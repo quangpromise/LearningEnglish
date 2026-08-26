@@ -1,0 +1,48 @@
+# Flutter / Dart
+app/.dart_tool/
+app/.flutter-plugins
+app/.flutter-plugins-dependencies
+app/.packages
+app/.pub-cache/
+app/.pub/
+app/build/
+app/**/generated_plugin_registrant.dart
+
+# Android
+app/android/.gradle/
+app/android/local.properties
+app/android/**/gradle-wrapper.jar
+app/android/key.properties
+*.jks
+*.keystore
+
+# iOS
+app/ios/Pods/
+app/ios/.symlinks/
+app/ios/Flutter/Flutter.framework
+app/ios/Flutter/Flutter.podspec
+app/ios/Runner.xcworkspace/xcshareddata/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env / secrets
+.env
+.env.*
+**/secrets.dart
+google-services.json
+GoogleService-Info.plist
+
+# Build output
+*.apk
+*.aab
+*.ipa
+
+# Logs
+*.log

@@ -1,0 +1,22 @@
+# CODEOWNERS — mapping module sang người/nhóm chịu trách nhiệm review.
+# Cập nhật username GitHub thật khi có thành viên tham gia.
+# Xem quy tắc chia module trong CLAUDE.md > "Cộng tác nhiều người".
+
+# Mặc định: chủ dự án review mọi thứ chưa có owner cụ thể
+*                                   @OWNER_GITHUB_USERNAME
+
+# Core / kiến trúc chung — cần review kỹ vì ảnh hưởng toàn bộ team
+/app/lib/core/                     @OWNER_GITHUB_USERNAME
+/CLAUDE.md                         @OWNER_GITHUB_USERNAME
+
+# Từng feature — điền thêm owner khi có người phụ trách
+/app/lib/features/music_player/    @OWNER_GITHUB_USERNAME
+/app/lib/features/translation/     @OWNER_GITHUB_USERNAME
+/app/lib/features/pronunciation/   @OWNER_GITHUB_USERNAME
+/app/lib/features/grammar/         @OWNER_GITHUB_USERNAME
+
+# Tài liệu nghiên cứu / bản quyền nhạc — cần review cẩn thận về license
+/docs/                              @OWNER_GITHUB_USERNAME
+
+# Agents & Skills
+/.claude/                           @OWNER_GITHUB_USERNAME
