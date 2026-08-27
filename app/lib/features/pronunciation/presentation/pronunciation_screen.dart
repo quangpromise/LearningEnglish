@@ -45,6 +45,7 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
   Completer<void>? _finalResultCompleter;
   String? _recordedPath;
   bool _playingBack = false;
+  String? _recordError;
 
   @override
   void initState() {
@@ -214,12 +215,19 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
       _score = null;
       _recognized = '';
       _recordedPath = null;
+      _recordError = null;
     });
-    if (await _recorder.hasPermission()) {
-      final dir = await getTemporaryDirectory();
-      final path =
-          '${dir.path}/pronunciation_attempt_${DateTime.now().millisecondsSinceEpoch}.m4a';
-      await _recorder.start(const rec.RecordConfig(), path: path);
+    try {
+      if (await _recorder.hasPermission()) {
+        final dir = await getTemporaryDirectory();
+        final path =
+            '${dir.path}/pronunciation_attempt_${DateTime.now().millisecondsSinceEpoch}.m4a';
+        await _recorder.start(const rec.RecordConfig(), path: path);
+      } else if (mounted) {
+        setState(() => _recordError = 'Chưa có quyền micro để ghi âm.');
+      }
+    } catch (e) {
+      if (mounted) setState(() => _recordError = 'Không ghi âm được: $e');
     }
     await _speech.listen(
       onResult: (result) {
@@ -236,15 +244,18 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
   Future<void> _playRecording() async {
     final path = _recordedPath;
     if (path == null) return;
-    setState(() => _playingBack = true);
+    setState(() {
+      _playingBack = true;
+      _recordError = null;
+    });
     try {
       await _playbackPlayer.setFilePath(path);
       await _playbackPlayer.play();
       await _playbackPlayer.processingStateStream.firstWhere(
         (s) => s == ProcessingState.completed,
       );
-    } catch (_) {
-      // bo qua - vd file khong ton tai / bi huy giua chung
+    } catch (e) {
+      if (mounted) setState(() => _recordError = 'Không phát lại được: $e');
     } finally {
       if (mounted) setState(() => _playingBack = false);
     }
@@ -388,6 +399,14 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
                     ),
                   ],
                 ),
+              ),
+            ],
+            if (_recordError != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                _recordError!,
+                textAlign: TextAlign.center,
+                style: AppTextStyles.body(size: 11, color: AppColors.pink),
               ),
             ],
             const Spacer(),
