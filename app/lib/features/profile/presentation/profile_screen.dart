@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../core/config/env.dart';
 import '../../../core/i18n/app_language.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
@@ -601,6 +602,15 @@ class ProfileScreen extends ConsumerWidget {
                           ),
                         ],
                       ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Center(
+                    child: Text(
+                      Env.buildSha.isNotEmpty
+                          ? 'Build ${Env.buildSha.substring(0, 7)}'
+                          : 'Build (local)',
+                      style: AppTextStyles.muted(size: 10),
                     ),
                   ),
                 ],

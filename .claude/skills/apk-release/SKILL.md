@@ -5,8 +5,17 @@ description: Build & ký file APK Android release cho app Learn English Through 
 
 # Quy trình build & phát hành APK (sideload)
 
-## 0. Cách nhanh nhất — để GitHub Actions tự build & phát hành
-Không cần build tay: mỗi lần push vào `main`, GitHub Actions tự build và cập nhật APK mới nhất vào 1 link tải cố định. Xem chi tiết & link tải tại [`docs/ci-apk-distribution.md`](../../../docs/ci-apk-distribution.md). Chỉ dùng các bước build thủ công dưới đây khi cần build ngay trên máy (debug nhanh, không đợi CI) hoặc khi CI gặp sự cố.
+## 0. GitHub Actions build & phát hành — CHỈ khi người dùng đồng ý
+Push vào `main` vẫn luôn chạy CI (analyze/format/test) như bình thường, nhưng
+job "Build & Publish APK" (`.github/workflows/build-apk.yml`) có điều kiện
+`if:` chỉ chạy khi: (a) người dùng tự bấm "Run workflow" (workflow_dispatch)
+trên GitHub, HOẶC (b) commit message chứa `[build]`. **Claude chỉ được thêm
+`[build]` vào commit message khi người dùng đã yêu cầu rõ ràng build/phát
+hành bản mới** — không tự ý build sau mỗi lần sửa code, kể cả khi đã fix
+xong 1 bug, trừ khi người dùng nói build/release/tải bản mới. Xem chi tiết
+& link tải tại [`docs/ci-apk-distribution.md`](../../../docs/ci-apk-distribution.md).
+Chỉ dùng các bước build thủ công dưới đây khi cần build ngay trên máy
+(debug nhanh, không đợi CI) hoặc khi CI gặp sự cố.
 
 ## 1. Build APK debug để test nhanh (không cần keystore)
 ```bash

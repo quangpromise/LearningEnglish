@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/songs_data.dart';
 import 'player_screen.dart';
+
+String _levelLabel(WidgetRef ref, String level) => switch (level) {
+  'Cơ bản' => ref.tr('song_level_basic'),
+  'Trung cấp' => ref.tr('song_level_intermediate'),
+  'Nâng cao' => ref.tr('song_level_advanced'),
+  _ => level,
+};
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -63,7 +71,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Xin chào', style: AppTextStyles.muted()),
+                    Text(ref.tr('home_greeting'), style: AppTextStyles.muted()),
                     Text('Quang', style: AppTextStyles.heading(size: 20)),
                   ],
                 ),
@@ -99,7 +107,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       decoration: InputDecoration(
                         isDense: true,
                         border: InputBorder.none,
-                        hintText: 'Tìm bài hát, ca sĩ...',
+                        hintText: ref.tr('home_search_hint'),
                         hintStyle: AppTextStyles.muted(),
                       ),
                     ),
@@ -144,7 +152,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'GỢI Ý NGHE THỬ',
+                            ref.tr('home_try_listening'),
                             style: TextStyle(
                               color: AppColors.purple,
                               fontWeight: FontWeight.w800,
@@ -192,8 +200,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             if (query.isEmpty && !_favoritesOnly) const SizedBox(height: 22),
             Text(
               _favoritesOnly
-                  ? 'Bài hát yêu thích'
-                  : (query.isEmpty ? 'Gợi ý cho bạn' : 'Kết quả tìm kiếm'),
+                  ? ref.tr('home_favorites_title')
+                  : (query.isEmpty
+                        ? ref.tr('home_suggested_for_you')
+                        : ref.tr('home_search_results')),
               style: AppTextStyles.heading(size: 16),
             ),
             const SizedBox(height: 12),
@@ -202,8 +212,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ? Center(
                       child: Text(
                         _favoritesOnly
-                            ? 'Chưa có bài hát yêu thích nào.\nBấm biểu tượng trái tim khi nghe để lưu.'
-                            : 'Không tìm thấy bài hát nào',
+                            ? ref.tr('home_no_favorites')
+                            : ref.tr('home_no_results'),
                         textAlign: TextAlign.center,
                         style: AppTextStyles.muted(),
                       ),
@@ -293,7 +303,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     borderRadius: BorderRadius.circular(999),
                                   ),
                                   child: Text(
-                                    song.level,
+                                    _levelLabel(ref, song.level),
                                     style: TextStyle(
                                       color: song.level == 'Cơ bản'
                                           ? AppColors.teal

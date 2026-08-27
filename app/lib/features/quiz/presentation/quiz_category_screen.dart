@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/quiz_data.dart';
 import 'quiz_question_screen.dart';
@@ -21,11 +23,11 @@ const _catColors = [
   AppColors.blue,
 ];
 
-class QuizCategoryScreen extends StatelessWidget {
+class QuizCategoryScreen extends ConsumerWidget {
   const QuizCategoryScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return ScreenBackground(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
@@ -39,13 +41,10 @@ class QuizCategoryScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Đố vui tiếng Anh',
+                      ref.tr('quiz_title'),
                       style: AppTextStyles.heading(size: 20),
                     ),
-                    Text(
-                      'Chọn chủ đề để bắt đầu thử thách',
-                      style: AppTextStyles.muted(),
-                    ),
+                    Text(ref.tr('quiz_subtitle'), style: AppTextStyles.muted()),
                   ],
                 ),
               ],
@@ -106,7 +105,7 @@ class QuizCategoryScreen extends StatelessWidget {
                             style: AppTextStyles.body(weight: FontWeight.w800),
                           ),
                           Text(
-                            '$count câu đố',
+                            '$count ${ref.tr('quiz_riddle_count')}',
                             style: AppTextStyles.muted(size: 11),
                           ),
                         ],

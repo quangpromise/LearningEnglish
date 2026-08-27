@@ -1,12 +1,14 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/quiz_data.dart';
 import 'quiz_result_screen.dart';
 
-class QuizQuestionScreen extends StatefulWidget {
+class QuizQuestionScreen extends ConsumerStatefulWidget {
   const QuizQuestionScreen({
     super.key,
     required this.category,
@@ -16,10 +18,10 @@ class QuizQuestionScreen extends StatefulWidget {
   final List<Riddle> riddles;
 
   @override
-  State<QuizQuestionScreen> createState() => _QuizQuestionScreenState();
+  ConsumerState<QuizQuestionScreen> createState() => _QuizQuestionScreenState();
 }
 
-class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
+class _QuizQuestionScreenState extends ConsumerState<QuizQuestionScreen> {
   int _index = 0;
   String? _picked;
   final List<bool> _results = [];
@@ -117,7 +119,7 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
                 borderRadius: BorderRadius.circular(999),
               ),
               child: Text(
-                '${widget.category.toUpperCase()} · Câu ${_index + 1}/${widget.riddles.length}',
+                '${widget.category.toUpperCase()} · ${ref.tr('quiz_question_label')} ${_index + 1}/${widget.riddles.length}',
                 style: const TextStyle(
                   color: Color(0xFF9DB4FF),
                   fontWeight: FontWeight.w800,

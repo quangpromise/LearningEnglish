@@ -14,6 +14,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # CHI build & publish APK khi nguoi dung DA DONG Y - push binh thuong
+    # (kem CI analyze/format/test) KHONG tu dong build APK nua. Claude chi
+    # them "[build]" vao commit message khi nguoi dung yeu cau ro rang; nguoi
+    # dung cung co the tu bam "Run workflow" (workflow_dispatch) bat cu luc nao.
+    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[build]') }}
     defaults:
       run:
         working-directory: app

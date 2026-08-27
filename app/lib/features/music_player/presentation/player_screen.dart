@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
 
 import '../../../core/audio/now_playing_service.dart';
+import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../grammar/presentation/grammar_screen.dart';
@@ -102,7 +103,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
       _myGeneration = await NowPlayingService.instance.play(song.audioUrl);
     } catch (e) {
       if (mounted) {
-        setState(() => _error = 'Không tải được nhạc. Kiểm tra kết nối mạng.');
+        setState(() => _error = ref.tr('player_load_error'));
       }
     }
     // Man hinh co the da bi dong, hoac 1 bai khac da giat quyen phat trong
@@ -212,8 +213,8 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
                 ),
                 Text(
                   widget.queue.length > 1
-                      ? 'ĐANG PHÁT · ${_index + 1}/${widget.queue.length}'
-                      : 'ĐANG PHÁT',
+                      ? '${ref.tr('player_now_playing')} · ${_index + 1}/${widget.queue.length}'
+                      : ref.tr('player_now_playing'),
                   style: AppTextStyles.muted(size: 11)
                       .copyWith(letterSpacing: 1),
                 ),
@@ -369,7 +370,10 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('Song ngữ Anh – Việt', style: AppTextStyles.muted()),
+                Text(
+                  ref.tr('player_bilingual_toggle'),
+                  style: AppTextStyles.muted(),
+                ),
                 const SizedBox(width: 10),
                 Switch(
                   value: _bilingual,

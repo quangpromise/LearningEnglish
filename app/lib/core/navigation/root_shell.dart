@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
@@ -31,6 +33,8 @@ class _RootShellState extends State<RootShell> with WidgetsBindingObserver {
     Icons.person_rounded,
   ];
 
+  Timer? _updateCheckTimer;
+
   @override
   void initState() {
     super.initState();
@@ -38,11 +42,19 @@ class _RootShellState extends State<RootShell> with WidgetsBindingObserver {
     WidgetsBinding.instance.addPostFrameCallback(
       (_) => showUpdateDialogIfAvailable(context),
     );
+    // Ngoai kiem tra luc mo app/resume, kiem tra dinh ky moi 15 phut - phong
+    // truong hop nguoi dung khong bao gio dua app xuong nen (didChange
+    // AppLifecycleState.resumed se khong bao gio ban), ho van thay thong
+    // bao neu ban build moi duoc publish trong luc dang dung app.
+    _updateCheckTimer = Timer.periodic(const Duration(minutes: 15), (_) {
+      if (mounted) showUpdateDialogIfAvailable(context);
+    });
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _updateCheckTimer?.cancel();
     super.dispose();
   }
 
