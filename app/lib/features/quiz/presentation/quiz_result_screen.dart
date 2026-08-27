@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/quiz_data.dart';
 import 'leaderboard_screen.dart';
 
-class QuizResultScreen extends StatelessWidget {
+class QuizResultScreen extends ConsumerStatefulWidget {
   const QuizResultScreen({
     super.key,
     required this.riddles,
@@ -14,9 +16,28 @@ class QuizResultScreen extends StatelessWidget {
   final List<bool> results;
 
   @override
+  ConsumerState<QuizResultScreen> createState() => _QuizResultScreenState();
+}
+
+class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
+  late final int _xp;
+
+  @override
+  void initState() {
+    super.initState();
+    final correct = widget.results.where((r) => r).length;
+    _xp = correct * 15;
+    if (_xp > 0) {
+      ref.read(leaderboardRepositoryProvider).addXp(_xp).catchError((_) {});
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final riddles = widget.riddles;
+    final results = widget.results;
     final correct = results.where((r) => r).length;
-    final xp = correct * 15;
+    final xp = _xp;
     return ScreenBackground(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),

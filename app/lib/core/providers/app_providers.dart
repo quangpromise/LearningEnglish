@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../features/auth/data/auth_repository.dart';
 import '../../features/profile/data/profile_repository.dart';
+import '../../features/quiz/data/leaderboard_repository.dart';
 import '../../features/rewards/data/rewards_repository.dart';
 import '../../features/stats/data/stats_repository.dart';
 
@@ -48,4 +49,8 @@ final statsRepositoryProvider = Provider<StatsRepository>(
 /// reset để làm mới lại số liệu trên UI.
 final myStatsProvider = FutureProvider(
   (ref) => ref.watch(statsRepositoryProvider).fetchMyStats(),
+);
+
+final leaderboardRepositoryProvider = Provider<LeaderboardRepository>(
+  (ref) => LeaderboardRepository(ref.watch(supabaseClientProvider)),
 );

@@ -133,7 +133,7 @@ class PillButton extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(999),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 22),
+          padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 16),
           decoration: BoxDecoration(
             gradient: filled ? AppColors.accentGradient : null,
             color: filled ? null : AppColors.glassFill,
@@ -154,9 +154,19 @@ class PillButton extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (icon != null) ...[icon!, const SizedBox(width: 8)],
-              Text(
-                label,
-                style: AppTextStyles.body(size: 14, weight: FontWeight.w800),
+              // Flexible bat buoc phai co o day: PillButton thuong nam trong
+              // Expanded (vd 2 nut canh nhau), khien Container bi ep vao 1
+              // chieu rong co dinh - neu Text khong duoc boc Flexible, no se
+              // lay chieu rong tu nhien (khong gioi han) va tran ra ngoai
+              // vien bo tron cua nut khi label dai (vd "Xem bang xep hang").
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.body(size: 14, weight: FontWeight.w800),
+                ),
               ),
             ],
           ),
