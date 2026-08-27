@@ -5,6 +5,7 @@ import '../../features/music_player/presentation/home_screen.dart';
 import '../../features/pronunciation/presentation/pronunciation_screen.dart';
 import '../../features/quiz/presentation/quiz_category_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
+import '../../features/update/presentation/update_dialog.dart';
 
 class RootShell extends StatefulWidget {
   const RootShell({super.key});
@@ -24,6 +25,12 @@ class _RootShellState extends State<RootShell> {
   ];
 
   static const _icons = [Icons.home_rounded, Icons.extension_rounded, Icons.mic_rounded, Icons.person_rounded];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => showUpdateDialogIfAvailable(context));
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -45,6 +45,10 @@ dependencies:
   supabase_flutter: ^2.8.0
   # Đăng nhập bằng Google mail
   google_sign_in: ^6.2.2
+  # Gọi GitHub API kiểm tra bản cập nhật (feature update checker)
+  http: ^1.2.2
+  # Mở link tải APK mới trong trình duyệt khi có bản cập nhật
+  url_launcher: ^6.3.1
 
 dev_dependencies:
   flutter_test:

@@ -19,4 +19,9 @@ class Env {
   static const googleWebClientId = String.fromEnvironment('GOOGLE_WEB_CLIENT_ID');
 
   static bool get isConfigured => supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty && googleWebClientId.isNotEmpty;
+
+  /// Commit SHA của bản build hiện tại, do CI truyền vào lúc build
+  /// (--dart-define=BUILD_SHA=...). Rỗng khi build cục bộ không truyền vào —
+  /// tính năng kiểm tra cập nhật sẽ tự bỏ qua trong trường hợp đó.
+  static const buildSha = String.fromEnvironment('BUILD_SHA');
 }

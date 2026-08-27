@@ -1,5 +1,8 @@
 name: Build & Publish APK
 
+permissions:
+  contents: write
+
 on:
   push:
     branches: [main]
@@ -29,7 +32,11 @@ jobs:
           flutter build apk --release --split-per-abi \
             --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
             --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }} \
-            --dart-define=GOOGLE_WEB_CLIENT_ID=${{ secrets.GOOGLE_WEB_CLIENT_ID }}
+            --dart-define=GOOGLE_WEB_CLIENT_ID=${{ secrets.GOOGLE_WEB_CLIENT_ID }} \
+            --dart-define=BUILD_SHA=${{ github.sha }}
+
+      - name: Ghi commit SHA để app tự kiểm tra bản cập nhật
+        run: echo -n "${{ github.sha }}" > build/app/outputs/flutter-apk/version.txt
 
       - name: Publish to rolling "latest" release
         uses: ncipollo/release-action@v1
@@ -46,4 +53,5 @@ jobs:
             app/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
             app/build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
             app/build/app/outputs/flutter-apk/app-x86_64-release.apk
+            app/build/app/outputs/flutter-apk/version.txt
           token: ${{ secrets.GITHUB_TOKEN }}
