@@ -22,6 +22,13 @@ class NowPlayingService {
     if (!isCurrent(myGeneration)) return myGeneration;
     await player.setUrl(url);
     if (!isCurrent(myGeneration)) return myGeneration;
+    // Ep vi tri ve 0 truoc khi phat: dung chung 1 player cho nhieu bai, neu
+    // khong seek lai, "position" co the con giu gia tri cua bai TRUOC trong
+    // 1 khoang ngan sau setUrl(), khien dong loi bai hat nhay thang toi vi
+    // tri sai hoan toan ngay tu dau (vd bai truoc dang o phut 2, bai moi
+    // ngan hon nen moi dong loi deu bi coi la "da qua").
+    await player.seek(Duration.zero);
+    if (!isCurrent(myGeneration)) return myGeneration;
     await player.play();
     return myGeneration;
   }
