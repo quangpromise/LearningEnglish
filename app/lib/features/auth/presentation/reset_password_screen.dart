@@ -117,10 +117,17 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
   }
 }
 
-class _PasswordField extends StatelessWidget {
+class _PasswordField extends StatefulWidget {
   const _PasswordField({required this.controller, required this.label});
   final TextEditingController controller;
   final String label;
+
+  @override
+  State<_PasswordField> createState() => _PasswordFieldState();
+}
+
+class _PasswordFieldState extends State<_PasswordField> {
+  bool _obscured = true;
 
   @override
   Widget build(BuildContext context) {
@@ -128,8 +135,8 @@ class _PasswordField extends StatelessWidget {
       borderRadius: 16,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: TextField(
-        controller: controller,
-        obscureText: true,
+        controller: widget.controller,
+        obscureText: _obscured,
         style: AppTextStyles.body(),
         decoration: InputDecoration(
           border: InputBorder.none,
@@ -138,8 +145,18 @@ class _PasswordField extends StatelessWidget {
             size: 18,
             color: AppColors.textMuted,
           ),
-          hintText: label,
+          hintText: widget.label,
           hintStyle: AppTextStyles.muted(),
+          suffixIcon: IconButton(
+            onPressed: () => setState(() => _obscured = !_obscured),
+            icon: Icon(
+              _obscured
+                  ? Icons.visibility_off_rounded
+                  : Icons.visibility_rounded,
+              size: 18,
+              color: AppColors.textMuted,
+            ),
+          ),
         ),
       ),
     );

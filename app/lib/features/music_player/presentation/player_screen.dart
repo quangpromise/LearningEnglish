@@ -228,65 +228,61 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
                     ),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: AnimatedScale(
-                        scale: isCurrent ? 1.12 : 1,
+                      child: AnimatedOpacity(
+                        opacity: isCurrent ? 1 : 0.3,
                         duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeOut,
-                        child: AnimatedOpacity(
-                          opacity: isCurrent ? 1 : 0.3,
-                          duration: const Duration(milliseconds: 300),
-                          child: Column(
-                            children: [
-                              Wrap(
-                                alignment: WrapAlignment.center,
-                                children: line.en.split(' ').map((w) {
-                                  return GestureDetector(
-                                    onTap: isCurrent
-                                        ? () => _onWordTap(
-                                            w.replaceAll(
-                                              RegExp('[^a-zA-Z]'),
-                                              '',
-                                            ),
-                                          )
-                                        : null,
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 2,
-                                      ),
-                                      child: isCurrent
-                                          ? ShaderMask(
-                                              shaderCallback: (rect) =>
-                                                  AppColors.accentGradient
-                                                      .createShader(rect),
-                                              child: Text(
-                                                w,
-                                                style: AppTextStyles.heading(
-                                                  size: 21,
-                                                ),
-                                              ),
-                                            )
-                                          : Text(
+                        child: Column(
+                          children: [
+                            Wrap(
+                              alignment: WrapAlignment.center,
+                              children: line.en.split(' ').map((w) {
+                                return GestureDetector(
+                                  onTap: isCurrent
+                                      ? () => _onWordTap(
+                                          w.replaceAll(RegExp('[^a-zA-Z]'), ''),
+                                        )
+                                      : null,
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 2,
+                                    ),
+                                    // Chi doi mau (gradient) khi la tu dang
+                                    // hat, KHONG doi kich thuoc chu - giu
+                                    // cung 1 font size cho moi tu de tranh
+                                    // hieu ung "zoom" nguoi dung khong muon.
+                                    child: isCurrent
+                                        ? ShaderMask(
+                                            shaderCallback: (rect) => AppColors
+                                                .accentGradient
+                                                .createShader(rect),
+                                            child: Text(
                                               w,
                                               style: AppTextStyles.heading(
-                                                size: 15,
+                                                size: 17,
                                               ),
                                             ),
-                                    ),
-                                  );
-                                }).toList(),
-                              ),
-                              if (_bilingual)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 4),
-                                  child: Text(
-                                    line.vi,
-                                    style: AppTextStyles.muted(
-                                      size: isCurrent ? 13 : 12,
-                                    ),
+                                          )
+                                        : Text(
+                                            w,
+                                            style: AppTextStyles.heading(
+                                              size: 17,
+                                            ),
+                                          ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                            if (_bilingual)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 4),
+                                child: Text(
+                                  line.vi,
+                                  style: AppTextStyles.muted(
+                                    size: isCurrent ? 13 : 12,
                                   ),
                                 ),
-                            ],
-                          ),
+                              ),
+                          ],
                         ),
                       ),
                     ),

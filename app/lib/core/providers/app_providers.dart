@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../features/auth/data/auth_repository.dart';
@@ -6,6 +7,7 @@ import '../../features/profile/data/profile_repository.dart';
 import '../../features/quiz/data/leaderboard_repository.dart';
 import '../../features/rewards/data/rewards_repository.dart';
 import '../../features/stats/data/stats_repository.dart';
+import '../i18n/app_language.dart';
 
 final supabaseClientProvider = Provider<SupabaseClient>(
   (ref) => Supabase.instance.client,
@@ -59,3 +61,31 @@ final myStatsProvider = FutureProvider(
 final leaderboardRepositoryProvider = Provider<LeaderboardRepository>(
   (ref) => LeaderboardRepository(ref.watch(supabaseClientProvider)),
 );
+
+const _appLanguagePrefKey = 'app_language';
+
+/// Ngôn ngữ giao diện hiện tại - lưu lại trên máy (SharedPreferences), khôi
+/// phục khi mở app lại. Đổi bằng `ref.read(appLanguageProvider.notifier)
+/// .setLanguage(...)` (vd từ màn Hồ sơ).
+class AppLanguageNotifier extends StateNotifier<AppLanguage> {
+  AppLanguageNotifier() : super(AppLanguage.vi) {
+    _restore();
+  }
+
+  Future<void> _restore() async {
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getString(_appLanguagePrefKey);
+    if (saved == AppLanguage.en.name) state = AppLanguage.en;
+  }
+
+  Future<void> setLanguage(AppLanguage lang) async {
+    state = lang;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_appLanguagePrefKey, lang.name);
+  }
+}
+
+final appLanguageProvider =
+    StateNotifierProvider<AppLanguageNotifier, AppLanguage>(
+      (ref) => AppLanguageNotifier(),
+    );

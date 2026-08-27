@@ -133,15 +133,23 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                               decoration: BoxDecoration(
                                 gradient: AppColors.accentGradient,
                                 shape: BoxShape.circle,
+                                image: p.avatarUrl != null
+                                    ? DecorationImage(
+                                        image: NetworkImage(p.avatarUrl!),
+                                        fit: BoxFit.cover,
+                                      )
+                                    : null,
                               ),
-                              child: Center(
-                                child: Text(
-                                  p.displayName.isNotEmpty
-                                      ? p.displayName[0].toUpperCase()
-                                      : '?',
-                                  style: AppTextStyles.heading(size: 13),
-                                ),
-                              ),
+                              child: p.avatarUrl == null
+                                  ? Center(
+                                      child: Text(
+                                        p.displayName.isNotEmpty
+                                            ? p.displayName[0].toUpperCase()
+                                            : '?',
+                                        style: AppTextStyles.heading(size: 13),
+                                      ),
+                                    )
+                                  : null,
                             ),
                             const SizedBox(width: 12),
                             Expanded(

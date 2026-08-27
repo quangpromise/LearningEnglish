@@ -4,11 +4,13 @@ class LeaderboardEntry {
   const LeaderboardEntry({
     required this.rank,
     required this.displayName,
+    required this.avatarUrl,
     required this.xp,
     required this.isMe,
   });
   final int rank;
   final String displayName;
+  final String? avatarUrl;
   final int xp;
   final bool isMe;
 }
@@ -35,6 +37,7 @@ class LeaderboardRepository {
       return LeaderboardEntry(
         rank: m['rank'] as int,
         displayName: m['display_name'] as String? ?? 'Người dùng',
+        avatarUrl: m['avatar_url'] as String?,
         xp: m['xp'] as int? ?? 0,
         isMe: m['is_me'] as bool? ?? false,
       );

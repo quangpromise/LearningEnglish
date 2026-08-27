@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 
@@ -139,10 +140,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
               style: AppTextStyles.heading(size: 22),
             ),
             const SizedBox(height: 6),
-            Text(
-              'Đăng nhập để lưu tiến độ & điểm thưởng',
-              style: AppTextStyles.muted(),
-            ),
+            Text(ref.tr('auth_tagline'), style: AppTextStyles.muted()),
             const SizedBox(height: 24),
             GlowBox(
               borderRadius: 999,
@@ -151,7 +149,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                 children: [
                   Expanded(
                     child: _ModeTab(
-                      label: 'Đăng nhập',
+                      label: ref.tr('auth_tab_signin'),
                       active: !isSignUp,
                       onTap: () => setState(() {
                         _mode = _Mode.signIn;
@@ -162,7 +160,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                   ),
                   Expanded(
                     child: _ModeTab(
-                      label: 'Đăng ký',
+                      label: ref.tr('auth_tab_signup'),
                       active: isSignUp,
                       onTap: () => setState(() {
                         _mode = _Mode.signUp;
@@ -178,14 +176,16 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
             if (isSignUp) ...[
               _AuthField(
                 controller: _usernameCtrl,
-                label: 'Tên người dùng',
+                label: ref.tr('auth_username'),
                 icon: Icons.person_outline_rounded,
               ),
               const SizedBox(height: 12),
             ],
             _AuthField(
               controller: _emailCtrl,
-              label: isSignUp ? 'Email' : 'Email hoặc tên người dùng',
+              label: isSignUp
+                  ? ref.tr('auth_email')
+                  : ref.tr('auth_email_or_username'),
               icon: Icons.mail_outline_rounded,
               keyboardType: isSignUp
                   ? TextInputType.emailAddress
@@ -194,7 +194,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
             const SizedBox(height: 12),
             _AuthField(
               controller: _passwordCtrl,
-              label: 'Mật khẩu',
+              label: ref.tr('auth_password'),
               icon: Icons.lock_outline_rounded,
               obscure: true,
             ),
@@ -205,7 +205,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                 child: GestureDetector(
                   onTap: _loading ? null : _forgotPassword,
                   child: Text(
-                    'Quên mật khẩu?',
+                    ref.tr('auth_forgot_password'),
                     style: AppTextStyles.body(
                       size: 12,
                       weight: FontWeight.w700,
@@ -236,8 +236,10 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
               width: double.infinity,
               child: PillButton(
                 label: _loading
-                    ? 'Đang xử lý...'
-                    : (isSignUp ? 'Tạo tài khoản' : 'Đăng nhập'),
+                    ? ref.tr('auth_processing')
+                    : (isSignUp
+                          ? ref.tr('auth_create_account')
+                          : ref.tr('auth_signin_button')),
                 onTap: _loading ? null : _submitEmailForm,
               ),
             ),
@@ -247,7 +249,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                 Expanded(child: Divider(color: AppColors.glassBorder)),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: Text('hoặc', style: AppTextStyles.muted()),
+                  child: Text(ref.tr('auth_or'), style: AppTextStyles.muted()),
                 ),
                 Expanded(child: Divider(color: AppColors.glassBorder)),
               ],
@@ -257,7 +259,9 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
               width: double.infinity,
               child: PillButton(
                 filled: false,
-                label: _loading ? 'Đang đăng nhập...' : 'Đăng nhập bằng Google',
+                label: _loading
+                    ? ref.tr('auth_google_processing')
+                    : ref.tr('auth_google_signin'),
                 icon: const Icon(
                   Icons.g_mobiledata_rounded,
                   color: AppColors.textPrimary,
@@ -308,7 +312,7 @@ class _ModeTab extends StatelessWidget {
   }
 }
 
-class _AuthField extends StatelessWidget {
+class _AuthField extends StatefulWidget {
   const _AuthField({
     required this.controller,
     required this.label,
@@ -324,20 +328,39 @@ class _AuthField extends StatelessWidget {
   final TextInputType? keyboardType;
 
   @override
+  State<_AuthField> createState() => _AuthFieldState();
+}
+
+class _AuthFieldState extends State<_AuthField> {
+  late bool _obscured = widget.obscure;
+
+  @override
   Widget build(BuildContext context) {
     return GlowBox(
       borderRadius: 16,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: TextField(
-        controller: controller,
-        obscureText: obscure,
-        keyboardType: keyboardType,
+        controller: widget.controller,
+        obscureText: _obscured,
+        keyboardType: widget.keyboardType,
         style: AppTextStyles.body(),
         decoration: InputDecoration(
           border: InputBorder.none,
-          icon: Icon(icon, size: 18, color: AppColors.textMuted),
-          hintText: label,
+          icon: Icon(widget.icon, size: 18, color: AppColors.textMuted),
+          hintText: widget.label,
           hintStyle: AppTextStyles.muted(),
+          suffixIcon: widget.obscure
+              ? IconButton(
+                  onPressed: () => setState(() => _obscured = !_obscured),
+                  icon: Icon(
+                    _obscured
+                        ? Icons.visibility_off_rounded
+                        : Icons.visibility_rounded,
+                    size: 18,
+                    color: AppColors.textMuted,
+                  ),
+                )
+              : null,
         ),
       ),
     );

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../core/i18n/app_language.dart';
+import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../settings/presentation/change_password_sheet.dart';
@@ -15,24 +17,24 @@ class ProfileScreen extends ConsumerWidget {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF12172E),
-        title: const Text(
-          'Đăng xuất?',
-          style: TextStyle(color: AppColors.textPrimary),
+        title: Text(
+          ref.tr('profile_signout_title'),
+          style: const TextStyle(color: AppColors.textPrimary),
         ),
         content: Text(
-          'Bạn có chắc muốn đăng xuất khỏi tài khoản này?',
+          ref.tr('profile_signout_body'),
           style: AppTextStyles.muted(),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Huỷ'),
+            child: Text(ref.tr('common_cancel')),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text(
-              'Đăng xuất',
-              style: TextStyle(color: AppColors.pink),
+            child: Text(
+              ref.tr('profile_sign_out'),
+              style: const TextStyle(color: AppColors.pink),
             ),
           ),
         ],
@@ -48,24 +50,24 @@ class ProfileScreen extends ConsumerWidget {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF12172E),
-        title: const Text(
-          'Đặt lại thống kê?',
-          style: TextStyle(color: AppColors.textPrimary),
+        title: Text(
+          ref.tr('profile_reset_title'),
+          style: const TextStyle(color: AppColors.textPrimary),
         ),
         content: Text(
-          'Toàn bộ số liệu (từ đã học, bài hoàn thành, điểm phát âm, thời gian luyện tập) sẽ về 0. Không thể hoàn tác.',
+          ref.tr('profile_reset_body'),
           style: AppTextStyles.muted(),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Huỷ'),
+            child: Text(ref.tr('common_cancel')),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text(
-              'Đặt lại',
-              style: TextStyle(color: AppColors.pink),
+            child: Text(
+              ref.tr('profile_reset_confirm'),
+              style: const TextStyle(color: AppColors.pink),
             ),
           ),
         ],
@@ -75,6 +77,84 @@ class ProfileScreen extends ConsumerWidget {
       await ref.read(statsRepositoryProvider).resetStats();
       ref.invalidate(myStatsProvider);
     }
+  }
+
+  void _showLanguagePicker(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Container(
+        padding: const EdgeInsets.fromLTRB(20, 14, 20, 28),
+        decoration: const BoxDecoration(
+          color: Color(0xFF12172E),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              ref.tr('profile_language_title'),
+              style: AppTextStyles.heading(size: 16),
+            ),
+            const SizedBox(height: 14),
+            for (final lang in AppLanguage.values)
+              Consumer(
+                builder: (context, innerRef, _) {
+                  final current = innerRef.watch(appLanguageProvider);
+                  final active = current == lang;
+                  return GestureDetector(
+                    onTap: () {
+                      innerRef
+                          .read(appLanguageProvider.notifier)
+                          .setLanguage(lang);
+                      Navigator.of(context).pop();
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
+                      decoration: BoxDecoration(
+                        color: active
+                            ? AppColors.blue.withValues(alpha: 0.16)
+                            : AppColors.glassFill,
+                        border: Border.all(
+                          color: active
+                              ? AppColors.blue.withValues(alpha: 0.5)
+                              : AppColors.glassBorder,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        children: [
+                          Text(lang.flag, style: const TextStyle(fontSize: 22)),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              lang.label,
+                              style: AppTextStyles.body(
+                                weight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                          if (active)
+                            const Icon(
+                              Icons.check_circle_rounded,
+                              color: AppColors.blue,
+                              size: 20,
+                            ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _pickAndUploadAvatar(BuildContext context, WidgetRef ref) async {
@@ -93,8 +173,9 @@ class ProfileScreen extends ConsumerWidget {
       ref.invalidate(myProfileProvider);
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Không tải được avatar: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${ref.tr('profile_avatar_error')} $e')),
+        );
       }
     }
   }
@@ -109,7 +190,10 @@ class ProfileScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Hồ sơ', style: AppTextStyles.heading(size: 16)),
+            Text(
+              ref.tr('profile_title'),
+              style: AppTextStyles.heading(size: 16),
+            ),
             const SizedBox(height: 16),
             Row(
               children: [
@@ -193,7 +277,7 @@ class ProfileScreen extends ConsumerWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            '${statsAsync.valueOrNull?.streakDays ?? 0} ngày liên tiếp',
+                            '${statsAsync.valueOrNull?.streakDays ?? 0} ${ref.tr('profile_streak_suffix')}',
                             style: const TextStyle(
                               color: AppColors.amber,
                               fontWeight: FontWeight.w800,
@@ -219,7 +303,7 @@ class ProfileScreen extends ConsumerWidget {
                       ),
                     ),
                     error: (e, _) => Text(
-                      'Không tải được thống kê: $e',
+                      '${ref.tr('profile_stats_error')} $e',
                       style: AppTextStyles.muted(),
                     ),
                     data: (stats) => GridView.count(
@@ -234,13 +318,13 @@ class ProfileScreen extends ConsumerWidget {
                           icon: Icons.menu_book_rounded,
                           color: AppColors.blue,
                           value: '${stats.wordsLearned}',
-                          label: 'Từ đã học',
+                          label: ref.tr('profile_words_learned'),
                         ),
                         _StatCard(
                           icon: Icons.music_note_rounded,
                           color: AppColors.purple,
                           value: '${stats.songsCompleted}',
-                          label: 'Bài hát hoàn thành',
+                          label: ref.tr('profile_songs_completed'),
                         ),
                         _StatCard(
                           icon: Icons.mic_rounded,
@@ -248,13 +332,13 @@ class ProfileScreen extends ConsumerWidget {
                           value: stats.avgPronunciationScore > 0
                               ? '${stats.avgPronunciationScore}%'
                               : '—',
-                          label: 'Điểm phát âm TB',
+                          label: ref.tr('profile_avg_score'),
                         ),
                         _StatCard(
                           icon: Icons.timer_outlined,
                           color: AppColors.amber,
                           value: stats.practiceTimeLabel,
-                          label: 'Thời gian luyện tập',
+                          label: ref.tr('profile_practice_time'),
                         ),
                       ],
                     ),
@@ -285,13 +369,13 @@ class ProfileScreen extends ConsumerWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Giọng đọc tiếng Anh',
+                                  ref.tr('profile_voice_title'),
                                   style: AppTextStyles.body(
                                     weight: FontWeight.w800,
                                   ),
                                 ),
                                 Text(
-                                  'Chọn giọng phát âm mẫu bạn thích',
+                                  ref.tr('profile_voice_subtitle'),
                                   style: AppTextStyles.muted(size: 11),
                                 ),
                               ],
@@ -331,13 +415,59 @@ class ProfileScreen extends ConsumerWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Đổi mật khẩu',
+                                  ref.tr('profile_change_password'),
                                   style: AppTextStyles.body(
                                     weight: FontWeight.w800,
                                   ),
                                 ),
                                 Text(
-                                  'Chỉ áp dụng cho tài khoản đăng ký email',
+                                  ref.tr('profile_change_password_subtitle'),
+                                  style: AppTextStyles.muted(size: 11),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(
+                            Icons.chevron_right_rounded,
+                            color: AppColors.textMuted,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  GestureDetector(
+                    onTap: () => _showLanguagePicker(context, ref),
+                    child: GlowBox(
+                      borderRadius: 20,
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 34,
+                            height: 34,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: AppColors.teal.withValues(alpha: 0.18),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              ref.watch(appLanguageProvider).flag,
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  ref.tr('profile_language_title'),
+                                  style: AppTextStyles.body(
+                                    weight: FontWeight.w800,
+                                  ),
+                                ),
+                                Text(
+                                  ref.tr('profile_language_subtitle'),
                                   style: AppTextStyles.muted(size: 11),
                                 ),
                               ],
@@ -358,7 +488,7 @@ class ProfileScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'HOẠT ĐỘNG TUẦN NÀY',
+                          ref.tr('profile_weekly_activity'),
                           style: AppTextStyles.muted(size: 11)
                               .copyWith(letterSpacing: 0.6),
                         ),
@@ -373,7 +503,7 @@ class ProfileScreen extends ConsumerWidget {
                               if (week.isEmpty) {
                                 return Center(
                                   child: Text(
-                                    'Chưa có hoạt động nào tuần này',
+                                    ref.tr('profile_no_activity'),
                                     style: AppTextStyles.muted(size: 11),
                                   ),
                                 );
@@ -429,7 +559,7 @@ class ProfileScreen extends ConsumerWidget {
                           const SizedBox(width: 14),
                           Expanded(
                             child: Text(
-                              'Đặt lại thống kê',
+                              ref.tr('profile_reset_stats'),
                               style: AppTextStyles.body(
                                 weight: FontWeight.w800,
                               ),
@@ -462,7 +592,7 @@ class ProfileScreen extends ConsumerWidget {
                           const SizedBox(width: 14),
                           Expanded(
                             child: Text(
-                              'Đăng xuất',
+                              ref.tr('profile_sign_out'),
                               style: AppTextStyles.body(
                                 weight: FontWeight.w800,
                                 color: AppColors.pink,

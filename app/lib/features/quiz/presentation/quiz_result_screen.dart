@@ -166,7 +166,7 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: PillButton(
-                    label: 'Xem bảng xếp hạng',
+                    label: 'Bảng xếp hạng',
                     onTap: () => Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (_) => LeaderboardScreen(myXp: xp),
