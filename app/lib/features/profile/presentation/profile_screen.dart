@@ -42,8 +42,43 @@ class ProfileScreen extends ConsumerWidget {
     }
   }
 
+  Future<void> _confirmResetStats(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF12172E),
+        title: const Text(
+          'Đặt lại thống kê?',
+          style: TextStyle(color: AppColors.textPrimary),
+        ),
+        content: Text(
+          'Toàn bộ số liệu (từ đã học, bài hoàn thành, điểm phát âm, thời gian luyện tập) sẽ về 0. Không thể hoàn tác.',
+          style: AppTextStyles.muted(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Huỷ'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text(
+              'Đặt lại',
+              style: TextStyle(color: AppColors.pink),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      await ref.read(statsRepositoryProvider).resetStats();
+      ref.invalidate(myStatsProvider);
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final statsAsync = ref.watch(myStatsProvider);
     return ScreenBackground(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
@@ -108,39 +143,53 @@ class ProfileScreen extends ConsumerWidget {
             Expanded(
               child: ListView(
                 children: [
-                  GridView.count(
-                    crossAxisCount: 2,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 12,
-                    childAspectRatio: 1.5,
-                    children: const [
-                      _StatCard(
-                        icon: Icons.menu_book_rounded,
-                        color: AppColors.blue,
-                        value: '248',
-                        label: 'Từ đã học',
+                  statsAsync.when(
+                    loading: () => const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 24),
+                      child: Center(
+                        child: CircularProgressIndicator(color: AppColors.blue),
                       ),
-                      _StatCard(
-                        icon: Icons.music_note_rounded,
-                        color: AppColors.purple,
-                        value: '32',
-                        label: 'Bài hát hoàn thành',
-                      ),
-                      _StatCard(
-                        icon: Icons.mic_rounded,
-                        color: AppColors.teal,
-                        value: '88%',
-                        label: 'Điểm phát âm TB',
-                      ),
-                      _StatCard(
-                        icon: Icons.timer_outlined,
-                        color: AppColors.amber,
-                        value: '14h 20p',
-                        label: 'Thời gian luyện tập',
-                      ),
-                    ],
+                    ),
+                    error: (e, _) => Text(
+                      'Không tải được thống kê: $e',
+                      style: AppTextStyles.muted(),
+                    ),
+                    data: (stats) => GridView.count(
+                      crossAxisCount: 2,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      mainAxisSpacing: 12,
+                      crossAxisSpacing: 12,
+                      childAspectRatio: 1.5,
+                      children: [
+                        _StatCard(
+                          icon: Icons.menu_book_rounded,
+                          color: AppColors.blue,
+                          value: '${stats.wordsLearned}',
+                          label: 'Từ đã học',
+                        ),
+                        _StatCard(
+                          icon: Icons.music_note_rounded,
+                          color: AppColors.purple,
+                          value: '${stats.songsCompleted}',
+                          label: 'Bài hát hoàn thành',
+                        ),
+                        _StatCard(
+                          icon: Icons.mic_rounded,
+                          color: AppColors.teal,
+                          value: stats.avgPronunciationScore > 0
+                              ? '${stats.avgPronunciationScore}%'
+                              : '—',
+                          label: 'Điểm phát âm TB',
+                        ),
+                        _StatCard(
+                          icon: Icons.timer_outlined,
+                          color: AppColors.amber,
+                          value: stats.practiceTimeLabel,
+                          label: 'Thời gian luyện tập',
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 14),
                   GestureDetector(
@@ -241,7 +290,7 @@ class ProfileScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'HOẠT ĐỘNG TUẦN NÀY',
+                          'HOẠT ĐỘNG TUẦN NÀY (minh hoạ)',
                           style: AppTextStyles.muted(size: 11)
                               .copyWith(letterSpacing: 0.6),
                         ),
@@ -263,6 +312,39 @@ class ProfileScreen extends ConsumerWidget {
                           ),
                         ),
                       ],
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  GestureDetector(
+                    onTap: () => _confirmResetStats(context, ref),
+                    child: GlowBox(
+                      borderRadius: 20,
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 34,
+                            height: 34,
+                            decoration: BoxDecoration(
+                              color: AppColors.amber.withValues(alpha: 0.18),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.restart_alt_rounded,
+                              size: 16,
+                              color: AppColors.amber,
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Text(
+                              'Đặt lại thống kê',
+                              style: AppTextStyles.body(
+                                weight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 14),

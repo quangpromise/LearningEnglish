@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
+import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/tts/app_tts.dart';
 
 /// Luyện phát âm: ghi âm qua mic (speech_to_text), so khớp với câu mẫu
 /// bằng thuật toán word-match đơn giản. Xem giới hạn kỹ thuật (ASR không
 /// chấm được lỗi phát âm ở mức âm vị) trong docs/research-ai-voice.md.
-class PronunciationScreen extends StatefulWidget {
+class PronunciationScreen extends ConsumerStatefulWidget {
   const PronunciationScreen({
     super.key,
     this.targetEn = "Now I'm standing in the rain",
@@ -18,16 +20,18 @@ class PronunciationScreen extends StatefulWidget {
   final String targetVi;
 
   @override
-  State<PronunciationScreen> createState() => _PronunciationScreenState();
+  ConsumerState<PronunciationScreen> createState() =>
+      _PronunciationScreenState();
 }
 
-class _PronunciationScreenState extends State<PronunciationScreen> {
+class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
   final stt.SpeechToText _speech = stt.SpeechToText();
   bool _listening = false;
   bool _available = false;
   String _recognized = '';
   int? _score;
   List<bool> _wordResults = [];
+  DateTime? _listenStartedAt;
 
   @override
   void initState() {
@@ -50,10 +54,18 @@ class _PronunciationScreenState extends State<PronunciationScreen> {
       results.add(i < said.length && said[i] == target[i]);
     }
     final correct = results.where((r) => r).length;
+    final score = target.isEmpty
+        ? 0
+        : ((correct / target.length) * 100).round();
     setState(() {
       _wordResults = results;
-      _score = target.isEmpty ? 0 : ((correct / target.length) * 100).round();
+      _score = score;
     });
+    ref
+        .read(statsRepositoryProvider)
+        .recordPronunciationScore(score)
+        .then((_) => ref.invalidate(myStatsProvider))
+        .catchError((_) {});
   }
 
   Future<void> _toggleListening() async {
@@ -61,9 +73,17 @@ class _PronunciationScreenState extends State<PronunciationScreen> {
     if (_listening) {
       await _speech.stop();
       setState(() => _listening = false);
+      final startedAt = _listenStartedAt;
+      if (startedAt != null) {
+        final elapsed = DateTime.now().difference(startedAt).inSeconds;
+        if (elapsed > 0) {
+          ref.read(statsRepositoryProvider).addPracticeSeconds(elapsed);
+        }
+      }
       _scoreAttempt();
       return;
     }
+    _listenStartedAt = DateTime.now();
     setState(() {
       _listening = true;
       _score = null;

@@ -1,32 +1,38 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
 
+import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../grammar/presentation/grammar_screen.dart';
 import '../../translation/presentation/word_popup_sheet.dart';
 import '../data/songs_data.dart';
 
-class PlayerScreen extends StatefulWidget {
+class PlayerScreen extends ConsumerStatefulWidget {
   const PlayerScreen({super.key, required this.song});
   final Song song;
 
   @override
-  State<PlayerScreen> createState() => _PlayerScreenState();
+  ConsumerState<PlayerScreen> createState() => _PlayerScreenState();
 }
 
-class _PlayerScreenState extends State<PlayerScreen> {
+class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   final _player = AudioPlayer();
   int _currentLine = 0;
   bool _bilingual = true;
   String? _error;
+  bool _completedRecorded = false;
   StreamSubscription<Duration>? _positionSub;
+  StreamSubscription<PlayerState>? _stateSub;
   late final List<GlobalKey> _lineKeys;
+  late final DateTime _openedAt;
 
   @override
   void initState() {
     super.initState();
+    _openedAt = DateTime.now();
     _lineKeys = List.generate(widget.song.lyrics.length, (_) => GlobalKey());
     _loadAndPlay();
   }
@@ -66,11 +72,27 @@ class _PlayerScreenState extends State<PlayerScreen> {
         );
       }
     });
+    _stateSub = _player.playerStateStream.listen((state) {
+      if (state.processingState == ProcessingState.completed &&
+          !_completedRecorded) {
+        _completedRecorded = true;
+        ref
+            .read(statsRepositoryProvider)
+            .recordSongCompleted(widget.song.title)
+            .then((_) => ref.invalidate(myStatsProvider))
+            .catchError((_) {});
+      }
+    });
   }
 
   @override
   void dispose() {
+    final elapsed = DateTime.now().difference(_openedAt).inSeconds;
+    if (elapsed > 0) {
+      ref.read(statsRepositoryProvider).addPracticeSeconds(elapsed);
+    }
     _positionSub?.cancel();
+    _stateSub?.cancel();
     _player.dispose();
     super.dispose();
   }

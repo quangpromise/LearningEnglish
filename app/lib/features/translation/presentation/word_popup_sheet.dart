@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/dictionary/free_dictionary_api.dart';
+import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/translation/app_translator.dart';
 import '../../../core/tts/app_tts.dart';
@@ -18,7 +20,7 @@ class _WordLookup {
   final String definitionEn;
 }
 
-class WordPopupSheet extends StatefulWidget {
+class WordPopupSheet extends ConsumerStatefulWidget {
   const WordPopupSheet({
     super.key,
     required this.word,
@@ -31,10 +33,10 @@ class WordPopupSheet extends StatefulWidget {
   final String sentenceVi;
 
   @override
-  State<WordPopupSheet> createState() => _WordPopupSheetState();
+  ConsumerState<WordPopupSheet> createState() => _WordPopupSheetState();
 }
 
-class _WordPopupSheetState extends State<WordPopupSheet> {
+class _WordPopupSheetState extends ConsumerState<WordPopupSheet> {
   late final Future<_WordLookup> _lookup = _load();
 
   Future<_WordLookup> _load() async {
@@ -46,6 +48,11 @@ class _WordPopupSheetState extends State<WordPopupSheet> {
     ]);
     final entry = results[0] as DictionaryEntry?;
     final meaningVi = results[1] as String;
+    ref
+        .read(statsRepositoryProvider)
+        .recordWordLearned(widget.word)
+        .then((_) => ref.invalidate(myStatsProvider))
+        .catchError((_) {});
     return _WordLookup(
       ipa: entry?.ipa ?? '—',
       pos: entry != null && entry.partOfSpeech.isNotEmpty

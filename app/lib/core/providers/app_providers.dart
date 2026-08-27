@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../features/auth/data/auth_repository.dart';
 import '../../features/rewards/data/rewards_repository.dart';
+import '../../features/stats/data/stats_repository.dart';
 
 final supabaseClientProvider = Provider<SupabaseClient>(
   (ref) => Supabase.instance.client,
@@ -25,4 +26,15 @@ final authStateProvider = StreamProvider<AuthState>(
 /// sau khi admin cấp điểm để làm mới lại số dư trên UI.
 final myRewardsProvider = FutureProvider(
   (ref) => ref.watch(rewardsRepositoryProvider).fetchMyRewards(),
+);
+
+final statsRepositoryProvider = Provider<StatsRepository>(
+  (ref) => StatsRepository(ref.watch(supabaseClientProvider)),
+);
+
+/// Thống kê thật của user hiện tại (từ đã học, bài hoàn thành...). Gọi
+/// `ref.invalidate(myStatsProvider)` sau khi ghi nhận hành động mới hoặc
+/// reset để làm mới lại số liệu trên UI.
+final myStatsProvider = FutureProvider(
+  (ref) => ref.watch(statsRepositoryProvider).fetchMyStats(),
 );
