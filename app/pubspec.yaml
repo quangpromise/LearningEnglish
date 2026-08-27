@@ -58,6 +58,9 @@ dependencies:
   http: ^1.2.2
   # Mở link tải APK mới trong trình duyệt khi có bản cập nhật
   url_launcher: ^6.3.1
+  # Mở trình cài đặt Android trực tiếp sau khi tải APK cập nhật xong (thay vì
+  # để Chrome tự xử lý file .apk tải về)
+  open_file: ^4.0.0
 
 dev_dependencies:
   flutter_test:

@@ -1,6 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Can de mo trinh cai dat Android ngay sau khi tai xong APK cap nhat
+         (xem update_dialog.dart) - bat buoc tren Android 8+ cho app sideload. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <application
         android:label="learn_english_music"
         android:name="${applicationName}"

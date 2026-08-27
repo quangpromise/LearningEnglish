@@ -31,11 +31,18 @@ class AuthRepository {
       );
     }
 
-    await _supabase.auth.signInWithIdToken(
-      provider: OAuthProvider.google,
-      idToken: idToken,
-      accessToken: googleAuth.accessToken,
-    );
+    await _supabase.auth
+        .signInWithIdToken(
+          provider: OAuthProvider.google,
+          idToken: idToken,
+          accessToken: googleAuth.accessToken,
+        )
+        .timeout(
+          const Duration(seconds: 15),
+          onTimeout: () => throw Exception(
+            'Kết nối tới máy chủ quá lâu — kiểm tra mạng và thử lại.',
+          ),
+        );
   }
 
   /// Đăng ký tài khoản mới bằng email + mật khẩu, kèm username hiển thị.
@@ -46,11 +53,14 @@ class AuthRepository {
     required String password,
     required String username,
   }) async {
-    await _supabase.auth.signUp(
-      email: email,
-      password: password,
-      data: {'username': username},
-    );
+    await _supabase.auth
+        .signUp(email: email, password: password, data: {'username': username})
+        .timeout(
+          const Duration(seconds: 15),
+          onTimeout: () => throw Exception(
+            'Kết nối tới máy chủ quá lâu — kiểm tra mạng và thử lại.',
+          ),
+        );
   }
 
   /// Đăng nhập bằng email HOẶC username. Nếu không phải định dạng email,
@@ -71,7 +81,14 @@ class AuthRepository {
       }
       email = resolved;
     }
-    await _supabase.auth.signInWithPassword(email: email, password: password);
+    await _supabase.auth
+        .signInWithPassword(email: email, password: password)
+        .timeout(
+          const Duration(seconds: 15),
+          onTimeout: () => throw Exception(
+            'Kết nối tới máy chủ quá lâu — kiểm tra mạng và thử lại.',
+          ),
+        );
   }
 
   /// Đổi mật khẩu cho tài khoản đang đăng nhập (chỉ áp dụng cho tài khoản
