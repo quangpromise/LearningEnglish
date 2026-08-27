@@ -22,11 +22,26 @@ class _PlayerScreenState extends State<PlayerScreen> {
   bool _bilingual = true;
   String? _error;
   StreamSubscription<Duration>? _positionSub;
+  late final List<GlobalKey> _lineKeys;
 
   @override
   void initState() {
     super.initState();
+    _lineKeys = List.generate(widget.song.lyrics.length, (_) => GlobalKey());
     _loadAndPlay();
+  }
+
+  void _scrollToCurrentLine() {
+    final key = _lineKeys[_currentLine];
+    final ctx = key.currentContext;
+    if (ctx != null) {
+      Scrollable.ensureVisible(
+        ctx,
+        alignment: 0.5,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
   }
 
   Future<void> _loadAndPlay() async {
@@ -44,7 +59,12 @@ class _PlayerScreenState extends State<PlayerScreen> {
       for (var i = 0; i < lyrics.length; i++) {
         if (pos.inMilliseconds / 1000 >= lyrics[i].startSeconds) line = i;
       }
-      if (line != _currentLine && mounted) setState(() => _currentLine = line);
+      if (line != _currentLine && mounted) {
+        setState(() => _currentLine = line);
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => _scrollToCurrentLine(),
+        );
+      }
     });
   }
 
@@ -144,6 +164,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                   final line = lyrics[i];
                   final isCurrent = i == _currentLine;
                   return GestureDetector(
+                    key: _lineKeys[i],
                     onTap: () => _player.seek(
                       Duration(
                         milliseconds: (line.startSeconds * 1000).round(),

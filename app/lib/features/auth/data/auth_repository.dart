@@ -74,6 +74,12 @@ class AuthRepository {
     await _supabase.auth.signInWithPassword(email: email, password: password);
   }
 
+  /// Đổi mật khẩu cho tài khoản đang đăng nhập (chỉ áp dụng cho tài khoản
+  /// đăng ký bằng email — tài khoản Google không có mật khẩu để đổi).
+  Future<void> changePassword(String newPassword) async {
+    await _supabase.auth.updateUser(UserAttributes(password: newPassword));
+  }
+
   Future<void> signOut() async {
     await GoogleSignIn().signOut();
     await _supabase.auth.signOut();

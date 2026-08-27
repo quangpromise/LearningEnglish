@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../settings/presentation/change_password_sheet.dart';
 import '../../settings/presentation/voice_settings_sheet.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -174,6 +175,52 @@ class ProfileScreen extends ConsumerWidget {
                                 ),
                                 Text(
                                   'Chọn giọng phát âm mẫu bạn thích',
+                                  style: AppTextStyles.muted(size: 11),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(
+                            Icons.chevron_right_rounded,
+                            color: AppColors.textMuted,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  GestureDetector(
+                    onTap: () => showChangePasswordSheet(context),
+                    child: GlowBox(
+                      borderRadius: 20,
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 34,
+                            height: 34,
+                            decoration: BoxDecoration(
+                              color: AppColors.purple.withValues(alpha: 0.18),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.lock_reset_rounded,
+                              size: 16,
+                              color: AppColors.purple,
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Đổi mật khẩu',
+                                  style: AppTextStyles.body(
+                                    weight: FontWeight.w800,
+                                  ),
+                                ),
+                                Text(
+                                  'Chỉ áp dụng cho tài khoản đăng ký email',
                                   style: AppTextStyles.muted(size: 11),
                                 ),
                               ],
