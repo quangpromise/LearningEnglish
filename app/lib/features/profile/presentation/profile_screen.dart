@@ -606,11 +606,20 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 14),
                   Center(
-                    child: Text(
-                      Env.buildSha.isNotEmpty
-                          ? 'Build ${Env.buildSha.substring(0, 7)}'
-                          : 'Build (local)',
-                      style: AppTextStyles.muted(size: 10),
+                    child: Consumer(
+                      builder: (context, innerRef, _) {
+                        final versionAsync = innerRef.watch(appVersionProvider);
+                        final version = versionAsync.valueOrNull ?? '';
+                        final buildLabel = Env.buildSha.isNotEmpty
+                            ? 'commit ${Env.buildSha.substring(0, 7)}'
+                            : 'local';
+                        return Text(
+                          version.isEmpty
+                              ? buildLabel
+                              : '$version · $buildLabel',
+                          style: AppTextStyles.muted(size: 10),
+                        );
+                      },
                     ),
                   ),
                 ],

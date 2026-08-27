@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -100,3 +101,10 @@ final appLanguageProvider =
     StateNotifierProvider<AppLanguageNotifier, AppLanguage>(
       (ref) => AppLanguageNotifier(),
     );
+
+/// Version + build number thật đọc từ APK đã cài (hiện ở màn Hồ sơ) - đáng
+/// tin cậy hơn tự đồng bộ tay theo pubspec.yaml.
+final appVersionProvider = FutureProvider((ref) async {
+  final info = await PackageInfo.fromPlatform();
+  return 'v${info.version} (${info.buildNumber})';
+});

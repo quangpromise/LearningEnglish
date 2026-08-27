@@ -42,6 +42,8 @@ dependencies:
   shared_preferences: ^2.3.4
   # Lưu file mp3 tạm khi phát giọng đọc chất lượng cao (Google Cloud TTS)
   path_provider: ^2.1.6
+  # Đọc version/build number thật từ APK đã cài, hiện ở màn Hồ sơ
+  package_info_plus: ^10.2.1
   # Chọn ảnh từ thư viện/máy ảnh cho tính năng đặt Avatar
   image_picker: ^1.1.2
   # Phát âm mẫu bằng TTS gốc máy, offline, miễn phí
