@@ -42,6 +42,14 @@ File ra tại `app/build/app/outputs/flutter-apk/app-release.apk`.
 - [ ] `flutter analyze` và `flutter test` sạch lỗi.
 - [ ] Nhạc dùng trong bản build đã xác minh license theo `docs/research-music-libraries.md` (không còn dữ liệu mẫu/demo).
 - [ ] Ghi chú thay đổi (changelog) cho bản phát hành.
+- [ ] **Dung lượng APK**: mỗi khi thêm package mới, kiểm tra tác động dung
+      lượng TRƯỚC khi merge — tải APK CI mới nhất, `unzip -l app-*.apk` xem
+      thư mục `lib/<abi>/` có file `.so` nào bất thường lớn không (case thật
+      đã gặp: `google_mlkit_translation` nhúng 1 file `libtranslate_jni.so`
+      ~16MB, chiếm 44% APK). CI đã có bước tự cảnh báo khi APK > 22MB và
+      **chặn build** khi > 30MB (xem `.github/workflows/build-apk.yml`) — nếu
+      build bị chặn vì lý do chính đáng (tính năng thật sự cần), tăng
+      ngưỡng `MAX_MB` trong workflow kèm ghi chú lý do, đừng lặng lẽ bỏ qua.
 
 ## 5. Host & hướng dẫn người dùng cài (sideload, không qua Google Play)
 1. Tạo GitHub Release mới trong repo, đính kèm file `app-release.apk`:

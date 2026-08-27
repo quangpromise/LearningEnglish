@@ -59,6 +59,27 @@ jobs:
           CLEAN_CLIENT_ID=$(printf '%s' "$GG_CLIENT_ID" | tr -d '\n\r')
           flutter build apk --release --split-per-abi --dart-define=SUPABASE_URL="$CLEAN_URL" --dart-define=SUPABASE_ANON_KEY="$CLEAN_ANON_KEY" --dart-define=GOOGLE_WEB_CLIENT_ID="$CLEAN_CLIENT_ID" --dart-define=BUILD_SHA="$BUILD_SHA"
 
+      - name: Kiem tra dung luong APK (chan quy dinh cua library lam phinh app)
+        run: |
+          cd build/app/outputs/flutter-apk
+          WARN_MB=22
+          MAX_MB=30
+          FAILED=0
+          echo "=== Dung luong APK theo kien truc ==="
+          for f in app-*-release.apk; do
+            SIZE_MB=$(du -m "$f" | cut -f1)
+            echo "$f: ${SIZE_MB}MB"
+            if [ "$SIZE_MB" -gt "$MAX_MB" ]; then
+              echo "::error::$f nang ${SIZE_MB}MB, vuot qua muc toi da cho phep ${MAX_MB}MB. Kiem tra dependency moi them (chay 'unzip -l' xem file .so nao lon bat thuong truoc khi merge) - vi du thuc te: google_mlkit_translation tung nhung rieng 1 file libtranslate_jni.so ~16MB khien APK nang gap doi."
+              FAILED=1
+            elif [ "$SIZE_MB" -gt "$WARN_MB" ]; then
+              echo "::warning::$f nang ${SIZE_MB}MB, vuot muc canh bao ${WARN_MB}MB - chua chan build nhung nen xem lai dependency vua them co can thiet khong."
+            fi
+          done
+          if [ "$FAILED" -eq 1 ]; then
+            exit 1
+          fi
+
       - name: Ghi commit SHA để app tự kiểm tra bản cập nhật
         run: echo -n "${{ github.sha }}" > build/app/outputs/flutter-apk/version.txt
 
