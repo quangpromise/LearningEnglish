@@ -80,6 +80,29 @@ class AuthRepository {
     await _supabase.auth.updateUser(UserAttributes(password: newPassword));
   }
 
+  /// Gửi email đặt lại mật khẩu (quên mật khẩu). Chấp nhận cả username -
+  /// tra email tương ứng qua RPC giống lúc đăng nhập. Link trong email sẽ
+  /// mở lại app qua deep link `learnenglishmusic://reset-callback/` (xem
+  /// AndroidManifest.xml), Supabase SDK tự bắt link này và phát sự kiện
+  /// AuthChangeEvent.passwordRecovery cho _AuthGate xử lý (main.dart).
+  Future<void> sendPasswordResetEmail(String identifier) async {
+    var email = identifier.trim();
+    if (!email.contains('@')) {
+      final resolved = await _supabase.rpc(
+        'email_for_username',
+        params: {'p_username': email},
+      );
+      if (resolved is! String || resolved.isEmpty) {
+        throw Exception('Không tìm thấy tài khoản với tên người dùng này.');
+      }
+      email = resolved;
+    }
+    await _supabase.auth.resetPasswordForEmail(
+      email,
+      redirectTo: 'learnenglishmusic://reset-callback/',
+    );
+  }
+
   Future<void> signOut() async {
     await GoogleSignIn().signOut();
     await _supabase.auth.signOut();

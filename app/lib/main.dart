@@ -7,6 +7,7 @@ import 'core/navigation/root_shell.dart';
 import 'core/providers/app_providers.dart';
 import 'core/theme/app_theme.dart';
 import 'core/tts/app_tts.dart';
+import 'features/auth/presentation/reset_password_screen.dart';
 import 'features/auth/presentation/sign_in_screen.dart';
 
 Future<void> main() async {
@@ -69,6 +70,16 @@ class _AuthGate extends ConsumerWidget {
       return const ScreenBackground(
         child: Center(child: CircularProgressIndicator()),
       );
+    }
+
+    // Link "quên mật khẩu" trong email tạo 1 session tạm (recovery) - nếu
+    // vào thẳng RootShell như đăng nhập bình thường, người dùng sẽ không
+    // bao giờ được yêu cầu đặt mật khẩu mới. Chặn lại ở đây cho tới khi họ
+    // hoàn tất (passwordRecoveryHandledProvider) rồi mới cho vào app.
+    final recoveryHandled = ref.watch(passwordRecoveryHandledProvider);
+    if (authState.value?.event == AuthChangeEvent.passwordRecovery &&
+        !recoveryHandled) {
+      return const ResetPasswordScreen();
     }
 
     final signedIn = session != null;

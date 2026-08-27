@@ -49,6 +49,25 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   Future<void> _signInWithGoogle() =>
       _run(() => ref.read(authRepositoryProvider).signInWithGoogle());
 
+  Future<void> _forgotPassword() {
+    final identifier = _emailCtrl.text.trim();
+    if (identifier.isEmpty) {
+      setState(
+        () => _error =
+            'Nhập email hoặc tên người dùng trước khi bấm quên mật khẩu.',
+      );
+      return Future.value();
+    }
+    return _run(() async {
+      await ref.read(authRepositoryProvider).sendPasswordResetEmail(identifier);
+      if (mounted) {
+        setState(
+          () => _info = 'Đã gửi email đặt lại mật khẩu (nếu tài khoản tồn tại). Mở email trên điện thoại này và bấm vào link để đặt mật khẩu mới.',
+        );
+      }
+    });
+  }
+
   Future<void> _submitEmailForm() {
     final identifier = _emailCtrl.text.trim();
     final password = _passwordCtrl.text;
@@ -179,7 +198,24 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
               icon: Icons.lock_outline_rounded,
               obscure: true,
             ),
-            const SizedBox(height: 18),
+            if (!isSignUp) ...[
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerRight,
+                child: GestureDetector(
+                  onTap: _loading ? null : _forgotPassword,
+                  child: Text(
+                    'Quên mật khẩu?',
+                    style: AppTextStyles.body(
+                      size: 12,
+                      weight: FontWeight.w700,
+                      color: AppColors.blue,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+            const SizedBox(height: 10),
             if (_error != null) ...[
               Text(
                 _error!,

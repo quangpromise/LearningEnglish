@@ -24,6 +24,11 @@ final authStateProvider = StreamProvider<AuthState>(
   (ref) => ref.watch(authRepositoryProvider).authStateChanges,
 );
 
+/// true sau khi người dùng đã đặt xong mật khẩu mới từ link "quên mật khẩu"
+/// - dùng để _AuthGate (main.dart) ngừng hiện ResetPasswordScreen dù event
+/// AuthChangeEvent.passwordRecovery vẫn là giá trị cuối cùng của stream.
+final passwordRecoveryHandledProvider = StateProvider<bool>((ref) => false);
+
 /// Điểm thưởng & tier của user hiện tại. Gọi `ref.invalidate(myRewardsProvider)`
 /// sau khi admin cấp điểm để làm mới lại số dư trên UI.
 final myRewardsProvider = FutureProvider(
