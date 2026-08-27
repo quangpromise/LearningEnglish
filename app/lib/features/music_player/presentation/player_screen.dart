@@ -37,7 +37,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     _loadAndPlay();
   }
 
-  void _scrollToCurrentLine() {
+  void _scrollToCurrentLine([int retriesLeft = 5]) {
     final key = _lineKeys[_currentLine];
     final ctx = key.currentContext;
     if (ctx != null) {
@@ -46,6 +46,13 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
         alignment: 0.5,
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeOut,
+      );
+    } else if (retriesLeft > 0) {
+      // ListView.builder chỉ build các item gần vùng hiển thị — nếu dòng
+      // hiện tại nhảy xa (mới mở bài, hoặc seek), context của nó chưa tồn
+      // tại ngay khi frame này build xong. Thử lại vài lần ở frame sau.
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _scrollToCurrentLine(retriesLeft - 1),
       );
     }
   }
@@ -181,6 +188,10 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
             const SizedBox(height: 12),
             Expanded(
               child: ListView.builder(
+                // Build sẵn nhiều dòng ở ngoài vùng hiển thị (không chỉ dòng
+                // đang thấy) để khi bài mới mở/seek xa, dòng đích đã có
+                // context sẵn cho Scrollable.ensureVisible thay vì null.
+                cacheExtent: 2000,
                 itemCount: lyrics.length,
                 itemBuilder: (context, i) {
                   final line = lyrics[i];
@@ -194,9 +205,14 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
                     ),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Opacity(
-                        opacity: isCurrent ? 1 : 0.3,
-                        child: Column(
+                      child: AnimatedScale(
+                        scale: isCurrent ? 1.12 : 1,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOut,
+                        child: AnimatedOpacity(
+                          opacity: isCurrent ? 1 : 0.3,
+                          duration: const Duration(milliseconds: 300),
+                          child: Column(
                           children: [
                             Wrap(
                               alignment: WrapAlignment.center,
@@ -244,6 +260,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
                                 ),
                               ),
                           ],
+                          ),
                         ),
                       ),
                     ),
