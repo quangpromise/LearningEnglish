@@ -124,9 +124,8 @@ class _VoiceSettingsSheetState extends State<_VoiceSettingsSheet> {
                   (voice) => Padding(
                     padding: const EdgeInsets.only(bottom: 8),
                     child: _VoiceTile(
-                      title:
-                          '${_labelFor(voice.languageCode)} · ${voice.label}',
-                      subtitle: 'Google Cloud Neural2',
+                      title: voice.label,
+                      subtitle: 'VoiceRSS',
                       selected:
                           AppTts.instance.isCloudMode &&
                           AppTts.instance.selectedCloud == voice,

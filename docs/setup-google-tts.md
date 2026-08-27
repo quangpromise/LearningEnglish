@@ -1,3 +1,8 @@
+> **Trạng thái: KHÔNG dùng hiện tại.** Yêu cầu gắn thẻ thanh toán Google Cloud
+> không thực hiện được — dự án đang dùng **VoiceRSS** thay thế, xem
+> [`docs/setup-voicerss-tts.md`](setup-voicerss-tts.md). Giữ lại file này để
+> tham khảo nếu sau muốn quay lại Google Cloud TTS (chất lượng cao hơn).
+
 # Hướng dẫn lấy Google Cloud Text-to-Speech API key (làm 1 lần)
 
 Nâng cấp giọng đọc từ TTS mặc định của máy (thường khó nghe, robot) lên giọng

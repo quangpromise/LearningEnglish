@@ -22,47 +22,35 @@ class VoiceOption {
   int get hashCode => Object.hash(name, locale);
 }
 
-/// Giọng đọc chất lượng cao (Google Cloud TTS Neural2) — cần mạng, gọi qua
-/// Edge Function `tts` để giấu API key (xem docs/setup-google-tts.md).
+/// Giọng đọc chất lượng cao (VoiceRSS, mã nguồn qua Edge Function `tts` để
+/// giấu API key — xem docs/setup-voicerss-tts.md). `locale` là mã VoiceRSS
+/// dùng cho tham số `hl`, vd 'en-us'.
 class CloudVoice {
-  const CloudVoice({
-    required this.name,
-    required this.languageCode,
-    required this.label,
-  });
-  final String name;
-  final String languageCode;
+  const CloudVoice({required this.locale, required this.label});
+  final String locale;
   final String label;
 
   @override
-  bool operator ==(Object other) => other is CloudVoice && other.name == name;
+  bool operator ==(Object other) =>
+      other is CloudVoice && other.locale == locale;
 
   @override
-  int get hashCode => name.hashCode;
+  int get hashCode => locale.hashCode;
 }
 
 const kCloudVoices = [
-  CloudVoice(name: 'en-US-Neural2-F', languageCode: 'en-US', label: 'Mỹ · Nữ'),
-  CloudVoice(name: 'en-US-Neural2-D', languageCode: 'en-US', label: 'Mỹ · Nam'),
-  CloudVoice(name: 'en-GB-Neural2-A', languageCode: 'en-GB', label: 'Anh · Nữ'),
-  CloudVoice(
-    name: 'en-GB-Neural2-B',
-    languageCode: 'en-GB',
-    label: 'Anh · Nam',
-  ),
-  CloudVoice(name: 'en-AU-Neural2-A', languageCode: 'en-AU', label: 'Úc · Nữ'),
-  CloudVoice(
-    name: 'en-IN-Neural2-A',
-    languageCode: 'en-IN',
-    label: 'Ấn Độ · Nữ',
-  ),
+  CloudVoice(locale: 'en-us', label: 'Tiếng Anh (Mỹ)'),
+  CloudVoice(locale: 'en-gb', label: 'Tiếng Anh (Anh)'),
+  CloudVoice(locale: 'en-au', label: 'Tiếng Anh (Úc)'),
+  CloudVoice(locale: 'en-in', label: 'Tiếng Anh (Ấn Độ)'),
+  CloudVoice(locale: 'en-ca', label: 'Tiếng Anh (Canada)'),
 ];
 
 enum _TtsMode { device, cloud }
 
 /// Service TTS dùng chung cho toàn app — ưu tiên giọng chất lượng cao
-/// (Google Cloud TTS) nếu người dùng đã chọn và có mạng; tự động rơi về
-/// giọng gốc máy (flutter_tts, offline) nếu lỗi mạng/chưa chọn giọng cloud.
+/// (VoiceRSS qua Edge Function) nếu người dùng đã chọn và có mạng; tự động
+/// rơi về giọng gốc máy (flutter_tts, offline) nếu lỗi mạng/hết quota.
 class AppTts {
   AppTts._();
   static final AppTts instance = AppTts._();
@@ -73,7 +61,7 @@ class AppTts {
   static const _prefModeKey = 'tts_mode';
   static const _prefNameKey = 'tts_voice_name';
   static const _prefLocaleKey = 'tts_voice_locale';
-  static const _prefCloudNameKey = 'tts_cloud_voice_name';
+  static const _prefCloudLocaleKey = 'tts_cloud_locale';
 
   _TtsMode _mode = _TtsMode.device;
   VoiceOption? _selectedDevice;
@@ -89,8 +77,8 @@ class AppTts {
     final mode = prefs.getString(_prefModeKey);
 
     if (mode == 'cloud') {
-      final cloudName = prefs.getString(_prefCloudNameKey);
-      final match = kCloudVoices.where((v) => v.name == cloudName);
+      final cloudLocale = prefs.getString(_prefCloudLocaleKey);
+      final match = kCloudVoices.where((v) => v.locale == cloudLocale);
       if (match.isNotEmpty) {
         _mode = _TtsMode.cloud;
         _selectedCloud = match.first;
@@ -144,7 +132,7 @@ class AppTts {
     _selectedCloud = voice;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_prefModeKey, 'cloud');
-    await prefs.setString(_prefCloudNameKey, voice.name);
+    await prefs.setString(_prefCloudLocaleKey, voice.locale);
   }
 
   Future<void> _applySelectedDevice() async {
@@ -160,7 +148,7 @@ class AppTts {
         await _speakCloud(text, _selectedCloud!);
         return;
       } catch (_) {
-        // Không có mạng / Edge Function lỗi -> rơi về giọng máy bên dưới.
+        // Không có mạng / hết quota VoiceRSS -> rơi về giọng máy bên dưới.
       }
     }
     await _deviceTts.stop();
@@ -174,16 +162,12 @@ class AppTts {
     final dir = await getTemporaryDirectory();
     final cacheDir = Directory('${dir.path}/tts_cache');
     if (!await cacheDir.exists()) await cacheDir.create(recursive: true);
-    final file = File('${cacheDir.path}/${voice.name}_${text.hashCode}.mp3');
+    final file = File('${cacheDir.path}/${voice.locale}_${text.hashCode}.mp3');
 
     if (!await file.exists()) {
       final res = await Supabase.instance.client.functions.invoke(
         'tts',
-        body: {
-          'text': text,
-          'languageCode': voice.languageCode,
-          'voiceName': voice.name,
-        },
+        body: {'text': text, 'locale': voice.locale},
       );
       final audioContent = (res.data as Map)['audioContent'] as String?;
       if (audioContent == null) {
