@@ -38,6 +38,28 @@ class AuthRepository {
     );
   }
 
+  /// Đăng ký tài khoản mới bằng email + mật khẩu, kèm username hiển thị.
+  /// Supabase mặc định yêu cầu xác nhận email trước khi đăng nhập được —
+  /// nếu dự án đã tắt "Confirm email" trong Dashboard thì đăng nhập ngay.
+  Future<void> signUpWithEmail({
+    required String email,
+    required String password,
+    required String username,
+  }) async {
+    await _supabase.auth.signUp(
+      email: email,
+      password: password,
+      data: {'username': username},
+    );
+  }
+
+  Future<void> signInWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    await _supabase.auth.signInWithPassword(email: email, password: password);
+  }
+
   Future<void> signOut() async {
     await GoogleSignIn().signOut();
     await _supabase.auth.signOut();

@@ -49,8 +49,12 @@ dependencies:
   supabase_flutter: ^2.8.0
   # Đăng nhập bằng Google mail
   google_sign_in: ^6.2.2
-  # Gọi GitHub API kiểm tra bản cập nhật (feature update checker)
+  # Gọi GitHub API kiểm tra bản cập nhật (feature update checker); cũng dùng
+  # gọi Free Dictionary API (miễn phí, không cần key) lấy IPA/định nghĩa
   http: ^1.2.2
+  # Dịch Anh-Việt on-device, offline sau khi tải model lần đầu, miễn phí,
+  # không giới hạn số lượt gọi — xem docs/research-translation-tts.md
+  google_mlkit_translation: ^0.13.0
   # Mở link tải APK mới trong trình duyệt khi có bản cập nhật
   url_launcher: ^6.3.1
 
