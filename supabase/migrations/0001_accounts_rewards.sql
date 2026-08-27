@@ -16,6 +16,7 @@ create table if not exists public.profiles (
 alter table public.profiles enable row level security;
 
 -- User tu xem duoc ho so cua chinh minh; admin xem duoc tat ca.
+drop policy if exists "profiles_select_own_or_admin" on public.profiles;
 create policy "profiles_select_own_or_admin"
   on public.profiles for select
   using (
@@ -24,6 +25,7 @@ create policy "profiles_select_own_or_admin"
   );
 
 -- Chi cho user tu sua display_name/avatar cua chinh minh, KHONG duoc tu sua role.
+drop policy if exists "profiles_update_own_limited" on public.profiles;
 create policy "profiles_update_own_limited"
   on public.profiles for update
   using (auth.uid() = id)
@@ -31,6 +33,7 @@ create policy "profiles_update_own_limited"
 
 -- Tu tao profile khi dang ky lan dau (trigger ben duoi se lam viec nay,
 -- nhung van can policy insert cho truong hop goi truc tiep).
+drop policy if exists "profiles_insert_own" on public.profiles;
 create policy "profiles_insert_own"
   on public.profiles for insert
   with check (auth.uid() = id);
@@ -75,6 +78,7 @@ create table if not exists public.point_transactions (
 alter table public.point_transactions enable row level security;
 
 -- User xem duoc giao dich cua chinh minh; admin xem duoc tat ca.
+drop policy if exists "point_tx_select_own_or_admin" on public.point_transactions;
 create policy "point_tx_select_own_or_admin"
   on public.point_transactions for select
   using (
@@ -84,6 +88,7 @@ create policy "point_tx_select_own_or_admin"
 
 -- CHI admin duoc insert (cap diem). Khong co policy update/delete -> khong ai sua/xoa duoc,
 -- kem ca admin, dam bao lich su diem khong bi chinh sua nguoc.
+drop policy if exists "point_tx_insert_admin_only" on public.point_transactions;
 create policy "point_tx_insert_admin_only"
   on public.point_transactions for insert
   with check (
@@ -117,11 +122,13 @@ create table if not exists public.tiers (
 alter table public.tiers enable row level security;
 
 -- Ai cung doc duoc danh sach tier (can hien thi trong app cho user thuong).
+drop policy if exists "tiers_select_all" on public.tiers;
 create policy "tiers_select_all"
   on public.tiers for select
   using (true);
 
 -- Chi admin sua duoc cau hinh tier.
+drop policy if exists "tiers_write_admin_only" on public.tiers;
 create policy "tiers_write_admin_only"
   on public.tiers for all
   using (exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin'))
