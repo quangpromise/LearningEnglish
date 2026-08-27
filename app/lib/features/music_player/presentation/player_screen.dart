@@ -29,6 +29,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   StreamSubscription<PlayerState>? _stateSub;
   late final List<GlobalKey> _lineKeys;
   late final DateTime _openedAt;
+  bool _disposed = false;
 
   @override
   void initState() {
@@ -61,12 +62,17 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   Future<void> _loadAndPlay() async {
     try {
       await _player.setUrl(widget.song.audioUrl);
+      if (_disposed) return;
       await _player.play();
     } catch (e) {
       if (mounted) {
         setState(() => _error = 'Không tải được nhạc. Kiểm tra kết nối mạng.');
       }
     }
+    // Man hinh co the da bi dong (nguoi dung bam lui/chon bai khac) trong
+    // luc await o tren dang cho - neu khong chan lai, subscription duoc tao
+    // sau day se song ngoai vong doi State va Player cu van tiep tuc phat.
+    if (_disposed) return;
     _positionSub = _player.positionStream.listen((pos) {
       final lyrics = widget.song.lyrics;
       var line = 0;
@@ -95,12 +101,17 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
 
   @override
   void dispose() {
+    _disposed = true;
     final elapsed = DateTime.now().difference(_openedAt).inSeconds;
     if (elapsed > 0) {
       ref.read(statsRepositoryProvider).addPracticeSeconds(elapsed);
     }
     _positionSub?.cancel();
     _stateSub?.cancel();
+    // Dung nhac truoc khi giai phong - just_audio.dispose() khong dam bao
+    // ngat am thanh ngay lap tuc tren moi thiet bi neu goi truc tiep, khien
+    // bai cu van tu phat khi da mo bai khac.
+    _player.stop();
     _player.dispose();
     super.dispose();
   }
