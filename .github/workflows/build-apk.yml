@@ -28,12 +28,7 @@ jobs:
         run: flutter pub get
 
       - name: Build release APK (split per ABI)
-        run: |
-          flutter build apk --release --split-per-abi \
-            --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
-            --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }} \
-            --dart-define=GOOGLE_WEB_CLIENT_ID=${{ secrets.GOOGLE_WEB_CLIENT_ID }} \
-            --dart-define=BUILD_SHA=${{ github.sha }}
+        run: flutter build apk --release --split-per-abi --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }} --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }} --dart-define=GOOGLE_WEB_CLIENT_ID=${{ secrets.GOOGLE_WEB_CLIENT_ID }} --dart-define=BUILD_SHA=${{ github.sha }}
 
       - name: Ghi commit SHA để app tự kiểm tra bản cập nhật
         run: echo -n "${{ github.sha }}" > build/app/outputs/flutter-apk/version.txt
