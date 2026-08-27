@@ -28,7 +28,20 @@ jobs:
         run: flutter pub get
 
       - name: Build release APK (split per ABI)
-        run: flutter build apk --release --split-per-abi --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }} --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }} --dart-define=GOOGLE_WEB_CLIENT_ID=${{ secrets.GOOGLE_WEB_CLIENT_ID }} --dart-define=BUILD_SHA=${{ github.sha }}
+        env:
+          # Dua secret qua bien moi truong (khong chen truc tiep ${{ }} vao
+          # dong lenh) - neu secret bi dinh ky tu xuong dong thua luc paste,
+          # cach nay van an toan vi gia tri chi duoc doc luc runtime, khong
+          # bi GitHub thay the truc tiep vao noi dung script gay vo dong lenh.
+          SB_URL: ${{ secrets.SUPABASE_URL }}
+          SB_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          GG_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID }}
+          BUILD_SHA: ${{ github.sha }}
+        run: |
+          CLEAN_URL=$(printf '%s' "$SB_URL" | tr -d '\n\r')
+          CLEAN_ANON_KEY=$(printf '%s' "$SB_ANON_KEY" | tr -d '\n\r')
+          CLEAN_CLIENT_ID=$(printf '%s' "$GG_CLIENT_ID" | tr -d '\n\r')
+          flutter build apk --release --split-per-abi --dart-define=SUPABASE_URL="$CLEAN_URL" --dart-define=SUPABASE_ANON_KEY="$CLEAN_ANON_KEY" --dart-define=GOOGLE_WEB_CLIENT_ID="$CLEAN_CLIENT_ID" --dart-define=BUILD_SHA="$BUILD_SHA"
 
       - name: Ghi commit SHA để app tự kiểm tra bản cập nhật
         run: echo -n "${{ github.sha }}" > build/app/outputs/flutter-apk/version.txt
