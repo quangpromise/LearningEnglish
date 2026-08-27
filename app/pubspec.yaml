@@ -35,6 +35,9 @@ dependencies:
   just_audio: ^0.9.42
   # Ghi âm + nhận diện giọng nói on-device cho tính năng luyện phát âm
   speech_to_text: ^7.0.0
+  # Ghi lại file âm thanh thô để người dùng nghe lại chính giọng mình vừa
+  # luyện (speech_to_text chỉ nhận diện văn bản, không lưu file audio)
+  record: ^7.1.1
   # Lưu lựa chọn giọng đọc TTS của người dùng trên máy (offline)
   shared_preferences: ^2.3.4
   # Lưu file mp3 tạm khi phát giọng đọc chất lượng cao (Google Cloud TTS)

@@ -5,6 +5,7 @@ import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
 
+import '../../../core/audio/now_playing_service.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../grammar/presentation/grammar_screen.dart';
@@ -20,7 +21,12 @@ class PlayerScreen extends ConsumerStatefulWidget {
 }
 
 class _PlayerScreenState extends ConsumerState<PlayerScreen> {
-  final _player = AudioPlayer();
+  // Dung chung 1 AudioPlayer cho toan app (xem now_playing_service.dart) -
+  // truoc day moi PlayerScreen tu tao AudioPlayer rieng, nen thoat 1 bai roi
+  // mo bai khac ngay lap tuc (trong luc man hinh cu con dang chuyen canh,
+  // chua kip dispose) khien 2 AudioPlayer ton tai song song, phat de len nhau.
+  AudioPlayer get _player => NowPlayingService.instance.player;
+  int? _myGeneration;
   int _currentLine = 0;
   bool _bilingual = true;
   String? _error;
@@ -30,6 +36,10 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   late final List<GlobalKey> _lineKeys;
   late final DateTime _openedAt;
   bool _disposed = false;
+
+  bool get _isCurrentOwner =>
+      _myGeneration != null &&
+      NowPlayingService.instance.isCurrent(_myGeneration!);
 
   @override
   void initState() {
@@ -61,18 +71,18 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
 
   Future<void> _loadAndPlay() async {
     try {
-      await _player.setUrl(widget.song.audioUrl);
-      if (_disposed) return;
-      await _player.play();
+      _myGeneration = await NowPlayingService.instance.play(
+        widget.song.audioUrl,
+      );
     } catch (e) {
       if (mounted) {
         setState(() => _error = 'Không tải được nhạc. Kiểm tra kết nối mạng.');
       }
     }
-    // Man hinh co the da bi dong (nguoi dung bam lui/chon bai khac) trong
+    // Man hinh co the da bi dong, hoac 1 bai khac da giat quyen phat trong
     // luc await o tren dang cho - neu khong chan lai, subscription duoc tao
-    // sau day se song ngoai vong doi State va Player cu van tiep tuc phat.
-    if (_disposed) return;
+    // sau day se lang nghe nham player dang phat bai KHAC.
+    if (_disposed || !_isCurrentOwner) return;
     _positionSub = _player.positionStream.listen((pos) {
       final lyrics = widget.song.lyrics;
       var line = 0;
@@ -108,11 +118,12 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     }
     _positionSub?.cancel();
     _stateSub?.cancel();
-    // Dung nhac truoc khi giai phong - just_audio.dispose() khong dam bao
-    // ngat am thanh ngay lap tuc tren moi thiet bi neu goi truc tiep, khien
-    // bai cu van tu phat khi da mo bai khac.
-    _player.stop();
-    _player.dispose();
+    // Player la singleton dung chung toan app - KHONG duoc dispose() no o
+    // day. Chi dung phat neu khong co man hinh nao khac da giat quyen
+    // (vd nguoi dung mo bai khac) trong luc man hinh nay dang dong.
+    if (_myGeneration != null) {
+      NowPlayingService.instance.stopIfCurrent(_myGeneration!);
+    }
     super.dispose();
   }
 

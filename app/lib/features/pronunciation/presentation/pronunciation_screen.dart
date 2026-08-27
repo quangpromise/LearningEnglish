@@ -2,6 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:record/record.dart' as rec;
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 import '../../../core/providers/app_providers.dart';
@@ -29,6 +32,8 @@ class PronunciationScreen extends ConsumerStatefulWidget {
 
 class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
   final stt.SpeechToText _speech = stt.SpeechToText();
+  final rec.AudioRecorder _recorder = rec.AudioRecorder();
+  final AudioPlayer _playbackPlayer = AudioPlayer();
   bool _listening = false;
   bool _available = false;
   String _recognized = '';
@@ -38,6 +43,8 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
   late String _targetEn;
   late String _targetVi;
   Completer<void>? _finalResultCompleter;
+  String? _recordedPath;
+  bool _playingBack = false;
 
   @override
   void initState() {
@@ -61,23 +68,101 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
       _score = null;
       _recognized = '';
       _wordResults = [];
+      _recordedPath = null;
     });
   }
 
-  List<String> _normalize(String s) => s
-      .toLowerCase()
-      .replaceAll(RegExp(r"[^a-z' ]"), '')
-      .split(' ')
-      .where((w) => w.isNotEmpty)
-      .toList();
+  // Bo may nhan dien giong noi cua Android thuong "danh may lai" contraction
+  // theo cach rieng (vd nguoi dung noi "I'm" nhung tra ve "I am") - neu
+  // khong quy ve cung 1 dang, ca cau se bi lech vi tri va diem luon gan 0%
+  // du doc dung.
+  static const _contractions = {
+    "i'm": 'i am',
+    "it's": 'it is',
+    "don't": 'do not',
+    "can't": 'cannot',
+    "won't": 'will not',
+    "didn't": 'did not',
+    "doesn't": 'does not',
+    "isn't": 'is not',
+    "aren't": 'are not',
+    "wasn't": 'was not',
+    "weren't": 'were not',
+    "haven't": 'have not',
+    "hasn't": 'has not',
+    "hadn't": 'had not',
+    "you're": 'you are',
+    "they're": 'they are',
+    "we're": 'we are',
+    "i've": 'i have',
+    "you've": 'you have',
+    "we've": 'we have',
+    "they've": 'they have',
+    "i'll": 'i will',
+    "you'll": 'you will',
+    "he'll": 'he will',
+    "she'll": 'she will',
+    "we'll": 'we will',
+    "they'll": 'they will',
+    "let's": 'let us',
+    "that's": 'that is',
+    "who's": 'who is',
+    "what's": 'what is',
+    "there's": 'there is',
+    "here's": 'here is',
+  };
+
+  List<String> _normalize(String s) {
+    final words = s
+        .toLowerCase()
+        .replaceAll(RegExp(r"[^a-z' ]"), '')
+        .split(' ')
+        .where((w) => w.isNotEmpty);
+    final expanded = <String>[];
+    for (final w in words) {
+      final mapped = _contractions[w];
+      if (mapped != null) {
+        expanded.addAll(mapped.split(' '));
+      } else {
+        expanded.add(w);
+      }
+    }
+    return expanded;
+  }
+
+  /// So khop bang Longest Common Subsequence thay vi doi vi tri tuyet doi -
+  /// chiu duoc truong hop nguoi noi dung nhung may nhan dien them/bot/doi
+  /// cho 1 tu (vd nghe nham 1 tu) ma khong lam sai lech toan bo cau con lai.
+  List<bool> _lcsMatch(List<String> target, List<String> said) {
+    final n = target.length, m = said.length;
+    final dp = List.generate(n + 1, (_) => List.filled(m + 1, 0));
+    for (var i = 1; i <= n; i++) {
+      for (var j = 1; j <= m; j++) {
+        dp[i][j] = target[i - 1] == said[j - 1]
+            ? dp[i - 1][j - 1] + 1
+            : (dp[i - 1][j] >= dp[i][j - 1] ? dp[i - 1][j] : dp[i][j - 1]);
+      }
+    }
+    final matched = List.filled(n, false);
+    var i = n, j = m;
+    while (i > 0 && j > 0) {
+      if (target[i - 1] == said[j - 1]) {
+        matched[i - 1] = true;
+        i--;
+        j--;
+      } else if (dp[i - 1][j] >= dp[i][j - 1]) {
+        i--;
+      } else {
+        j--;
+      }
+    }
+    return matched;
+  }
 
   void _scoreAttempt() {
     final target = _normalize(_targetEn);
     final said = _normalize(_recognized);
-    final results = <bool>[];
-    for (var i = 0; i < target.length; i++) {
-      results.add(i < said.length && said[i] == target[i]);
-    }
+    final results = _lcsMatch(target, said);
     final correct = results.where((r) => r).length;
     final score = target.isEmpty
         ? 0
@@ -103,12 +188,16 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
       final completer = Completer<void>();
       _finalResultCompleter = completer;
       await _speech.stop();
+      final recordedPath = await _recorder.stop();
       await completer.future.timeout(
         const Duration(milliseconds: 1500),
         onTimeout: () {},
       );
       if (!mounted) return;
-      setState(() => _listening = false);
+      setState(() {
+        _listening = false;
+        _recordedPath = recordedPath;
+      });
       final startedAt = _listenStartedAt;
       if (startedAt != null) {
         final elapsed = DateTime.now().difference(startedAt).inSeconds;
@@ -124,7 +213,14 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
       _listening = true;
       _score = null;
       _recognized = '';
+      _recordedPath = null;
     });
+    if (await _recorder.hasPermission()) {
+      final dir = await getTemporaryDirectory();
+      final path =
+          '${dir.path}/pronunciation_attempt_${DateTime.now().millisecondsSinceEpoch}.m4a';
+      await _recorder.start(const rec.RecordConfig(), path: path);
+    }
     await _speech.listen(
       onResult: (result) {
         setState(() => _recognized = result.recognizedWords);
@@ -137,9 +233,28 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
     );
   }
 
+  Future<void> _playRecording() async {
+    final path = _recordedPath;
+    if (path == null) return;
+    setState(() => _playingBack = true);
+    try {
+      await _playbackPlayer.setFilePath(path);
+      await _playbackPlayer.play();
+      await _playbackPlayer.processingStateStream.firstWhere(
+        (s) => s == ProcessingState.completed,
+      );
+    } catch (_) {
+      // bo qua - vd file khong ton tai / bi huy giua chung
+    } finally {
+      if (mounted) setState(() => _playingBack = false);
+    }
+  }
+
   @override
   void dispose() {
     _speech.stop();
+    _recorder.dispose();
+    _playbackPlayer.dispose();
     super.dispose();
   }
 
@@ -248,6 +363,33 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
                   : 'Chạm để bắt đầu ghi âm',
               style: AppTextStyles.muted(),
             ),
+            if (!_listening && _recordedPath != null) ...[
+              const SizedBox(height: 10),
+              GestureDetector(
+                onTap: _playingBack ? null : _playRecording,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      _playingBack
+                          ? Icons.graphic_eq_rounded
+                          : Icons.play_circle_outline_rounded,
+                      size: 16,
+                      color: AppColors.blue,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      _playingBack ? 'Đang phát...' : 'Nghe lại giọng của bạn',
+                      style: AppTextStyles.body(
+                        size: 12,
+                        weight: FontWeight.w700,
+                        color: AppColors.blue,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             const Spacer(),
             if (_score != null) ...[
               GlowBox(
@@ -323,6 +465,7 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
                     onTap: () => setState(() {
                       _score = null;
                       _recognized = '';
+                      _recordedPath = null;
                     }),
                   ),
                 ),
