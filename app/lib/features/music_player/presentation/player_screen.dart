@@ -31,7 +31,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   bool _bilingual = true;
   String? _error;
   bool _completedRecorded = false;
-  StreamSubscription<Duration>? _positionSub;
+  Timer? _positionTimer;
   StreamSubscription<PlayerState>? _stateSub;
   late final List<GlobalKey> _lineKeys;
   late final DateTime _openedAt;
@@ -80,10 +80,17 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
       }
     }
     // Man hinh co the da bi dong, hoac 1 bai khac da giat quyen phat trong
-    // luc await o tren dang cho - neu khong chan lai, subscription duoc tao
-    // sau day se lang nghe nham player dang phat bai KHAC.
+    // luc await o tren dang cho - neu khong chan lai, timer duoc tao sau day
+    // se lang nghe nham player dang phat bai KHAC.
     if (_disposed || !_isCurrentOwner) return;
-    _positionSub = _player.positionStream.listen((pos) {
+    // Doc truc tiep _player.position bang Timer.periodic thay vi
+    // positionStream: sau khi doi sang dung chung 1 AudioPlayer singleton
+    // (NowPlayingService), positionStream co luc khong phat tick nao cho toi
+    // khi nguoi dung tu tay bam pause/play - Timer poll truc tiep khong phu
+    // thuoc vao hanh vi phat tick cua stream nen luon chay dung tu dau.
+    _positionTimer = Timer.periodic(const Duration(milliseconds: 250), (_) {
+      if (!_isCurrentOwner) return;
+      final pos = _player.position;
       final lyrics = widget.song.lyrics;
       var line = 0;
       for (var i = 0; i < lyrics.length; i++) {
@@ -116,7 +123,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     if (elapsed > 0) {
       ref.read(statsRepositoryProvider).addPracticeSeconds(elapsed);
     }
-    _positionSub?.cancel();
+    _positionTimer?.cancel();
     _stateSub?.cancel();
     // Player la singleton dung chung toan app - KHONG duoc dispose() no o
     // day. Chi dung phat neu khong co man hinh nao khac da giat quyen
