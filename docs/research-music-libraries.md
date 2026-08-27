@@ -24,6 +24,9 @@ Xem quy tắc bắt buộc đầy đủ trong [CLAUDE.md](../CLAUDE.md#nguồn-n
 | Don't Close Your Eyes | Josh Woodward | https://www.joshwoodward.com/song/DontCloseYourEyes | CC-BY 4.0 | Có, xem `ATTRIBUTION.md` |
 | Circles | Josh Woodward | https://www.joshwoodward.com/song/Circles | CC-BY 4.0 | Có, xem `ATTRIBUTION.md` |
 | Same Boat | Josh Woodward | https://www.joshwoodward.com/song/SameBoat | CC-BY 4.0 | Có, xem `ATTRIBUTION.md` |
+| A Thousand Years, California Lullabye, Cherubs, Crazy Glue, Flickering Flame, Goodbye to Spring, I'm Letting Go, Let It In, My Favorite Regret, Release, Saboteurs, She Dreams in Blue, Swansong, The Box, The Long Fade, The Maze, The Nest (17 bài) | Josh Woodward | joshwoodward.com/song/&lt;tên bài&gt; | CC-BY 4.0 | Có, xem `ATTRIBUTION.md` |
+
+Ghi chú chọn lọc: trong danh sách bài hát nổi bật trên trang chủ Josh Woodward (~22 bài), đã loại 2 bài không phù hợp cho app học tiếng Anh đại trà — "I Want to Destroy Something Beautiful" (giọng điệu gay gắt/nhắc rượu) và "Wade" (từ vựng nâng cao, giễu nhại tiêu dùng, đã ghi nhận là lựa chọn cho cấp độ nâng cao nếu sau này cần).
 
 Ghi chú kỹ thuật: timestamp đồng bộ lyric-nhạc trong `songs_data.dart` hiện là **ước lượng** (phân bổ tỉ lệ theo độ dài từng câu trên tổng thời lượng bài hát), không phải forced-alignment thật từ việc nghe file — vì chưa có công cụ nghe/tách giọng tại thời điểm thêm dữ liệu. Cần nghe lại và tinh chỉnh `startSeconds` thủ công cho khớp chính xác trước khi coi lyric-sync là "chuẩn".
 
