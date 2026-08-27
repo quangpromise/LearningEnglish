@@ -213,53 +213,56 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
                           opacity: isCurrent ? 1 : 0.3,
                           duration: const Duration(milliseconds: 300),
                           child: Column(
-                          children: [
-                            Wrap(
-                              alignment: WrapAlignment.center,
-                              children: line.en.split(' ').map((w) {
-                                return GestureDetector(
-                                  onTap: isCurrent
-                                      ? () => _onWordTap(
-                                          w.replaceAll(RegExp('[^a-zA-Z]'), ''),
-                                        )
-                                      : null,
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 2,
-                                    ),
-                                    child: isCurrent
-                                        ? ShaderMask(
-                                            shaderCallback: (rect) => AppColors
-                                                .accentGradient
-                                                .createShader(rect),
-                                            child: Text(
-                                              w,
-                                              style: AppTextStyles.heading(
-                                                size: 21,
-                                              ),
+                            children: [
+                              Wrap(
+                                alignment: WrapAlignment.center,
+                                children: line.en.split(' ').map((w) {
+                                  return GestureDetector(
+                                    onTap: isCurrent
+                                        ? () => _onWordTap(
+                                            w.replaceAll(
+                                              RegExp('[^a-zA-Z]'),
+                                              '',
                                             ),
                                           )
-                                        : Text(
-                                            w,
-                                            style: AppTextStyles.heading(
-                                              size: 15,
+                                        : null,
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 2,
+                                      ),
+                                      child: isCurrent
+                                          ? ShaderMask(
+                                              shaderCallback: (rect) =>
+                                                  AppColors.accentGradient
+                                                      .createShader(rect),
+                                              child: Text(
+                                                w,
+                                                style: AppTextStyles.heading(
+                                                  size: 21,
+                                                ),
+                                              ),
+                                            )
+                                          : Text(
+                                              w,
+                                              style: AppTextStyles.heading(
+                                                size: 15,
+                                              ),
                                             ),
-                                          ),
-                                  ),
-                                );
-                              }).toList(),
-                            ),
-                            if (_bilingual)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 4),
-                                child: Text(
-                                  line.vi,
-                                  style: AppTextStyles.muted(
-                                    size: isCurrent ? 13 : 12,
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                              if (_bilingual)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 4),
+                                  child: Text(
+                                    line.vi,
+                                    style: AppTextStyles.muted(
+                                      size: isCurrent ? 13 : 12,
+                                    ),
                                   ),
                                 ),
-                              ),
-                          ],
+                            ],
                           ),
                         ),
                       ),
