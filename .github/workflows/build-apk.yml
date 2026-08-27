@@ -27,6 +27,22 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Giai ma keystore ky release (co dinh, giong may local)
+        env:
+          KEYSTORE_B64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+          STORE_PW: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          KEY_PW: ${{ secrets.RELEASE_KEY_PASSWORD }}
+        run: |
+          mkdir -p android/keystore
+          printf '%s' "$KEYSTORE_B64" | tr -d '\n\r' | base64 -d > android/keystore/release.keystore.jks
+          cat > android/key.properties <<EOF
+          storePassword=$(printf '%s' "$STORE_PW" | tr -d '\n\r')
+          keyPassword=$(printf '%s' "$KEY_PW" | tr -d '\n\r')
+          keyAlias=$(printf '%s' "$KEY_ALIAS" | tr -d '\n\r')
+          storeFile=keystore/release.keystore.jks
+          EOF
+
       - name: Build release APK (split per ABI)
         env:
           # Dua secret qua bien moi truong (khong chen truc tiep ${{ }} vao
