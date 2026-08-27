@@ -43,6 +43,10 @@ dependencies:
   flutter_tts: ^4.2.0
   # Quản lý state theo feature, thuận tiện khi nhiều người code song song
   flutter_riverpod: ^2.6.1
+  # Backend tài khoản/điểm thưởng/phân quyền (Supabase: Auth + Postgres + Edge Functions)
+  supabase_flutter: ^2.8.0
+  # Đăng nhập bằng Google mail
+  google_sign_in: ^6.2.2
 
 dev_dependencies:
   flutter_test:
