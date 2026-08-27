@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../features/auth/data/auth_repository.dart';
+import '../../features/music_player/data/favorites_repository.dart';
 import '../../features/profile/data/profile_repository.dart';
 import '../../features/quiz/data/leaderboard_repository.dart';
 import '../../features/rewards/data/rewards_repository.dart';
@@ -60,6 +61,16 @@ final myStatsProvider = FutureProvider(
 
 final leaderboardRepositoryProvider = Provider<LeaderboardRepository>(
   (ref) => LeaderboardRepository(ref.watch(supabaseClientProvider)),
+);
+
+final favoritesRepositoryProvider = Provider<FavoritesRepository>(
+  (ref) => FavoritesRepository(ref.watch(supabaseClientProvider)),
+);
+
+/// Tên các bài hát user đã đánh dấu yêu thích. Gọi
+/// `ref.invalidate(favoriteSongTitlesProvider)` sau khi bật/tắt yêu thích.
+final favoriteSongTitlesProvider = FutureProvider(
+  (ref) => ref.watch(favoritesRepositoryProvider).fetchFavoriteTitles(),
 );
 
 const _appLanguagePrefKey = 'app_language';

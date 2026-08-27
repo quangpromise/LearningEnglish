@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/songs_data.dart';
 import 'player_screen.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   final _searchController = TextEditingController();
   String _query = '';
+  bool _favoritesOnly = false;
 
   @override
   void dispose() {
@@ -21,10 +24,20 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
+  void _openQueue(List<Song> queue, int index) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => PlayerScreen(queue: queue, startIndex: index),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final query = _query.trim().toLowerCase();
-    final filteredSongs = query.isEmpty
+    final favoritesAsync = ref.watch(favoriteSongTitlesProvider);
+    final favoriteTitles = favoritesAsync.valueOrNull ?? <String>{};
+    var filteredSongs = query.isEmpty
         ? kSongs
         : kSongs
               .where(
@@ -33,6 +46,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     s.artist.toLowerCase().contains(query),
               )
               .toList();
+    if (_favoritesOnly) {
+      filteredSongs = filteredSongs
+          .where((s) => favoriteTitles.contains(s.title))
+          .toList();
+    }
     return ScreenBackground(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
@@ -49,7 +67,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     Text('Quang', style: AppTextStyles.heading(size: 20)),
                   ],
                 ),
-                const _IconCircle(icon: Icons.notifications_none_rounded),
+                GestureDetector(
+                  onTap: () => setState(() => _favoritesOnly = !_favoritesOnly),
+                  child: _IconCircle(
+                    icon: _favoritesOnly
+                        ? Icons.favorite_rounded
+                        : Icons.favorite_border_rounded,
+                    iconColor: _favoritesOnly ? AppColors.pink : null,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 16),
@@ -94,7 +120,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             const SizedBox(height: 20),
-            if (query.isEmpty)
+            if (query.isEmpty && !_favoritesOnly)
               GlowBox(
                 light: true,
                 borderRadius: 26,
@@ -146,11 +172,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     GestureDetector(
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => PlayerScreen(song: kSongs.first),
-                        ),
-                      ),
+                      onTap: () => _openQueue(kSongs, 0),
                       child: Container(
                         width: 42,
                         height: 42,
@@ -167,9 +189,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
-            if (query.isEmpty) const SizedBox(height: 22),
+            if (query.isEmpty && !_favoritesOnly) const SizedBox(height: 22),
             Text(
-              query.isEmpty ? 'Gợi ý cho bạn' : 'Kết quả tìm kiếm',
+              _favoritesOnly
+                  ? 'Bài hát yêu thích'
+                  : (query.isEmpty ? 'Gợi ý cho bạn' : 'Kết quả tìm kiếm'),
               style: AppTextStyles.heading(size: 16),
             ),
             const SizedBox(height: 12),
@@ -177,7 +201,10 @@ class _HomeScreenState extends State<HomeScreen> {
               child: filteredSongs.isEmpty
                   ? Center(
                       child: Text(
-                        'Không tìm thấy bài hát nào',
+                        _favoritesOnly
+                            ? 'Chưa có bài hát yêu thích nào.\nBấm biểu tượng trái tim khi nghe để lưu.'
+                            : 'Không tìm thấy bài hát nào',
+                        textAlign: TextAlign.center,
                         style: AppTextStyles.muted(),
                       ),
                     )
@@ -186,12 +213,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       separatorBuilder: (_, _) => const SizedBox(height: 12),
                       itemBuilder: (context, i) {
                         final song = filteredSongs[i];
+                        final isFavorite = favoriteTitles.contains(song.title);
                         return GestureDetector(
-                          onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => PlayerScreen(song: song),
-                            ),
-                          ),
+                          onTap: () => _openQueue(filteredSongs, i),
                           child: GlowBox(
                             padding: const EdgeInsets.all(12),
                             borderRadius: 20,
@@ -226,6 +250,33 @@ class _HomeScreenState extends State<HomeScreen> {
                                         style: AppTextStyles.muted(),
                                       ),
                                     ],
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () async {
+                                    final repo = ref.read(
+                                      favoritesRepositoryProvider,
+                                    );
+                                    if (isFavorite) {
+                                      await repo.removeFavorite(song.title);
+                                    } else {
+                                      await repo.addFavorite(song.title);
+                                    }
+                                    ref.invalidate(favoriteSongTitlesProvider);
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                    ),
+                                    child: Icon(
+                                      isFavorite
+                                          ? Icons.favorite_rounded
+                                          : Icons.favorite_border_rounded,
+                                      size: 18,
+                                      color: isFavorite
+                                          ? AppColors.pink
+                                          : AppColors.textMuted,
+                                    ),
                                   ),
                                 ),
                                 Container(
@@ -267,8 +318,9 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class _IconCircle extends StatelessWidget {
-  const _IconCircle({required this.icon});
+  const _IconCircle({required this.icon, this.iconColor});
   final IconData icon;
+  final Color? iconColor;
 
   @override
   Widget build(BuildContext context) {
@@ -280,7 +332,7 @@ class _IconCircle extends StatelessWidget {
         shape: BoxShape.circle,
         border: Border.all(color: AppColors.glassBorder),
       ),
-      child: Icon(icon, size: 18, color: AppColors.textPrimary),
+      child: Icon(icon, size: 18, color: iconColor ?? AppColors.textPrimary),
     );
   }
 }

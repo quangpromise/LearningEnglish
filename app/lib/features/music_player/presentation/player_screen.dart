@@ -13,8 +13,17 @@ import '../../translation/presentation/word_popup_sheet.dart';
 import '../data/songs_data.dart';
 
 class PlayerScreen extends ConsumerStatefulWidget {
-  const PlayerScreen({super.key, required this.song});
-  final Song song;
+  const PlayerScreen({
+    super.key,
+    required this.queue,
+    required this.startIndex,
+  });
+
+  /// Danh sách bài hát sẽ phát nối tiếp nhau (tự động chuyển bài khi 1 bài
+  /// kết thúc) - vd toàn bộ danh sách/kết quả tìm kiếm ở Home, bắt đầu từ
+  /// bài người dùng vừa bấm.
+  final List<Song> queue;
+  final int startIndex;
 
   @override
   ConsumerState<PlayerScreen> createState() => _PlayerScreenState();
@@ -27,13 +36,15 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   // chua kip dispose) khien 2 AudioPlayer ton tai song song, phat de len nhau.
   AudioPlayer get _player => NowPlayingService.instance.player;
   int? _myGeneration;
+  late int _index;
+  Song get _song => widget.queue[_index];
   int _currentLine = 0;
   bool _bilingual = true;
   String? _error;
   bool _completedRecorded = false;
   Timer? _positionTimer;
   StreamSubscription<PlayerState>? _stateSub;
-  late final List<GlobalKey> _lineKeys;
+  late List<GlobalKey> _lineKeys;
   late final DateTime _openedAt;
   bool _disposed = false;
 
@@ -45,7 +56,23 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   void initState() {
     super.initState();
     _openedAt = DateTime.now();
-    _lineKeys = List.generate(widget.song.lyrics.length, (_) => GlobalKey());
+    _index = widget.startIndex;
+    _lineKeys = List.generate(_song.lyrics.length, (_) => GlobalKey());
+    _loadAndPlay();
+  }
+
+  /// Chuyen sang bai ke tiep trong hang doi khi bai hien tai vua ket thuc -
+  /// dung lai cung 1 man hinh (khong push man moi) de tao cam giac "nghe
+  /// lien tuc nhieu bai" thay vi phai tu quay lai Home chon bai tiep.
+  void _playNextInQueue() {
+    if (_index + 1 >= widget.queue.length) return;
+    setState(() {
+      _index++;
+      _currentLine = 0;
+      _completedRecorded = false;
+      _error = null;
+      _lineKeys = List.generate(_song.lyrics.length, (_) => GlobalKey());
+    });
     _loadAndPlay();
   }
 
@@ -70,10 +97,9 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   }
 
   Future<void> _loadAndPlay() async {
+    final song = _song;
     try {
-      _myGeneration = await NowPlayingService.instance.play(
-        widget.song.audioUrl,
-      );
+      _myGeneration = await NowPlayingService.instance.play(song.audioUrl);
     } catch (e) {
       if (mounted) {
         setState(() => _error = 'Không tải được nhạc. Kiểm tra kết nối mạng.');
@@ -83,6 +109,8 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     // luc await o tren dang cho - neu khong chan lai, timer duoc tao sau day
     // se lang nghe nham player dang phat bai KHAC.
     if (_disposed || !_isCurrentOwner) return;
+    _positionTimer?.cancel();
+    _stateSub?.cancel();
     // Doc truc tiep _player.position bang Timer.periodic thay vi
     // positionStream: sau khi doi sang dung chung 1 AudioPlayer singleton
     // (NowPlayingService), positionStream co luc khong phat tick nao cho toi
@@ -91,7 +119,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     _positionTimer = Timer.periodic(const Duration(milliseconds: 250), (_) {
       if (!_isCurrentOwner) return;
       final pos = _player.position;
-      final lyrics = widget.song.lyrics;
+      final lyrics = _song.lyrics;
       var line = 0;
       for (var i = 0; i < lyrics.length; i++) {
         if (pos.inMilliseconds / 1000 >= lyrics[i].startSeconds) line = i;
@@ -105,13 +133,15 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     });
     _stateSub = _player.playerStateStream.listen((state) {
       if (state.processingState == ProcessingState.completed &&
-          !_completedRecorded) {
+          !_completedRecorded &&
+          _isCurrentOwner) {
         _completedRecorded = true;
         ref
             .read(statsRepositoryProvider)
-            .recordSongCompleted(widget.song.title)
+            .recordSongCompleted(song.title)
             .then((_) => ref.invalidate(myStatsProvider))
             .catchError((_) {});
+        _playNextInQueue();
       }
     });
   }
@@ -135,7 +165,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   }
 
   void _onWordTap(String word) {
-    final lyrics = widget.song.lyrics;
+    final lyrics = _song.lyrics;
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -150,7 +180,10 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final lyrics = widget.song.lyrics;
+    final lyrics = _song.lyrics;
+    final favoritesAsync = ref.watch(favoriteSongTitlesProvider);
+    final isFavorite =
+        favoritesAsync.valueOrNull?.contains(_song.title) ?? false;
     return ScreenBackground(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
@@ -164,23 +197,45 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
                   onTap: () => Navigator.of(context).pop(),
                 ),
                 Text(
-                  'ĐANG PHÁT',
+                  widget.queue.length > 1
+                      ? 'ĐANG PHÁT · ${_index + 1}/${widget.queue.length}'
+                      : 'ĐANG PHÁT',
                   style: AppTextStyles.muted(size: 11)
                       .copyWith(letterSpacing: 1),
                 ),
-                _CircleBtn(
-                  icon: Icons.menu_book_rounded,
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => GrammarScreen(
-                        sentence: LyricLine(
-                          lyrics[_currentLine].startSeconds,
-                          lyrics[_currentLine].en,
-                          lyrics[_currentLine].vi,
+                Row(
+                  children: [
+                    _CircleBtn(
+                      icon: isFavorite
+                          ? Icons.favorite_rounded
+                          : Icons.favorite_border_rounded,
+                      iconColor: isFavorite ? AppColors.pink : null,
+                      onTap: () async {
+                        final repo = ref.read(favoritesRepositoryProvider);
+                        if (isFavorite) {
+                          await repo.removeFavorite(_song.title);
+                        } else {
+                          await repo.addFavorite(_song.title);
+                        }
+                        ref.invalidate(favoriteSongTitlesProvider);
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    _CircleBtn(
+                      icon: Icons.menu_book_rounded,
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => GrammarScreen(
+                            sentence: LyricLine(
+                              lyrics[_currentLine].startSeconds,
+                              lyrics[_currentLine].en,
+                              lyrics[_currentLine].vi,
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
               ],
             ),
@@ -206,8 +261,8 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            Text(widget.song.title, style: AppTextStyles.heading(size: 19)),
-            Text(widget.song.artist, style: AppTextStyles.muted()),
+            Text(_song.title, style: AppTextStyles.heading(size: 19)),
+            Text(_song.artist, style: AppTextStyles.muted()),
             if (_error != null) ...[
               const SizedBox(height: 8),
               Text(
@@ -380,9 +435,10 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
 }
 
 class _CircleBtn extends StatelessWidget {
-  const _CircleBtn({required this.icon, required this.onTap});
+  const _CircleBtn({required this.icon, required this.onTap, this.iconColor});
   final IconData icon;
   final VoidCallback onTap;
+  final Color? iconColor;
 
   @override
   Widget build(BuildContext context) {
@@ -396,7 +452,7 @@ class _CircleBtn extends StatelessWidget {
           shape: BoxShape.circle,
           border: Border.all(color: AppColors.glassBorder),
         ),
-        child: Icon(icon, size: 18, color: AppColors.textPrimary),
+        child: Icon(icon, size: 18, color: iconColor ?? AppColors.textPrimary),
       ),
     );
   }
