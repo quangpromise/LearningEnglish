@@ -5,6 +5,7 @@ import 'package:speech_to_text/speech_to_text.dart' as stt;
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/tts/app_tts.dart';
+import '../../music_player/data/songs_data.dart';
 
 /// Luyện phát âm: ghi âm qua mic (speech_to_text), so khớp với câu mẫu
 /// bằng thuật toán word-match đơn giản. Xem giới hạn kỹ thuật (ASR không
@@ -32,11 +33,32 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
   int? _score;
   List<bool> _wordResults = [];
   DateTime? _listenStartedAt;
+  late String _targetEn;
+  late String _targetVi;
 
   @override
   void initState() {
     super.initState();
+    _targetEn = widget.targetEn;
+    _targetVi = widget.targetVi;
     _speech.initialize().then((ok) => setState(() => _available = ok));
+  }
+
+  Future<void> _pickPracticeSentence() async {
+    final picked = await showModalBottomSheet<_PracticeChoice>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => const _PracticeSourcePicker(),
+    );
+    if (picked == null) return;
+    setState(() {
+      _targetEn = picked.en;
+      _targetVi = picked.vi;
+      _score = null;
+      _recognized = '';
+      _wordResults = [];
+    });
   }
 
   List<String> _normalize(String s) => s
@@ -47,7 +69,7 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
       .toList();
 
   void _scoreAttempt() {
-    final target = _normalize(widget.targetEn);
+    final target = _normalize(_targetEn);
     final said = _normalize(_recognized);
     final results = <bool>[];
     for (var i = 0; i < target.length; i++) {
@@ -104,7 +126,7 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final targetWords = _normalize(widget.targetEn);
+    final targetWords = _normalize(_targetEn);
 
     return ScreenBackground(
       child: Padding(
@@ -133,7 +155,7 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
                 ),
                 Text('Luyện phát âm', style: AppTextStyles.heading(size: 15)),
                 IconButton(
-                  onPressed: () => AppTts.instance.speak(widget.targetEn),
+                  onPressed: () => AppTts.instance.speak(_targetEn),
                   icon: const Icon(
                     Icons.volume_up_rounded,
                     color: AppColors.textPrimary,
@@ -142,20 +164,43 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
               ],
             ),
             const SizedBox(height: 16),
-            GlowBox(
-              borderRadius: 22,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'ĐỌC THEO CÂU NÀY',
-                    style: AppTextStyles.muted(size: 10)
-                        .copyWith(letterSpacing: 0.6),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(widget.targetEn, style: AppTextStyles.heading(size: 18)),
-                  Text(widget.targetVi, style: AppTextStyles.muted()),
-                ],
+            GestureDetector(
+              onTap: _pickPracticeSentence,
+              child: GlowBox(
+                borderRadius: 22,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'ĐỌC THEO CÂU NÀY',
+                          style: AppTextStyles.muted(size: 10)
+                              .copyWith(letterSpacing: 0.6),
+                        ),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.swap_horiz_rounded,
+                              size: 14,
+                              color: AppColors.blue,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Đổi câu',
+                              style: AppTextStyles.muted(size: 11)
+                                  .copyWith(color: AppColors.blue),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text(_targetEn, style: AppTextStyles.heading(size: 18)),
+                    Text(_targetVi, style: AppTextStyles.muted()),
+                  ],
+                ),
               ),
             ),
             const Spacer(),
@@ -286,6 +331,220 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Câu (tiếng Anh + nghĩa tiếng Việt) người dùng chọn để luyện phát âm —
+/// có thể lấy từ lời 1 bài hát có sẵn hoặc tự gõ tay.
+class _PracticeChoice {
+  const _PracticeChoice(this.en, this.vi);
+  final String en;
+  final String vi;
+}
+
+/// Bottom sheet chọn câu/từ để luyện phát âm: hoặc gõ tay, hoặc chọn 1 dòng
+/// lời trong danh sách bài hát có sẵn (`kSongs`).
+class _PracticeSourcePicker extends StatefulWidget {
+  const _PracticeSourcePicker();
+
+  @override
+  State<_PracticeSourcePicker> createState() => _PracticeSourcePickerState();
+}
+
+class _PracticeSourcePickerState extends State<_PracticeSourcePicker> {
+  final _customController = TextEditingController();
+  int? _expandedSongIndex;
+
+  @override
+  void dispose() {
+    _customController.dispose();
+    super.dispose();
+  }
+
+  void _useCustomText() {
+    final text = _customController.text.trim();
+    if (text.isEmpty) return;
+    Navigator.of(context).pop(_PracticeChoice(text, ''));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.75,
+      minChildSize: 0.4,
+      maxChildSize: 0.92,
+      expand: false,
+      builder: (context, scrollController) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Color(0xFF12172E),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.glassBorder,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Chọn câu luyện tập',
+                style: AppTextStyles.heading(size: 16),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                'TỰ NHẬP TỪ HOẶC CÂU',
+                style: AppTextStyles.muted(size: 10)
+                    .copyWith(letterSpacing: 0.6),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _customController,
+                      style: AppTextStyles.body(),
+                      cursorColor: AppColors.purple,
+                      onSubmitted: (_) => _useCustomText(),
+                      decoration: InputDecoration(
+                        isDense: true,
+                        filled: true,
+                        fillColor: AppColors.glassFill,
+                        hintText: 'vd: pronunciation',
+                        hintStyle: AppTextStyles.muted(),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 12,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  GestureDetector(
+                    onTap: _useCustomText,
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        gradient: AppColors.accentGradient,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: const Icon(
+                        Icons.arrow_forward_rounded,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'HOẶC CHỌN LỜI TỪ BÀI HÁT',
+                style: AppTextStyles.muted(size: 10)
+                    .copyWith(letterSpacing: 0.6),
+              ),
+              const SizedBox(height: 8),
+              Expanded(
+                child: ListView.builder(
+                  controller: scrollController,
+                  itemCount: kSongs.length,
+                  itemBuilder: (context, songIndex) {
+                    final song = kSongs[songIndex];
+                    final expanded = _expandedSongIndex == songIndex;
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        GestureDetector(
+                          onTap: () => setState(
+                            () => _expandedSongIndex = expanded
+                                ? null
+                                : songIndex,
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.music_note_rounded,
+                                  size: 18,
+                                  color: song.color,
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        song.title,
+                                        style: AppTextStyles.body(
+                                          weight: FontWeight.w800,
+                                        ),
+                                      ),
+                                      Text(
+                                        song.artist,
+                                        style: AppTextStyles.muted(size: 11),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Icon(
+                                  expanded
+                                      ? Icons.expand_less_rounded
+                                      : Icons.expand_more_rounded,
+                                  color: AppColors.textMuted,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        if (expanded)
+                          ...song.lyrics.map(
+                            (line) => GestureDetector(
+                              onTap: () =>
+                                  Navigator.of(context)
+                                      .pop(_PracticeChoice(line.en, line.vi)),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 8,
+                                  horizontal: 12,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(line.en, style: AppTextStyles.body()),
+                                    Text(
+                                      line.vi,
+                                      style: AppTextStyles.muted(size: 11),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        const Divider(color: AppColors.glassBorder, height: 1),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
