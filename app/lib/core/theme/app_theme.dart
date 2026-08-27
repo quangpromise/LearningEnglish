@@ -45,6 +45,7 @@ class AppTextStyles {
     fontWeight: weight,
     color: AppColors.textPrimary,
     letterSpacing: -0.2,
+    decoration: TextDecoration.none,
   );
 
   static TextStyle body({
@@ -56,6 +57,7 @@ class AppTextStyles {
     fontSize: size,
     fontWeight: weight,
     color: color ?? AppColors.textPrimary,
+    decoration: TextDecoration.none,
   );
 
   static TextStyle muted({
@@ -66,6 +68,7 @@ class AppTextStyles {
     fontSize: size,
     fontWeight: weight,
     color: AppColors.textMuted,
+    decoration: TextDecoration.none,
   );
 }
 
@@ -171,7 +174,18 @@ class ScreenBackground extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(gradient: AppColors.screenGradient),
-      child: SafeArea(child: child),
+      child: SafeArea(
+        // Ep decoration mac dinh la none o tang goc man hinh: bat ky
+        // TextStyle nao (kem ca cac TextStyle() viet tay khong qua
+        // AppTextStyles) khong tu khai bao decoration rieng se ke thua gia
+        // tri nay thay vi ke thua tu DefaultTextStyle cua Theme/Material o
+        // xa hon - nghi ngo day la nguyen nhan gach chan vang xuat hien
+        // khap noi trong app du khong co dong code nao chu dong "set" no.
+        child: DefaultTextStyle.merge(
+          style: const TextStyle(decoration: TextDecoration.none),
+          child: child,
+        ),
+      ),
     );
   }
 }

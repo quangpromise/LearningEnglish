@@ -47,6 +47,7 @@ class LearnEnglishMusicApp extends StatelessWidget {
           fontFamily: 'Manrope',
           bodyColor: AppColors.textPrimary,
           displayColor: AppColors.textPrimary,
+          decoration: TextDecoration.none,
         ),
         fontFamily: 'Manrope',
       ),
