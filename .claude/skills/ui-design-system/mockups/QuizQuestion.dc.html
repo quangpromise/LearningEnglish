@@ -1,0 +1,81 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+  * { box-sizing:border-box; }
+  body{ margin:0; }
+  .screen{
+    width:100%; height:100%; border-radius:28px; overflow:hidden; position:relative;
+    background:
+      radial-gradient(90% 50% at 50% -5%, rgba(91,140,255,.32), transparent 60%),
+      linear-gradient(170deg,#0a0e1c 0%,#0d1330 55%,#080b16 100%);
+    color:#eef1fb; font-family:'Manrope',system-ui,sans-serif;
+    display:flex; flex-direction:column; padding:26px 24px 24px; gap:20px;
+  }
+  h1,h2,h3{ font-family:'Space Grotesk',system-ui,sans-serif; margin:0; letter-spacing:-.01em; }
+  a{ color:#9db4ff; } a:hover{ color:#c2cfff; }
+  .top-row{ display:flex; align-items:center; gap:12px; }
+  .icon-btn{ width:36px; height:36px; border-radius:999px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .progress-track{ flex:1; height:8px; border-radius:999px; background:rgba(255,255,255,.08); display:flex; gap:4px; padding:2px; }
+  .seg{ flex:1; border-radius:999px; background:rgba(255,255,255,.1); }
+  .seg.done{ background:linear-gradient(90deg,#5b8cff,#9b6bff); }
+  .timer-pill{
+    display:flex; align-items:center; gap:6px; padding:7px 12px; border-radius:999px; flex-shrink:0;
+    background:rgba(255,178,60,.15); color:#ffb23c; font-size:12px; font-weight:800;
+    box-shadow:0 0 20px rgba(255,178,60,.25);
+  }
+  .cat-tag{ align-self:flex-start; font-size:11px; font-weight:800; padding:6px 14px; border-radius:999px; background:rgba(91,140,255,.15); color:#9db4ff; text-transform:uppercase; letter-spacing:.05em; }
+  .q-card{ padding:22px; border-radius:24px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.09); display:flex; flex-direction:column; gap:10px; }
+  .q-card .en{ font-size:19px; font-weight:800; line-height:1.4; }
+  .q-card .vi{ font-size:13px; color:rgba(238,241,251,.55); font-weight:600; }
+  .options{ display:flex; flex-direction:column; gap:12px; flex:1; }
+  .opt{
+    display:flex; align-items:center; gap:12px; padding:16px 18px; border-radius:18px;
+    background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.09); font-size:14px; font-weight:700;
+  }
+  .opt .letter{ width:28px; height:28px; border-radius:999px; background:rgba(255,255,255,.08); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; flex-shrink:0; }
+  .opt.correct{ background:rgba(91,224,208,.14); border-color:rgba(91,224,208,.5); }
+  .opt.correct .letter{ background:#5be0d0; color:#08211d; }
+  .xp-hint{ text-align:center; font-size:12px; font-weight:700; color:rgba(255,178,60,.85); }
+</style>
+</helmet>
+
+<div class="screen">
+  <div class="top-row">
+    <div class="icon-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#eef1fb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></div>
+    <div class="progress-track">
+      <div class="seg done"></div><div class="seg done"></div><div class="seg done"></div>
+      <div class="seg"></div><div class="seg"></div>
+    </div>
+    <div class="timer-pill">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+      0:12
+    </div>
+  </div>
+
+  <div class="cat-tag">Suy luận · Câu 3/5</div>
+
+  <div class="q-card">
+    <div class="en">"What has an eye, but cannot see?"</div>
+    <div class="vi">Cái gì có mắt nhưng không nhìn được?</div>
+  </div>
+
+  <div class="options">
+    <div class="opt"><div class="letter">A</div>A sponge</div>
+    <div class="opt correct"><div class="letter">B</div>A needle</div>
+    <div class="opt"><div class="letter">C</div>A bottle</div>
+    <div class="opt"><div class="letter">D</div>A cat</div>
+  </div>
+
+  <div class="xp-hint">Trả lời đúng để nhận +10 XP</div>
+</div>
+</x-dc>
+</body>
+</html>

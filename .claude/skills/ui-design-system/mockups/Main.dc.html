@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+  * { box-sizing:border-box; }
+  body{ margin:0; }
+  .screen{
+    width:100%; height:100%; border-radius:28px; overflow:hidden; position:relative;
+    background:
+      radial-gradient(120% 70% at 20% -10%, rgba(91,140,255,.4), transparent 60%),
+      radial-gradient(100% 60% at 100% 110%, rgba(155,107,255,.35), transparent 55%),
+      linear-gradient(160deg,#0a0e1c 0%,#0d1330 55%,#080b16 100%);
+    color:#eef1fb; font-family:'Manrope',system-ui,sans-serif;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding:60px;
+  }
+  h1{ font-family:'Space Grotesk',system-ui,sans-serif; font-size:34px; font-weight:700; letter-spacing:-.02em; line-height:1.2; margin:0 0 14px; }
+  h1 .grad{ background:linear-gradient(90deg,#8fb0ff,#c9a8ff); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  p{ font-size:15px; color:rgba(238,241,251,.55); font-weight:600; max-width:340px; margin:0 0 28px; }
+  a{ color:#9db4ff; }
+  .glow-orb{
+    width:80px; height:80px; border-radius:28px; margin-bottom:28px;
+    background:linear-gradient(135deg,#5b8cff,#9b6bff);
+    box-shadow:0 30px 60px rgba(91,140,255,.5), 0 0 60px rgba(155,107,255,.35);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .tags{ display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+  .tag{ padding:8px 16px; border-radius:999px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); font-size:12px; font-weight:700; }
+</style>
+</helmet>
+<div class="screen">
+  <div class="glow-orb">
+    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+  </div>
+  <h1>Learn English<br><span class="grad">Through Music</span></h1>
+  <p>Bộ mockup giao diện — học tiếng Anh qua lời bài hát song ngữ, luyện phát âm bằng mic và giải thích ngữ pháp ngay trong bài hát.</p>
+  <div class="tags">
+    <div class="tag">Trang chủ</div>
+    <div class="tag">Nghe & Lyric</div>
+    <div class="tag">Tra từ</div>
+    <div class="tag">Luyện phát âm</div>
+    <div class="tag">Ngữ pháp</div>
+    <div class="tag">Hồ sơ</div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

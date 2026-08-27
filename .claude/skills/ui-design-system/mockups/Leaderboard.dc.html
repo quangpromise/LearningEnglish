@@ -1,0 +1,116 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+  * { box-sizing:border-box; }
+  body{ margin:0; }
+  .screen{
+    width:100%; height:100%; border-radius:28px; overflow:hidden; position:relative;
+    background:
+      radial-gradient(110% 60% at 50% -10%, rgba(155,107,255,.38), transparent 60%),
+      radial-gradient(80% 40% at 100% 30%, rgba(91,140,255,.25), transparent 55%),
+      linear-gradient(170deg,#0a0e1c 0%,#0d1330 55%,#080b16 100%);
+    color:#eef1fb; font-family:'Manrope',system-ui,sans-serif;
+    display:flex; flex-direction:column; padding:26px 24px 20px; gap:16px;
+  }
+  h1,h2,h3{ font-family:'Space Grotesk',system-ui,sans-serif; margin:0; letter-spacing:-.01em; }
+  a{ color:#9db4ff; } a:hover{ color:#c2cfff; }
+  .top-row{ display:flex; align-items:center; justify-content:space-between; }
+  .icon-btn{ width:36px; height:36px; border-radius:999px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); display:flex; align-items:center; justify-content:center; }
+  .top-label{ font-size:16px; font-weight:800; }
+  .tabs{ display:flex; gap:8px; }
+  .tab{ padding:8px 16px; border-radius:999px; font-size:12px; font-weight:800; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); color:rgba(238,241,251,.6); }
+  .tab.active{ background:linear-gradient(135deg,#5b8cff,#9b6bff); color:#fff; border:none; box-shadow:0 8px 20px rgba(91,140,255,.4); }
+  .podium{ display:flex; align-items:flex-end; justify-content:center; gap:10px; margin-top:6px; }
+  .p-col{ display:flex; flex-direction:column; align-items:center; gap:8px; }
+  .p-avatar{ width:52px; height:52px; border-radius:999px; display:flex; align-items:center; justify-content:center; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:18px; position:relative; }
+  .p-col.first .p-avatar{ width:64px; height:64px; font-size:22px; background:linear-gradient(135deg,#ffd66b,#ff9d7d); box-shadow:0 0 30px rgba(255,214,107,.5); }
+  .p-col.second .p-avatar{ background:linear-gradient(135deg,#9db4ff,#5b8cff); box-shadow:0 0 20px rgba(91,140,255,.4); }
+  .p-col.third .p-avatar{ background:linear-gradient(135deg,#c9a8ff,#9b6bff); box-shadow:0 0 20px rgba(155,107,255,.4); }
+  .crown{ position:absolute; top:-16px; left:50%; transform:translateX(-50%); }
+  .p-name{ font-size:12px; font-weight:800; }
+  .p-xp{ font-size:11px; color:rgba(238,241,251,.5); font-weight:700; }
+  .p-bar{ width:56px; border-radius:12px 12px 0 0; background:rgba(255,255,255,.08); }
+  .p-col.first .p-bar{ height:56px; background:linear-gradient(180deg,rgba(255,214,107,.3),rgba(255,214,107,.08)); }
+  .p-col.second .p-bar{ height:38px; }
+  .p-col.third .p-bar{ height:26px; }
+  .list{ flex:1; overflow:hidden; display:flex; flex-direction:column; gap:8px; }
+  .row{ display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:16px; background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.08); }
+  .row.me{ background:rgba(91,140,255,.14); border-color:rgba(91,140,255,.5); box-shadow:0 0 20px rgba(91,140,255,.2); }
+  .row .rank{ width:20px; font-size:13px; font-weight:800; color:rgba(238,241,251,.4); text-align:center; flex-shrink:0; }
+  .row .av{ width:36px; height:36px; border-radius:999px; background:linear-gradient(135deg,#5b8cff,#9b6bff); display:flex; align-items:center; justify-content:center; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:13px; flex-shrink:0; }
+  .row .nm{ flex:1; font-size:13px; font-weight:700; }
+  .row .xp{ font-size:12px; font-weight:800; color:#9db4ff; }
+  .me-card{
+    display:flex; align-items:center; gap:12px; padding:14px 18px; border-radius:20px;
+    background:linear-gradient(135deg,#5b8cff,#9b6bff); box-shadow:0 20px 40px rgba(91,140,255,.5);
+  }
+  .me-card .rank{ font-family:'Space Grotesk',sans-serif; font-size:20px; font-weight:700; color:#fff; }
+  .me-card .info{ flex:1; }
+  .me-card .info .l{ font-size:11px; color:rgba(255,255,255,.75); font-weight:700; }
+  .me-card .info .v{ font-size:14px; color:#fff; font-weight:800; }
+</style>
+</helmet>
+
+<div class="screen">
+  <div class="top-row">
+    <div class="icon-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#eef1fb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></div>
+    <div class="top-label">Bảng xếp hạng</div>
+    <div style="width:36px"></div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active">Tuần này</div>
+    <div class="tab">Tháng này</div>
+    <div class="tab">Mọi lúc</div>
+  </div>
+
+  <div class="podium">
+    <div class="p-col second">
+      <div class="p-avatar">M</div>
+      <div class="p-name">Minh Anh</div>
+      <div class="p-xp">2,180 XP</div>
+      <div class="p-bar"></div>
+    </div>
+    <div class="p-col first">
+      <svg class="crown" width="26" height="26" viewBox="0 0 24 24" fill="#ffd66b"><path d="M3 8l4 3 5-6 5 6 4-3-2 10H5z"/></svg>
+      <div class="p-avatar">L</div>
+      <div class="p-name">Lan Phương</div>
+      <div class="p-xp">2,540 XP</div>
+      <div class="p-bar"></div>
+    </div>
+    <div class="p-col third">
+      <div class="p-avatar">D</div>
+      <div class="p-name">Đức Huy</div>
+      <div class="p-xp">1,960 XP</div>
+      <div class="p-bar"></div>
+    </div>
+  </div>
+
+  <div class="list">
+    <div class="row"><div class="rank">4</div><div class="av">T</div><div class="nm">Thảo Vy</div><div class="xp">1,720 XP</div></div>
+    <div class="row"><div class="rank">5</div><div class="av">K</div><div class="nm">Khánh Duy</div><div class="xp">1,540 XP</div></div>
+    <div class="row"><div class="rank">6</div><div class="av">N</div><div class="nm">Ngọc Hà</div><div class="xp">1,390 XP</div></div>
+    <div class="row me"><div class="rank">7</div><div class="av">Q</div><div class="nm">Quang (Bạn)</div><div class="xp">1,240 XP</div></div>
+    <div class="row"><div class="rank">8</div><div class="av">P</div><div class="nm">Phúc An</div><div class="xp">1,180 XP</div></div>
+  </div>
+
+  <div class="me-card">
+    <div class="rank">#7</div>
+    <div class="info">
+      <div class="l">Hạng của bạn tuần này</div>
+      <div class="v">1,240 XP</div>
+    </div>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

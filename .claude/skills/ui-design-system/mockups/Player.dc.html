@@ -1,0 +1,111 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+  * { box-sizing:border-box; }
+  body{ margin:0; }
+  .screen{
+    width:100%; height:100%; border-radius:28px; overflow:hidden; position:relative;
+    background:
+      radial-gradient(90% 55% at 50% -5%, rgba(155,107,255,.4), transparent 60%),
+      radial-gradient(80% 45% at 100% 100%, rgba(91,140,255,.3), transparent 55%),
+      linear-gradient(170deg,#0a0e1c 0%,#0d1330 55%,#080b16 100%);
+    color:#eef1fb; font-family:'Manrope',system-ui,sans-serif;
+    display:flex; flex-direction:column; padding:26px 24px 24px;
+  }
+  h1,h2,h3{ font-family:'Space Grotesk',system-ui,sans-serif; margin:0; letter-spacing:-.01em; }
+  a{ color:#9db4ff; } a:hover{ color:#c2cfff; }
+  .top-row{ display:flex; align-items:center; justify-content:space-between; }
+  .icon-btn{ width:38px; height:38px; border-radius:999px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); display:flex; align-items:center; justify-content:center; }
+  .top-label{ font-size:12px; font-weight:700; color:rgba(238,241,251,.5); text-transform:uppercase; letter-spacing:.08em; }
+  .art-wrap{ display:flex; justify-content:center; margin:22px 0 18px; }
+  .art{
+    width:190px; height:190px; border-radius:32px;
+    background:linear-gradient(135deg,#5b8cff,#9b6bff);
+    box-shadow:0 30px 60px rgba(91,140,255,.5), 0 0 60px rgba(155,107,255,.35);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .title-block{ text-align:center; display:flex; flex-direction:column; gap:4px; }
+  .title-block .song{ font-size:20px; font-weight:800; }
+  .title-block .artist{ font-size:13px; color:rgba(238,241,251,.5); font-weight:600; }
+  .lyric-wrap{ flex:1; margin-top:22px; overflow:hidden; position:relative; }
+  .lyric-line{ text-align:center; padding:9px 0; opacity:.28; }
+  .lyric-line .en{ font-size:15px; font-weight:700; }
+  .lyric-line .vi{ font-size:12px; color:rgba(238,241,251,.5); margin-top:2px; }
+  .lyric-line.current{ opacity:1; }
+  .lyric-line.current .en{
+    font-size:21px; font-weight:800;
+    background:linear-gradient(90deg,#8fb0ff,#c9a8ff);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .lyric-line.current .vi{ color:rgba(238,241,251,.8); font-size:13px; font-weight:600; }
+  .toggle-row{ display:flex; align-items:center; justify-content:center; gap:10px; margin-top:8px; }
+  .toggle{ width:40px; height:22px; border-radius:999px; background:linear-gradient(135deg,#5b8cff,#9b6bff); position:relative; box-shadow:0 4px 14px rgba(91,140,255,.5); }
+  .toggle .knob{ position:absolute; top:2px; right:2px; width:18px; height:18px; border-radius:999px; background:#fff; }
+  .toggle-label{ font-size:12px; font-weight:700; color:rgba(238,241,251,.6); }
+  .scrub{ margin-top:20px; }
+  .scrub-track{ height:5px; border-radius:999px; background:rgba(255,255,255,.12); position:relative; overflow:visible; }
+  .scrub-fill{ height:100%; width:38%; border-radius:999px; background:linear-gradient(90deg,#5b8cff,#9b6bff); position:relative; }
+  .scrub-fill::after{ content:''; position:absolute; right:-6px; top:50%; transform:translateY(-50%); width:14px; height:14px; border-radius:999px; background:#fff; box-shadow:0 0 12px rgba(91,140,255,.8); }
+  .time-row{ display:flex; justify-content:space-between; margin-top:8px; font-size:11px; font-weight:700; color:rgba(238,241,251,.4); }
+  .controls{ display:flex; align-items:center; justify-content:center; gap:26px; margin-top:18px; }
+  .ctrl-side{ width:40px; height:40px; display:flex; align-items:center; justify-content:center; color:rgba(238,241,251,.7); }
+  .play-big{
+    width:72px; height:72px; border-radius:999px;
+    background:linear-gradient(135deg,#5b8cff,#9b6bff);
+    box-shadow:0 20px 40px rgba(91,140,255,.55), 0 0 50px rgba(155,107,255,.4);
+    display:flex; align-items:center; justify-content:center;
+  }
+</style>
+</helmet>
+
+<div class="screen">
+  <div class="top-row">
+    <div class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#eef1fb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></div>
+    <div class="top-label">Đang phát</div>
+    <div class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#eef1fb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg></div>
+  </div>
+
+  <div class="art-wrap">
+    <div class="art">
+      <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+    </div>
+  </div>
+
+  <div class="title-block">
+    <div class="song">Sunny Afternoon</div>
+    <div class="artist">Clara Voss</div>
+  </div>
+
+  <div class="lyric-wrap">
+    <div class="lyric-line"><div class="en">I used to run from every storm</div><div class="vi">Tôi từng trốn chạy khỏi mọi cơn giông</div></div>
+    <div class="lyric-line current"><div class="en">Now I'm standing in the rain</div><div class="vi">Giờ tôi đứng lặng giữa cơn mưa</div></div>
+    <div class="lyric-line"><div class="en">Learning how to feel the warmth</div><div class="vi">Học cách cảm nhận hơi ấm</div></div>
+  </div>
+
+  <div class="toggle-row">
+    <span class="toggle-label">Song ngữ Anh – Việt</span>
+    <div class="toggle"><div class="knob"></div></div>
+  </div>
+
+  <div class="scrub">
+    <div class="scrub-track"><div class="scrub-fill"></div></div>
+    <div class="time-row"><span>1:24</span><span>3:42</span></div>
+  </div>
+
+  <div class="controls">
+    <div class="ctrl-side"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19 5v14l-11-7z"/><rect x="6" y="5" width="2" height="14"/></svg></div>
+    <div class="play-big"><svg width="26" height="26" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg></div>
+    <div class="ctrl-side"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M5 5v14l11-7z"/><rect x="16" y="5" width="2" height="14"/></svg></div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

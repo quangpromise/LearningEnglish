@@ -1,0 +1,34 @@
+{
+  "pages": [
+    { "id": "page-1", "name": "Màn hình chính" },
+    { "id": "page-2", "name": "Đố vui & Xếp hạng" }
+  ],
+  "artboards": [
+    { "file": "Main.dc.html", "x": 0, "y": 0, "w": 1200, "h": 380 },
+    { "file": "Home.dc.html", "x": 0, "y": 500, "w": 390, "h": 844 },
+    { "file": "Player.dc.html", "x": 470, "y": 500, "w": 390, "h": 844 },
+    { "file": "WordPopup.dc.html", "x": 940, "y": 500, "w": 390, "h": 844 },
+    { "file": "Pronunciation.dc.html", "x": 0, "y": 1464, "w": 390, "h": 844 },
+    { "file": "Grammar.dc.html", "x": 470, "y": 1464, "w": 390, "h": 844 },
+    { "file": "Profile.dc.html", "x": 940, "y": 1464, "w": 390, "h": 844 },
+
+    { "file": "QuizCategory.dc.html", "x": 0, "y": 0, "w": 390, "h": 844, "page": "page-2" },
+    { "file": "QuizQuestion.dc.html", "x": 470, "y": 0, "w": 390, "h": 844, "page": "page-2" },
+    { "file": "QuizResult.dc.html", "x": 940, "y": 0, "w": 390, "h": 844, "page": "page-2" },
+    { "file": "Leaderboard.dc.html", "x": 1410, "y": 0, "w": 390, "h": 844, "page": "page-2" }
+  ],
+  "annotations": [
+    { "id": "cap-home", "x": 0, "y": 1360, "w": 390, "text": "1. Trang chủ — chọn bài hát theo thể loại/trình độ, xem tiến độ bài đang nghe dở." },
+    { "id": "cap-player", "x": 470, "y": 1360, "w": 390, "text": "2. Nghe nhạc — lyric song ngữ Anh–Việt đồng bộ theo thời gian, dòng đang hát được làm nổi bật." },
+    { "id": "cap-word", "x": 940, "y": 1360, "w": 390, "text": "3. Chạm vào từ — bottom sheet hiện nghĩa, phiên âm IPA, ví dụ trong bài và nút nghe phát âm mẫu." },
+    { "id": "cap-pron", "x": 0, "y": 2324, "w": 390, "text": "4. Luyện phát âm — ghi âm qua mic, hiện waveform, chấm điểm so khớp và phản hồi từng từ." },
+    { "id": "cap-grammar", "x": 470, "y": 2324, "w": 390, "text": "5. Ngữ pháp — phân tích cấu trúc câu khó trong lyric kèm bài tập nhanh để củng cố." },
+    { "id": "cap-profile", "x": 940, "y": 2324, "w": 390, "text": "6. Hồ sơ — thống kê từ vựng, bài hát hoàn thành, điểm phát âm, streak và huy hiệu." },
+
+    { "id": "cap-quizcat", "x": 0, "y": 860, "w": 390, "page": "page-2", "text": "1. Chọn chủ đề đố vui — 6 danh mục lấy từ kho câu đố tiếng Anh (chơi chữ, suy luận, động vật, cuộc sống, bảng chữ cái, trái cây & xe cộ)." },
+    { "id": "cap-quizq", "x": 470, "y": 860, "w": 390, "page": "page-2", "text": "2. Câu hỏi trắc nghiệm — riddle song ngữ, đếm giờ, thanh tiến trình theo số câu, thưởng XP khi trả lời đúng." },
+    { "id": "cap-quizresult", "x": 940, "y": 860, "w": 390, "page": "page-2", "text": "3. Kết quả thử thách — điểm số, XP nhận được, thay đổi thứ hạng và chi tiết đúng/sai từng câu." },
+    { "id": "cap-leaderboard", "x": 1410, "y": 860, "w": 390, "page": "page-2", "text": "4. Bảng xếp hạng — podium top 3, danh sách người chơi theo tuần/tháng/mọi lúc, làm nổi bật hạng của bạn." }
+  ],
+  "launch": { "view": "canvas", "page": "page-2" }
+}

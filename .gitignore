@@ -46,3 +46,8 @@ GoogleService-Info.plist
 
 # Logs
 *.log
+
+# Backend (AI Voice Chat)
+backend/**/node_modules/
+backend/**/__pycache__/
+backend/**/*.pyc

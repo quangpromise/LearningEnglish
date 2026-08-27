@@ -1,0 +1,15 @@
+{
+  "name": "gemini-proxy",
+  "version": "0.1.0",
+  "private": true,
+  "description": "WebSocket proxy: app Flutter <-> Gemini Live API, tu dong fallback sang pipeline tu host khi het quota.",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0",
+    "dotenv": "^16.4.5"
+  }
+}

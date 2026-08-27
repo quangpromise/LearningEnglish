@@ -37,13 +37,16 @@ D:\Projects\Learn Engligh\
 ├── .claude/
 │   ├── agents/                        # Agent chuyên biệt (xem bên dưới)
 │   └── skills/                        # Skill quy trình cụ thể (xem bên dưới)
+├── backend/                            # Proxy Gemini Live + pipeline fallback tự host cho AI Voice Chat
 └── app/                                # Flutter project (Android + iOS)
     └── lib/
         ├── features/
         │   ├── music_player/          # Phát nhạc, đồng bộ lyric
         │   ├── translation/           # Dịch từ/câu on-device
         │   ├── pronunciation/         # Ghi âm mic, chấm điểm phát âm
-        │   └── grammar/                # Giải thích ngữ pháp
+        │   ├── grammar/                # Giải thích ngữ pháp
+        │   ├── quiz/                   # Đố vui tiếng Anh + bảng xếp hạng
+        │   └── ai_voice_chat/          # Trò chuyện AI bằng giọng nói (xem docs/research-ai-voice.md)
         └── core/                       # Config, DI, theme, routing
 ```
 
@@ -72,3 +75,4 @@ Dự án được thiết kế để nhiều người cùng code song song, hạ
 - **CI** (`.github/workflows/ci.yml`): tự động chạy `flutter analyze`, `dart format --set-exit-if-changed`, `flutter test` trên mọi PR vào `main`/`develop`.
 - **Templates**: `.github/PULL_REQUEST_TEMPLATE.md` và `.github/ISSUE_TEMPLATE/` chuẩn hoá cách báo bug/đề xuất tính năng/PR, có mục nhắc kiểm tra license khi thêm nhạc/thư viện mới.
 - **Chi tiết quy trình** (setup môi trường, branch naming, commit convention, coding style): xem [CONTRIBUTING.md](CONTRIBUTING.md).
+- **Thành viên mới dùng Claude Code**: xem [docs/team-onboarding.md](docs/team-onboarding.md) — hướng dẫn clone repo, mở bằng Claude Code, bật MCP GitHub, cài môi trường Flutter, nhận việc.

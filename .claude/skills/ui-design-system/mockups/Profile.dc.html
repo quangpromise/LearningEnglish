@@ -1,0 +1,129 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+  * { box-sizing:border-box; }
+  body{ margin:0; }
+  .screen{
+    width:100%; height:100%; border-radius:28px; overflow:hidden; position:relative;
+    background:
+      radial-gradient(100% 55% at 15% -8%, rgba(91,140,255,.32), transparent 60%),
+      radial-gradient(80% 45% at 100% 20%, rgba(155,107,255,.28), transparent 55%),
+      linear-gradient(170deg,#0a0e1c 0%,#0d1330 55%,#080b16 100%);
+    color:#eef1fb; font-family:'Manrope',system-ui,sans-serif;
+    display:flex; flex-direction:column; padding:26px 24px 22px; gap:16px;
+  }
+  h1,h2,h3{ font-family:'Space Grotesk',system-ui,sans-serif; margin:0; letter-spacing:-.01em; }
+  a{ color:#9db4ff; } a:hover{ color:#c2cfff; }
+  .top-row{ display:flex; align-items:center; justify-content:space-between; }
+  .icon-btn{ width:38px; height:38px; border-radius:999px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); display:flex; align-items:center; justify-content:center; }
+  .top-label{ font-size:12px; font-weight:700; color:rgba(238,241,251,.5); text-transform:uppercase; letter-spacing:.08em; }
+  .profile-row{ display:flex; align-items:center; gap:14px; }
+  .avatar{ width:60px; height:60px; border-radius:999px; background:linear-gradient(135deg,#5b8cff,#9b6bff); box-shadow:0 14px 30px rgba(91,140,255,.5); display:flex; align-items:center; justify-content:center; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:22px; }
+  .profile-name{ font-size:18px; font-weight:800; }
+  .streak-badge{ display:inline-flex; align-items:center; gap:6px; margin-top:4px; padding:5px 12px; border-radius:999px; background:rgba(255,178,60,.16); color:#ffb23c; font-size:12px; font-weight:800; }
+  .body-scroll{ flex:1; overflow:hidden; display:flex; flex-direction:column; gap:16px; }
+  .stat-grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+  .stat-card{ padding:16px; border-radius:20px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.09); display:flex; flex-direction:column; gap:8px; }
+  .stat-card .ic{ width:34px; height:34px; border-radius:12px; display:flex; align-items:center; justify-content:center; }
+  .stat-card .ic.a{ background:rgba(91,140,255,.18); }
+  .stat-card .ic.b{ background:rgba(155,107,255,.2); }
+  .stat-card .ic.c{ background:rgba(91,224,208,.18); }
+  .stat-card .ic.d{ background:rgba(255,178,60,.18); }
+  .stat-card .num{ font-size:20px; font-weight:800; font-family:'Space Grotesk',sans-serif; }
+  .stat-card .lbl{ font-size:11px; color:rgba(238,241,251,.5); font-weight:700; }
+  .card{ padding:18px; border-radius:22px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.09); }
+  .card .head{ display:flex; align-items:center; justify-content:space-between; font-size:13px; font-weight:800; color:rgba(238,241,251,.55); text-transform:uppercase; letter-spacing:.06em; margin-bottom:14px; }
+  .bars{ display:flex; align-items:flex-end; justify-content:space-between; height:70px; }
+  .bar-col{ display:flex; flex-direction:column; align-items:center; gap:6px; flex:1; }
+  .bar{ width:14px; border-radius:8px 8px 4px 4px; background:linear-gradient(180deg,#9b6bff,#5b8cff); }
+  .bar.low{ background:rgba(255,255,255,.12); }
+  .bar-col .d{ font-size:10px; color:rgba(238,241,251,.4); font-weight:700; }
+  .badges{ display:flex; gap:12px; }
+  .badge{ width:48px; height:48px; border-radius:999px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); display:flex; align-items:center; justify-content:center; }
+  .badge.glow{ box-shadow:0 0 20px rgba(155,107,255,.5); border-color:rgba(155,107,255,.5); }
+  .settings-row{ display:flex; align-items:center; gap:12px; padding:14px 16px; border-radius:16px; background:rgba(255,255,255,.04); }
+  .settings-row .lbl{ flex:1; font-size:13px; font-weight:700; }
+</style>
+</helmet>
+
+<div class="screen">
+  <div class="top-row">
+    <div class="top-label">Hồ sơ</div>
+    <div class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#eef1fb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></div>
+  </div>
+
+  <div class="profile-row">
+    <div class="avatar">Q</div>
+    <div>
+      <div class="profile-name">Quang Hứa</div>
+      <div class="streak-badge">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1 4-3 5-3 9a3 3 0 0 0 6 0c0-1-.5-2-1-3 2 1 4 3.5 4 6.5A6.5 6.5 0 0 1 5 14.5C5 9 9 6 12 2z"/></svg>
+        12 ngày liên tiếp
+      </div>
+    </div>
+  </div>
+
+  <div class="body-scroll">
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="ic a"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9db4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+        <div class="num">248</div>
+        <div class="lbl">Từ đã học</div>
+      </div>
+      <div class="stat-card">
+        <div class="ic b"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c9a8ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
+        <div class="num">32</div>
+        <div class="lbl">Bài hát hoàn thành</div>
+      </div>
+      <div class="stat-card">
+        <div class="ic c"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5be0d0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 19v3"/></svg></div>
+        <div class="num">88%</div>
+        <div class="lbl">Điểm phát âm TB</div>
+      </div>
+      <div class="stat-card">
+        <div class="ic d"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffb23c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+        <div class="num">14h 20p</div>
+        <div class="lbl">Thời gian luyện tập</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="head">Hoạt động tuần này</div>
+      <div class="bars">
+        <div class="bar-col"><div class="bar" style="height:30px"></div><div class="d">T2</div></div>
+        <div class="bar-col"><div class="bar" style="height:48px"></div><div class="d">T3</div></div>
+        <div class="bar-col"><div class="bar low" style="height:14px"></div><div class="d">T4</div></div>
+        <div class="bar-col"><div class="bar" style="height:60px"></div><div class="d">T5</div></div>
+        <div class="bar-col"><div class="bar" style="height:38px"></div><div class="d">T6</div></div>
+        <div class="bar-col"><div class="bar" style="height:52px"></div><div class="d">T7</div></div>
+        <div class="bar-col"><div class="bar" style="height:22px"></div><div class="d">CN</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="head">Huy hiệu</div>
+      <div class="badges">
+        <div class="badge glow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c9a8ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 15 9l7 1-5 5 1.5 7L12 18l-6.5 4L7 15l-5-5 7-1z"/></svg></div>
+        <div class="badge"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(238,241,251,.5)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M8.5 13.5 7 22l5-3 5 3-1.5-8.5"/></svg></div>
+        <div class="badge"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(238,241,251,.5)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+      </div>
+    </div>
+
+    <div class="settings-row">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#9db4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 1 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>
+      <span class="lbl">Chỉnh sửa hồ sơ</span>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(238,241,251,.4)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
