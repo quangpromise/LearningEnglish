@@ -1,23 +1,44 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+/// 1 ngày trong biểu đồ "hoạt động tuần này" — [date] là ngày thật (server,
+/// UTC), [seconds] là tổng số giây luyện tập ghi nhận được trong ngày đó.
+class DailyActivity {
+  const DailyActivity({required this.date, required this.seconds});
+  final DateTime date;
+  final int seconds;
+
+  /// Nhãn hiển thị theo thứ trong tuần (T2..T7, CN) dựa trên [date] thật,
+  /// không cố định cứng — đúng bất kể hôm nay là thứ mấy.
+  String get weekdayLabel {
+    const labels = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+    return labels[date.weekday - 1];
+  }
+}
+
 class UserStats {
   const UserStats({
     required this.wordsLearned,
     required this.songsCompleted,
     required this.avgPronunciationScore,
     required this.practiceSeconds,
+    required this.streakDays,
+    required this.weeklyActivity,
   });
 
   final int wordsLearned;
   final int songsCompleted;
   final int avgPronunciationScore;
   final int practiceSeconds;
+  final int streakDays;
+  final List<DailyActivity> weeklyActivity;
 
   static const empty = UserStats(
     wordsLearned: 0,
     songsCompleted: 0,
     avgPronunciationScore: 0,
     practiceSeconds: 0,
+    streakDays: 0,
+    weeklyActivity: [],
   );
 
   String get practiceTimeLabel {
@@ -36,13 +57,25 @@ class StatsRepository {
   final SupabaseClient _supabase;
 
   Future<UserStats> fetchMyStats() async {
-    final res = await _supabase.rpc('my_stats_summary');
-    final row = (res as List).first as Map<String, dynamic>;
+    final results = await Future.wait([
+      _supabase.rpc('my_stats_summary'),
+      _supabase.rpc('my_weekly_activity'),
+    ]);
+    final row = (results[0] as List).first as Map<String, dynamic>;
+    final weekRows = results[1] as List;
     return UserStats(
       wordsLearned: row['words_learned'] as int? ?? 0,
       songsCompleted: row['songs_completed'] as int? ?? 0,
       avgPronunciationScore: row['avg_pronunciation_score'] as int? ?? 0,
       practiceSeconds: row['practice_seconds'] as int? ?? 0,
+      streakDays: row['streak_days'] as int? ?? 0,
+      weeklyActivity: weekRows.map((r) {
+        final m = r as Map<String, dynamic>;
+        return DailyActivity(
+          date: DateTime.parse(m['activity_date'] as String),
+          seconds: m['seconds'] as int? ?? 0,
+        );
+      }).toList(),
     );
   }
 

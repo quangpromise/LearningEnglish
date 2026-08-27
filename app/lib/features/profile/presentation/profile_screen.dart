@@ -183,18 +183,18 @@ class ProfileScreen extends ConsumerWidget {
                         color: AppColors.amber.withValues(alpha: 0.16),
                         borderRadius: BorderRadius.circular(999),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.local_fire_department_rounded,
                             size: 14,
                             color: AppColors.amber,
                           ),
-                          SizedBox(width: 4),
+                          const SizedBox(width: 4),
                           Text(
-                            '12 ngày liên tiếp',
-                            style: TextStyle(
+                            '${statsAsync.valueOrNull?.streakDays ?? 0} ngày liên tiếp',
+                            style: const TextStyle(
                               color: AppColors.amber,
                               fontWeight: FontWeight.w800,
                               fontSize: 12,
@@ -358,25 +358,49 @@ class ProfileScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'HOẠT ĐỘNG TUẦN NÀY (minh hoạ)',
+                          'HOẠT ĐỘNG TUẦN NÀY',
                           style: AppTextStyles.muted(size: 11)
                               .copyWith(letterSpacing: 0.6),
                         ),
                         const SizedBox(height: 14),
                         SizedBox(
                           height: 70,
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: const [
-                              _Bar(h: 30, d: 'T2'),
-                              _Bar(h: 48, d: 'T3'),
-                              _Bar(h: 14, d: 'T4', low: true),
-                              _Bar(h: 60, d: 'T5'),
-                              _Bar(h: 38, d: 'T6'),
-                              _Bar(h: 52, d: 'T7'),
-                              _Bar(h: 22, d: 'CN'),
-                            ],
+                          child: statsAsync.when(
+                            loading: () => const SizedBox.shrink(),
+                            error: (_, _) => const SizedBox.shrink(),
+                            data: (stats) {
+                              final week = stats.weeklyActivity;
+                              if (week.isEmpty) {
+                                return Center(
+                                  child: Text(
+                                    'Chưa có hoạt động nào tuần này',
+                                    style: AppTextStyles.muted(size: 11),
+                                  ),
+                                );
+                              }
+                              // Quy đổi giây -> chiều cao thanh: tỉ lệ theo
+                              // ngày luyện tập nhiều nhất trong tuần, thanh
+                              // tối thiểu 14px để vẫn thấy được ngày 0 giây.
+                              final maxSeconds = week
+                                  .map((d) => d.seconds)
+                                  .fold(0, (a, b) => a > b ? a : b);
+                              return Row(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: week.map((d) {
+                                  final ratio = maxSeconds > 0
+                                      ? d.seconds / maxSeconds
+                                      : 0.0;
+                                  final height = 14.0 + ratio * 46.0;
+                                  return _Bar(
+                                    h: height,
+                                    d: d.weekdayLabel,
+                                    low: d.seconds == 0,
+                                  );
+                                }).toList(),
+                              );
+                            },
                           ),
                         ),
                       ],
