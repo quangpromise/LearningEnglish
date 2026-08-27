@@ -40,7 +40,7 @@ class _RootShellState extends State<RootShell> {
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
             color: const Color(0xD90A0E1C),
             border: Border.all(color: AppColors.glassBorder),
@@ -53,14 +53,18 @@ class _RootShellState extends State<RootShell> {
               final active = i == _tab;
               return GestureDetector(
                 onTap: () => setState(() => _tab = i),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(_icons[i], size: 22, color: active ? Colors.white : AppColors.textMuted),
-                    const SizedBox(height: 4),
-                    if (active)
-                      Container(width: 6, height: 6, decoration: const BoxDecoration(gradient: AppColors.accentGradient, shape: BoxShape.circle)),
-                  ],
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeOut,
+                  width: active ? 76 : 44,
+                  height: 44,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: active ? Colors.white.withValues(alpha: 0.12) : Colors.transparent,
+                    border: active ? Border.all(color: Colors.white.withValues(alpha: 0.35)) : null,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Icon(_icons[i], size: 22, color: active ? Colors.white : AppColors.textMuted),
                 ),
               );
             }),
