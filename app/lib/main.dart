@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/config/env.dart';
@@ -38,11 +37,12 @@ class LearnEnglishMusicApp extends StatelessWidget {
           secondary: AppColors.purple,
           surface: AppColors.bgMid,
         ),
-        textTheme: GoogleFonts.manropeTextTheme(ThemeData.dark().textTheme).apply(
+        textTheme: ThemeData.dark().textTheme.apply(
+          fontFamily: 'Manrope',
           bodyColor: AppColors.textPrimary,
           displayColor: AppColors.textPrimary,
         ),
-        fontFamily: GoogleFonts.manrope().fontFamily,
+        fontFamily: 'Manrope',
       ),
       home: Env.isConfigured ? const _AuthGate() : const _MissingConfigScreen(),
     );

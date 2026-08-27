@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 /// Design tokens theo `.claude/skills/ui-design-system/SKILL.md`.
 class AppColors {
@@ -38,13 +37,13 @@ class AppTextStyles {
   AppTextStyles._();
 
   static TextStyle heading({double size = 20, FontWeight weight = FontWeight.w700}) =>
-      GoogleFonts.spaceGrotesk(fontSize: size, fontWeight: weight, color: AppColors.textPrimary, letterSpacing: -0.2);
+      TextStyle(fontFamily: 'SpaceGrotesk', fontSize: size, fontWeight: weight, color: AppColors.textPrimary, letterSpacing: -0.2);
 
   static TextStyle body({double size = 14, FontWeight weight = FontWeight.w600, Color? color}) =>
-      GoogleFonts.manrope(fontSize: size, fontWeight: weight, color: color ?? AppColors.textPrimary);
+      TextStyle(fontFamily: 'Manrope', fontSize: size, fontWeight: weight, color: color ?? AppColors.textPrimary);
 
   static TextStyle muted({double size = 12, FontWeight weight = FontWeight.w600}) =>
-      GoogleFonts.manrope(fontSize: size, fontWeight: weight, color: AppColors.textMuted);
+      TextStyle(fontFamily: 'Manrope', fontSize: size, fontWeight: weight, color: AppColors.textMuted);
 }
 
 class GlowBox extends StatelessWidget {
