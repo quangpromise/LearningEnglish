@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/dictionary/free_dictionary_api.dart';
+import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/translation/app_translator.dart';
@@ -57,10 +58,10 @@ class _WordPopupSheetState extends ConsumerState<WordPopupSheet> {
       ipa: (entry != null && entry.ipa.isNotEmpty) ? entry.ipa : '—',
       pos: entry != null && entry.partOfSpeech.isNotEmpty
           ? posLabel(entry.partOfSpeech)
-          : 'Chưa rõ từ loại',
+          : ref.tr('word_no_pos'),
       meaningVi: meaningVi.isNotEmpty
           ? meaningVi
-          : '(không dịch được — kiểm tra mạng)',
+          : ref.tr('word_translate_error'),
       definitionEn: entry?.definition ?? '',
     );
   }
@@ -177,7 +178,7 @@ class _WordPopupSheetState extends ConsumerState<WordPopupSheet> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'TRONG BÀI HÁT',
+                  ref.tr('word_in_song'),
                   style: AppTextStyles.muted(size: 10)
                       .copyWith(letterSpacing: 0.6),
                 ),
@@ -195,7 +196,7 @@ class _WordPopupSheetState extends ConsumerState<WordPopupSheet> {
             children: [
               Expanded(
                 child: PillButton(
-                  label: 'Nghe phát âm',
+                  label: ref.tr('word_listen_pronunciation'),
                   icon: const Icon(
                     Icons.volume_up_rounded,
                     color: Colors.white,
@@ -207,7 +208,7 @@ class _WordPopupSheetState extends ConsumerState<WordPopupSheet> {
               const SizedBox(width: 12),
               Expanded(
                 child: PillButton(
-                  label: 'Lưu từ',
+                  label: ref.tr('word_save'),
                   filled: false,
                   icon: const Icon(
                     Icons.add_rounded,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/quiz_data.dart';
@@ -44,7 +45,7 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
         child: Column(
           children: [
             Text(
-              'HOÀN THÀNH THỬ THÁCH',
+              ref.tr('quiz_completed'),
               style: AppTextStyles.muted(size: 11)
                   .copyWith(color: const Color(0xFFC9A8FF), letterSpacing: 1),
             ),
@@ -68,7 +69,10 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
                         '$correct/${results.length}',
                         style: AppTextStyles.heading(size: 26),
                       ),
-                      Text('câu đúng', style: AppTextStyles.muted(size: 11)),
+                      Text(
+                        ref.tr('quiz_correct_count'),
+                        style: AppTextStyles.muted(size: 11),
+                      ),
                     ],
                   ),
                 ],
@@ -158,7 +162,7 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
               children: [
                 Expanded(
                   child: PillButton(
-                    label: 'Làm lại',
+                    label: ref.tr('quiz_retry'),
                     filled: false,
                     onTap: () => Navigator.of(context).pop(),
                   ),
@@ -166,7 +170,7 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: PillButton(
-                    label: 'Bảng xếp hạng',
+                    label: ref.tr('quiz_leaderboard_button'),
                     onTap: () => Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (_) => LeaderboardScreen(myXp: xp),

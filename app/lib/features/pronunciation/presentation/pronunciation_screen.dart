@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart' as rec;
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
+import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/tts/app_tts.dart';
@@ -224,10 +225,12 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
             '${dir.path}/pronunciation_attempt_${DateTime.now().millisecondsSinceEpoch}.m4a';
         await _recorder.start(const rec.RecordConfig(), path: path);
       } else if (mounted) {
-        setState(() => _recordError = 'Chưa có quyền micro để ghi âm.');
+        setState(() => _recordError = ref.tr('pron_mic_permission_missing'));
       }
     } catch (e) {
-      if (mounted) setState(() => _recordError = 'Không ghi âm được: $e');
+      if (mounted) {
+        setState(() => _recordError = '${ref.tr('pron_record_failed')} $e');
+      }
     }
     await _speech.listen(
       onResult: (result) {
@@ -250,12 +253,18 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
     });
     try {
       await _playbackPlayer.setFilePath(path);
-      await _playbackPlayer.play();
+      // KHONG await play(): just_audio's play() chi hoan tat future khi phat
+      // XONG hoac bi tam dung, khong phai luc bat dau - await no o day se
+      // treo ham nay cho toi khi phat het, khien nut "dang phat" ket dinh va
+      // (tuy theo hanh vi may) co cam giac nhu khong phat duoc gi ca.
+      unawaited(_playbackPlayer.play());
       await _playbackPlayer.processingStateStream.firstWhere(
         (s) => s == ProcessingState.completed,
       );
     } catch (e) {
-      if (mounted) setState(() => _recordError = 'Không phát lại được: $e');
+      if (mounted) {
+        setState(() => _recordError = '${ref.tr('pron_playback_failed')} $e');
+      }
     } finally {
       if (mounted) setState(() => _playingBack = false);
     }
@@ -286,7 +295,10 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
                 // truoc do de "back" - dat 1 khoang trong bang chieu rong
                 // nut am luong o phai de tieu de van can giua.
                 const SizedBox(width: 48),
-                Text('Luyện phát âm', style: AppTextStyles.heading(size: 15)),
+                Text(
+                  ref.tr('pron_title'),
+                  style: AppTextStyles.heading(size: 15),
+                ),
                 IconButton(
                   onPressed: () => AppTts.instance.speak(_targetEn),
                   icon: const Icon(
@@ -308,7 +320,7 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'ĐỌC THEO CÂU NÀY',
+                          ref.tr('pron_read_this'),
                           style: AppTextStyles.muted(size: 10)
                               .copyWith(letterSpacing: 0.6),
                         ),
@@ -321,7 +333,7 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              'Đổi câu',
+                              ref.tr('pron_change_sentence'),
                               style: AppTextStyles.muted(size: 11)
                                   .copyWith(color: AppColors.blue),
                             ),
@@ -338,10 +350,7 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
             ),
             const Spacer(),
             if (!_available)
-              Text(
-                'Thiết bị chưa hỗ trợ hoặc chưa cấp quyền micro.',
-                style: AppTextStyles.muted(),
-              )
+              Text(ref.tr('pron_no_mic'), style: AppTextStyles.muted())
             else
               GestureDetector(
                 onTap: _toggleListening,
@@ -370,8 +379,8 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
             const SizedBox(height: 12),
             Text(
               _listening
-                  ? 'Đang nghe... chạm để dừng'
-                  : 'Chạm để bắt đầu ghi âm',
+                  ? ref.tr('pron_listening_stop')
+                  : ref.tr('pron_tap_to_record'),
               style: AppTextStyles.muted(),
             ),
             if (!_listening && _recordedPath != null) ...[
@@ -390,7 +399,9 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      _playingBack ? 'Đang phát...' : 'Nghe lại giọng của bạn',
+                      _playingBack
+                          ? ref.tr('pron_playing')
+                          : ref.tr('pron_play_recording'),
                       style: AppTextStyles.body(
                         size: 12,
                         weight: FontWeight.w700,
@@ -479,7 +490,7 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
               children: [
                 Expanded(
                   child: PillButton(
-                    label: 'Thử lại',
+                    label: ref.tr('pron_retry'),
                     filled: false,
                     onTap: () => setState(() {
                       _score = null;
@@ -491,7 +502,7 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: PillButton(
-                    label: 'Xong',
+                    label: ref.tr('pron_done'),
                     onTap: () => Navigator.of(context).maybePop(),
                   ),
                 ),
@@ -514,14 +525,15 @@ class _PracticeChoice {
 
 /// Bottom sheet chọn câu/từ để luyện phát âm: hoặc gõ tay, hoặc chọn 1 dòng
 /// lời trong danh sách bài hát có sẵn (`kSongs`).
-class _PracticeSourcePicker extends StatefulWidget {
+class _PracticeSourcePicker extends ConsumerStatefulWidget {
   const _PracticeSourcePicker();
 
   @override
-  State<_PracticeSourcePicker> createState() => _PracticeSourcePickerState();
+  ConsumerState<_PracticeSourcePicker> createState() =>
+      _PracticeSourcePickerState();
 }
 
-class _PracticeSourcePickerState extends State<_PracticeSourcePicker> {
+class _PracticeSourcePickerState extends ConsumerState<_PracticeSourcePicker> {
   final _customController = TextEditingController();
   int? _expandedSongIndex;
 
@@ -566,12 +578,12 @@ class _PracticeSourcePickerState extends State<_PracticeSourcePicker> {
               ),
               const SizedBox(height: 16),
               Text(
-                'Chọn câu luyện tập',
+                ref.tr('pron_pick_title'),
                 style: AppTextStyles.heading(size: 16),
               ),
               const SizedBox(height: 14),
               Text(
-                'TỰ NHẬP TỪ HOẶC CÂU',
+                ref.tr('pron_custom_label'),
                 style: AppTextStyles.muted(size: 10)
                     .copyWith(letterSpacing: 0.6),
               ),
@@ -588,7 +600,7 @@ class _PracticeSourcePickerState extends State<_PracticeSourcePicker> {
                         isDense: true,
                         filled: true,
                         fillColor: AppColors.glassFill,
-                        hintText: 'vd: pronunciation',
+                        hintText: ref.tr('pron_custom_hint'),
                         hintStyle: AppTextStyles.muted(),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(14),
@@ -621,7 +633,7 @@ class _PracticeSourcePickerState extends State<_PracticeSourcePicker> {
               ),
               const SizedBox(height: 20),
               Text(
-                'HOẶC CHỌN LỜI TỪ BÀI HÁT',
+                ref.tr('pron_pick_from_song'),
                 style: AppTextStyles.muted(size: 10)
                     .copyWith(letterSpacing: 0.6),
               ),

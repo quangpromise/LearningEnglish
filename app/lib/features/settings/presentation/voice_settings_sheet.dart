@@ -1,7 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/tts/app_tts.dart';
+
+String _voiceLabel(WidgetRef ref, String locale) => switch (locale) {
+  'en-us' => ref.tr('voice_en_us'),
+  'en-gb' => ref.tr('voice_en_gb'),
+  'en-au' => ref.tr('voice_en_au'),
+  'en-in' => ref.tr('voice_en_in'),
+  'en-ca' => ref.tr('voice_en_ca'),
+  _ => locale,
+};
 
 Future<void> showVoiceSettingsSheet(BuildContext context) {
   return showModalBottomSheet(
@@ -12,14 +23,15 @@ Future<void> showVoiceSettingsSheet(BuildContext context) {
   );
 }
 
-class _VoiceSettingsSheet extends StatefulWidget {
+class _VoiceSettingsSheet extends ConsumerStatefulWidget {
   const _VoiceSettingsSheet();
 
   @override
-  State<_VoiceSettingsSheet> createState() => _VoiceSettingsSheetState();
+  ConsumerState<_VoiceSettingsSheet> createState() =>
+      _VoiceSettingsSheetState();
 }
 
-class _VoiceSettingsSheetState extends State<_VoiceSettingsSheet> {
+class _VoiceSettingsSheetState extends ConsumerState<_VoiceSettingsSheet> {
   Future<void> _choose(CloudVoice voice) async {
     await AppTts.instance.selectCloudVoice(voice);
     setState(() {});
@@ -49,12 +61,12 @@ class _VoiceSettingsSheetState extends State<_VoiceSettingsSheet> {
             ),
           ),
           const SizedBox(height: 16),
-          Text('Giọng đọc tiếng Anh', style: AppTextStyles.heading(size: 18)),
-          const SizedBox(height: 4),
           Text(
-            'Chạm để chọn và nghe thử — áp dụng cho mọi chỗ phát âm mẫu trong app.',
-            style: AppTextStyles.muted(),
+            ref.tr('voice_settings_title'),
+            style: AppTextStyles.heading(size: 18),
           ),
+          const SizedBox(height: 4),
+          Text(ref.tr('voice_settings_subtitle'), style: AppTextStyles.muted()),
           const SizedBox(height: 16),
           ...kCloudVoices.map(
             (voice) => Padding(
@@ -71,7 +83,7 @@ class _VoiceSettingsSheetState extends State<_VoiceSettingsSheet> {
                     children: [
                       Expanded(
                         child: Text(
-                          voice.label,
+                          _voiceLabel(ref, voice.locale),
                           style: AppTextStyles.body(weight: FontWeight.w800),
                         ),
                       ),

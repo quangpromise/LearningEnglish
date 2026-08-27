@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:just_audio/just_audio.dart';
 
 /// AudioPlayer DUY NHẤT cho toàn app — trước đây mỗi PlayerScreen tự tạo
@@ -29,7 +31,12 @@ class NowPlayingService {
     // ngan hon nen moi dong loi deu bi coi la "da qua").
     await player.seek(Duration.zero);
     if (!isCurrent(myGeneration)) return myGeneration;
-    await player.play();
+    // KHONG await o day: just_audio's play() tra ve 1 Future CHI hoan tat
+    // khi phat xong/bi tam dung, khong phai ngay khi bat dau phat. Neu await,
+    // ham play() nay (va moi thu goi no) se bi treo cho toi khi het bai -
+    // day chinh la ly do truoc day phai bam dung/phat lai moi "unblock" duoc
+    // (bam dung lam Future cua play() hoan tat som).
+    unawaited(player.play());
     return myGeneration;
   }
 

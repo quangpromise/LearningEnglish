@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 
@@ -62,13 +63,16 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                     ),
                   ),
                 ),
-                Text('Bảng xếp hạng', style: AppTextStyles.heading(size: 16)),
+                Text(
+                  ref.tr('leaderboard_title'),
+                  style: AppTextStyles.heading(size: 16),
+                ),
                 const SizedBox(width: 36),
               ],
             ),
             const SizedBox(height: 14),
             Text(
-              'Xếp hạng theo tổng XP đố vui của tất cả người dùng',
+              ref.tr('leaderboard_subtitle'),
               style: AppTextStyles.muted(size: 11),
               textAlign: TextAlign.center,
             ),
@@ -80,7 +84,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                 ),
                 error: (e, _) => Center(
                   child: Text(
-                    'Không tải được bảng xếp hạng: $e',
+                    '${ref.tr('leaderboard_error')} $e',
                     style: AppTextStyles.muted(),
                     textAlign: TextAlign.center,
                   ),
@@ -89,7 +93,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                   if (entries.isEmpty) {
                     return Center(
                       child: Text(
-                        'Chưa có ai trên bảng xếp hạng.\nHoàn thành 1 lượt đố vui để lên hạng đầu tiên!',
+                        ref.tr('leaderboard_empty'),
                         style: AppTextStyles.muted(),
                         textAlign: TextAlign.center,
                       ),
@@ -155,7 +159,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                             Expanded(
                               child: Text(
                                 p.isMe
-                                    ? '${p.displayName} (Bạn)'
+                                    ? '${p.displayName} ${ref.tr('leaderboard_you_suffix')}'
                                     : p.displayName,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -208,9 +212,9 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                     ),
                   ),
                 ),
-                error: (_, _) => const Text(
-                  'Không tải được hạng của bạn',
-                  style: TextStyle(color: Colors.white),
+                error: (_, _) => Text(
+                  ref.tr('leaderboard_rank_error'),
+                  style: const TextStyle(color: Colors.white),
                 ),
                 data: (myRank) => Row(
                   children: [
@@ -226,9 +230,9 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Hạng của bạn',
-                            style: TextStyle(
+                          Text(
+                            ref.tr('leaderboard_your_rank'),
+                            style: const TextStyle(
                               color: Colors.white70,
                               fontWeight: FontWeight.w700,
                               fontSize: 11,

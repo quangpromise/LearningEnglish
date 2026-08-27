@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../music_player/data/songs_data.dart';
 import '../data/grammar_content.dart';
 
-class GrammarScreen extends StatefulWidget {
+class GrammarScreen extends ConsumerStatefulWidget {
   const GrammarScreen({super.key, required this.sentence});
   final LyricLine sentence;
 
   @override
-  State<GrammarScreen> createState() => _GrammarScreenState();
+  ConsumerState<GrammarScreen> createState() => _GrammarScreenState();
 }
 
-class _GrammarScreenState extends State<GrammarScreen> {
+class _GrammarScreenState extends ConsumerState<GrammarScreen> {
   late final DetectedGrammar _detected;
 
   @override
@@ -51,7 +53,10 @@ class _GrammarScreenState extends State<GrammarScreen> {
                     ),
                   ),
                 ),
-                Text('Ngữ pháp', style: AppTextStyles.heading(size: 15)),
+                Text(
+                  ref.tr('grammar_title'),
+                  style: AppTextStyles.heading(size: 15),
+                ),
                 const SizedBox(width: 36),
               ],
             ),
@@ -108,7 +113,7 @@ class _GrammarScreenState extends State<GrammarScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'CẤU TRÚC',
+                          ref.tr('grammar_structure'),
                           style: AppTextStyles.muted(size: 11)
                               .copyWith(letterSpacing: 0.6),
                         ),
@@ -153,7 +158,7 @@ class _GrammarScreenState extends State<GrammarScreen> {
             ),
             const SizedBox(height: 12),
             PillButton(
-              label: 'Tiếp tục',
+              label: ref.tr('grammar_continue'),
               onTap: () => Navigator.of(context).maybePop(),
             ),
           ],
@@ -203,15 +208,15 @@ class _WordBlock extends StatelessWidget {
 
 /// Danh sách nhiều câu hỏi trắc nghiệm, cho phép chấm chọn và chuyển câu -
 /// thay cho phiên bản cũ chỉ có 1 câu hỏi và không bấm chọn được.
-class _QuizSection extends StatefulWidget {
+class _QuizSection extends ConsumerStatefulWidget {
   const _QuizSection({required this.quizzes});
   final List<GrammarQuizQuestion> quizzes;
 
   @override
-  State<_QuizSection> createState() => _QuizSectionState();
+  ConsumerState<_QuizSection> createState() => _QuizSectionState();
 }
 
-class _QuizSectionState extends State<_QuizSection> {
+class _QuizSectionState extends ConsumerState<_QuizSection> {
   int _index = 0;
   int? _selected;
   int _correctCount = 0;
@@ -239,12 +244,12 @@ class _QuizSectionState extends State<_QuizSection> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'BÀI TẬP NHANH',
+            ref.tr('grammar_quick_quiz'),
             style: AppTextStyles.muted(size: 11).copyWith(letterSpacing: 0.6),
           ),
           const SizedBox(height: 10),
           Text(
-            'Bạn đúng $_correctCount/$total câu.',
+            '${ref.tr('grammar_score_prefix')} $_correctCount/$total ${ref.tr('grammar_score_suffix')}',
             style: AppTextStyles.heading(size: 16),
           ),
         ],
@@ -258,7 +263,7 @@ class _QuizSectionState extends State<_QuizSection> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'BÀI TẬP NHANH',
+              ref.tr('grammar_quick_quiz'),
               style: AppTextStyles.muted(size: 11).copyWith(letterSpacing: 0.6),
             ),
             Text('${_index + 1}/$total', style: AppTextStyles.muted(size: 11)),
@@ -284,7 +289,9 @@ class _QuizSectionState extends State<_QuizSection> {
           SizedBox(
             width: double.infinity,
             child: PillButton(
-              label: _index + 1 < total ? 'Câu tiếp theo' : 'Xem kết quả',
+              label: _index + 1 < total
+                  ? ref.tr('grammar_next_question')
+                  : ref.tr('grammar_see_result'),
               onTap: _next,
             ),
           ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 
@@ -39,11 +40,11 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
     final newPassword = _newPasswordCtrl.text;
     final confirm = _confirmCtrl.text;
     if (newPassword.length < 6) {
-      setState(() => _error = 'Mật khẩu cần ít nhất 6 ký tự.');
+      setState(() => _error = ref.tr('change_password_short'));
       return;
     }
     if (newPassword != confirm) {
-      setState(() => _error = 'Mật khẩu nhập lại không khớp.');
+      setState(() => _error = ref.tr('change_password_mismatch'));
       return;
     }
     setState(() {
@@ -53,9 +54,13 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
     });
     try {
       await ref.read(authRepositoryProvider).changePassword(newPassword);
-      if (mounted) setState(() => _success = 'Đổi mật khẩu thành công!');
+      if (mounted) {
+        setState(() => _success = ref.tr('change_password_success'));
+      }
     } catch (e) {
-      if (mounted) setState(() => _error = 'Thất bại: $e');
+      if (mounted) {
+        setState(() => _error = '${ref.tr('change_password_failed')} $e');
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -84,18 +89,24 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
             ),
           ),
           const SizedBox(height: 16),
-          Text('Đổi mật khẩu', style: AppTextStyles.heading(size: 18)),
+          Text(
+            ref.tr('change_password_title'),
+            style: AppTextStyles.heading(size: 18),
+          ),
           const SizedBox(height: 4),
           Text(
-            'Chỉ áp dụng cho tài khoản đăng ký bằng email.',
+            ref.tr('change_password_subtitle'),
             style: AppTextStyles.muted(),
           ),
           const SizedBox(height: 16),
-          _PasswordField(controller: _newPasswordCtrl, label: 'Mật khẩu mới'),
+          _PasswordField(
+            controller: _newPasswordCtrl,
+            label: ref.tr('change_password_new'),
+          ),
           const SizedBox(height: 12),
           _PasswordField(
             controller: _confirmCtrl,
-            label: 'Nhập lại mật khẩu mới',
+            label: ref.tr('change_password_confirm'),
           ),
           const SizedBox(height: 16),
           if (_error != null) ...[
@@ -115,7 +126,9 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
           SizedBox(
             width: double.infinity,
             child: PillButton(
-              label: _loading ? 'Đang xử lý...' : 'Xác nhận đổi mật khẩu',
+              label: _loading
+                  ? ref.tr('processing_ellipsis')
+                  : ref.tr('change_password_confirm_button'),
               onTap: _loading ? null : _submit,
             ),
           ),

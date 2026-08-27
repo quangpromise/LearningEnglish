@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 
@@ -32,11 +33,11 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
     final newPassword = _newPasswordCtrl.text;
     final confirm = _confirmCtrl.text;
     if (newPassword.length < 6) {
-      setState(() => _error = 'Mật khẩu cần ít nhất 6 ký tự.');
+      setState(() => _error = ref.tr('change_password_short'));
       return;
     }
     if (newPassword != confirm) {
-      setState(() => _error = 'Mật khẩu nhập lại không khớp.');
+      setState(() => _error = ref.tr('change_password_mismatch'));
       return;
     }
     setState(() {
@@ -47,7 +48,9 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
       await ref.read(authRepositoryProvider).changePassword(newPassword);
       ref.read(passwordRecoveryHandledProvider.notifier).state = true;
     } catch (e) {
-      if (mounted) setState(() => _error = 'Thất bại: $e');
+      if (mounted) {
+        setState(() => _error = '${ref.tr('change_password_failed')} $e');
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -76,22 +79,25 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
                 ),
               ),
               const SizedBox(height: 18),
-              Text('Đặt mật khẩu mới', style: AppTextStyles.heading(size: 20)),
+              Text(
+                ref.tr('reset_password_title'),
+                style: AppTextStyles.heading(size: 20),
+              ),
               const SizedBox(height: 6),
               Text(
-                'Nhập mật khẩu mới cho tài khoản của bạn.',
+                ref.tr('reset_password_subtitle'),
                 style: AppTextStyles.muted(),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
               _PasswordField(
                 controller: _newPasswordCtrl,
-                label: 'Mật khẩu mới',
+                label: ref.tr('change_password_new'),
               ),
               const SizedBox(height: 12),
               _PasswordField(
                 controller: _confirmCtrl,
-                label: 'Nhập lại mật khẩu mới',
+                label: ref.tr('change_password_confirm'),
               ),
               const SizedBox(height: 16),
               if (_error != null) ...[
@@ -105,7 +111,9 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
               SizedBox(
                 width: double.infinity,
                 child: PillButton(
-                  label: _loading ? 'Đang xử lý...' : 'Xác nhận',
+                  label: _loading
+                      ? ref.tr('processing_ellipsis')
+                      : ref.tr('reset_password_confirm_button'),
                   onTap: _loading ? null : _submit,
                 ),
               ),

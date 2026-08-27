@@ -251,6 +251,14 @@ class AppStrings {
       AppLanguage.vi: 'Tiếp tục',
       AppLanguage.en: 'Continue',
     },
+    'grammar_score_prefix': {
+      AppLanguage.vi: 'Bạn đúng',
+      AppLanguage.en: 'You got',
+    },
+    'grammar_score_suffix': {
+      AppLanguage.vi: 'câu.',
+      AppLanguage.en: 'correct.',
+    },
 
     // Pronunciation screen
     'pron_title': {
@@ -307,6 +315,14 @@ class AppStrings {
     'pron_mic_permission_missing': {
       AppLanguage.vi: 'Chưa có quyền micro để ghi âm.',
       AppLanguage.en: 'Microphone permission not granted.',
+    },
+    'pron_record_failed': {
+      AppLanguage.vi: 'Không ghi âm được:',
+      AppLanguage.en: "Couldn't record:",
+    },
+    'pron_playback_failed': {
+      AppLanguage.vi: 'Không phát lại được:',
+      AppLanguage.en: "Couldn't play back:",
     },
 
     // Quiz
@@ -373,9 +389,33 @@ class AppStrings {
       AppLanguage.vi: 'Giọng đọc tiếng Anh',
       AppLanguage.en: 'English voice',
     },
+    'voice_settings_subtitle': {
+      AppLanguage.vi: 'Chạm để chọn và nghe thử — áp dụng cho mọi chỗ phát âm mẫu trong app.',
+      AppLanguage.en: 'Tap to choose and preview — applies everywhere the app plays a sample pronunciation.',
+    },
     'voice_preview_text': {
       AppLanguage.vi: 'Hello, this is a preview of my voice.',
       AppLanguage.en: 'Hello, this is a preview of my voice.',
+    },
+    'voice_en_us': {
+      AppLanguage.vi: 'Tiếng Anh (Mỹ)',
+      AppLanguage.en: 'English (US)',
+    },
+    'voice_en_gb': {
+      AppLanguage.vi: 'Tiếng Anh (Anh)',
+      AppLanguage.en: 'English (UK)',
+    },
+    'voice_en_au': {
+      AppLanguage.vi: 'Tiếng Anh (Úc)',
+      AppLanguage.en: 'English (Australia)',
+    },
+    'voice_en_in': {
+      AppLanguage.vi: 'Tiếng Anh (Ấn Độ)',
+      AppLanguage.en: 'English (India)',
+    },
+    'voice_en_ca': {
+      AppLanguage.vi: 'Tiếng Anh (Canada)',
+      AppLanguage.en: 'English (Canada)',
     },
 
     // Change password sheet

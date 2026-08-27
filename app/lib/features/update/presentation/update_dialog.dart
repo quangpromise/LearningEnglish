@@ -1,10 +1,12 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/update_checker.dart';
 
@@ -19,15 +21,15 @@ Future<void> showUpdateDialogIfAvailable(BuildContext context) async {
   );
 }
 
-class _UpdateDialog extends StatefulWidget {
+class _UpdateDialog extends ConsumerStatefulWidget {
   const _UpdateDialog({required this.update});
   final UpdateInfo update;
 
   @override
-  State<_UpdateDialog> createState() => _UpdateDialogState();
+  ConsumerState<_UpdateDialog> createState() => _UpdateDialogState();
 }
 
-class _UpdateDialogState extends State<_UpdateDialog> {
+class _UpdateDialogState extends ConsumerState<_UpdateDialog> {
   bool _downloading = false;
   String? _error;
 
@@ -52,14 +54,17 @@ class _UpdateDialogState extends State<_UpdateDialog> {
       final result = await OpenFile.open(file.path);
       if (result.type != ResultType.done && mounted) {
         setState(
-          () => _error =
-              'Không mở được trình cài đặt: ${result.message}. Hãy cho phép "Cài đặt ứng dụng không rõ nguồn gốc" nếu được hỏi.',
+          () => _error = ref
+              .tr('update_install_failed')
+              .replaceFirst('{msg}', result.message),
         );
       } else if (mounted) {
         Navigator.of(context).pop();
       }
     } catch (e) {
-      if (mounted) setState(() => _error = 'Tải cập nhật thất bại: $e');
+      if (mounted) {
+        setState(() => _error = '${ref.tr('update_download_failed')} $e');
+      }
     } finally {
       if (mounted) setState(() => _downloading = false);
     }
@@ -89,19 +94,19 @@ class _UpdateDialogState extends State<_UpdateDialog> {
               ),
             ),
             const SizedBox(height: 14),
-            const Text(
-              'Có bản cập nhật mới',
-              style: TextStyle(
+            Text(
+              ref.tr('update_available_title'),
+              style: const TextStyle(
                 color: Colors.black,
                 fontWeight: FontWeight.w800,
                 fontSize: 16,
               ),
             ),
             const SizedBox(height: 6),
-            const Text(
-              'Tải và cài đè trực tiếp lên app hiện tại — dữ liệu & đăng nhập của bạn vẫn được giữ nguyên.',
+            Text(
+              ref.tr('update_available_body'),
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.black54,
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
@@ -127,9 +132,9 @@ class _UpdateDialogState extends State<_UpdateDialog> {
                     onPressed: _downloading
                         ? null
                         : () => Navigator.of(context).pop(),
-                    child: const Text(
-                      'Để sau',
-                      style: TextStyle(
+                    child: Text(
+                      ref.tr('update_later'),
+                      style: const TextStyle(
                         color: Colors.black54,
                         fontWeight: FontWeight.w700,
                       ),
@@ -138,7 +143,9 @@ class _UpdateDialogState extends State<_UpdateDialog> {
                 ),
                 Expanded(
                   child: PillButton(
-                    label: _downloading ? 'Đang tải...' : 'Tải về',
+                    label: _downloading
+                        ? ref.tr('update_downloading')
+                        : ref.tr('update_download'),
                     onTap: _downloading ? null : _downloadAndInstall,
                   ),
                 ),
