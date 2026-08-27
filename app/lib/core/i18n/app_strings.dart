@@ -136,10 +136,8 @@ class AppStrings {
       AppLanguage.en: 'Reset statistics?',
     },
     'profile_reset_body': {
-      AppLanguage.vi:
-          'Toàn bộ số liệu (từ đã học, bài hoàn thành, điểm phát âm, thời gian luyện tập) sẽ về 0. Không thể hoàn tác.',
-      AppLanguage.en:
-          'All stats (words learned, songs completed, pronunciation score, practice time) will reset to 0. This cannot be undone.',
+      AppLanguage.vi: 'Toàn bộ số liệu (từ đã học, bài hoàn thành, điểm phát âm, thời gian luyện tập) sẽ về 0. Không thể hoàn tác.',
+      AppLanguage.en: 'All stats (words learned, songs completed, pronunciation score, practice time) will reset to 0. This cannot be undone.',
     },
     'profile_reset_confirm': {
       AppLanguage.vi: 'Đặt lại',
