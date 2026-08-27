@@ -131,6 +131,12 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
         );
       }
     });
+    // Cuon lan dau ngay khi vua vao bai: neu dong dau tien (_currentLine=0)
+    // trung voi dong tinh duoc tu vi tri hien tai, nhanh "line != _currentLine"
+    // o tren se KHONG bao gio dung (vi ca 2 deu la 0) nen _scrollToCurrentLine
+    // chua bao gio duoc goi - day la ly do truoc day phai tam dung/phat lai
+    // (lam _currentLine doi tam thoi) thi cuon moi bat dau chay.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToCurrentLine());
     _stateSub = _player.playerStateStream.listen((state) {
       if (state.processingState == ProcessingState.completed &&
           !_completedRecorded &&
@@ -142,6 +148,14 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
             .then((_) => ref.invalidate(myStatsProvider))
             .catchError((_) {});
         _playNextInQueue();
+      }
+      // Moi lan nguoi dung bam tiep tuc phat (hoac tu dong resume), dam bao
+      // vi tri hien tai duoc cuon dung vao khung hinh - phong khi lan dau
+      // tien bi bo lo do ListView chua kip layout xong.
+      if (state.playing && _isCurrentOwner && mounted) {
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => _scrollToCurrentLine(),
+        );
       }
     });
   }

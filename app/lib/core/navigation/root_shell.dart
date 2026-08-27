@@ -14,7 +14,7 @@ class RootShell extends StatefulWidget {
   State<RootShell> createState() => _RootShellState();
 }
 
-class _RootShellState extends State<RootShell> {
+class _RootShellState extends State<RootShell> with WidgetsBindingObserver {
   int _tab = 0;
 
   static const _screens = [
@@ -34,9 +34,27 @@ class _RootShellState extends State<RootShell> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback(
       (_) => showUpdateDialogIfAvailable(context),
     );
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Truoc day chi kiem tra cap nhat 1 lan luc app moi mo - neu ban build
+    // moi duoc publish trong luc app dang mo san, nguoi dung khong bao gio
+    // thay thong bao tru khi tat han app roi mo lai. Kiem tra lai moi khi
+    // app quay lai foreground.
+    if (state == AppLifecycleState.resumed && mounted) {
+      showUpdateDialogIfAvailable(context);
+    }
   }
 
   @override
