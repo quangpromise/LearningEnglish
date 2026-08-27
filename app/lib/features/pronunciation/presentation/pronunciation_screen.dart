@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/tts/app_tts.dart';
 
 /// Luyện phát âm: ghi âm qua mic (speech_to_text), so khớp với câu mẫu
 /// bằng thuật toán word-match đơn giản. Xem giới hạn kỹ thuật (ASR không
@@ -23,7 +23,6 @@ class PronunciationScreen extends StatefulWidget {
 
 class _PronunciationScreenState extends State<PronunciationScreen> {
   final stt.SpeechToText _speech = stt.SpeechToText();
-  final FlutterTts _tts = FlutterTts();
   bool _listening = false;
   bool _available = false;
   String _recognized = '';
@@ -80,7 +79,6 @@ class _PronunciationScreenState extends State<PronunciationScreen> {
   @override
   void dispose() {
     _speech.stop();
-    _tts.stop();
     super.dispose();
   }
 
@@ -115,7 +113,7 @@ class _PronunciationScreenState extends State<PronunciationScreen> {
                 ),
                 Text('Luyện phát âm', style: AppTextStyles.heading(size: 15)),
                 IconButton(
-                  onPressed: () => _tts.speak(widget.targetEn),
+                  onPressed: () => AppTts.instance.speak(widget.targetEn),
                   icon: const Icon(
                     Icons.volume_up_rounded,
                     color: AppColors.textPrimary,

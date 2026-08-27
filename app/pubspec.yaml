@@ -39,6 +39,8 @@ dependencies:
   just_audio: ^0.9.42
   # Ghi âm + nhận diện giọng nói on-device cho tính năng luyện phát âm
   speech_to_text: ^7.0.0
+  # Lưu lựa chọn giọng đọc TTS của người dùng trên máy (offline)
+  shared_preferences: ^2.3.4
   # Phát âm mẫu bằng TTS gốc máy, offline, miễn phí
   flutter_tts: ^4.2.0
   # Quản lý state theo feature, thuận tiện khi nhiều người code song song

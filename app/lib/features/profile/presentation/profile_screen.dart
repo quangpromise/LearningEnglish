@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../settings/presentation/voice_settings_sheet.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -104,6 +105,52 @@ class ProfileScreen extends StatelessWidget {
                         label: 'Thời gian luyện tập',
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 14),
+                  GestureDetector(
+                    onTap: () => showVoiceSettingsSheet(context),
+                    child: GlowBox(
+                      borderRadius: 20,
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 34,
+                            height: 34,
+                            decoration: BoxDecoration(
+                              color: AppColors.blue.withValues(alpha: 0.18),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.record_voice_over_rounded,
+                              size: 16,
+                              color: AppColors.blue,
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Giọng đọc tiếng Anh',
+                                  style: AppTextStyles.body(
+                                    weight: FontWeight.w800,
+                                  ),
+                                ),
+                                Text(
+                                  'Chọn giọng phát âm mẫu bạn thích',
+                                  style: AppTextStyles.muted(size: 11),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(
+                            Icons.chevron_right_rounded,
+                            color: AppColors.textMuted,
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 14),
                   GlowBox(

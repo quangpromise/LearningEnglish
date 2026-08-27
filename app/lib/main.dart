@@ -6,6 +6,7 @@ import 'core/config/env.dart';
 import 'core/navigation/root_shell.dart';
 import 'core/providers/app_providers.dart';
 import 'core/theme/app_theme.dart';
+import 'core/tts/app_tts.dart';
 import 'features/auth/presentation/sign_in_screen.dart';
 
 Future<void> main() async {
@@ -17,6 +18,8 @@ Future<void> main() async {
       publishableKey: Env.supabaseAnonKey,
     );
   }
+
+  await AppTts.instance.restoreSavedVoice();
 
   runApp(const ProviderScope(child: LearnEnglishMusicApp()));
 }

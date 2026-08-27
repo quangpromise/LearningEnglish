@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/tts/app_tts.dart';
 
 /// Từ điển rút gọn cho demo — sau này thay bằng google_mlkit_translation
 /// hoặc dữ liệu song ngữ đi kèm từng bài hát (xem docs/research-translation-tts.md).
@@ -153,7 +153,7 @@ class WordPopupSheet extends StatelessWidget {
                     color: Colors.white,
                     size: 16,
                   ),
-                  onTap: () => FlutterTts().speak(word),
+                  onTap: () => AppTts.instance.speak(word),
                 ),
               ),
               const SizedBox(width: 12),
