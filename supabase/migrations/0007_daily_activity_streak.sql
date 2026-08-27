@@ -109,8 +109,12 @@ grant execute on function public.my_streak_days() to authenticated;
 
 -- ============================================================
 -- 5. my_stats_summary(): them streak_days vao ket qua tong hop co san.
+--    Phai DROP truoc vi Postgres khong cho doi kieu tra ve (them cot OUT
+--    moi) bang create or replace - se bao loi 42P13.
 -- ============================================================
-create or replace function public.my_stats_summary()
+drop function if exists public.my_stats_summary();
+
+create function public.my_stats_summary()
 returns table (
   words_learned integer,
   songs_completed integer,
@@ -129,6 +133,8 @@ as $$
     (select coalesce(seconds, 0) from public.user_practice_time where user_id = auth.uid()),
     public.my_streak_days();
 $$;
+
+grant execute on function public.my_stats_summary() to authenticated;
 
 -- ============================================================
 -- 6. reset_my_stats(): xoa luon lich su hoat dong theo ngay khi reset.
