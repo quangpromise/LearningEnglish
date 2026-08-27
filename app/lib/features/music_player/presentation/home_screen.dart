@@ -1,53 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../data/songs_data.dart';
 import 'player_screen.dart';
-
-class Song {
-  const Song({
-    required this.title,
-    required this.artist,
-    required this.duration,
-    required this.level,
-    required this.color,
-  });
-  final String title;
-  final String artist;
-  final String duration;
-  final String level;
-  final Color color;
-}
-
-const kSongs = [
-  Song(
-    title: 'Golden Hour',
-    artist: 'Mara Lane',
-    duration: '3:42',
-    level: 'Cơ bản',
-    color: AppColors.blue,
-  ),
-  Song(
-    title: 'Paper Boats',
-    artist: 'The Wandering Few',
-    duration: '4:05',
-    level: 'Trung cấp',
-    color: AppColors.purple,
-  ),
-  Song(
-    title: 'City Lights',
-    artist: 'Noah Rivers',
-    duration: '3:20',
-    level: 'Cơ bản',
-    color: AppColors.teal,
-  ),
-  Song(
-    title: 'Sunny Afternoon',
-    artist: 'Clara Voss',
-    duration: '3:42',
-    level: 'Cơ bản',
-    color: AppColors.pink,
-  ),
-];
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -113,7 +68,7 @@ class HomeScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'ĐANG HỌC DỞ',
+                          'GỢI Ý NGHE THỬ',
                           style: TextStyle(
                             color: AppColors.purple,
                             fontWeight: FontWeight.w800,
@@ -122,7 +77,7 @@ class HomeScreen extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          'Sunny Afternoon',
+                          kSongs.first.title,
                           style: TextStyle(
                             color: Colors.black.withValues(alpha: 0.87),
                             fontWeight: FontWeight.w800,
@@ -130,7 +85,7 @@ class HomeScreen extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          'Clara Voss · Câu 14/22',
+                          '${kSongs.first.artist} · ${kSongs.first.duration}',
                           style: TextStyle(
                             color: Colors.black.withValues(alpha: 0.5),
                             fontWeight: FontWeight.w600,
@@ -143,15 +98,7 @@ class HomeScreen extends StatelessWidget {
                   GestureDetector(
                     onTap: () => Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (_) => const PlayerScreen(
-                          song: Song(
-                            title: 'Sunny Afternoon',
-                            artist: 'Clara Voss',
-                            duration: '3:42',
-                            level: 'Cơ bản',
-                            color: AppColors.pink,
-                          ),
-                        ),
+                        builder: (_) => PlayerScreen(song: kSongs.first),
                       ),
                     ),
                     child: Container(

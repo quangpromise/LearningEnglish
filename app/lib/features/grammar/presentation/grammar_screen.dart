@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_theme.dart';
-import '../../music_player/presentation/player_screen.dart';
+import '../../music_player/data/songs_data.dart';
 
 class GrammarScreen extends StatelessWidget {
   const GrammarScreen({super.key, required this.sentence});

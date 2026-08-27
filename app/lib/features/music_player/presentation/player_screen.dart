@@ -1,24 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:just_audio/just_audio.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../grammar/presentation/grammar_screen.dart';
 import '../../translation/presentation/word_popup_sheet.dart';
-import 'home_screen.dart';
-
-class LyricLine {
-  const LyricLine(this.en, this.vi);
-  final String en;
-  final String vi;
-}
-
-const kLyrics = [
-  LyricLine(
-    "I used to run from every storm",
-    "Tôi từng trốn chạy khỏi mọi cơn giông",
-  ),
-  LyricLine("Now I'm standing in the rain", "Giờ tôi đứng lặng giữa cơn mưa"),
-  LyricLine("Learning how to feel the warmth", "Học cách cảm nhận hơi ấm"),
-];
+import '../data/songs_data.dart';
 
 class PlayerScreen extends StatefulWidget {
   const PlayerScreen({super.key, required this.song});
@@ -29,25 +17,61 @@ class PlayerScreen extends StatefulWidget {
 }
 
 class _PlayerScreenState extends State<PlayerScreen> {
-  int _currentLine = 1;
-  bool _playing = false;
+  final _player = AudioPlayer();
+  int _currentLine = 0;
   bool _bilingual = true;
+  String? _error;
+  StreamSubscription<Duration>? _positionSub;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAndPlay();
+  }
+
+  Future<void> _loadAndPlay() async {
+    try {
+      await _player.setUrl(widget.song.audioUrl);
+      await _player.play();
+    } catch (e) {
+      if (mounted) {
+        setState(() => _error = 'Không tải được nhạc. Kiểm tra kết nối mạng.');
+      }
+    }
+    _positionSub = _player.positionStream.listen((pos) {
+      final lyrics = widget.song.lyrics;
+      var line = 0;
+      for (var i = 0; i < lyrics.length; i++) {
+        if (pos.inMilliseconds / 1000 >= lyrics[i].startSeconds) line = i;
+      }
+      if (line != _currentLine && mounted) setState(() => _currentLine = line);
+    });
+  }
+
+  @override
+  void dispose() {
+    _positionSub?.cancel();
+    _player.dispose();
+    super.dispose();
+  }
 
   void _onWordTap(String word) {
+    final lyrics = widget.song.lyrics;
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (_) => WordPopupSheet(
         word: word,
-        sentenceEn: kLyrics[_currentLine].en,
-        sentenceVi: kLyrics[_currentLine].vi,
+        sentenceEn: lyrics[_currentLine].en,
+        sentenceVi: lyrics[_currentLine].vi,
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final lyrics = widget.song.lyrics;
     return ScreenBackground(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
@@ -69,8 +93,13 @@ class _PlayerScreenState extends State<PlayerScreen> {
                   icon: Icons.menu_book_rounded,
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (_) =>
-                          GrammarScreen(sentence: kLyrics[_currentLine]),
+                      builder: (_) => GrammarScreen(
+                        sentence: LyricLine(
+                          lyrics[_currentLine].startSeconds,
+                          lyrics[_currentLine].en,
+                          lyrics[_currentLine].vi,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -100,15 +129,26 @@ class _PlayerScreenState extends State<PlayerScreen> {
             const SizedBox(height: 16),
             Text(widget.song.title, style: AppTextStyles.heading(size: 19)),
             Text(widget.song.artist, style: AppTextStyles.muted()),
+            if (_error != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                _error!,
+                style: AppTextStyles.muted().copyWith(color: AppColors.amber),
+              ),
+            ],
             const SizedBox(height: 12),
             Expanded(
               child: ListView.builder(
-                itemCount: kLyrics.length,
+                itemCount: lyrics.length,
                 itemBuilder: (context, i) {
-                  final line = kLyrics[i];
+                  final line = lyrics[i];
                   final isCurrent = i == _currentLine;
                   return GestureDetector(
-                    onTap: () => setState(() => _currentLine = i),
+                    onTap: () => _player.seek(
+                      Duration(
+                        milliseconds: (line.startSeconds * 1000).round(),
+                      ),
+                    ),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       child: Opacity(
@@ -180,51 +220,68 @@ class _PlayerScreenState extends State<PlayerScreen> {
                 ),
               ],
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(
-                    Icons.skip_previous_rounded,
-                    color: AppColors.textPrimary,
-                    size: 28,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                GestureDetector(
-                  onTap: () => setState(() => _playing = !_playing),
-                  child: Container(
-                    width: 68,
-                    height: 68,
-                    decoration: BoxDecoration(
-                      gradient: AppColors.accentGradient,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.blue.withValues(alpha: 0.5),
-                          blurRadius: 40,
-                          offset: const Offset(0, 16),
+            StreamBuilder<PlayerState>(
+              stream: _player.playerStateStream,
+              builder: (context, snapshot) {
+                final playing = snapshot.data?.playing ?? false;
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconButton(
+                      onPressed: () => _player.seek(
+                        Duration(
+                          seconds: (_player.position.inSeconds - 10).clamp(
+                            0,
+                            1 << 30,
+                          ),
                         ),
-                      ],
+                      ),
+                      icon: const Icon(
+                        Icons.replay_10_rounded,
+                        color: AppColors.textPrimary,
+                        size: 26,
+                      ),
                     ),
-                    child: Icon(
-                      _playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                      color: Colors.white,
-                      size: 30,
+                    const SizedBox(width: 12),
+                    GestureDetector(
+                      onTap: () => playing ? _player.pause() : _player.play(),
+                      child: Container(
+                        width: 68,
+                        height: 68,
+                        decoration: BoxDecoration(
+                          gradient: AppColors.accentGradient,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.blue.withValues(alpha: 0.5),
+                              blurRadius: 40,
+                              offset: const Offset(0, 16),
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          playing
+                              ? Icons.pause_rounded
+                              : Icons.play_arrow_rounded,
+                          color: Colors.white,
+                          size: 30,
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(
-                    Icons.skip_next_rounded,
-                    color: AppColors.textPrimary,
-                    size: 28,
-                  ),
-                ),
-              ],
+                    const SizedBox(width: 12),
+                    IconButton(
+                      onPressed: () => _player.seek(
+                        Duration(seconds: _player.position.inSeconds + 10),
+                      ),
+                      icon: const Icon(
+                        Icons.forward_10_rounded,
+                        color: AppColors.textPrimary,
+                        size: 26,
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
           ],
         ),
