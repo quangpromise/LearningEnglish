@@ -144,7 +144,7 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
             Expanded(
               child: ListView.separated(
                 itemCount: options.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                separatorBuilder: (_, _) => const SizedBox(height: 12),
                 itemBuilder: (context, i) {
                   final opt = options[i];
                   final isPicked = _picked == opt;

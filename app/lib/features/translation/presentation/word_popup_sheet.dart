@@ -5,7 +5,7 @@ import '../../../core/theme/app_theme.dart';
 
 /// Từ điển rút gọn cho demo — sau này thay bằng google_mlkit_translation
 /// hoặc dữ liệu song ngữ đi kèm từng bài hát (xem docs/research-translation-tts.md).
-const Map<String, _WordInfo> kMiniDictionary = {
+const Map<String, _WordInfo> _miniDictionary = {
   'rain': _WordInfo(ipa: '/reɪn/', pos: 'Danh từ', meaning: 'mưa'),
   'storm': _WordInfo(
     ipa: '/stɔːrm/',
@@ -52,7 +52,7 @@ class WordPopupSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final key = word.toLowerCase();
     final info =
-        kMiniDictionary[key] ??
+        _miniDictionary[key] ??
         const _WordInfo(
           ipa: '—',
           pos: 'Chưa có dữ liệu',

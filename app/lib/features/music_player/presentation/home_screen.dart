@@ -176,7 +176,7 @@ class HomeScreen extends StatelessWidget {
             Expanded(
               child: ListView.separated(
                 itemCount: kSongs.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                separatorBuilder: (_, _) => const SizedBox(height: 12),
                 itemBuilder: (context, i) {
                   final song = kSongs[i];
                   return GestureDetector(
