@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
 
@@ -191,7 +192,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
                 // Build sẵn nhiều dòng ở ngoài vùng hiển thị (không chỉ dòng
                 // đang thấy) để khi bài mới mở/seek xa, dòng đích đã có
                 // context sẵn cho Scrollable.ensureVisible thay vì null.
-                cacheExtent: 2000,
+                scrollCacheExtent: const ScrollCacheExtent.pixels(2000),
                 itemCount: lyrics.length,
                 itemBuilder: (context, i) {
                   final line = lyrics[i];
