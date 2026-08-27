@@ -24,18 +24,26 @@ Future<UpdateInfo?> checkForUpdate() async {
 
   try {
     final releaseRes = await http
-        .get(Uri.parse('https://api.github.com/repos/$_repo/releases/tags/latest'))
+        .get(
+          Uri.parse('https://api.github.com/repos/$_repo/releases/tags/latest'),
+        )
         .timeout(const Duration(seconds: 8));
     if (releaseRes.statusCode != 200) return null;
 
     final release = jsonDecode(releaseRes.body) as Map<String, dynamic>;
     final assets = (release['assets'] as List).cast<Map<String, dynamic>>();
 
-    final versionAsset = assets.where((a) => a['name'] == 'version.txt').firstOrNull;
-    final apkAsset = assets.where((a) => a['name'] == 'app-arm64-v8a-release.apk').firstOrNull;
+    final versionAsset = assets
+        .where((a) => a['name'] == 'version.txt')
+        .firstOrNull;
+    final apkAsset = assets
+        .where((a) => a['name'] == 'app-arm64-v8a-release.apk')
+        .firstOrNull;
     if (versionAsset == null || apkAsset == null) return null;
 
-    final shaRes = await http.get(Uri.parse(versionAsset['browser_download_url'] as String)).timeout(const Duration(seconds: 8));
+    final shaRes = await http
+        .get(Uri.parse(versionAsset['browser_download_url'] as String))
+        .timeout(const Duration(seconds: 8));
     if (shaRes.statusCode != 200) return null;
 
     final latestSha = shaRes.body.trim();

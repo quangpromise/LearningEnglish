@@ -24,12 +24,19 @@ class _RootShellState extends State<RootShell> {
     ProfileScreen(),
   ];
 
-  static const _icons = [Icons.home_rounded, Icons.extension_rounded, Icons.mic_rounded, Icons.person_rounded];
+  static const _icons = [
+    Icons.home_rounded,
+    Icons.extension_rounded,
+    Icons.mic_rounded,
+    Icons.person_rounded,
+  ];
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => showUpdateDialogIfAvailable(context));
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => showUpdateDialogIfAvailable(context),
+    );
   }
 
   @override
@@ -45,7 +52,13 @@ class _RootShellState extends State<RootShell> {
             color: const Color(0xD90A0E1C),
             border: Border.all(color: AppColors.glassBorder),
             borderRadius: BorderRadius.circular(999),
-            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 40, offset: const Offset(0, 20))],
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.5),
+                blurRadius: 40,
+                offset: const Offset(0, 20),
+              ),
+            ],
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -60,11 +73,21 @@ class _RootShellState extends State<RootShell> {
                   height: 44,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: active ? Colors.white.withValues(alpha: 0.12) : Colors.transparent,
-                    border: active ? Border.all(color: Colors.white.withValues(alpha: 0.35)) : null,
+                    color: active
+                        ? Colors.white.withValues(alpha: 0.12)
+                        : Colors.transparent,
+                    border: active
+                        ? Border.all(
+                            color: Colors.white.withValues(alpha: 0.35),
+                          )
+                        : null,
                     borderRadius: BorderRadius.circular(999),
                   ),
-                  child: Icon(_icons[i], size: 22, color: active ? Colors.white : AppColors.textMuted),
+                  child: Icon(
+                    _icons[i],
+                    size: 22,
+                    color: active ? Colors.white : AppColors.textMuted,
+                  ),
                 ),
               );
             }),

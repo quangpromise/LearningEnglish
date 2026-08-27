@@ -23,8 +23,16 @@ class GrammarScreen extends StatelessWidget {
                   child: Container(
                     width: 36,
                     height: 36,
-                    decoration: BoxDecoration(color: AppColors.glassFill, shape: BoxShape.circle, border: Border.all(color: AppColors.glassBorder)),
-                    child: const Icon(Icons.chevron_left_rounded, size: 18, color: AppColors.textPrimary),
+                    decoration: BoxDecoration(
+                      color: AppColors.glassFill,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.glassBorder),
+                    ),
+                    child: const Icon(
+                      Icons.chevron_left_rounded,
+                      size: 18,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
                 ),
                 Text('Ngữ pháp', style: AppTextStyles.heading(size: 15)),
@@ -35,7 +43,12 @@ class GrammarScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                gradient: LinearGradient(colors: [AppColors.blue.withValues(alpha: 0.18), AppColors.purple.withValues(alpha: 0.18)]),
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.blue.withValues(alpha: 0.18),
+                    AppColors.purple.withValues(alpha: 0.18),
+                  ],
+                ),
                 borderRadius: BorderRadius.circular(22),
                 border: Border.all(color: AppColors.glassBorder),
               ),
@@ -43,9 +56,22 @@ class GrammarScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                    decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.92), borderRadius: BorderRadius.circular(999)),
-                    child: const Text('PRESENT CONTINUOUS', style: TextStyle(color: Color(0xFF5B3CFF), fontWeight: FontWeight.w800, fontSize: 10)),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.92),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: const Text(
+                      'PRESENT CONTINUOUS',
+                      style: TextStyle(
+                        color: Color(0xFF5B3CFF),
+                        fontWeight: FontWeight.w800,
+                        fontSize: 10,
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 10),
                   Text(sentence.en, style: AppTextStyles.heading(size: 19)),
@@ -62,22 +88,46 @@ class GrammarScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('CẤU TRÚC', style: AppTextStyles.muted(size: 11).copyWith(letterSpacing: 0.6)),
+                        Text(
+                          'CẤU TRÚC',
+                          style: AppTextStyles.muted(size: 11)
+                              .copyWith(letterSpacing: 0.6),
+                        ),
                         const SizedBox(height: 12),
                         Wrap(
                           spacing: 8,
                           runSpacing: 8,
                           children: const [
-                            _WordBlock(label: 'Chủ ngữ', word: 'I', color: AppColors.blue),
-                            _WordBlock(label: "To be", word: "am ('m)", color: AppColors.purple),
-                            _WordBlock(label: 'V-ing', word: 'standing', color: AppColors.purple),
-                            _WordBlock(label: 'Trạng ngữ', word: 'in the rain', color: AppColors.teal),
+                            _WordBlock(
+                              label: 'Chủ ngữ',
+                              word: 'I',
+                              color: AppColors.blue,
+                            ),
+                            _WordBlock(
+                              label: "To be",
+                              word: "am ('m)",
+                              color: AppColors.purple,
+                            ),
+                            _WordBlock(
+                              label: 'V-ing',
+                              word: 'standing',
+                              color: AppColors.purple,
+                            ),
+                            _WordBlock(
+                              label: 'Trạng ngữ',
+                              word: 'in the rain',
+                              color: AppColors.teal,
+                            ),
                           ],
                         ),
                         const SizedBox(height: 10),
                         Text(
                           "Diễn tả một hành động đang xảy ra ngay tại thời điểm nói. Công thức: S + am/is/are + V-ing. Ở đây \"standing\" mô tả trạng thái đang diễn ra của người hát.",
-                          style: AppTextStyles.body(size: 13, weight: FontWeight.w500, color: AppColors.textMuted),
+                          style: AppTextStyles.body(
+                            size: 13,
+                            weight: FontWeight.w500,
+                            color: AppColors.textMuted,
+                          ),
                         ),
                       ],
                     ),
@@ -88,13 +138,29 @@ class GrammarScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('BÀI TẬP NHANH', style: AppTextStyles.muted(size: 11).copyWith(letterSpacing: 0.6)),
+                        Text(
+                          'BÀI TẬP NHANH',
+                          style: AppTextStyles.muted(size: 11)
+                              .copyWith(letterSpacing: 0.6),
+                        ),
                         const SizedBox(height: 10),
-                        Text('Chọn câu đúng dùng thì hiện tại tiếp diễn:', style: AppTextStyles.body(size: 13)),
+                        Text(
+                          'Chọn câu đúng dùng thì hiện tại tiếp diễn:',
+                          style: AppTextStyles.body(size: 13),
+                        ),
                         const SizedBox(height: 10),
-                        const _QuizOption(text: 'She stand in the rain now.', correct: false),
-                        const _QuizOption(text: 'She is standing in the rain now.', correct: true),
-                        const _QuizOption(text: 'She stood in the rain now.', correct: false),
+                        const _QuizOption(
+                          text: 'She stand in the rain now.',
+                          correct: false,
+                        ),
+                        const _QuizOption(
+                          text: 'She is standing in the rain now.',
+                          correct: true,
+                        ),
+                        const _QuizOption(
+                          text: 'She stood in the rain now.',
+                          correct: false,
+                        ),
                       ],
                     ),
                   ),
@@ -102,7 +168,10 @@ class GrammarScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            PillButton(label: 'Tiếp tục', onTap: () => Navigator.of(context).maybePop()),
+            PillButton(
+              label: 'Tiếp tục',
+              onTap: () => Navigator.of(context).maybePop(),
+            ),
           ],
         ),
       ),
@@ -111,7 +180,11 @@ class GrammarScreen extends StatelessWidget {
 }
 
 class _WordBlock extends StatelessWidget {
-  const _WordBlock({required this.label, required this.word, required this.color});
+  const _WordBlock({
+    required this.label,
+    required this.word,
+    required this.color,
+  });
   final String label;
   final String word;
   final Color color;
@@ -120,11 +193,29 @@ class _WordBlock extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(color: color.withValues(alpha: 0.18), borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.18),
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Column(
         children: [
-          Text(label.toUpperCase(), style: TextStyle(color: color, fontSize: 9, fontWeight: FontWeight.w800, letterSpacing: 0.4)),
-          Text(word, style: TextStyle(color: color, fontSize: 13, fontWeight: FontWeight.w800)),
+          Text(
+            label.toUpperCase(),
+            style: TextStyle(
+              color: color,
+              fontSize: 9,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.4,
+            ),
+          ),
+          Text(
+            word,
+            style: TextStyle(
+              color: color,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
         ],
       ),
     );
@@ -142,8 +233,14 @@ class _QuizOption extends StatelessWidget {
       margin: const EdgeInsets.only(top: 8),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
       decoration: BoxDecoration(
-        color: correct ? AppColors.teal.withValues(alpha: 0.16) : AppColors.glassFill,
-        border: Border.all(color: correct ? AppColors.teal.withValues(alpha: 0.5) : AppColors.glassBorder),
+        color: correct
+            ? AppColors.teal.withValues(alpha: 0.16)
+            : AppColors.glassFill,
+        border: Border.all(
+          color: correct
+              ? AppColors.teal.withValues(alpha: 0.5)
+              : AppColors.glassBorder,
+        ),
         borderRadius: BorderRadius.circular(999),
       ),
       child: Row(
@@ -151,10 +248,26 @@ class _QuizOption extends StatelessWidget {
           Container(
             width: 18,
             height: 18,
-            decoration: BoxDecoration(shape: BoxShape.circle, color: correct ? AppColors.teal : Colors.transparent, border: Border.all(color: correct ? AppColors.teal : AppColors.textMuted, width: 2)),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: correct ? AppColors.teal : Colors.transparent,
+              border: Border.all(
+                color: correct ? AppColors.teal : AppColors.textMuted,
+                width: 2,
+              ),
+            ),
           ),
           const SizedBox(width: 10),
-          Expanded(child: Text(text, style: AppTextStyles.body(size: 13, weight: FontWeight.w700, color: correct ? AppColors.teal : AppColors.textPrimary))),
+          Expanded(
+            child: Text(
+              text,
+              style: AppTextStyles.body(
+                size: 13,
+                weight: FontWeight.w700,
+                color: correct ? AppColors.teal : AppColors.textPrimary,
+              ),
+            ),
+          ),
         ],
       ),
     );

@@ -12,7 +12,10 @@ class LyricLine {
 }
 
 const kLyrics = [
-  LyricLine("I used to run from every storm", "Tôi từng trốn chạy khỏi mọi cơn giông"),
+  LyricLine(
+    "I used to run from every storm",
+    "Tôi từng trốn chạy khỏi mọi cơn giông",
+  ),
   LyricLine("Now I'm standing in the rain", "Giờ tôi đứng lặng giữa cơn mưa"),
   LyricLine("Learning how to feel the warmth", "Học cách cảm nhận hơi ấm"),
 ];
@@ -53,11 +56,23 @@ class _PlayerScreenState extends State<PlayerScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _CircleBtn(icon: Icons.chevron_left_rounded, onTap: () => Navigator.of(context).pop()),
-                Text('ĐANG PHÁT', style: AppTextStyles.muted(size: 11).copyWith(letterSpacing: 1)),
+                _CircleBtn(
+                  icon: Icons.chevron_left_rounded,
+                  onTap: () => Navigator.of(context).pop(),
+                ),
+                Text(
+                  'ĐANG PHÁT',
+                  style: AppTextStyles.muted(size: 11)
+                      .copyWith(letterSpacing: 1),
+                ),
                 _CircleBtn(
                   icon: Icons.menu_book_rounded,
-                  onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => GrammarScreen(sentence: kLyrics[_currentLine]))),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          GrammarScreen(sentence: kLyrics[_currentLine]),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -68,9 +83,19 @@ class _PlayerScreenState extends State<PlayerScreen> {
               decoration: BoxDecoration(
                 gradient: AppColors.accentGradient,
                 borderRadius: BorderRadius.circular(30),
-                boxShadow: [BoxShadow(color: AppColors.purple.withValues(alpha: 0.4), blurRadius: 60, offset: const Offset(0, 24))],
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.purple.withValues(alpha: 0.4),
+                    blurRadius: 60,
+                    offset: const Offset(0, 24),
+                  ),
+                ],
               ),
-              child: const Icon(Icons.music_note_rounded, color: Colors.white, size: 56),
+              child: const Icon(
+                Icons.music_note_rounded,
+                color: Colors.white,
+                size: 56,
+              ),
             ),
             const SizedBox(height: 16),
             Text(widget.song.title, style: AppTextStyles.heading(size: 19)),
@@ -94,15 +119,33 @@ class _PlayerScreenState extends State<PlayerScreen> {
                               alignment: WrapAlignment.center,
                               children: line.en.split(' ').map((w) {
                                 return GestureDetector(
-                                  onTap: isCurrent ? () => _onWordTap(w.replaceAll(RegExp('[^a-zA-Z]'), '')) : null,
+                                  onTap: isCurrent
+                                      ? () => _onWordTap(
+                                          w.replaceAll(RegExp('[^a-zA-Z]'), ''),
+                                        )
+                                      : null,
                                   child: Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 2),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 2,
+                                    ),
                                     child: isCurrent
                                         ? ShaderMask(
-                                            shaderCallback: (rect) => AppColors.accentGradient.createShader(rect),
-                                            child: Text(w, style: AppTextStyles.heading(size: 21)),
+                                            shaderCallback: (rect) => AppColors
+                                                .accentGradient
+                                                .createShader(rect),
+                                            child: Text(
+                                              w,
+                                              style: AppTextStyles.heading(
+                                                size: 21,
+                                              ),
+                                            ),
                                           )
-                                        : Text(w, style: AppTextStyles.heading(size: 15)),
+                                        : Text(
+                                            w,
+                                            style: AppTextStyles.heading(
+                                              size: 15,
+                                            ),
+                                          ),
                                   ),
                                 );
                               }).toList(),
@@ -110,7 +153,12 @@ class _PlayerScreenState extends State<PlayerScreen> {
                             if (_bilingual)
                               Padding(
                                 padding: const EdgeInsets.only(top: 4),
-                                child: Text(line.vi, style: AppTextStyles.muted(size: isCurrent ? 13 : 12)),
+                                child: Text(
+                                  line.vi,
+                                  style: AppTextStyles.muted(
+                                    size: isCurrent ? 13 : 12,
+                                  ),
+                                ),
                               ),
                           ],
                         ),
@@ -125,13 +173,24 @@ class _PlayerScreenState extends State<PlayerScreen> {
               children: [
                 Text('Song ngữ Anh – Việt', style: AppTextStyles.muted()),
                 const SizedBox(width: 10),
-                Switch(value: _bilingual, activeTrackColor: AppColors.purple, onChanged: (v) => setState(() => _bilingual = v)),
+                Switch(
+                  value: _bilingual,
+                  activeTrackColor: AppColors.purple,
+                  onChanged: (v) => setState(() => _bilingual = v),
+                ),
               ],
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                IconButton(onPressed: () {}, icon: const Icon(Icons.skip_previous_rounded, color: AppColors.textPrimary, size: 28)),
+                IconButton(
+                  onPressed: () {},
+                  icon: const Icon(
+                    Icons.skip_previous_rounded,
+                    color: AppColors.textPrimary,
+                    size: 28,
+                  ),
+                ),
                 const SizedBox(width: 12),
                 GestureDetector(
                   onTap: () => setState(() => _playing = !_playing),
@@ -141,13 +200,30 @@ class _PlayerScreenState extends State<PlayerScreen> {
                     decoration: BoxDecoration(
                       gradient: AppColors.accentGradient,
                       shape: BoxShape.circle,
-                      boxShadow: [BoxShadow(color: AppColors.blue.withValues(alpha: 0.5), blurRadius: 40, offset: const Offset(0, 16))],
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.blue.withValues(alpha: 0.5),
+                          blurRadius: 40,
+                          offset: const Offset(0, 16),
+                        ),
+                      ],
                     ),
-                    child: Icon(_playing ? Icons.pause_rounded : Icons.play_arrow_rounded, color: Colors.white, size: 30),
+                    child: Icon(
+                      _playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                      color: Colors.white,
+                      size: 30,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
-                IconButton(onPressed: () {}, icon: const Icon(Icons.skip_next_rounded, color: AppColors.textPrimary, size: 28)),
+                IconButton(
+                  onPressed: () {},
+                  icon: const Icon(
+                    Icons.skip_next_rounded,
+                    color: AppColors.textPrimary,
+                    size: 28,
+                  ),
+                ),
               ],
             ),
           ],
@@ -169,7 +245,11 @@ class _CircleBtn extends StatelessWidget {
       child: Container(
         width: 38,
         height: 38,
-        decoration: BoxDecoration(color: AppColors.glassFill, shape: BoxShape.circle, border: Border.all(color: AppColors.glassBorder)),
+        decoration: BoxDecoration(
+          color: AppColors.glassFill,
+          shape: BoxShape.circle,
+          border: Border.all(color: AppColors.glassBorder),
+        ),
         child: Icon(icon, size: 18, color: AppColors.textPrimary),
       ),
     );

@@ -23,16 +23,33 @@ Future<void> showUpdateDialogIfAvailable(BuildContext context) async {
             Container(
               width: 52,
               height: 52,
-              decoration: BoxDecoration(gradient: AppColors.accentGradient, borderRadius: BorderRadius.circular(16)),
-              child: const Icon(Icons.system_update_rounded, color: Colors.white),
+              decoration: BoxDecoration(
+                gradient: AppColors.accentGradient,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Icon(
+                Icons.system_update_rounded,
+                color: Colors.white,
+              ),
             ),
             const SizedBox(height: 14),
-            const Text('Có bản cập nhật mới', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w800, fontSize: 16)),
+            const Text(
+              'Có bản cập nhật mới',
+              style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.w800,
+                fontSize: 16,
+              ),
+            ),
             const SizedBox(height: 6),
             const Text(
               'Tải và cài đè trực tiếp lên app hiện tại — dữ liệu & đăng nhập của bạn vẫn được giữ nguyên.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.black54, fontSize: 12, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                color: Colors.black54,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
             ),
             const SizedBox(height: 18),
             Row(
@@ -40,14 +57,23 @@ Future<void> showUpdateDialogIfAvailable(BuildContext context) async {
                 Expanded(
                   child: TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Để sau', style: TextStyle(color: Colors.black54, fontWeight: FontWeight.w700)),
+                    child: const Text(
+                      'Để sau',
+                      style: TextStyle(
+                        color: Colors.black54,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ),
                 ),
                 Expanded(
                   child: PillButton(
                     label: 'Tải về',
                     onTap: () {
-                      launchUrl(Uri.parse(update.downloadUrl), mode: LaunchMode.externalApplication);
+                      launchUrl(
+                        Uri.parse(update.downloadUrl),
+                        mode: LaunchMode.externalApplication,
+                      );
                       Navigator.of(context).pop();
                     },
                   ),

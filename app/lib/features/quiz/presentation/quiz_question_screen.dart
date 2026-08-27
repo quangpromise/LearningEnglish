@@ -7,7 +7,11 @@ import '../data/quiz_data.dart';
 import 'quiz_result_screen.dart';
 
 class QuizQuestionScreen extends StatefulWidget {
-  const QuizQuestionScreen({super.key, required this.category, required this.riddles});
+  const QuizQuestionScreen({
+    super.key,
+    required this.category,
+    required this.riddles,
+  });
   final String category;
   final List<Riddle> riddles;
 
@@ -46,9 +50,12 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
           _picked = null;
         });
       } else {
-        Navigator.of(context).pushReplacement(MaterialPageRoute(
-          builder: (_) => QuizResultScreen(riddles: widget.riddles, results: _results),
-        ));
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) =>
+                QuizResultScreen(riddles: widget.riddles, results: _results),
+          ),
+        );
       }
     });
   }
@@ -69,8 +76,16 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
                   child: Container(
                     width: 34,
                     height: 34,
-                    decoration: BoxDecoration(color: AppColors.glassFill, shape: BoxShape.circle, border: Border.all(color: AppColors.glassBorder)),
-                    child: const Icon(Icons.close_rounded, size: 16, color: AppColors.textPrimary),
+                    decoration: BoxDecoration(
+                      color: AppColors.glassFill,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.glassBorder),
+                    ),
+                    child: const Icon(
+                      Icons.close_rounded,
+                      size: 16,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -97,8 +112,18 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
             const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-              decoration: BoxDecoration(color: AppColors.blue.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(999)),
-              child: Text('${widget.category.toUpperCase()} · Câu ${_index + 1}/${widget.riddles.length}', style: const TextStyle(color: Color(0xFF9DB4FF), fontWeight: FontWeight.w800, fontSize: 11)),
+              decoration: BoxDecoration(
+                color: AppColors.blue.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                '${widget.category.toUpperCase()} · Câu ${_index + 1}/${widget.riddles.length}',
+                style: const TextStyle(
+                  color: Color(0xFF9DB4FF),
+                  fontWeight: FontWeight.w800,
+                  fontSize: 11,
+                ),
+              ),
             ),
             const SizedBox(height: 14),
             GlowBox(
@@ -106,7 +131,10 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('"${_current.en}"', style: AppTextStyles.heading(size: 18)),
+                  Text(
+                    '"${_current.en}"',
+                    style: AppTextStyles.heading(size: 18),
+                  ),
                   const SizedBox(height: 8),
                   Text(_current.vi, style: AppTextStyles.muted()),
                 ],
@@ -133,18 +161,43 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
                   return GestureDetector(
                     onTap: () => _pick(opt),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-                      decoration: BoxDecoration(color: bg, border: Border.all(color: border), borderRadius: BorderRadius.circular(18)),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 16,
+                      ),
+                      decoration: BoxDecoration(
+                        color: bg,
+                        border: Border.all(color: border),
+                        borderRadius: BorderRadius.circular(18),
+                      ),
                       child: Row(
                         children: [
                           Container(
                             width: 28,
                             height: 28,
-                            decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.08), shape: BoxShape.circle),
-                            child: Center(child: Text(String.fromCharCode(65 + i), style: AppTextStyles.body(size: 12, weight: FontWeight.w800))),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.08),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Center(
+                              child: Text(
+                                String.fromCharCode(65 + i),
+                                style: AppTextStyles.body(
+                                  size: 12,
+                                  weight: FontWeight.w800,
+                                ),
+                              ),
+                            ),
                           ),
                           const SizedBox(width: 12),
-                          Expanded(child: Text(opt, style: AppTextStyles.body(weight: FontWeight.w700))),
+                          Expanded(
+                            child: Text(
+                              opt,
+                              style: AppTextStyles.body(
+                                weight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -152,7 +205,13 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
                 },
               ),
             ),
-            Center(child: Text('Trả lời đúng để nhận +10 XP', style: AppTextStyles.muted(size: 12).copyWith(color: AppColors.amber))),
+            Center(
+              child: Text(
+                'Trả lời đúng để nhận +10 XP',
+                style: AppTextStyles.muted(size: 12)
+                    .copyWith(color: AppColors.amber),
+              ),
+            ),
           ],
         ),
       ),

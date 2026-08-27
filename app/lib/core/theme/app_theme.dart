@@ -36,18 +36,47 @@ class AppColors {
 class AppTextStyles {
   AppTextStyles._();
 
-  static TextStyle heading({double size = 20, FontWeight weight = FontWeight.w700}) =>
-      TextStyle(fontFamily: 'SpaceGrotesk', fontSize: size, fontWeight: weight, color: AppColors.textPrimary, letterSpacing: -0.2);
+  static TextStyle heading({
+    double size = 20,
+    FontWeight weight = FontWeight.w700,
+  }) => TextStyle(
+    fontFamily: 'SpaceGrotesk',
+    fontSize: size,
+    fontWeight: weight,
+    color: AppColors.textPrimary,
+    letterSpacing: -0.2,
+  );
 
-  static TextStyle body({double size = 14, FontWeight weight = FontWeight.w600, Color? color}) =>
-      TextStyle(fontFamily: 'Manrope', fontSize: size, fontWeight: weight, color: color ?? AppColors.textPrimary);
+  static TextStyle body({
+    double size = 14,
+    FontWeight weight = FontWeight.w600,
+    Color? color,
+  }) => TextStyle(
+    fontFamily: 'Manrope',
+    fontSize: size,
+    fontWeight: weight,
+    color: color ?? AppColors.textPrimary,
+  );
 
-  static TextStyle muted({double size = 12, FontWeight weight = FontWeight.w600}) =>
-      TextStyle(fontFamily: 'Manrope', fontSize: size, fontWeight: weight, color: AppColors.textMuted);
+  static TextStyle muted({
+    double size = 12,
+    FontWeight weight = FontWeight.w600,
+  }) => TextStyle(
+    fontFamily: 'Manrope',
+    fontSize: size,
+    fontWeight: weight,
+    color: AppColors.textMuted,
+  );
 }
 
 class GlowBox extends StatelessWidget {
-  const GlowBox({super.key, required this.child, this.padding, this.borderRadius = 22, this.light = false});
+  const GlowBox({
+    super.key,
+    required this.child,
+    this.padding,
+    this.borderRadius = 22,
+    this.light = false,
+  });
 
   final Widget child;
   final EdgeInsetsGeometry? padding;
@@ -59,11 +88,19 @@ class GlowBox extends StatelessWidget {
     return Container(
       padding: padding ?? const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: light ? Colors.white.withValues(alpha: 0.95) : AppColors.glassFill,
+        color: light
+            ? Colors.white.withValues(alpha: 0.95)
+            : AppColors.glassFill,
         borderRadius: BorderRadius.circular(borderRadius),
         border: light ? null : Border.all(color: AppColors.glassBorder),
         boxShadow: light
-            ? [BoxShadow(color: Colors.black.withValues(alpha: 0.35), blurRadius: 40, offset: const Offset(0, 20))]
+            ? [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.35),
+                  blurRadius: 40,
+                  offset: const Offset(0, 20),
+                ),
+              ]
             : null,
       ),
       child: child,
@@ -72,7 +109,13 @@ class GlowBox extends StatelessWidget {
 }
 
 class PillButton extends StatelessWidget {
-  const PillButton({super.key, required this.label, this.onTap, this.filled = true, this.icon});
+  const PillButton({
+    super.key,
+    required this.label,
+    this.onTap,
+    this.filled = true,
+    this.icon,
+  });
 
   final String label;
   final VoidCallback? onTap;
@@ -94,7 +137,13 @@ class PillButton extends StatelessWidget {
             border: filled ? null : Border.all(color: AppColors.glassBorder),
             borderRadius: BorderRadius.circular(999),
             boxShadow: filled
-                ? [BoxShadow(color: AppColors.blue.withValues(alpha: 0.45), blurRadius: 24, offset: const Offset(0, 10))]
+                ? [
+                    BoxShadow(
+                      color: AppColors.blue.withValues(alpha: 0.45),
+                      blurRadius: 24,
+                      offset: const Offset(0, 10),
+                    ),
+                  ]
                 : null,
           ),
           child: Row(
@@ -102,7 +151,10 @@ class PillButton extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (icon != null) ...[icon!, const SizedBox(width: 8)],
-              Text(label, style: AppTextStyles.body(size: 14, weight: FontWeight.w800)),
+              Text(
+                label,
+                style: AppTextStyles.body(size: 14, weight: FontWeight.w800),
+              ),
             ],
           ),
         ),

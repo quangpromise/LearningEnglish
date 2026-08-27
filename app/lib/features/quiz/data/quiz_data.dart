@@ -2,7 +2,13 @@
 /// vn.elsaspeak.com/do-vui-tieng-anh (nội dung tĩnh, không có sẵn hệ thống
 /// điểm/xếp hạng — phần game hoá bên dưới do app này tự thiết kế thêm).
 class Riddle {
-  const Riddle({required this.category, required this.en, required this.vi, required this.answer, required this.distractors});
+  const Riddle({
+    required this.category,
+    required this.en,
+    required this.vi,
+    required this.answer,
+    required this.distractors,
+  });
   final String category;
   final String en;
   final String vi;
@@ -10,7 +16,14 @@ class Riddle {
   final List<String> distractors;
 }
 
-const kCategories = ['Chơi chữ', 'Suy luận', 'Động vật', 'Cuộc sống', 'Bảng chữ cái', 'Trái cây & xe cộ'];
+const kCategories = [
+  'Chơi chữ',
+  'Suy luận',
+  'Động vật',
+  'Cuộc sống',
+  'Bảng chữ cái',
+  'Trái cây & xe cộ',
+];
 
 const kRiddles = [
   Riddle(

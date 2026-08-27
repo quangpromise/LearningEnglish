@@ -12,7 +12,10 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   if (Env.isConfigured) {
-    await Supabase.initialize(url: Env.supabaseUrl, anonKey: Env.supabaseAnonKey);
+    await Supabase.initialize(
+      url: Env.supabaseUrl,
+      anonKey: Env.supabaseAnonKey,
+    );
   }
 
   runApp(const ProviderScope(child: LearnEnglishMusicApp()));
@@ -59,7 +62,9 @@ class _AuthGate extends ConsumerWidget {
     final session = Supabase.instance.client.auth.currentSession;
 
     if (authState.isLoading && session == null) {
-      return const ScreenBackground(child: Center(child: CircularProgressIndicator()));
+      return const ScreenBackground(
+        child: Center(child: CircularProgressIndicator()),
+      );
     }
 
     final signedIn = session != null;

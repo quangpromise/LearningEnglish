@@ -26,7 +26,9 @@ class AuthRepository {
     final googleAuth = await googleUser.authentication;
     final idToken = googleAuth.idToken;
     if (idToken == null) {
-      throw Exception('Không lấy được ID token từ Google — kiểm tra lại GOOGLE_WEB_CLIENT_ID.');
+      throw Exception(
+        'Không lấy được ID token từ Google — kiểm tra lại GOOGLE_WEB_CLIENT_ID.',
+      );
     }
 
     await _supabase.auth.signInWithIdToken(

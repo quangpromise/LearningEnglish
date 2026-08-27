@@ -8,7 +8,11 @@ import '../../../core/theme/app_theme.dart';
 /// bằng thuật toán word-match đơn giản. Xem giới hạn kỹ thuật (ASR không
 /// chấm được lỗi phát âm ở mức âm vị) trong docs/research-ai-voice.md.
 class PronunciationScreen extends StatefulWidget {
-  const PronunciationScreen({super.key, this.targetEn = "Now I'm standing in the rain", this.targetVi = 'Giờ tôi đứng lặng giữa cơn mưa'});
+  const PronunciationScreen({
+    super.key,
+    this.targetEn = "Now I'm standing in the rain",
+    this.targetVi = 'Giờ tôi đứng lặng giữa cơn mưa',
+  });
 
   final String targetEn;
   final String targetVi;
@@ -67,7 +71,8 @@ class _PronunciationScreenState extends State<PronunciationScreen> {
       _recognized = '';
     });
     await _speech.listen(
-      onResult: (result) => setState(() => _recognized = result.recognizedWords),
+      onResult: (result) =>
+          setState(() => _recognized = result.recognizedWords),
       listenOptions: stt.SpeechListenOptions(localeId: 'en_US'),
     );
   }
@@ -96,12 +101,26 @@ class _PronunciationScreenState extends State<PronunciationScreen> {
                   child: Container(
                     width: 36,
                     height: 36,
-                    decoration: BoxDecoration(color: AppColors.glassFill, shape: BoxShape.circle, border: Border.all(color: AppColors.glassBorder)),
-                    child: const Icon(Icons.chevron_left_rounded, size: 18, color: AppColors.textPrimary),
+                    decoration: BoxDecoration(
+                      color: AppColors.glassFill,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.glassBorder),
+                    ),
+                    child: const Icon(
+                      Icons.chevron_left_rounded,
+                      size: 18,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
                 ),
                 Text('Luyện phát âm', style: AppTextStyles.heading(size: 15)),
-                IconButton(onPressed: () => _tts.speak(widget.targetEn), icon: const Icon(Icons.volume_up_rounded, color: AppColors.textPrimary)),
+                IconButton(
+                  onPressed: () => _tts.speak(widget.targetEn),
+                  icon: const Icon(
+                    Icons.volume_up_rounded,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 16),
@@ -110,7 +129,11 @@ class _PronunciationScreenState extends State<PronunciationScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('ĐỌC THEO CÂU NÀY', style: AppTextStyles.muted(size: 10).copyWith(letterSpacing: 0.6)),
+                  Text(
+                    'ĐỌC THEO CÂU NÀY',
+                    style: AppTextStyles.muted(size: 10)
+                        .copyWith(letterSpacing: 0.6),
+                  ),
                   const SizedBox(height: 6),
                   Text(widget.targetEn, style: AppTextStyles.heading(size: 18)),
                   Text(widget.targetVi, style: AppTextStyles.muted()),
@@ -119,7 +142,10 @@ class _PronunciationScreenState extends State<PronunciationScreen> {
             ),
             const Spacer(),
             if (!_available)
-              Text('Thiết bị chưa hỗ trợ hoặc chưa cấp quyền micro.', style: AppTextStyles.muted())
+              Text(
+                'Thiết bị chưa hỗ trợ hoặc chưa cấp quyền micro.',
+                style: AppTextStyles.muted(),
+              )
             else
               GestureDetector(
                 onTap: _toggleListening,
@@ -129,13 +155,29 @@ class _PronunciationScreenState extends State<PronunciationScreen> {
                   decoration: BoxDecoration(
                     gradient: AppColors.accentGradient,
                     shape: BoxShape.circle,
-                    boxShadow: [BoxShadow(color: (_listening ? AppColors.pink : AppColors.blue).withValues(alpha: 0.5), blurRadius: 50, offset: const Offset(0, 20))],
+                    boxShadow: [
+                      BoxShadow(
+                        color: (_listening ? AppColors.pink : AppColors.blue)
+                            .withValues(alpha: 0.5),
+                        blurRadius: 50,
+                        offset: const Offset(0, 20),
+                      ),
+                    ],
                   ),
-                  child: Icon(_listening ? Icons.stop_rounded : Icons.mic_rounded, color: Colors.white, size: 32),
+                  child: Icon(
+                    _listening ? Icons.stop_rounded : Icons.mic_rounded,
+                    color: Colors.white,
+                    size: 32,
+                  ),
                 ),
               ),
             const SizedBox(height: 12),
-            Text(_listening ? 'Đang nghe... chạm để dừng' : 'Chạm để bắt đầu ghi âm', style: AppTextStyles.muted()),
+            Text(
+              _listening
+                  ? 'Đang nghe... chạm để dừng'
+                  : 'Chạm để bắt đầu ghi âm',
+              style: AppTextStyles.muted(),
+            ),
             const Spacer(),
             if (_score != null) ...[
               GlowBox(
@@ -149,8 +191,20 @@ class _PronunciationScreenState extends State<PronunciationScreen> {
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
-                          CircularProgressIndicator(value: _score! / 100, strokeWidth: 6, backgroundColor: Colors.black12, color: AppColors.blue),
-                          Text('$_score%', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: Colors.black)),
+                          CircularProgressIndicator(
+                            value: _score! / 100,
+                            strokeWidth: 6,
+                            backgroundColor: Colors.black12,
+                            color: AppColors.blue,
+                          ),
+                          Text(
+                            '$_score%',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 14,
+                              color: Colors.black,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -162,12 +216,25 @@ class _PronunciationScreenState extends State<PronunciationScreen> {
                         children: List.generate(targetWords.length, (i) {
                           final ok = i < _wordResults.length && _wordResults[i];
                           return Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
-                              color: (ok ? AppColors.teal : AppColors.pink).withValues(alpha: 0.18),
+                              color: (ok ? AppColors.teal : AppColors.pink)
+                                  .withValues(alpha: 0.18),
                               borderRadius: BorderRadius.circular(999),
                             ),
-                            child: Text(targetWords[i], style: TextStyle(color: ok ? const Color(0xFF1A8F7E) : const Color(0xFFC22A54), fontWeight: FontWeight.w800, fontSize: 11)),
+                            child: Text(
+                              targetWords[i],
+                              style: TextStyle(
+                                color: ok
+                                    ? const Color(0xFF1A8F7E)
+                                    : const Color(0xFFC22A54),
+                                fontWeight: FontWeight.w800,
+                                fontSize: 11,
+                              ),
+                            ),
                           );
                         }),
                       ),
@@ -179,9 +246,23 @@ class _PronunciationScreenState extends State<PronunciationScreen> {
             ],
             Row(
               children: [
-                Expanded(child: PillButton(label: 'Thử lại', filled: false, onTap: () => setState(() { _score = null; _recognized = ''; }))),
+                Expanded(
+                  child: PillButton(
+                    label: 'Thử lại',
+                    filled: false,
+                    onTap: () => setState(() {
+                      _score = null;
+                      _recognized = '';
+                    }),
+                  ),
+                ),
                 const SizedBox(width: 12),
-                Expanded(child: PillButton(label: 'Xong', onTap: () => Navigator.of(context).maybePop())),
+                Expanded(
+                  child: PillButton(
+                    label: 'Xong',
+                    onTap: () => Navigator.of(context).maybePop(),
+                  ),
+                ),
               ],
             ),
           ],

@@ -42,8 +42,16 @@ class LeaderboardScreen extends StatelessWidget {
                   child: Container(
                     width: 36,
                     height: 36,
-                    decoration: BoxDecoration(color: AppColors.glassFill, shape: BoxShape.circle, border: Border.all(color: AppColors.glassBorder)),
-                    child: const Icon(Icons.chevron_left_rounded, size: 18, color: AppColors.textPrimary),
+                    decoration: BoxDecoration(
+                      color: AppColors.glassFill,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.glassBorder),
+                    ),
+                    child: const Icon(
+                      Icons.chevron_left_rounded,
+                      size: 18,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
                 ),
                 Text('Bảng xếp hạng', style: AppTextStyles.heading(size: 16)),
@@ -68,25 +76,61 @@ class LeaderboardScreen extends StatelessWidget {
                 itemBuilder: (context, i) {
                   final p = players[i];
                   return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
                     decoration: BoxDecoration(
-                      color: p.isMe ? AppColors.blue.withValues(alpha: 0.16) : AppColors.glassFill,
-                      border: Border.all(color: p.isMe ? AppColors.blue.withValues(alpha: 0.5) : AppColors.glassBorder),
+                      color: p.isMe
+                          ? AppColors.blue.withValues(alpha: 0.16)
+                          : AppColors.glassFill,
+                      border: Border.all(
+                        color: p.isMe
+                            ? AppColors.blue.withValues(alpha: 0.5)
+                            : AppColors.glassBorder,
+                      ),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Row(
                       children: [
-                        SizedBox(width: 20, child: Text('${i + 1}', textAlign: TextAlign.center, style: AppTextStyles.muted(size: 13))),
+                        SizedBox(
+                          width: 20,
+                          child: Text(
+                            '${i + 1}',
+                            textAlign: TextAlign.center,
+                            style: AppTextStyles.muted(size: 13),
+                          ),
+                        ),
                         const SizedBox(width: 12),
                         Container(
                           width: 36,
                           height: 36,
-                          decoration: BoxDecoration(gradient: AppColors.accentGradient, shape: BoxShape.circle),
-                          child: Center(child: Text(p.name[0], style: AppTextStyles.heading(size: 13))),
+                          decoration: BoxDecoration(
+                            gradient: AppColors.accentGradient,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: Text(
+                              p.name[0],
+                              style: AppTextStyles.heading(size: 13),
+                            ),
+                          ),
                         ),
                         const SizedBox(width: 12),
-                        Expanded(child: Text(p.name, style: AppTextStyles.body(weight: FontWeight.w700))),
-                        Text('${p.xp} XP', style: const TextStyle(color: Color(0xFF9DB4FF), fontWeight: FontWeight.w800, fontSize: 12)),
+                        Expanded(
+                          child: Text(
+                            p.name,
+                            style: AppTextStyles.body(weight: FontWeight.w700),
+                          ),
+                        ),
+                        Text(
+                          '${p.xp} XP',
+                          style: const TextStyle(
+                            color: Color(0xFF9DB4FF),
+                            fontWeight: FontWeight.w800,
+                            fontSize: 12,
+                          ),
+                        ),
                       ],
                     ),
                   );
@@ -99,18 +143,44 @@ class LeaderboardScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 gradient: AppColors.accentGradient,
                 borderRadius: BorderRadius.circular(20),
-                boxShadow: [BoxShadow(color: AppColors.blue.withValues(alpha: 0.5), blurRadius: 40, offset: const Offset(0, 16))],
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.blue.withValues(alpha: 0.5),
+                    blurRadius: 40,
+                    offset: const Offset(0, 16),
+                  ),
+                ],
               ),
               child: Row(
                 children: [
-                  Text('#$myRank', style: AppTextStyles.heading(size: 20, weight: FontWeight.w700).copyWith(color: Colors.white)),
+                  Text(
+                    '#$myRank',
+                    style: AppTextStyles.heading(
+                      size: 20,
+                      weight: FontWeight.w700,
+                    ).copyWith(color: Colors.white),
+                  ),
                   const SizedBox(width: 14),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Hạng của bạn tuần này', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.w700, fontSize: 11)),
-                        Text('${me.xp} XP', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 14)),
+                        const Text(
+                          'Hạng của bạn tuần này',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 11,
+                          ),
+                        ),
+                        Text(
+                          '${me.xp} XP',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 14,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -139,7 +209,14 @@ class _Tab extends StatelessWidget {
         border: active ? null : Border.all(color: AppColors.glassBorder),
         borderRadius: BorderRadius.circular(999),
       ),
-      child: Text(label, style: TextStyle(color: active ? Colors.white : AppColors.textMuted, fontWeight: FontWeight.w800, fontSize: 12)),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: active ? Colors.white : AppColors.textMuted,
+          fontWeight: FontWeight.w800,
+          fontSize: 12,
+        ),
+      ),
     );
   }
 }

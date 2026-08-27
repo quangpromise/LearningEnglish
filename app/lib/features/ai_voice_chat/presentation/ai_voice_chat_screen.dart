@@ -21,7 +21,11 @@ class AiVoiceChatScreen extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.graphic_eq_rounded, color: AppColors.blue, size: 48),
+              const Icon(
+                Icons.graphic_eq_rounded,
+                color: AppColors.blue,
+                size: 48,
+              ),
               const SizedBox(height: 16),
               Text('AI Voice Chat', style: AppTextStyles.heading(size: 20)),
               const SizedBox(height: 8),
