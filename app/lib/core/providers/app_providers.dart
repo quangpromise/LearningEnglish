@@ -106,5 +106,13 @@ final appLanguageProvider =
 /// tin cậy hơn tự đồng bộ tay theo pubspec.yaml.
 final appVersionProvider = FutureProvider((ref) async {
   final info = await PackageInfo.fromPlatform();
-  return 'v${info.version} (${info.buildNumber})';
+  // Build --split-per-abi: Flutter tu cong them "1000 * ma ABI" vao build
+  // number that trong pubspec.yaml (vd arm64-v8a co ma ABI = 2, build that
+  // = 2 => versionCode thuc te tren may = 2002) de moi kien truc co
+  // versionCode rieng cho Play Store - xem android/app/build.gradle.kts.
+  // Neu hien thang so nay ra man hinh se gay hieu lam (giong nam thang/loi).
+  // Lay phan du chia 1000 de ra lai dung build number that.
+  final raw = int.tryParse(info.buildNumber);
+  final build = raw != null ? (raw % 1000).toString() : info.buildNumber;
+  return 'v${info.version} ($build)';
 });
