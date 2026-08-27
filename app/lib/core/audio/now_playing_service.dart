@@ -31,12 +31,28 @@ class NowPlayingService {
     // ngan hon nen moi dong loi deu bi coi la "da qua").
     await player.seek(Duration.zero);
     if (!isCurrent(myGeneration)) return myGeneration;
-    // KHONG await o day: just_audio's play() tra ve 1 Future CHI hoan tat
-    // khi phat xong/bi tam dung, khong phai ngay khi bat dau phat. Neu await,
-    // ham play() nay (va moi thu goi no) se bi treo cho toi khi het bai -
-    // day chinh la ly do truoc day phai bam dung/phat lai moi "unblock" duoc
-    // (bam dung lam Future cua play() hoan tat som).
+    // KHONG await Future cua play(): just_audio's play() tra ve 1 Future CHI
+    // hoan tat khi phat xong/bi tam dung, khong phai ngay khi bat dau phat.
+    // Neu await, ham play() nay (va moi thu goi no) se bi treo cho toi khi
+    // het bai - day chinh la ly do truoc day phai bam dung/phat lai moi
+    // "unblock" duoc (bam dung lam Future cua play() hoan tat som).
     unawaited(player.play());
+    // Nhung van can XAC NHAN playback thuc su da bat dau (playing == true)
+    // truoc khi tra ve - vi ban than lenh play() o tren la "ban roi quen",
+    // neu no loi ngam (nguon chua san sang, mang chap chon...) thi khong ai
+    // biet, vi tri phat dung yen o 0 mai mai (giong het trieu chung "loi
+    // khong dong bo") cho toi khi nguoi dung tu bam nut Play/Pause (goi
+    // player.play() truc tiep) moi thuc su chay - day la nguyen nhan that
+    // su cua bug "phai bam phat lai moi chay", KHONG phai do stream lyric.
+    try {
+      await player.playingStream
+          .firstWhere((playing) => playing)
+          .timeout(const Duration(seconds: 3));
+    } catch (_) {
+      if (isCurrent(myGeneration)) {
+        unawaited(player.play());
+      }
+    }
     return myGeneration;
   }
 

@@ -38,6 +38,11 @@ dependencies:
   # Ghi lại file âm thanh thô để người dùng nghe lại chính giọng mình vừa
   # luyện (speech_to_text chỉ nhận diện văn bản, không lưu file audio)
   record: ^7.1.1
+  # Ep lai audio session ve che do phat nhac (loa ngoai) truoc khi phat lai
+  # ghi am - sau khi dung mic (record/speech_to_text), Android giu nguyen
+  # audio mode cho ghi am nen AudioPlayer phat qua loa tai nghe rat nho,
+  # nguoi dung tuong nhu "khong nghe duoc gi" du file ghi am hoan toan binh thuong.
+  audio_session: ^0.1.21
   # Lưu lựa chọn giọng đọc TTS của người dùng trên máy (offline)
   shared_preferences: ^2.3.4
   # Lưu file mp3 tạm khi phát giọng đọc chất lượng cao (Google Cloud TTS)

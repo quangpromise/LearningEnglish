@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:audio_session/audio_session.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
@@ -252,6 +253,13 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
       _recordError = null;
     });
     try {
+      // Sau khi dung mic (record + speech_to_text) de ghi am, Android giu
+      // nguyen audio mode cho ghi am - neu phat lai ngay, AudioPlayer se
+      // phat qua loa THOAI (earpiece) rat nho thay vi loa ngoai, khien
+      // nguoi dung tuong nhu khong nghe duoc gi du file ghi am hoan toan
+      // binh thuong. Ep lai session ve che do nhac truoc khi phat.
+      final session = await AudioSession.instance;
+      await session.configure(const AudioSessionConfiguration.music());
       await _playbackPlayer.setFilePath(path);
       // KHONG await play(): just_audio's play() chi hoan tat future khi phat
       // XONG hoac bi tam dung, khong phai luc bat dau - await no o day se
