@@ -31,10 +31,6 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.8
-
   # Phát nhạc thật (stream mp3 tự host) + đồng bộ lyric theo thời gian phát
   just_audio: ^0.9.42
   # Ghi âm + nhận diện giọng nói on-device cho tính năng luyện phát âm
@@ -52,11 +48,9 @@ dependencies:
   # Đăng nhập bằng Google mail
   google_sign_in: ^6.2.2
   # Gọi GitHub API kiểm tra bản cập nhật (feature update checker); cũng dùng
-  # gọi Free Dictionary API (miễn phí, không cần key) lấy IPA/định nghĩa
+  # gọi Free Dictionary API và MyMemory Translation API (miễn phí, không cần
+  # key) cho tính năng tra từ/dịch — xem docs/research-translation-tts.md
   http: ^1.2.2
-  # Dịch Anh-Việt on-device, offline sau khi tải model lần đầu, miễn phí,
-  # không giới hạn số lượt gọi — xem docs/research-translation-tts.md
-  google_mlkit_translation: ^0.13.0
   # Mở link tải APK mới trong trình duyệt khi có bản cập nhật
   url_launcher: ^6.3.1
 

@@ -3,10 +3,11 @@
 ## Dịch (song ngữ Anh–Việt)
 | Giải pháp | Chi phí | Offline? | Ghi chú |
 |---|---|---|---|
-| **google_mlkit_translation** (đang dùng) | Miễn phí, không giới hạn lượt gọi | ✅ On-device | Hỗ trợ 50+ ngôn ngữ, dịch qua trung gian English nên non-English↔non-English kém hơn — nhưng English↔Vietnamese dịch trực tiếp, đủ tốt cho nhu cầu app |
-| Google Cloud Translation API | Free tier 500.000 ký tự/tháng, sau đó tính phí | ❌ Cần mạng | Dùng khi cần chất lượng dịch cao hơn ML Kit, chấp nhận phụ thuộc mạng |
+| google_mlkit_translation (đã thử, bỏ) | Miễn phí, không giới hạn lượt gọi | ✅ On-device | Nhúng file native `libtranslate_jni.so` ~16MB/kiến trúc CPU vào APK — riêng thư viện này chiếm ~44% dung lượng app (36.7MB → nếu bỏ còn ~20MB). Đổi lại lợi ích offline không đáng so với cái giá dung lượng, nhất là khi các tính năng khác (từ điển, giọng đọc chất lượng cao) cũng đã cần mạng |
+| **MyMemory Translation API** (đang dùng) | Miễn phí, không cần key, ~5000 từ/ngày/IP | ❌ Cần mạng | Gọi HTTP thuần qua package `http` đã có sẵn — không thêm dung lượng APK. Chất lượng dịch từ đơn/câu ngắn đủ tốt cho nhu cầu tra nghĩa trong app |
+| Google Cloud Translation API | Free tier 500.000 ký tự/tháng, sau đó tính phí | ❌ Cần mạng | Chất lượng cao hơn MyMemory nếu cần sau này, nhưng thêm 1 dependency cloud + billing như Google Cloud TTS |
 
-**Quyết định**: giữ `google_mlkit_translation` làm mặc định vì offline + miễn phí phù hợp mục tiêu dự án.
+**Quyết định**: chuyển từ `google_mlkit_translation` sang MyMemory Translation API để giảm dung lượng APK đáng kể — xem commit lịch sử để biết chi tiết đo đạc.
 
 ## Phát âm mẫu (Text-to-Speech)
 | Giải pháp | Chi phí | Offline? | Chất lượng giọng |
