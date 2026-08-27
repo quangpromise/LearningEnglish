@@ -50,12 +50,16 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
       _run(() => ref.read(authRepositoryProvider).signInWithGoogle());
 
   Future<void> _submitEmailForm() {
-    final email = _emailCtrl.text.trim();
+    final identifier = _emailCtrl.text.trim();
     final password = _passwordCtrl.text;
     final username = _usernameCtrl.text.trim();
 
-    if (email.isEmpty || password.isEmpty) {
-      setState(() => _error = 'Vui lòng nhập email và mật khẩu.');
+    if (identifier.isEmpty || password.isEmpty) {
+      setState(
+        () => _error = _mode == _Mode.signIn
+            ? 'Vui lòng nhập email/tên người dùng và mật khẩu.'
+            : 'Vui lòng nhập email và mật khẩu.',
+      );
       return Future.value();
     }
     if (_mode == _Mode.signUp && username.isEmpty) {
@@ -67,14 +71,14 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
       return _run(
         () => ref
             .read(authRepositoryProvider)
-            .signInWithEmail(email: email, password: password),
+            .signInWithIdentifier(identifier: identifier, password: password),
       );
     }
     return _run(() async {
       await ref
           .read(authRepositoryProvider)
           .signUpWithEmail(
-            email: email,
+            email: identifier,
             password: password,
             username: username,
           );
@@ -162,9 +166,11 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
             ],
             _AuthField(
               controller: _emailCtrl,
-              label: 'Email',
+              label: isSignUp ? 'Email' : 'Email hoặc tên người dùng',
               icon: Icons.mail_outline_rounded,
-              keyboardType: TextInputType.emailAddress,
+              keyboardType: isSignUp
+                  ? TextInputType.emailAddress
+                  : TextInputType.text,
             ),
             const SizedBox(height: 12),
             _AuthField(

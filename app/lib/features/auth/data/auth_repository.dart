@@ -53,10 +53,24 @@ class AuthRepository {
     );
   }
 
-  Future<void> signInWithEmail({
-    required String email,
+  /// Đăng nhập bằng email HOẶC username. Nếu không phải định dạng email,
+  /// tra email tương ứng qua RPC `email_for_username` rồi mới đăng nhập —
+  /// Supabase Auth chỉ xác thực bằng email nên cần bước tra trung gian này.
+  Future<void> signInWithIdentifier({
+    required String identifier,
     required String password,
   }) async {
+    var email = identifier.trim();
+    if (!email.contains('@')) {
+      final resolved = await _supabase.rpc(
+        'email_for_username',
+        params: {'p_username': email},
+      );
+      if (resolved is! String || resolved.isEmpty) {
+        throw Exception('Không tìm thấy tài khoản với tên người dùng này.');
+      }
+      email = resolved;
+    }
     await _supabase.auth.signInWithPassword(email: email, password: password);
   }
 
