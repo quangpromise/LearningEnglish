@@ -41,6 +41,8 @@ dependencies:
   speech_to_text: ^7.0.0
   # Lưu lựa chọn giọng đọc TTS của người dùng trên máy (offline)
   shared_preferences: ^2.3.4
+  # Lưu file mp3 tạm khi phát giọng đọc chất lượng cao (Google Cloud TTS)
+  path_provider: ^2.1.6
   # Phát âm mẫu bằng TTS gốc máy, offline, miễn phí
   flutter_tts: ^4.2.0
   # Quản lý state theo feature, thuận tiện khi nhiều người code song song

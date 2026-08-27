@@ -40,30 +40,36 @@ class _VoiceSettingsSheet extends StatefulWidget {
 }
 
 class _VoiceSettingsSheetState extends State<_VoiceSettingsSheet> {
-  List<VoiceOption>? _voices;
-  VoiceOption? _selected;
+  List<VoiceOption>? _deviceVoices;
 
   @override
   void initState() {
     super.initState();
-    _selected = AppTts.instance.selected;
     AppTts.instance.loadEnglishVoices().then((voices) {
-      if (mounted) setState(() => _voices = voices);
+      if (mounted) setState(() => _deviceVoices = voices);
     });
   }
 
-  Future<void> _choose(VoiceOption voice) async {
-    setState(() => _selected = voice);
+  Future<void> _chooseCloud(CloudVoice voice) async {
+    setState(() {});
+    await AppTts.instance.selectCloudVoice(voice);
+    setState(() {});
+    await AppTts.instance.speak('Hello, this is a preview of my voice.');
+  }
+
+  Future<void> _chooseDevice(VoiceOption voice) async {
+    setState(() {});
     await AppTts.instance.selectVoice(voice);
+    setState(() {});
     await AppTts.instance.speak('Hello, this is a preview of my voice.');
   }
 
   @override
   Widget build(BuildContext context) {
-    final voices = _voices;
+    final deviceVoices = _deviceVoices;
     return Container(
       constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.7,
+        maxHeight: MediaQuery.of(context).size.height * 0.75,
       ),
       padding: const EdgeInsets.fromLTRB(24, 14, 24, 28),
       decoration: const BoxDecoration(
@@ -91,74 +97,125 @@ class _VoiceSettingsSheetState extends State<_VoiceSettingsSheet> {
             'Chạm để chọn và nghe thử — áp dụng cho mọi chỗ phát âm mẫu trong app.',
             style: AppTextStyles.muted(),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 16),
           Flexible(
-            child: voices == null
-                ? const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 24),
+            child: ListView(
+              shrinkWrap: true,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      'CHẤT LƯỢNG CAO',
+                      style: AppTextStyles.muted(size: 10)
+                          .copyWith(letterSpacing: 0.6),
+                    ),
+                    const SizedBox(width: 6),
+                    Icon(
+                      Icons.wifi_rounded,
+                      size: 12,
+                      color: AppColors.textMuted,
+                    ),
+                    const SizedBox(width: 2),
+                    Text('cần mạng', style: AppTextStyles.muted(size: 10)),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                ...kCloudVoices.map(
+                  (voice) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: _VoiceTile(
+                      title:
+                          '${_labelFor(voice.languageCode)} · ${voice.label}',
+                      subtitle: 'Google Cloud Neural2',
+                      selected:
+                          AppTts.instance.isCloudMode &&
+                          AppTts.instance.selectedCloud == voice,
+                      onTap: () => _chooseCloud(voice),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'OFFLINE (GIỌNG TRÊN MÁY)',
+                  style: AppTextStyles.muted(size: 10)
+                      .copyWith(letterSpacing: 0.6),
+                ),
+                const SizedBox(height: 8),
+                if (deviceVoices == null)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16),
                     child: Center(
                       child: CircularProgressIndicator(color: AppColors.blue),
                     ),
                   )
-                : voices.isEmpty
-                ? Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 24),
-                    child: Text(
-                      'Không tìm thấy giọng tiếng Anh nào trên máy này. '
-                      'Hãy kiểm tra cài đặt Text-to-Speech của điện thoại.',
-                      style: AppTextStyles.muted(),
-                    ),
+                else if (deviceVoices.isEmpty)
+                  Text(
+                    'Không tìm thấy giọng tiếng Anh nào trên máy này.',
+                    style: AppTextStyles.muted(),
                   )
-                : ListView.separated(
-                    shrinkWrap: true,
-                    itemCount: voices.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: 8),
-                    itemBuilder: (context, i) {
-                      final voice = voices[i];
-                      final isSelected = _selected == voice;
-                      return GestureDetector(
-                        onTap: () => _choose(voice),
-                        child: GlowBox(
-                          borderRadius: 16,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      _labelFor(voice.locale),
-                                      style: AppTextStyles.body(
-                                        weight: FontWeight.w800,
-                                      ),
-                                    ),
-                                    Text(
-                                      voice.name,
-                                      style: AppTextStyles.muted(size: 11),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Icon(
-                                isSelected
-                                    ? Icons.check_circle_rounded
-                                    : Icons.volume_up_rounded,
-                                color: isSelected
-                                    ? AppColors.teal
-                                    : AppColors.textMuted,
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
+                else
+                  ...deviceVoices.map(
+                    (voice) => Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: _VoiceTile(
+                        title: _labelFor(voice.locale),
+                        subtitle: voice.name,
+                        selected:
+                            !AppTts.instance.isCloudMode &&
+                            AppTts.instance.selected == voice,
+                        onTap: () => _chooseDevice(voice),
+                      ),
+                    ),
                   ),
+              ],
+            ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _VoiceTile extends StatelessWidget {
+  const _VoiceTile({
+    required this.title,
+    required this.subtitle,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String title;
+  final String subtitle;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: GlowBox(
+        borderRadius: 16,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: AppTextStyles.body(weight: FontWeight.w800),
+                  ),
+                  Text(subtitle, style: AppTextStyles.muted(size: 11)),
+                ],
+              ),
+            ),
+            Icon(
+              selected ? Icons.check_circle_rounded : Icons.volume_up_rounded,
+              color: selected ? AppColors.teal : AppColors.textMuted,
+            ),
+          ],
+        ),
       ),
     );
   }

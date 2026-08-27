@@ -1,5 +1,13 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../config/env.dart';
 
 class VoiceOption {
   const VoiceOption({required this.name, required this.locale});
@@ -14,34 +22,93 @@ class VoiceOption {
   int get hashCode => Object.hash(name, locale);
 }
 
-/// Service TTS dùng chung cho toàn app — đảm bảo mọi màn hình (luyện phát
-/// âm, tra từ trong lyric...) phát cùng 1 giọng đọc mà người dùng đã chọn,
-/// thay vì mỗi nơi tự tạo `FlutterTts()` riêng với giọng mặc định của máy.
+/// Giọng đọc chất lượng cao (Google Cloud TTS Neural2) — cần mạng, gọi qua
+/// Edge Function `tts` để giấu API key (xem docs/setup-google-tts.md).
+class CloudVoice {
+  const CloudVoice({
+    required this.name,
+    required this.languageCode,
+    required this.label,
+  });
+  final String name;
+  final String languageCode;
+  final String label;
+
+  @override
+  bool operator ==(Object other) => other is CloudVoice && other.name == name;
+
+  @override
+  int get hashCode => name.hashCode;
+}
+
+const kCloudVoices = [
+  CloudVoice(name: 'en-US-Neural2-F', languageCode: 'en-US', label: 'Mỹ · Nữ'),
+  CloudVoice(name: 'en-US-Neural2-D', languageCode: 'en-US', label: 'Mỹ · Nam'),
+  CloudVoice(name: 'en-GB-Neural2-A', languageCode: 'en-GB', label: 'Anh · Nữ'),
+  CloudVoice(
+    name: 'en-GB-Neural2-B',
+    languageCode: 'en-GB',
+    label: 'Anh · Nam',
+  ),
+  CloudVoice(name: 'en-AU-Neural2-A', languageCode: 'en-AU', label: 'Úc · Nữ'),
+  CloudVoice(
+    name: 'en-IN-Neural2-A',
+    languageCode: 'en-IN',
+    label: 'Ấn Độ · Nữ',
+  ),
+];
+
+enum _TtsMode { device, cloud }
+
+/// Service TTS dùng chung cho toàn app — ưu tiên giọng chất lượng cao
+/// (Google Cloud TTS) nếu người dùng đã chọn và có mạng; tự động rơi về
+/// giọng gốc máy (flutter_tts, offline) nếu lỗi mạng/chưa chọn giọng cloud.
 class AppTts {
   AppTts._();
   static final AppTts instance = AppTts._();
 
-  final FlutterTts _tts = FlutterTts();
+  final FlutterTts _deviceTts = FlutterTts();
+  final AudioPlayer _cloudPlayer = AudioPlayer();
+
+  static const _prefModeKey = 'tts_mode';
   static const _prefNameKey = 'tts_voice_name';
   static const _prefLocaleKey = 'tts_voice_locale';
+  static const _prefCloudNameKey = 'tts_cloud_voice_name';
 
-  VoiceOption? _selected;
-  VoiceOption? get selected => _selected;
+  _TtsMode _mode = _TtsMode.device;
+  VoiceOption? _selectedDevice;
+  CloudVoice? _selectedCloud;
+
+  VoiceOption? get selected => _selectedDevice;
+  CloudVoice? get selectedCloud => _selectedCloud;
+  bool get isCloudMode => _mode == _TtsMode.cloud;
 
   /// Gọi 1 lần lúc khởi động app để áp lại giọng đã lưu từ lần trước.
   Future<void> restoreSavedVoice() async {
     final prefs = await SharedPreferences.getInstance();
+    final mode = prefs.getString(_prefModeKey);
+
+    if (mode == 'cloud') {
+      final cloudName = prefs.getString(_prefCloudNameKey);
+      final match = kCloudVoices.where((v) => v.name == cloudName);
+      if (match.isNotEmpty) {
+        _mode = _TtsMode.cloud;
+        _selectedCloud = match.first;
+        return;
+      }
+    }
+
     final name = prefs.getString(_prefNameKey);
     final locale = prefs.getString(_prefLocaleKey);
     if (name != null && locale != null) {
-      _selected = VoiceOption(name: name, locale: locale);
-      await _applySelected();
+      _selectedDevice = VoiceOption(name: name, locale: locale);
+      await _applySelectedDevice();
     }
   }
 
   /// Lấy danh sách giọng đọc tiếng Anh có sẵn trên máy (engine TTS gốc).
   Future<List<VoiceOption>> loadEnglishVoices() async {
-    final raw = await _tts.getVoices;
+    final raw = await _deviceTts.getVoices;
     final result = <VoiceOption>[];
     final seen = <String>{};
     if (raw is List) {
@@ -63,22 +130,70 @@ class AppTts {
   }
 
   Future<void> selectVoice(VoiceOption voice) async {
-    _selected = voice;
-    await _applySelected();
+    _mode = _TtsMode.device;
+    _selectedDevice = voice;
+    await _applySelectedDevice();
     final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_prefModeKey, 'device');
     await prefs.setString(_prefNameKey, voice.name);
     await prefs.setString(_prefLocaleKey, voice.locale);
   }
 
-  Future<void> _applySelected() async {
-    final v = _selected;
+  Future<void> selectCloudVoice(CloudVoice voice) async {
+    _mode = _TtsMode.cloud;
+    _selectedCloud = voice;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_prefModeKey, 'cloud');
+    await prefs.setString(_prefCloudNameKey, voice.name);
+  }
+
+  Future<void> _applySelectedDevice() async {
+    final v = _selectedDevice;
     if (v != null) {
-      await _tts.setVoice({'name': v.name, 'locale': v.locale});
+      await _deviceTts.setVoice({'name': v.name, 'locale': v.locale});
     }
   }
 
   Future<void> speak(String text) async {
-    await _tts.stop();
-    await _tts.speak(text);
+    if (_mode == _TtsMode.cloud && _selectedCloud != null) {
+      try {
+        await _speakCloud(text, _selectedCloud!);
+        return;
+      } catch (_) {
+        // Không có mạng / Edge Function lỗi -> rơi về giọng máy bên dưới.
+      }
+    }
+    await _deviceTts.stop();
+    await _deviceTts.speak(text);
+  }
+
+  Future<void> _speakCloud(String text, CloudVoice voice) async {
+    if (!Env.isConfigured) {
+      throw Exception('Supabase chưa cấu hình — không gọi được giọng cloud.');
+    }
+    final dir = await getTemporaryDirectory();
+    final cacheDir = Directory('${dir.path}/tts_cache');
+    if (!await cacheDir.exists()) await cacheDir.create(recursive: true);
+    final file = File('${cacheDir.path}/${voice.name}_${text.hashCode}.mp3');
+
+    if (!await file.exists()) {
+      final res = await Supabase.instance.client.functions.invoke(
+        'tts',
+        body: {
+          'text': text,
+          'languageCode': voice.languageCode,
+          'voiceName': voice.name,
+        },
+      );
+      final audioContent = (res.data as Map)['audioContent'] as String?;
+      if (audioContent == null) {
+        throw Exception('Edge Function tts không trả về audioContent.');
+      }
+      await file.writeAsBytes(base64Decode(audioContent));
+    }
+
+    await _cloudPlayer.stop();
+    await _cloudPlayer.setFilePath(file.path);
+    await _cloudPlayer.play();
   }
 }
