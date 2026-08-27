@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
@@ -76,9 +77,32 @@ class ProfileScreen extends ConsumerWidget {
     }
   }
 
+  Future<void> _pickAndUploadAvatar(BuildContext context, WidgetRef ref) async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 512,
+      maxHeight: 512,
+      imageQuality: 85,
+    );
+    if (picked == null) return;
+    final bytes = await picked.readAsBytes();
+    final ext = picked.path.split('.').last.toLowerCase();
+    try {
+      await ref.read(profileRepositoryProvider).uploadAvatar(bytes, ext);
+      ref.invalidate(myProfileProvider);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Không tải được avatar: $e')));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final statsAsync = ref.watch(myStatsProvider);
+    final profileAsync = ref.watch(myProfileProvider);
     return ScreenBackground(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
@@ -89,22 +113,66 @@ class ProfileScreen extends ConsumerWidget {
             const SizedBox(height: 16),
             Row(
               children: [
-                Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    gradient: AppColors.accentGradient,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Text('Q', style: AppTextStyles.heading(size: 22)),
+                GestureDetector(
+                  onTap: () => _pickAndUploadAvatar(context, ref),
+                  child: Stack(
+                    children: [
+                      Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          gradient: AppColors.accentGradient,
+                          shape: BoxShape.circle,
+                          image: profileAsync.valueOrNull?.avatarUrl != null
+                              ? DecorationImage(
+                                  image: NetworkImage(
+                                    profileAsync.valueOrNull!.avatarUrl!,
+                                  ),
+                                  fit: BoxFit.cover,
+                                )
+                              : null,
+                        ),
+                        child: profileAsync.valueOrNull?.avatarUrl == null
+                            ? Center(
+                                child: Text(
+                                  profileAsync.valueOrNull?.initial ?? '?',
+                                  style: AppTextStyles.heading(size: 22),
+                                ),
+                              )
+                            : null,
+                      ),
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: Container(
+                          width: 20,
+                          height: 20,
+                          decoration: BoxDecoration(
+                            color: AppColors.bgMid,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: AppColors.bgTop,
+                              width: 2,
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.camera_alt_rounded,
+                            size: 11,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(width: 14),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Quang Hứa', style: AppTextStyles.heading(size: 18)),
+                    Text(
+                      profileAsync.valueOrNull?.nameLabel ?? '...',
+                      style: AppTextStyles.heading(size: 18),
+                    ),
                     Container(
                       margin: const EdgeInsets.only(top: 4),
                       padding: const EdgeInsets.symmetric(

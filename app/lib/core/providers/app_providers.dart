@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../features/auth/data/auth_repository.dart';
+import '../../features/profile/data/profile_repository.dart';
 import '../../features/rewards/data/rewards_repository.dart';
 import '../../features/stats/data/stats_repository.dart';
 
@@ -26,6 +27,16 @@ final authStateProvider = StreamProvider<AuthState>(
 /// sau khi admin cấp điểm để làm mới lại số dư trên UI.
 final myRewardsProvider = FutureProvider(
   (ref) => ref.watch(rewardsRepositoryProvider).fetchMyRewards(),
+);
+
+final profileRepositoryProvider = Provider<ProfileRepository>(
+  (ref) => ProfileRepository(ref.watch(supabaseClientProvider)),
+);
+
+/// Hồ sơ (tên, avatar) của user hiện tại. Gọi `ref.invalidate(myProfileProvider)`
+/// sau khi đổi avatar để làm mới lại UI.
+final myProfileProvider = FutureProvider(
+  (ref) => ref.watch(profileRepositoryProvider).fetchMyProfile(),
 );
 
 final statsRepositoryProvider = Provider<StatsRepository>(
