@@ -13,12 +13,19 @@ class AppTranslator {
   AppTranslator._();
   static final AppTranslator instance = AppTranslator._();
 
+  // Cache trong phien: cung 1 tu/cau lyric thuong duoc tra lai nhieu lan.
+  final Map<String, String> _cache = {};
+
   Future<String> translateToVietnamese(String text) async {
+    final key = text.trim().toLowerCase();
+    final cached = _cache[key];
+    if (cached != null) return cached;
+
     final uri = Uri.parse(
       'https://api.mymemory.translated.net/get'
       '?q=${Uri.encodeComponent(text)}&langpair=en|vi',
     );
-    final res = await http.get(uri).timeout(const Duration(seconds: 8));
+    final res = await http.get(uri).timeout(const Duration(seconds: 6));
     if (res.statusCode != 200) {
       throw Exception('MyMemory trả về lỗi HTTP ${res.statusCode}');
     }
@@ -27,6 +34,7 @@ class AppTranslator {
     if (translated == null || translated.isEmpty) {
       throw Exception('MyMemory không trả về bản dịch');
     }
+    _cache[key] = translated;
     return translated;
   }
 }

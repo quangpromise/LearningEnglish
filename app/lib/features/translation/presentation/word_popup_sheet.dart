@@ -54,7 +54,7 @@ class _WordPopupSheetState extends ConsumerState<WordPopupSheet> {
         .then((_) => ref.invalidate(myStatsProvider))
         .catchError((_) {});
     return _WordLookup(
-      ipa: entry?.ipa ?? '—',
+      ipa: (entry != null && entry.ipa.isNotEmpty) ? entry.ipa : '—',
       pos: entry != null && entry.partOfSpeech.isNotEmpty
           ? posLabel(entry.partOfSpeech)
           : 'Chưa rõ từ loại',

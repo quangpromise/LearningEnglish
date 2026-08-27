@@ -28,55 +28,58 @@ const _posLabels = {
 
 String posLabel(String pos) => _posLabels[pos.toLowerCase()] ?? pos;
 
-/// Tra định nghĩa/IPA tiếng Anh miễn phí, không cần API key.
-/// https://dictionaryapi.dev/ — mã nguồn mở, dữ liệu từ Wiktionary.
+final _htmlTag = RegExp(r'<[^>]*>');
+
+/// Tra định nghĩa tiếng Anh miễn phí, không cần API key, qua Wiktionary REST
+/// API (hạ tầng Wikimedia — ổn định, nhanh hơn hẳn dictionaryapi.dev, vốn
+/// đã ngừng hoạt động ổn định — API đó từng trả lỗi 522/timeout ~20s).
 class FreeDictionaryApi {
   FreeDictionaryApi._();
 
+  // Cache trong phiên làm việc: nhiều từ trong lyric lặp lại nhiều lần
+  // (vd "the", "you"...), tra lại không cần gọi mạng lần nữa -> tức thời.
+  static final Map<String, DictionaryEntry?> _cache = {};
+
   static Future<DictionaryEntry?> lookup(String word) async {
+    final key = word.toLowerCase();
+    if (_cache.containsKey(key)) return _cache[key];
+
     final uri = Uri.parse(
-      'https://api.dictionaryapi.dev/api/v2/entries/en/${Uri.encodeComponent(word)}',
+      'https://en.wiktionary.org/api/rest_v1/page/definition/${Uri.encodeComponent(key)}',
     );
     final http.Response res;
     try {
-      res = await http.get(uri).timeout(const Duration(seconds: 8));
+      res = await http.get(uri).timeout(const Duration(seconds: 6));
     } catch (_) {
       return null;
     }
-    if (res.statusCode != 200) return null;
+    if (res.statusCode != 200) {
+      _cache[key] = null;
+      return null;
+    }
 
     final data = jsonDecode(res.body);
-    if (data is! List || data.isEmpty) return null;
-    final entry = data.first as Map<String, dynamic>;
+    final entry = data is Map<String, dynamic> ? _firstDefinition(data) : null;
+    _cache[key] = entry;
+    return entry;
+  }
 
-    var ipa = '';
-    final phonetics = entry['phonetics'];
-    if (phonetics is List) {
-      for (final p in phonetics) {
-        final text = (p as Map<String, dynamic>)['text'];
-        if (text is String && text.isNotEmpty) {
-          ipa = text;
-          break;
+  static DictionaryEntry? _firstDefinition(Map<String, dynamic> data) {
+    final enBlocks = data['en'];
+    if (enBlocks is! List) return null;
+    for (final block in enBlocks) {
+      final m = block as Map<String, dynamic>;
+      final pos = m['partOfSpeech']?.toString() ?? '';
+      final defs = m['definitions'];
+      if (defs is! List) continue;
+      for (final d in defs) {
+        final raw = (d as Map<String, dynamic>)['definition']?.toString() ?? '';
+        final text = raw.replaceAll(_htmlTag, '').trim();
+        if (text.isNotEmpty) {
+          return DictionaryEntry(ipa: '', partOfSpeech: pos, definition: text);
         }
       }
     }
-    if (ipa.isEmpty && entry['phonetic'] is String) {
-      ipa = entry['phonetic'] as String;
-    }
-
-    var pos = '';
-    var definition = '';
-    final meanings = entry['meanings'];
-    if (meanings is List && meanings.isNotEmpty) {
-      final firstMeaning = meanings.first as Map<String, dynamic>;
-      pos = firstMeaning['partOfSpeech']?.toString() ?? '';
-      final defs = firstMeaning['definitions'];
-      if (defs is List && defs.isNotEmpty) {
-        definition =
-            (defs.first as Map<String, dynamic>)['definition']?.toString() ??
-            '';
-      }
-    }
-    return DictionaryEntry(ipa: ipa, partOfSpeech: pos, definition: definition);
+    return null;
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
@@ -35,6 +37,7 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
   DateTime? _listenStartedAt;
   late String _targetEn;
   late String _targetVi;
+  Completer<void>? _finalResultCompleter;
 
   @override
   void initState() {
@@ -93,7 +96,18 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
   Future<void> _toggleListening() async {
     if (!_available) return;
     if (_listening) {
+      // speech_to_text co the con gui 1 onResult(finalResult: true) SAU khi
+      // stop() da resolve - neu cham diem ngay luc nay, _recognized co the
+      // chi la ket qua tam thoi (partial), khien diem sai/thap bat thuong.
+      // Doi ket qua cuoi cung toi da 1.5s truoc khi cham.
+      final completer = Completer<void>();
+      _finalResultCompleter = completer;
       await _speech.stop();
+      await completer.future.timeout(
+        const Duration(milliseconds: 1500),
+        onTimeout: () {},
+      );
+      if (!mounted) return;
       setState(() => _listening = false);
       final startedAt = _listenStartedAt;
       if (startedAt != null) {
@@ -112,8 +126,13 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
       _recognized = '';
     });
     await _speech.listen(
-      onResult: (result) =>
-          setState(() => _recognized = result.recognizedWords),
+      onResult: (result) {
+        setState(() => _recognized = result.recognizedWords);
+        if (result.finalResult &&
+            !(_finalResultCompleter?.isCompleted ?? true)) {
+          _finalResultCompleter!.complete();
+        }
+      },
       listenOptions: stt.SpeechListenOptions(localeId: 'en_US'),
     );
   }
@@ -136,23 +155,11 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                GestureDetector(
-                  onTap: () => Navigator.of(context).maybePop(),
-                  child: Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: AppColors.glassFill,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.glassBorder),
-                    ),
-                    child: const Icon(
-                      Icons.chevron_left_rounded,
-                      size: 18,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                ),
+                // Man hinh nay la 1 tab goc trong IndexedStack cua RootShell
+                // (khong bao gio duoc Navigator.push), nen khong co man
+                // truoc do de "back" - dat 1 khoang trong bang chieu rong
+                // nut am luong o phai de tieu de van can giua.
+                const SizedBox(width: 48),
                 Text('Luyện phát âm', style: AppTextStyles.heading(size: 15)),
                 IconButton(
                   onPressed: () => AppTts.instance.speak(_targetEn),
