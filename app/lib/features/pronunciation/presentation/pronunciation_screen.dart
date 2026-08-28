@@ -225,14 +225,17 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
         final path =
             '${dir.path}/pronunciation_attempt_${DateTime.now().millisecondsSinceEpoch}.m4a';
         // AudioSource mac dinh ("defaultSource"/"mic") gan nhu luon bi CAM
-        // (file ra hoan toan im lang) khi speech_to_text dang chay dong thoi -
-        // ca 2 cung tranh mic, va SpeechRecognizer he thong luon thang. Dung
-        // chung audio source "voiceRecognition" (cung loai SpeechRecognizer
-        // dang dung noi bo) de Android cho phep ca 2 cung doc duoc tin hieu.
+        // (file ra hoan toan im lang) khi speech_to_text dang chay dong thoi.
+        // Da thu "voiceRecognition" (cung loai SpeechRecognizer dang dung)
+        // nhung van bi cam - kha nang cao thu pham la cac hieu ung xu ly
+        // tin hieu (AGC/AEC/NS) ma Android ap dung khi phien SpeechRecognizer
+        // dang hoat dong, chung "de" len ca luong AudioRecord thu 2 cua app.
+        // "unprocessed" yeu cau tin hieu THO, khong qua bat ky hieu ung nao -
+        // day la nguon duy nhat duoc thiet ke rieng de tranh dung do.
         await _recorder.start(
           const rec.RecordConfig(
             androidConfig: rec.AndroidRecordConfig(
-              audioSource: rec.AndroidAudioSource.voiceRecognition,
+              audioSource: rec.AndroidAudioSource.unprocessed,
             ),
           ),
           path: path,
