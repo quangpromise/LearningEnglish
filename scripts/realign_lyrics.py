@@ -11,7 +11,6 @@ import re
 import sys
 import json
 from pathlib import Path
-from difflib import SequenceMatcher
 
 from faster_whisper import WhisperModel
 
@@ -101,15 +100,34 @@ def align_lines(lines, asr_words):
             expected.append(w)
 
     asr_seq = [w["w"] for w in asr_words]
+    n_asr = len(asr_seq)
 
-    sm = SequenceMatcher(a=expected, b=asr_seq, autojunk=False)
-    blocks = sm.get_matching_blocks()  # list of Match(a, b, size), ends with size=0
-
-    # Build mapping expected_index -> asr_index for matched words
-    idx_map = {}
-    for blk in blocks:
-        for k in range(blk.size):
-            idx_map[blk.a + k] = blk.b + k
+    # Khop TUAN TU TIEN (greedy, khong bao gio nhay lui) thay vi
+    # difflib.SequenceMatcher (global). Nhieu bai co doan diep khuc/verse
+    # duoc HAT LAI y nguyen o cuoi bai (reprise) - vi du "Circles": ca doan
+    # mo dau duoc hat lai gan cuoi. Global matcher co the "an nham" ca khoi
+    # chu dau tien vao LAN HAT LAI (vi no cung la 1 chuoi khop dai), khien
+    # tat ca cac dong ngay sau bi dồn sai ve cuoi bai. Quet tien voi con tro
+    # CHI TANG, tim tu khop TRONG PHAM VI gan nhat phia truoc, dam bao luon
+    # bat duoc LAN HAT DAU TIEN cua moi cau, khong bao gio nhay lui.
+    # Gioi han hep (khong phai 40-60) CO CHU DICH: tu pho bien (vd "you",
+    # "the") lap lai rat nhieu trong bai hat - neu cho phep tim xa, 1 tu
+    # khong khop se khien con tro "nhay co hoi" toi 1 lan xuat hien XA VA SAI
+    # cua tu pho bien do, lam sai lech ca doan sau. Gioi han hep buoc loi
+    # (neu co) chi lam lech vai giay thay vi hang chuc giay.
+    LOOKAHEAD = 12
+    ptr = 0
+    asr_idx_for_expected = {}
+    for ei, w in enumerate(expected):
+        limit = min(n_asr, ptr + LOOKAHEAD)
+        found = None
+        for j in range(ptr, limit):
+            if asr_seq[j] == w:
+                found = j
+                break
+        if found is not None:
+            asr_idx_for_expected[ei] = found
+            ptr = found + 1
 
     result = {}
     for li, (num_start, _, en, _, old_num) in enumerate(lines):
@@ -117,27 +135,20 @@ def align_lines(lines, asr_words):
         end_expected_idx = (
             line_word_start_idx[li + 1] if li + 1 < len(lines) else len(expected)
         )
-        # Tim tu KHOP dau tien trong pham vi dong nay (uu tien tu dau, nhung
-        # neu tu dau khong khop thi lay tu khop dau tien tim duoc trong dong).
         found_asr_idx = None
         for ei in range(start_expected_idx, end_expected_idx):
-            if ei in idx_map:
-                # Bu lai offset: neu tu khop khong phai la tu DAU cua dong,
-                # tru di so tu da troi qua truoc do * ~0.35s/tu (uoc luong)
-                # -- nhung don gian hon: chi dung truc tiep timestamp cua tu
-                # khop, tru mot khoang nho theo vi tri tu trong dong.
+            if ei in asr_idx_for_expected:
                 offset_words = ei - start_expected_idx
-                asr_idx = idx_map[ei]
+                asr_idx = asr_idx_for_expected[ei]
                 t = asr_words[asr_idx]["t"]
                 if offset_words > 0 and asr_idx > 0:
                     # Uoc luong lui thoi gian bang trung binh khoang cach tu
                     # truoc do trong cung 1 cau ASR de ra thoi diem TU DAU dong.
                     lookback = min(offset_words, asr_idx)
                     t_prev = asr_words[asr_idx - lookback]["t"]
-                    if asr_idx - lookback >= 0:
-                        span = t - t_prev
-                        avg_gap = span / lookback if lookback else 0
-                        t = max(0.0, t - avg_gap * offset_words)
+                    span = t - t_prev
+                    avg_gap = span / lookback if lookback else 0
+                    t = max(0.0, t - avg_gap * offset_words)
                 found_asr_idx = t
                 break
         if found_asr_idx is not None:
@@ -179,19 +190,43 @@ def main():
             print(f"  !! no ASR words for {stem}, skipping")
             continue
         mapping = align_lines(block["lines"], asr_words)
+
+        # resolved[i] = [num_start, num_end, value, matched?]. Dong khong
+        # khop giu gia tri CU (uoc luong ty le) tam thoi - buoc sau se sua
+        # lai neu gia tri cu do gay nhay lui so voi dong truoc/sau da khop.
+        resolved = []
         matched = 0
         for num_start, num_end, en, vi, old_num in block["lines"]:
             new_val = mapping.get(num_start)
-            if new_val is None:
-                stats.append((stem, old_num, None, en))
-                continue
-            matched += 1
-            diff = new_val - old_num
-            stats.append((stem, old_num, new_val, en))
-            if abs(diff) >= 0.05:
-                new_str = f"{new_val:g}"
-                all_replacements.append((num_start, num_end, new_str))
+            if new_val is not None:
+                matched += 1
+                resolved.append([num_start, num_end, new_val, True, en, old_num])
+            else:
+                resolved.append([num_start, num_end, old_num, False, en, old_num])
         print(f"  matched {matched}/{len(block['lines'])} lines")
+
+        # Chong nhay lui: dong KHONG khop (van giu gia tri uoc luong cu) co
+        # the nam "lac cho" so voi cac dong lang gieng DA duoc cap nhat that
+        # tu ASR (vd 1 dong giua bai giu uoc luong ~194s trong khi 2 dong
+        # ke no vua duoc canh lai that ve ~16s va ~38s). Noi suy lai gia tri
+        # cho nhung dong nay giua 2 moc da "chot" (matched=True) gan nhat.
+        for i in range(1, len(resolved)):
+            if resolved[i][2] < resolved[i - 1][2]:
+                prev_val = resolved[i - 1][2]
+                next_ok = None
+                for k in range(i + 1, len(resolved)):
+                    if resolved[k][2] > prev_val:
+                        next_ok = resolved[k][2]
+                        break
+                new_val = round(
+                    prev_val + (next_ok - prev_val) * 0.3, 1
+                ) if next_ok is not None else round(prev_val + 1.0, 1)
+                resolved[i][2] = new_val
+
+        for num_start, num_end, val, was_matched, en, old_num in resolved:
+            stats.append((stem, old_num, val if was_matched else None, en))
+            if abs(val - old_num) >= 0.05:
+                all_replacements.append((num_start, num_end, f"{val:g}"))
 
     print()
     print("=== Summary (old -> new, song) ===")
