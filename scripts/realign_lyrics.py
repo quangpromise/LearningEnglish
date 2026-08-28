@@ -205,40 +205,77 @@ def main():
                 resolved.append([num_start, num_end, old_num, False, en, old_num])
         print(f"  matched {matched}/{len(block['lines'])} lines")
 
-        # Chong nhay lui: dong KHONG khop (van giu gia tri uoc luong cu) co
-        # the nam "lac cho" so voi cac dong lang gieng DA duoc cap nhat that
-        # tu ASR (vd 1 dong giua bai giu uoc luong ~194s trong khi 2 dong
-        # ke no vua duoc canh lai that ve ~16s va ~38s). Noi suy lai gia tri
-        # cho nhung dong nay giua 2 moc da "chot" (matched=True) gan nhat.
+        # Dong KHONG khop van dang giu gia tri UOC LUONG CU (tinh theo ty le
+        # do dai cau tren TONG thoi luong bai hat) - gia tri nay hau nhu
+        # luon SAI vi tri thuc te mot khi cac dong lang gieng da duoc canh
+        # lai bang thoi gian ASR that (vd dong truoc that su o giay 16, gia
+        # tri uoc luong cu cua dong nay lai la 194 - VAN "tang dan" so voi
+        # dong truoc nen khong bi bat boi kiem tra chong-nhay-lui truoc day,
+        # nhung tao ra 1 khoang trong khong-lam-gi hang tram giay khien loi
+        # bai hat "dung hinh" tren giao dien). Thay vi chi kiem tra nhay lui,
+        # LOAI BO hoan toan gia tri cu cho dong khong khop va NOI SUY TUYEN
+        # TINH giua 2 moc DA KHOP (matched=True) gan nhat truoc/sau no.
+        n = len(resolved)
+        for i in range(n):
+            if resolved[i][3]:  # da khop that tu ASR - giu nguyen
+                continue
+            prev_idx = next(
+                (k for k in range(i - 1, -1, -1) if resolved[k][3]), None
+            )
+            next_idx = next(
+                (k for k in range(i + 1, n) if resolved[k][3]), None
+            )
+            if prev_idx is not None and next_idx is not None:
+                prev_val = resolved[prev_idx][2]
+                next_val = resolved[next_idx][2]
+                frac = (i - prev_idx) / (next_idx - prev_idx)
+                new_val = round(prev_val + (next_val - prev_val) * frac, 1)
+            elif prev_idx is not None:
+                # Khong con moc khop nao sau no (cuoi bai) - noi tiep voi
+                # khoang cach trung binh ke tu moc khop gan nhat.
+                gap = (i - prev_idx) * 1.0
+                new_val = round(resolved[prev_idx][2] + gap, 1)
+            elif next_idx is not None:
+                # Khong co moc khop nao truoc no (dau bai).
+                gap = (next_idx - i) * 1.0
+                new_val = round(max(0.0, resolved[next_idx][2] - gap), 1)
+            else:
+                # Ca bai khong khop duoc dong nao - giu uoc luong cu, khong
+                # co du lieu ASR nao de doi chieu.
+                new_val = resolved[i][2]
+            resolved[i][2] = new_val
+
+        # Luoi an toan cuoi cung: NGAY CA 2 dong DA KHOP (matched=True) that
+        # tu ASR van co the bi dao thu tu voi nhau - "offset_words" trong
+        # align_lines() uoc luong LUI thoi gian ve dau dong dua tren khoang
+        # cach trung binh giua cac tu, neu tu khop nam o cuoi 1 dong dai va
+        # avg_gap lon, gia tri uoc luong lui co the vuot qua ca dong TRUOC.
+        # Ep cung mot lan nua: khong dong nao duoc phep co thoi gian nho hon
+        # hoac bang dong ngay truoc no.
         for i in range(1, len(resolved)):
-            if resolved[i][2] < resolved[i - 1][2]:
-                prev_val = resolved[i - 1][2]
-                next_ok = None
-                for k in range(i + 1, len(resolved)):
-                    if resolved[k][2] > prev_val:
-                        next_ok = resolved[k][2]
-                        break
-                new_val = round(
-                    prev_val + (next_ok - prev_val) * 0.3, 1
-                ) if next_ok is not None else round(prev_val + 1.0, 1)
-                resolved[i][2] = new_val
+            if resolved[i][2] <= resolved[i - 1][2]:
+                resolved[i][2] = round(resolved[i - 1][2] + 0.1, 1)
 
         for num_start, num_end, val, was_matched, en, old_num in resolved:
-            stats.append((stem, old_num, val if was_matched else None, en))
+            stats.append((stem, old_num, val, was_matched, en))
             if abs(val - old_num) >= 0.05:
                 all_replacements.append((num_start, num_end, f"{val:g}"))
 
     print()
     print("=== Summary (old -> new, song) ===")
-    big_changes = [s for s in stats if s[1] is not None and s[2] is not None and abs(s[2] - s[1]) >= 3]
-    unmatched = [s for s in stats if s[2] is None]
-    print(f"Total lines: {len(stats)}, unmatched: {len(unmatched)}, big shifts (>=3s): {len(big_changes)}")
-    for stem, old, new, en in big_changes[:30]:
+    matched_stats = [s for s in stats if s[3]]
+    unmatched_stats = [s for s in stats if not s[3]]
+    big_changes = [s for s in matched_stats if abs(s[2] - s[1]) >= 3]
+    print(
+        f"Total lines: {len(stats)}, matched from ASR: {len(matched_stats)}, "
+        f"interpolated (no ASR match): {len(unmatched_stats)}, big shifts (>=3s): {len(big_changes)}"
+    )
+    for stem, old, new, _, en in big_changes[:30]:
         print(f"  {stem}: {old} -> {new}  | {en[:50]}")
-    if unmatched:
-        print("Unmatched lines (kept old value):")
-        for stem, old, new, en in unmatched[:30]:
-            print(f"  {stem}: {old}  | {en[:50]}")
+    if unmatched_stats:
+        print("Interpolated lines (no direct ASR match):")
+        for stem, old, new, _, en in unmatched_stats[:30]:
+            print(f"  {stem}: {old} -> {new} (interpolated)  | {en[:50]}")
 
     if dry_run:
         print(f"\n[dry-run] Would apply {len(all_replacements)} replacements. No file written.")

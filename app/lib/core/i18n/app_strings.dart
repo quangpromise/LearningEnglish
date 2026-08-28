@@ -286,6 +286,10 @@ class AppStrings {
       AppLanguage.vi: 'Chạm để bắt đầu ghi âm',
       AppLanguage.en: 'Tap to start recording',
     },
+    'pron_scoring': {
+      AppLanguage.vi: 'Đang chấm điểm...',
+      AppLanguage.en: 'Scoring...',
+    },
     'pron_play_recording': {
       AppLanguage.vi: 'Nghe lại giọng của bạn',
       AppLanguage.en: 'Listen back to your recording',

@@ -47,6 +47,7 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
   Completer<void>? _finalResultCompleter;
   String? _recordedPath;
   bool _playingBack = false;
+  bool _scoring = false;
   String? _recordError;
 
   @override
@@ -182,24 +183,24 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
   }
 
   Future<void> _toggleListening() async {
-    if (!_available) return;
+    if (!_available || _scoring) return;
     if (_listening) {
-      // speech_to_text co the con gui 1 onResult(finalResult: true) SAU khi
-      // stop() da resolve - neu cham diem ngay luc nay, _recognized co the
-      // chi la ket qua tam thoi (partial), khien diem sai/thap bat thuong.
-      // Doi ket qua cuoi cung toi da 1.5s truoc khi cham.
-      final completer = Completer<void>();
-      _finalResultCompleter = completer;
-      await _speech.stop();
+      // Da thu chay `record` (ghi file tho) va `speech_to_text` (nhan dien
+      // song song) CUNG LUC nhieu lan - Android luon "cam" file cua `record`
+      // (im lang hoan toan) du doi audioSource nao, vi day la gioi han nen
+      // tang cua he dieu hanh (khong cho 2 phien capture mic tranh nhau tin
+      // hieu that khi 1 ben la SpeechRecognizer he thong), khong phai loi
+      // config sua duoc. Nen tach lam 2 GIAI DOAN TUAN TU thay vi chay song
+      // song: (1) chi `record` ghi am sach (khong co gi tranh chap mic),
+      // (2) sau khi dung, PHAT LAI chinh file do qua loa trong luc
+      // `speech_to_text` dang nghe qua mic de lay transcript cham diem -
+      // mic luc nay cung chi co 1 ben dung (STT), khong con xung dot.
       final recordedPath = await _recorder.stop();
-      await completer.future.timeout(
-        const Duration(milliseconds: 1500),
-        onTimeout: () {},
-      );
       if (!mounted) return;
       setState(() {
         _listening = false;
         _recordedPath = recordedPath;
+        _scoring = recordedPath != null;
       });
       final startedAt = _listenStartedAt;
       if (startedAt != null) {
@@ -208,7 +209,9 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
           ref.read(statsRepositoryProvider).addPracticeSeconds(elapsed);
         }
       }
-      _scoreAttempt();
+      if (recordedPath != null) {
+        await _scoreViaLoopback(recordedPath);
+      }
       return;
     }
     _listenStartedAt = DateTime.now();
@@ -224,22 +227,7 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
         final dir = await getTemporaryDirectory();
         final path =
             '${dir.path}/pronunciation_attempt_${DateTime.now().millisecondsSinceEpoch}.m4a';
-        // AudioSource mac dinh ("defaultSource"/"mic") gan nhu luon bi CAM
-        // (file ra hoan toan im lang) khi speech_to_text dang chay dong thoi.
-        // Da thu "voiceRecognition" (cung loai SpeechRecognizer dang dung)
-        // nhung van bi cam - kha nang cao thu pham la cac hieu ung xu ly
-        // tin hieu (AGC/AEC/NS) ma Android ap dung khi phien SpeechRecognizer
-        // dang hoat dong, chung "de" len ca luong AudioRecord thu 2 cua app.
-        // "unprocessed" yeu cau tin hieu THO, khong qua bat ky hieu ung nao -
-        // day la nguon duy nhat duoc thiet ke rieng de tranh dung do.
-        await _recorder.start(
-          const rec.RecordConfig(
-            androidConfig: rec.AndroidRecordConfig(
-              audioSource: rec.AndroidAudioSource.unprocessed,
-            ),
-          ),
-          path: path,
-        );
+        await _recorder.start(const rec.RecordConfig(), path: path);
       } else if (mounted) {
         setState(() => _recordError = ref.tr('pron_mic_permission_missing'));
       }
@@ -248,16 +236,53 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
         setState(() => _recordError = '${ref.tr('pron_record_failed')} $e');
       }
     }
-    await _speech.listen(
-      onResult: (result) {
-        setState(() => _recognized = result.recognizedWords);
-        if (result.finalResult &&
-            !(_finalResultCompleter?.isCompleted ?? true)) {
-          _finalResultCompleter!.complete();
-        }
-      },
-      listenOptions: stt.SpeechListenOptions(localeId: 'en_US'),
-    );
+  }
+
+  /// Phat lai file vua ghi qua loa trong luc `speech_to_text` dang nghe qua
+  /// mic, de lay transcript cham diem MA KHONG can chay 2 phien capture mic
+  /// cung luc (xem giai thich trong _toggleListening). Rui ro da biet: che
+  /// do chong vong (AEC) cua may co the lam giam do chinh xac nhan dien so
+  /// voi noi truc tiep vao mic - chap nhan danh doi nay de nut "nghe lai
+  /// ghi am" luon phat ra am thanh that thay vi im lang.
+  Future<void> _scoreViaLoopback(String path) async {
+    try {
+      final session = await AudioSession.instance;
+      await session.configure(const AudioSessionConfiguration.music());
+
+      final completer = Completer<void>();
+      _finalResultCompleter = completer;
+      await _speech.listen(
+        onResult: (result) {
+          setState(() => _recognized = result.recognizedWords);
+          if (result.finalResult &&
+              !(_finalResultCompleter?.isCompleted ?? true)) {
+            _finalResultCompleter!.complete();
+          }
+        },
+        listenOptions: stt.SpeechListenOptions(localeId: 'en_US'),
+      );
+      // Cho STT thuc su vao trang thai dang nghe truoc khi phat, tranh mat
+      // vai tu dau do phien nhan dien chua kip khoi dong xong.
+      await Future.delayed(const Duration(milliseconds: 400));
+
+      await _playbackPlayer.setFilePath(path);
+      unawaited(_playbackPlayer.play());
+      await _playbackPlayer.processingStateStream.firstWhere(
+        (s) => s == ProcessingState.completed,
+      );
+      await _speech.stop();
+      await completer.future.timeout(
+        const Duration(milliseconds: 1500),
+        onTimeout: () {},
+      );
+    } catch (e) {
+      if (mounted) {
+        setState(() => _recordError = '${ref.tr('pron_record_failed')} $e');
+      }
+    } finally {
+      if (mounted) setState(() => _scoring = false);
+    }
+    _scoreAttempt();
   }
 
   Future<void> _playRecording() async {
@@ -376,7 +401,7 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
               Text(ref.tr('pron_no_mic'), style: AppTextStyles.muted())
             else
               GestureDetector(
-                onTap: _toggleListening,
+                onTap: _scoring ? null : _toggleListening,
                 child: Container(
                   width: 88,
                   height: 88,
@@ -386,27 +411,37 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
                     boxShadow: [
                       BoxShadow(
                         color: (_listening ? AppColors.pink : AppColors.blue)
-                            .withValues(alpha: 0.5),
+                            .withValues(alpha: _scoring ? 0.2 : 0.5),
                         blurRadius: 50,
                         offset: const Offset(0, 20),
                       ),
                     ],
                   ),
-                  child: Icon(
-                    _listening ? Icons.stop_rounded : Icons.mic_rounded,
-                    color: Colors.white,
-                    size: 32,
-                  ),
+                  child: _scoring
+                      ? const Padding(
+                          padding: EdgeInsets.all(28),
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 3,
+                          ),
+                        )
+                      : Icon(
+                          _listening ? Icons.stop_rounded : Icons.mic_rounded,
+                          color: Colors.white,
+                          size: 32,
+                        ),
                 ),
               ),
             const SizedBox(height: 12),
             Text(
-              _listening
+              _scoring
+                  ? ref.tr('pron_scoring')
+                  : _listening
                   ? ref.tr('pron_listening_stop')
                   : ref.tr('pron_tap_to_record'),
               style: AppTextStyles.muted(),
             ),
-            if (!_listening && _recordedPath != null) ...[
+            if (!_listening && !_scoring && _recordedPath != null) ...[
               const SizedBox(height: 10),
               GestureDetector(
                 onTap: _playingBack ? null : _playRecording,
