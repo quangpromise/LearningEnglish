@@ -28,7 +28,7 @@ Xem quy tắc bắt buộc đầy đủ trong [CLAUDE.md](../CLAUDE.md#nguồn-n
 
 Ghi chú chọn lọc: trong danh sách bài hát nổi bật trên trang chủ Josh Woodward (~22 bài), đã loại 2 bài không phù hợp cho app học tiếng Anh đại trà — "I Want to Destroy Something Beautiful" (giọng điệu gay gắt/nhắc rượu) và "Wade" (từ vựng nâng cao, giễu nhại tiêu dùng, đã ghi nhận là lựa chọn cho cấp độ nâng cao nếu sau này cần).
 
-Ghi chú kỹ thuật: timestamp đồng bộ lyric-nhạc trong `songs_data.dart` hiện là **ước lượng** (phân bổ tỉ lệ theo độ dài từng câu trên tổng thời lượng bài hát), không phải forced-alignment thật từ việc nghe file — vì chưa có công cụ nghe/tách giọng tại thời điểm thêm dữ liệu. Cần nghe lại và tinh chỉnh `startSeconds` thủ công cho khớp chính xác trước khi coi lyric-sync là "chuẩn".
+Ghi chú kỹ thuật: timestamp đồng bộ lyric-nhạc trong `songs_data.dart` đã được canh lại bằng **forced-alignment tự động** — chạy ASR (faster-whisper, xem `scripts/realign_lyrics.py`) trên từng file audio thật để lấy timestamp cấp-từ, rồi align tuần tự với text lyric có sẵn (chỉ lấy timestamp từ ASR, KHÔNG đổi nội dung lời đã viết sẵn — tránh ASR nghe nhầm làm sai lời bài hát). ~95% số dòng (497/524) khớp được; số còn lại (đoạn nhạc nền át giọng, ASR không nhận diện được) giữ ước lượng cũ hoặc nội suy giữa 2 mốc lân cận để tránh lệch thứ tự thời gian. Chạy lại `python scripts/realign_lyrics.py` (cần `pip install faster-whisper`) khi thêm bài mới hoặc muốn canh lại — dùng `--dry-run` để xem trước, `--only <ten-file-khong-duoi>` để chạy 1 bài.
 
 ## Lưu trữ/host file khi scale
 - Giai đoạn đầu (hiện tại): commit trực tiếp file mp3 vào repo tại `content/audio/`, app stream qua `raw.githubusercontent.com` — đơn giản, không tốn thêm hạ tầng, phù hợp vài bài hát đầu tiên.
