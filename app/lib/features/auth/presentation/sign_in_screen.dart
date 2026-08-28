@@ -71,11 +71,15 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   Future<void> _resendConfirmation() {
     final identifier = _emailCtrl.text.trim();
     if (identifier.isEmpty || !identifier.contains('@')) {
-      setState(() => _error = 'Nhập email đã đăng ký để gửi lại link xác nhận.');
+      setState(
+        () => _error = 'Nhập email đã đăng ký để gửi lại link xác nhận.',
+      );
       return Future.value();
     }
     return _run(() async {
-      await ref.read(authRepositoryProvider).resendConfirmationEmail(identifier);
+      await ref
+          .read(authRepositoryProvider)
+          .resendConfirmationEmail(identifier);
       if (mounted) {
         setState(() => _info = 'Đã gửi lại email xác nhận. Kiểm tra hộp thư.');
       }

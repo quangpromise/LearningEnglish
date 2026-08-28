@@ -166,57 +166,57 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                       onRefresh: _refresh,
                       color: AppColors.blue,
                       child: ListView(
-                      children: [
-                        requestsAsync.when(
-                          loading: () => const SizedBox.shrink(),
-                          error: (_, _) => const SizedBox.shrink(),
-                          data: (requests) => requests.isEmpty
-                              ? const SizedBox.shrink()
-                              : _buildSection(
-                                  ref.tr('friends_pending_requests'),
-                                  requests
-                                      .map(
-                                        (u) => _RequestTile(
-                                          user: u,
-                                          onAccept: () => _accept(u),
-                                          onDecline: () => _decline(u),
-                                        ),
-                                      )
-                                      .toList(),
+                        children: [
+                          requestsAsync.when(
+                            loading: () => const SizedBox.shrink(),
+                            error: (_, _) => const SizedBox.shrink(),
+                            data: (requests) => requests.isEmpty
+                                ? const SizedBox.shrink()
+                                : _buildSection(
+                                    ref.tr('friends_pending_requests'),
+                                    requests
+                                        .map(
+                                          (u) => _RequestTile(
+                                            user: u,
+                                            onAccept: () => _accept(u),
+                                            onDecline: () => _decline(u),
+                                          ),
+                                        )
+                                        .toList(),
+                                  ),
+                          ),
+                          const SizedBox(height: 8),
+                          friendsAsync.when(
+                            loading: () => const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 24),
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  color: AppColors.blue,
                                 ),
-                        ),
-                        const SizedBox(height: 8),
-                        friendsAsync.when(
-                          loading: () => const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 24),
-                            child: Center(
-                              child: CircularProgressIndicator(
-                                color: AppColors.blue,
                               ),
                             ),
-                          ),
-                          error: (_, _) => Text(
-                            ref.tr('friends_load_error'),
-                            style: AppTextStyles.muted(),
-                          ),
-                          data: (friends) => friends.isEmpty
-                              ? Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 24,
+                            error: (_, _) => Text(
+                              ref.tr('friends_load_error'),
+                              style: AppTextStyles.muted(),
+                            ),
+                            data: (friends) => friends.isEmpty
+                                ? Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 24,
+                                    ),
+                                    child: Text(
+                                      ref.tr('friends_empty'),
+                                      style: AppTextStyles.muted(),
+                                    ),
+                                  )
+                                : _buildSection(
+                                    ref.tr('friends_list_title'),
+                                    friends
+                                        .map((u) => _FriendTile(user: u))
+                                        .toList(),
                                   ),
-                                  child: Text(
-                                    ref.tr('friends_empty'),
-                                    style: AppTextStyles.muted(),
-                                  ),
-                                )
-                              : _buildSection(
-                                  ref.tr('friends_list_title'),
-                                  friends
-                                      .map((u) => _FriendTile(user: u))
-                                      .toList(),
-                                ),
-                        ),
-                      ],
+                          ),
+                        ],
                       ),
                     ),
             ),
