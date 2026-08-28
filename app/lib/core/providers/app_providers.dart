@@ -8,6 +8,7 @@ import '../../features/music_player/data/favorites_repository.dart';
 import '../../features/profile/data/profile_repository.dart';
 import '../../features/quiz/data/leaderboard_repository.dart';
 import '../../features/rewards/data/rewards_repository.dart';
+import '../../features/social/data/social_repository.dart';
 import '../../features/stats/data/stats_repository.dart';
 import '../i18n/app_language.dart';
 
@@ -72,6 +73,22 @@ final favoritesRepositoryProvider = Provider<FavoritesRepository>(
 /// `ref.invalidate(favoriteSongTitlesProvider)` sau khi bật/tắt yêu thích.
 final favoriteSongTitlesProvider = FutureProvider(
   (ref) => ref.watch(favoritesRepositoryProvider).fetchFavoriteTitles(),
+);
+
+final socialRepositoryProvider = Provider<SocialRepository>(
+  (ref) => SocialRepository(ref.watch(supabaseClientProvider)),
+);
+
+/// Danh sách bạn bè (đã chấp nhận) kèm trạng thái online. Gọi
+/// `ref.invalidate(myFriendsProvider)` sau khi kết bạn/hủy kết bạn.
+final myFriendsProvider = FutureProvider(
+  (ref) => ref.watch(socialRepositoryProvider).fetchFriends(),
+);
+
+/// Lời mời kết bạn đang chờ mình chấp nhận. Gọi
+/// `ref.invalidate(myPendingRequestsProvider)` sau khi phản hồi lời mời.
+final myPendingRequestsProvider = FutureProvider(
+  (ref) => ref.watch(socialRepositoryProvider).fetchPendingRequests(),
 );
 
 const _appLanguagePrefKey = 'app_language';

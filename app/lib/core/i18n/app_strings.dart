@@ -136,6 +136,14 @@ class AppStrings {
       AppLanguage.vi: 'Chỉ áp dụng cho tài khoản đăng ký email',
       AppLanguage.en: 'Only for email-registered accounts',
     },
+    'profile_friends_title': {
+      AppLanguage.vi: 'Bạn bè',
+      AppLanguage.en: 'Friends',
+    },
+    'profile_friends_subtitle': {
+      AppLanguage.vi: 'Kết bạn, nhắn tin, xem ai đang online',
+      AppLanguage.en: 'Add friends, chat, see who is online',
+    },
     'profile_language_title': {
       AppLanguage.vi: 'Ngôn ngữ ứng dụng',
       AppLanguage.en: 'App language',
@@ -186,6 +194,57 @@ class AppStrings {
       AppLanguage.vi: 'Chưa có hoạt động nào tuần này',
       AppLanguage.en: 'No activity this week yet',
     },
+    // Friends & chat (friends_screen.dart, chat_screen.dart)
+    'friends_title': {AppLanguage.vi: 'Bạn bè', AppLanguage.en: 'Friends'},
+    'friends_search_hint': {
+      AppLanguage.vi: 'Tìm bạn theo tên...',
+      AppLanguage.en: 'Search people by name...',
+    },
+    'friends_pending_requests': {
+      AppLanguage.vi: 'LỜI MỜI KẾT BẠN',
+      AppLanguage.en: 'FRIEND REQUESTS',
+    },
+    'friends_list_title': {AppLanguage.vi: 'BẠN BÈ', AppLanguage.en: 'FRIENDS'},
+    'friends_load_error': {
+      AppLanguage.vi: 'Không tải được danh sách bạn bè.',
+      AppLanguage.en: "Couldn't load your friends list.",
+    },
+    'friends_empty': {
+      AppLanguage.vi:
+          'Chưa có bạn bè nào. Tìm và kết bạn ở ô tìm kiếm phía trên.',
+      AppLanguage.en: 'No friends yet. Search above to add some.',
+    },
+    'friends_no_results': {
+      AppLanguage.vi: 'Không tìm thấy ai phù hợp',
+      AppLanguage.en: 'No matching users found',
+    },
+    'friends_status_friends': {
+      AppLanguage.vi: 'Bạn bè',
+      AppLanguage.en: 'Friends',
+    },
+    'friends_status_pending': {
+      AppLanguage.vi: 'Đã gửi lời mời',
+      AppLanguage.en: 'Request sent',
+    },
+    'friends_add_button': {AppLanguage.vi: 'Kết bạn', AppLanguage.en: 'Add'},
+    'friends_online': {AppLanguage.vi: 'Đang online', AppLanguage.en: 'Online'},
+    'friends_offline': {
+      AppLanguage.vi: 'Không hoạt động',
+      AppLanguage.en: 'Offline',
+    },
+    'chat_load_error': {
+      AppLanguage.vi: 'Không tải được tin nhắn.',
+      AppLanguage.en: "Couldn't load messages.",
+    },
+    'chat_say_hi': {
+      AppLanguage.vi: 'Chưa có tin nhắn nào. Gửi lời chào đầu tiên nhé!',
+      AppLanguage.en: 'No messages yet. Say hi!',
+    },
+    'chat_input_hint': {
+      AppLanguage.vi: 'Nhắn gì đó...',
+      AppLanguage.en: 'Type a message...',
+    },
+
     'profile_avatar_error': {
       AppLanguage.vi: 'Không tải được avatar:',
       AppLanguage.en: "Couldn't upload avatar:",

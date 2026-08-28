@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../providers/app_providers.dart';
 import '../theme/app_theme.dart';
 import '../../features/music_player/presentation/home_screen.dart';
 import '../../features/pronunciation/presentation/pronunciation_screen.dart';
@@ -10,14 +12,15 @@ import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/update/presentation/update_dialog.dart';
 import '../../features/vocabulary/presentation/vocabulary_topics_screen.dart';
 
-class RootShell extends StatefulWidget {
+class RootShell extends ConsumerStatefulWidget {
   const RootShell({super.key});
 
   @override
-  State<RootShell> createState() => _RootShellState();
+  ConsumerState<RootShell> createState() => _RootShellState();
 }
 
-class _RootShellState extends State<RootShell> with WidgetsBindingObserver {
+class _RootShellState extends ConsumerState<RootShell>
+    with WidgetsBindingObserver {
   int _tab = 0;
 
   static const _screens = [
@@ -37,6 +40,7 @@ class _RootShellState extends State<RootShell> with WidgetsBindingObserver {
   ];
 
   Timer? _updateCheckTimer;
+  Timer? _presenceTimer;
 
   @override
   void initState() {
@@ -52,12 +56,21 @@ class _RootShellState extends State<RootShell> with WidgetsBindingObserver {
     _updateCheckTimer = Timer.periodic(const Duration(minutes: 15), (_) {
       if (mounted) showUpdateDialogIfAvailable(context);
     });
+    // "Dang online" duoc tinh o server bang last_seen_at trong vong 90s gan
+    // nhat (xem my_friends() trong migration) - can heartbeat thuong xuyen
+    // hon khoang do de ban be thay minh dang online chinh xac trong luc app
+    // dang mo o foreground.
+    ref.read(socialRepositoryProvider).updatePresence().catchError((_) {});
+    _presenceTimer = Timer.periodic(const Duration(seconds: 45), (_) {
+      ref.read(socialRepositoryProvider).updatePresence().catchError((_) {});
+    });
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _updateCheckTimer?.cancel();
+    _presenceTimer?.cancel();
     super.dispose();
   }
 
@@ -69,6 +82,7 @@ class _RootShellState extends State<RootShell> with WidgetsBindingObserver {
     // app quay lai foreground.
     if (state == AppLifecycleState.resumed && mounted) {
       showUpdateDialogIfAvailable(context);
+      ref.read(socialRepositoryProvider).updatePresence().catchError((_) {});
     }
   }
 
