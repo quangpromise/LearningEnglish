@@ -120,6 +120,12 @@ class AuthRepository {
     );
   }
 
+  /// Gửi lại email xác nhận đăng ký (khi dự án bật "Confirm email" trong
+  /// Supabase Dashboard và người dùng chưa bấm link xác nhận lần đầu).
+  Future<void> resendConfirmationEmail(String email) async {
+    await _supabase.auth.resend(type: OtpType.signup, email: email);
+  }
+
   Future<void> signOut() async {
     await GoogleSignIn().signOut();
     await _supabase.auth.signOut();

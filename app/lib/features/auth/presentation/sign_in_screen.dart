@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
@@ -40,11 +41,45 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     });
     try {
       await action();
+    } on AuthApiException catch (e) {
+      setState(() => _error = _messageForAuthError(e));
     } catch (e) {
       setState(() => _error = 'Thất bại: $e');
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  /// Supabase mac dinh yeu cau xac nhan email truoc khi dang nhap duoc -
+  /// neu bat "Confirm email" trong Dashboard, tai khoan vua dang ky se bi
+  /// tu choi dang nhap voi ma loi nay cho toi khi bam link trong email. Ma
+  /// loi goc bi che sau exception mac dinh nen phai bat theo `e.code`.
+  String _messageForAuthError(AuthApiException e) {
+    switch (e.code) {
+      case 'email_not_confirmed':
+        return 'Tài khoản chưa xác nhận email. Vui lòng kiểm tra hộp thư '
+            '(kể cả mục spam) và bấm vào link xác nhận trước khi đăng nhập.';
+      case 'invalid_credentials':
+        return 'Email/tên người dùng hoặc mật khẩu không đúng.';
+      case 'user_already_exists':
+        return 'Email này đã được đăng ký. Hãy đăng nhập hoặc dùng "Quên mật khẩu".';
+      default:
+        return 'Thất bại: ${e.message}';
+    }
+  }
+
+  Future<void> _resendConfirmation() {
+    final identifier = _emailCtrl.text.trim();
+    if (identifier.isEmpty || !identifier.contains('@')) {
+      setState(() => _error = 'Nhập email đã đăng ký để gửi lại link xác nhận.');
+      return Future.value();
+    }
+    return _run(() async {
+      await ref.read(authRepositoryProvider).resendConfirmationEmail(identifier);
+      if (mounted) {
+        setState(() => _info = 'Đã gửi lại email xác nhận. Kiểm tra hộp thư.');
+      }
+    });
   }
 
   Future<void> _signInWithGoogle() =>
@@ -175,6 +210,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
             const SizedBox(height: 18),
             if (isSignUp) ...[
               _AuthField(
+                key: const ValueKey('auth_field_username'),
                 controller: _usernameCtrl,
                 label: ref.tr('auth_username'),
                 icon: Icons.person_outline_rounded,
@@ -182,6 +218,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
               const SizedBox(height: 12),
             ],
             _AuthField(
+              key: const ValueKey('auth_field_email'),
               controller: _emailCtrl,
               label: isSignUp
                   ? ref.tr('auth_email')
@@ -193,6 +230,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
             ),
             const SizedBox(height: 12),
             _AuthField(
+              key: const ValueKey('auth_field_password'),
               controller: _passwordCtrl,
               label: ref.tr('auth_password'),
               icon: Icons.lock_outline_rounded,
@@ -222,6 +260,21 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                 textAlign: TextAlign.center,
                 style: AppTextStyles.body(size: 12, color: AppColors.pink),
               ),
+              if (_error!.contains('chưa xác nhận email')) ...[
+                const SizedBox(height: 6),
+                GestureDetector(
+                  onTap: _loading ? null : _resendConfirmation,
+                  child: Text(
+                    'Gửi lại email xác nhận',
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.body(
+                      size: 12,
+                      weight: FontWeight.w700,
+                      color: AppColors.blue,
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(height: 12),
             ],
             if (_info != null) ...[
@@ -314,6 +367,7 @@ class _ModeTab extends StatelessWidget {
 
 class _AuthField extends StatefulWidget {
   const _AuthField({
+    super.key,
     required this.controller,
     required this.label,
     required this.icon,

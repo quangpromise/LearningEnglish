@@ -23,6 +23,29 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
   Timer? _debounce;
 
   @override
+  void initState() {
+    super.initState();
+    // Cac provider nay khong tu dong lam moi neu da tung fetch trong phien
+    // nay - invalidate moi lan mo man hinh de loi moi ket ban moi gui toi
+    // trong luc minh o man hinh khac cung hien ra ngay, khong can khoi
+    // dong lai app.
+    Future.microtask(() {
+      if (!mounted) return;
+      ref.invalidate(myPendingRequestsProvider);
+      ref.invalidate(myFriendsProvider);
+    });
+  }
+
+  Future<void> _refresh() async {
+    ref.invalidate(myPendingRequestsProvider);
+    ref.invalidate(myFriendsProvider);
+    await Future.wait([
+      ref.read(myPendingRequestsProvider.future),
+      ref.read(myFriendsProvider.future),
+    ]);
+  }
+
+  @override
   void dispose() {
     _debounce?.cancel();
     _searchCtrl.dispose();
@@ -139,7 +162,10 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
             Expanded(
               child: _searchCtrl.text.trim().isNotEmpty
                   ? _buildSearchResults()
-                  : ListView(
+                  : RefreshIndicator(
+                      onRefresh: _refresh,
+                      color: AppColors.blue,
+                      child: ListView(
                       children: [
                         requestsAsync.when(
                           loading: () => const SizedBox.shrink(),
@@ -191,6 +217,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                                 ),
                         ),
                       ],
+                      ),
                     ),
             ),
           ],

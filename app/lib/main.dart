@@ -66,6 +66,20 @@ class _AuthGate extends ConsumerWidget {
     final authState = ref.watch(authStateProvider);
     final session = Supabase.instance.client.auth.currentSession;
 
+    // Cac provider "cua toi" (ho so, stats, ban be...) la FutureProvider,
+    // Riverpod mac dinh cache ket qua cho ca vong doi app. Neu khong lam
+    // moi khi doi trang thai dang nhap, doi tai khoan tren cung may se
+    // hien du lieu CU cua tai khoan truoc do. invalidate het moi khi thuc
+    // su co su kien dang nhap/dang xuat (khong invalidate voi cac event
+    // khac nhu tokenRefreshed de tranh goi lai API khong can thiet).
+    ref.listen<AsyncValue<AuthState>>(authStateProvider, (previous, next) {
+      final event = next.value?.event;
+      if (event == AuthChangeEvent.signedIn ||
+          event == AuthChangeEvent.signedOut) {
+        invalidateUserScopedProviders(ref);
+      }
+    });
+
     if (authState.isLoading && session == null) {
       return const ScreenBackground(
         child: Center(child: CircularProgressIndicator()),

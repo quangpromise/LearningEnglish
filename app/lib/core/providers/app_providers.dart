@@ -36,7 +36,10 @@ final passwordRecoveryHandledProvider = StateProvider<bool>((ref) => false);
 
 /// Điểm thưởng & tier của user hiện tại. Gọi `ref.invalidate(myRewardsProvider)`
 /// sau khi admin cấp điểm để làm mới lại số dư trên UI.
-final myRewardsProvider = FutureProvider(
+/// autoDispose để không giữ dữ liệu của user cũ khi widget xem nó bị huỷ
+/// (vd đăng xuất) - kết hợp với invalidate thủ công trong main.dart _AuthGate
+/// khi đổi trạng thái đăng nhập (2 lớp bảo vệ chống lộ dữ liệu chéo user).
+final myRewardsProvider = FutureProvider.autoDispose(
   (ref) => ref.watch(rewardsRepositoryProvider).fetchMyRewards(),
 );
 
@@ -45,8 +48,9 @@ final profileRepositoryProvider = Provider<ProfileRepository>(
 );
 
 /// Hồ sơ (tên, avatar) của user hiện tại. Gọi `ref.invalidate(myProfileProvider)`
-/// sau khi đổi avatar để làm mới lại UI.
-final myProfileProvider = FutureProvider(
+/// sau khi đổi avatar để làm mới lại UI. autoDispose - xem ghi chú ở
+/// myRewardsProvider.
+final myProfileProvider = FutureProvider.autoDispose(
   (ref) => ref.watch(profileRepositoryProvider).fetchMyProfile(),
 );
 
@@ -57,7 +61,7 @@ final statsRepositoryProvider = Provider<StatsRepository>(
 /// Thống kê thật của user hiện tại (từ đã học, bài hoàn thành...). Gọi
 /// `ref.invalidate(myStatsProvider)` sau khi ghi nhận hành động mới hoặc
 /// reset để làm mới lại số liệu trên UI.
-final myStatsProvider = FutureProvider(
+final myStatsProvider = FutureProvider.autoDispose(
   (ref) => ref.watch(statsRepositoryProvider).fetchMyStats(),
 );
 
@@ -71,7 +75,7 @@ final favoritesRepositoryProvider = Provider<FavoritesRepository>(
 
 /// Tên các bài hát user đã đánh dấu yêu thích. Gọi
 /// `ref.invalidate(favoriteSongTitlesProvider)` sau khi bật/tắt yêu thích.
-final favoriteSongTitlesProvider = FutureProvider(
+final favoriteSongTitlesProvider = FutureProvider.autoDispose(
   (ref) => ref.watch(favoritesRepositoryProvider).fetchFavoriteTitles(),
 );
 
@@ -81,15 +85,27 @@ final socialRepositoryProvider = Provider<SocialRepository>(
 
 /// Danh sách bạn bè (đã chấp nhận) kèm trạng thái online. Gọi
 /// `ref.invalidate(myFriendsProvider)` sau khi kết bạn/hủy kết bạn.
-final myFriendsProvider = FutureProvider(
+final myFriendsProvider = FutureProvider.autoDispose(
   (ref) => ref.watch(socialRepositoryProvider).fetchFriends(),
 );
 
 /// Lời mời kết bạn đang chờ mình chấp nhận. Gọi
 /// `ref.invalidate(myPendingRequestsProvider)` sau khi phản hồi lời mời.
-final myPendingRequestsProvider = FutureProvider(
+final myPendingRequestsProvider = FutureProvider.autoDispose(
   (ref) => ref.watch(socialRepositoryProvider).fetchPendingRequests(),
 );
+
+/// Toàn bộ provider gắn với user hiện tại - gọi invalidate hết mỗi khi
+/// đăng nhập/đăng xuất (main.dart _AuthGate) để tránh hiện dữ liệu của
+/// tài khoản trước đó khi đổi sang tài khoản khác trên cùng máy.
+void invalidateUserScopedProviders(Ref ref) {
+  ref.invalidate(myProfileProvider);
+  ref.invalidate(myStatsProvider);
+  ref.invalidate(myRewardsProvider);
+  ref.invalidate(myFriendsProvider);
+  ref.invalidate(myPendingRequestsProvider);
+  ref.invalidate(favoriteSongTitlesProvider);
+}
 
 const _appLanguagePrefKey = 'app_language';
 
