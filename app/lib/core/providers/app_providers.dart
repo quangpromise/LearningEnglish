@@ -98,7 +98,7 @@ final myPendingRequestsProvider = FutureProvider.autoDispose(
 /// Toàn bộ provider gắn với user hiện tại - gọi invalidate hết mỗi khi
 /// đăng nhập/đăng xuất (main.dart _AuthGate) để tránh hiện dữ liệu của
 /// tài khoản trước đó khi đổi sang tài khoản khác trên cùng máy.
-void invalidateUserScopedProviders(Ref ref) {
+void invalidateUserScopedProviders(WidgetRef ref) {
   ref.invalidate(myProfileProvider);
   ref.invalidate(myStatsProvider);
   ref.invalidate(myRewardsProvider);
