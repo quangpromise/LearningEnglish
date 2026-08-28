@@ -561,7 +561,16 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
                 Expanded(
                   child: PillButton(
                     label: ref.tr('pron_done'),
-                    onTap: () => Navigator.of(context).maybePop(),
+                    // Man hinh nay la 1 tab goc trong IndexedStack cua
+                    // RootShell (khong bao gio duoc Navigator.push), nen
+                    // Navigator.maybePop() truoc day khong co gi de pop -
+                    // nut bam khong lam gi ca. "Done" o day nghia la dong
+                    // bang ket qua, quay ve trang thai san sang ghi lai.
+                    onTap: () => setState(() {
+                      _score = null;
+                      _recognized = '';
+                      _recordedPath = null;
+                    }),
                   ),
                 ),
               ],
