@@ -20,6 +20,40 @@ class AppStrings {
       AppLanguage.en: 'Pronunciation',
     },
     'nav_profile': {AppLanguage.vi: 'Hồ sơ', AppLanguage.en: 'Profile'},
+    'nav_vocab': {AppLanguage.vi: 'Từ vựng', AppLanguage.en: 'Vocabulary'},
+
+    // Vocabulary feature (vocabulary_*_screen.dart)
+    'vocab_title': {
+      AppLanguage.vi: 'Từ vựng theo chủ đề',
+      AppLanguage.en: 'Vocabulary by topic',
+    },
+    'vocab_subtitle': {
+      AppLanguage.vi: 'Chọn một chủ đề để bắt đầu học',
+      AppLanguage.en: 'Pick a topic to start learning',
+    },
+    'vocab_word_count': {AppLanguage.vi: 'từ', AppLanguage.en: 'words'},
+    'vocab_select_hint': {
+      AppLanguage.vi: 'Chọn tối đa {max} từ để học hôm nay',
+      AppLanguage.en: 'Select up to {max} words to learn today',
+    },
+    'vocab_start_learning': {
+      AppLanguage.vi: 'Bắt đầu học',
+      AppLanguage.en: 'Start learning',
+    },
+    'vocab_question_label': {AppLanguage.vi: 'Câu', AppLanguage.en: 'Question'},
+    'vocab_choose_word_for': {
+      AppLanguage.vi: 'CHỌN TỪ TIẾNG ANH ĐÚNG CHO',
+      AppLanguage.en: 'CHOOSE THE CORRECT ENGLISH WORD FOR',
+    },
+    'vocab_completed': {
+      AppLanguage.vi: 'HOÀN THÀNH',
+      AppLanguage.en: 'COMPLETED',
+    },
+    'vocab_correct_count': {
+      AppLanguage.vi: 'câu đúng',
+      AppLanguage.en: 'correct',
+    },
+    'vocab_done': {AppLanguage.vi: 'Xong', AppLanguage.en: 'Done'},
 
     // Sign-in screen
     'auth_tagline': {

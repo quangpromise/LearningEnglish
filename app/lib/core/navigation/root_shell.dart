@@ -8,6 +8,7 @@ import '../../features/pronunciation/presentation/pronunciation_screen.dart';
 import '../../features/quiz/presentation/quiz_category_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/update/presentation/update_dialog.dart';
+import '../../features/vocabulary/presentation/vocabulary_topics_screen.dart';
 
 class RootShell extends StatefulWidget {
   const RootShell({super.key});
@@ -21,6 +22,7 @@ class _RootShellState extends State<RootShell> with WidgetsBindingObserver {
 
   static const _screens = [
     HomeScreen(),
+    VocabularyTopicsScreen(),
     QuizCategoryScreen(),
     PronunciationScreen(),
     ProfileScreen(),
@@ -28,6 +30,7 @@ class _RootShellState extends State<RootShell> with WidgetsBindingObserver {
 
   static const _icons = [
     Icons.home_rounded,
+    Icons.style_rounded,
     Icons.extension_rounded,
     Icons.mic_rounded,
     Icons.person_rounded,
