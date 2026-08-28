@@ -95,6 +95,14 @@ final myPendingRequestsProvider = FutureProvider.autoDispose(
   (ref) => ref.watch(socialRepositoryProvider).fetchPendingRequests(),
 );
 
+/// Số tin nhắn chưa đọc gửi đến mình - realtime, dùng cho badge đỏ trên
+/// nút tin nhắn ở Home (tương tự Facebook). Tự cập nhật khi có tin nhắn
+/// mới hoặc khi mình mở 1 cuộc hội thoại (ChatScreen gọi
+/// markConversationRead rồi số này tự giảm qua stream, không cần invalidate).
+final unreadMessageCountProvider = StreamProvider.autoDispose(
+  (ref) => ref.watch(socialRepositoryProvider).watchUnreadCount(),
+);
+
 /// Toàn bộ provider gắn với user hiện tại - gọi invalidate hết mỗi khi
 /// đăng nhập/đăng xuất (main.dart _AuthGate) để tránh hiện dữ liệu của
 /// tài khoản trước đó khi đổi sang tài khoản khác trên cùng máy.
@@ -104,6 +112,7 @@ void invalidateUserScopedProviders(WidgetRef ref) {
   ref.invalidate(myRewardsProvider);
   ref.invalidate(myFriendsProvider);
   ref.invalidate(myPendingRequestsProvider);
+  ref.invalidate(unreadMessageCountProvider);
   ref.invalidate(favoriteSongTitlesProvider);
 }
 

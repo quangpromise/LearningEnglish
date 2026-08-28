@@ -195,6 +195,10 @@ class AppStrings {
       AppLanguage.en: 'No activity this week yet',
     },
     // Friends & chat (friends_screen.dart, chat_screen.dart)
+    'home_messages_tooltip': {
+      AppLanguage.vi: 'Tin nhắn',
+      AppLanguage.en: 'Messages',
+    },
     'friends_title': {AppLanguage.vi: 'Bạn bè', AppLanguage.en: 'Friends'},
     'friends_search_hint': {
       AppLanguage.vi: 'Tìm bạn theo tên...',

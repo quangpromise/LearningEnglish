@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../social/presentation/friends_screen.dart';
 import '../data/songs_data.dart';
 import 'player_screen.dart';
 
@@ -75,14 +76,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     Text('Quang', style: AppTextStyles.heading(size: 20)),
                   ],
                 ),
-                GestureDetector(
-                  onTap: () => setState(() => _favoritesOnly = !_favoritesOnly),
-                  child: _IconCircle(
-                    icon: _favoritesOnly
-                        ? Icons.favorite_rounded
-                        : Icons.favorite_border_rounded,
-                    iconColor: _favoritesOnly ? AppColors.pink : null,
-                  ),
+                Row(
+                  children: [
+                    const _MessagesButton(),
+                    const SizedBox(width: 10),
+                    GestureDetector(
+                      onTap: () =>
+                          setState(() => _favoritesOnly = !_favoritesOnly),
+                      child: _IconCircle(
+                        icon: _favoritesOnly
+                            ? Icons.favorite_rounded
+                            : Icons.favorite_border_rounded,
+                        iconColor: _favoritesOnly ? AppColors.pink : null,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -320,6 +328,58 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       },
                     ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Nút tin nhắn kiểu Facebook: chấm đỏ (kèm số nếu <10) nổi ở góc khi có
+/// tin nhắn chưa đọc, tự cập nhật realtime qua [unreadMessageCountProvider].
+class _MessagesButton extends ConsumerWidget {
+  const _MessagesButton();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final unread = ref.watch(unreadMessageCountProvider).valueOrNull ?? 0;
+    return GestureDetector(
+      onTap: () => Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (_) => const FriendsScreen())),
+      child: Tooltip(
+        message: ref.tr('home_messages_tooltip'),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            const _IconCircle(icon: Icons.chat_bubble_rounded),
+            if (unread > 0)
+              Positioned(
+                right: -2,
+                top: -2,
+                child: Container(
+                  padding: const EdgeInsets.all(3),
+                  constraints: const BoxConstraints(
+                    minWidth: 16,
+                    minHeight: 16,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.pink,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppColors.bgTop, width: 2),
+                  ),
+                  child: Text(
+                    unread > 9 ? '9+' : '$unread',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 9,
+                      fontWeight: FontWeight.w800,
+                      height: 1,
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),

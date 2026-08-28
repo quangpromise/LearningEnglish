@@ -20,6 +20,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   bool _sending = false;
 
   @override
+  void initState() {
+    super.initState();
+    // Danh dau doc ngay khi mo cuoc hoi thoai - unreadMessageCountProvider
+    // (Home) tu giam qua realtime stream, khong can invalidate thu cong.
+    Future.microtask(
+      () => ref.read(socialRepositoryProvider).markConversationRead(widget.friend.id),
+    );
+  }
+
+  @override
   void dispose() {
     _inputCtrl.dispose();
     _scrollCtrl.dispose();
@@ -114,6 +124,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 ),
                 data: (messages) {
                   _scrollToBottom();
+                  // Ban nhan tin moi trong luc man hinh dang mo - danh dau
+                  // doc ngay, khong doi nguoi dung roi man hinh roi quay lai.
+                  if (messages.any(
+                    (m) => m.receiverId == myId && m.readAt == null,
+                  )) {
+                    ref
+                        .read(socialRepositoryProvider)
+                        .markConversationRead(widget.friend.id);
+                  }
                   if (messages.isEmpty) {
                     return Center(
                       child: Text(

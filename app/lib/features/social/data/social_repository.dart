@@ -38,6 +38,7 @@ class ChatMessage {
     required this.receiverId,
     required this.content,
     required this.createdAt,
+    this.readAt,
   });
 
   factory ChatMessage.fromRow(Map<String, dynamic> row) => ChatMessage(
@@ -46,6 +47,9 @@ class ChatMessage {
     receiverId: row['receiver_id'] as String,
     content: row['content'] as String,
     createdAt: DateTime.parse(row['created_at'] as String),
+    readAt: row['read_at'] != null
+        ? DateTime.parse(row['read_at'] as String)
+        : null,
   );
 
   final int id;
@@ -53,6 +57,7 @@ class ChatMessage {
   final String receiverId;
   final String content;
   final DateTime createdAt;
+  final DateTime? readAt;
 }
 
 /// Ket ban, tin nhan 1-1, va trang thai online - xem
@@ -148,6 +153,33 @@ class SocialRepository {
   Future<void> updatePresence() async {
     if (_myId == null) return;
     await _supabase.rpc('update_my_presence');
+  }
+
+  Future<int> fetchUnreadCount() async {
+    if (_myId == null) return 0;
+    final result = await _supabase.rpc('unread_message_count');
+    return (result as num?)?.toInt() ?? 0;
+  }
+
+  Future<void> markConversationRead(String otherUserId) async {
+    if (_myId == null) return;
+    await _supabase.rpc(
+      'mark_conversation_read',
+      params: {'other_user_id': otherUserId},
+    );
+  }
+
+  /// Realtime: so tin nhan CHUA DOC gui den minh, cap nhat ngay khi co tin
+  /// nhan moi hoac khi minh danh dau da doc (khong can poll) - dung cho
+  /// badge tren nut tin nhan o Home.
+  Stream<int> watchUnreadCount() {
+    final myId = _myId;
+    if (myId == null) return const Stream.empty();
+    return _supabase
+        .from('messages')
+        .stream(primaryKey: ['id'])
+        .eq('receiver_id', myId)
+        .map((rows) => rows.where((r) => r['read_at'] == null).length);
   }
 
   Future<List<ChatMessage>> fetchConversation(String otherUserId) async {
