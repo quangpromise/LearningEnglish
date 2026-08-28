@@ -303,9 +303,31 @@ class ProfileScreen extends ConsumerWidget {
                         child: CircularProgressIndicator(color: AppColors.blue),
                       ),
                     ),
-                    error: (e, _) => Text(
-                      '${ref.tr('profile_stats_error')} $e',
-                      style: AppTextStyles.muted(),
+                    // Khong hien nguyen object exception ra man hinh -
+                    // fetchMyStats() da tu thu lai truong hop loi tam thoi
+                    // thuong gap (PGRST303 ngay sau khi cap nhat APK), neu
+                    // van that bai o day thi la loi that su, chi can 1 dong
+                    // thong bao ngan + nut thu lai thay vi chi tiet ky thuat.
+                    error: (e, _) => GestureDetector(
+                      onTap: () => ref.invalidate(myStatsProvider),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              ref.tr('profile_stats_error'),
+                              style: AppTextStyles.muted(),
+                            ),
+                          ),
+                          Text(
+                            ref.tr('profile_stats_retry'),
+                            style: AppTextStyles.body(
+                              size: 12,
+                              weight: FontWeight.w700,
+                              color: AppColors.blue,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     data: (stats) => GridView.count(
                       crossAxisCount: 2,

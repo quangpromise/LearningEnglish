@@ -178,9 +178,10 @@ class AppStrings {
       AppLanguage.en: 'Reset',
     },
     'profile_stats_error': {
-      AppLanguage.vi: 'Không tải được thống kê:',
-      AppLanguage.en: "Couldn't load stats:",
+      AppLanguage.vi: 'Không tải được thống kê lúc này.',
+      AppLanguage.en: "Couldn't load stats right now.",
     },
+    'profile_stats_retry': {AppLanguage.vi: 'Thử lại', AppLanguage.en: 'Retry'},
     'profile_no_activity': {
       AppLanguage.vi: 'Chưa có hoạt động nào tuần này',
       AppLanguage.en: 'No activity this week yet',

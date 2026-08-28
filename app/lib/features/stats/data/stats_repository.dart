@@ -57,10 +57,38 @@ class StatsRepository {
   final SupabaseClient _supabase;
 
   Future<UserStats> fetchMyStats() async {
-    final results = await Future.wait([
-      _supabase.rpc('my_stats_summary'),
-      _supabase.rpc('my_weekly_activity'),
-    ]);
+    List<dynamic> results;
+    try {
+      results = await Future.wait([
+        _supabase.rpc('my_stats_summary'),
+        _supabase.rpc('my_weekly_activity'),
+      ]);
+    } on PostgrestException catch (e) {
+      // "JWT issued at future" (PGRST303) - da xac nhan CHI xay ra ngay sau
+      // khi cap nhat APK trong app roi mo lai (khong xay ra o lan mo app
+      // binh thuong), va tu het khi tat/mo lai app - dung la trieu chung
+      // cua do lech dong ho THOANG QUA giua cac node server cua Supabase
+      // (token vua duoc GoTrue mint xong, nhung node PostgREST xac thuc yeu
+      // cau lai nhan thoi gian cham hon vai giay), KHONG phai loi dong ho
+      // may nguoi dung. Doi 1 chut cho dong ho cac node dong bo lai roi thu
+      // lai truoc - neu van loi (vd do that su la session cu/het han that)
+      // moi ep lam moi session va thu lan cuoi.
+      if (e.code != 'PGRST303') rethrow;
+      await Future<void>.delayed(const Duration(seconds: 2));
+      try {
+        results = await Future.wait([
+          _supabase.rpc('my_stats_summary'),
+          _supabase.rpc('my_weekly_activity'),
+        ]);
+      } on PostgrestException catch (e2) {
+        if (e2.code != 'PGRST303') rethrow;
+        await _supabase.auth.refreshSession();
+        results = await Future.wait([
+          _supabase.rpc('my_stats_summary'),
+          _supabase.rpc('my_weekly_activity'),
+        ]);
+      }
+    }
     final row = (results[0] as List).first as Map<String, dynamic>;
     final weekRows = results[1] as List;
     return UserStats(
