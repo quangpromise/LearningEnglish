@@ -224,7 +224,19 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
         final dir = await getTemporaryDirectory();
         final path =
             '${dir.path}/pronunciation_attempt_${DateTime.now().millisecondsSinceEpoch}.m4a';
-        await _recorder.start(const rec.RecordConfig(), path: path);
+        // AudioSource mac dinh ("defaultSource"/"mic") gan nhu luon bi CAM
+        // (file ra hoan toan im lang) khi speech_to_text dang chay dong thoi -
+        // ca 2 cung tranh mic, va SpeechRecognizer he thong luon thang. Dung
+        // chung audio source "voiceRecognition" (cung loai SpeechRecognizer
+        // dang dung noi bo) de Android cho phep ca 2 cung doc duoc tin hieu.
+        await _recorder.start(
+          const rec.RecordConfig(
+            androidConfig: rec.AndroidRecordConfig(
+              audioSource: rec.AndroidAudioSource.voiceRecognition,
+            ),
+          ),
+          path: path,
+        );
       } else if (mounted) {
         setState(() => _recordError = ref.tr('pron_mic_permission_missing'));
       }
