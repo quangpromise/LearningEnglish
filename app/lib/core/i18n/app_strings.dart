@@ -369,6 +369,34 @@ class AppStrings {
 
     // Home screen
     'home_greeting': {AppLanguage.vi: 'Xin chào', AppLanguage.en: 'Hello'},
+    'home_dictionary_tooltip': {
+      AppLanguage.vi: 'Từ điển',
+      AppLanguage.en: 'Dictionary',
+    },
+    'dictionary_title': {
+      AppLanguage.vi: 'Từ điển Anh - Việt',
+      AppLanguage.en: 'English - Vietnamese Dictionary',
+    },
+    'dictionary_en_to_vi': {
+      AppLanguage.vi: 'Anh → Việt',
+      AppLanguage.en: 'English → Vietnamese',
+    },
+    'dictionary_vi_to_en': {
+      AppLanguage.vi: 'Việt → Anh',
+      AppLanguage.en: 'Vietnamese → English',
+    },
+    'dictionary_hint_en': {
+      AppLanguage.vi: 'Nhập từ hoặc câu tiếng Anh...',
+      AppLanguage.en: 'Type an English word or sentence...',
+    },
+    'dictionary_hint_vi': {
+      AppLanguage.vi: 'Nhập từ hoặc câu tiếng Việt...',
+      AppLanguage.en: 'Type a Vietnamese word or sentence...',
+    },
+    'dictionary_error': {
+      AppLanguage.vi: 'Không tra được, thử lại nhé',
+      AppLanguage.en: 'Could not look this up, please try again',
+    },
     'home_search_hint': {
       AppLanguage.vi: 'Tìm bài hát, ca sĩ...',
       AppLanguage.en: 'Search songs, artists...',

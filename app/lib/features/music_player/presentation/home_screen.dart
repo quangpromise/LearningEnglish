@@ -6,6 +6,7 @@ import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../grammar/presentation/grammar_topics_screen.dart';
 import '../../social/presentation/conversations_screen.dart';
+import '../../translation/presentation/dictionary_popup.dart';
 import '../../vocabulary/presentation/vocabulary_topics_screen.dart';
 import '../data/songs_data.dart';
 import 'player_screen.dart';
@@ -82,13 +83,33 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(ref.tr('home_greeting'), style: AppTextStyles.muted()),
+                    Row(
+                      children: [
+                        Text(
+                          ref.tr('home_greeting'),
+                          style: AppTextStyles.muted(),
+                        ),
+                        const SizedBox(width: 8),
+                        const _MessagesButton(),
+                      ],
+                    ),
                     Text('Quang', style: AppTextStyles.heading(size: 20)),
                   ],
                 ),
                 Row(
                   children: [
-                    const _MessagesButton(),
+                    GestureDetector(
+                      onTap: () => showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (_) => const DictionaryPopup(),
+                      ),
+                      child: Tooltip(
+                        message: ref.tr('home_dictionary_tooltip'),
+                        child: const _IconCircle(icon: Icons.menu_book_rounded),
+                      ),
+                    ),
                     const SizedBox(width: 10),
                     GestureDetector(
                       onTap: () =>
