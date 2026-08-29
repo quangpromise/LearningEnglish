@@ -91,13 +91,22 @@ class AppTts {
     await prefs.setBool(_prefUseGeminiKey, true);
   }
 
+  /// Loi that gan nhat tu _speakGemini (vd HTTP status + body tra ve) - luon
+  /// bi nuot trong speak() (roi xuong giong khac de khong lam gian doan
+  /// tinh nang dang dung), luu lai o day de noi can CHAN DOAN (vd sheet
+  /// chon giong o man Ho so) co the doc va hien ra that su.
+  String? lastGeminiError;
+
   Future<void> speak(String text) async {
     if (_useGemini) {
       try {
         await _speakGemini(text, GeminiVoiceSelection.instance.value);
+        lastGeminiError = null;
         return;
-      } catch (_) {
-        // Loi mang/API Gemini TTS -> roi xuong VoiceRSS/giong may ben duoi.
+      } catch (e) {
+        // Loi mang/API Gemini TTS -> roi xuong VoiceRSS/giong may ben duoi -
+        // nhung luu lai loi that de _previewGemini/UI chan doan doc duoc.
+        lastGeminiError = '$e';
       }
     }
     if (_selectedCloud != null) {
@@ -111,6 +120,13 @@ class AppTts {
     await _deviceTts.stop();
     await _deviceTts.speak(text);
   }
+
+  /// Nhu speak() nhung CHI dung Gemini va KHONG nuot loi - dung rieng cho
+  /// nut "nghe thu" luc chon giong o man Ho so, de nguoi dung (va bao cao
+  /// loi) thay dung nguyen nhan that thay vi nghe giong khac ma khong biet
+  /// vi sao Gemini that bai.
+  Future<void> previewGeminiVoice(String voiceName, String text) =>
+      _speakGemini(text, voiceName);
 
   /// Goi Gemini Text-to-Speech (generateContent 1 lan, KHAC voi Gemini Live
   /// dung o AI Voice Chat - Live chi noi duoc trong luc dang tro chuyen thoi
@@ -152,13 +168,15 @@ class AppTts {
           )
           .timeout(const Duration(seconds: 15));
       if (res.statusCode != 200) {
-        throw Exception('Gemini TTS lỗi (HTTP ${res.statusCode})');
+        throw Exception('Gemini TTS lỗi HTTP ${res.statusCode}: ${res.body}');
       }
       final data = jsonDecode(res.body) as Map<String, dynamic>;
       final audioData =
           (data['output_audio'] as Map<String, dynamic>?)?['data'] as String?;
       if (audioData == null) {
-        throw Exception('Gemini TTS không trả về audio.');
+        throw Exception(
+          'Gemini TTS không trả về audio - JSON nhận được: ${res.body}',
+        );
       }
       final pcm = base64Decode(audioData);
       await file.writeAsBytes(_pcmToWav(pcm, sampleRate: 24000));

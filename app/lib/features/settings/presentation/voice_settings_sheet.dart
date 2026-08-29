@@ -73,7 +73,36 @@ class _VoiceSettingsSheetState extends ConsumerState<_VoiceSettingsSheet> {
     // AppTts.selectGeminiVoice.
     await AppTts.instance.selectGeminiVoice();
     setState(() {});
-    await AppTts.instance.speak('Hello, this is a preview of my voice.');
+    // Dung previewGeminiVoice (KHONG nuot loi) thay vi speak() thuong - neu
+    // Gemini TTS that bai, speak() se im lang roi xuong giong khac, khien
+    // nguoi dung tuong nham la Gemini "khong hoat dong" ma khong biet vi
+    // sao. O day can hien loi that de tu chan doan.
+    try {
+      await AppTts.instance.previewGeminiVoice(
+        picked,
+        'Hello, this is a preview of my voice.',
+      );
+    } catch (e) {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            backgroundColor: const Color(0xFF12172E),
+            title: const Text(
+              'Gemini TTS error',
+              style: TextStyle(color: AppColors.textPrimary),
+            ),
+            content: Text('$e', style: AppTextStyles.muted()),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
+    }
   }
 
   @override
