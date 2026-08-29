@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/config/env.dart';
+import 'core/navigation/nav_keys.dart';
 import 'core/navigation/root_shell.dart';
+import 'core/notifications/daily_quiz_notifications.dart';
 import 'core/providers/app_providers.dart';
 import 'core/theme/app_theme.dart';
 import 'core/tts/app_tts.dart';
@@ -23,6 +25,7 @@ Future<void> main() async {
 
   await AppTts.instance.restoreSavedVoice();
   await GeminiVoiceSelection.instance.restoreSaved();
+  await DailyQuizNotifications.instance.init();
 
   runApp(const ProviderScope(child: LearnEnglishMusicApp()));
 }
@@ -33,6 +36,7 @@ class LearnEnglishMusicApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: rootNavigatorKey,
       title: 'Learn English Through Music',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(

@@ -71,6 +71,13 @@ dependencies:
   # Ket noi WebSocket toi backend/gemini-proxy cho tinh nang AI Voice Chat -
   # goi chinh thuc cua dart.dev, khong phai thu vien ben thu 3 khong ro nguon.
   web_socket_channel: ^3.0.1
+  # Thong bao nhac hoc tu vung theo lich (hoat dong ca khi app da dong/khoa
+  # may) - MIT/BSD-style, mien phi, chay hoan toan on-device (khong goi API
+  # nao) - xem docs/research-notifications.md.
+  flutter_local_notifications: ^22.3.0
+  # Phu thuoc bat buoc cua flutter_local_notifications cho lich hen gio
+  # chinh xac (zonedSchedule) - Apache 2.0, mien phi, on-device.
+  timezone: ^0.11.1
 
 dev_dependencies:
   flutter_test:

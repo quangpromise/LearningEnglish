@@ -3,10 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/dictionary/free_dictionary_api.dart';
 import '../../../core/i18n/app_strings.dart';
-import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/translation/app_translator.dart';
 import '../../../core/tts/app_tts.dart';
+import '../../vocabulary/data/daily_words_repository.dart';
+import '../../vocabulary/presentation/daily_words_controller.dart';
 
 class _WordLookup {
   const _WordLookup({
@@ -50,6 +51,12 @@ class WordPopupSheet extends ConsumerStatefulWidget {
 class _WordPopupSheetState extends ConsumerState<WordPopupSheet> {
   late final Future<_WordLookup> _lookup = _load();
 
+  // Ket qua tra tu, luu lai de nut "Luu" ben duoi dung khi them vao danh
+  // sach hoc hom nay (can vi/ipa, khong chi rieng "word"). Tu tra tu KHONG
+  // con tu dong tinh la "da hoc" nua - chi khi tra loi DUNG trong quiz nhac
+  // hom nay (DailyQuizPopupScreen) moi ghi vao thong ke "Tu da hoc" o Ho so.
+  _WordLookup? _result;
+
   Future<_WordLookup> _load() async {
     final entry = await FreeDictionaryApi.lookup(widget.word);
     final results = await Future.wait([
@@ -64,12 +71,7 @@ class _WordPopupSheetState extends ConsumerState<WordPopupSheet> {
     ]);
     final meaningVi = results[0];
     final definitionVi = results[1];
-    ref
-        .read(statsRepositoryProvider)
-        .recordWordLearned(widget.word)
-        .then((_) => ref.invalidate(myStatsProvider))
-        .catchError((_) {});
-    return _WordLookup(
+    final result = _WordLookup(
       ipa: (entry != null && entry.ipa.isNotEmpty) ? entry.ipa : '—',
       pos: entry != null && entry.partOfSpeech.isNotEmpty
           ? posLabel(entry.partOfSpeech)
@@ -78,6 +80,33 @@ class _WordPopupSheetState extends ConsumerState<WordPopupSheet> {
           ? meaningVi
           : ref.tr('word_translate_error'),
       definitionVi: definitionVi,
+    );
+    if (mounted) setState(() => _result = result);
+    return result;
+  }
+
+  Future<void> _saveToDaily() async {
+    final info = _result;
+    if (info == null) return;
+    final added = await ref
+        .read(dailyWordsControllerProvider.notifier)
+        .addWord(
+          DailyWordEntry(
+            en: widget.word,
+            vi: info.meaningVi,
+            ipa: info.ipa == '—' ? '' : info.ipa,
+          ),
+        );
+    if (!mounted) return;
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    final nav = Navigator.of(context);
+    nav.pop();
+    messenger?.showSnackBar(
+      SnackBar(
+        content: Text(
+          ref.tr(added ? 'word_saved_to_daily' : 'daily_words_full'),
+        ),
+      ),
     );
   }
 
@@ -230,7 +259,7 @@ class _WordPopupSheetState extends ConsumerState<WordPopupSheet> {
                     color: AppColors.textPrimary,
                     size: 16,
                   ),
-                  onTap: () => Navigator.of(context).pop(),
+                  onTap: _result == null ? null : _saveToDaily,
                 ),
               ),
             ],

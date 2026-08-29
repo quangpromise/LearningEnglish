@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/tts/app_tts.dart';
+import '../data/daily_words_repository.dart';
 import '../data/vocabulary_data.dart';
+import 'daily_words_controller.dart';
 import 'vocabulary_quiz_screen.dart';
 
 const _maxWordsPerSession = 10;
@@ -31,6 +33,16 @@ class _VocabularyTopicDetailScreenState
         _selected.add(word);
       }
     });
+  }
+
+  Future<void> _saveToDailyList(BuildContext context) async {
+    final entries = _selected
+        .map((w) => DailyWordEntry(en: w.en, vi: w.vi, ipa: w.ipa))
+        .toList();
+    await ref.read(dailyWordsControllerProvider.notifier).setWords(entries);
+    if (!context.mounted) return;
+    ScaffoldMessenger.maybeOf(context)
+        ?.showSnackBar(SnackBar(content: Text(ref.tr('vocab_added_to_daily'))));
   }
 
   @override
@@ -186,21 +198,34 @@ class _VocabularyTopicDetailScreenState
               ),
             ),
             const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: PillButton(
-                label: ref.tr('vocab_start_learning'),
-                onTap: _selected.isEmpty
-                    ? null
-                    : () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => VocabularyQuizScreen(
-                            topic: widget.topic,
-                            words: _selected.toList(),
+            Row(
+              children: [
+                Expanded(
+                  child: PillButton(
+                    label: ref.tr('vocab_start_learning'),
+                    onTap: _selected.isEmpty
+                        ? null
+                        : () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => VocabularyQuizScreen(
+                                topic: widget.topic,
+                                words: _selected.toList(),
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-              ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: PillButton(
+                    label: ref.tr('vocab_add_to_daily'),
+                    filled: false,
+                    onTap: _selected.isEmpty
+                        ? null
+                        : () => _saveToDailyList(context),
+                  ),
+                ),
+              ],
             ),
           ],
         ),

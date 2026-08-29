@@ -11,6 +11,7 @@ import '../../settings/presentation/change_password_sheet.dart';
 import '../../settings/presentation/voice_settings_sheet.dart';
 import '../../social/presentation/friends_screen.dart';
 import '../../update/data/update_checker.dart';
+import '../../vocabulary/presentation/daily_words_controller.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -448,6 +449,8 @@ class ProfileScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 14),
+                  const _DailyWordsSection(),
+                  const SizedBox(height: 14),
                   GestureDetector(
                     onTap: () => Navigator.of(context).push(
                       MaterialPageRoute(builder: (_) => const FriendsScreen()),
@@ -853,6 +856,164 @@ class _Bar extends StatelessWidget {
         const SizedBox(height: 6),
         Text(d, style: AppTextStyles.muted(size: 10)),
       ],
+    );
+  }
+}
+
+const _kIntervalChoicesMinutes = [15, 30, 60, 90, 120];
+
+/// "Học 10 từ hôm nay" - hien danh sach tu da chon (o Vocabulary hoac luu
+/// tu khi tra cuu), cho phep dat khoang thoi gian nhac quiz + bat/tat.
+class _DailyWordsSection extends ConsumerWidget {
+  const _DailyWordsSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(dailyWordsControllerProvider);
+    final notifier = ref.read(dailyWordsControllerProvider.notifier);
+    final total = state.words.length;
+    final learned = total - state.pending.length;
+
+    return GlowBox(
+      borderRadius: 22,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: AppColors.purple.withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.checklist_rounded,
+                  size: 16,
+                  color: AppColors.purple,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  ref.tr('profile_daily_words_title'),
+                  style: AppTextStyles.body(weight: FontWeight.w800),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (total == 0)
+            Text(
+              ref.tr('profile_daily_words_empty'),
+              style: AppTextStyles.muted(size: 12),
+            )
+          else ...[
+            Text(
+              ref
+                  .tr('profile_daily_words_progress')
+                  .replaceFirst('{learned}', '$learned')
+                  .replaceFirst('{total}', '$total'),
+              style: AppTextStyles.muted(size: 12),
+            ),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final w in state.words)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color:
+                          state.learnedTodayEnLower.contains(w.en.toLowerCase())
+                          ? AppColors.teal.withValues(alpha: 0.16)
+                          : AppColors.glassFill,
+                      borderRadius: BorderRadius.circular(999),
+                      border: Border.all(color: AppColors.glassBorder),
+                    ),
+                    child: Text(
+                      w.en,
+                      style: AppTextStyles.body(
+                        size: 11.5,
+                        weight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Text(
+              ref.tr('profile_daily_words_interval_label'),
+              style: AppTextStyles.muted(size: 11).copyWith(letterSpacing: 0.4),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final m in _kIntervalChoicesMinutes)
+                  GestureDetector(
+                    onTap: () => notifier.setIntervalMinutes(m),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: state.intervalMinutes == m
+                            ? AppColors.blue.withValues(alpha: 0.22)
+                            : AppColors.glassFill,
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(
+                          color: state.intervalMinutes == m
+                              ? AppColors.blue.withValues(alpha: 0.6)
+                              : AppColors.glassBorder,
+                        ),
+                      ),
+                      child: Text(
+                        '$m ${ref.tr('profile_daily_words_minutes_suffix')}',
+                        style: AppTextStyles.body(
+                          size: 12,
+                          weight: FontWeight.w700,
+                          color: state.intervalMinutes == m
+                              ? AppColors.blue
+                              : AppColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            SizedBox(
+              width: double.infinity,
+              child: PillButton(
+                label: ref.tr(
+                  state.active
+                      ? 'profile_daily_words_stop'
+                      : 'profile_daily_words_start',
+                ),
+                filled: !state.active,
+                onTap: state.pending.isEmpty && !state.active
+                    ? null
+                    : () => state.active ? notifier.stop() : notifier.start(),
+              ),
+            ),
+            if (state.active) ...[
+              const SizedBox(height: 8),
+              Text(
+                ref.tr('profile_daily_words_active_hint'),
+                style: AppTextStyles.muted(size: 10.5),
+              ),
+            ],
+          ],
+        ],
+      ),
     );
   }
 }

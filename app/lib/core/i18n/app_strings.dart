@@ -259,6 +259,75 @@ class AppStrings {
       AppLanguage.en: 'correct',
     },
     'vocab_done': {AppLanguage.vi: 'Xong', AppLanguage.en: 'Done'},
+    'vocab_add_to_daily': {
+      AppLanguage.vi: 'Học hôm nay',
+      AppLanguage.en: 'Learn today',
+    },
+    'vocab_added_to_daily': {
+      AppLanguage.vi: 'Đã đặt làm danh sách học hôm nay',
+      AppLanguage.en: "Set as today's learning list",
+    },
+    'word_saved_to_daily': {
+      AppLanguage.vi: 'Đã thêm vào danh sách học hôm nay',
+      AppLanguage.en: "Added to today's learning list",
+    },
+    'daily_words_full': {
+      AppLanguage.vi: 'Danh sách học hôm nay đã đủ 10 từ',
+      AppLanguage.en: "Today's learning list is already full (10 words)",
+    },
+    'daily_quiz_title': {
+      AppLanguage.vi: 'Quiz nhanh',
+      AppLanguage.en: 'Quick quiz',
+    },
+    'daily_quiz_empty': {
+      AppLanguage.vi: 'Bạn đã học hết các từ hôm nay rồi!',
+      AppLanguage.en: "You've learned all of today's words!",
+    },
+    'daily_quiz_correct': {
+      AppLanguage.vi: 'Chính xác! Đã ghi vào từ đã học.',
+      AppLanguage.en: 'Correct! Recorded as learned.',
+    },
+    'daily_quiz_wrong': {
+      AppLanguage.vi: 'Chưa đúng, sẽ hỏi lại ở lần nhắc sau.',
+      AppLanguage.en: "Not quite — you'll be asked again next reminder.",
+    },
+    'daily_quiz_close': {AppLanguage.vi: 'Đóng', AppLanguage.en: 'Close'},
+
+    // Profile - "Học 10 từ hôm nay" (chon o Vocabulary hoac khi luu tu tra
+    // cuu, nhac hoc bang thong bao dinh ky)
+    'profile_daily_words_title': {
+      AppLanguage.vi: 'Học 10 từ hôm nay',
+      AppLanguage.en: 'Learn 10 words today',
+    },
+    'profile_daily_words_empty': {
+      AppLanguage.vi: 'Chưa có từ nào — vào Từ vựng theo chủ đề để chọn, hoặc bấm "Lưu" khi tra một từ.',
+      AppLanguage.en: 'No words yet — pick some in Vocabulary by Topic, or tap "Save" when looking up a word.',
+    },
+    'profile_daily_words_progress': {
+      AppLanguage.vi: '{learned}/{total} từ đã học hôm nay',
+      AppLanguage.en: '{learned}/{total} words learned today',
+    },
+    'profile_daily_words_interval_label': {
+      AppLanguage.vi: 'Nhắc quiz mỗi',
+      AppLanguage.en: 'Quiz reminder every',
+    },
+    'profile_daily_words_minutes_suffix': {
+      AppLanguage.vi: 'phút',
+      AppLanguage.en: 'min',
+    },
+    'profile_daily_words_start': {
+      AppLanguage.vi: 'Bắt đầu học',
+      AppLanguage.en: 'Start learning',
+    },
+    'profile_daily_words_stop': {
+      AppLanguage.vi: 'Kết thúc học',
+      AppLanguage.en: 'End learning',
+    },
+    'profile_daily_words_active_hint': {
+      AppLanguage.vi:
+          'Đang bật nhắc quiz — thông báo sẽ hiện kể cả khi tắt app',
+      AppLanguage.en: 'Reminders are on — notifications will show even if the app is closed',
+    },
 
     // Sign-in screen
     'auth_tagline': {
