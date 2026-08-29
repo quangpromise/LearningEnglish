@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../grammar/presentation/grammar_topics_screen.dart';
 import '../../social/presentation/conversations_screen.dart';
 import '../../vocabulary/presentation/vocabulary_topics_screen.dart';
 import '../data/songs_data.dart';
@@ -184,6 +185,62 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ),
                             Text(
                               ref.tr('home_vocabulary_quick_subtitle'),
+                              style: TextStyle(
+                                color: Colors.black.withValues(alpha: 0.5),
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(
+                        Icons.chevron_right_rounded,
+                        color: Colors.black54,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              GestureDetector(
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const GrammarTopicsScreen(),
+                  ),
+                ),
+                child: GlowBox(
+                  light: true,
+                  borderRadius: 26,
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          gradient: AppColors.accentGradient,
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        child: const Icon(
+                          Icons.menu_book_rounded,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              ref.tr('grammar_topics_title'),
+                              style: TextStyle(
+                                color: Colors.black.withValues(alpha: 0.87),
+                                fontWeight: FontWeight.w800,
+                                fontSize: 15,
+                              ),
+                            ),
+                            Text(
+                              ref.tr('grammar_topics_quick_subtitle'),
                               style: TextStyle(
                                 color: Colors.black.withValues(alpha: 0.5),
                                 fontWeight: FontWeight.w600,

@@ -9,6 +9,7 @@ import '../../features/music_player/presentation/home_screen.dart';
 import '../../features/pronunciation/presentation/pronunciation_screen.dart';
 import '../../features/quiz/presentation/quiz_category_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
+import '../../features/reading/presentation/reading_library_screen.dart';
 import '../../features/update/presentation/update_dialog.dart';
 
 class RootShell extends ConsumerStatefulWidget {
@@ -22,10 +23,13 @@ class _RootShellState extends ConsumerState<RootShell>
     with WidgetsBindingObserver {
   int _tab = 0;
 
-  // Vocabulary theo chu de khong con la tab rieng - da chuyen thanh 1 the
-  // truy cap nhanh ngay tren man Home (xem home_screen.dart).
+  // Vocabulary va Grammar khong phai tab rieng - da chuyen thanh the truy
+  // cap nhanh ngay tren man Home (xem home_screen.dart). Reading VAN la
+  // tab rieng, ngang hang voi Home, vi doc sach la hoat dong "toan man
+  // hinh" rieng biet, khac voi cac the truy cap nhanh khac.
   static const _screens = [
     HomeScreen(),
+    ReadingLibraryScreen(),
     QuizCategoryScreen(),
     PronunciationScreen(),
     ProfileScreen(),
@@ -33,6 +37,7 @@ class _RootShellState extends ConsumerState<RootShell>
 
   static const _icons = [
     Icons.home_rounded,
+    Icons.auto_stories_rounded,
     Icons.extension_rounded,
     Icons.mic_rounded,
     Icons.person_rounded,

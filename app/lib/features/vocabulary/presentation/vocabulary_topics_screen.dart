@@ -3,8 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../grammar/presentation/grammar_topics_screen.dart';
-import '../../reading/presentation/reading_library_screen.dart';
 import '../data/vocabulary_data.dart';
 import 'vocabulary_topic_detail_screen.dart';
 
@@ -56,114 +54,6 @@ class VocabularyTopicsScreen extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 18),
-            GestureDetector(
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const GrammarTopicsScreen()),
-              ),
-              child: GlowBox(
-                light: true,
-                borderRadius: 22,
-                child: Row(
-                  children: [
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        gradient: AppColors.accentGradient,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: const Icon(
-                        Icons.menu_book_rounded,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            ref.tr('grammar_topics_title'),
-                            style: TextStyle(
-                              color: Colors.black.withValues(alpha: 0.87),
-                              fontWeight: FontWeight.w800,
-                              fontSize: 14,
-                            ),
-                          ),
-                          Text(
-                            ref.tr('grammar_topics_quick_subtitle'),
-                            style: TextStyle(
-                              color: Colors.black.withValues(alpha: 0.5),
-                              fontWeight: FontWeight.w600,
-                              fontSize: 11.5,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Icon(
-                      Icons.chevron_right_rounded,
-                      color: Colors.black54,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            GestureDetector(
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const ReadingLibraryScreen()),
-              ),
-              child: GlowBox(
-                light: true,
-                borderRadius: 22,
-                child: Row(
-                  children: [
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        gradient: AppColors.accentGradient,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: const Icon(
-                        Icons.auto_stories_rounded,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            ref.tr('reading_title'),
-                            style: TextStyle(
-                              color: Colors.black.withValues(alpha: 0.87),
-                              fontWeight: FontWeight.w800,
-                              fontSize: 14,
-                            ),
-                          ),
-                          Text(
-                            ref.tr('reading_quick_subtitle'),
-                            style: TextStyle(
-                              color: Colors.black.withValues(alpha: 0.5),
-                              fontWeight: FontWeight.w600,
-                              fontSize: 11.5,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Icon(
-                      Icons.chevron_right_rounded,
-                      color: Colors.black54,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
             Expanded(
               child: GridView.builder(
                 itemCount: kVocabTopics.length,
