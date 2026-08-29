@@ -371,6 +371,10 @@ class AppStrings {
       AppLanguage.vi: 'TRONG BÀI HÁT',
       AppLanguage.en: 'IN THE SONG',
     },
+    'word_in_text': {
+      AppLanguage.vi: 'TRONG ĐOẠN VĂN',
+      AppLanguage.en: 'IN THE TEXT',
+    },
     'word_no_pos': {
       AppLanguage.vi: 'Chưa rõ từ loại',
       AppLanguage.en: 'Unknown part of speech',

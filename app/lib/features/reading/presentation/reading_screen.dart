@@ -114,8 +114,12 @@ class _ReadingScreenState extends ConsumerState<ReadingScreen> {
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (_) =>
-          WordPopupSheet(word: word, sentenceEn: sentence, sentenceVi: ''),
+      builder: (_) => WordPopupSheet(
+        word: word,
+        sentenceEn: sentence,
+        sentenceVi: '',
+        sourceLabelKey: 'word_in_text',
+      ),
     );
   }
 

@@ -13,12 +13,16 @@ class _WordLookup {
     required this.ipa,
     required this.pos,
     required this.meaningVi,
-    required this.definitionEn,
+    required this.definitionVi,
   });
   final String ipa;
   final String pos;
   final String meaningVi;
-  final String definitionEn;
+
+  /// Giai thich (dictionary definition) da dich sang tieng Viet - truoc day
+  /// hien nguyen ban tieng Anh tu FreeDictionaryApi, kho hieu voi nguoi moi
+  /// hoc; gio dich luon sang tieng Viet giong nhu nghia chinh.
+  final String definitionVi;
 }
 
 class WordPopupSheet extends ConsumerStatefulWidget {
@@ -27,11 +31,17 @@ class WordPopupSheet extends ConsumerStatefulWidget {
     required this.word,
     required this.sentenceEn,
     required this.sentenceVi,
+    this.sourceLabelKey = 'word_in_song',
   });
 
   final String word;
   final String sentenceEn;
   final String sentenceVi;
+
+  /// Key i18n cho nhan phia tren cau ngu canh - 'word_in_song' (mac dinh,
+  /// dung khi mo tu Player) hoac 'word_in_text' (dung khi mo tu man Doc
+  /// sach, vi khong phai "bai hat").
+  final String sourceLabelKey;
 
   @override
   ConsumerState<WordPopupSheet> createState() => _WordPopupSheetState();
@@ -41,14 +51,19 @@ class _WordPopupSheetState extends ConsumerState<WordPopupSheet> {
   late final Future<_WordLookup> _lookup = _load();
 
   Future<_WordLookup> _load() async {
+    final entry = await FreeDictionaryApi.lookup(widget.word);
     final results = await Future.wait([
-      FreeDictionaryApi.lookup(widget.word),
       AppTranslator.instance
           .translateToVietnamese(widget.word)
           .catchError((_) => ''),
+      (entry != null && entry.definition.isNotEmpty)
+          ? AppTranslator.instance
+                .translateToVietnamese(entry.definition)
+                .catchError((_) => '')
+          : Future.value(''),
     ]);
-    final entry = results[0] as DictionaryEntry?;
-    final meaningVi = results[1] as String;
+    final meaningVi = results[0];
+    final definitionVi = results[1];
     ref
         .read(statsRepositoryProvider)
         .recordWordLearned(widget.word)
@@ -62,7 +77,7 @@ class _WordPopupSheetState extends ConsumerState<WordPopupSheet> {
       meaningVi: meaningVi.isNotEmpty
           ? meaningVi
           : ref.tr('word_translate_error'),
-      definitionEn: entry?.definition ?? '',
+      definitionVi: definitionVi,
     );
   }
 
@@ -159,10 +174,10 @@ class _WordPopupSheetState extends ConsumerState<WordPopupSheet> {
                         weight: FontWeight.w700,
                       ),
                     ),
-                    if (info.definitionEn.isNotEmpty) ...[
+                    if (info.definitionVi.isNotEmpty) ...[
                       const SizedBox(height: 4),
                       Text(
-                        info.definitionEn,
+                        info.definitionVi,
                         style: AppTextStyles.muted(size: 12),
                       ),
                     ],
@@ -178,7 +193,7 @@ class _WordPopupSheetState extends ConsumerState<WordPopupSheet> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  ref.tr('word_in_song'),
+                  ref.tr(widget.sourceLabelKey),
                   style: AppTextStyles.muted(size: 10)
                       .copyWith(letterSpacing: 0.6),
                 ),
