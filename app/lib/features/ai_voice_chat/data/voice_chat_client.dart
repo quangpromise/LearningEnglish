@@ -98,7 +98,7 @@ class VoiceChatClient implements VoiceChatSession {
   Future<void> start() async {
     if (!await _recorder.hasPermission()) {
       _stateController.add(VoiceChatState.error);
-      throw Exception('Không có quyền truy cập micro');
+      throw Exception('Microphone permission denied');
     }
 
     _stateController.add(VoiceChatState.connecting);
@@ -115,14 +115,14 @@ class VoiceChatClient implements VoiceChatSession {
         }
       },
       onError: (Object e) {
-        lastError = 'Lỗi kết nối máy chủ: $e';
+        lastError = 'Server connection error: $e';
         _stateController.add(VoiceChatState.error);
       },
       onDone: () {
         final code = channel.closeCode;
         if (code != null && code != 1000) {
           lastError =
-              'Máy chủ đóng kết nối (mã $code'
+              'Server closed the connection (code $code'
               '${channel.closeReason != null ? ": ${channel.closeReason}" : ""})';
           _stateController.add(VoiceChatState.error);
         } else {

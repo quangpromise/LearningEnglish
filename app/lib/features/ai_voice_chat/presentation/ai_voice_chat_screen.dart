@@ -60,7 +60,7 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
       final token = Supabase.instance.client.auth.currentSession?.accessToken;
       if (token == null) {
         setState(() {
-          _error = 'Bạn cần đăng nhập để dùng AI Voice Chat';
+          _error = 'You need to sign in to use AI Voice Chat';
           _state = VoiceChatState.error;
         });
         return;
@@ -83,7 +83,7 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
       setState(() {
         _state = s;
         if (s == VoiceChatState.error) {
-          _error = client.lastError ?? _error ?? 'Đã xảy ra lỗi';
+          _error = client.lastError ?? _error ?? 'Something went wrong';
         }
       });
     });
@@ -97,7 +97,7 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _error = 'Không kết nối được: $e';
+          _error = 'Could not connect: $e';
           _state = VoiceChatState.error;
         });
       }
@@ -145,13 +145,13 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
   String _statusLabel() {
     switch (_state) {
       case VoiceChatState.idle:
-        return 'Bấm micro để bắt đầu trò chuyện';
+        return 'Tap the mic to start chatting';
       case VoiceChatState.connecting:
-        return 'Đang kết nối...';
+        return 'Connecting...';
       case VoiceChatState.listening:
-        return 'Đang nghe — cứ nói tự nhiên bằng tiếng Anh';
+        return 'Listening — speak naturally in English';
       case VoiceChatState.error:
-        return _error ?? 'Đã xảy ra lỗi';
+        return _error ?? 'Something went wrong';
     }
   }
 
@@ -179,7 +179,7 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
               ],
             ),
             Text(
-              'Trò chuyện tự do bằng tiếng Anh — AI sẽ chỉ ra khi bạn nói sai',
+              'Chat freely in English — the AI will point out your mistakes',
               style: AppTextStyles.muted(),
             ),
             const SizedBox(height: 12),
@@ -187,7 +187,7 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
               child: _messages.isEmpty
                   ? Center(
                       child: Text(
-                        'Chưa có cuộc trò chuyện nào.\nBấm micro bên dưới để bắt đầu.',
+                        'No conversation yet.\nTap the mic below to start.',
                         textAlign: TextAlign.center,
                         style: AppTextStyles.muted(),
                       ),
@@ -321,7 +321,7 @@ class _MessageBubble extends StatelessWidget {
                   const SizedBox(width: 6),
                   Flexible(
                     child: Text(
-                      'Nói đúng là: ${message.correction}',
+                      'Correct way to say it: ${message.correction}',
                       style: AppTextStyles.muted(size: 12)
                           .copyWith(color: AppColors.amber),
                     ),

@@ -77,7 +77,7 @@ class GeminiLiveDirectClient implements VoiceChatSession {
   Future<void> start() async {
     if (!await _recorder.hasPermission()) {
       _stateController.add(VoiceChatState.error);
-      throw Exception('Không có quyền truy cập micro');
+      throw Exception('Microphone permission denied');
     }
 
     _stateController.add(VoiceChatState.connecting);
@@ -113,7 +113,7 @@ class GeminiLiveDirectClient implements VoiceChatSession {
     channel.stream.listen(
       _handleServerMessage,
       onError: (Object e) {
-        lastError = 'Lỗi kết nối Gemini Live: $e';
+        lastError = 'Gemini Live connection error: $e';
         _stateController.add(VoiceChatState.error);
       },
       onDone: () {
@@ -125,7 +125,7 @@ class GeminiLiveDirectClient implements VoiceChatSession {
         final code = channel.closeCode;
         if (code != null && code != 1000) {
           lastError =
-              'Gemini Live đóng kết nối (mã $code'
+              'Gemini Live closed the connection (code $code'
               '${channel.closeReason != null ? ": ${channel.closeReason}" : ""})';
           _stateController.add(VoiceChatState.error);
         } else {
@@ -157,10 +157,27 @@ class GeminiLiveDirectClient implements VoiceChatSession {
   }
 
   void _handleServerMessage(dynamic raw) {
-    if (raw is! String) return;
+    // Server co the tra ve JSON qua text frame (String) HOAC binary frame
+    // (List<int>/Uint8List) tuy engine WebSocket - truoc day chi xu ly
+    // String nen khi server gui binary frame, moi phan hoi bi am tham bo qua
+    // hoan toan (khong loi, khong audio, khong transcript - dung trieu chung
+    // "bam mic nhung AI khong bao gio tra loi" du cho da doi rat lau).
+    String text;
+    if (raw is String) {
+      text = raw;
+    } else if (raw is List<int>) {
+      try {
+        text = utf8.decode(raw);
+      } catch (_) {
+        return;
+      }
+    } else {
+      return;
+    }
+
     Map<String, dynamic> message;
     try {
-      message = jsonDecode(raw) as Map<String, dynamic>;
+      message = jsonDecode(text) as Map<String, dynamic>;
     } catch (_) {
       return;
     }
