@@ -239,26 +239,34 @@ class _VocabularyQuizScreenState extends ConsumerState<VocabularyQuizScreen> {
             ),
             const SizedBox(height: 14),
             SizedBox(
-              width: 140,
-              height: 140,
+              width: 160,
+              height: 160,
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  CircularProgressIndicator(
-                    value: _results.isEmpty ? 0 : correct / _results.length,
-                    strokeWidth: 10,
-                    backgroundColor: Colors.white.withValues(alpha: 0.08),
-                    color: widget.topic.color,
+                  SizedBox(
+                    width: 160,
+                    height: 160,
+                    child: CircularProgressIndicator(
+                      value: _results.isEmpty ? 0 : correct / _results.length,
+                      strokeWidth: 10,
+                      backgroundColor: Colors.white.withValues(alpha: 0.08),
+                      color: widget.topic.color,
+                    ),
                   ),
                   Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
                         '$correct/${_results.length}',
-                        style: AppTextStyles.heading(size: 26),
+                        style: AppTextStyles.heading(size: 24),
                       ),
+                      const SizedBox(height: 4),
                       Text(
                         ref.tr('vocab_correct_count'),
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: AppTextStyles.muted(size: 11),
                       ),
                     ],

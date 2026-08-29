@@ -1,3 +1,8 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../core/i18n/app_language.dart';
+import '../../../core/providers/app_providers.dart';
+
 /// Dữ liệu câu đố lấy từ kho đố vui tiếng Anh tham khảo tại
 /// vn.elsaspeak.com/do-vui-tieng-anh (nội dung tĩnh, không có sẵn hệ thống
 /// điểm/xếp hạng — phần game hoá bên dưới do app này tự thiết kế thêm).
@@ -24,6 +29,23 @@ const kCategories = [
   'Bảng chữ cái',
   'Trái cây & xe cộ',
 ];
+
+/// Ten tieng Anh cho tung chu de (key la chuoi tieng Viet trong
+/// [kCategories]/[Riddle.category], dung lam ID canonical - khong doi de
+/// khong pha viec loc riddle theo category).
+const kCategoryNamesEn = {
+  'Chơi chữ': 'Wordplay',
+  'Suy luận': 'Logic',
+  'Động vật': 'Animals',
+  'Cuộc sống': 'Life',
+  'Bảng chữ cái': 'Alphabet',
+  'Trái cây & xe cộ': 'Fruits & Vehicles',
+};
+
+String categoryLabel(WidgetRef ref, String category) =>
+    ref.watch(appLanguageProvider) == AppLanguage.en
+    ? (kCategoryNamesEn[category] ?? category)
+    : category;
 
 const kRiddles = [
   Riddle(

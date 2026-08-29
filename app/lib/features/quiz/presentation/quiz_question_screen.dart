@@ -119,7 +119,7 @@ class _QuizQuestionScreenState extends ConsumerState<QuizQuestionScreen> {
                 borderRadius: BorderRadius.circular(999),
               ),
               child: Text(
-                '${widget.category.toUpperCase()} · ${ref.tr('quiz_question_label')} ${_index + 1}/${widget.riddles.length}',
+                '${categoryLabel(ref, widget.category).toUpperCase()} · ${ref.tr('quiz_question_label')} ${_index + 1}/${widget.riddles.length}',
                 style: const TextStyle(
                   color: Color(0xFF9DB4FF),
                   fontWeight: FontWeight.w800,

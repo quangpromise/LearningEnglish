@@ -101,7 +101,7 @@ class QuizCategoryScreen extends ConsumerWidget {
                           ),
                           const Spacer(),
                           Text(
-                            cat,
+                            categoryLabel(ref, cat),
                             style: AppTextStyles.body(weight: FontWeight.w800),
                           ),
                           Text(
