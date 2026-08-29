@@ -70,41 +70,6 @@ class AppStrings {
       AppLanguage.en: 'More features',
     },
 
-    // Fitness feature (fitness_*_screen.dart) - noi dung tu bien soan,
-    // khong sao chep tu app/nguon nao khac.
-    'fitness_title': {AppLanguage.vi: 'Tập luyện', AppLanguage.en: 'Workout'},
-    'fitness_subtitle': {
-      AppLanguage.vi: 'Bài tập tại nhà theo nhóm cơ, có hẹn giờ',
-      AppLanguage.en: 'Home workouts by muscle group, with a timer',
-    },
-    'fitness_quick_subtitle': {
-      AppLanguage.vi: 'Bài tập tại nhà kèm hẹn giờ',
-      AppLanguage.en: 'Home workouts with a timer',
-    },
-    'fitness_exercise_count': {
-      AppLanguage.vi: 'bài tập',
-      AppLanguage.en: 'exercises',
-    },
-    'fitness_reps': {AppLanguage.vi: 'lần', AppLanguage.en: 'reps'},
-    'fitness_set_label': {AppLanguage.vi: 'Hiệp', AppLanguage.en: 'Set'},
-    'fitness_rest_label': {AppLanguage.vi: 'NGHỈ', AppLanguage.en: 'REST'},
-    'fitness_skip_rest': {
-      AppLanguage.vi: 'Bỏ qua nghỉ',
-      AppLanguage.en: 'Skip rest',
-    },
-    'fitness_seconds_left': {
-      AppLanguage.vi: 'giây còn lại',
-      AppLanguage.en: 'seconds left',
-    },
-    'fitness_done_set': {
-      AppLanguage.vi: 'Xong hiệp này',
-      AppLanguage.en: 'Done with this set',
-    },
-    'fitness_completed': {
-      AppLanguage.vi: 'Hoàn thành bài tập!',
-      AppLanguage.en: 'Workout complete!',
-    },
-
     // Vocabulary feature (vocabulary_*_screen.dart)
     'vocab_title': {
       AppLanguage.vi: 'Từ vựng theo chủ đề',

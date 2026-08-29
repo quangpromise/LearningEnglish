@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../fitness/presentation/fitness_categories_screen.dart';
 import '../../quiz/presentation/quiz_category_screen.dart';
 import '../../reading/presentation/reading_library_screen.dart';
 
@@ -41,18 +40,6 @@ class MenuScreen extends ConsumerWidget {
               subtitle: ref.tr('quiz_subtitle'),
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const QuizCategoryScreen()),
-              ),
-            ),
-            const SizedBox(height: 12),
-            _MenuItem(
-              icon: Icons.fitness_center_rounded,
-              color: AppColors.amber,
-              title: ref.tr('fitness_title'),
-              subtitle: ref.tr('fitness_quick_subtitle'),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const FitnessCategoriesScreen(),
-                ),
               ),
             ),
           ],
