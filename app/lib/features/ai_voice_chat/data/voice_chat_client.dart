@@ -15,26 +15,32 @@ enum ChatRole { user, ai }
 /// chat. [hasError] danh dau tin nhan cua nguoi dung bi AI phat hien sai ngu
 /// phap/phat am o luot do; [correction] la cau noi dung AI goi y (chi co o
 /// tin nhan cua AI, trich tu cau tra loi cua no - xem
-/// GeminiLiveDirectClient._systemPrompt).
+/// GeminiLiveDirectClient._systemPrompt); [audioPath] la duong dan file WAV
+/// da luu tam cua dung luot noi nay (chi co o tin nhan cua AI) - de nut
+/// "nghe lai" phat lai dung cau AI vua noi thay vi phai doi AI noi lai.
 class TranscriptEvent {
   const TranscriptEvent({
     required this.role,
     required this.text,
     this.correction,
     this.hasError = false,
+    this.audioPath,
   });
 
   final ChatRole role;
   final String text;
   final String? correction;
   final bool hasError;
+  final String? audioPath;
 
-  TranscriptEvent copyWith({bool? hasError}) => TranscriptEvent(
-    role: role,
-    text: text,
-    correction: correction,
-    hasError: hasError ?? this.hasError,
-  );
+  TranscriptEvent copyWith({bool? hasError, String? audioPath}) =>
+      TranscriptEvent(
+        role: role,
+        text: text,
+        correction: correction,
+        hasError: hasError ?? this.hasError,
+        audioPath: audioPath ?? this.audioPath,
+      );
 }
 
 /// Giao dien chung cho 1 phien AI Voice Chat - [VoiceChatClient] (qua

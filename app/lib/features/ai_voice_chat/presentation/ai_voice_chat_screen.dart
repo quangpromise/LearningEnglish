@@ -33,6 +33,11 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
   final ScrollController _scrollCtrl = ScrollController();
   final List<TranscriptEvent> _messages = [];
 
+  /// Duong dan file WAV vua nhan cho luot hien tai, cho den khi ghep vao
+  /// TranscriptEvent cua AI cho luot do (audio luon den truoc transcript
+  /// trong cung 1 luot - xem GeminiLiveDirectClient._handleServerMessage).
+  String? _pendingAudioPath;
+
   VoiceChatState _state = VoiceChatState.idle;
   String? _error;
 
@@ -133,7 +138,12 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
           hasError: true,
         );
       }
-      _messages.add(event);
+      var toAdd = event;
+      if (event.role == ChatRole.ai && _pendingAudioPath != null) {
+        toAdd = event.copyWith(audioPath: _pendingAudioPath);
+        _pendingAudioPath = null;
+      }
+      _messages.add(toAdd);
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_scrollCtrl.hasClients) return;
@@ -151,10 +161,23 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
       final path =
           '${dir.path}/voice_chat_reply_${DateTime.now().millisecondsSinceEpoch}.wav';
       await File(path).writeAsBytes(wavBytes);
+      // Ghi lai duong dan de _onTranscript gan vao tin nhan AI cua dung luot
+      // nay, cho phep nghe lai sau nay thay vi chi nghe duoc 1 lan luc AI
+      // vua tra loi.
+      _pendingAudioPath = path;
       await _player.setFilePath(path);
       await _player.play();
     } catch (_) {
       // Loi phat lai khong lam gian doan phien chat - bo qua 1 luot noi.
+    }
+  }
+
+  Future<void> _replayAudio(String path) async {
+    try {
+      await _player.setFilePath(path);
+      await _player.play();
+    } catch (_) {
+      // Bo qua - file tam co the da bi he thong don dep.
     }
   }
 
@@ -214,8 +237,10 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
                   : ListView.builder(
                       controller: _scrollCtrl,
                       itemCount: _messages.length,
-                      itemBuilder: (context, i) =>
-                          _MessageBubble(message: _messages[i]),
+                      itemBuilder: (context, i) => _MessageBubble(
+                        message: _messages[i],
+                        onReplay: _replayAudio,
+                      ),
                     ),
             ),
             const SizedBox(height: 8),
@@ -269,13 +294,19 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
 }
 
 class _MessageBubble extends StatelessWidget {
-  const _MessageBubble({required this.message});
+  const _MessageBubble({required this.message, this.onReplay});
 
   final TranscriptEvent message;
+
+  /// Goi khi bam nut nghe lai tren bong bao tra loi tu nhien cua AI -
+  /// nhan duong dan file WAV da luu tam cua dung luot noi do (xem
+  /// AiVoiceChatScreen._replayAudio).
+  final Future<void> Function(String path)? onReplay;
 
   @override
   Widget build(BuildContext context) {
     final isMine = message.role == ChatRole.user;
+    final canReplay = !isMine && message.audioPath != null;
     return Align(
       alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
       child: Column(
@@ -283,32 +314,51 @@ class _MessageBubble extends StatelessWidget {
             ? CrossAxisAlignment.end
             : CrossAxisAlignment.start,
         children: [
-          Container(
-            margin: const EdgeInsets.only(top: 6),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            constraints: BoxConstraints(
-              maxWidth: MediaQuery.of(context).size.width * 0.72,
-            ),
-            decoration: BoxDecoration(
-              color: isMine
-                  ? (message.hasError
-                        ? AppColors.pink.withValues(alpha: 0.18)
-                        // Xanh kieu bong chat "cua minh" trong Messenger.
-                        : const Color(0xFF0084FF))
-                  : AppColors.glassFill,
-              border: isMine
-                  ? (message.hasError
-                        ? Border.all(color: AppColors.pink, width: 1.4)
-                        : null)
-                  : Border.all(color: AppColors.glassBorder),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Text(
-              message.text,
-              style: AppTextStyles.body(
+          GestureDetector(
+            onTap: canReplay ? () => onReplay!(message.audioPath!) : null,
+            child: Container(
+              margin: const EdgeInsets.only(top: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(context).size.width * 0.72,
+              ),
+              decoration: BoxDecoration(
                 color: isMine
-                    ? (message.hasError ? AppColors.pink : Colors.white)
-                    : null,
+                    ? (message.hasError
+                          ? AppColors.pink.withValues(alpha: 0.18)
+                          // Xanh kieu bong chat "cua minh" trong Messenger.
+                          : const Color(0xFF0084FF))
+                    : AppColors.glassFill,
+                border: isMine
+                    ? (message.hasError
+                          ? Border.all(color: AppColors.pink, width: 1.4)
+                          : null)
+                    : Border.all(color: AppColors.glassBorder),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Flexible(
+                    child: Text(
+                      message.text,
+                      style: AppTextStyles.body(
+                        color: isMine
+                            ? (message.hasError ? AppColors.pink : Colors.white)
+                            : null,
+                      ),
+                    ),
+                  ),
+                  if (canReplay) ...[
+                    const SizedBox(width: 8),
+                    const Icon(
+                      Icons.volume_up_rounded,
+                      size: 16,
+                      color: AppColors.blue,
+                    ),
+                  ],
+                ],
               ),
             ),
           ),
