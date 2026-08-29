@@ -129,63 +129,114 @@ class _HoldingTile extends ConsumerWidget {
       ),
       onDismissed: (_) =>
           ref.read(cryptoPortfolioProvider.notifier).remove(holding.coinId),
-      child: GlowBox(
-        borderRadius: 16,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        child: Row(
-          children: [
-            ClipOval(
-              child: Image.network(
-                holding.imageUrl,
-                width: 30,
-                height: 30,
-                errorBuilder: (_, _, _) => Container(
+      child: GestureDetector(
+        onTap: () => _editAmount(context, ref),
+        child: GlowBox(
+          borderRadius: 16,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          child: Row(
+            children: [
+              ClipOval(
+                child: Image.network(
+                  holding.imageUrl,
                   width: 30,
                   height: 30,
-                  color: AppColors.glassFill,
+                  errorBuilder: (_, _, _) => Container(
+                    width: 30,
+                    height: 30,
+                    color: AppColors.glassFill,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      holding.name,
+                      style: AppTextStyles.body(weight: FontWeight.w800),
+                    ),
+                    Text(
+                      '${holding.quantity} ${holding.symbol}',
+                      style: AppTextStyles.muted(size: 12),
+                    ),
+                    Text(
+                      '@ ${formatCryptoPrice(price, currency)}',
+                      style: AppTextStyles.muted(size: 11),
+                    ),
+                  ],
+                ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    holding.name,
-                    style: AppTextStyles.body(weight: FontWeight.w800),
+                    formatCryptoPrice(value, currency),
+                    style: AppTextStyles.body(
+                      weight: FontWeight.w800,
+                      size: 13,
+                    ),
                   ),
                   Text(
-                    '${holding.quantity} ${holding.symbol}',
-                    style: AppTextStyles.muted(size: 12),
-                  ),
-                  Text(
-                    '@ ${formatCryptoPrice(price, currency)}',
-                    style: AppTextStyles.muted(size: 11),
+                    '${isUp ? '+' : ''}${change.toStringAsFixed(2)}%',
+                    style: TextStyle(
+                      color: isUp ? AppColors.teal : AppColors.pink,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 11,
+                    ),
                   ),
                 ],
               ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  formatCryptoPrice(value, currency),
-                  style: AppTextStyles.body(weight: FontWeight.w800, size: 13),
-                ),
-                Text(
-                  '${isUp ? '+' : ''}${change.toStringAsFixed(2)}%',
-                  style: TextStyle(
-                    color: isUp ? AppColors.teal : AppColors.pink,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 11,
-                  ),
-                ),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  Future<void> _editAmount(BuildContext context, WidgetRef ref) async {
+    final controller = TextEditingController(text: holding.quantity.toString());
+    final quantity = await showDialog<double>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.bgMid,
+        title: Text(
+          '${ref.tr('crypto_quantity_of')} ${holding.symbol}',
+          style: AppTextStyles.heading(size: 16),
+        ),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          style: AppTextStyles.body(),
+          decoration: InputDecoration(
+            hintText: '0.00',
+            hintStyle: AppTextStyles.muted(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(ref.tr('crypto_cancel')),
+          ),
+          TextButton(
+            onPressed: () {
+              final q = double.tryParse(controller.text.replaceAll(',', '.'));
+              Navigator.of(dialogContext).pop(q);
+            },
+            child: Text(ref.tr('crypto_confirm_add')),
+          ),
+        ],
+      ),
+    );
+    if (quantity == null) return;
+    if (quantity <= 0) {
+      await ref.read(cryptoPortfolioProvider.notifier).remove(holding.coinId);
+      return;
+    }
+    await ref
+        .read(cryptoPortfolioProvider.notifier)
+        .updateQuantity(holding.coinId, quantity);
   }
 }

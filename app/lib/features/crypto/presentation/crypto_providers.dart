@@ -101,6 +101,17 @@ class CryptoPortfolioController extends StateNotifier<List<CryptoHolding>> {
     await CryptoPortfolioRepository.save(state);
   }
 
+  /// Sua so luong dang nam giu cua 1 coin da co san trong danh muc - dung
+  /// khi nguoi dung muon tang/giam amount thay vi xoa roi them lai tu dau.
+  Future<void> updateQuantity(String coinId, double quantity) async {
+    final i = state.indexWhere((h) => h.coinId == coinId);
+    if (i == -1) return;
+    final updated = [...state];
+    updated[i] = updated[i].copyWith(quantity: quantity);
+    state = updated;
+    await CryptoPortfolioRepository.save(state);
+  }
+
   Future<void> remove(String coinId) async {
     state = state.where((h) => h.coinId != coinId).toList();
     await CryptoPortfolioRepository.save(state);
