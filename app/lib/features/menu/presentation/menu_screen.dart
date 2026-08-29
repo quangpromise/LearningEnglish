@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../ai_voice_chat/presentation/ai_voice_chat_screen.dart';
 import '../../crypto/presentation/crypto_screen.dart';
 import '../../quiz/presentation/quiz_category_screen.dart';
 import '../../reading/presentation/reading_library_screen.dart';
@@ -52,6 +53,16 @@ class MenuScreen extends ConsumerWidget {
               onTap: () => Navigator.of(
                 context,
               ).push(MaterialPageRoute(builder: (_) => const CryptoScreen())),
+            ),
+            const SizedBox(height: 12),
+            _MenuItem(
+              icon: Icons.graphic_eq_rounded,
+              color: AppColors.pink,
+              title: ref.tr('voice_chat_title'),
+              subtitle: ref.tr('voice_chat_quick_subtitle'),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const AiVoiceChatScreen()),
+              ),
             ),
           ],
         ),

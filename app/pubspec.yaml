@@ -68,6 +68,9 @@ dependencies:
   # Mở trình cài đặt Android trực tiếp sau khi tải APK cập nhật xong (thay vì
   # để Chrome tự xử lý file .apk tải về)
   open_file: ^4.0.0
+  # Ket noi WebSocket toi backend/gemini-proxy cho tinh nang AI Voice Chat -
+  # goi chinh thuc cua dart.dev, khong phai thu vien ben thu 3 khong ro nguon.
+  web_socket_channel: ^3.0.1
 
 dev_dependencies:
   flutter_test:

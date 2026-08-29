@@ -81,6 +81,14 @@ class AppStrings {
       AppLanguage.vi: 'Giá top 100 coin, cập nhật trực tiếp',
       AppLanguage.en: 'Live prices for the top 100 coins',
     },
+    'voice_chat_title': {
+      AppLanguage.vi: 'AI Voice Chat',
+      AppLanguage.en: 'AI Voice Chat',
+    },
+    'voice_chat_quick_subtitle': {
+      AppLanguage.vi: 'Trò chuyện tự do bằng giọng nói với AI',
+      AppLanguage.en: 'Free-form voice conversation with AI',
+    },
     'crypto_error': {
       AppLanguage.vi: 'Không tải được dữ liệu, thử lại nhé',
       AppLanguage.en: 'Could not load data, please try again',
