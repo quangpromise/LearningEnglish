@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/fitness_data.dart';
+import 'exercise_animation.dart';
 
 enum _Phase { work, rest, done }
 
@@ -142,7 +143,9 @@ class _FitnessTimerScreenState extends ConsumerState<FitnessTimerScreen> {
           '${ref.tr('fitness_set_label')} $_currentSet/${ex.sets}',
           style: AppTextStyles.muted(size: 13),
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: 8),
+        ExerciseAnimation(color: widget.color),
+        const SizedBox(height: 10),
         if (isRest) ...[
           Text(
             ref.tr('fitness_rest_label'),
