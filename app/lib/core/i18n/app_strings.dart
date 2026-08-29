@@ -86,6 +86,46 @@ class AppStrings {
       AppLanguage.en: 'Could not load data, please try again',
     },
     'crypto_retry': {AppLanguage.vi: 'Thử lại', AppLanguage.en: 'Retry'},
+    'crypto_tab_market': {
+      AppLanguage.vi: 'Thị trường',
+      AppLanguage.en: 'Market',
+    },
+    'crypto_tab_portfolio': {
+      AppLanguage.vi: 'Danh mục',
+      AppLanguage.en: 'Portfolio',
+    },
+    'crypto_col_price': {AppLanguage.vi: 'Giá', AppLanguage.en: 'Price'},
+    'crypto_col_change': {AppLanguage.vi: '24h %', AppLanguage.en: '24h %'},
+    'crypto_col_market_cap': {
+      AppLanguage.vi: 'Vốn hoá',
+      AppLanguage.en: 'Market Cap',
+    },
+    'crypto_col_supply': {
+      AppLanguage.vi: 'Lượng lưu hành',
+      AppLanguage.en: 'Circulating Supply',
+    },
+    'crypto_add_coin': {
+      AppLanguage.vi: 'Thêm coin vào danh mục',
+      AppLanguage.en: 'Add a coin to your portfolio',
+    },
+    'crypto_search_hint': {
+      AppLanguage.vi: 'Tìm theo tên hoặc ký hiệu...',
+      AppLanguage.en: 'Search by name or symbol...',
+    },
+    'crypto_quantity_of': {
+      AppLanguage.vi: 'Số lượng',
+      AppLanguage.en: 'Quantity of',
+    },
+    'crypto_cancel': {AppLanguage.vi: 'Huỷ', AppLanguage.en: 'Cancel'},
+    'crypto_confirm_add': {AppLanguage.vi: 'Thêm', AppLanguage.en: 'Add'},
+    'crypto_total_value': {
+      AppLanguage.vi: 'TỔNG GIÁ TRỊ DANH MỤC',
+      AppLanguage.en: 'TOTAL PORTFOLIO VALUE',
+    },
+    'crypto_portfolio_empty': {
+      AppLanguage.vi: 'Chưa có coin nào trong danh mục.\nBấm nút + để thêm.',
+      AppLanguage.en: 'No coins in your portfolio yet.\nTap + to add one.',
+    },
 
     // Vocabulary feature (vocabulary_*_screen.dart)
     'vocab_title': {

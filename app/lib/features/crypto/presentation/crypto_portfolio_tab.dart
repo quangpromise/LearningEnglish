@@ -1,0 +1,184 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../core/i18n/app_strings.dart';
+import '../../../core/theme/app_theme.dart';
+import '../data/crypto_currency.dart';
+import '../data/crypto_portfolio_repository.dart';
+import '../data/crypto_repository.dart';
+import 'crypto_providers.dart';
+
+class CryptoPortfolioTab extends ConsumerWidget {
+  const CryptoPortfolioTab({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currency = ref.watch(cryptoCurrencyProvider);
+    final holdings = ref.watch(cryptoPortfolioProvider);
+    final coinsAsync = ref.watch(cryptoTop100Provider(currency));
+
+    return coinsAsync.when(
+      data: (coins) {
+        final byId = {for (final c in coins) c.id: c};
+        double valueNow = 0;
+        double value24hAgo = 0;
+        for (final h in holdings) {
+          final c = byId[h.coinId];
+          if (c == null) continue;
+          final v = c.price * h.quantity;
+          valueNow += v;
+          value24hAgo += v / (1 + c.change24hPercent / 100);
+        }
+        final pct = value24hAgo == 0
+            ? 0.0
+            : (valueNow - value24hAgo) / value24hAgo * 100;
+        final isUp = pct >= 0;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            GlowBox(
+              borderRadius: 20,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    ref.tr('crypto_total_value'),
+                    style: AppTextStyles.muted(size: 12),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    formatCryptoPrice(valueNow, currency),
+                    style: AppTextStyles.heading(size: 26),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${isUp ? '+' : ''}${pct.toStringAsFixed(2)}% (24h)',
+                    style: TextStyle(
+                      color: isUp ? AppColors.teal : AppColors.pink,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+            Expanded(
+              child: holdings.isEmpty
+                  ? Center(
+                      child: Text(
+                        ref.tr('crypto_portfolio_empty'),
+                        style: AppTextStyles.muted(),
+                        textAlign: TextAlign.center,
+                      ),
+                    )
+                  : ListView.separated(
+                      itemCount: holdings.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: 10),
+                      itemBuilder: (context, i) => _HoldingTile(
+                        holding: holdings[i],
+                        coin: byId[holdings[i].coinId],
+                        currency: currency,
+                      ),
+                    ),
+            ),
+          ],
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (_, _) => Center(
+        child: Text(ref.tr('crypto_error'), style: AppTextStyles.muted()),
+      ),
+    );
+  }
+}
+
+class _HoldingTile extends ConsumerWidget {
+  const _HoldingTile({
+    required this.holding,
+    required this.coin,
+    required this.currency,
+  });
+
+  final CryptoHolding holding;
+  final CryptoCoin? coin;
+  final CryptoCurrency currency;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final price = coin?.price ?? 0;
+    final change = coin?.change24hPercent ?? 0;
+    final isUp = change >= 0;
+    final value = price * holding.quantity;
+
+    return Dismissible(
+      key: ValueKey(holding.coinId),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        decoration: BoxDecoration(
+          color: AppColors.pink.withValues(alpha: 0.18),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: const Icon(Icons.delete_outline_rounded, color: AppColors.pink),
+      ),
+      onDismissed: (_) =>
+          ref.read(cryptoPortfolioProvider.notifier).remove(holding.coinId),
+      child: GlowBox(
+        borderRadius: 16,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        child: Row(
+          children: [
+            ClipOval(
+              child: Image.network(
+                holding.imageUrl,
+                width: 30,
+                height: 30,
+                errorBuilder: (_, _, _) => Container(
+                  width: 30,
+                  height: 30,
+                  color: AppColors.glassFill,
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    holding.name,
+                    style: AppTextStyles.body(weight: FontWeight.w800),
+                  ),
+                  Text(
+                    '${holding.quantity} ${holding.symbol}',
+                    style: AppTextStyles.muted(size: 12),
+                  ),
+                ],
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  formatCryptoPrice(value, currency),
+                  style: AppTextStyles.body(weight: FontWeight.w800, size: 13),
+                ),
+                Text(
+                  '${isUp ? '+' : ''}${change.toStringAsFixed(2)}%',
+                  style: TextStyle(
+                    color: isUp ? AppColors.teal : AppColors.pink,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
