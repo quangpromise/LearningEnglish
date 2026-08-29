@@ -62,3 +62,59 @@ Future<UpdateInfo?> checkForUpdate() async {
 extension _FirstOrNull<T> on Iterable<T> {
   T? get firstOrNull => isEmpty ? null : first;
 }
+
+/// Ban chi tiet cua checkForUpdate() dung cho nut "Kiem tra cap nhat" thu
+/// cong trong man Ho so - checkForUpdate() im lang tra ve null khi that bai
+/// (dung cho kiem tra ngam luc mo app, khong lam phien nguoi dung), con o
+/// day tra ve mo ta ro TUNG BUOC, giup tu chan doan khi khong thay thong
+/// bao tu dong (vd bi GitHub rate-limit tren mang di dong - rat pho bien voi
+/// API khong xac thuc tu IP dung chung nha mang, cache CDN cua Release chua
+/// kip cap nhat...) thay vi phai doan mo qua lai nhieu vong nhu da xay ra.
+Future<String> debugCheckForUpdate() async {
+  if (Env.buildSha.isEmpty) {
+    return 'Bản build cục bộ (không có BUILD_SHA đóng gói sẵn) - không kiểm tra được. Chỉ hoạt động với bản build từ CI.';
+  }
+  try {
+    final releaseRes = await http
+        .get(
+          Uri.parse('https://api.github.com/repos/$_repo/releases/tags/latest'),
+        )
+        .timeout(const Duration(seconds: 8));
+    if (releaseRes.statusCode != 200) {
+      return 'GitHub API trả về lỗi HTTP ${releaseRes.statusCode}.\n'
+          '${releaseRes.statusCode == 403 ? "Rất có thể do bị rate-limit (mạng của bạn gọi API GitHub không xác thực quá nhiều lần trong 1 giờ)." : releaseRes.body}';
+    }
+
+    final release = jsonDecode(releaseRes.body) as Map<String, dynamic>;
+    final assets = (release['assets'] as List).cast<Map<String, dynamic>>();
+    final versionAsset = assets
+        .where((a) => a['name'] == 'version.txt')
+        .firstOrNull;
+    final apkAsset = assets
+        .where((a) => a['name'] == 'app-arm64-v8a-release.apk')
+        .firstOrNull;
+    if (versionAsset == null || apkAsset == null) {
+      return 'Release "latest" trên GitHub thiếu file version.txt hoặc APK.';
+    }
+
+    final shaRes = await http
+        .get(Uri.parse(versionAsset['browser_download_url'] as String))
+        .timeout(const Duration(seconds: 8));
+    if (shaRes.statusCode != 200) {
+      return 'Không tải được version.txt (HTTP ${shaRes.statusCode}).';
+    }
+
+    final latestSha = shaRes.body.trim();
+    final runningShaShort = Env.buildSha.length > 7
+        ? Env.buildSha.substring(0, 7)
+        : Env.buildSha;
+    final latestShaShort = latestSha.length > 7
+        ? latestSha.substring(0, 7)
+        : latestSha;
+    return 'Bản đang chạy: $runningShaShort\n'
+        'Bản mới nhất trên GitHub: $latestShaShort\n'
+        '${latestSha == Env.buildSha ? "-> Đã là bản mới nhất, không có gì để thông báo." : "-> CÓ bản mới hơn - lẽ ra phải thấy popup. Thử mở lại app hoặc kiểm tra mạng."}';
+  } catch (e) {
+    return 'Lỗi khi kiểm tra: $e';
+  }
+}

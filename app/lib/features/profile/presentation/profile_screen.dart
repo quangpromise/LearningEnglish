@@ -10,9 +10,43 @@ import '../../../core/theme/app_theme.dart';
 import '../../settings/presentation/change_password_sheet.dart';
 import '../../settings/presentation/voice_settings_sheet.dart';
 import '../../social/presentation/friends_screen.dart';
+import '../../update/data/update_checker.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
+
+  /// Kiem tra cap nhat thu cong, hien chi tiet TUNG BUOC thay vi im lang -
+  /// dung khi popup tu dong (showUpdateDialogIfAvailable, chay ngam luc mo
+  /// app) khong hien ra du nguoi dung nghi da co ban moi, de tu chan doan
+  /// (rate-limit GitHub API, mang loi, hay that su da la ban moi nhat).
+  Future<void> _checkForUpdateNow(BuildContext context) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) =>
+          const Center(child: CircularProgressIndicator(color: AppColors.blue)),
+    );
+    final result = await debugCheckForUpdate();
+    if (!context.mounted) return;
+    Navigator.of(context).pop();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF12172E),
+        title: const Text(
+          'Update check',
+          style: TextStyle(color: AppColors.textPrimary),
+        ),
+        content: Text(result, style: AppTextStyles.muted()),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
 
   Future<void> _confirmSignOut(BuildContext context, WidgetRef ref) async {
     final confirmed = await showDialog<bool>(
@@ -540,6 +574,53 @@ class ProfileScreen extends ConsumerWidget {
                                 ),
                                 Text(
                                   ref.tr('profile_language_subtitle'),
+                                  style: AppTextStyles.muted(size: 11),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(
+                            Icons.chevron_right_rounded,
+                            color: AppColors.textMuted,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  GestureDetector(
+                    onTap: () => _checkForUpdateNow(context),
+                    child: GlowBox(
+                      borderRadius: 20,
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 34,
+                            height: 34,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: AppColors.blue.withValues(alpha: 0.18),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.system_update_rounded,
+                              size: 16,
+                              color: AppColors.blue,
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Check for updates',
+                                  style: AppTextStyles.body(
+                                    weight: FontWeight.w800,
+                                  ),
+                                ),
+                                Text(
+                                  'See exactly why the update popup did or didn\'t show',
                                   style: AppTextStyles.muted(size: 11),
                                 ),
                               ],
