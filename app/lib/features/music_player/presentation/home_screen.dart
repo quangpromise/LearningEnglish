@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../social/presentation/friends_screen.dart';
+import '../../social/presentation/conversations_screen.dart';
 import '../data/songs_data.dart';
 import 'player_screen.dart';
 
@@ -344,9 +344,8 @@ class _MessagesButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final unread = ref.watch(unreadMessageCountProvider).valueOrNull ?? 0;
     return GestureDetector(
-      onTap: () => Navigator.of(
-        context,
-      ).push(MaterialPageRoute(builder: (_) => const FriendsScreen())),
+      onTap: () => Navigator.of(context)
+          .push(MaterialPageRoute(builder: (_) => const ConversationsScreen())),
       child: Tooltip(
         message: ref.tr('home_messages_tooltip'),
         child: Stack(

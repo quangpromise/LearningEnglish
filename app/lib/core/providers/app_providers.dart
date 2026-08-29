@@ -113,8 +113,28 @@ void invalidateUserScopedProviders(WidgetRef ref) {
   ref.invalidate(myFriendsProvider);
   ref.invalidate(myPendingRequestsProvider);
   ref.invalidate(unreadMessageCountProvider);
+  ref.invalidate(myConversationsProvider);
   ref.invalidate(favoriteSongTitlesProvider);
 }
+
+/// Nhip realtime tu bang messages (khong quan tam noi dung, chi de kich
+/// hoat refetch) - moi khi co tin nhan moi/duoc danh dau da doc, dung de
+/// lam moi myConversationsProvider ngay lap tuc thay vi phai roi man hinh
+/// tin nhan roi quay lai moi thay cap nhat.
+final _messagesRealtimePingProvider = StreamProvider.autoDispose<void>((ref) {
+  final client = ref.watch(supabaseClientProvider);
+  if (client.auth.currentUser == null) return const Stream.empty();
+  return client.from('messages').stream(primaryKey: ['id']).map((_) {});
+});
+
+/// Danh sach hoi thoai (man Tin nhan o Home) - ban be kem tin nhan gan
+/// nhat + so chua doc. Gọi `ref.invalidate(myConversationsProvider)` sau
+/// khi gui/nhan tin nếu cần làm mới ngay lập tức (thường tự làm mới qua
+/// _messagesRealtimePingProvider ở trên).
+final myConversationsProvider = FutureProvider.autoDispose((ref) {
+  ref.watch(_messagesRealtimePingProvider);
+  return ref.watch(socialRepositoryProvider).fetchConversations();
+});
 
 const _appLanguagePrefKey = 'app_language';
 

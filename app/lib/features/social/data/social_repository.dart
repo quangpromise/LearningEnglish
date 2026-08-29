@@ -60,6 +60,27 @@ class ChatMessage {
   final DateTime? readAt;
 }
 
+/// 1 dong trong danh sach hoi thoai (man Tin nhan) - ban be kem tin nhan
+/// GAN NHAT va so tin chua doc, xem RPC my_conversations() trong
+/// supabase/migrations/0013_conversations_list.sql.
+class ConversationPreview {
+  const ConversationPreview({
+    required this.friend,
+    this.lastMessage,
+    this.lastMessageAt,
+    this.lastMessageIsMine = false,
+    this.unreadCount = 0,
+  });
+
+  final SocialUser friend;
+  final String? lastMessage;
+  final DateTime? lastMessageAt;
+  final bool lastMessageIsMine;
+  final int unreadCount;
+
+  bool get hasUnread => unreadCount > 0;
+}
+
 /// Ket ban, tin nhan 1-1, va trang thai online - xem
 /// supabase/migrations/0011_friends_and_chat.sql cho schema/RPC day du.
 class SocialRepository {
@@ -180,6 +201,34 @@ class SocialRepository {
         .stream(primaryKey: ['id'])
         .eq('receiver_id', myId)
         .map((rows) => rows.where((r) => r['read_at'] == null).length);
+  }
+
+  /// Danh sach hoi thoai (ban be + tin nhan gan nhat + so chua doc), sap
+  /// xep theo tin moi nhat truoc - dung cho man hinh Tin nhan (thay the
+  /// FriendsScreen lam man mac dinh khi bam nut tin nhan o Home).
+  Future<List<ConversationPreview>> fetchConversations() async {
+    final rows = await _supabase.rpc('my_conversations');
+    return (rows as List).map((r) {
+      final m = r as Map<String, dynamic>;
+      return ConversationPreview(
+        friend: SocialUser(
+          id: m['id'] as String,
+          username: m['username'] as String?,
+          displayName: m['display_name'] as String?,
+          avatarUrl: m['avatar_url'] as String?,
+          isOnline: m['is_online'] as bool? ?? false,
+          lastSeenAt: m['last_seen_at'] != null
+              ? DateTime.parse(m['last_seen_at'] as String)
+              : null,
+        ),
+        lastMessage: m['last_message'] as String?,
+        lastMessageAt: m['last_message_at'] != null
+            ? DateTime.parse(m['last_message_at'] as String)
+            : null,
+        lastMessageIsMine: m['last_message_is_mine'] as bool? ?? false,
+        unreadCount: (m['unread_count'] as num?)?.toInt() ?? 0,
+      );
+    }).toList();
   }
 
   Future<List<ChatMessage>> fetchConversation(String otherUserId) async {

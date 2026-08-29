@@ -373,8 +373,7 @@ class _FriendTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return GestureDetector(
-      onTap: () => Navigator.of(context)
-          .push(MaterialPageRoute(builder: (_) => ChatScreen(friend: user))),
+      onTap: () => openChatPopup(context, user),
       child: GlowBox(
         borderRadius: 16,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),

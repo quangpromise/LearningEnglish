@@ -248,6 +248,14 @@ class AppStrings {
       AppLanguage.vi: 'Nhắn gì đó...',
       AppLanguage.en: 'Type a message...',
     },
+    'conversations_no_message': {
+      AppLanguage.vi: 'Chưa có tin nhắn nào',
+      AppLanguage.en: 'No messages yet',
+    },
+    'conversations_you_prefix': {
+      AppLanguage.vi: 'Bạn: ',
+      AppLanguage.en: 'You: ',
+    },
 
     'profile_avatar_error': {
       AppLanguage.vi: 'Không tải được avatar:',

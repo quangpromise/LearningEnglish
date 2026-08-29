@@ -4,7 +4,26 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/time_format.dart';
 import '../data/social_repository.dart';
+
+/// Mở khung chat với 1 người bạn dưới dạng pop-up (bottom sheet cao gần
+/// hết màn hình) thay vì chuyển hẳn sang màn hình mới - dùng ở cả danh
+/// sách hội thoại lẫn danh sách bạn bè để trải nghiệm nhất quán.
+Future<void> openChatPopup(BuildContext context, SocialUser friend) {
+  return showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) => FractionallySizedBox(
+      heightFactor: 0.92,
+      child: ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        child: ChatScreen(friend: friend),
+      ),
+    ),
+  );
+}
 
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key, required this.friend});
@@ -25,7 +44,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     // Danh dau doc ngay khi mo cuoc hoi thoai - unreadMessageCountProvider
     // (Home) tu giam qua realtime stream, khong can invalidate thu cong.
     Future.microtask(
-      () => ref.read(socialRepositoryProvider).markConversationRead(widget.friend.id),
+      () => ref
+          .read(socialRepositoryProvider)
+          .markConversationRead(widget.friend.id),
     );
   }
 
@@ -87,7 +108,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       border: Border.all(color: AppColors.glassBorder),
                     ),
                     child: const Icon(
-                      Icons.chevron_left_rounded,
+                      Icons.close_rounded,
                       color: AppColors.textPrimary,
                     ),
                   ),
@@ -147,34 +168,56 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     itemBuilder: (context, i) {
                       final m = messages[i];
                       final isMine = m.senderId == myId;
-                      return Align(
-                        alignment: isMine
-                            ? Alignment.centerRight
-                            : Alignment.centerLeft,
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(vertical: 4),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 10,
-                          ),
-                          constraints: BoxConstraints(
-                            maxWidth: MediaQuery.of(context).size.width * 0.72,
-                          ),
-                          decoration: BoxDecoration(
-                            gradient: isMine ? AppColors.accentGradient : null,
-                            color: isMine ? null : AppColors.glassFill,
-                            border: isMine
-                                ? null
-                                : Border.all(color: AppColors.glassBorder),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Text(
-                            m.content,
-                            style: AppTextStyles.body(
-                              color: isMine ? Colors.white : null,
+                      return Column(
+                        crossAxisAlignment: isMine
+                            ? CrossAxisAlignment.end
+                            : CrossAxisAlignment.start,
+                        children: [
+                          Align(
+                            alignment: isMine
+                                ? Alignment.centerRight
+                                : Alignment.centerLeft,
+                            child: Container(
+                              margin: const EdgeInsets.only(top: 4),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 10,
+                              ),
+                              constraints: BoxConstraints(
+                                maxWidth:
+                                    MediaQuery.of(context).size.width * 0.72,
+                              ),
+                              decoration: BoxDecoration(
+                                gradient: isMine
+                                    ? AppColors.accentGradient
+                                    : null,
+                                color: isMine ? null : AppColors.glassFill,
+                                border: isMine
+                                    ? null
+                                    : Border.all(color: AppColors.glassBorder),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Text(
+                                m.content,
+                                style: AppTextStyles.body(
+                                  color: isMine ? Colors.white : null,
+                                ),
+                              ),
                             ),
                           ),
-                        ),
+                          Padding(
+                            padding: const EdgeInsets.only(
+                              top: 2,
+                              bottom: 4,
+                              left: 4,
+                              right: 4,
+                            ),
+                            child: Text(
+                              formatBubbleTime(m.createdAt),
+                              style: AppTextStyles.muted(size: 10),
+                            ),
+                          ),
+                        ],
                       );
                     },
                   );
