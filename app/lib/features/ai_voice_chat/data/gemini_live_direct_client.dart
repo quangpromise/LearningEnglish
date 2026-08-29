@@ -58,9 +58,13 @@ class GeminiLiveDirectClient implements VoiceChatSession {
       'they said first, then, as a separate final sentence, say exactly: '
       '"Correction: " followed by the full corrected sentence. Do this '
       'every time you notice a mistake, without exception.\n'
-      'Example - user says "I go to store yesterday and buyed some milk": '
-      'you could reply "Nice, what else did you get? Correction: I went to '
-      'the store yesterday and bought some milk."\n\n'
+      'Example 1 (grammar) - user says "I go to store yesterday and buyed '
+      'some milk": you could reply "Nice, what else did you get? '
+      'Correction: I went to the store yesterday and bought some milk."\n'
+      'Example 2 (wrong word / misspoken word) - user says "I am very '
+      'confusing about this lesson" (they meant "confused"): you could '
+      'reply "Which part is tricky? Correction: I am very confused about '
+      'this lesson."\n\n'
       'If the user did not make any mistake, just reply normally and never '
       'say the word "Correction". Keep the normal part of your reply short.';
 

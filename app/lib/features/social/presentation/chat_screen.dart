@@ -114,6 +114,54 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   ),
                 ),
                 const SizedBox(width: 12),
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        gradient: AppColors.accentGradient,
+                        shape: BoxShape.circle,
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: widget.friend.avatarUrl != null
+                          ? Image.network(
+                              widget.friend.avatarUrl!,
+                              fit: BoxFit.cover,
+                            )
+                          : Center(
+                              child: Text(
+                                widget.friend.label.isNotEmpty
+                                    ? widget.friend.label[0].toUpperCase()
+                                    : '?',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ),
+                    ),
+                    Positioned(
+                      right: -1,
+                      bottom: -1,
+                      child: Container(
+                        width: 11,
+                        height: 11,
+                        decoration: BoxDecoration(
+                          // Xanh la khi online, xam khi offline - giong
+                          // Messenger: luon co 1 cham trang thai.
+                          color: widget.friend.isOnline
+                              ? AppColors.teal
+                              : AppColors.textMuted,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: AppColors.bgTop, width: 2),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 10),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

@@ -161,20 +161,23 @@ class _ConversationTile extends ConsumerWidget {
                           ),
                         ),
                 ),
-                if (friend.isOnline)
-                  Positioned(
-                    right: -1,
-                    bottom: -1,
-                    child: Container(
-                      width: 12,
-                      height: 12,
-                      decoration: BoxDecoration(
-                        color: AppColors.teal,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: AppColors.bgTop, width: 2),
-                      ),
+                Positioned(
+                  right: -1,
+                  bottom: -1,
+                  child: Container(
+                    width: 12,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      // Xanh la khi online, xam khi offline - giong
+                      // Messenger: luon co 1 cham trang thai.
+                      color: friend.isOnline
+                          ? AppColors.teal
+                          : AppColors.textMuted,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.bgTop, width: 2),
                     ),
                   ),
+                ),
               ],
             ),
             const SizedBox(width: 12),

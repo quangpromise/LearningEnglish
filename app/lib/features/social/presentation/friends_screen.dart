@@ -347,7 +347,7 @@ class _Avatar extends StatelessWidget {
                   ),
                 ),
         ),
-        if (showOnlineDot && user.isOnline)
+        if (showOnlineDot)
           Positioned(
             right: -1,
             bottom: -1,
@@ -355,7 +355,9 @@ class _Avatar extends StatelessWidget {
               width: 12,
               height: 12,
               decoration: BoxDecoration(
-                color: AppColors.teal,
+                // Xanh la khi online, xam khi offline - giong Messenger:
+                // luon co 1 cham trang thai, khong chi hien khi online.
+                color: user.isOnline ? AppColors.teal : AppColors.textMuted,
                 shape: BoxShape.circle,
                 border: Border.all(color: AppColors.bgTop, width: 2),
               ),

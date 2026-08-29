@@ -29,12 +29,18 @@ class _RootShellState extends ConsumerState<RootShell>
   // cap nhanh ngay tren man Home (xem home_screen.dart). Reading va Quiz
   // cung khong con la tab rieng - gom vao man Menu (tab cuoi cung) de
   // thanh dieu huong duoi khong bi qua nhieu icon.
-  static const _screens = [
-    HomeScreen(),
-    AiVoiceChatScreen(),
-    PronunciationScreen(),
-    ProfileScreen(),
-    MenuScreen(),
+  //
+  // Khong con la list const: PronunciationScreen can biet no co dang la tab
+  // dang active hay khong (qua [isActive]) de tu doi cau luyen moi moi lan
+  // nguoi dung quay lai tab nay - IndexedStack giu nguyen state cua tat ca
+  // tab, initState() chi chay 1 lan duy nhat luc mo app nen khong tu doi cau
+  // duoc neu khong co co che nay.
+  List<Widget> _buildScreens() => [
+    const HomeScreen(),
+    const AiVoiceChatScreen(),
+    PronunciationScreen(isActive: _tab == 2),
+    const ProfileScreen(),
+    const MenuScreen(),
   ];
 
   static const _icons = [
@@ -118,7 +124,7 @@ class _RootShellState extends ConsumerState<RootShell>
 
     return Scaffold(
       backgroundColor: AppColors.bgTop,
-      body: IndexedStack(index: _tab, children: _screens),
+      body: IndexedStack(index: _tab, children: _buildScreens()),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
         child: Container(

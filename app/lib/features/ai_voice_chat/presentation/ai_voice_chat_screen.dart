@@ -13,6 +13,7 @@ import '../data/gemini_live_direct_client.dart';
 import '../data/gemini_voices.dart';
 import '../data/voice_chat_client.dart';
 import '../data/voice_chat_config.dart';
+import 'gemini_voice_picker_sheet.dart';
 
 /// AI Voice Chat: tro chuyen tu do bang giong noi voi AI qua backend
 /// gemini-proxy (xem backend/README.md ve kien truc + cach deploy). BAT
@@ -34,10 +35,10 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
   final ScrollController _scrollCtrl = ScrollController();
   final List<TranscriptEvent> _messages = [];
 
-  /// Duong dan file WAV vua nhan cho luot hien tai, cho den khi ghep vao
-  /// TranscriptEvent cua AI cho luot do (audio luon den truoc transcript
-  /// trong cung 1 luot - xem GeminiLiveDirectClient._handleServerMessage).
-  String? _pendingAudioPath;
+  /// Future dang ghi file WAV cho luot hien tai (tu _playResponse) - xem
+  /// _onTranscript de biet tai sao phai await future thay vi doc 1 bien
+  /// String? don gian.
+  Future<String?>? _pendingAudioFuture;
 
   VoiceChatState _state = VoiceChatState.idle;
   String? _error;
@@ -56,11 +57,23 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (_) => _VoicePickerSheet(current: _voiceName),
+      builder: (_) => GeminiVoicePickerSheet(current: _voiceName),
     );
     if (picked == null || picked == _voiceName) return;
     setState(() => _voiceName = picked);
     await GeminiVoicePrefs.save(picked);
+    // GeminiLiveDirectClient chi gui voiceName 1 lan luc setup, va man hinh
+    // nay la 1 tab thuong truc (khong bao gio bi dispose khi chuyen tab) nen
+    // _client van song sau khi ket thuc 1 cuoc noi chuyen - neu khong dong
+    // no o day, lan bam mic tiep theo se TAI SU DUNG client cu (van con
+    // giong cu) thay vi ap dung giong vua chon, dung nguyen nhan giong luon
+    // "ket dinh" o Puck du chon giong khac. Chi dong duoc khi dang idle -
+    // dang noi/dang cho AI tra loi thi de nguyen, giong moi se ap dung tu
+    // lan bat dau phien tiep theo.
+    if (_state == VoiceChatState.idle && _client != null) {
+      _client!.dispose();
+      _client = null;
+    }
   }
 
   @override
@@ -152,21 +165,36 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
 
   /// Khi AI bao co loi (kem [TranscriptEvent.correction]), boi do luon tin
   /// nhan cua nguoi dung ngay truoc do - do la cau da gay ra loi goi y nay.
-  void _onTranscript(TranscriptEvent event) {
+  ///
+  /// Audio va transcript den tu 2 stream KHAC NHAU (incomingAudio va
+  /// transcriptStream) - du client emit audio truoc transcript trong cung 1
+  /// luot, ben nghe (o day) khong duoc gia dinh _playResponse (async, co
+  /// ghi file) da chay XONG truoc khi _onTranscript chay, vi Dart chi dam
+  /// bao thu tu SCHEDULE microtask, khong dam bao _playResponse hoan tat
+  /// truoc _onTranscript bat dau - dan den bug thuc te: tin nhan AI bi gan
+  /// nham duong dan audio cua luot TRUOC do (dang phat lai lai loi cu khi
+  /// bam nghe lai). Sua bang cach _onTranscript CHO (await) chinh future
+  /// dang ghi file cua _playResponse thay vi doc 1 bien da-xong-hay-chua.
+  Future<void> _onTranscript(TranscriptEvent event) async {
     if (!mounted) return;
+    var toAdd = event;
+    if (event.role == ChatRole.ai) {
+      final pending = _pendingAudioFuture;
+      _pendingAudioFuture = null;
+      if (pending != null) {
+        final path = await pending;
+        if (!mounted) return;
+        toAdd = event.copyWith(audioPath: path);
+      }
+    }
     setState(() {
-      if (event.role == ChatRole.ai &&
-          event.correction != null &&
+      if (toAdd.role == ChatRole.ai &&
+          toAdd.correction != null &&
           _messages.isNotEmpty &&
           _messages.last.role == ChatRole.user) {
         _messages[_messages.length - 1] = _messages.last.copyWith(
           hasError: true,
         );
-      }
-      var toAdd = event;
-      if (event.role == ChatRole.ai && _pendingAudioPath != null) {
-        toAdd = event.copyWith(audioPath: _pendingAudioPath);
-        _pendingAudioPath = null;
       }
       _messages.add(toAdd);
     });
@@ -181,19 +209,30 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
   }
 
   Future<void> _playResponse(List<int> wavBytes) async {
+    // Gan future NGAY (dong bo, truoc await dau tien) de _onTranscript luon
+    // thay _pendingAudioFuture != null va cho dung file cua luot nay - xem
+    // giai thich trong _onTranscript.
+    final future = _saveReplyAudio(wavBytes);
+    _pendingAudioFuture = future;
+    final path = await future;
+    if (path == null) return;
+    try {
+      await _player.setFilePath(path);
+      await _player.play();
+    } catch (_) {
+      // Loi phat lai khong lam gian doan phien chat - bo qua 1 luot noi.
+    }
+  }
+
+  Future<String?> _saveReplyAudio(List<int> wavBytes) async {
     try {
       final dir = await getTemporaryDirectory();
       final path =
           '${dir.path}/voice_chat_reply_${DateTime.now().millisecondsSinceEpoch}.wav';
       await File(path).writeAsBytes(wavBytes);
-      // Ghi lai duong dan de _onTranscript gan vao tin nhan AI cua dung luot
-      // nay, cho phep nghe lai sau nay thay vi chi nghe duoc 1 lan luc AI
-      // vua tra loi.
-      _pendingAudioPath = path;
-      await _player.setFilePath(path);
-      await _player.play();
+      return path;
     } catch (_) {
-      // Loi phat lai khong lam gian doan phien chat - bo qua 1 luot noi.
+      return null;
     }
   }
 
@@ -250,7 +289,7 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
                 ),
                 if (kUseDirectGeminiConnection)
                   GestureDetector(
-                    onTap: busy ? null : _pickVoice,
+                    onTap: (busy || recording) ? null : _pickVoice,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 10,
@@ -470,103 +509,6 @@ class _MessageBubble extends StatelessWidget {
             ),
         ],
       ),
-    );
-  }
-}
-
-/// Bottom sheet chon 1 trong 30 giong dung san Gemini Live (xem
-/// gemini_voices.dart) - chi anh huong tu lan ket noi moi tiep theo, khong
-/// doi giong ngay giua 1 phien dang mo.
-class _VoicePickerSheet extends StatelessWidget {
-  const _VoicePickerSheet({required this.current});
-
-  final String current;
-
-  @override
-  Widget build(BuildContext context) {
-    return DraggableScrollableSheet(
-      initialChildSize: 0.6,
-      minChildSize: 0.4,
-      maxChildSize: 0.85,
-      expand: false,
-      builder: (context, scrollController) {
-        return Container(
-          decoration: const BoxDecoration(
-            color: Color(0xFF12172E),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-          ),
-          padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: AppColors.glassBorder,
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text('Choose a voice', style: AppTextStyles.heading(size: 16)),
-              const SizedBox(height: 4),
-              Text(
-                'Takes effect the next time you start a new chat session',
-                style: AppTextStyles.muted(size: 11),
-              ),
-              const SizedBox(height: 14),
-              Expanded(
-                child: ListView.separated(
-                  controller: scrollController,
-                  itemCount: kGeminiVoices.length,
-                  separatorBuilder: (_, _) =>
-                      const Divider(color: AppColors.glassBorder, height: 1),
-                  itemBuilder: (context, i) {
-                    final voice = kGeminiVoices[i];
-                    final selected = voice.name == current;
-                    return GestureDetector(
-                      onTap: () => Navigator.of(context).pop(voice.name),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    voice.name,
-                                    style: AppTextStyles.body(
-                                      weight: FontWeight.w800,
-                                      color: selected ? AppColors.blue : null,
-                                    ),
-                                  ),
-                                  Text(
-                                    voice.style,
-                                    style: AppTextStyles.muted(size: 11),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            if (selected)
-                              const Icon(
-                                Icons.check_circle_rounded,
-                                color: AppColors.blue,
-                                size: 20,
-                              ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 }

@@ -24,10 +24,18 @@ class PronunciationScreen extends ConsumerStatefulWidget {
     super.key,
     this.targetEn = "Now I'm standing in the rain",
     this.targetVi = 'Giờ tôi đứng lặng giữa cơn mưa',
+    this.isActive = true,
   });
 
   final String targetEn;
   final String targetVi;
+
+  /// True khi day dang la tab dang hien tren man hinh - RootShell giu man
+  /// nay song trong IndexedStack (khong bao gio dispose khi chuyen tab
+  /// khac), nen initState() chi chay 1 lan duy nhat luc mo app. Theo doi co
+  /// nay thay doi (qua didUpdateWidget) la cach duy nhat de biet "nguoi dung
+  /// vua quay lai tab nay" ma tu doi cau luyen moi.
+  final bool isActive;
 
   @override
   ConsumerState<PronunciationScreen> createState() =>
@@ -61,6 +69,26 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
     _speech
         .initialize(onError: _handleSttError)
         .then((ok) => setState(() => _available = ok));
+  }
+
+  @override
+  void didUpdateWidget(covariant PronunciationScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Tab nay vua duoc kich hoat lai (truoc do dang o tab khac) - doi sang 1
+    // cau luyen ngau nhien khac, dong thoi xoa ket qua/diem cua lan luyen
+    // truoc de khong con hien thi lan lon voi cau moi.
+    if (!oldWidget.isActive && widget.isActive && !_listening && !_scoring) {
+      final next = _randomSongLine();
+      setState(() {
+        _targetEn = next.en;
+        _targetVi = next.vi;
+        _score = null;
+        _recognized = '';
+        _wordResults = [];
+        _recordedPath = null;
+        _recordError = null;
+      });
+    }
   }
 
   /// Truoc day khong bat loi tu STT (vd error_no_match, error_speech_timeout,

@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/tts/app_tts.dart';
+import '../../ai_voice_chat/data/gemini_voices.dart';
+import '../../ai_voice_chat/presentation/gemini_voice_picker_sheet.dart';
 
 String _voiceLabel(WidgetRef ref, String locale) => switch (locale) {
   'en-us' => ref.tr('voice_en_us'),
@@ -32,10 +34,32 @@ class _VoiceSettingsSheet extends ConsumerStatefulWidget {
 }
 
 class _VoiceSettingsSheetState extends ConsumerState<_VoiceSettingsSheet> {
+  String _geminiVoice = kDefaultGeminiVoiceName;
+
+  @override
+  void initState() {
+    super.initState();
+    GeminiVoicePrefs.load().then((v) {
+      if (mounted) setState(() => _geminiVoice = v);
+    });
+  }
+
   Future<void> _choose(CloudVoice voice) async {
     await AppTts.instance.selectCloudVoice(voice);
     setState(() {});
     await AppTts.instance.speak('Hello, this is a preview of my voice.');
+  }
+
+  Future<void> _chooseGeminiVoice() async {
+    final picked = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => GeminiVoicePickerSheet(current: _geminiVoice),
+    );
+    if (picked == null || picked == _geminiVoice) return;
+    setState(() => _geminiVoice = picked);
+    await GeminiVoicePrefs.save(picked);
   }
 
   @override
@@ -98,6 +122,33 @@ class _VoiceSettingsSheetState extends ConsumerState<_VoiceSettingsSheet> {
                     ],
                   ),
                 ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'AI Voice Chat voice',
+            style: AppTextStyles.muted(size: 11).copyWith(letterSpacing: 0.4),
+          ),
+          const SizedBox(height: 8),
+          GestureDetector(
+            onTap: _chooseGeminiVoice,
+            child: GlowBox(
+              borderRadius: 16,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      _geminiVoice,
+                      style: AppTextStyles.body(weight: FontWeight.w800),
+                    ),
+                  ),
+                  const Icon(
+                    Icons.chevron_right_rounded,
+                    color: AppColors.textMuted,
+                  ),
+                ],
               ),
             ),
           ),
