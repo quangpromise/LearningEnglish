@@ -66,6 +66,7 @@ class FitnessExerciseListScreen extends ConsumerWidget {
                         builder: (_) => FitnessTimerScreen(
                           exercise: ex,
                           color: group.color,
+                          region: regionForMuscleGroup(group.nameEn),
                         ),
                       ),
                     ),

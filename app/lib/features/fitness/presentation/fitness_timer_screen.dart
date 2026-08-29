@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/fitness_data.dart';
+import 'body_diagram.dart';
 import 'exercise_animation.dart';
 
 enum _Phase { work, rest, done }
@@ -19,9 +20,11 @@ class FitnessTimerScreen extends ConsumerStatefulWidget {
     super.key,
     required this.exercise,
     required this.color,
+    this.region = BodyRegion.fullBody,
   });
   final Exercise exercise;
   final Color color;
+  final BodyRegion region;
 
   @override
   ConsumerState<FitnessTimerScreen> createState() => _FitnessTimerScreenState();
@@ -144,7 +147,7 @@ class _FitnessTimerScreenState extends ConsumerState<FitnessTimerScreen> {
           style: AppTextStyles.muted(size: 13),
         ),
         const SizedBox(height: 8),
-        ExerciseAnimation(color: widget.color),
+        ExerciseAnimation(color: widget.color, region: widget.region),
         const SizedBox(height: 10),
         if (isRest) ...[
           Text(
