@@ -9,9 +9,10 @@ import 'body_diagram.dart';
 /// Hinh nguoi don gian TU VE, chuyen dong LIEN TUC theo dung dang tac cua
 /// bai tap (squat gap goi, plank giu yen, push-up day tay, crunch gap
 /// bung...) thay vi 1 kieu nhun chung chung cho moi bai. Vung co dang tap
-/// (region) van duoc to do nhu truoc. Day la animation GOC ve bang
-/// CustomPainter, khong sao chep hinh anh/video minh hoa tu bat ky app hay
-/// nguon nao khac - chi mo phong don gian dang chuyen dong dac trung.
+/// (region) van duoc to do nhu truoc. Cac chi (tay/chan) duoc ve dang vien
+/// thuoc (capsule) tron deu voi 1 vet sang mo o canh tren de tao cam giac
+/// hinh khoi tron, dau co gradient nhe nhu qua cau bong - van la hinh minh
+/// hoa GOC, khong sao chep hinh anh/video tu bat ky app hay nguon nao khac.
 class ExerciseAnimation extends StatefulWidget {
   const ExerciseAnimation({
     super.key,
@@ -90,61 +91,135 @@ class _ExercisePainter extends CustomPainter {
   bool _isHighlighted(BodyRegion part) =>
       region == part || region == BodyRegion.fullBody;
 
-  Paint _paintFor(BodyRegion part) => Paint()
-    ..color = (_isHighlighted(part) ? color : AppColors.glassBorder).withValues(
-      alpha: _isHighlighted(part) ? 0.85 : 0.4,
-    )
-    ..style = PaintingStyle.fill;
+  Color _colorFor(BodyRegion part) =>
+      (_isHighlighted(part) ? color : AppColors.glassBorder);
 
+  double _alphaFor(BodyRegion part) => _isHighlighted(part) ? 0.88 : 0.42;
+
+  /// Ve 1 "khuc chi" (tay/chan) dang vien thuoc (capsule) - 2 dau tron deu,
+  /// them 1 vet sang mo o canh tren + 1 khop tron o goc pivot de noi lien
+  /// mach voi than nguoi, tao cam giac hinh khoi tron thay vi thanh dep.
   void _limb(
     Canvas canvas,
     Offset pivot,
     double angleRad,
     double length,
     double thickness,
-    Paint paint,
+    Color base,
+    double alpha,
   ) {
     canvas.save();
     canvas.translate(pivot.dx, pivot.dy);
     canvas.rotate(angleRad);
+    final r = thickness / 2;
+    final body = RRect.fromLTRBR(0, -r, length, r, Radius.circular(r));
     canvas.drawRRect(
-      RRect.fromLTRBR(
-        0,
-        -thickness / 2,
-        length,
-        thickness / 2,
-        Radius.circular(thickness / 2),
-      ),
-      paint,
+      body,
+      Paint()
+        ..color = base.withValues(alpha: alpha)
+        ..style = PaintingStyle.fill,
+    );
+    // Vet sang mo doc theo canh tren de goi y hinh tru tron.
+    final highlight = RRect.fromLTRBR(
+      length * 0.08,
+      -r * 0.62,
+      length * 0.92,
+      -r * 0.12,
+      Radius.circular(r * 0.4),
+    );
+    canvas.drawRRect(
+      highlight,
+      Paint()
+        ..color = Colors.white.withValues(alpha: alpha * 0.22)
+        ..style = PaintingStyle.fill,
     );
     canvas.restore();
+    // Khop tron o pivot de noi mach voi than/chi khac.
+    canvas.drawCircle(
+      pivot,
+      r * 0.92,
+      Paint()
+        ..color = base.withValues(alpha: alpha)
+        ..style = PaintingStyle.fill,
+    );
+  }
+
+  void _head(Canvas canvas, Offset center, double radius) {
+    final shader = RadialGradient(
+      center: const Alignment(-0.35, -0.4),
+      radius: 0.9,
+      colors: [
+        Colors.white.withValues(alpha: 0.30),
+        AppColors.glassBorder.withValues(alpha: 0.42),
+        AppColors.glassBorder.withValues(alpha: 0.48),
+      ],
+      stops: const [0, 0.55, 1],
+    ).createShader(Rect.fromCircle(center: center, radius: radius));
+    canvas.drawCircle(center, radius, Paint()..shader = shader);
+  }
+
+  void _groundShadow(Canvas canvas, Offset center, double width) {
+    canvas.drawOval(
+      Rect.fromCenter(center: center, width: width, height: width * 0.22),
+      Paint()..color = Colors.black.withValues(alpha: 0.16),
+    );
+  }
+
+  void _torso(Canvas canvas, Rect rect, Color base, double alpha) {
+    // Than hoi thop eo o giua (waist taper) thay vi hinh chu nhat deu.
+    final path = Path()
+      ..moveTo(rect.left, rect.top + rect.height * 0.12)
+      ..quadraticBezierTo(
+        rect.left - rect.width * 0.03,
+        rect.top + rect.height * 0.5,
+        rect.left + rect.width * 0.08,
+        rect.bottom - rect.height * 0.1,
+      )
+      ..quadraticBezierTo(
+        rect.left + rect.width * 0.5,
+        rect.bottom + rect.height * 0.06,
+        rect.right - rect.width * 0.08,
+        rect.bottom - rect.height * 0.1,
+      )
+      ..quadraticBezierTo(
+        rect.right + rect.width * 0.03,
+        rect.top + rect.height * 0.5,
+        rect.right,
+        rect.top + rect.height * 0.12,
+      )
+      ..quadraticBezierTo(
+        rect.center.dx,
+        rect.top - rect.height * 0.1,
+        rect.left,
+        rect.top + rect.height * 0.12,
+      )
+      ..close();
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = base.withValues(alpha: alpha)
+        ..style = PaintingStyle.fill,
+    );
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = Colors.white.withValues(alpha: alpha * 0.14)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.2,
+    );
   }
 
   @override
   void paint(Canvas canvas, Size size) {
-    final headPaint = Paint()
-      ..color = AppColors.glassBorder.withValues(alpha: 0.4)
-      ..style = PaintingStyle.fill;
-    final torsoPaint = _paintFor(BodyRegion.abs);
-    final armPaint = _paintFor(BodyRegion.arms);
-    final legPaint = _paintFor(BodyRegion.legs);
-
     if (_isFloorMovement(movement)) {
-      _paintFloor(canvas, size, headPaint, torsoPaint, armPaint, legPaint);
+      _paintFloor(canvas, size);
     } else {
-      _paintStanding(canvas, size, headPaint, torsoPaint, armPaint, legPaint);
+      _paintStanding(canvas, size);
     }
   }
 
   // ---- Cac dang tap DUNG (squat, lunge, jump, raise, twist, ...) ----
-  void _paintStanding(
-    Canvas canvas,
-    Size size,
-    Paint headPaint,
-    Paint torsoPaint,
-    Paint armPaint,
-    Paint legPaint,
-  ) {
+  void _paintStanding(Canvas canvas, Size size) {
     final w = size.width;
     final h = size.height;
 
@@ -164,7 +239,7 @@ class _ExercisePainter extends CustomPainter {
         bob = h * 0.10 * t;
         legSplay = 0.05 * t;
         legShorten = 0.30 * t;
-        armAngle = math.pi / 2 - 0.5 * t; // tay dua ra truoc giu thang bang
+        armAngle = math.pi / 2 - 0.5 * t;
         break;
       case ExerciseMovement.lunge:
         frontLegAngle = math.pi / 2 - 0.35;
@@ -175,12 +250,12 @@ class _ExercisePainter extends CustomPainter {
         armAngle = math.pi / 2 - 0.3 * t;
         break;
       case ExerciseMovement.jump:
-        bob = -h * 0.12 * t; // bat len khoi mat dat
+        bob = -h * 0.12 * t;
         legShorten = 0.20 * t;
-        armAngle = math.pi / 2 - math.pi * t; // vung tay len qua dau
+        armAngle = math.pi / 2 - math.pi * t;
         break;
       case ExerciseMovement.raise:
-        armAngle = math.pi / 2 - math.pi * t; // tu buong thong len qua dau
+        armAngle = math.pi / 2 - math.pi * t;
         bob = h * 0.01 * t;
         break;
       case ExerciseMovement.twist:
@@ -192,45 +267,26 @@ class _ExercisePainter extends CustomPainter {
         armAngle = math.pi / 2 - 0.15 * t;
     }
 
-    // Dau
-    canvas.drawCircle(Offset(w * 0.5, h * 0.09 + bob), w * 0.14, headPaint);
+    _groundShadow(canvas, Offset(w * 0.5, h * 0.97), w * 0.5);
 
-    // Than - xoay nhe khi twist
+    final armColor = _colorFor(BodyRegion.arms);
+    final armAlpha = _alphaFor(BodyRegion.arms);
+    final legColor = _colorFor(BodyRegion.legs);
+    final legAlpha = _alphaFor(BodyRegion.legs);
+
+    // Than - xoay nhe khi twist (ve truoc de chi de len tren nhu khop vai/hong)
     canvas.save();
     final torsoCenter = Offset(w * 0.5, h * 0.375 + bob);
     canvas.translate(torsoCenter.dx, torsoCenter.dy);
     canvas.rotate(torsoTilt);
     canvas.translate(-torsoCenter.dx, -torsoCenter.dy);
-    canvas.drawRRect(
-      RRect.fromLTRBR(
-        w * 0.32,
-        h * 0.20 + bob,
-        w * 0.68,
-        h * 0.55 + bob,
-        const Radius.circular(10),
-      ),
-      torsoPaint,
+    _torso(
+      canvas,
+      Rect.fromLTRB(w * 0.33, h * 0.20 + bob, w * 0.67, h * 0.55 + bob),
+      _colorFor(BodyRegion.abs),
+      _alphaFor(BodyRegion.abs),
     );
     canvas.restore();
-
-    // 2 tay - doi xung, huong xac dinh boi armAngle (0 = phai, pi/2 = xuong)
-    final armLen = w * 0.20;
-    _limb(
-      canvas,
-      Offset(w * 0.30, h * 0.24 + bob),
-      armAngle,
-      armLen,
-      w * 0.09,
-      armPaint,
-    );
-    _limb(
-      canvas,
-      Offset(w * 0.70, h * 0.24 + bob),
-      math.pi - armAngle,
-      armLen,
-      w * 0.09,
-      armPaint,
-    );
 
     // 2 chan
     if (isLunge) {
@@ -239,16 +295,18 @@ class _ExercisePainter extends CustomPainter {
         Offset(w * 0.44, h * 0.55),
         frontLegAngle,
         h * 0.40 * frontLegLen,
-        w * 0.11,
-        legPaint,
+        w * 0.115,
+        legColor,
+        legAlpha,
       );
       _limb(
         canvas,
         Offset(w * 0.56, h * 0.55),
         backLegAngle,
         h * 0.40 * backLegLen,
-        w * 0.11,
-        legPaint,
+        w * 0.115,
+        legColor,
+        legAlpha,
       );
     } else {
       final legLen = h * 0.40 * (1 - legShorten);
@@ -257,98 +315,72 @@ class _ExercisePainter extends CustomPainter {
         Offset(w * 0.42 - w * legSplay, h * 0.55),
         math.pi / 2,
         legLen,
-        w * 0.12,
-        legPaint,
+        w * 0.125,
+        legColor,
+        legAlpha,
       );
       _limb(
         canvas,
         Offset(w * 0.58 + w * legSplay, h * 0.55),
         math.pi / 2,
         legLen,
-        w * 0.12,
-        legPaint,
+        w * 0.125,
+        legColor,
+        legAlpha,
       );
     }
+
+    // 2 tay
+    final armLen = w * 0.20;
+    _limb(
+      canvas,
+      Offset(w * 0.30, h * 0.24 + bob),
+      armAngle,
+      armLen,
+      w * 0.095,
+      armColor,
+      armAlpha,
+    );
+    _limb(
+      canvas,
+      Offset(w * 0.70, h * 0.24 + bob),
+      math.pi - armAngle,
+      armLen,
+      w * 0.095,
+      armColor,
+      armAlpha,
+    );
+
+    // Dau
+    _head(canvas, Offset(w * 0.5, h * 0.09 + bob), w * 0.145);
   }
 
   // ---- Cac dang tap SAN (push-up, plank, crunch, bridge, climber, kick) ----
-  void _paintFloor(
-    Canvas canvas,
-    Size size,
-    Paint headPaint,
-    Paint torsoPaint,
-    Paint armPaint,
-    Paint legPaint,
-  ) {
+  void _paintFloor(Canvas canvas, Size size) {
     final w = size.width;
     final h = size.height;
     final ground = h * 0.82;
 
+    _groundShadow(canvas, Offset(w * 0.55, ground + 6), w * 0.85);
+
     switch (movement) {
       case ExerciseMovement.pushUp:
-        _pushUpLike(
-          canvas,
-          w,
-          h,
-          ground,
-          headPaint,
-          torsoPaint,
-          armPaint,
-          legPaint,
-          dip: t,
-        );
+        _pushUpLike(canvas, w, h, ground, dip: t);
         break;
       case ExerciseMovement.plank:
-        _pushUpLike(
-          canvas,
-          w,
-          h,
-          ground,
-          headPaint,
-          torsoPaint,
-          armPaint,
-          legPaint,
-          dip: 0.05 * t,
-        );
+        _pushUpLike(canvas, w, h, ground, dip: 0.05 * t);
         break;
       case ExerciseMovement.crunch:
-        _crunch(
-          canvas,
-          w,
-          h,
-          ground,
-          headPaint,
-          torsoPaint,
-          armPaint,
-          legPaint,
-        );
+        _crunch(canvas, w, h, ground);
         break;
       case ExerciseMovement.bridge:
-        _bridge(
-          canvas,
-          w,
-          h,
-          ground,
-          headPaint,
-          torsoPaint,
-          armPaint,
-          legPaint,
-        );
+        _bridge(canvas, w, h, ground);
         break;
       case ExerciseMovement.climber:
-        _climber(
-          canvas,
-          w,
-          h,
-          ground,
-          headPaint,
-          torsoPaint,
-          armPaint,
-          legPaint,
-        );
+        _climber(canvas, w, h, ground);
         break;
       case ExerciseMovement.kick:
-        _kick(canvas, w, h, ground, headPaint, torsoPaint, armPaint, legPaint);
+        _kick(canvas, w, h, ground);
         break;
       default:
         break;
@@ -361,248 +393,253 @@ class _ExercisePainter extends CustomPainter {
     Canvas canvas,
     double w,
     double h,
-    double ground,
-    Paint headPaint,
-    Paint torsoPaint,
-    Paint armPaint,
-    Paint legPaint, {
+    double ground, {
     required double dip,
   }) {
     final torsoY = ground - h * 0.22 - h * 0.10 * (1 - dip);
     final headX = w * 0.16;
     final hipX = w * 0.58;
     final footX = w * 0.92;
+    final armColor = _colorFor(BodyRegion.arms);
+    final armAlpha = _alphaFor(BodyRegion.arms);
+    final legColor = _colorFor(BodyRegion.legs);
+    final legAlpha = _alphaFor(BodyRegion.legs);
 
-    // Chan - tu hong toi ban chan cham dat
+    final legDx = footX - hipX;
+    final legDy = ground - torsoY;
     _limb(
       canvas,
       Offset(hipX, torsoY),
-      math.atan2(ground - torsoY, footX - hipX),
-      math
-          .sqrt(math.pow(footX - hipX, 2) + math.pow(ground - torsoY, 2))
-          .toDouble(),
-      w * 0.10,
-      legPaint,
+      math.atan2(legDy, legDx),
+      math.sqrt(legDx * legDx + legDy * legDy),
+      w * 0.105,
+      legColor,
+      legAlpha,
     );
-    // Tay - chong tu vai xuong san, goc doi theo dip (thang hon khi dip=0)
     final armAngle = math.pi / 2 - 0.35 * (1 - dip);
     _limb(
       canvas,
       Offset(headX + w * 0.06, torsoY),
       armAngle,
       ground - torsoY,
-      w * 0.09,
-      armPaint,
+      w * 0.095,
+      armColor,
+      armAlpha,
     );
-    // Dau
-    canvas.drawCircle(Offset(headX, torsoY), w * 0.12, headPaint);
-    // Than
-    canvas.drawRRect(
-      RRect.fromLTRBR(
+    _torso(
+      canvas,
+      Rect.fromLTRB(
         headX + w * 0.02,
         torsoY - h * 0.07,
         hipX,
         torsoY + h * 0.07,
-        const Radius.circular(10),
       ),
-      torsoPaint,
+      _colorFor(BodyRegion.abs),
+      _alphaFor(BodyRegion.abs),
     );
+    _head(canvas, Offset(headX, torsoY), w * 0.125);
   }
 
   /// Gap bung: phan than tren + dau nghieng len ve phia goi theo t.
-  void _crunch(
-    Canvas canvas,
-    double w,
-    double h,
-    double ground,
-    Paint headPaint,
-    Paint torsoPaint,
-    Paint armPaint,
-    Paint legPaint,
-  ) {
+  void _crunch(Canvas canvas, double w, double h, double ground) {
+    final legColor = _colorFor(BodyRegion.legs);
+    final legAlpha = _alphaFor(BodyRegion.legs);
+    final armColor = _colorFor(BodyRegion.arms);
+    final armAlpha = _alphaFor(BodyRegion.arms);
+
     final hip = Offset(w * 0.55, ground - h * 0.06);
     final kneeUp = Offset(w * 0.78, ground - h * 0.20);
-    final footDown = Offset(w * 0.95, ground - h * 0.02);
-    // Chan gap goi co dinh (mo phong ngoi gap goi)
-    _limb(canvas, hip, -0.55, w * 0.30, w * 0.11, legPaint);
-    _limb(canvas, kneeUp, 0.75, w * 0.22, w * 0.10, legPaint);
-    canvas.drawCircle(footDown, w * 0.02, legPaint);
+    _limb(canvas, hip, -0.55, w * 0.30, w * 0.115, legColor, legAlpha);
+    _limb(canvas, kneeUp, 0.75, w * 0.22, w * 0.105, legColor, legAlpha);
 
-    // Than tren nghieng len theo t (0 = nam san, 1 = ngoi day 1 phan)
     final liftAngle = -math.pi / 2 + (1 - 0.55 * t) * (math.pi / 2 - 0.35);
     final shoulder = hip.translate(-w * 0.02, 0);
+    final torsoAngle = math.pi - (0.35 * t + 0.05);
     _limb(
       canvas,
       shoulder,
-      math.pi - (0.35 * t + 0.05),
+      torsoAngle,
       w * 0.30,
-      w * 0.16,
-      torsoPaint,
+      w * 0.20,
+      _colorFor(BodyRegion.abs),
+      _alphaFor(BodyRegion.abs),
     );
-    final headOffset = Offset.fromDirection(
-      math.pi - (0.35 * t + 0.05),
-      w * 0.34,
-    );
-    canvas.drawCircle(shoulder + headOffset, w * 0.11, headPaint);
-    // Tay dat nhe truoc nguc
+    final headOffset = Offset.fromDirection(torsoAngle, w * 0.34);
+    _head(canvas, shoulder + headOffset, w * 0.115);
     _limb(
       canvas,
       shoulder + headOffset * 0.55,
       liftAngle,
       w * 0.14,
-      w * 0.07,
-      armPaint,
+      w * 0.075,
+      armColor,
+      armAlpha,
     );
   }
 
   /// Cau hong: vai co dinh sat dat, hong nang len ha xuong theo t.
-  void _bridge(
-    Canvas canvas,
-    double w,
-    double h,
-    double ground,
-    Paint headPaint,
-    Paint torsoPaint,
-    Paint armPaint,
-    Paint legPaint,
-  ) {
+  void _bridge(Canvas canvas, double w, double h, double ground) {
+    final legColor = _colorFor(BodyRegion.legs);
+    final legAlpha = _alphaFor(BodyRegion.legs);
+    final armColor = _colorFor(BodyRegion.arms);
+    final armAlpha = _alphaFor(BodyRegion.arms);
+
     final shoulder = Offset(w * 0.18, ground - h * 0.02);
     final hipLift = h * 0.16 * t;
     final hip = Offset(w * 0.50, ground - h * 0.02 - hipLift);
     final knee = Offset(w * 0.72, ground - h * 0.16);
     final foot = Offset(w * 0.82, ground);
 
-    canvas.drawCircle(shoulder + const Offset(-6, 0), w * 0.11, headPaint);
-    // Than tu vai den hong (nang len ha xuong)
+    _head(canvas, shoulder + const Offset(-6, 0), w * 0.115);
     final angle = math.atan2(hip.dy - shoulder.dy, hip.dx - shoulder.dx);
     final len = (hip - shoulder).distance;
-    _limb(canvas, shoulder, angle, len, w * 0.16, torsoPaint);
-    // Dui tu hong den goi, cang tu goi xuong ban chan (co dinh cham dat)
+    _limb(
+      canvas,
+      shoulder,
+      angle,
+      len,
+      w * 0.20,
+      _colorFor(BodyRegion.abs),
+      _alphaFor(BodyRegion.abs),
+    );
     final thighAngle = math.atan2(knee.dy - hip.dy, knee.dx - hip.dx);
-    _limb(canvas, hip, thighAngle, (knee - hip).distance, w * 0.12, legPaint);
+    _limb(
+      canvas,
+      hip,
+      thighAngle,
+      (knee - hip).distance,
+      w * 0.12,
+      legColor,
+      legAlpha,
+    );
     final shinAngle = math.atan2(foot.dy - knee.dy, foot.dx - knee.dx);
-    _limb(canvas, knee, shinAngle, (foot - knee).distance, w * 0.11, legPaint);
-    // Tay ap sat san lam diem tua
+    _limb(
+      canvas,
+      knee,
+      shinAngle,
+      (foot - knee).distance,
+      w * 0.11,
+      legColor,
+      legAlpha,
+    );
     _limb(
       canvas,
       shoulder,
       math.pi / 2 - 0.1,
       h * 0.02 + 6,
       w * 0.08,
-      armPaint,
+      armColor,
+      armAlpha,
     );
   }
 
   /// Leo nui: tu the plank cao, 1 chan luan phien keo len sat nguc.
-  void _climber(
-    Canvas canvas,
-    double w,
-    double h,
-    double ground,
-    Paint headPaint,
-    Paint torsoPaint,
-    Paint armPaint,
-    Paint legPaint,
-  ) {
+  void _climber(Canvas canvas, double w, double h, double ground) {
+    final legColor = _colorFor(BodyRegion.legs);
+    final legAlpha = _alphaFor(BodyRegion.legs);
+    final armColor = _colorFor(BodyRegion.arms);
+    final armAlpha = _alphaFor(BodyRegion.arms);
+
     final torsoY = ground - h * 0.30;
     final headX = w * 0.16;
     final hipX = w * 0.58;
 
-    canvas.drawCircle(Offset(headX, torsoY), w * 0.12, headPaint);
-    canvas.drawRRect(
-      RRect.fromLTRBR(
+    _torso(
+      canvas,
+      Rect.fromLTRB(
         headX + w * 0.02,
         torsoY - h * 0.07,
         hipX,
         torsoY + h * 0.07,
-        const Radius.circular(10),
       ),
-      torsoPaint,
+      _colorFor(BodyRegion.abs),
+      _alphaFor(BodyRegion.abs),
     );
-    // Tay chong thang
+    _head(canvas, Offset(headX, torsoY), w * 0.125);
     _limb(
       canvas,
       Offset(headX + w * 0.06, torsoY),
       math.pi / 2,
       ground - torsoY,
-      w * 0.09,
-      armPaint,
+      w * 0.095,
+      armColor,
+      armAlpha,
     );
 
-    // Chan 1: keo goi vao sat nguc (theo t), chan 2: duoi thang ve sau
+    final hipPt = Offset(hipX, torsoY);
     final tuckKnee = Offset(hipX + w * 0.10 - w * 0.20 * t, torsoY + h * 0.02);
     _limb(
       canvas,
-      Offset(hipX, torsoY),
+      hipPt,
       math.atan2(tuckKnee.dy - torsoY, tuckKnee.dx - hipX),
-      (tuckKnee - Offset(hipX, torsoY)).distance,
-      w * 0.10,
-      legPaint,
+      (tuckKnee - hipPt).distance,
+      w * 0.105,
+      legColor,
+      legAlpha,
     );
     final extFoot = Offset(w * 0.94, ground);
     _limb(
       canvas,
-      Offset(hipX, torsoY),
+      hipPt,
       math.atan2(extFoot.dy - torsoY, extFoot.dx - hipX),
-      (extFoot - Offset(hipX, torsoY)).distance,
-      w * 0.10,
-      legPaint,
+      (extFoot - hipPt).distance,
+      w * 0.105,
+      legColor,
+      legAlpha,
     );
   }
 
   /// Da chan ra sau: tu the boi 4 diem tua, 1 chan da thang len phia sau.
-  void _kick(
-    Canvas canvas,
-    double w,
-    double h,
-    double ground,
-    Paint headPaint,
-    Paint torsoPaint,
-    Paint armPaint,
-    Paint legPaint,
-  ) {
+  void _kick(Canvas canvas, double w, double h, double ground) {
+    final legColor = _colorFor(BodyRegion.legs);
+    final legAlpha = _alphaFor(BodyRegion.legs);
+    final armColor = _colorFor(BodyRegion.arms);
+    final armAlpha = _alphaFor(BodyRegion.arms);
+
     final torsoY = ground - h * 0.20;
     final headX = w * 0.18;
     final hipX = w * 0.55;
 
-    canvas.drawCircle(Offset(headX, torsoY), w * 0.11, headPaint);
-    canvas.drawRRect(
-      RRect.fromLTRBR(
+    _torso(
+      canvas,
+      Rect.fromLTRB(
         headX + w * 0.02,
         torsoY - h * 0.06,
         hipX,
         torsoY + h * 0.06,
-        const Radius.circular(9),
       ),
-      torsoPaint,
+      _colorFor(BodyRegion.abs),
+      _alphaFor(BodyRegion.abs),
     );
-    // Tay + chan tua (co dinh)
+    _head(canvas, Offset(headX, torsoY), w * 0.105);
     _limb(
       canvas,
       Offset(headX + w * 0.05, torsoY),
       math.pi / 2,
       ground - torsoY,
-      w * 0.08,
-      armPaint,
+      w * 0.085,
+      armColor,
+      armAlpha,
     );
     _limb(
       canvas,
       Offset(hipX - w * 0.05, torsoY),
       math.pi / 2,
       ground - torsoY,
-      w * 0.09,
-      legPaint,
+      w * 0.095,
+      legColor,
+      legAlpha,
     );
 
-    // Chan da: tu hong da len ra sau-tren theo t
-    final kickAngle = -0.15 - 0.9 * t; // cang len cao khi t tang
+    final kickAngle = -0.15 - 0.9 * t;
     _limb(
       canvas,
       Offset(hipX, torsoY),
       kickAngle,
       w * 0.34,
       w * 0.10,
-      legPaint,
+      legColor,
+      legAlpha,
     );
   }
 
