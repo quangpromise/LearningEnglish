@@ -37,11 +37,16 @@ class GeminiLiveDirectClient implements VoiceChatSession {
   static const _systemPrompt =
       'You are a friendly, patient English-speaking practice partner. Chat '
       'naturally in English with the user (an intermediate English learner). '
-      'If they make a clear grammar, word-choice, or pronunciation mistake, '
-      'say the corrected sentence naturally, then add exactly the phrase '
-      '"Correction: " followed by the corrected sentence once, then continue '
-      'the conversation. If there is no mistake, never say the word '
-      '"Correction". Keep replies short and easy to follow.';
+      'Listen carefully for ANY of these mistakes in what they say: grammar '
+      '(verb tense, articles, word order, subject-verb agreement...), '
+      'spelling or word choice (wrong word, malapropism, mispronounced word '
+      'that changed its meaning), and pronunciation (a word said in a way a '
+      'native speaker would not recognize, even if the meaning is still '
+      'clear from context). If you catch a clear mistake of any of these '
+      'kinds, say the corrected sentence naturally, then add exactly the '
+      'phrase "Correction: " followed by the corrected sentence once, then '
+      'continue the conversation. If there is no mistake, never say the '
+      'word "Correction". Keep replies short and easy to follow.';
 
   WebSocketChannel? _channel;
   StreamSubscription<Uint8List>? _micSub;
@@ -80,58 +85,80 @@ class GeminiLiveDirectClient implements VoiceChatSession {
       throw Exception('Microphone permission denied');
     }
 
-    _stateController.add(VoiceChatState.connecting);
-    final uri = Uri.parse(
-      'wss://generativelanguage.googleapis.com/ws/'
-      'google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent'
-      '?key=$apiKey',
-    );
-    final channel = WebSocketChannel.connect(uri);
-    _channel = channel;
-    await channel.ready;
+    // Chi mo ket noi moi lan dau (hoac sau khi loi/stop() dat _channel ve
+    // null) - cac luot noi tiep theo trong cung 1 phien chat tai su dung
+    // channel da mo, khong reconnect lai tu dau.
+    if (_channel == null) {
+      _stateController.add(VoiceChatState.connecting);
+      final uri = Uri.parse(
+        'wss://generativelanguage.googleapis.com/ws/'
+        'google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent'
+        '?key=$apiKey',
+      );
+      final channel = WebSocketChannel.connect(uri);
+      _channel = channel;
+      await channel.ready;
 
-    channel.sink.add(
-      jsonEncode({
-        'setup': {
-          'model': 'models/$model',
-          'generationConfig': {
-            'responseModalities': ['AUDIO'],
+      channel.sink.add(
+        jsonEncode({
+          'setup': {
+            'model': 'models/$model',
+            'generationConfig': {
+              'responseModalities': ['AUDIO'],
+            },
+            'systemInstruction': {
+              'parts': [
+                {'text': _systemPrompt},
+              ],
+            },
+            // Bat transcription 2 chieu de hien thi hoi thoai dang text tren
+            // man hinh (xem AiVoiceChatScreen) - khong anh huong toi audio.
+            'inputAudioTranscription': <String, dynamic>{},
+            'outputAudioTranscription': <String, dynamic>{},
+            // Tat VAD tu dong phia server - nguoi dung tu bao luc bat dau/
+            // ket thuc noi (activityStart/activityEnd trong start()/
+            // endTurn()) thay vi de Gemini tu doan luc nao im lang la het
+            // luot. Truoc day dung VAD tu dong khien AI khong bao gio ("hoac
+            // rat lau") tra loi vi khong doan dung luc nguoi dung ngung noi.
+            'realtimeInputConfig': {
+              'automaticActivityDetection': {'disabled': true},
+            },
           },
-          'systemInstruction': {
-            'parts': [
-              {'text': _systemPrompt},
-            ],
-          },
-          // Bat transcription 2 chieu de hien thi hoi thoai dang text tren
-          // man hinh (xem AiVoiceChatScreen) - khong anh huong toi audio.
-          'inputAudioTranscription': <String, dynamic>{},
-          'outputAudioTranscription': <String, dynamic>{},
-        },
-      }),
-    );
+        }),
+      );
 
-    channel.stream.listen(
-      _handleServerMessage,
-      onError: (Object e) {
-        lastError = 'Gemini Live connection error: $e';
-        _stateController.add(VoiceChatState.error);
-      },
-      onDone: () {
-        // Neu server tu dong dong ket noi (vd sai model, sai API key, het
-        // quota) ma khong phai do nguoi dung bam dung, closeCode se khac
-        // 1000 (normal closure) - phai bao loi ro rang thay vi im lang tro
-        // ve idle, neu khong nguoi dung se tuong minh dang noi ma "khong ai
-        // phan hoi" trong khi thuc ra ket noi da chet tu truoc.
-        final code = channel.closeCode;
-        if (code != null && code != 1000) {
-          lastError =
-              'Gemini Live closed the connection (code $code'
-              '${channel.closeReason != null ? ": ${channel.closeReason}" : ""})';
+      channel.stream.listen(
+        _handleServerMessage,
+        onError: (Object e) {
+          lastError = 'Gemini Live connection error: $e';
           _stateController.add(VoiceChatState.error);
-        } else {
-          _stateController.add(VoiceChatState.idle);
-        }
-      },
+        },
+        onDone: () {
+          // Neu server tu dong dong ket noi (vd sai model, sai API key, het
+          // quota) ma khong phai do nguoi dung bam dung, closeCode se khac
+          // 1000 (normal closure) - phai bao loi ro rang thay vi im lang tro
+          // ve idle, neu khong nguoi dung se tuong minh dang noi ma "khong ai
+          // phan hoi" trong khi thuc ra ket noi da chet tu truoc.
+          final code = channel.closeCode;
+          if (code != null && code != 1000) {
+            lastError =
+                'Gemini Live closed the connection (code $code'
+                '${channel.closeReason != null ? ": ${channel.closeReason}" : ""})';
+            _stateController.add(VoiceChatState.error);
+          } else {
+            _stateController.add(VoiceChatState.idle);
+          }
+          _channel = null;
+        },
+      );
+    }
+
+    // Bao AI biet nguoi dung bat dau 1 luot noi moi - bat buoc phai gui
+    // truoc audio vi automaticActivityDetection da bi tat o tren.
+    _channel!.sink.add(
+      jsonEncode({
+        'realtimeInput': {'activityStart': <String, dynamic>{}},
+      }),
     );
 
     final micStream = await _recorder.startStream(
@@ -154,6 +181,23 @@ class GeminiLiveDirectClient implements VoiceChatSession {
         }),
       );
     });
+  }
+
+  @override
+  Future<void> endTurn() async {
+    await _micSub?.cancel();
+    _micSub = null;
+    if (await _recorder.isRecording()) {
+      await _recorder.stop();
+    }
+    // Bao AI biet nguoi dung noi xong luot nay - vi da tat auto-VAD, khong
+    // co tin hieu nay thi AI se cho mai khong bao gio tra loi.
+    _channel?.sink.add(
+      jsonEncode({
+        'realtimeInput': {'activityEnd': <String, dynamic>{}},
+      }),
+    );
+    _stateController.add(VoiceChatState.thinking);
   }
 
   void _handleServerMessage(dynamic raw) {
@@ -239,6 +283,10 @@ class GeminiLiveDirectClient implements VoiceChatSession {
           ),
         );
       }
+
+      // AI da tra loi xong luot nay - san sang cho nguoi dung bam mic noi
+      // luot tiep theo (van dung chung 1 ket noi, khong reconnect lai).
+      _stateController.add(VoiceChatState.idle);
     }
   }
 

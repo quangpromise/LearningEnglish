@@ -4,8 +4,9 @@ import 'dart:typed_data';
 import 'package:record/record.dart' as rec;
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-/// Trang thai 1 phien AI Voice Chat.
-enum VoiceChatState { idle, connecting, listening, error }
+/// Trang thai 1 phien AI Voice Chat. [thinking] = nguoi dung da dung ghi am
+/// (goi [VoiceChatSession.endTurn]), dang cho AI xu ly va tra loi.
+enum VoiceChatState { idle, connecting, listening, thinking, error }
 
 /// Ai la nguoi noi ra 1 doan hoi thoai da chuyen thanh text.
 enum ChatRole { user, ai }
@@ -44,6 +45,14 @@ abstract class VoiceChatSession {
   Stream<VoiceChatState> get stateStream;
   Stream<Uint8List> get incomingAudio;
   Future<void> start();
+
+  /// Bao AI la nguoi dung da noi xong luot nay, muon nhan phan hoi ngay -
+  /// thay vi de AI tu doan luc nao nguoi dung ngung noi (auto-VAD). Mac dinh
+  /// goi thang [stop] (dong ca phien) - danh cho client khong ho tro dieu
+  /// khien luot rieng (vd VoiceChatClient qua backend, dung auto-VAD phia
+  /// server); GeminiLiveDirectClient ghi de de chi ket thuc luot noi hien
+  /// tai va giu nguyen ket noi cho luot tiep theo.
+  Future<void> endTurn() => stop();
   Future<void> stop();
   void dispose();
 
@@ -142,6 +151,9 @@ class VoiceChatClient implements VoiceChatSession {
     _stateController.add(VoiceChatState.listening);
     _micSub = micStream.listen((chunk) => _channel?.sink.add(chunk));
   }
+
+  @override
+  Future<void> endTurn() => stop();
 
   @override
   Future<void> stop() async {

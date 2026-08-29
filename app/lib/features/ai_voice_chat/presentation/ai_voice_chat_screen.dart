@@ -8,6 +8,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/config/env.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/tts/app_tts.dart';
 import '../data/gemini_live_direct_client.dart';
 import '../data/voice_chat_client.dart';
 import '../data/voice_chat_config.dart';
@@ -47,50 +48,65 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
   }
 
   Future<void> _toggle() async {
-    if (_state != VoiceChatState.idle && _state != VoiceChatState.error) {
-      await _client?.stop();
+    // Dang noi - bam lai nghia la "toi noi xong roi", ket thuc luot nay va
+    // cho AI tra loi (khong dong ca phien - xem VoiceChatSession.endTurn).
+    if (_state == VoiceChatState.listening) {
+      await _client?.endTurn();
+      return;
+    }
+    // Dang ket noi hoac dang cho AI tra loi luot truoc - bo qua, nut da bi
+    // vo hieu hoa trong build() nhung chan lai o day cho chac.
+    if (_state == VoiceChatState.connecting ||
+        _state == VoiceChatState.thinking) {
       return;
     }
 
+    final existing = _client;
     final VoiceChatSession client;
-    if (kUseDirectGeminiConnection) {
-      // TAM THOI (xem voice_chat_config.dart) - bo qua dang nhap/backend.
-      client = GeminiLiveDirectClient(apiKey: Env.geminiApiKeyDirect);
+    if (existing != null && _state == VoiceChatState.idle) {
+      // Phien van dang mo (vua nhan xong 1 luot tra loi) - tai su dung, chi
+      // bat dau ghi am luot moi thay vi tao ket noi moi tu dau.
+      client = existing;
     } else {
-      final token = Supabase.instance.client.auth.currentSession?.accessToken;
-      if (token == null) {
-        setState(() {
-          _error = 'You need to sign in to use AI Voice Chat';
-          _state = VoiceChatState.error;
-        });
-        return;
+      if (kUseDirectGeminiConnection) {
+        // TAM THOI (xem voice_chat_config.dart) - bo qua dang nhap/backend.
+        client = GeminiLiveDirectClient(apiKey: Env.geminiApiKeyDirect);
+      } else {
+        final token = Supabase.instance.client.auth.currentSession?.accessToken;
+        if (token == null) {
+          setState(() {
+            _error = 'You need to sign in to use AI Voice Chat';
+            _state = VoiceChatState.error;
+          });
+          return;
+        }
+        client = VoiceChatClient(
+          backendUrl: kVoiceChatBackendUrl,
+          accessToken: token,
+        );
       }
-      client = VoiceChatClient(
-        backendUrl: kVoiceChatBackendUrl,
-        accessToken: token,
-      );
+      _client = client;
+
+      _stateSub?.cancel();
+      _stateSub = client.stateStream.listen((s) {
+        if (!mounted) return;
+        setState(() {
+          _state = s;
+          if (s == VoiceChatState.error) {
+            _error = client.lastError ?? _error ?? 'Something went wrong';
+          }
+        });
+      });
+      _audioSub?.cancel();
+      _audioSub = client.incomingAudio.listen(_playResponse);
+      _transcriptSub?.cancel();
+      _transcriptSub = client.transcriptStream.listen(_onTranscript);
     }
 
     setState(() {
       _error = null;
       _state = VoiceChatState.connecting;
     });
-    _client = client;
-
-    _stateSub?.cancel();
-    _stateSub = client.stateStream.listen((s) {
-      if (!mounted) return;
-      setState(() {
-        _state = s;
-        if (s == VoiceChatState.error) {
-          _error = client.lastError ?? _error ?? 'Something went wrong';
-        }
-      });
-    });
-    _audioSub?.cancel();
-    _audioSub = client.incomingAudio.listen(_playResponse);
-    _transcriptSub?.cancel();
-    _transcriptSub = client.transcriptStream.listen(_onTranscript);
 
     try {
       await client.start();
@@ -149,7 +165,9 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
       case VoiceChatState.connecting:
         return 'Connecting...';
       case VoiceChatState.listening:
-        return 'Listening — speak naturally in English';
+        return 'Recording — tap the mic again when you\'re done talking';
+      case VoiceChatState.thinking:
+        return 'Thinking...';
       case VoiceChatState.error:
         return _error ?? 'Something went wrong';
     }
@@ -157,9 +175,10 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final active =
+    final recording = _state == VoiceChatState.listening;
+    final busy =
         _state == VoiceChatState.connecting ||
-        _state == VoiceChatState.listening;
+        _state == VoiceChatState.thinking;
 
     return ScreenBackground(
       child: Padding(
@@ -210,7 +229,7 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
             const SizedBox(height: 12),
             Center(
               child: GestureDetector(
-                onTap: _state == VoiceChatState.connecting ? null : _toggle,
+                onTap: busy ? null : _toggle,
                 child: Container(
                   width: 72,
                   height: 72,
@@ -219,14 +238,14 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: (active ? AppColors.pink : AppColors.blue)
+                        color: (recording ? AppColors.pink : AppColors.blue)
                             .withValues(alpha: 0.5),
                         blurRadius: 40,
                         offset: const Offset(0, 16),
                       ),
                     ],
                   ),
-                  child: _state == VoiceChatState.connecting
+                  child: busy
                       ? const Padding(
                           padding: EdgeInsets.all(22),
                           child: CircularProgressIndicator(
@@ -235,7 +254,7 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
                           ),
                         )
                       : Icon(
-                          active ? Icons.stop_rounded : Icons.mic_rounded,
+                          recording ? Icons.stop_rounded : Icons.mic_rounded,
                           color: Colors.white,
                           size: 28,
                         ),
@@ -271,13 +290,11 @@ class _MessageBubble extends StatelessWidget {
               maxWidth: MediaQuery.of(context).size.width * 0.72,
             ),
             decoration: BoxDecoration(
-              gradient: isMine && !message.hasError
-                  ? AppColors.accentGradient
-                  : null,
               color: isMine
                   ? (message.hasError
                         ? AppColors.pink.withValues(alpha: 0.18)
-                        : null)
+                        // Xanh kieu bong chat "cua minh" trong Messenger.
+                        : const Color(0xFF0084FF))
                   : AppColors.glassFill,
               border: isMine
                   ? (message.hasError
@@ -296,37 +313,49 @@ class _MessageBubble extends StatelessWidget {
             ),
           ),
           if (message.correction != null)
-            Container(
-              margin: const EdgeInsets.only(top: 4),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              constraints: BoxConstraints(
-                maxWidth: MediaQuery.of(context).size.width * 0.72,
-              ),
-              decoration: BoxDecoration(
-                color: AppColors.amber.withValues(alpha: 0.14),
-                border: Border.all(
-                  color: AppColors.amber.withValues(alpha: 0.5),
+            GestureDetector(
+              onTap: () => AppTts.instance.speak(message.correction!),
+              child: Container(
+                margin: const EdgeInsets.only(top: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
                 ),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(
-                    Icons.lightbulb_rounded,
-                    color: AppColors.amber,
-                    size: 16,
+                constraints: BoxConstraints(
+                  maxWidth: MediaQuery.of(context).size.width * 0.72,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.amber.withValues(alpha: 0.14),
+                  border: Border.all(
+                    color: AppColors.amber.withValues(alpha: 0.5),
                   ),
-                  const SizedBox(width: 6),
-                  Flexible(
-                    child: Text(
-                      'Correct way to say it: ${message.correction}',
-                      style: AppTextStyles.muted(size: 12)
-                          .copyWith(color: AppColors.amber),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(
+                      Icons.lightbulb_rounded,
+                      color: AppColors.amber,
+                      size: 16,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        'Correct way to say it: ${message.correction}',
+                        style: AppTextStyles.muted(size: 12)
+                            .copyWith(color: AppColors.amber),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    const Icon(
+                      Icons.volume_up_rounded,
+                      color: AppColors.amber,
+                      size: 16,
+                    ),
+                  ],
+                ),
               ),
             ),
         ],
