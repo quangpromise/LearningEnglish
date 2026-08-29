@@ -37,6 +37,9 @@ Thumbs.db
 .env.*
 !.env.example
 **/secrets.dart
+*.key
+*.pem
+ssh-key-*
 google-services.json
 GoogleService-Info.plist
 

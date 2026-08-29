@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../data/gemini_live_direct_client.dart';
 import '../data/voice_chat_client.dart';
 import '../data/voice_chat_config.dart';
 
@@ -22,7 +23,7 @@ class AiVoiceChatScreen extends StatefulWidget {
 }
 
 class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
-  VoiceChatClient? _client;
+  VoiceChatSession? _client;
   StreamSubscription<VoiceChatState>? _stateSub;
   StreamSubscription<List<int>>? _audioSub;
   final AudioPlayer _player = AudioPlayer();
@@ -45,24 +46,29 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
       return;
     }
 
-    final token = Supabase.instance.client.auth.currentSession?.accessToken;
-    if (token == null) {
-      setState(() {
-        _error = 'Bạn cần đăng nhập để dùng AI Voice Chat';
-        _state = VoiceChatState.error;
-      });
-      return;
+    final VoiceChatSession client;
+    if (kUseDirectGeminiConnection) {
+      // TAM THOI (xem voice_chat_config.dart) - bo qua dang nhap/backend.
+      client = GeminiLiveDirectClient(apiKey: kGeminiApiKeyDirect);
+    } else {
+      final token = Supabase.instance.client.auth.currentSession?.accessToken;
+      if (token == null) {
+        setState(() {
+          _error = 'Bạn cần đăng nhập để dùng AI Voice Chat';
+          _state = VoiceChatState.error;
+        });
+        return;
+      }
+      client = VoiceChatClient(
+        backendUrl: kVoiceChatBackendUrl,
+        accessToken: token,
+      );
     }
 
     setState(() {
       _error = null;
       _state = VoiceChatState.connecting;
     });
-
-    final client = VoiceChatClient(
-      backendUrl: kVoiceChatBackendUrl,
-      accessToken: token,
-    );
     _client = client;
 
     _stateSub?.cancel();

@@ -5,6 +5,34 @@ import { GoogleGenAI, Modality } from '@google/genai';
 // nang cap: https://ai.google.dev/gemini-api/docs/live-api
 const MODEL = process.env.GEMINI_LIVE_MODEL || 'gemini-3.1-flash-live-preview';
 
+// Gemini Live tra am thanh dang PCM 16-bit, mono, 24kHz (khong co header).
+const OUTPUT_SAMPLE_RATE = 24000;
+
+/**
+ * Boc du lieu PCM tho thanh 1 file WAV hoan chinh (them header 44 byte) -
+ * de client Flutter (va ca fallback-pipeline dung Piper, von da tra ve WAV
+ * san) nhan duoc CUNG 1 dinh dang moi luot noi, khong can biet dang dung
+ * Gemini hay fallback.
+ */
+function pcmToWav(pcmBuffer, sampleRate = OUTPUT_SAMPLE_RATE) {
+  const header = Buffer.alloc(44);
+  const byteRate = sampleRate * 2; // 16-bit mono
+  header.write('RIFF', 0, 'ascii');
+  header.writeUInt32LE(36 + pcmBuffer.length, 4);
+  header.write('WAVE', 8, 'ascii');
+  header.write('fmt ', 12, 'ascii');
+  header.writeUInt32LE(16, 16); // fmt chunk size
+  header.writeUInt16LE(1, 20); // PCM format
+  header.writeUInt16LE(1, 22); // mono
+  header.writeUInt32LE(sampleRate, 24);
+  header.writeUInt32LE(byteRate, 28);
+  header.writeUInt16LE(2, 32); // block align (16-bit mono)
+  header.writeUInt16LE(16, 34); // bits per sample
+  header.write('data', 36, 'ascii');
+  header.writeUInt32LE(pcmBuffer.length, 40);
+  return Buffer.concat([header, pcmBuffer]);
+}
+
 const SYSTEM_PROMPT =
   'Ban la mot nguoi ban luyen noi tieng Anh than thien, kien nhan. Tro chuyen ' +
   'tu nhien bang tieng Anh voi nguoi dung (nguoi hoc tieng Anh trinh do trung ' +
@@ -29,6 +57,7 @@ export class GeminiLiveSession {
     this.onError = onError;
     this.connected = false;
     this.session = null;
+    this._turnAudioParts = [];
   }
 
   async connect() {
@@ -59,13 +88,20 @@ export class GeminiLiveSession {
 
   _handleMessage(message) {
     const parts = message?.serverContent?.modelTurn?.parts;
-    if (!parts) return;
-    for (const part of parts) {
-      if (part.inlineData?.data) {
-        // Du lieu tra ve dang base64 - decode thanh Buffer nhi phan truoc
-        // khi forward qua WebSocket cho client Flutter.
-        this.onAudioChunk(Buffer.from(part.inlineData.data, 'base64'));
+    if (parts) {
+      for (const part of parts) {
+        if (part.inlineData?.data) {
+          this._turnAudioParts.push(Buffer.from(part.inlineData.data, 'base64'));
+        }
       }
+    }
+    // Gom het audio cua 1 luot noi (turn) roi moi gui 1 lan duoi dang WAV
+    // hoan chinh - client chi can phat file, khong phai tu ghep chunk PCM
+    // tho lai voi nhau.
+    if (message?.serverContent?.turnComplete && this._turnAudioParts.length) {
+      const wav = pcmToWav(Buffer.concat(this._turnAudioParts));
+      this._turnAudioParts = [];
+      this.onAudioChunk(wav);
     }
   }
 
