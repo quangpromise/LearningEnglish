@@ -10,6 +10,7 @@ import 'crypto_coin_picker_sheet.dart';
 import 'crypto_market_tab.dart';
 import 'crypto_portfolio_tab.dart';
 import 'crypto_providers.dart';
+import 'crypto_watchlist_tab.dart';
 
 class CryptoScreen extends ConsumerStatefulWidget {
   const CryptoScreen({super.key});
@@ -26,7 +27,7 @@ class _CryptoScreenState extends ConsumerState<CryptoScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     // Gia THUC SU real-time gio lay tu OKX WebSocket (xem liveCoinsProvider),
     // khong con phu thuoc vao polling nay nua. Doan nay chi con lam moi dinh
     // ky phan du lieu CoinGecko (rank/von hoa/luong luu hanh, va gia fallback
@@ -151,6 +152,7 @@ class _CryptoScreenState extends ConsumerState<CryptoScreen>
                 tabs: [
                   Tab(text: ref.tr('crypto_tab_market')),
                   Tab(text: ref.tr('crypto_tab_portfolio')),
+                  Tab(text: ref.tr('crypto_tab_watchlist')),
                 ],
               ),
             ),
@@ -158,7 +160,11 @@ class _CryptoScreenState extends ConsumerState<CryptoScreen>
             Expanded(
               child: TabBarView(
                 controller: _tabController,
-                children: const [CryptoMarketTab(), CryptoPortfolioTab()],
+                children: const [
+                  CryptoMarketTab(),
+                  CryptoPortfolioTab(),
+                  CryptoWatchlistTab(),
+                ],
               ),
             ),
           ],

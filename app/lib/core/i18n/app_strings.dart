@@ -155,6 +155,15 @@ class AppStrings {
       AppLanguage.vi: 'Danh mục',
       AppLanguage.en: 'Portfolio',
     },
+    'crypto_tab_watchlist': {
+      AppLanguage.vi: 'Theo dõi',
+      AppLanguage.en: 'Watchlist',
+    },
+    'crypto_watchlist_empty': {
+      AppLanguage.vi: 'Chưa theo dõi coin nào.\nBấm dấu sao ở tab Thị trường để thêm vào đây.',
+      AppLanguage.en:
+          'No coins watched yet.\nTap the star on Market to add one here.',
+    },
     'crypto_col_price': {AppLanguage.vi: 'Giá', AppLanguage.en: 'Price'},
     'crypto_col_change': {AppLanguage.vi: '24h %', AppLanguage.en: '24h %'},
     'crypto_col_market_cap': {

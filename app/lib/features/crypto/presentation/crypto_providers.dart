@@ -4,6 +4,7 @@ import '../data/crypto_currency.dart';
 import '../data/crypto_portfolio_repository.dart';
 import '../data/crypto_repository.dart';
 import '../data/crypto_transaction_repository.dart';
+import '../data/crypto_watchlist_repository.dart';
 import '../data/okx_service.dart';
 
 final cryptoCurrencyProvider = StateProvider<CryptoCurrency>(
@@ -201,3 +202,27 @@ final cryptoTransactionHistoryProvider =
       ref.watch(cryptoPortfolioProvider);
       return CryptoTransactionRepository.load();
     });
+
+/// Danh sach coin id dang "theo doi" (watchlist) - chi de xem gia, khong
+/// lien quan gi Portfolio (khong so luong, khong lai/lo).
+class CryptoWatchlistController extends StateNotifier<Set<String>> {
+  CryptoWatchlistController() : super({}) {
+    _load();
+  }
+
+  Future<void> _load() async {
+    state = await CryptoWatchlistRepository.load();
+  }
+
+  Future<void> toggle(String coinId) async {
+    final next = Set<String>.from(state);
+    if (!next.remove(coinId)) next.add(coinId);
+    state = next;
+    await CryptoWatchlistRepository.save(state);
+  }
+}
+
+final cryptoWatchlistProvider =
+    StateNotifierProvider<CryptoWatchlistController, Set<String>>(
+      (ref) => CryptoWatchlistController(),
+    );
