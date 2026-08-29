@@ -130,7 +130,7 @@ class _VocabularyQuizScreenState extends ConsumerState<VocabularyQuizScreen> {
                 borderRadius: BorderRadius.circular(999),
               ),
               child: Text(
-                '${widget.topic.name.toUpperCase()} · ${ref.tr('vocab_question_label')} ${_index + 1}/${_order.length}',
+                '${topicLabel(ref, widget.topic).toUpperCase()} · ${ref.tr('vocab_question_label')} ${_index + 1}/${_order.length}',
                 style: TextStyle(
                   color: widget.topic.color,
                   fontWeight: FontWeight.w800,

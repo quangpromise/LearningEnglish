@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/app_language.dart';
+import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 
 /// Một từ vựng: từ tiếng Anh + phiên âm IPA + nghĩa tiếng Việt + 1 câu ví dụ
@@ -27,20 +30,33 @@ class VocabWord {
 class VocabTopic {
   const VocabTopic({
     required this.name,
+    required this.nameEn,
     required this.icon,
     required this.color,
     required this.words,
   });
 
   final String name;
+
+  /// Ten chu de bang tieng Anh - hien thi thay [name] khi ngon ngu giao
+  /// dien la English (xem topicLabel() ben duoi).
+  final String nameEn;
   final IconData icon;
   final Color color;
   final List<VocabWord> words;
 }
 
+/// Ten chu de theo ngon ngu giao dien hien tai - dung o moi noi hien thi
+/// ten chu de (danh sach, man chi tiet, quiz) thay vi doc thang [VocabTopic.name].
+String topicLabel(WidgetRef ref, VocabTopic topic) =>
+    ref.watch(appLanguageProvider) == AppLanguage.en
+    ? topic.nameEn
+    : topic.name;
+
 const kVocabTopics = <VocabTopic>[
   VocabTopic(
     name: 'Gia đình',
+    nameEn: 'Family',
     icon: Icons.family_restroom_rounded,
     color: AppColors.blue,
     words: [
@@ -153,6 +169,7 @@ const kVocabTopics = <VocabTopic>[
   ),
   VocabTopic(
     name: 'Cơ thể',
+    nameEn: 'Body',
     icon: Icons.accessibility_new_rounded,
     color: AppColors.teal,
     words: [
@@ -265,6 +282,7 @@ const kVocabTopics = <VocabTopic>[
   ),
   VocabTopic(
     name: 'Ngoại hình',
+    nameEn: 'Appearance',
     icon: Icons.face_retouching_natural_rounded,
     color: AppColors.pink,
     words: [
@@ -370,6 +388,7 @@ const kVocabTopics = <VocabTopic>[
   ),
   VocabTopic(
     name: 'Tính cách',
+    nameEn: 'Personality',
     icon: Icons.psychology_rounded,
     color: AppColors.amber,
     words: [
@@ -476,6 +495,7 @@ const kVocabTopics = <VocabTopic>[
   ),
   VocabTopic(
     name: 'Cảm xúc',
+    nameEn: 'Emotions',
     icon: Icons.emoji_emotions_rounded,
     color: AppColors.purple,
     words: [
@@ -581,6 +601,7 @@ const kVocabTopics = <VocabTopic>[
   ),
   VocabTopic(
     name: 'Sở thích',
+    nameEn: 'Hobbies',
     icon: Icons.sports_esports_rounded,
     color: AppColors.blue,
     words: [
@@ -686,6 +707,7 @@ const kVocabTopics = <VocabTopic>[
   ),
   VocabTopic(
     name: 'Quần áo',
+    nameEn: 'Clothing',
     icon: Icons.checkroom_rounded,
     color: AppColors.teal,
     words: [
@@ -791,6 +813,7 @@ const kVocabTopics = <VocabTopic>[
   ),
   VocabTopic(
     name: 'Mua sắm',
+    nameEn: 'Shopping',
     icon: Icons.shopping_bag_rounded,
     color: AppColors.amber,
     words: [
@@ -889,6 +912,7 @@ const kVocabTopics = <VocabTopic>[
   ),
   VocabTopic(
     name: 'Du lịch',
+    nameEn: 'Travel',
     icon: Icons.flight_takeoff_rounded,
     color: AppColors.pink,
     words: [
@@ -987,6 +1011,7 @@ const kVocabTopics = <VocabTopic>[
   ),
   VocabTopic(
     name: 'Trường học',
+    nameEn: 'School',
     icon: Icons.school_rounded,
     color: AppColors.blue,
     words: [
@@ -1085,6 +1110,7 @@ const kVocabTopics = <VocabTopic>[
   ),
   VocabTopic(
     name: 'Bạn bè',
+    nameEn: 'Friends',
     icon: Icons.diversity_3_rounded,
     color: AppColors.teal,
     words: [
@@ -1176,6 +1202,7 @@ const kVocabTopics = <VocabTopic>[
   ),
   VocabTopic(
     name: 'Thời tiết',
+    nameEn: 'Weather',
     icon: Icons.wb_sunny_rounded,
     color: AppColors.amber,
     words: [
@@ -1274,6 +1301,7 @@ const kVocabTopics = <VocabTopic>[
   ),
   VocabTopic(
     name: 'Môi trường',
+    nameEn: 'Environment',
     icon: Icons.eco_rounded,
     color: AppColors.teal,
     words: [
@@ -1367,6 +1395,7 @@ const kVocabTopics = <VocabTopic>[
   ),
   VocabTopic(
     name: 'Thú cưng',
+    nameEn: 'Pets',
     icon: Icons.pets_rounded,
     color: AppColors.pink,
     words: [
@@ -1458,6 +1487,7 @@ const kVocabTopics = <VocabTopic>[
   ),
   VocabTopic(
     name: 'Thức ăn',
+    nameEn: 'Food',
     icon: Icons.restaurant_rounded,
     color: AppColors.amber,
     words: [
@@ -1556,6 +1586,7 @@ const kVocabTopics = <VocabTopic>[
   ),
   VocabTopic(
     name: 'Thức uống',
+    nameEn: 'Drinks',
     icon: Icons.local_cafe_rounded,
     color: AppColors.purple,
     words: [
@@ -1640,6 +1671,7 @@ const kVocabTopics = <VocabTopic>[
   ),
   VocabTopic(
     name: 'Màu sắc',
+    nameEn: 'Colors',
     icon: Icons.palette_rounded,
     color: AppColors.blue,
     words: [
@@ -1724,6 +1756,7 @@ const kVocabTopics = <VocabTopic>[
   ),
   VocabTopic(
     name: 'Công việc',
+    nameEn: 'Work',
     icon: Icons.work_rounded,
     color: AppColors.teal,
     words: [
@@ -1815,6 +1848,7 @@ const kVocabTopics = <VocabTopic>[
   ),
   VocabTopic(
     name: 'Kinh doanh',
+    nameEn: 'Business',
     icon: Icons.trending_up_rounded,
     color: AppColors.amber,
     words: [
@@ -1907,6 +1941,7 @@ const kVocabTopics = <VocabTopic>[
   ),
   VocabTopic(
     name: 'Chào hỏi',
+    nameEn: 'Greetings',
     icon: Icons.waving_hand_rounded,
     color: AppColors.pink,
     words: [
@@ -1984,6 +2019,7 @@ const kVocabTopics = <VocabTopic>[
   ),
   VocabTopic(
     name: 'Nghệ thuật',
+    nameEn: 'Art',
     icon: Icons.brush_rounded,
     color: AppColors.purple,
     words: [
@@ -2062,6 +2098,7 @@ const kVocabTopics = <VocabTopic>[
   ),
   VocabTopic(
     name: 'Máy tính',
+    nameEn: 'Computers',
     icon: Icons.computer_rounded,
     color: AppColors.blue,
     words: [
@@ -2153,6 +2190,7 @@ const kVocabTopics = <VocabTopic>[
   ),
   VocabTopic(
     name: 'Y tế',
+    nameEn: 'Health',
     icon: Icons.local_hospital_rounded,
     color: AppColors.teal,
     words: [
@@ -2244,6 +2282,7 @@ const kVocabTopics = <VocabTopic>[
   ),
   VocabTopic(
     name: 'Điện thoại',
+    nameEn: 'Phones',
     icon: Icons.smartphone_rounded,
     color: AppColors.amber,
     words: [
@@ -2321,6 +2360,7 @@ const kVocabTopics = <VocabTopic>[
   ),
   VocabTopic(
     name: 'Truyền hình',
+    nameEn: 'Television',
     icon: Icons.live_tv_rounded,
     color: AppColors.purple,
     words: [

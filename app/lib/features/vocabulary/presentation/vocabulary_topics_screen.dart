@@ -63,7 +63,7 @@ class VocabularyTopicsScreen extends ConsumerWidget {
                           ),
                           const Spacer(),
                           Text(
-                            topic.name,
+                            topicLabel(ref, topic),
                             style: AppTextStyles.body(weight: FontWeight.w800),
                           ),
                           Text(

@@ -268,14 +268,19 @@ class AppStrings {
       AppLanguage.vi: 'Tìm bài hát, ca sĩ...',
       AppLanguage.en: 'Search songs, artists...',
     },
-    'home_try_listening': {
-      AppLanguage.vi: 'GỢI Ý NGHE THỬ',
-      AppLanguage.en: 'TRY LISTENING',
-    },
     'home_suggested_for_you': {
       AppLanguage.vi: 'Gợi ý cho bạn',
       AppLanguage.en: 'Suggested for you',
     },
+    'home_vocabulary_quick_title': {
+      AppLanguage.vi: 'Từ vựng theo chủ đề',
+      AppLanguage.en: 'Vocabulary by Topic',
+    },
+    'home_vocabulary_quick_subtitle': {
+      AppLanguage.vi: 'Học từ mới qua 25 chủ đề quen thuộc',
+      AppLanguage.en: 'Learn new words across 25 familiar topics',
+    },
+    'home_song_count': {AppLanguage.vi: 'bài hát', AppLanguage.en: 'songs'},
     'home_search_results': {
       AppLanguage.vi: 'Kết quả tìm kiếm',
       AppLanguage.en: 'Search results',

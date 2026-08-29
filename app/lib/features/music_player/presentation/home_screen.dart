@@ -5,8 +5,17 @@ import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../social/presentation/conversations_screen.dart';
+import '../../vocabulary/presentation/vocabulary_topics_screen.dart';
 import '../data/songs_data.dart';
 import 'player_screen.dart';
+
+const _kLevelOrder = ['Cơ bản', 'Trung cấp', 'Nâng cao'];
+
+Color _levelColor(String level) => switch (level) {
+  'Cơ bản' => AppColors.teal,
+  'Trung cấp' => AppColors.amber,
+  _ => AppColors.pink,
+};
 
 String _levelLabel(WidgetRef ref, String level) => switch (level) {
   'Cơ bản' => ref.tr('song_level_basic'),
@@ -136,76 +145,64 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ),
             const SizedBox(height: 20),
-            if (query.isEmpty && !_favoritesOnly)
-              GlowBox(
-                light: true,
-                borderRadius: 26,
-                child: Row(
-                  children: [
-                    Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        gradient: AppColors.accentGradient,
-                        borderRadius: BorderRadius.circular(18),
-                      ),
-                      child: const Icon(
-                        Icons.music_note_rounded,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            ref.tr('home_try_listening'),
-                            style: TextStyle(
-                              color: AppColors.purple,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 10,
-                              letterSpacing: 0.6,
-                            ),
-                          ),
-                          Text(
-                            kSongs.first.title,
-                            style: TextStyle(
-                              color: Colors.black.withValues(alpha: 0.87),
-                              fontWeight: FontWeight.w800,
-                              fontSize: 15,
-                            ),
-                          ),
-                          Text(
-                            '${kSongs.first.artist} · ${kSongs.first.duration}',
-                            style: TextStyle(
-                              color: Colors.black.withValues(alpha: 0.5),
-                              fontWeight: FontWeight.w600,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () => _openQueue(kSongs, 0),
-                      child: Container(
-                        width: 42,
-                        height: 42,
+            if (query.isEmpty && !_favoritesOnly) ...[
+              GestureDetector(
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const VocabularyTopicsScreen(),
+                  ),
+                ),
+                child: GlowBox(
+                  light: true,
+                  borderRadius: 26,
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 60,
+                        height: 60,
                         decoration: BoxDecoration(
                           gradient: AppColors.accentGradient,
-                          borderRadius: BorderRadius.circular(999),
+                          borderRadius: BorderRadius.circular(18),
                         ),
                         child: const Icon(
-                          Icons.play_arrow_rounded,
+                          Icons.style_rounded,
                           color: Colors.white,
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              ref.tr('home_vocabulary_quick_title'),
+                              style: TextStyle(
+                                color: Colors.black.withValues(alpha: 0.87),
+                                fontWeight: FontWeight.w800,
+                                fontSize: 15,
+                              ),
+                            ),
+                            Text(
+                              ref.tr('home_vocabulary_quick_subtitle'),
+                              style: TextStyle(
+                                color: Colors.black.withValues(alpha: 0.5),
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(
+                        Icons.chevron_right_rounded,
+                        color: Colors.black54,
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            if (query.isEmpty && !_favoritesOnly) const SizedBox(height: 22),
+              const SizedBox(height: 22),
+            ],
             Text(
               _favoritesOnly
                   ? ref.tr('home_favorites_title')
@@ -216,7 +213,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
             const SizedBox(height: 12),
             Expanded(
-              child: filteredSongs.isEmpty
+              child: query.isEmpty && !_favoritesOnly
+                  ? _LevelGroupList(ref: ref, onOpen: _openQueue)
+                  : filteredSongs.isEmpty
                   ? Center(
                       child: Text(
                         _favoritesOnly
@@ -229,104 +228,230 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   : ListView.separated(
                       itemCount: filteredSongs.length,
                       separatorBuilder: (_, _) => const SizedBox(height: 12),
-                      itemBuilder: (context, i) {
-                        final song = filteredSongs[i];
-                        final isFavorite = favoriteTitles.contains(song.title);
-                        return GestureDetector(
-                          onTap: () => _openQueue(filteredSongs, i),
-                          child: GlowBox(
-                            padding: const EdgeInsets.all(12),
-                            borderRadius: 20,
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 52,
-                                  height: 52,
-                                  decoration: BoxDecoration(
-                                    color: song.color.withValues(alpha: 0.9),
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                  child: const Icon(
-                                    Icons.music_note_rounded,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                const SizedBox(width: 14),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        song.title,
-                                        style: AppTextStyles.body(
-                                          weight: FontWeight.w800,
-                                        ),
-                                      ),
-                                      Text(
-                                        '${song.artist} · ${song.duration}',
-                                        style: AppTextStyles.muted(),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                GestureDetector(
-                                  onTap: () async {
-                                    final repo = ref.read(
-                                      favoritesRepositoryProvider,
-                                    );
-                                    if (isFavorite) {
-                                      await repo.removeFavorite(song.title);
-                                    } else {
-                                      await repo.addFavorite(song.title);
-                                    }
-                                    ref.invalidate(favoriteSongTitlesProvider);
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 6,
-                                    ),
-                                    child: Icon(
-                                      isFavorite
-                                          ? Icons.favorite_rounded
-                                          : Icons.favorite_border_rounded,
-                                      size: 18,
-                                      color: isFavorite
-                                          ? AppColors.pink
-                                          : AppColors.textMuted,
-                                    ),
-                                  ),
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color:
-                                        (song.level == 'Cơ bản'
-                                                ? AppColors.teal
-                                                : AppColors.amber)
-                                            .withValues(alpha: 0.15),
-                                    borderRadius: BorderRadius.circular(999),
-                                  ),
-                                  child: Text(
-                                    _levelLabel(ref, song.level),
-                                    style: TextStyle(
-                                      color: song.level == 'Cơ bản'
-                                          ? AppColors.teal
-                                          : AppColors.amber,
-                                      fontWeight: FontWeight.w800,
-                                      fontSize: 10,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
+                      itemBuilder: (context, i) => _SongTile(
+                        song: filteredSongs[i],
+                        isFavorite: favoriteTitles.contains(
+                          filteredSongs[i].title,
+                        ),
+                        onTap: () => _openQueue(filteredSongs, i),
+                      ),
                     ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 3 the theo trinh do (Co ban/Trung cap/Nang cao) thay cho danh sach bai
+/// hat phang o man Home mac dinh - bam vao 1 the mo popup liet ke rieng
+/// cac bai cua trinh do do.
+class _LevelGroupList extends StatelessWidget {
+  const _LevelGroupList({required this.ref, required this.onOpen});
+  final WidgetRef ref;
+  final void Function(List<Song> queue, int index) onOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      children: _kLevelOrder.map((level) {
+        final songs = kSongs.where((s) => s.level == level).toList();
+        if (songs.isEmpty) return const SizedBox.shrink();
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: GestureDetector(
+            onTap: () => _openLevelPopup(context, level, songs),
+            child: GlowBox(
+              padding: const EdgeInsets.all(14),
+              borderRadius: 20,
+              child: Row(
+                children: [
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: _levelColor(level).withValues(alpha: 0.18),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Icon(
+                      Icons.queue_music_rounded,
+                      color: _levelColor(level),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _levelLabel(ref, level),
+                          style: AppTextStyles.body(weight: FontWeight.w800),
+                        ),
+                        Text(
+                          '${songs.length} ${ref.tr('home_song_count')}',
+                          style: AppTextStyles.muted(),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(Icons.chevron_right_rounded, color: _levelColor(level)),
+                ],
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  void _openLevelPopup(BuildContext context, String level, List<Song> songs) {
+    final favoriteTitles =
+        ref.read(favoriteSongTitlesProvider).valueOrNull ?? <String>{};
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => FractionallySizedBox(
+        heightFactor: 0.85,
+        child: ClipRRect(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          child: ScreenBackground(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          _levelLabel(ref, level),
+                          style: AppTextStyles.heading(size: 18),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () => Navigator.of(context).maybePop(),
+                        child: Container(
+                          width: 34,
+                          height: 34,
+                          decoration: BoxDecoration(
+                            color: AppColors.glassFill,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: AppColors.glassBorder),
+                          ),
+                          child: const Icon(
+                            Icons.close_rounded,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: ListView.separated(
+                      itemCount: songs.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: 12),
+                      itemBuilder: (context, i) => _SongTile(
+                        song: songs[i],
+                        isFavorite: favoriteTitles.contains(songs[i].title),
+                        onTap: () {
+                          Navigator.of(context).maybePop();
+                          onOpen(songs, i);
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SongTile extends ConsumerWidget {
+  const _SongTile({
+    required this.song,
+    required this.isFavorite,
+    required this.onTap,
+  });
+  final Song song;
+  final bool isFavorite;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return GestureDetector(
+      onTap: onTap,
+      child: GlowBox(
+        padding: const EdgeInsets.all(12),
+        borderRadius: 20,
+        child: Row(
+          children: [
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: song.color.withValues(alpha: 0.9),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: const Icon(Icons.music_note_rounded, color: Colors.white),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    song.title,
+                    style: AppTextStyles.body(weight: FontWeight.w800),
+                  ),
+                  Text(
+                    '${song.artist} · ${song.duration}',
+                    style: AppTextStyles.muted(),
+                  ),
+                ],
+              ),
+            ),
+            GestureDetector(
+              onTap: () async {
+                final repo = ref.read(favoritesRepositoryProvider);
+                if (isFavorite) {
+                  await repo.removeFavorite(song.title);
+                } else {
+                  await repo.addFavorite(song.title);
+                }
+                ref.invalidate(favoriteSongTitlesProvider);
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+                child: Icon(
+                  isFavorite
+                      ? Icons.favorite_rounded
+                      : Icons.favorite_border_rounded,
+                  size: 18,
+                  color: isFavorite ? AppColors.pink : AppColors.textMuted,
+                ),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: _levelColor(song.level).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                _levelLabel(ref, song.level),
+                style: TextStyle(
+                  color: _levelColor(song.level),
+                  fontWeight: FontWeight.w800,
+                  fontSize: 10,
+                ),
+              ),
             ),
           ],
         ),

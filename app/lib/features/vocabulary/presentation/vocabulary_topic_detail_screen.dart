@@ -64,7 +64,7 @@ class _VocabularyTopicDetailScreenState
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        widget.topic.name,
+                        topicLabel(ref, widget.topic),
                         style: AppTextStyles.heading(size: 17),
                       ),
                       Text(
