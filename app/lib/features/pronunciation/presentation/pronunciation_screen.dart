@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart' as rec;
+import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 import '../../../core/i18n/app_strings.dart';
@@ -46,6 +47,7 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
   late String _targetEn;
   late String _targetVi;
   Completer<void>? _finalResultCompleter;
+  Completer<void>? _listeningStartedCompleter;
   String? _recordedPath;
   bool _playingBack = false;
   bool _scoring = false;
@@ -57,7 +59,31 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
     final initial = _randomSongLine();
     _targetEn = initial.en;
     _targetVi = initial.vi;
-    _speech.initialize().then((ok) => setState(() => _available = ok));
+    _speech
+        .initialize(onError: _handleSttError, onStatus: _handleSttStatus)
+        .then((ok) => setState(() => _available = ok));
+  }
+
+  /// Truoc day cho co dinh 400ms sau khi goi listen() roi moi phat lai am
+  /// thanh, gia dinh luc do STT chac chan da vao trang thai nghe - tren may
+  /// cham/lan dau khoi dong recognizer he thong, 400ms co the chua du, mat
+  /// vai tu dau va lam diem thap that thuong ("luc cham luc khong"). Dung
+  /// callback status='listening' that su thay vi doan mo.
+  void _handleSttStatus(String status) {
+    if (status == 'listening' &&
+        !(_listeningStartedCompleter?.isCompleted ?? true)) {
+      _listeningStartedCompleter!.complete();
+    }
+  }
+
+  /// Truoc day khong bat loi tu STT (vd error_no_match, error_speech_timeout,
+  /// error_busy khi may vua dung 1 phien truoc do chua kip giai phong) -
+  /// hoan tat ngay completer dang cho thay vi de no phai doi het timeout,
+  /// va giu lai thong tin loi de debug khi diem ra 0% bat thuong.
+  void _handleSttError(SpeechRecognitionError error) {
+    if (!(_finalResultCompleter?.isCompleted ?? true)) {
+      _finalResultCompleter!.complete();
+    }
   }
 
   /// Lay ngau nhien 1 dong lyric bat ky trong toan bo danh sach bai hat lam
@@ -267,6 +293,8 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
 
       final completer = Completer<void>();
       _finalResultCompleter = completer;
+      final startedCompleter = Completer<void>();
+      _listeningStartedCompleter = startedCompleter;
       await _speech.listen(
         onResult: (result) {
           setState(() => _recognized = result.recognizedWords);
@@ -277,15 +305,22 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
         },
         listenOptions: stt.SpeechListenOptions(localeId: 'en_US'),
       );
-      // Cho STT thuc su vao trang thai dang nghe truoc khi phat, tranh mat
-      // vai tu dau do phien nhan dien chua kip khoi dong xong.
-      await Future.delayed(const Duration(milliseconds: 400));
+      // Cho STT bao "dang nghe" that su (qua onStatus) truoc khi phat lai -
+      // vong lap timeout 1200ms la luoi an toan neu vi ly do gi status khong
+      // bao gio ban, khong phai muc tieu binh thuong.
+      await startedCompleter.future.timeout(
+        const Duration(milliseconds: 1200),
+        onTimeout: () {},
+      );
 
       await _playbackPlayer.setFilePath(path);
       unawaited(_playbackPlayer.play());
       await _playbackPlayer.processingStateStream.firstWhere(
         (s) => s == ProcessingState.completed,
       );
+      // Dem 1 khoang truoc khi bao STT dung - dung ngay lap tuc luc am thanh
+      // vua het de cat mat phan nhan dien cua tu cuoi cung.
+      await Future.delayed(const Duration(milliseconds: 300));
       await _speech.stop();
       await completer.future.timeout(
         const Duration(milliseconds: 1500),
