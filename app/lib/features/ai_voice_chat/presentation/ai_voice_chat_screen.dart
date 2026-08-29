@@ -10,6 +10,7 @@ import '../../../core/config/env.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/tts/app_tts.dart';
 import '../data/gemini_live_direct_client.dart';
+import '../data/gemini_voices.dart';
 import '../data/voice_chat_client.dart';
 import '../data/voice_chat_config.dart';
 
@@ -40,6 +41,27 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
 
   VoiceChatState _state = VoiceChatState.idle;
   String? _error;
+  String _voiceName = kDefaultGeminiVoiceName;
+
+  @override
+  void initState() {
+    super.initState();
+    GeminiVoicePrefs.load().then((v) {
+      if (mounted) setState(() => _voiceName = v);
+    });
+  }
+
+  Future<void> _pickVoice() async {
+    final picked = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => _VoicePickerSheet(current: _voiceName),
+    );
+    if (picked == null || picked == _voiceName) return;
+    setState(() => _voiceName = picked);
+    await GeminiVoicePrefs.save(picked);
+  }
 
   @override
   void dispose() {
@@ -75,7 +97,10 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
     } else {
       if (kUseDirectGeminiConnection) {
         // TAM THOI (xem voice_chat_config.dart) - bo qua dang nhap/backend.
-        client = GeminiLiveDirectClient(apiKey: Env.geminiApiKeyDirect);
+        client = GeminiLiveDirectClient(
+          apiKey: Env.geminiApiKeyDirect,
+          voiceName: _voiceName,
+        );
       } else {
         final token = Supabase.instance.client.auth.currentSession?.accessToken;
         if (token == null) {
@@ -217,7 +242,42 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
                   size: 22,
                 ),
                 const SizedBox(width: 8),
-                Text('AI Voice Chat', style: AppTextStyles.heading(size: 20)),
+                Expanded(
+                  child: Text(
+                    'AI Voice Chat',
+                    style: AppTextStyles.heading(size: 20),
+                  ),
+                ),
+                if (kUseDirectGeminiConnection)
+                  GestureDetector(
+                    onTap: busy ? null : _pickVoice,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.glassFill,
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(color: AppColors.glassBorder),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.record_voice_over_rounded,
+                            size: 14,
+                            color: AppColors.blue,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            _voiceName,
+                            style: AppTextStyles.muted(size: 11),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
               ],
             ),
             Text(
@@ -410,6 +470,103 @@ class _MessageBubble extends StatelessWidget {
             ),
         ],
       ),
+    );
+  }
+}
+
+/// Bottom sheet chon 1 trong 30 giong dung san Gemini Live (xem
+/// gemini_voices.dart) - chi anh huong tu lan ket noi moi tiep theo, khong
+/// doi giong ngay giua 1 phien dang mo.
+class _VoicePickerSheet extends StatelessWidget {
+  const _VoicePickerSheet({required this.current});
+
+  final String current;
+
+  @override
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.6,
+      minChildSize: 0.4,
+      maxChildSize: 0.85,
+      expand: false,
+      builder: (context, scrollController) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Color(0xFF12172E),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.glassBorder,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text('Choose a voice', style: AppTextStyles.heading(size: 16)),
+              const SizedBox(height: 4),
+              Text(
+                'Takes effect the next time you start a new chat session',
+                style: AppTextStyles.muted(size: 11),
+              ),
+              const SizedBox(height: 14),
+              Expanded(
+                child: ListView.separated(
+                  controller: scrollController,
+                  itemCount: kGeminiVoices.length,
+                  separatorBuilder: (_, _) =>
+                      const Divider(color: AppColors.glassBorder, height: 1),
+                  itemBuilder: (context, i) {
+                    final voice = kGeminiVoices[i];
+                    final selected = voice.name == current;
+                    return GestureDetector(
+                      onTap: () => Navigator.of(context).pop(voice.name),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    voice.name,
+                                    style: AppTextStyles.body(
+                                      weight: FontWeight.w800,
+                                      color: selected ? AppColors.blue : null,
+                                    ),
+                                  ),
+                                  Text(
+                                    voice.style,
+                                    style: AppTextStyles.muted(size: 11),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (selected)
+                              const Icon(
+                                Icons.check_circle_rounded,
+                                color: AppColors.blue,
+                                size: 20,
+                              ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

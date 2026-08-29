@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:record/record.dart' as rec;
 import 'package:web_socket_channel/web_socket_channel.dart';
 
+import 'gemini_voices.dart' show kDefaultGeminiVoiceName;
 import 'voice_chat_client.dart'
     show ChatRole, TranscriptEvent, VoiceChatSession, VoiceChatState;
 
@@ -18,10 +19,19 @@ import 'voice_chat_client.dart'
 /// Node.js, khong co ban Dart chinh thuc) - xem
 /// https://ai.google.dev/api/live va https://ai.google.dev/gemini-api/docs/live-api
 class GeminiLiveDirectClient implements VoiceChatSession {
-  GeminiLiveDirectClient({required this.apiKey, this.model = _defaultModel});
+  GeminiLiveDirectClient({
+    required this.apiKey,
+    this.model = _defaultModel,
+    this.voiceName = kDefaultGeminiVoiceName,
+  });
 
   final String apiKey;
   final String model;
+
+  /// Ten 1 trong 30 giong dung san Gemini Live ho tro (xem gemini_voices.dart)
+  /// - chi co tac dung luc gui setup luc bat dau ket noi, doi giong giua
+  /// chung phien dang mo se khong co tac dung cho toi lan ket noi tiep theo.
+  final String voiceName;
 
   static const _defaultModel = 'gemini-3.1-flash-live-preview';
   static const _outputSampleRate = 24000;
@@ -111,6 +121,11 @@ class GeminiLiveDirectClient implements VoiceChatSession {
             'model': 'models/$model',
             'generationConfig': {
               'responseModalities': ['AUDIO'],
+              'speechConfig': {
+                'voiceConfig': {
+                  'prebuiltVoiceConfig': {'voiceName': voiceName},
+                },
+              },
             },
             'systemInstruction': {
               'parts': [
