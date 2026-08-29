@@ -11,6 +11,12 @@ final cryptoCurrencyProvider = StateProvider<CryptoCurrency>(
   (ref) => CryptoCurrency.usd,
 );
 
+/// Che tong gia tri/so luong/so tien dang nam giu bang dau * (bam icon con
+/// mat o tab Portfolio) - chi luu trong phien lam viec, khong luu lai qua
+/// SharedPreferences vi day chi la che nhanh khi luot xem qua o noi cong
+/// cong, khong phai cai dat lau dai.
+final cryptoPrivacyModeProvider = StateProvider<bool>((ref) => false);
+
 final cryptoTop100Provider = FutureProvider.autoDispose
     .family<List<CryptoCoin>, CryptoCurrency>(
       (ref, currency) => CryptoRepository.fetchTop100(currency: currency),

@@ -17,6 +17,7 @@ class CryptoPortfolioTab extends ConsumerWidget {
     final currency = ref.watch(cryptoCurrencyProvider);
     final holdings = ref.watch(cryptoPortfolioProvider);
     final coinsAsync = ref.watch(cryptoTop100Provider(currency));
+    final hidden = ref.watch(cryptoPrivacyModeProvider);
 
     // Uu tien du lieu CU con hieu luc (xem ly do trong crypto_market_tab.dart)
     // thay vi doi thanh man hinh loi moi khi 1 lan tu dong lam moi bi that bai.
@@ -55,7 +56,9 @@ class CryptoPortfolioTab extends ConsumerWidget {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        formatCryptoPrice(valueNow, currency),
+                        hidden
+                            ? '********'
+                            : formatCryptoPrice(valueNow, currency),
                         style: AppTextStyles.heading(size: 26),
                       ),
                       const SizedBox(height: 4),
@@ -68,6 +71,28 @@ class CryptoPortfolioTab extends ConsumerWidget {
                         ),
                       ),
                     ],
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () =>
+                      ref.read(cryptoPrivacyModeProvider.notifier).state =
+                          !hidden,
+                  child: Container(
+                    width: 34,
+                    height: 34,
+                    margin: const EdgeInsets.only(right: 10),
+                    decoration: BoxDecoration(
+                      color: AppColors.glassFill,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.glassBorder),
+                    ),
+                    child: Icon(
+                      hidden
+                          ? Icons.visibility_off_rounded
+                          : Icons.visibility_rounded,
+                      size: 16,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
                 ),
                 GestureDetector(
@@ -148,6 +173,7 @@ class _HoldingTile extends ConsumerWidget {
     final change = coin?.change24hPercent ?? 0;
     final isUp = change >= 0;
     final value = price * holding.quantity;
+    final hidden = ref.watch(cryptoPrivacyModeProvider);
 
     return Dismissible(
       key: ValueKey(holding.coinId),
@@ -192,7 +218,9 @@ class _HoldingTile extends ConsumerWidget {
                       style: AppTextStyles.body(weight: FontWeight.w800),
                     ),
                     Text(
-                      '${holding.quantity} ${holding.symbol}',
+                      hidden
+                          ? '**** ${holding.symbol}'
+                          : '${holding.quantity} ${holding.symbol}',
                       style: AppTextStyles.muted(size: 12),
                     ),
                     Text(
@@ -206,7 +234,7 @@ class _HoldingTile extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    formatCryptoPrice(value, currency),
+                    hidden ? '******' : formatCryptoPrice(value, currency),
                     style: AppTextStyles.body(
                       weight: FontWeight.w800,
                       size: 13,

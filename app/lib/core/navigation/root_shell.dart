@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/app_providers.dart';
 import '../theme/app_theme.dart';
-import '../../features/ai_voice_chat/presentation/ai_voice_chat_screen.dart';
 import '../../features/menu/presentation/menu_screen.dart';
 import '../../features/music_player/presentation/home_screen.dart';
 import '../../features/pronunciation/presentation/pronunciation_screen.dart';
@@ -28,7 +27,9 @@ class _RootShellState extends ConsumerState<RootShell>
   // Vocabulary va Grammar khong phai tab rieng - da chuyen thanh the truy
   // cap nhanh ngay tren man Home (xem home_screen.dart). Reading va Quiz
   // cung khong con la tab rieng - gom vao man Menu (tab cuoi cung) de
-  // thanh dieu huong duoi khong bi qua nhieu icon.
+  // thanh dieu huong duoi khong bi qua nhieu icon. AI Voice Chat cung
+  // khong con la tab rieng - da chuyen thanh nut noi (xem ai_fab_overlay.dart)
+  // hien tren MOI man hinh cua app thay vi chiem 1 cho co dinh o thanh tab.
   //
   // Khong con la list const: PronunciationScreen can biet no co dang la tab
   // dang active hay khong (qua [isActive]) de tu doi cau luyen moi moi lan
@@ -37,19 +38,25 @@ class _RootShellState extends ConsumerState<RootShell>
   // duoc neu khong co co che nay.
   List<Widget> _buildScreens() => [
     const HomeScreen(),
-    const AiVoiceChatScreen(),
-    PronunciationScreen(isActive: _tab == 2),
+    PronunciationScreen(isActive: _tab == 1),
     const ProfileScreen(),
     const MenuScreen(),
   ];
 
   static const _icons = [
     Icons.home_rounded,
-    Icons.graphic_eq_rounded,
     Icons.mic_rounded,
     Icons.person_rounded,
     Icons.menu_rounded,
   ];
+
+  static const _pronunciationTabIndex = 1;
+
+  void _setTab(int i) {
+    setState(() => _tab = i);
+    ref.read(pronunciationTabActiveProvider.notifier).state =
+        i == _pronunciationTabIndex;
+  }
 
   Timer? _updateCheckTimer;
   Timer? _presenceTimer;
@@ -146,7 +153,7 @@ class _RootShellState extends ConsumerState<RootShell>
             children: List.generate(_icons.length, (i) {
               final active = i == _tab;
               return GestureDetector(
-                onTap: () => setState(() => _tab = i),
+                onTap: () => _setTab(i),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   curve: Curves.easeOut,

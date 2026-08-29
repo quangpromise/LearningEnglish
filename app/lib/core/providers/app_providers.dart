@@ -143,6 +143,10 @@ final myConversationsProvider = FutureProvider.autoDispose((ref) {
   return ref.watch(socialRepositoryProvider).fetchConversations();
 });
 
+/// true khi tab Luyện phát âm (RootShell) đang là tab đang hiển thị - dùng
+/// để ẩn nút nổi "AI Voice Chat" ở màn đó (tránh chồng lên nút mic).
+final pronunciationTabActiveProvider = StateProvider<bool>((ref) => false);
+
 const _appLanguagePrefKey = 'app_language';
 
 /// Ngôn ngữ giao diện hiện tại - lưu lại trên máy (SharedPreferences), khôi

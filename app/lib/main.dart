@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/config/env.dart';
+import 'core/navigation/ai_fab_overlay.dart';
 import 'core/navigation/nav_keys.dart';
 import 'core/navigation/root_shell.dart';
 import 'core/notifications/daily_quiz_notifications.dart';
@@ -39,6 +40,12 @@ class LearnEnglishMusicApp extends StatelessWidget {
       navigatorKey: rootNavigatorKey,
       title: 'Learn English Through Music',
       debugShowCheckedModeBanner: false,
+      // Nut noi "AI Voice Chat" chong len TREN CUNG moi man hinh (bao gom
+      // ca man hinh push tu Navigator, khong chi cac tab cua RootShell) -
+      // xem ai_fab_overlay.dart de biet ly do va cach an rieng o tab Luyen
+      // phat am.
+      builder: (context, child) =>
+          Stack(children: [?child, const AiFabOverlay()]),
       theme: ThemeData(
         useMaterial3: true,
         brightness: Brightness.dark,
