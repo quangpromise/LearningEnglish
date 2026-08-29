@@ -25,6 +25,9 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+        // Bat buoc de flutter_local_notifications build duoc (yeu cau desugaring
+        // de dung API java.time tren cac ban Android cu hon API 26).
+        isCoreLibraryDesugaringEnabled = true
     }
 
     defaultConfig {
@@ -74,4 +77,11 @@ kotlin {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // Yeu cau boi flutter_local_notifications (xem isCoreLibraryDesugaringEnabled
+    // o tren) - cho phep dung mot so API Java 8+ (java.time...) tren cac ban
+    // Android cu hon API 26.
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 }
