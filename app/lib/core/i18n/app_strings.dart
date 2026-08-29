@@ -62,6 +62,14 @@ class AppStrings {
       AppLanguage.en: 'Tap any word to see its meaning',
     },
 
+    // Menu tab (menu_screen.dart) - gom cac muc it dung hon vao 1 danh
+    // sach thay vi chiem rieng 1 tab o thanh dieu huong duoi.
+    'menu_title': {AppLanguage.vi: 'Menu', AppLanguage.en: 'Menu'},
+    'menu_subtitle': {
+      AppLanguage.vi: 'Các tính năng khác',
+      AppLanguage.en: 'More features',
+    },
+
     // Vocabulary feature (vocabulary_*_screen.dart)
     'vocab_title': {
       AppLanguage.vi: 'Từ vựng theo chủ đề',

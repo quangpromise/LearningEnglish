@@ -5,11 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/app_providers.dart';
 import '../theme/app_theme.dart';
+import '../../features/menu/presentation/menu_screen.dart';
 import '../../features/music_player/presentation/home_screen.dart';
 import '../../features/pronunciation/presentation/pronunciation_screen.dart';
-import '../../features/quiz/presentation/quiz_category_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
-import '../../features/reading/presentation/reading_library_screen.dart';
 import '../../features/social/data/social_repository.dart';
 import '../../features/social/presentation/incoming_message_banner.dart';
 import '../../features/update/presentation/update_dialog.dart';
@@ -26,23 +25,21 @@ class _RootShellState extends ConsumerState<RootShell>
   int _tab = 0;
 
   // Vocabulary va Grammar khong phai tab rieng - da chuyen thanh the truy
-  // cap nhanh ngay tren man Home (xem home_screen.dart). Reading VAN la
-  // tab rieng, ngang hang voi Home, vi doc sach la hoat dong "toan man
-  // hinh" rieng biet, khac voi cac the truy cap nhanh khac.
+  // cap nhanh ngay tren man Home (xem home_screen.dart). Reading va Quiz
+  // cung khong con la tab rieng - gom vao man Menu (tab cuoi cung) de
+  // thanh dieu huong duoi khong bi qua nhieu icon.
   static const _screens = [
     HomeScreen(),
-    ReadingLibraryScreen(),
-    QuizCategoryScreen(),
     PronunciationScreen(),
     ProfileScreen(),
+    MenuScreen(),
   ];
 
   static const _icons = [
     Icons.home_rounded,
-    Icons.auto_stories_rounded,
-    Icons.extension_rounded,
     Icons.mic_rounded,
     Icons.person_rounded,
+    Icons.menu_rounded,
   ];
 
   Timer? _updateCheckTimer;
