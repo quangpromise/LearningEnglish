@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:audio_session/audio_session.dart';
 import 'package:flutter/material.dart';
@@ -53,9 +54,24 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
   @override
   void initState() {
     super.initState();
-    _targetEn = widget.targetEn;
-    _targetVi = widget.targetVi;
+    final initial = _randomSongLine();
+    _targetEn = initial.en;
+    _targetVi = initial.vi;
     _speech.initialize().then((ok) => setState(() => _available = ok));
+  }
+
+  /// Lay ngau nhien 1 dong lyric bat ky trong toan bo danh sach bai hat lam
+  /// cau mac dinh de luyen phat am, thay vi luon la 1 cau co dinh - nguoi
+  /// dung van co the tu doi cau khac qua nut "Doi cau" nhu cu.
+  _PracticeChoice _randomSongLine() {
+    final allLines = <_PracticeChoice>[
+      for (final song in kSongs)
+        for (final line in song.lyrics) _PracticeChoice(line.en, line.vi),
+    ];
+    if (allLines.isEmpty) {
+      return _PracticeChoice(widget.targetEn, widget.targetVi);
+    }
+    return allLines[Random().nextInt(allLines.length)];
   }
 
   Future<void> _pickPracticeSentence() async {
