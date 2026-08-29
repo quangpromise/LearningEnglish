@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../crypto/presentation/crypto_screen.dart';
 import '../../quiz/presentation/quiz_category_screen.dart';
 import '../../reading/presentation/reading_library_screen.dart';
 
@@ -41,6 +42,16 @@ class MenuScreen extends ConsumerWidget {
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const QuizCategoryScreen()),
               ),
+            ),
+            const SizedBox(height: 12),
+            _MenuItem(
+              icon: Icons.currency_bitcoin_rounded,
+              color: AppColors.amber,
+              title: ref.tr('crypto_title'),
+              subtitle: ref.tr('crypto_quick_subtitle'),
+              onTap: () => Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const CryptoScreen())),
             ),
           ],
         ),

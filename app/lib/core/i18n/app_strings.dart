@@ -70,6 +70,23 @@ class AppStrings {
       AppLanguage.en: 'More features',
     },
 
+    // Crypto feature (crypto_screen.dart) - bang xep hang gia coin, du lieu
+    // lay tu API cong khai mien phi CoinGecko (khong can API key).
+    'crypto_title': {AppLanguage.vi: 'Crypto', AppLanguage.en: 'Crypto'},
+    'crypto_subtitle': {
+      AppLanguage.vi: 'Top 100 coin theo vốn hoá',
+      AppLanguage.en: 'Top 100 coins by market cap',
+    },
+    'crypto_quick_subtitle': {
+      AppLanguage.vi: 'Giá top 100 coin, cập nhật trực tiếp',
+      AppLanguage.en: 'Live prices for the top 100 coins',
+    },
+    'crypto_error': {
+      AppLanguage.vi: 'Không tải được dữ liệu, thử lại nhé',
+      AppLanguage.en: 'Could not load data, please try again',
+    },
+    'crypto_retry': {AppLanguage.vi: 'Thử lại', AppLanguage.en: 'Retry'},
+
     // Vocabulary feature (vocabulary_*_screen.dart)
     'vocab_title': {
       AppLanguage.vi: 'Từ vựng theo chủ đề',
