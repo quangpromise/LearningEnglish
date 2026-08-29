@@ -20,7 +20,7 @@ class CryptoMarketTab extends ConsumerWidget {
     // limit do tu dong lam moi moi 5s) - tranh man hinh nhap nhay ve loi
     // "khong tai duoc" moi vai giay chi vi 1 request thoang qua bi tu choi.
     if (coins.hasValue) {
-      final list = coins.value!;
+      final list = ref.watch(liveCoinsProvider(currency));
       return RefreshIndicator(
         onRefresh: () async => ref.invalidate(cryptoTop100Provider(currency)),
         child: ListView.separated(

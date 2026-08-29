@@ -27,10 +27,13 @@ class _CryptoScreenState extends ConsumerState<CryptoScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    // Tu dong lam moi gia moi 5s trong luc man hinh Crypto dang mo - CoinGecko
-    // khong ho tro websocket mien phi nen day la cach gan "realtime" nhat co
-    // the lam an toan tu client (khong nhung API key CoinMarketCap vao APK).
-    _autoRefresh = Timer.periodic(const Duration(seconds: 5), (_) {
+    // Gia THUC SU real-time gio lay tu OKX WebSocket (xem liveCoinsProvider),
+    // khong con phu thuoc vao polling nay nua. Doan nay chi con lam moi dinh
+    // ky phan du lieu CoinGecko (rank/von hoa/luong luu hanh, va gia fallback
+    // cho coin khong co tren OKX vd Pi Network) - khoang cach dai hon nhieu
+    // so voi truoc (tung la 5s, gay rate-limit lien tuc) vi khong con can
+    // "gan nhu tuc thoi" cho phan nay.
+    _autoRefresh = Timer.periodic(const Duration(seconds: 30), (_) {
       if (!mounted) return;
       ref.invalidate(cryptoTop100Provider(ref.read(cryptoCurrencyProvider)));
     });

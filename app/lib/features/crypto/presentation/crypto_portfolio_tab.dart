@@ -20,7 +20,7 @@ class CryptoPortfolioTab extends ConsumerWidget {
     // Uu tien du lieu CU con hieu luc (xem ly do trong crypto_market_tab.dart)
     // thay vi doi thanh man hinh loi moi khi 1 lan tu dong lam moi bi that bai.
     if (coinsAsync.hasValue) {
-      final coins = coinsAsync.value!;
+      final coins = ref.watch(liveCoinsProvider(currency));
       final byId = {for (final c in coins) c.id: c};
       double valueNow = 0;
       double value24hAgo = 0;
