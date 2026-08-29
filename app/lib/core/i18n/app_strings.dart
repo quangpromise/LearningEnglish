@@ -494,6 +494,10 @@ class AppStrings {
       AppLanguage.vi: 'TRONG ĐOẠN VĂN',
       AppLanguage.en: 'IN THE TEXT',
     },
+    'word_in_chat': {
+      AppLanguage.vi: 'TRONG ĐOẠN CHAT',
+      AppLanguage.en: 'IN THE CHAT',
+    },
     'word_no_pos': {
       AppLanguage.vi: 'Chưa rõ từ loại',
       AppLanguage.en: 'Unknown part of speech',

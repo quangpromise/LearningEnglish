@@ -15,6 +15,7 @@ import '../data/gemini_live_direct_client.dart';
 import '../data/gemini_voices.dart';
 import '../data/voice_chat_client.dart';
 import '../data/voice_chat_config.dart';
+import '../../translation/presentation/word_popup_sheet.dart';
 import 'gemini_voice_picker_sheet.dart';
 
 /// AI Voice Chat: tro chuyen tu do bang giong noi voi AI qua backend
@@ -480,52 +481,62 @@ class _MessageBubble extends StatelessWidget {
             ? CrossAxisAlignment.end
             : CrossAxisAlignment.start,
         children: [
-          GestureDetector(
-            onTap: canReplay ? () => onReplay!(message.audioPath!) : null,
-            child: Container(
-              margin: const EdgeInsets.only(top: 6),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              constraints: BoxConstraints(
-                maxWidth: MediaQuery.of(context).size.width * 0.72,
-              ),
-              decoration: BoxDecoration(
-                color: isMine
-                    ? (message.hasError
-                          ? AppColors.pink.withValues(alpha: 0.18)
-                          // Xanh kieu bong chat "cua minh" trong Messenger.
-                          : const Color(0xFF0084FF))
-                    : AppColors.glassFill,
-                border: isMine
-                    ? (message.hasError
-                          ? Border.all(color: AppColors.pink, width: 1.4)
-                          : null)
-                    : Border.all(color: AppColors.glassBorder),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Flexible(
-                    child: Text(
-                      message.text,
-                      style: AppTextStyles.body(
-                        color: isMine
-                            ? (message.hasError ? AppColors.pink : Colors.white)
-                            : null,
+          Container(
+            margin: const EdgeInsets.only(top: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.of(context).size.width * 0.72,
+            ),
+            decoration: BoxDecoration(
+              color: isMine
+                  ? (message.hasError
+                        ? AppColors.pink.withValues(alpha: 0.18)
+                        // Xanh kieu bong chat "cua minh" trong Messenger.
+                        : const Color(0xFF0084FF))
+                  : AppColors.glassFill,
+              border: isMine
+                  ? (message.hasError
+                        ? Border.all(color: AppColors.pink, width: 1.4)
+                        : null)
+                  : Border.all(color: AppColors.glassBorder),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Flexible(
+                  // Cau tra loi cua AI: tach tung tu de cham vao tra tu dien +
+                  // nghe phat am rieng tu do (giong man Nghe nhac/Doc sach) -
+                  // nghe CA CAU thi bam nut loa rieng, khong con bam nguyen
+                  // bong chat nua (se dam voi viec cham tung tu).
+                  child: isMine
+                      ? Text(
+                          message.text,
+                          style: AppTextStyles.body(
+                            color: message.hasError
+                                ? AppColors.pink
+                                : Colors.white,
+                          ),
+                        )
+                      : _TappableAiText(text: message.text),
+                ),
+                if (canReplay) ...[
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => onReplay!(message.audioPath!),
+                    child: const Padding(
+                      padding: EdgeInsets.all(2),
+                      child: Icon(
+                        Icons.volume_up_rounded,
+                        size: 18,
+                        color: AppColors.blue,
                       ),
                     ),
                   ),
-                  if (canReplay) ...[
-                    const SizedBox(width: 8),
-                    const Icon(
-                      Icons.volume_up_rounded,
-                      size: 16,
-                      color: AppColors.blue,
-                    ),
-                  ],
                 ],
-              ),
+              ],
             ),
           ),
           if (message.correction != null)
@@ -576,6 +587,49 @@ class _MessageBubble extends StatelessWidget {
             ),
         ],
       ),
+    );
+  }
+}
+
+/// Chi tach cau AI thanh tung tu de cham tra tu dien - tuong tu Wrap+split
+/// dung o man Player cho lyric, khong dung TextSpan/RegExp phuc tap nhu man
+/// Doc sach vi cau chat thuong ngan, khong can tach cau/token chi tiet.
+class _TappableAiText extends StatelessWidget {
+  const _TappableAiText({required this.text});
+
+  final String text;
+
+  void _openWord(BuildContext context, String rawWord) {
+    final clean = rawWord.replaceAll(RegExp("[^A-Za-z']"), '');
+    if (clean.isEmpty) return;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => WordPopupSheet(
+        word: clean,
+        sentenceEn: text,
+        sentenceVi: '',
+        sourceLabelKey: 'word_in_chat',
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final style = AppTextStyles.body();
+    return Wrap(
+      children: [
+        for (final word in text.split(' '))
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => _openWord(context, word),
+            child: Padding(
+              padding: const EdgeInsets.only(right: 4, bottom: 2),
+              child: Text(word, style: style),
+            ),
+          ),
+      ],
     );
   }
 }
