@@ -22,6 +22,30 @@ class AppStrings {
     'nav_profile': {AppLanguage.vi: 'Hồ sơ', AppLanguage.en: 'Profile'},
     'nav_vocab': {AppLanguage.vi: 'Từ vựng', AppLanguage.en: 'Vocabulary'},
 
+    // Grammar TOPICS feature (grammar_topics_*.dart) - khac voi "Grammar
+    // screen" o duoi (phan tich ngu phap theo 1 cau lyric cu the) - day la
+    // 31 chu de ngu phap co ban duyet doc lap, vao tu man Vocabulary.
+    'grammar_topics_title': {
+      AppLanguage.vi: 'Ngữ pháp',
+      AppLanguage.en: 'Grammar',
+    },
+    'grammar_topics_subtitle': {
+      AppLanguage.vi: '31 chủ điểm ngữ pháp cơ bản, kèm bài tập luyện tập',
+      AppLanguage.en: '31 core grammar topics, with practice exercises',
+    },
+    'grammar_topics_quick_subtitle': {
+      AppLanguage.vi: '31 chủ điểm cơ bản kèm bài tập',
+      AppLanguage.en: '31 core topics with exercises',
+    },
+    'grammar_topics_examples_title': {
+      AppLanguage.vi: 'VÍ DỤ',
+      AppLanguage.en: 'EXAMPLES',
+    },
+    'grammar_topics_start_practice': {
+      AppLanguage.vi: 'Bắt đầu luyện tập',
+      AppLanguage.en: 'Start practice',
+    },
+
     // Vocabulary feature (vocabulary_*_screen.dart)
     'vocab_title': {
       AppLanguage.vi: 'Từ vựng theo chủ đề',
