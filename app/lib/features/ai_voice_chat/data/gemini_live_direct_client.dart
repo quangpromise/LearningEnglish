@@ -5,7 +5,8 @@ import 'dart:typed_data';
 import 'package:record/record.dart' as rec;
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-import 'voice_chat_client.dart' show VoiceChatSession, VoiceChatState;
+import 'voice_chat_client.dart'
+    show ChatRole, TranscriptEvent, VoiceChatSession, VoiceChatState;
 
 /// TAM THOI: ket noi THANG tu app toi Gemini Live API bang API key nhung
 /// cung, BO QUA backend/gemini-proxy - CHI dung de test trong luc chua co
@@ -24,17 +25,35 @@ class GeminiLiveDirectClient implements VoiceChatSession {
 
   static const _defaultModel = 'gemini-3.1-flash-live-preview';
   static const _outputSampleRate = 24000;
+
+  /// Yeu cau AI noi ro cau "Correction: ..." khi bat loi - day la cach duy
+  /// nhat de client doc duoc goi y sua loi dang text, vi phien Live nay chi
+  /// tra ve audio (responseModalities: AUDIO) + ban transcribe lai giong noi
+  /// cua no (outputTranscription), khong co kenh text rieng. Client se do
+  /// tim cum "Correction: ..." trong ban transcribe do (xem
+  /// _extractCorrection) de boi do tin nhan cua nguoi dung va hien goi y sua.
+  /// Day la giai phap "best-effort" - phu thuoc model co tuan thu dung mau
+  /// cau nay khi noi hay khong, khong dam bao 100%.
   static const _systemPrompt =
       'You are a friendly, patient English-speaking practice partner. Chat '
       'naturally in English with the user (an intermediate English learner). '
-      'If they make a clear grammar or word-choice mistake, gently model the '
-      'correct way to say it WHILE continuing the conversation naturally '
-      '(do not over-explain). Keep replies short and easy to follow.';
+      'If they make a clear grammar, word-choice, or pronunciation mistake, '
+      'say the corrected sentence naturally, then add exactly the phrase '
+      '"Correction: " followed by the corrected sentence once, then continue '
+      'the conversation. If there is no mistake, never say the word '
+      '"Correction". Keep replies short and easy to follow.';
 
   WebSocketChannel? _channel;
   StreamSubscription<Uint8List>? _micSub;
   final rec.AudioRecorder _recorder = rec.AudioRecorder();
   final List<int> _turnAudio = [];
+  final StringBuffer _inputText = StringBuffer();
+  final StringBuffer _outputText = StringBuffer();
+
+  static final RegExp _correctionPattern = RegExp(
+    r'correction:\s*(.+?)(?:[.!?]\s|$)',
+    caseSensitive: false,
+  );
 
   /// Chi tiet loi gan nhat (ma dong WebSocket, ly do server tra ve...) -
   /// man hinh doc gia tri nay khi state chuyen sang error de hien thi thay
@@ -49,6 +68,10 @@ class GeminiLiveDirectClient implements VoiceChatSession {
   final _audioController = StreamController<Uint8List>.broadcast();
   @override
   Stream<Uint8List> get incomingAudio => _audioController.stream;
+
+  final _transcriptController = StreamController<TranscriptEvent>.broadcast();
+  @override
+  Stream<TranscriptEvent> get transcriptStream => _transcriptController.stream;
 
   @override
   Future<void> start() async {
@@ -79,6 +102,10 @@ class GeminiLiveDirectClient implements VoiceChatSession {
               {'text': _systemPrompt},
             ],
           },
+          // Bat transcription 2 chieu de hien thi hoi thoai dang text tren
+          // man hinh (xem AiVoiceChatScreen) - khong anh huong toi audio.
+          'inputAudioTranscription': <String, dynamic>{},
+          'outputAudioTranscription': <String, dynamic>{},
         },
       }),
     );
@@ -156,10 +183,53 @@ class GeminiLiveDirectClient implements VoiceChatSession {
       }
     }
 
-    if (serverContent['turnComplete'] == true && _turnAudio.isNotEmpty) {
-      _audioController.add(_pcmToWav(Uint8List.fromList(_turnAudio)));
-      _turnAudio.clear();
+    final inputChunk =
+        (serverContent['inputTranscription'] as Map<String, dynamic>?)?['text']
+            as String?;
+    if (inputChunk != null) _inputText.write(inputChunk);
+
+    final outputChunk =
+        (serverContent['outputTranscription'] as Map<String, dynamic>?)?['text']
+            as String?;
+    if (outputChunk != null) _outputText.write(outputChunk);
+
+    if (serverContent['turnComplete'] == true) {
+      if (_turnAudio.isNotEmpty) {
+        _audioController.add(_pcmToWav(Uint8List.fromList(_turnAudio)));
+        _turnAudio.clear();
+      }
+
+      final userText = _inputText.toString().trim();
+      _inputText.clear();
+      if (userText.isNotEmpty) {
+        _transcriptController.add(
+          TranscriptEvent(role: ChatRole.user, text: userText),
+        );
+      }
+
+      var aiText = _outputText.toString().trim();
+      _outputText.clear();
+      if (aiText.isNotEmpty) {
+        final correction = _extractCorrection(aiText);
+        if (correction != null) {
+          aiText = aiText.replaceFirst(_correctionPattern, '').trim();
+        }
+        _transcriptController.add(
+          TranscriptEvent(
+            role: ChatRole.ai,
+            text: aiText.isEmpty ? (correction ?? '') : aiText,
+            correction: correction,
+          ),
+        );
+      }
     }
+  }
+
+  /// Tim cum "Correction: ..." (cau dung) trong ban transcribe loi noi cua
+  /// AI - tra ve null neu AI khong bat loi nao o luot nay (xem _systemPrompt).
+  String? _extractCorrection(String aiText) {
+    final match = _correctionPattern.firstMatch(aiText);
+    return match?.group(1)?.trim();
   }
 
   /// Boc PCM tho (16-bit, mono, 24kHz - dinh dang Gemini Live tra ve) thanh
@@ -199,6 +269,8 @@ class GeminiLiveDirectClient implements VoiceChatSession {
     await _channel?.sink.close();
     _channel = null;
     _turnAudio.clear();
+    _inputText.clear();
+    _outputText.clear();
     _stateController.add(VoiceChatState.idle);
   }
 
@@ -207,6 +279,7 @@ class GeminiLiveDirectClient implements VoiceChatSession {
     stop();
     _stateController.close();
     _audioController.close();
+    _transcriptController.close();
     _recorder.dispose();
   }
 }

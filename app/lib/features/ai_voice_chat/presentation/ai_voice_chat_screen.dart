@@ -27,7 +27,10 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
   VoiceChatSession? _client;
   StreamSubscription<VoiceChatState>? _stateSub;
   StreamSubscription<List<int>>? _audioSub;
+  StreamSubscription<TranscriptEvent>? _transcriptSub;
   final AudioPlayer _player = AudioPlayer();
+  final ScrollController _scrollCtrl = ScrollController();
+  final List<TranscriptEvent> _messages = [];
 
   VoiceChatState _state = VoiceChatState.idle;
   String? _error;
@@ -36,8 +39,10 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
   void dispose() {
     _stateSub?.cancel();
     _audioSub?.cancel();
+    _transcriptSub?.cancel();
     _client?.dispose();
     _player.dispose();
+    _scrollCtrl.dispose();
     super.dispose();
   }
 
@@ -84,6 +89,8 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
     });
     _audioSub?.cancel();
     _audioSub = client.incomingAudio.listen(_playResponse);
+    _transcriptSub?.cancel();
+    _transcriptSub = client.transcriptStream.listen(_onTranscript);
 
     try {
       await client.start();
@@ -95,6 +102,31 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
         });
       }
     }
+  }
+
+  /// Khi AI bao co loi (kem [TranscriptEvent.correction]), boi do luon tin
+  /// nhan cua nguoi dung ngay truoc do - do la cau da gay ra loi goi y nay.
+  void _onTranscript(TranscriptEvent event) {
+    if (!mounted) return;
+    setState(() {
+      if (event.role == ChatRole.ai &&
+          event.correction != null &&
+          _messages.isNotEmpty &&
+          _messages.last.role == ChatRole.user) {
+        _messages[_messages.length - 1] = _messages.last.copyWith(
+          hasError: true,
+        );
+      }
+      _messages.add(event);
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_scrollCtrl.hasClients) return;
+      _scrollCtrl.animateTo(
+        _scrollCtrl.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOut,
+      );
+    });
   }
 
   Future<void> _playResponse(List<int> wavBytes) async {
@@ -130,94 +162,173 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
         _state == VoiceChatState.listening;
 
     return ScreenBackground(
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
-            child: Row(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                GestureDetector(
-                  onTap: () => Navigator.of(context).maybePop(),
-                  child: Container(
-                    width: 34,
-                    height: 34,
-                    decoration: BoxDecoration(
-                      color: AppColors.glassFill,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.glassBorder),
-                    ),
-                    child: const Icon(
-                      Icons.chevron_left_rounded,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
+                const Icon(
+                  Icons.graphic_eq_rounded,
+                  color: AppColors.blue,
+                  size: 22,
                 ),
+                const SizedBox(width: 8),
+                Text('AI Voice Chat', style: AppTextStyles.heading(size: 20)),
               ],
             ),
-          ),
-          Expanded(
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(32),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.graphic_eq_rounded,
-                      color: AppColors.blue,
-                      size: 48,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'AI Voice Chat',
-                      style: AppTextStyles.heading(size: 20),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      _statusLabel(),
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.muted(),
-                    ),
-                    const SizedBox(height: 28),
-                    GestureDetector(
-                      onTap: _state == VoiceChatState.connecting
-                          ? null
-                          : _toggle,
-                      child: Container(
-                        width: 88,
-                        height: 88,
-                        decoration: BoxDecoration(
-                          gradient: AppColors.accentGradient,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: (active ? AppColors.pink : AppColors.blue)
-                                  .withValues(alpha: 0.5),
-                              blurRadius: 50,
-                              offset: const Offset(0, 20),
-                            ),
-                          ],
-                        ),
-                        child: _state == VoiceChatState.connecting
-                            ? const Padding(
-                                padding: EdgeInsets.all(28),
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 3,
-                                ),
-                              )
-                            : Icon(
-                                active ? Icons.stop_rounded : Icons.mic_rounded,
-                                color: Colors.white,
-                                size: 32,
-                              ),
+            Text(
+              'Trò chuyện tự do bằng tiếng Anh — AI sẽ chỉ ra khi bạn nói sai',
+              style: AppTextStyles.muted(),
+            ),
+            const SizedBox(height: 12),
+            Expanded(
+              child: _messages.isEmpty
+                  ? Center(
+                      child: Text(
+                        'Chưa có cuộc trò chuyện nào.\nBấm micro bên dưới để bắt đầu.',
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.muted(),
                       ),
+                    )
+                  : ListView.builder(
+                      controller: _scrollCtrl,
+                      itemCount: _messages.length,
+                      itemBuilder: (context, i) =>
+                          _MessageBubble(message: _messages[i]),
                     ),
-                  ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _statusLabel(),
+              textAlign: TextAlign.center,
+              style: _state == VoiceChatState.error
+                  ? AppTextStyles.muted().copyWith(color: AppColors.pink)
+                  : AppTextStyles.muted(),
+            ),
+            const SizedBox(height: 12),
+            Center(
+              child: GestureDetector(
+                onTap: _state == VoiceChatState.connecting ? null : _toggle,
+                child: Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    gradient: AppColors.accentGradient,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: (active ? AppColors.pink : AppColors.blue)
+                            .withValues(alpha: 0.5),
+                        blurRadius: 40,
+                        offset: const Offset(0, 16),
+                      ),
+                    ],
+                  ),
+                  child: _state == VoiceChatState.connecting
+                      ? const Padding(
+                          padding: EdgeInsets.all(22),
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 3,
+                          ),
+                        )
+                      : Icon(
+                          active ? Icons.stop_rounded : Icons.mic_rounded,
+                          color: Colors.white,
+                          size: 28,
+                        ),
                 ),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MessageBubble extends StatelessWidget {
+  const _MessageBubble({required this.message});
+
+  final TranscriptEvent message;
+
+  @override
+  Widget build(BuildContext context) {
+    final isMine = message.role == ChatRole.user;
+    return Align(
+      alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
+      child: Column(
+        crossAxisAlignment: isMine
+            ? CrossAxisAlignment.end
+            : CrossAxisAlignment.start,
+        children: [
+          Container(
+            margin: const EdgeInsets.only(top: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.of(context).size.width * 0.72,
+            ),
+            decoration: BoxDecoration(
+              gradient: isMine && !message.hasError
+                  ? AppColors.accentGradient
+                  : null,
+              color: isMine
+                  ? (message.hasError
+                        ? AppColors.pink.withValues(alpha: 0.18)
+                        : null)
+                  : AppColors.glassFill,
+              border: isMine
+                  ? (message.hasError
+                        ? Border.all(color: AppColors.pink, width: 1.4)
+                        : null)
+                  : Border.all(color: AppColors.glassBorder),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Text(
+              message.text,
+              style: AppTextStyles.body(
+                color: isMine
+                    ? (message.hasError ? AppColors.pink : Colors.white)
+                    : null,
+              ),
+            ),
           ),
+          if (message.correction != null)
+            Container(
+              margin: const EdgeInsets.only(top: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(context).size.width * 0.72,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.amber.withValues(alpha: 0.14),
+                border: Border.all(
+                  color: AppColors.amber.withValues(alpha: 0.5),
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(
+                    Icons.lightbulb_rounded,
+                    color: AppColors.amber,
+                    size: 16,
+                  ),
+                  const SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      'Nói đúng là: ${message.correction}',
+                      style: AppTextStyles.muted(size: 12)
+                          .copyWith(color: AppColors.amber),
+                    ),
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
     );

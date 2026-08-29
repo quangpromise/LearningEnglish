@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/app_providers.dart';
 import '../theme/app_theme.dart';
+import '../../features/ai_voice_chat/presentation/ai_voice_chat_screen.dart';
 import '../../features/menu/presentation/menu_screen.dart';
 import '../../features/music_player/presentation/home_screen.dart';
 import '../../features/pronunciation/presentation/pronunciation_screen.dart';
@@ -30,6 +31,7 @@ class _RootShellState extends ConsumerState<RootShell>
   // thanh dieu huong duoi khong bi qua nhieu icon.
   static const _screens = [
     HomeScreen(),
+    AiVoiceChatScreen(),
     PronunciationScreen(),
     ProfileScreen(),
     MenuScreen(),
@@ -37,6 +39,7 @@ class _RootShellState extends ConsumerState<RootShell>
 
   static const _icons = [
     Icons.home_rounded,
+    Icons.graphic_eq_rounded,
     Icons.mic_rounded,
     Icons.person_rounded,
     Icons.menu_rounded,

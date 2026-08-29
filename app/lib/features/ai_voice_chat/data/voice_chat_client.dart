@@ -7,6 +7,35 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 /// Trang thai 1 phien AI Voice Chat.
 enum VoiceChatState { idle, connecting, listening, error }
 
+/// Ai la nguoi noi ra 1 doan hoi thoai da chuyen thanh text.
+enum ChatRole { user, ai }
+
+/// 1 luot noi da duoc nhan dien thanh text (STT) - hien thi giong 1 tin nhan
+/// chat. [hasError] danh dau tin nhan cua nguoi dung bi AI phat hien sai ngu
+/// phap/phat am o luot do; [correction] la cau noi dung AI goi y (chi co o
+/// tin nhan cua AI, trich tu cau tra loi cua no - xem
+/// GeminiLiveDirectClient._systemPrompt).
+class TranscriptEvent {
+  const TranscriptEvent({
+    required this.role,
+    required this.text,
+    this.correction,
+    this.hasError = false,
+  });
+
+  final ChatRole role;
+  final String text;
+  final String? correction;
+  final bool hasError;
+
+  TranscriptEvent copyWith({bool? hasError}) => TranscriptEvent(
+    role: role,
+    text: text,
+    correction: correction,
+    hasError: hasError ?? this.hasError,
+  );
+}
+
 /// Giao dien chung cho 1 phien AI Voice Chat - [VoiceChatClient] (qua
 /// backend/gemini-proxy, dung lau dai) va [GeminiLiveDirectClient] (ket noi
 /// thang, chi dung tam thoi) deu cai giao dien nay, de AiVoiceChatScreen
@@ -22,6 +51,12 @@ abstract class VoiceChatSession {
   /// man hinh doc gia tri nay de hien thi nguyen nhan that thay vi 1 thong
   /// bao chung chung "da xay ra loi".
   String? get lastError => null;
+
+  /// Text cua tung luot noi (ca nguoi dung lan AI) de hien thi dang chat.
+  /// Mac dinh rong - chi GeminiLiveDirectClient ho tro (Gemini Live tra ve
+  /// transcription that su); backend/gemini-proxy chua lam viec nay.
+  Stream<TranscriptEvent> get transcriptStream =>
+      const Stream<TranscriptEvent>.empty();
 }
 
 /// Ket noi toi backend/gemini-proxy (xem backend/README.md): mo WebSocket,
@@ -54,6 +89,10 @@ class VoiceChatClient implements VoiceChatSession {
 
   @override
   String? lastError;
+
+  @override
+  Stream<TranscriptEvent> get transcriptStream =>
+      const Stream<TranscriptEvent>.empty();
 
   @override
   Future<void> start() async {
