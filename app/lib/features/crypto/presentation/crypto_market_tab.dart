@@ -28,7 +28,8 @@ class CryptoMarketTab extends ConsumerWidget {
               headingRowHeight: 36,
               dataRowMinHeight: 56,
               dataRowMaxHeight: 56,
-              columnSpacing: 20,
+              columnSpacing: 10,
+              horizontalMargin: 8,
               headingTextStyle: AppTextStyles.muted(size: 11),
               columns: [
                 const DataColumn(label: Text('#')),

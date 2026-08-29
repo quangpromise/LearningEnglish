@@ -156,6 +156,10 @@ class _HoldingTile extends ConsumerWidget {
                     '${holding.quantity} ${holding.symbol}',
                     style: AppTextStyles.muted(size: 12),
                   ),
+                  Text(
+                    '@ ${formatCryptoPrice(price, currency)}',
+                    style: AppTextStyles.muted(size: 11),
+                  ),
                 ],
               ),
             ),

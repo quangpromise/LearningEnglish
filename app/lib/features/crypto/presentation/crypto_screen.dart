@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -19,15 +21,24 @@ class CryptoScreen extends ConsumerStatefulWidget {
 class _CryptoScreenState extends ConsumerState<CryptoScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
+  Timer? _autoRefresh;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    // Tu dong lam moi gia moi 5s trong luc man hinh Crypto dang mo - CoinGecko
+    // khong ho tro websocket mien phi nen day la cach gan "realtime" nhat co
+    // the lam an toan tu client (khong nhung API key CoinMarketCap vao APK).
+    _autoRefresh = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (!mounted) return;
+      ref.invalidate(cryptoTop100Provider(ref.read(cryptoCurrencyProvider)));
+    });
   }
 
   @override
   void dispose() {
+    _autoRefresh?.cancel();
     _tabController.dispose();
     super.dispose();
   }
@@ -94,9 +105,26 @@ class _CryptoScreenState extends ConsumerState<CryptoScreen>
             const SizedBox(height: 14),
             Container(
               decoration: BoxDecoration(
-                color: AppColors.glassFill,
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.white.withValues(alpha: 0.06),
+                    Colors.white.withValues(alpha: 0.02),
+                  ],
+                ),
                 borderRadius: BorderRadius.circular(999),
-                border: Border.all(color: AppColors.glassBorder),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.14),
+                  width: 1.2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.25),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
               ),
               padding: const EdgeInsets.all(4),
               child: TabBar(
@@ -104,7 +132,15 @@ class _CryptoScreenState extends ConsumerState<CryptoScreen>
                 indicator: BoxDecoration(
                   gradient: AppColors.accentGradient,
                   borderRadius: BorderRadius.circular(999),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.blue.withValues(alpha: 0.45),
+                      blurRadius: 14,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
+                indicatorSize: TabBarIndicatorSize.tab,
                 labelColor: Colors.white,
                 unselectedLabelColor: AppColors.textMuted,
                 dividerColor: Colors.transparent,
