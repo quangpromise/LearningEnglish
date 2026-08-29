@@ -35,17 +35,38 @@ class QuizCategoryScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      ref.tr('quiz_title'),
-                      style: AppTextStyles.heading(size: 20),
+                GestureDetector(
+                  onTap: () => Navigator.of(context).maybePop(),
+                  child: Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color: AppColors.glassFill,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.glassBorder),
                     ),
-                    Text(ref.tr('quiz_subtitle'), style: AppTextStyles.muted()),
-                  ],
+                    child: const Icon(
+                      Icons.chevron_left_rounded,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        ref.tr('quiz_title'),
+                        style: AppTextStyles.heading(size: 20),
+                      ),
+                      Text(
+                        ref.tr('quiz_subtitle'),
+                        style: AppTextStyles.muted(),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
