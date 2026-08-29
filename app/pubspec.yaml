@@ -91,10 +91,12 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
-  # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  # Sach public domain (het han ban quyen that su - xem ATTRIBUTION.md o
+  # thu muc nay) tai truc tiep tu Project Gutenberg cho tinh nang Doc sach.
+  # KHONG duoc them file sach nao khac vao day neu chua xac minh public
+  # domain - xem quy tac ban quyen trong CLAUDE.md.
+  assets:
+    - assets/books/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

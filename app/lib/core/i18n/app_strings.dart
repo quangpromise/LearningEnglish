@@ -46,6 +46,22 @@ class AppStrings {
       AppLanguage.en: 'Start practice',
     },
 
+    // Reading feature (reading_*_screen.dart) - sach public domain, xem
+    // assets/books/ATTRIBUTION.md.
+    'reading_title': {AppLanguage.vi: 'Đọc sách', AppLanguage.en: 'Reading'},
+    'reading_subtitle': {
+      AppLanguage.vi: 'Sách tiếng Anh miễn phí bản quyền, chạm từ để dịch',
+      AppLanguage.en: 'Free public-domain books, tap any word to translate',
+    },
+    'reading_quick_subtitle': {
+      AppLanguage.vi: '4 cuốn sách kinh điển, chạm từ để dịch',
+      AppLanguage.en: '4 classic books, tap any word to translate',
+    },
+    'reading_tap_hint': {
+      AppLanguage.vi: 'Chạm vào 1 từ bất kỳ để xem nghĩa',
+      AppLanguage.en: 'Tap any word to see its meaning',
+    },
+
     // Vocabulary feature (vocabulary_*_screen.dart)
     'vocab_title': {
       AppLanguage.vi: 'Từ vựng theo chủ đề',
