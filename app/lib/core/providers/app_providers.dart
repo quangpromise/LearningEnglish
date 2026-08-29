@@ -103,6 +103,13 @@ final unreadMessageCountProvider = StreamProvider.autoDispose(
   (ref) => ref.watch(socialRepositoryProvider).watchUnreadCount(),
 );
 
+/// Phat 1 su kien moi lan co tin nhan MOI (chua tung thay) gui den minh -
+/// RootShell lang nghe cai nay de hien pop-up thong bao kieu Messenger
+/// tren BAT KY man hinh nao, khong chi rieng man Tin nhan.
+final newIncomingMessageProvider = StreamProvider.autoDispose(
+  (ref) => ref.watch(socialRepositoryProvider).watchNewIncomingMessages(),
+);
+
 /// Toàn bộ provider gắn với user hiện tại - gọi invalidate hết mỗi khi
 /// đăng nhập/đăng xuất (main.dart _AuthGate) để tránh hiện dữ liệu của
 /// tài khoản trước đó khi đổi sang tài khoản khác trên cùng máy.
