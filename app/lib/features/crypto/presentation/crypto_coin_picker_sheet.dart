@@ -76,29 +76,35 @@ class _CoinPickerSheetState extends ConsumerState<_CoinPickerSheet> {
                 ),
                 const SizedBox(height: 12),
                 Expanded(
-                  child: coins.when(
-                    data: (list) {
-                      final filtered = _query.isEmpty
-                          ? list
-                          : list
-                                .where(
-                                  (c) =>
-                                      c.name.toLowerCase().contains(_query) ||
-                                      c.symbol.toLowerCase().contains(_query),
-                                )
-                                .toList();
-                      return ListView.separated(
-                        itemCount: filtered.length,
-                        separatorBuilder: (_, _) => const SizedBox(height: 8),
-                        itemBuilder: (context, i) =>
-                            _pickTile(context, filtered[i]),
-                      );
-                    },
-                    loading: () =>
-                        const Center(child: CircularProgressIndicator()),
-                    error: (_, _) =>
-                        Center(child: Text(ref.tr('crypto_error'))),
-                  ),
+                  child: coins.hasValue
+                      ? Builder(
+                          builder: (context) {
+                            final list = coins.value!;
+                            final filtered = _query.isEmpty
+                                ? list
+                                : list
+                                      .where(
+                                        (c) =>
+                                            c.name.toLowerCase().contains(
+                                              _query,
+                                            ) ||
+                                            c.symbol.toLowerCase().contains(
+                                              _query,
+                                            ),
+                                      )
+                                      .toList();
+                            return ListView.separated(
+                              itemCount: filtered.length,
+                              separatorBuilder: (_, _) =>
+                                  const SizedBox(height: 8),
+                              itemBuilder: (context, i) =>
+                                  _pickTile(context, filtered[i]),
+                            );
+                          },
+                        )
+                      : coins.isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : Center(child: Text(ref.tr('crypto_error'))),
                 ),
               ],
             ),

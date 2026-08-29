@@ -83,21 +83,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Text(
-                          ref.tr('home_greeting'),
-                          style: AppTextStyles.muted(),
-                        ),
-                        const SizedBox(width: 8),
-                        const _MessagesButton(),
-                      ],
-                    ),
+                    Text(ref.tr('home_greeting'), style: AppTextStyles.muted()),
                     Text('Quang', style: AppTextStyles.heading(size: 20)),
                   ],
                 ),
                 Row(
                   children: [
+                    const _MessagesButton(),
+                    const SizedBox(width: 10),
                     GestureDetector(
                       onTap: () => showModalBottomSheet(
                         context: context,

@@ -15,8 +15,13 @@ class CryptoMarketTab extends ConsumerWidget {
     final currency = ref.watch(cryptoCurrencyProvider);
     final coins = ref.watch(cryptoTop100Provider(currency));
 
-    return coins.when(
-      data: (list) => RefreshIndicator(
+    // Uu tien hien du lieu CU (coins.hasValue) neu da tung tai duoc thanh
+    // cong truoc do, ke ca khi lan fetch gan nhat loi (vd CoinGecko rate-
+    // limit do tu dong lam moi moi 5s) - tranh man hinh nhap nhay ve loi
+    // "khong tai duoc" moi vai giay chi vi 1 request thoang qua bi tu choi.
+    if (coins.hasValue) {
+      final list = coins.value!;
+      return RefreshIndicator(
         onRefresh: () async => ref.invalidate(cryptoTop100Provider(currency)),
         child: ListView.separated(
           itemCount: list.length,
@@ -24,10 +29,12 @@ class CryptoMarketTab extends ConsumerWidget {
           itemBuilder: (context, i) =>
               _CoinRow(coin: list[i], currency: currency),
         ),
-      ),
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (_, _) => _MarketError(currency: currency),
-    );
+      );
+    }
+    if (coins.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    return _MarketError(currency: currency);
   }
 }
 

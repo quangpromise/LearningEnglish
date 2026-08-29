@@ -17,79 +17,82 @@ class CryptoPortfolioTab extends ConsumerWidget {
     final holdings = ref.watch(cryptoPortfolioProvider);
     final coinsAsync = ref.watch(cryptoTop100Provider(currency));
 
-    return coinsAsync.when(
-      data: (coins) {
-        final byId = {for (final c in coins) c.id: c};
-        double valueNow = 0;
-        double value24hAgo = 0;
-        for (final h in holdings) {
-          final c = byId[h.coinId];
-          if (c == null) continue;
-          final v = c.price * h.quantity;
-          valueNow += v;
-          value24hAgo += v / (1 + c.change24hPercent / 100);
-        }
-        final pct = value24hAgo == 0
-            ? 0.0
-            : (valueNow - value24hAgo) / value24hAgo * 100;
-        final isUp = pct >= 0;
+    // Uu tien du lieu CU con hieu luc (xem ly do trong crypto_market_tab.dart)
+    // thay vi doi thanh man hinh loi moi khi 1 lan tu dong lam moi bi that bai.
+    if (coinsAsync.hasValue) {
+      final coins = coinsAsync.value!;
+      final byId = {for (final c in coins) c.id: c};
+      double valueNow = 0;
+      double value24hAgo = 0;
+      for (final h in holdings) {
+        final c = byId[h.coinId];
+        if (c == null) continue;
+        final v = c.price * h.quantity;
+        valueNow += v;
+        value24hAgo += v / (1 + c.change24hPercent / 100);
+      }
+      final pct = value24hAgo == 0
+          ? 0.0
+          : (valueNow - value24hAgo) / value24hAgo * 100;
+      final isUp = pct >= 0;
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            GlowBox(
-              borderRadius: 20,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    ref.tr('crypto_total_value'),
-                    style: AppTextStyles.muted(size: 12),
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          GlowBox(
+            borderRadius: 20,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  ref.tr('crypto_total_value'),
+                  style: AppTextStyles.muted(size: 12),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  formatCryptoPrice(valueNow, currency),
+                  style: AppTextStyles.heading(size: 26),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${isUp ? '+' : ''}${pct.toStringAsFixed(2)}% (24h)',
+                  style: TextStyle(
+                    color: isUp ? AppColors.teal : AppColors.pink,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 13,
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    formatCryptoPrice(valueNow, currency),
-                    style: AppTextStyles.heading(size: 26),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${isUp ? '+' : ''}${pct.toStringAsFixed(2)}% (24h)',
-                    style: TextStyle(
-                      color: isUp ? AppColors.teal : AppColors.pink,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 13,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          Expanded(
+            child: holdings.isEmpty
+                ? Center(
+                    child: Text(
+                      ref.tr('crypto_portfolio_empty'),
+                      style: AppTextStyles.muted(),
+                      textAlign: TextAlign.center,
+                    ),
+                  )
+                : ListView.separated(
+                    itemCount: holdings.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 10),
+                    itemBuilder: (context, i) => _HoldingTile(
+                      holding: holdings[i],
+                      coin: byId[holdings[i].coinId],
+                      currency: currency,
                     ),
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 14),
-            Expanded(
-              child: holdings.isEmpty
-                  ? Center(
-                      child: Text(
-                        ref.tr('crypto_portfolio_empty'),
-                        style: AppTextStyles.muted(),
-                        textAlign: TextAlign.center,
-                      ),
-                    )
-                  : ListView.separated(
-                      itemCount: holdings.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 10),
-                      itemBuilder: (context, i) => _HoldingTile(
-                        holding: holdings[i],
-                        coin: byId[holdings[i].coinId],
-                        currency: currency,
-                      ),
-                    ),
-            ),
-          ],
-        );
-      },
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (_, _) => Center(
-        child: Text(ref.tr('crypto_error'), style: AppTextStyles.muted()),
-      ),
+          ),
+        ],
+      );
+    }
+    if (coinsAsync.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    return Center(
+      child: Text(ref.tr('crypto_error'), style: AppTextStyles.muted()),
     );
   }
 }
