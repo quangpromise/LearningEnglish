@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// 1 giong noi dung san (prebuilt) Gemini Live ho tro - xem
@@ -68,5 +69,29 @@ class GeminiVoicePrefs {
   static Future<void> save(String voiceName) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_key, voiceName);
+  }
+}
+
+/// Giong Gemini Live dang chon - dung CHUNG cho toan app (man Ho so va man
+/// AI Voice Chat deu doc/ghi qua day) thay vi moi man tu giu 1 bien rieng.
+/// Truoc day AiVoiceChatScreen va man Ho so moi noi tu load/luu doc lap -
+/// doi giong o Ho so khong lam AiVoiceChatScreen (dang song san trong tab,
+/// initState chi chay 1 lan luc mo app) biet ma cap nhat, phai khoi dong lai
+/// app moi thay hieu luc. Dung ValueNotifier de ca 2 noi cung nghe 1 nguon,
+/// doi ngay lap tuc bat ke doi tu dau.
+class GeminiVoiceSelection extends ValueNotifier<String> {
+  GeminiVoiceSelection._() : super(kDefaultGeminiVoiceName);
+
+  static final instance = GeminiVoiceSelection._();
+
+  /// Goi 1 lan luc khoi dong app (xem main.dart) de ap lai giong da luu tu
+  /// lan truoc.
+  Future<void> restoreSaved() async {
+    value = await GeminiVoicePrefs.load();
+  }
+
+  Future<void> select(String voiceName) async {
+    value = voiceName;
+    await GeminiVoicePrefs.save(voiceName);
   }
 }

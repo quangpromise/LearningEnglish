@@ -34,14 +34,22 @@ class _VoiceSettingsSheet extends ConsumerStatefulWidget {
 }
 
 class _VoiceSettingsSheetState extends ConsumerState<_VoiceSettingsSheet> {
-  String _geminiVoice = kDefaultGeminiVoiceName;
-
   @override
   void initState() {
     super.initState();
-    GeminiVoicePrefs.load().then((v) {
-      if (mounted) setState(() => _geminiVoice = v);
-    });
+    // Nghe GeminiVoiceSelection (nguon dung chung voi AiVoiceChatScreen) de
+    // sheet nay luon hien dung giong dang chon, ke ca khi doi tu man kia.
+    GeminiVoiceSelection.instance.addListener(_onGeminiVoiceChanged);
+  }
+
+  void _onGeminiVoiceChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    GeminiVoiceSelection.instance.removeListener(_onGeminiVoiceChanged);
+    super.dispose();
   }
 
   Future<void> _choose(CloudVoice voice) async {
@@ -51,15 +59,15 @@ class _VoiceSettingsSheetState extends ConsumerState<_VoiceSettingsSheet> {
   }
 
   Future<void> _chooseGeminiVoice() async {
+    final current = GeminiVoiceSelection.instance.value;
     final picked = await showModalBottomSheet<String>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (_) => GeminiVoicePickerSheet(current: _geminiVoice),
+      builder: (_) => GeminiVoicePickerSheet(current: current),
     );
-    if (picked == null || picked == _geminiVoice) return;
-    setState(() => _geminiVoice = picked);
-    await GeminiVoicePrefs.save(picked);
+    if (picked == null || picked == current) return;
+    await GeminiVoiceSelection.instance.select(picked);
   }
 
   @override
@@ -140,7 +148,7 @@ class _VoiceSettingsSheetState extends ConsumerState<_VoiceSettingsSheet> {
                 children: [
                   Expanded(
                     child: Text(
-                      _geminiVoice,
+                      GeminiVoiceSelection.instance.value,
                       style: AppTextStyles.body(weight: FontWeight.w800),
                     ),
                   ),

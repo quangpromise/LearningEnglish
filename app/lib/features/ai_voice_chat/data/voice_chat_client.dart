@@ -12,12 +12,15 @@ enum VoiceChatState { idle, connecting, listening, thinking, error }
 enum ChatRole { user, ai }
 
 /// 1 luot noi da duoc nhan dien thanh text (STT) - hien thi giong 1 tin nhan
-/// chat. [hasError] danh dau tin nhan cua nguoi dung bi AI phat hien sai ngu
-/// phap/phat am o luot do; [correction] la cau noi dung AI goi y (chi co o
-/// tin nhan cua AI, trich tu cau tra loi cua no - xem
-/// GeminiLiveDirectClient._systemPrompt); [audioPath] la duong dan file WAV
-/// da luu tam cua dung luot noi nay (chi co o tin nhan cua AI) - de nut
-/// "nghe lai" phat lai dung cau AI vua noi thay vi phai doi AI noi lai.
+/// chat. [hasError] danh dau tin nhan bi phat hien sai ngu phap/chinh ta/
+/// phat am; [correction] la cau noi dung goi y - co the den tu Gemini (trich
+/// tu cau tra loi cua no, gan vao tin nhan cua AI - xem
+/// GeminiLiveDirectClient._systemPrompt) HOAC tu LanguageTool (phan tich
+/// thang van ban nguoi dung noi, gan vao chinh tin nhan cua nguoi dung - xem
+/// AiVoiceChatScreen._checkGrammar) - ca 2 co che chay doc lap, khong phu
+/// thuoc lan nhau. [audioPath] la duong dan file WAV da luu tam cua dung
+/// luot noi nay (chi co o tin nhan cua AI) - de nut "nghe lai" phat lai dung
+/// cau AI vua noi thay vi phai doi AI noi lai.
 class TranscriptEvent {
   const TranscriptEvent({
     required this.role,
@@ -33,14 +36,17 @@ class TranscriptEvent {
   final bool hasError;
   final String? audioPath;
 
-  TranscriptEvent copyWith({bool? hasError, String? audioPath}) =>
-      TranscriptEvent(
-        role: role,
-        text: text,
-        correction: correction,
-        hasError: hasError ?? this.hasError,
-        audioPath: audioPath ?? this.audioPath,
-      );
+  TranscriptEvent copyWith({
+    bool? hasError,
+    String? audioPath,
+    String? correction,
+  }) => TranscriptEvent(
+    role: role,
+    text: text,
+    correction: correction ?? this.correction,
+    hasError: hasError ?? this.hasError,
+    audioPath: audioPath ?? this.audioPath,
+  );
 }
 
 /// Giao dien chung cho 1 phien AI Voice Chat - [VoiceChatClient] (qua

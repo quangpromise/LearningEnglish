@@ -7,6 +7,7 @@ import 'core/navigation/root_shell.dart';
 import 'core/providers/app_providers.dart';
 import 'core/theme/app_theme.dart';
 import 'core/tts/app_tts.dart';
+import 'features/ai_voice_chat/data/gemini_voices.dart';
 import 'features/auth/presentation/reset_password_screen.dart';
 import 'features/auth/presentation/sign_in_screen.dart';
 
@@ -21,6 +22,7 @@ Future<void> main() async {
   }
 
   await AppTts.instance.restoreSavedVoice();
+  await GeminiVoiceSelection.instance.restoreSaved();
 
   runApp(const ProviderScope(child: LearnEnglishMusicApp()));
 }

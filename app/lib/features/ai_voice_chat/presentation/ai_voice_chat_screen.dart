@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -47,9 +49,31 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
   @override
   void initState() {
     super.initState();
-    GeminiVoicePrefs.load().then((v) {
-      if (mounted) setState(() => _voiceName = v);
-    });
+    _voiceName = GeminiVoiceSelection.instance.value;
+    // Nghe truc tiep GeminiVoiceSelection (nguon dung chung ca man Ho so lan
+    // man nay) thay vi tu load/luu rieng - truoc day doi giong o man Ho so
+    // khong lam man nay biet ma cap nhat (man nay la 1 tab thuong truc,
+    // initState chi chay 1 lan luc mo app), phai khoi dong lai app moi thay
+    // hieu luc. Gio doi tu dau cung deu bao ve day ngay lap tuc.
+    GeminiVoiceSelection.instance.addListener(_onVoiceChanged);
+  }
+
+  void _onVoiceChanged() {
+    if (!mounted) return;
+    final newVoice = GeminiVoiceSelection.instance.value;
+    if (newVoice == _voiceName) return;
+    setState(() => _voiceName = newVoice);
+    // GeminiLiveDirectClient chi gui voiceName 1 lan luc setup, va man hinh
+    // nay la 1 tab thuong truc (khong bao gio bi dispose khi chuyen tab) nen
+    // _client van song sau khi ket thuc 1 cuoc noi chuyen - neu khong dong
+    // no o day, lan bam mic tiep theo se TAI SU DUNG client cu (van con
+    // giong cu) thay vi ap dung giong vua chon. Chi dong duoc khi dang idle -
+    // dang noi/dang cho AI tra loi thi de nguyen, giong moi se ap dung tu
+    // lan bat dau phien tiep theo.
+    if (_state == VoiceChatState.idle && _client != null) {
+      _client!.dispose();
+      _client = null;
+    }
   }
 
   Future<void> _pickVoice() async {
@@ -60,24 +84,12 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
       builder: (_) => GeminiVoicePickerSheet(current: _voiceName),
     );
     if (picked == null || picked == _voiceName) return;
-    setState(() => _voiceName = picked);
-    await GeminiVoicePrefs.save(picked);
-    // GeminiLiveDirectClient chi gui voiceName 1 lan luc setup, va man hinh
-    // nay la 1 tab thuong truc (khong bao gio bi dispose khi chuyen tab) nen
-    // _client van song sau khi ket thuc 1 cuoc noi chuyen - neu khong dong
-    // no o day, lan bam mic tiep theo se TAI SU DUNG client cu (van con
-    // giong cu) thay vi ap dung giong vua chon, dung nguyen nhan giong luon
-    // "ket dinh" o Puck du chon giong khac. Chi dong duoc khi dang idle -
-    // dang noi/dang cho AI tra loi thi de nguyen, giong moi se ap dung tu
-    // lan bat dau phien tiep theo.
-    if (_state == VoiceChatState.idle && _client != null) {
-      _client!.dispose();
-      _client = null;
-    }
+    await GeminiVoiceSelection.instance.select(picked);
   }
 
   @override
   void dispose() {
+    GeminiVoiceSelection.instance.removeListener(_onVoiceChanged);
     _stateSub?.cancel();
     _audioSub?.cancel();
     _transcriptSub?.cancel();
@@ -206,6 +218,61 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
         curve: Curves.easeOut,
       );
     });
+
+    // Kiem tra ngu phap/chinh ta cau nguoi dung vua noi bang LanguageTool -
+    // DOC LAP voi viec Gemini co chiu noi ra "Correction: ..." hay khong (co
+    // che do la best-effort, phu thuoc model tuan thu 1 huong dan phu trong
+    // luc dang tro chuyen tu nhien nen khong dam bao). LanguageTool phan tich
+    // thang van ban da nhan dien, dang tin cay hon nhieu cho loi ngu phap/
+    // chinh ta (khong bat duoc loi phat am thuan tuy - do van la phan viec
+    // cua co che "Correction:" cua Gemini).
+    if (toAdd.role == ChatRole.user) {
+      unawaited(_checkGrammar(toAdd));
+    }
+  }
+
+  Future<void> _checkGrammar(TranscriptEvent userEvent) async {
+    try {
+      final res = await http
+          .post(
+            Uri.parse('https://api.languagetool.org/v2/check'),
+            body: {'text': userEvent.text, 'language': 'en-US'},
+          )
+          .timeout(const Duration(seconds: 6));
+      if (res.statusCode != 200) return;
+
+      final data = jsonDecode(res.body) as Map<String, dynamic>;
+      final matches = (data['matches'] as List?) ?? const [];
+      if (matches.isEmpty) return;
+
+      final match = matches.first as Map<String, dynamic>;
+      final replacements = (match['replacements'] as List?) ?? const [];
+      if (replacements.isEmpty) return;
+      final replacement =
+          (replacements.first as Map<String, dynamic>)['value'] as String?;
+      final offset = match['offset'] as int?;
+      final length = match['length'] as int?;
+      if (replacement == null || offset == null || length == null) return;
+
+      final corrected = userEvent.text.replaceRange(
+        offset,
+        offset + length,
+        replacement,
+      );
+      if (corrected == userEvent.text) return;
+
+      if (!mounted) return;
+      final index = _messages.indexOf(userEvent);
+      if (index == -1) return;
+      setState(() {
+        _messages[index] = _messages[index].copyWith(
+          hasError: true,
+          correction: corrected,
+        );
+      });
+    } catch (_) {
+      // Loi mang/API LanguageTool - bo qua lang le, khong lam gian doan chat.
+    }
   }
 
   Future<void> _playResponse(List<int> wavBytes) async {

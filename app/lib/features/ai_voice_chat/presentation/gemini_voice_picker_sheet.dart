@@ -57,6 +57,14 @@ class GeminiVoicePickerSheet extends StatelessWidget {
                     final voice = kGeminiVoices[i];
                     final selected = voice.name == current;
                     return GestureDetector(
+                      // Mac dinh GestureDetector chi nhan tap tren vung THUC
+                      // SU duoc ve (chu/icon), khong tinh khoang trong -
+                      // dung nguyen nhan chi dong Puck (co icon dau tich lap
+                      // day khoang trong ben phai) nhan tap duoc, cac giong
+                      // khac (khong co icon do) phan lon dien tich dong la
+                      // trong nen khong bam duoc. opaque coi ca vung bounding
+                      // box la tap duoc, khong chi phan co ve.
+                      behavior: HitTestBehavior.opaque,
                       onTap: () => Navigator.of(context).pop(voice.name),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 12),
