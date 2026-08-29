@@ -47,7 +47,6 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
   late String _targetEn;
   late String _targetVi;
   Completer<void>? _finalResultCompleter;
-  Completer<void>? _listeningStartedCompleter;
   String? _recordedPath;
   bool _playingBack = false;
   bool _scoring = false;
@@ -60,20 +59,8 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
     _targetEn = initial.en;
     _targetVi = initial.vi;
     _speech
-        .initialize(onError: _handleSttError, onStatus: _handleSttStatus)
+        .initialize(onError: _handleSttError)
         .then((ok) => setState(() => _available = ok));
-  }
-
-  /// Truoc day cho co dinh 400ms sau khi goi listen() roi moi phat lai am
-  /// thanh, gia dinh luc do STT chac chan da vao trang thai nghe - tren may
-  /// cham/lan dau khoi dong recognizer he thong, 400ms co the chua du, mat
-  /// vai tu dau va lam diem thap that thuong ("luc cham luc khong"). Dung
-  /// callback status='listening' that su thay vi doan mo.
-  void _handleSttStatus(String status) {
-    if (status == 'listening' &&
-        !(_listeningStartedCompleter?.isCompleted ?? true)) {
-      _listeningStartedCompleter!.complete();
-    }
   }
 
   /// Truoc day khong bat loi tu STT (vd error_no_match, error_speech_timeout,
@@ -227,22 +214,20 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
   Future<void> _toggleListening() async {
     if (!_available || _scoring) return;
     if (_listening) {
-      // Da thu chay `record` (ghi file tho) va `speech_to_text` (nhan dien
-      // song song) CUNG LUC nhieu lan - Android luon "cam" file cua `record`
-      // (im lang hoan toan) du doi audioSource nao, vi day la gioi han nen
-      // tang cua he dieu hanh (khong cho 2 phien capture mic tranh nhau tin
-      // hieu that khi 1 ben la SpeechRecognizer he thong), khong phai loi
-      // config sua duoc. Nen tach lam 2 GIAI DOAN TUAN TU thay vi chay song
-      // song: (1) chi `record` ghi am sach (khong co gi tranh chap mic),
-      // (2) sau khi dung, PHAT LAI chinh file do qua loa trong luc
-      // `speech_to_text` dang nghe qua mic de lay transcript cham diem -
-      // mic luc nay cung chi co 1 ben dung (STT), khong con xung dot.
-      final recordedPath = await _recorder.stop();
-      if (!mounted) return;
+      // Nguoi dung bao da noi xong - dung `speech_to_text` (da nghe TRUC
+      // TIEP luc noi, xem nhanh else ben duoi) va cho ket qua cuoi cung.
+      // Truoc day dung cach "ghi am roi phat lai qua loa cho STT nghe lai"
+      // de ne viec Android khong cho `record` + `speech_to_text` cung mic
+      // 1 luc - cach do phu thuoc chat luong chong vong (AEC) tung may nen
+      // rat that thuong (co khi phai thu 3-4 lan moi duoc 1 lan cham diem).
+      // Gio cham diem thang tu ket qua STT nghe truc tiep, on dinh hon han;
+      // `record` van duoc thu chay song song (best-effort, xem nhanh else)
+      // chi de co file "nghe lai giong minh" - neu Android lam file do im
+      // lang do dang uu tien mic cho STT thi chi mat nut nghe lai, khong
+      // anh huong diem so.
       setState(() {
         _listening = false;
-        _recordedPath = recordedPath;
-        _scoring = recordedPath != null;
+        _scoring = true;
       });
       final startedAt = _listenStartedAt;
       if (startedAt != null) {
@@ -251,11 +236,33 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
           ref.read(statsRepositoryProvider).addPracticeSeconds(elapsed);
         }
       }
-      if (recordedPath != null) {
-        await _scoreViaLoopback(recordedPath);
+
+      final completer = _finalResultCompleter;
+      await _speech.stop();
+      if (completer != null) {
+        await completer.future.timeout(
+          const Duration(milliseconds: 1500),
+          onTimeout: () {},
+        );
       }
+
+      String? recordedPath;
+      try {
+        recordedPath = await _recorder.stop();
+      } catch (_) {
+        recordedPath = null;
+      }
+
+      if (mounted) {
+        setState(() {
+          _recordedPath = recordedPath;
+          _scoring = false;
+        });
+      }
+      _scoreAttempt();
       return;
     }
+
     _listenStartedAt = DateTime.now();
     setState(() {
       _listening = true;
@@ -264,76 +271,43 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
       _recordedPath = null;
       _recordError = null;
     });
+
+    final completer = Completer<void>();
+    _finalResultCompleter = completer;
+    try {
+      await _speech.listen(
+        onResult: (result) {
+          setState(() => _recognized = result.recognizedWords);
+          if (result.finalResult && !completer.isCompleted) {
+            completer.complete();
+          }
+        },
+        listenOptions: stt.SpeechListenOptions(localeId: 'en_US'),
+      );
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _listening = false;
+          _recordError = '${ref.tr('pron_record_failed')} $e';
+        });
+      }
+      return;
+    }
+
+    // Ghi am song song CHI de co file "nghe lai giong minh" sau nay - hoan
+    // toan best-effort, khong lien quan gi den cham diem (da dung STT nghe
+    // truc tiep o tren). Neu Android lam im lang file nay do dang uu tien
+    // mic cho STT, hoac buoc nay loi vi ly do gi khac, bo qua lang le.
     try {
       if (await _recorder.hasPermission()) {
         final dir = await getTemporaryDirectory();
         final path =
             '${dir.path}/pronunciation_attempt_${DateTime.now().millisecondsSinceEpoch}.m4a';
         await _recorder.start(const rec.RecordConfig(), path: path);
-      } else if (mounted) {
-        setState(() => _recordError = ref.tr('pron_mic_permission_missing'));
       }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _recordError = '${ref.tr('pron_record_failed')} $e');
-      }
+    } catch (_) {
+      // Bo qua - chi mat tinh nang nghe lai, cham diem khong bi anh huong.
     }
-  }
-
-  /// Phat lai file vua ghi qua loa trong luc `speech_to_text` dang nghe qua
-  /// mic, de lay transcript cham diem MA KHONG can chay 2 phien capture mic
-  /// cung luc (xem giai thich trong _toggleListening). Rui ro da biet: che
-  /// do chong vong (AEC) cua may co the lam giam do chinh xac nhan dien so
-  /// voi noi truc tiep vao mic - chap nhan danh doi nay de nut "nghe lai
-  /// ghi am" luon phat ra am thanh that thay vi im lang.
-  Future<void> _scoreViaLoopback(String path) async {
-    try {
-      final session = await AudioSession.instance;
-      await session.configure(const AudioSessionConfiguration.music());
-
-      final completer = Completer<void>();
-      _finalResultCompleter = completer;
-      final startedCompleter = Completer<void>();
-      _listeningStartedCompleter = startedCompleter;
-      await _speech.listen(
-        onResult: (result) {
-          setState(() => _recognized = result.recognizedWords);
-          if (result.finalResult &&
-              !(_finalResultCompleter?.isCompleted ?? true)) {
-            _finalResultCompleter!.complete();
-          }
-        },
-        listenOptions: stt.SpeechListenOptions(localeId: 'en_US'),
-      );
-      // Cho STT bao "dang nghe" that su (qua onStatus) truoc khi phat lai -
-      // vong lap timeout 1200ms la luoi an toan neu vi ly do gi status khong
-      // bao gio ban, khong phai muc tieu binh thuong.
-      await startedCompleter.future.timeout(
-        const Duration(milliseconds: 1200),
-        onTimeout: () {},
-      );
-
-      await _playbackPlayer.setFilePath(path);
-      unawaited(_playbackPlayer.play());
-      await _playbackPlayer.processingStateStream.firstWhere(
-        (s) => s == ProcessingState.completed,
-      );
-      // Dem 1 khoang truoc khi bao STT dung - dung ngay lap tuc luc am thanh
-      // vua het de cat mat phan nhan dien cua tu cuoi cung.
-      await Future.delayed(const Duration(milliseconds: 300));
-      await _speech.stop();
-      await completer.future.timeout(
-        const Duration(milliseconds: 1500),
-        onTimeout: () {},
-      );
-    } catch (e) {
-      if (mounted) {
-        setState(() => _recordError = '${ref.tr('pron_record_failed')} $e');
-      }
-    } finally {
-      if (mounted) setState(() => _scoring = false);
-    }
-    _scoreAttempt();
   }
 
   Future<void> _playRecording() async {
