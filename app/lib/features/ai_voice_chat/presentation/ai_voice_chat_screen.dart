@@ -3,12 +3,14 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/config/env.dart';
+import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/tts/app_tts.dart';
 import '../data/gemini_live_direct_client.dart';
@@ -22,14 +24,19 @@ import 'gemini_voice_picker_sheet.dart';
 /// gemini-proxy (xem backend/README.md ve kien truc + cach deploy). BAT
 /// BUOC phai tu deploy backend va thay [kVoiceChatBackendUrl] truoc khi
 /// tinh nang nay hoat dong duoc - chua co server nao duoc host san.
-class AiVoiceChatScreen extends StatefulWidget {
+///
+/// Chu tren GIAO DIEN (tieu de, trang thai, loi...) doi theo ngon ngu app
+/// (ref.tr) - noi dung CUOC TRO CHUYEN voi AI (system prompt, cau AI noi)
+/// luon co dinh tieng Anh du app dang o ngon ngu nao, vi day la tinh nang
+/// luyen tieng Anh.
+class AiVoiceChatScreen extends ConsumerStatefulWidget {
   const AiVoiceChatScreen({super.key});
 
   @override
-  State<AiVoiceChatScreen> createState() => _AiVoiceChatScreenState();
+  ConsumerState<AiVoiceChatScreen> createState() => _AiVoiceChatScreenState();
 }
 
-class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
+class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
   VoiceChatSession? _client;
   StreamSubscription<VoiceChatState>? _stateSub;
   StreamSubscription<List<int>>? _audioSub;
@@ -131,7 +138,7 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
         final token = Supabase.instance.client.auth.currentSession?.accessToken;
         if (token == null) {
           setState(() {
-            _error = 'You need to sign in to use AI Voice Chat';
+            _error = ref.tr('voice_chat_sign_in_required');
             _state = VoiceChatState.error;
           });
           return;
@@ -149,7 +156,10 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
         setState(() {
           _state = s;
           if (s == VoiceChatState.error) {
-            _error = client.lastError ?? _error ?? 'Something went wrong';
+            _error =
+                client.lastError ??
+                _error ??
+                ref.tr('voice_chat_error_generic');
           }
         });
       });
@@ -169,7 +179,9 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _error = 'Could not connect: $e';
+          _error = ref
+              .tr('voice_chat_could_not_connect')
+              .replaceFirst('{msg}', '$e');
           _state = VoiceChatState.error;
         });
       }
@@ -316,15 +328,15 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
   String _statusLabel() {
     switch (_state) {
       case VoiceChatState.idle:
-        return 'Tap the mic to start chatting';
+        return ref.tr('voice_chat_tap_to_start');
       case VoiceChatState.connecting:
-        return 'Connecting...';
+        return ref.tr('voice_chat_connecting');
       case VoiceChatState.listening:
-        return 'Recording — tap the mic again when you\'re done talking';
+        return ref.tr('voice_chat_recording_stop');
       case VoiceChatState.thinking:
-        return 'Thinking...';
+        return ref.tr('voice_chat_thinking');
       case VoiceChatState.error:
-        return _error ?? 'Something went wrong';
+        return _error ?? ref.tr('voice_chat_error_generic');
     }
   }
 
@@ -351,7 +363,7 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'AI Voice Chat',
+                    ref.tr('voice_chat_title'),
                     style: AppTextStyles.heading(size: 20),
                   ),
                 ),
@@ -387,16 +399,13 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
                   ),
               ],
             ),
-            Text(
-              'Chat freely in English — the AI will point out your mistakes',
-              style: AppTextStyles.muted(),
-            ),
+            Text(ref.tr('voice_chat_subtitle'), style: AppTextStyles.muted()),
             const SizedBox(height: 12),
             Expanded(
               child: _messages.isEmpty
                   ? Center(
                       child: Text(
-                        'No conversation yet.\nTap the mic below to start.',
+                        ref.tr('voice_chat_empty'),
                         textAlign: TextAlign.center,
                         style: AppTextStyles.muted(),
                       ),
@@ -460,7 +469,7 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
   }
 }
 
-class _MessageBubble extends StatelessWidget {
+class _MessageBubble extends ConsumerWidget {
   const _MessageBubble({required this.message, this.onReplay});
 
   final TranscriptEvent message;
@@ -471,7 +480,7 @@ class _MessageBubble extends StatelessWidget {
   final Future<void> Function(String path)? onReplay;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isMine = message.role == ChatRole.user;
     final canReplay = !isMine && message.audioPath != null;
     return Align(
@@ -570,7 +579,7 @@ class _MessageBubble extends StatelessWidget {
                     const SizedBox(width: 6),
                     Flexible(
                       child: Text(
-                        'Correct way to say it: ${message.correction}',
+                        '${ref.tr('voice_chat_correction_prefix')}${message.correction}',
                         style: AppTextStyles.muted(size: 12)
                             .copyWith(color: AppColors.amber),
                       ),

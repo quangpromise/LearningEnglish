@@ -89,6 +89,59 @@ class AppStrings {
       AppLanguage.vi: 'Trò chuyện tự do bằng giọng nói với AI',
       AppLanguage.en: 'Free-form voice conversation with AI',
     },
+    // Chi dich CHU TREN GIAO DIEN (tieu de, trang thai, thong bao loi...) -
+    // ban than cuoc tro chuyen voi AI van luon bang tieng Anh du app dang o
+    // ngon ngu nao, vi day la tinh nang luyen tieng Anh.
+    'voice_chat_subtitle': {
+      AppLanguage.vi: 'Trò chuyện tự do bằng tiếng Anh — AI sẽ chỉ ra lỗi sai',
+      AppLanguage.en:
+          'Chat freely in English — the AI will point out your mistakes',
+    },
+    'voice_chat_empty': {
+      AppLanguage.vi:
+          'Chưa có cuộc trò chuyện nào.\nBấm micro bên dưới để bắt đầu.',
+      AppLanguage.en: 'No conversation yet.\nTap the mic below to start.',
+    },
+    'voice_chat_tap_to_start': {
+      AppLanguage.vi: 'Bấm micro để bắt đầu trò chuyện',
+      AppLanguage.en: 'Tap the mic to start chatting',
+    },
+    'voice_chat_connecting': {
+      AppLanguage.vi: 'Đang kết nối...',
+      AppLanguage.en: 'Connecting...',
+    },
+    'voice_chat_recording_stop': {
+      AppLanguage.vi: 'Đang ghi âm — bấm micro lần nữa khi bạn nói xong',
+      AppLanguage.en: 'Recording — tap the mic again when you\'re done talking',
+    },
+    'voice_chat_thinking': {
+      AppLanguage.vi: 'Đang suy nghĩ...',
+      AppLanguage.en: 'Thinking...',
+    },
+    'voice_chat_error_generic': {
+      AppLanguage.vi: 'Đã xảy ra lỗi',
+      AppLanguage.en: 'Something went wrong',
+    },
+    'voice_chat_sign_in_required': {
+      AppLanguage.vi: 'Bạn cần đăng nhập để dùng AI Voice Chat',
+      AppLanguage.en: 'You need to sign in to use AI Voice Chat',
+    },
+    'voice_chat_could_not_connect': {
+      AppLanguage.vi: 'Không kết nối được: {msg}',
+      AppLanguage.en: 'Could not connect: {msg}',
+    },
+    'voice_chat_correction_prefix': {
+      AppLanguage.vi: 'Nói đúng là: ',
+      AppLanguage.en: 'Correct way to say it: ',
+    },
+    'voice_chat_choose_voice': {
+      AppLanguage.vi: 'Chọn giọng',
+      AppLanguage.en: 'Choose a voice',
+    },
+    'voice_chat_voice_note': {
+      AppLanguage.vi: 'Có hiệu lực từ lần bắt đầu trò chuyện tiếp theo',
+      AppLanguage.en: 'Takes effect the next time you start a new chat session',
+    },
     'crypto_error': {
       AppLanguage.vi: 'Không tải được dữ liệu, thử lại nhé',
       AppLanguage.en: 'Could not load data, please try again',

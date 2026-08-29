@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/gemini_voices.dart';
 
@@ -7,13 +9,13 @@ import '../data/gemini_voices.dart';
 /// gemini_voices.dart) - dung chung cho AiVoiceChatScreen va man Ho so (muc
 /// "English Voice"). Tra ve ten giong da chon qua Navigator.pop, hoac null
 /// neu nguoi dung dong sheet ma khong chon.
-class GeminiVoicePickerSheet extends StatelessWidget {
+class GeminiVoicePickerSheet extends ConsumerWidget {
   const GeminiVoicePickerSheet({super.key, required this.current});
 
   final String current;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return DraggableScrollableSheet(
       initialChildSize: 0.6,
       minChildSize: 0.4,
@@ -40,10 +42,13 @@ class GeminiVoicePickerSheet extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              Text('Choose a voice', style: AppTextStyles.heading(size: 16)),
+              Text(
+                ref.tr('voice_chat_choose_voice'),
+                style: AppTextStyles.heading(size: 16),
+              ),
               const SizedBox(height: 4),
               Text(
-                'Takes effect the next time you start a new chat session',
+                ref.tr('voice_chat_voice_note'),
                 style: AppTextStyles.muted(size: 11),
               ),
               const SizedBox(height: 14),
