@@ -36,6 +36,12 @@ class GeminiLiveDirectClient implements VoiceChatSession {
   final rec.AudioRecorder _recorder = rec.AudioRecorder();
   final List<int> _turnAudio = [];
 
+  /// Chi tiet loi gan nhat (ma dong WebSocket, ly do server tra ve...) -
+  /// man hinh doc gia tri nay khi state chuyen sang error de hien thi thay
+  /// vi 1 thong bao chung chung.
+  @override
+  String? lastError;
+
   final _stateController = StreamController<VoiceChatState>.broadcast();
   @override
   Stream<VoiceChatState> get stateStream => _stateController.stream;
@@ -79,8 +85,26 @@ class GeminiLiveDirectClient implements VoiceChatSession {
 
     channel.stream.listen(
       _handleServerMessage,
-      onError: (_) => _stateController.add(VoiceChatState.error),
-      onDone: () => _stateController.add(VoiceChatState.idle),
+      onError: (Object e) {
+        lastError = 'Lỗi kết nối Gemini Live: $e';
+        _stateController.add(VoiceChatState.error);
+      },
+      onDone: () {
+        // Neu server tu dong dong ket noi (vd sai model, sai API key, het
+        // quota) ma khong phai do nguoi dung bam dung, closeCode se khac
+        // 1000 (normal closure) - phai bao loi ro rang thay vi im lang tro
+        // ve idle, neu khong nguoi dung se tuong minh dang noi ma "khong ai
+        // phan hoi" trong khi thuc ra ket noi da chet tu truoc.
+        final code = channel.closeCode;
+        if (code != null && code != 1000) {
+          lastError =
+              'Gemini Live đóng kết nối (mã $code'
+              '${channel.closeReason != null ? ": ${channel.closeReason}" : ""})';
+          _stateController.add(VoiceChatState.error);
+        } else {
+          _stateController.add(VoiceChatState.idle);
+        }
+      },
     );
 
     final micStream = await _recorder.startStream(

@@ -74,7 +74,13 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
 
     _stateSub?.cancel();
     _stateSub = client.stateStream.listen((s) {
-      if (mounted) setState(() => _state = s);
+      if (!mounted) return;
+      setState(() {
+        _state = s;
+        if (s == VoiceChatState.error) {
+          _error = client.lastError ?? _error ?? 'Đã xảy ra lỗi';
+        }
+      });
     });
     _audioSub?.cancel();
     _audioSub = client.incomingAudio.listen(_playResponse);
@@ -124,61 +130,95 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
         _state == VoiceChatState.listening;
 
     return ScreenBackground(
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.graphic_eq_rounded,
-                color: AppColors.blue,
-                size: 48,
-              ),
-              const SizedBox(height: 16),
-              Text('AI Voice Chat', style: AppTextStyles.heading(size: 20)),
-              const SizedBox(height: 8),
-              Text(
-                _statusLabel(),
-                textAlign: TextAlign.center,
-                style: AppTextStyles.muted(),
-              ),
-              const SizedBox(height: 28),
-              GestureDetector(
-                onTap: _state == VoiceChatState.connecting ? null : _toggle,
-                child: Container(
-                  width: 88,
-                  height: 88,
-                  decoration: BoxDecoration(
-                    gradient: AppColors.accentGradient,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: (active ? AppColors.pink : AppColors.blue)
-                            .withValues(alpha: 0.5),
-                        blurRadius: 50,
-                        offset: const Offset(0, 20),
-                      ),
-                    ],
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
+            child: Row(
+              children: [
+                GestureDetector(
+                  onTap: () => Navigator.of(context).maybePop(),
+                  child: Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color: AppColors.glassFill,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.glassBorder),
+                    ),
+                    child: const Icon(
+                      Icons.chevron_left_rounded,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
-                  child: _state == VoiceChatState.connecting
-                      ? const Padding(
-                          padding: EdgeInsets.all(28),
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 3,
-                          ),
-                        )
-                      : Icon(
-                          active ? Icons.stop_rounded : Icons.mic_rounded,
-                          color: Colors.white,
-                          size: 32,
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.graphic_eq_rounded,
+                      color: AppColors.blue,
+                      size: 48,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'AI Voice Chat',
+                      style: AppTextStyles.heading(size: 20),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _statusLabel(),
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.muted(),
+                    ),
+                    const SizedBox(height: 28),
+                    GestureDetector(
+                      onTap: _state == VoiceChatState.connecting
+                          ? null
+                          : _toggle,
+                      child: Container(
+                        width: 88,
+                        height: 88,
+                        decoration: BoxDecoration(
+                          gradient: AppColors.accentGradient,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: (active ? AppColors.pink : AppColors.blue)
+                                  .withValues(alpha: 0.5),
+                              blurRadius: 50,
+                              offset: const Offset(0, 20),
+                            ),
+                          ],
                         ),
+                        child: _state == VoiceChatState.connecting
+                            ? const Padding(
+                                padding: EdgeInsets.all(28),
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 3,
+                                ),
+                              )
+                            : Icon(
+                                active ? Icons.stop_rounded : Icons.mic_rounded,
+                                color: Colors.white,
+                                size: 32,
+                              ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

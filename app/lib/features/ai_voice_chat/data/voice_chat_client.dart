@@ -17,6 +17,11 @@ abstract class VoiceChatSession {
   Future<void> start();
   Future<void> stop();
   void dispose();
+
+  /// Chi tiet loi gan nhat khi [stateStream] phat ra [VoiceChatState.error] -
+  /// man hinh doc gia tri nay de hien thi nguyen nhan that thay vi 1 thong
+  /// bao chung chung "da xay ra loi".
+  String? get lastError => null;
 }
 
 /// Ket noi toi backend/gemini-proxy (xem backend/README.md): mo WebSocket,
@@ -48,6 +53,9 @@ class VoiceChatClient implements VoiceChatSession {
   Stream<Uint8List> get incomingAudio => _audioController.stream;
 
   @override
+  String? lastError;
+
+  @override
   Future<void> start() async {
     if (!await _recorder.hasPermission()) {
       _stateController.add(VoiceChatState.error);
@@ -67,8 +75,21 @@ class VoiceChatClient implements VoiceChatSession {
           _audioController.add(Uint8List.fromList(data));
         }
       },
-      onError: (_) => _stateController.add(VoiceChatState.error),
-      onDone: () => _stateController.add(VoiceChatState.idle),
+      onError: (Object e) {
+        lastError = 'Lỗi kết nối máy chủ: $e';
+        _stateController.add(VoiceChatState.error);
+      },
+      onDone: () {
+        final code = channel.closeCode;
+        if (code != null && code != 1000) {
+          lastError =
+              'Máy chủ đóng kết nối (mã $code'
+              '${channel.closeReason != null ? ": ${channel.closeReason}" : ""})';
+          _stateController.add(VoiceChatState.error);
+        } else {
+          _stateController.add(VoiceChatState.idle);
+        }
+      },
     );
     await channel.ready;
 
