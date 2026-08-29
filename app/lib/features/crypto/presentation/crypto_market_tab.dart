@@ -18,107 +18,106 @@ class CryptoMarketTab extends ConsumerWidget {
     return coins.when(
       data: (list) => RefreshIndicator(
         onRefresh: () async => ref.invalidate(cryptoTop100Provider(currency)),
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minWidth: MediaQuery.of(context).size.width - 48,
-            ),
-            child: DataTable(
-              headingRowHeight: 36,
-              dataRowMinHeight: 56,
-              dataRowMaxHeight: 56,
-              columnSpacing: 10,
-              horizontalMargin: 8,
-              headingTextStyle: AppTextStyles.muted(size: 11),
-              columns: [
-                const DataColumn(label: Text('#')),
-                const DataColumn(label: Text('Coin')),
-                DataColumn(label: Text(ref.tr('crypto_col_price'))),
-                DataColumn(label: Text(ref.tr('crypto_col_change'))),
-                DataColumn(label: Text(ref.tr('crypto_col_market_cap'))),
-                DataColumn(label: Text(ref.tr('crypto_col_supply'))),
-              ],
-              rows: list
-                  .map((c) => _coinRow(c, currency))
-                  .toList(growable: false),
-            ),
-          ),
+        child: ListView.separated(
+          itemCount: list.length,
+          separatorBuilder: (_, _) => const SizedBox(height: 8),
+          itemBuilder: (context, i) =>
+              _CoinRow(coin: list[i], currency: currency),
         ),
       ),
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (_, _) => _MarketError(currency: currency),
     );
   }
+}
 
-  DataRow _coinRow(CryptoCoin c, CryptoCurrency currency) {
-    final isUp = c.change24hPercent >= 0;
+/// 1 dong coin gon trong 2 dong chu - CA 4 chi so (Gia, 24h%, Von hoa,
+/// Luong luu hanh) deu nam trong be rong man hinh, khong can cuon ngang -
+/// thay the cho DataTable truoc day (buoc phai cuon ngang moi thay het cot).
+class _CoinRow extends StatelessWidget {
+  const _CoinRow({required this.coin, required this.currency});
+  final CryptoCoin coin;
+  final CryptoCurrency currency;
+
+  @override
+  Widget build(BuildContext context) {
+    final isUp = coin.change24hPercent >= 0;
     final changeColor = isUp ? AppColors.teal : AppColors.pink;
-    return DataRow(
-      cells: [
-        DataCell(Text('${c.rank}', style: AppTextStyles.muted(size: 12))),
-        DataCell(
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ClipOval(
-                child: Image.network(
-                  c.imageUrl,
-                  width: 22,
-                  height: 22,
-                  errorBuilder: (_, _, _) => Container(
-                    width: 22,
-                    height: 22,
-                    color: AppColors.glassFill,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    c.name,
-                    style: AppTextStyles.body(
-                      weight: FontWeight.w800,
-                      size: 13,
-                    ),
-                  ),
-                  Text(c.symbol, style: AppTextStyles.muted(size: 11)),
-                ],
-              ),
-            ],
+    return GlowBox(
+      borderRadius: 14,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 16,
+            child: Text('${coin.rank}', style: AppTextStyles.muted(size: 10)),
           ),
-        ),
-        DataCell(
-          Text(
-            formatCryptoPrice(c.price, currency),
-            style: AppTextStyles.body(weight: FontWeight.w700, size: 12),
-          ),
-        ),
-        DataCell(
-          Text(
-            '${isUp ? '+' : ''}${c.change24hPercent.toStringAsFixed(2)}%',
-            style: TextStyle(
-              color: changeColor,
-              fontWeight: FontWeight.w800,
-              fontSize: 12,
+          const SizedBox(width: 4),
+          ClipOval(
+            child: Image.network(
+              coin.imageUrl,
+              width: 24,
+              height: 24,
+              errorBuilder: (_, _, _) =>
+                  Container(width: 24, height: 24, color: AppColors.glassFill),
             ),
           ),
-        ),
-        DataCell(
-          Text(
-            formatCryptoCompact(c.marketCap, currency),
-            style: AppTextStyles.muted(size: 12),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        coin.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.body(
+                          weight: FontWeight.w800,
+                          size: 12.5,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      formatCryptoPrice(coin.price, currency),
+                      style: AppTextStyles.body(
+                        weight: FontWeight.w800,
+                        size: 11.5,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '${coin.symbol} · ${formatCryptoCompact(coin.marketCap, currency)} · ${formatSupply(coin.circulatingSupply, coin.symbol)}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.muted(size: 9.5),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      '${isUp ? '+' : ''}${coin.change24hPercent.toStringAsFixed(2)}%',
+                      style: TextStyle(
+                        color: changeColor,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 10.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-        ),
-        DataCell(
-          Text(
-            formatSupply(c.circulatingSupply, c.symbol),
-            style: AppTextStyles.muted(size: 12),
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
