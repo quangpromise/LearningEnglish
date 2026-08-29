@@ -46,7 +46,10 @@ python server.py
 ```
 
 ## Việc còn thiếu để chạy được thật (TODO)
-- [ ] Tích hợp đúng giao thức WebSocket của Gemini Live API (SDK chính thức thay đổi thường xuyên — kiểm tra tài liệu mới nhất trước khi code phần forward audio thật).
-- [ ] Logic phát hiện lỗi 429/quota cụ thể theo response thật của Gemini Live.
-- [ ] Điền prompt hệ thống cho Ollama LLM (vai trò "bạn luyện nói tiếng Anh", góp ý phát âm/ngữ pháp tự nhiên).
-- [ ] Bảo mật endpoint (xác thực người dùng trước khi cho kết nối WebSocket, giới hạn rate theo user).
+- [x] Tích hợp giao thức Gemini Live API qua SDK chính thức `@google/genai` (`gemini-proxy/src/geminiClient.js`) — kiểm tra lại tên model preview mới nhất trước khi deploy, SDK Live API còn hay đổi.
+- [x] Logic phát hiện lỗi 429/quota (kiểm tra cả `onerror` lẫn `onclose` reason, vì Gemini Live có thể trả lỗi quota qua 1 trong 2 đường).
+- [x] Prompt hệ thống cho Ollama LLM (`fallback-pipeline/llm.py`) và cho Gemini Live (`gemini-proxy/src/geminiClient.js`).
+- [x] Bảo mật endpoint: `gemini-proxy/src/auth.js` xác thực JWT (access token) Supabase mà app Flutter đã có sẵn qua query param `?token=`, kèm rate-limit đơn giản theo user (mặc định 120 chunk/phút).
+- [ ] Nối WebSocket thật từ `AiVoiceChatScreen` (Flutter) — hiện vẫn là placeholder tĩnh, chưa capture mic/stream PCM/phát audio phản hồi.
+- [ ] VAD (voice activity detection) trong `fallback-pipeline/server.py` để biết khi nào người dùng nói xong 1 câu, thay vì giả định mỗi WebSocket message là 1 câu hoàn chỉnh.
+- [ ] Test thật với API key Gemini + Ollama đã cài, xác nhận toàn bộ luồng audio 2 chiều hoạt động đúng.
