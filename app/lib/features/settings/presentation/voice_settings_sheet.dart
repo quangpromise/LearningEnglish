@@ -66,8 +66,14 @@ class _VoiceSettingsSheetState extends ConsumerState<_VoiceSettingsSheet> {
       isScrollControlled: true,
       builder: (_) => GeminiVoicePickerSheet(current: current),
     );
-    if (picked == null || picked == current) return;
-    await GeminiVoiceSelection.instance.select(picked);
+    if (picked == null) return;
+    if (picked != current) await GeminiVoiceSelection.instance.select(picked);
+    // Chon 1 giong Gemini o day nghia la dung Gemini cho MOI tinh nang doc
+    // tu/cau trong app (khong chi rieng luc AI Voice Chat tro chuyen) - xem
+    // AppTts.selectGeminiVoice.
+    await AppTts.instance.selectGeminiVoice();
+    setState(() {});
+    await AppTts.instance.speak('Hello, this is a preview of my voice.');
   }
 
   @override
@@ -120,10 +126,13 @@ class _VoiceSettingsSheetState extends ConsumerState<_VoiceSettingsSheet> {
                         ),
                       ),
                       Icon(
-                        AppTts.instance.selectedCloud == voice
+                        (AppTts.instance.selectedCloud == voice &&
+                                !AppTts.instance.useGemini)
                             ? Icons.check_circle_rounded
                             : Icons.volume_up_rounded,
-                        color: AppTts.instance.selectedCloud == voice
+                        color:
+                            (AppTts.instance.selectedCloud == voice &&
+                                !AppTts.instance.useGemini)
                             ? AppColors.teal
                             : AppColors.textMuted,
                       ),
@@ -135,7 +144,7 @@ class _VoiceSettingsSheetState extends ConsumerState<_VoiceSettingsSheet> {
           ),
           const SizedBox(height: 8),
           Text(
-            'AI Voice Chat voice',
+            'Gemini (used for AI Voice Chat too)',
             style: AppTextStyles.muted(size: 11).copyWith(letterSpacing: 0.4),
           ),
           const SizedBox(height: 8),
@@ -149,12 +158,21 @@ class _VoiceSettingsSheetState extends ConsumerState<_VoiceSettingsSheet> {
                   Expanded(
                     child: Text(
                       GeminiVoiceSelection.instance.value,
-                      style: AppTextStyles.body(weight: FontWeight.w800),
+                      style: AppTextStyles.body(
+                        weight: FontWeight.w800,
+                        color: AppTts.instance.useGemini
+                            ? AppColors.teal
+                            : null,
+                      ),
                     ),
                   ),
-                  const Icon(
-                    Icons.chevron_right_rounded,
-                    color: AppColors.textMuted,
+                  Icon(
+                    AppTts.instance.useGemini
+                        ? Icons.check_circle_rounded
+                        : Icons.chevron_right_rounded,
+                    color: AppTts.instance.useGemini
+                        ? AppColors.teal
+                        : AppColors.textMuted,
                   ),
                 ],
               ),
