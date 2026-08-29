@@ -29,6 +29,10 @@ class AppStrings {
       AppLanguage.vi: 'Ngữ pháp',
       AppLanguage.en: 'Grammar',
     },
+    'grammar_search_hint': {
+      AppLanguage.vi: 'Tìm chủ điểm ngữ pháp...',
+      AppLanguage.en: 'Search grammar topics...',
+    },
     'grammar_topics_subtitle': {
       AppLanguage.vi: '31 chủ điểm ngữ pháp cơ bản, kèm bài tập luyện tập',
       AppLanguage.en: '31 core grammar topics, with practice exercises',
@@ -225,6 +229,14 @@ class AppStrings {
       AppLanguage.en: 'Pick a topic to start learning',
     },
     'vocab_word_count': {AppLanguage.vi: 'từ', AppLanguage.en: 'words'},
+    'vocab_search_hint': {
+      AppLanguage.vi: 'Tìm chủ đề từ vựng...',
+      AppLanguage.en: 'Search vocabulary topics...',
+    },
+    'search_no_results': {
+      AppLanguage.vi: 'Không tìm thấy kết quả nào',
+      AppLanguage.en: 'No results found',
+    },
     'vocab_select_hint': {
       AppLanguage.vi: 'Chọn tối đa {max} từ để học hôm nay',
       AppLanguage.en: 'Select up to {max} words to learn today',
