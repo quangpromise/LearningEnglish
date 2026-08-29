@@ -112,6 +112,10 @@ class AppStrings {
       AppLanguage.vi: 'Tìm theo tên hoặc ký hiệu...',
       AppLanguage.en: 'Search by name or symbol...',
     },
+    'crypto_no_results': {
+      AppLanguage.vi: 'Không tìm thấy coin nào',
+      AppLanguage.en: 'No coins found',
+    },
     'crypto_quantity_of': {
       AppLanguage.vi: 'Số lượng',
       AppLanguage.en: 'Quantity of',
