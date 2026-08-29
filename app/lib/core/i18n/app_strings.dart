@@ -130,6 +130,20 @@ class AppStrings {
     },
     'crypto_cancel': {AppLanguage.vi: 'Huỷ', AppLanguage.en: 'Cancel'},
     'crypto_confirm_add': {AppLanguage.vi: 'Thêm', AppLanguage.en: 'Add'},
+    'crypto_currently_holding': {
+      AppLanguage.vi: 'Đang giữ',
+      AppLanguage.en: 'Currently holding',
+    },
+    'crypto_buy': {AppLanguage.vi: 'Mua', AppLanguage.en: 'Buy'},
+    'crypto_sell': {AppLanguage.vi: 'Bán', AppLanguage.en: 'Sell'},
+    'crypto_history_title': {
+      AppLanguage.vi: 'Lịch sử giao dịch',
+      AppLanguage.en: 'Transaction history',
+    },
+    'crypto_history_empty': {
+      AppLanguage.vi: 'Chưa có giao dịch nào',
+      AppLanguage.en: 'No transactions yet',
+    },
     'crypto_total_value': {
       AppLanguage.vi: 'TỔNG GIÁ TRỊ DANH MỤC',
       AppLanguage.en: 'TOTAL PORTFOLIO VALUE',

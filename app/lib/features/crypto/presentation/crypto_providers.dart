@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/crypto_currency.dart';
 import '../data/crypto_portfolio_repository.dart';
 import '../data/crypto_repository.dart';
+import '../data/crypto_transaction_repository.dart';
 import '../data/okx_service.dart';
 
 final cryptoCurrencyProvider = StateProvider<CryptoCurrency>(
@@ -101,20 +102,90 @@ class CryptoPortfolioController extends StateNotifier<List<CryptoHolding>> {
     await CryptoPortfolioRepository.save(state);
   }
 
-  /// Sua so luong dang nam giu cua 1 coin da co san trong danh muc - dung
-  /// khi nguoi dung muon tang/giam amount thay vi xoa roi them lai tu dau.
-  Future<void> updateQuantity(String coinId, double quantity) async {
-    final i = state.indexWhere((h) => h.coinId == coinId);
-    if (i == -1) return;
-    final updated = [...state];
-    updated[i] = updated[i].copyWith(quantity: quantity);
-    state = updated;
-    await CryptoPortfolioRepository.save(state);
-  }
-
   Future<void> remove(String coinId) async {
     state = state.where((h) => h.coinId != coinId).toList();
     await CryptoPortfolioRepository.save(state);
+  }
+
+  /// Mua them (hoac mua lan dau) 1 coin - cong don vao so luong dang giu,
+  /// va ghi lai 1 dong lich su "buy".
+  Future<void> buy({
+    required String coinId,
+    required String symbol,
+    required String name,
+    required String imageUrl,
+    required double quantity,
+    required double priceAtTime,
+  }) async {
+    if (quantity <= 0) return;
+    final i = state.indexWhere((h) => h.coinId == coinId);
+    if (i == -1) {
+      state = [
+        ...state,
+        CryptoHolding(
+          coinId: coinId,
+          symbol: symbol,
+          name: name,
+          imageUrl: imageUrl,
+          quantity: quantity,
+        ),
+      ];
+    } else {
+      final updated = [...state];
+      updated[i] = updated[i].copyWith(
+        quantity: updated[i].quantity + quantity,
+      );
+      state = updated;
+    }
+    await CryptoPortfolioRepository.save(state);
+    await CryptoTransactionRepository.record(
+      CryptoTransaction(
+        coinId: coinId,
+        symbol: symbol,
+        name: name,
+        imageUrl: imageUrl,
+        type: CryptoTransactionType.buy,
+        quantity: quantity,
+        priceAtTime: priceAtTime,
+        timestamp: DateTime.now(),
+      ),
+    );
+  }
+
+  /// Ban bot 1 coin dang giu - khong the ban qua so luong dang co (tu dong
+  /// gioi han lai o muc toi da dang giu), xoa het holding neu ban het sach,
+  /// va ghi lai 1 dong lich su "sell".
+  Future<void> sell({
+    required String coinId,
+    required double quantity,
+    required double priceAtTime,
+  }) async {
+    final i = state.indexWhere((h) => h.coinId == coinId);
+    if (i == -1 || quantity <= 0) return;
+    final holding = state[i];
+    final sellQty = quantity > holding.quantity ? holding.quantity : quantity;
+    final remaining = holding.quantity - sellQty;
+
+    final updated = [...state];
+    if (remaining <= 0) {
+      updated.removeAt(i);
+    } else {
+      updated[i] = holding.copyWith(quantity: remaining);
+    }
+    state = updated;
+    await CryptoPortfolioRepository.save(state);
+    await CryptoTransactionRepository.record(
+      CryptoTransaction(
+        coinId: holding.coinId,
+        symbol: holding.symbol,
+        name: holding.name,
+        imageUrl: holding.imageUrl,
+        type: CryptoTransactionType.sell,
+        quantity: sellQty,
+        priceAtTime: priceAtTime,
+        timestamp: DateTime.now(),
+      ),
+    );
   }
 }
 
@@ -122,3 +193,11 @@ final cryptoPortfolioProvider =
     StateNotifierProvider<CryptoPortfolioController, List<CryptoHolding>>(
       (ref) => CryptoPortfolioController(),
     );
+
+/// Lich su mua/ban - tu tai lai khi cryptoPortfolioProvider thay doi (nghia
+/// la vua co 1 lan buy/sell moi duoc ghi lai).
+final cryptoTransactionHistoryProvider =
+    FutureProvider.autoDispose<List<CryptoTransaction>>((ref) {
+      ref.watch(cryptoPortfolioProvider);
+      return CryptoTransactionRepository.load();
+    });
