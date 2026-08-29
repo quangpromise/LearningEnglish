@@ -147,7 +147,11 @@ class _FitnessTimerScreenState extends ConsumerState<FitnessTimerScreen> {
           style: AppTextStyles.muted(size: 13),
         ),
         const SizedBox(height: 8),
-        ExerciseAnimation(color: widget.color, region: widget.region),
+        ExerciseAnimation(
+          color: widget.color,
+          region: widget.region,
+          movement: ex.movement,
+        ),
         const SizedBox(height: 10),
         if (isRest) ...[
           Text(
