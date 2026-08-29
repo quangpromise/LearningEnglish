@@ -58,11 +58,16 @@ jobs:
           SB_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
           GG_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID }}
           BUILD_SHA: ${{ github.sha }}
+          # TAM THOI - xem ai_voice_chat/data/voice_chat_config.dart. Rong neu
+          # chua tao secret GEMINI_API_KEY_DIRECT (tinh nang chi bao loi ket
+          # noi, khong lam hong build).
+          GEMINI_DIRECT_KEY: ${{ secrets.GEMINI_API_KEY_DIRECT }}
         run: |
           CLEAN_URL=$(printf '%s' "$SB_URL" | tr -d '\n\r')
           CLEAN_ANON_KEY=$(printf '%s' "$SB_ANON_KEY" | tr -d '\n\r')
           CLEAN_CLIENT_ID=$(printf '%s' "$GG_CLIENT_ID" | tr -d '\n\r')
-          flutter build apk --release --split-per-abi --dart-define=SUPABASE_URL="$CLEAN_URL" --dart-define=SUPABASE_ANON_KEY="$CLEAN_ANON_KEY" --dart-define=GOOGLE_WEB_CLIENT_ID="$CLEAN_CLIENT_ID" --dart-define=BUILD_SHA="$BUILD_SHA"
+          CLEAN_GEMINI_KEY=$(printf '%s' "$GEMINI_DIRECT_KEY" | tr -d '\n\r')
+          flutter build apk --release --split-per-abi --dart-define=SUPABASE_URL="$CLEAN_URL" --dart-define=SUPABASE_ANON_KEY="$CLEAN_ANON_KEY" --dart-define=GOOGLE_WEB_CLIENT_ID="$CLEAN_CLIENT_ID" --dart-define=BUILD_SHA="$BUILD_SHA" --dart-define=GEMINI_API_KEY_DIRECT="$CLEAN_GEMINI_KEY"
 
       - name: Kiem tra dung luong APK (chan quy dinh cua library lam phinh app)
         run: |

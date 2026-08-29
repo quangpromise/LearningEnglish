@@ -6,6 +6,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../core/config/env.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/gemini_live_direct_client.dart';
 import '../data/voice_chat_client.dart';
@@ -49,7 +50,7 @@ class _AiVoiceChatScreenState extends State<AiVoiceChatScreen> {
     final VoiceChatSession client;
     if (kUseDirectGeminiConnection) {
       // TAM THOI (xem voice_chat_config.dart) - bo qua dang nhap/backend.
-      client = GeminiLiveDirectClient(apiKey: kGeminiApiKeyDirect);
+      client = GeminiLiveDirectClient(apiKey: Env.geminiApiKeyDirect);
     } else {
       final token = Supabase.instance.client.auth.currentSession?.accessToken;
       if (token == null) {

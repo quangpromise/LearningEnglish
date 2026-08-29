@@ -29,4 +29,13 @@ class Env {
   /// (--dart-define=BUILD_SHA=...). Rỗng khi build cục bộ không truyền vào —
   /// tính năng kiểm tra cập nhật sẽ tự bỏ qua trong trường hợp đó.
   static const buildSha = String.fromEnvironment('BUILD_SHA');
+
+  /// TẠM THỜI: API key Gemini dùng cho GeminiLiveDirectClient (kết nối
+  /// thẳng, bỏ qua backend/gemini-proxy) — xem
+  /// ai_voice_chat/data/voice_chat_config.dart. Không hardcode giá trị thật
+  /// vào đây, luôn truyền qua --dart-define=GEMINI_API_KEY_DIRECT=... (CI đã
+  /// cấu hình sẵn secret GEMINI_API_KEY_DIRECT).
+  static const geminiApiKeyDirect = String.fromEnvironment(
+    'GEMINI_API_KEY_DIRECT',
+  );
 }
