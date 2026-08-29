@@ -498,8 +498,8 @@ class AppStrings {
       AppLanguage.en: 'Vocabulary by Topic',
     },
     'home_vocabulary_quick_subtitle': {
-      AppLanguage.vi: 'Học từ mới qua 25 chủ đề quen thuộc',
-      AppLanguage.en: 'Learn new words across 25 familiar topics',
+      AppLanguage.vi: 'Học từ mới qua 46 chủ đề quen thuộc',
+      AppLanguage.en: 'Learn new words across 46 familiar topics',
     },
     'home_song_count': {AppLanguage.vi: 'bài hát', AppLanguage.en: 'songs'},
     'home_search_results': {
