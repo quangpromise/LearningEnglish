@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../notifications/chat_push.dart';
 import '../providers/app_providers.dart';
 import '../theme/app_theme.dart';
 import '../../features/menu/presentation/menu_screen.dart';
@@ -83,6 +84,7 @@ class _RootShellState extends ConsumerState<RootShell>
     _presenceTimer = Timer.periodic(const Duration(seconds: 45), (_) {
       ref.read(socialRepositoryProvider).updatePresence().catchError((_) {});
     });
+    ChatPush.instance.registerIfSignedInAndNotYet();
   }
 
   @override

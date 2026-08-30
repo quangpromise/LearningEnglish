@@ -56,6 +56,8 @@ class AppTts {
   CloudVoice? _selectedCloud;
   CloudVoice? get selectedCloud => _selectedCloud;
 
+  bool _awaitCompletionConfigured = false;
+
   /// Gọi 1 lần lúc khởi động app để áp lại giọng đã lưu từ lần trước.
   Future<void> restoreSavedVoice() async {
     final prefs = await SharedPreferences.getInstance();
@@ -83,6 +85,40 @@ class AppTts {
     }
     await _deviceTts.stop();
     await _deviceTts.speak(text);
+  }
+
+  /// Doc 1 doan text va CHO den khi doc xong (hoac bi stop()) moi hoan tat -
+  /// dung cho tinh nang doc sach thanh tieng theo tung cau (Reading), de
+  /// biet chinh xac luc nao chuyen sang cau tiep theo thay vi doan mo dai
+  /// (moi cau dai ngan khac nhau).
+  Future<void> speakAndWait(String text) async {
+    if (_selectedCloud != null) {
+      try {
+        await _speakCloud(text, _selectedCloud!);
+        await _cloudPlayer.playerStateStream.firstWhere(
+          (s) =>
+              s.processingState == ProcessingState.completed ||
+              s.processingState == ProcessingState.idle,
+        );
+        return;
+      } catch (_) {
+        // Không có mạng / hết quota VoiceRSS -> rơi về giọng máy bên dưới.
+      }
+    }
+    if (!_awaitCompletionConfigured) {
+      await _deviceTts.awaitSpeakCompletion(true);
+      _awaitCompletionConfigured = true;
+    }
+    await _deviceTts.stop();
+    await _deviceTts.speak(text);
+  }
+
+  /// Dung ngay lap tuc ca 2 nguon phat (may/cloud) - lam pending
+  /// speakAndWait() hoan tat som (khong loi) de vong lap doc tuan tu o
+  /// Reading dung lai dung luc thay vi cho het cau dang doc.
+  Future<void> stopSpeaking() async {
+    await _deviceTts.stop();
+    await _cloudPlayer.stop();
   }
 
   Future<void> _speakCloud(String text, CloudVoice voice) async {

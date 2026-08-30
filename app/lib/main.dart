@@ -6,6 +6,7 @@ import 'core/config/env.dart';
 import 'core/navigation/ai_fab_overlay.dart';
 import 'core/navigation/nav_keys.dart';
 import 'core/navigation/root_shell.dart';
+import 'core/notifications/chat_push.dart';
 import 'core/notifications/daily_quiz_notifications.dart';
 import 'core/providers/app_providers.dart';
 import 'core/theme/app_theme.dart';
@@ -29,6 +30,7 @@ Future<void> main() async {
   await AppTts.instance.restoreSavedVoice();
   await GeminiVoiceSelection.instance.restoreSaved();
   await DailyQuizNotifications.instance.init();
+  await ChatPush.instance.init();
 
   runApp(const ProviderScope(child: LearnEnglishMusicApp()));
 }
@@ -93,6 +95,13 @@ class _AuthGate extends ConsumerWidget {
       if (event == AuthChangeEvent.signedIn ||
           event == AuthChangeEvent.signedOut) {
         invalidateUserScopedProviders(ref);
+      }
+      // Dang ky/huy dang ky token FCM dung luc dang nhap/dang xuat - xem
+      // ChatPush (khong lam gi neu chua cau hinh Firebase project).
+      if (event == AuthChangeEvent.signedIn) {
+        ChatPush.instance.registerCurrentUser();
+      } else if (event == AuthChangeEvent.signedOut) {
+        ChatPush.instance.unregister();
       }
     });
 

@@ -7,6 +7,15 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// Push notification chat (Firebase) - chi apply plugin nay KHI da co file
+// google-services.json that (tai tu Firebase Console, xem docs/setup-
+// firebase-chat-push.md). Chua co file thi build van chay binh thuong nhu
+// truoc, chi la Firebase.initializeApp() se nem loi luc runtime va
+// ChatPush tu bo qua trong im lang (xem chat_push.dart) - khong chan build.
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+}
+
 // Doc thong tin ky release tu key.properties (local) - file nay KHONG commit len git.
 // Tren CI, workflow se tao file key.properties + giai ma keystore tu secret truoc khi build,
 // dam bao MOI ban build (local va CI) deu ky bang CUNG 1 keystore -> cung SHA-1 -> Google

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/tts/app_tts.dart';
 import '../../translation/presentation/word_popup_sheet.dart';
 import '../data/gutenberg_text.dart';
 import '../data/reading_data.dart';
@@ -38,6 +39,14 @@ class _ReadingScreenState extends ConsumerState<ReadingScreen> {
   int _currentPage = 0;
   int _pageCount = 1;
   bool _ready = false;
+
+  // Doc trang thanh tieng tung cau (nut loa) - xem _playFromSentence(). Dung
+  // 1 "token" tang dan de biet loi await speakAndWait() dang cho co con hop
+  // le khong (bi huy giua chung boi rewind/stop/doi trang thi token doi,
+  // vong lap tu dung lai dung luc thay vi doc tiep cau cu).
+  bool _reading = false;
+  int _sentenceIndex = 0;
+  int _speechToken = 0;
 
   @override
   void initState() {
@@ -80,6 +89,8 @@ class _ReadingScreenState extends ConsumerState<ReadingScreen> {
 
   @override
   void dispose() {
+    _speechToken++;
+    AppTts.instance.stopSpeaking();
     _pageController.dispose();
     super.dispose();
   }
@@ -91,12 +102,76 @@ class _ReadingScreenState extends ConsumerState<ReadingScreen> {
     return all.sublist(start, end);
   }
 
+  List<String> _sentencesForPage(int page) {
+    final sentences = <String>[];
+    for (final p in _paragraphsForPage(page)) {
+      sentences.addAll(splitSentences(p));
+    }
+    return sentences;
+  }
+
   void _onPageChanged(int index) {
-    setState(() => _currentPage = index);
+    _stopReading();
+    setState(() {
+      _currentPage = index;
+      _sentenceIndex = 0;
+    });
     ReadingPrefs.saveParagraphProgress(
       widget.book.assetPath,
       index * _paragraphsPerPage,
     );
+  }
+
+  /// Doc lien tuc tu cau [startIndex] tro di, tu dung lai khi het trang, bi
+  /// bam Dung, hoac chuyen trang/thoat man hinh giua chung.
+  Future<void> _playFromSentence(int startIndex) async {
+    final sentences = _sentencesForPage(_currentPage);
+    if (sentences.isEmpty) return;
+    final token = ++_speechToken;
+    var index = startIndex.clamp(0, sentences.length - 1);
+    setState(() {
+      _reading = true;
+      _sentenceIndex = index;
+    });
+    while (mounted && token == _speechToken && index < sentences.length) {
+      await AppTts.instance.speakAndWait(sentences[index]);
+      if (!mounted || token != _speechToken) return;
+      index++;
+      if (index >= sentences.length) break;
+      setState(() => _sentenceIndex = index);
+    }
+    if (mounted && token == _speechToken) setState(() => _reading = false);
+  }
+
+  void _togglePlay() {
+    if (_reading) {
+      _stopReading();
+    } else {
+      _playFromSentence(_sentenceIndex);
+    }
+  }
+
+  void _stopReading() {
+    _speechToken++;
+    AppTts.instance.stopSpeaking();
+    if (mounted) setState(() => _reading = false);
+  }
+
+  /// "Tua lai" = quay ve cau TRUOC do (khong the tua theo giay vi giong doc
+  /// may/cloud khac nhau khong chia se chung 1 timeline audio) - neu dang
+  /// doc thi tiep tuc doc luon tu cau do, neu dang dung thi chi luu vi tri
+  /// cho lan bam Play tiep theo.
+  void _rewind() {
+    final sentences = _sentencesForPage(_currentPage);
+    if (sentences.isEmpty) return;
+    final target = _sentenceIndex > 0 ? _sentenceIndex - 1 : 0;
+    _speechToken++;
+    AppTts.instance.stopSpeaking();
+    if (_reading) {
+      _playFromSentence(target);
+    } else {
+      setState(() => _sentenceIndex = target);
+    }
   }
 
   void _changeFontScale(double delta) {
@@ -202,6 +277,18 @@ class _ReadingScreenState extends ConsumerState<ReadingScreen> {
                 ),
               ),
             ),
+            if (_ready) ...[
+              const SizedBox(height: 10),
+              _ReadingAudioBar(
+                color: widget.book.color,
+                reading: _reading,
+                sentenceIndex: _sentenceIndex,
+                sentenceCount: _sentencesForPage(_currentPage).length,
+                onTogglePlay: _togglePlay,
+                onRewind: _rewind,
+                onStop: _stopReading,
+              ),
+            ],
             const SizedBox(height: 12),
             Expanded(
               child: !_ready
@@ -308,6 +395,96 @@ class _PageNavButton extends StatelessWidget {
           icon,
           color: enabled ? AppColors.textPrimary : AppColors.textMuted,
         ),
+      ),
+    );
+  }
+}
+
+/// Thanh dieu khien doc trang thanh tieng - nut loa bat/tam dung, tua lai 1
+/// cau, va dung han. Moi trang deu co thanh nay (khong an di khi khong doc)
+/// de nguoi dung luon thay duoc tinh nang.
+class _ReadingAudioBar extends StatelessWidget {
+  const _ReadingAudioBar({
+    required this.color,
+    required this.reading,
+    required this.sentenceIndex,
+    required this.sentenceCount,
+    required this.onTogglePlay,
+    required this.onRewind,
+    required this.onStop,
+  });
+
+  final Color color;
+  final bool reading;
+  final int sentenceIndex;
+  final int sentenceCount;
+  final VoidCallback onTogglePlay;
+  final VoidCallback onRewind;
+  final VoidCallback onStop;
+
+  @override
+  Widget build(BuildContext context) {
+    if (sentenceCount == 0) return const SizedBox.shrink();
+    return GlowBox(
+      borderRadius: 999,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      child: Row(
+        children: [
+          _AudioIconButton(
+            icon: Icons.replay_5_rounded,
+            onTap: onRewind,
+            color: color,
+          ),
+          const SizedBox(width: 4),
+          _AudioIconButton(
+            icon: reading
+                ? Icons.pause_circle_filled_rounded
+                : Icons.play_circle_fill_rounded,
+            onTap: onTogglePlay,
+            color: color,
+            large: true,
+          ),
+          const SizedBox(width: 4),
+          _AudioIconButton(
+            icon: Icons.stop_circle_rounded,
+            onTap: reading ? onStop : null,
+            color: color,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'Câu ${(sentenceIndex + 1).clamp(1, sentenceCount)}/$sentenceCount',
+              style: AppTextStyles.muted(size: 11).copyWith(height: 1.0),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AudioIconButton extends StatelessWidget {
+  const _AudioIconButton({
+    required this.icon,
+    required this.onTap,
+    required this.color,
+    this.large = false,
+  });
+
+  final IconData icon;
+  final VoidCallback? onTap;
+  final Color color;
+  final bool large;
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = onTap != null;
+    return GestureDetector(
+      onTap: onTap,
+      child: Icon(
+        icon,
+        size: large ? 32 : 24,
+        color: enabled ? color : AppColors.textMuted,
       ),
     );
   }
