@@ -5,6 +5,7 @@ import 'package:timezone/timezone.dart' as tz;
 
 import '../../features/vocabulary/presentation/daily_quiz_popup_screen.dart';
 import '../navigation/nav_keys.dart';
+import '../utils/vn_time.dart';
 
 /// Nhac hoc "10 tu hom nay" bang thong bao he thong dat lich truoc - hoat
 /// dong ca khi app da bi dong/khoa may, vi lich duoc AlarmManager (Android)
@@ -75,7 +76,9 @@ class DailyQuizNotifications {
     const details = NotificationDetails(android: androidDetails);
 
     final now = DateTime.now();
-    final endOfDay = DateTime(now.year, now.month, now.day, 23, 59, 59);
+    // Gioi han theo NUA DEM GIO VIET NAM (khong phai gio thiet bi) - dung
+    // yeu cau "het ngay gio Viet Nam thi tu dong ket thuc".
+    final endOfDay = nextVnMidnightInstant();
     var occurrence = now.add(Duration(minutes: intervalMinutes));
     var count = 0;
     while (occurrence.isBefore(endOfDay) && count < _maxScheduled) {

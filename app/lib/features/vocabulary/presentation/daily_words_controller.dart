@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/notifications/daily_quiz_notifications.dart';
+import '../../../core/utils/vn_time.dart';
 import '../data/daily_words_repository.dart';
 
 const kMaxDailyWords = 10;
@@ -20,6 +23,9 @@ class DailyWordsState {
   final bool active;
   final bool loaded;
 
+  /// Chi dung de HIEN THI tien do (vd "3/10 tu da hoc" o Ho so) - KHONG con
+  /// dung de loc cau hoi trong quiz nua (quiz luon hoi du ca 10 tu moi lan,
+  /// xem DailyQuizPopupScreen).
   List<DailyWordEntry> get pending => words
       .where((w) => !learnedTodayEnLower.contains(w.en.toLowerCase()))
       .toList();
@@ -49,25 +55,29 @@ class DailyWordsState {
   }
 }
 
-String _todayIso() {
-  final now = DateTime.now();
-  return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
-}
-
-/// Quan ly danh sach "10 tu hoc hom nay" + bat/tat nhac quiz dinh ky. Tu
-/// dong reset ve rong moi khi sang ngay moi (so sanh ngay luu voi ngay
-/// hom nay khi khoi tao).
+/// Quan ly danh sach "10 tu hoc hom nay" + bat/tat nhac quiz dinh ky.
+///
+/// - Quiz moi lan mo (thong bao nhac hoac bam "Bat dau hoc") hoi DU CA danh
+///   sach da chon, khong loc bot tu da tra loi dung truoc do - xem
+///   DailyQuizPopupScreen.
+/// - CHI tu dong ket thuc (huy nhac + reset danh sach) khi SANG NGAY MOI
+///   THEO GIO VIET NAM (khong con tu dong ket thuc khi da tra loi dung het
+///   10 tu) - vua kiem tra luc khoi tao (mo lai app), vua dat 1 Timer bat
+///   dung luc nua dem VN de ket thuc ngay ca khi app dang mo xuyen qua thoi
+///   diem do.
 class DailyWordsController extends StateNotifier<DailyWordsState> {
   DailyWordsController() : super(DailyWordsState.empty) {
     _restore();
   }
 
+  Timer? _midnightTimer;
+
   Future<void> _restore() async {
     final savedDate = await DailyWordsRepository.loadDate();
-    final today = _todayIso();
+    final today = todayVnIso();
     if (savedDate != today) {
-      // Sang ngay moi - danh sach hom qua khong con y nghia, reset het va
-      // huy moi nhac cu con sot lai (neu co).
+      // Sang ngay moi (gio VN) - danh sach hom qua khong con y nghia, reset
+      // het va huy moi nhac cu con sot lai (neu co).
       await DailyWordsRepository.saveDate(today);
       await DailyWordsRepository.saveWords([]);
       await DailyWordsRepository.saveLearnedToday({});
@@ -79,19 +89,38 @@ class DailyWordsController extends StateNotifier<DailyWordsState> {
         active: false,
         loaded: true,
       );
-      return;
+    } else {
+      final words = await DailyWordsRepository.loadWords();
+      final learned = await DailyWordsRepository.loadLearnedToday();
+      final interval = await DailyWordsRepository.loadIntervalMinutes();
+      final active = await DailyWordsRepository.loadActive();
+      state = state.copyWith(
+        words: words,
+        learnedTodayEnLower: learned,
+        intervalMinutes: interval,
+        active: active,
+        loaded: true,
+      );
     }
-    final words = await DailyWordsRepository.loadWords();
-    final learned = await DailyWordsRepository.loadLearnedToday();
-    final interval = await DailyWordsRepository.loadIntervalMinutes();
-    final active = await DailyWordsRepository.loadActive();
-    state = state.copyWith(
-      words: words,
-      learnedTodayEnLower: learned,
-      intervalMinutes: interval,
-      active: active,
-      loaded: true,
-    );
+    _scheduleMidnightReset();
+  }
+
+  /// Dat 1 lan Timer bat dung luc nua dem gio VN tiep theo de tu dong reset
+  /// - can thiet vi _restore() chi chay 1 lan luc tao controller (luc mo
+  /// app), neu app cu mo xuyen qua nua dem se khong tu biet ma reset neu
+  /// khong co co che chu dong nay.
+  void _scheduleMidnightReset() {
+    _midnightTimer?.cancel();
+    final delay = nextVnMidnightInstant().difference(DateTime.now());
+    _midnightTimer = Timer(delay.isNegative ? Duration.zero : delay, () {
+      _resetIfNewDay().then((_) => _scheduleMidnightReset());
+    });
+  }
+
+  @override
+  void dispose() {
+    _midnightTimer?.cancel();
+    super.dispose();
   }
 
   /// Them 1 tu (vd tu nut "Luu" o popup tra tu) - bo qua neu da co (trung
@@ -135,15 +164,16 @@ class DailyWordsController extends StateNotifier<DailyWordsState> {
     if (state.active) await _rescheduleReminders();
   }
 
-  /// Danh dau 1 tu la DA HOC (tra loi dung trong quiz nhac) - chi luc nay
-  /// moi tinh vao thong ke "Tu da hoc" o Ho so (goi rieng o noi mo quiz,
-  /// khong lam trong controller nay de tranh phu thuoc Supabase o day).
+  /// Danh dau 1 tu la DA TUNG tra loi dung it nhat 1 lan hom nay - chi dung
+  /// de hien thi tien do o Ho so va ghi vao thong ke "Tu da hoc" (goi rieng
+  /// o noi mo quiz). KHONG anh huong den viec quiz co hoi lai tu nay o cac
+  /// lan sau hay khong (luon hoi du danh sach) va KHONG tu dong ket thuc
+  /// nhac khi tat ca da duoc danh dau.
   Future<void> markLearned(String en) async {
     final lower = en.toLowerCase();
     final updated = {...state.learnedTodayEnLower, lower};
     state = state.copyWith(learnedTodayEnLower: updated);
     await DailyWordsRepository.saveLearnedToday(updated);
-    if (state.pending.isEmpty) await stop();
   }
 
   Future<void> start() async {
@@ -160,7 +190,7 @@ class DailyWordsController extends StateNotifier<DailyWordsState> {
   }
 
   Future<void> _rescheduleReminders() async {
-    if (state.pending.isEmpty) {
+    if (state.words.isEmpty) {
       await stop();
       return;
     }
@@ -171,7 +201,7 @@ class DailyWordsController extends StateNotifier<DailyWordsState> {
 
   Future<void> _resetIfNewDay() async {
     final savedDate = await DailyWordsRepository.loadDate();
-    final today = _todayIso();
+    final today = todayVnIso();
     if (savedDate == today) return;
     await DailyWordsRepository.saveDate(today);
     await DailyWordsRepository.saveWords([]);

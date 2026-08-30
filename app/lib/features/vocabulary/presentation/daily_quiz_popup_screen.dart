@@ -11,10 +11,11 @@ import '../data/vocabulary_data.dart';
 import 'daily_words_controller.dart';
 
 /// Man hinh quiz, mo khi bam vao thong bao nhac "hoc hom nay" (hoac bam
-/// "Bat dau hoc" o Ho so) - hoi LAN LUOT TAT CA cac tu con dang cho hoc
-/// (chua tra loi dung lan nao trong ngay), giong nhu VocabularyQuizScreen.
-/// Tra loi DUNG moi tu moi tinh la "da hoc" (ghi vao thong ke Ho so) - tra
-/// sai thi tu do van o lai danh sach, se duoc hoi lai o lan nhac sau.
+/// "Bat dau hoc" o Ho so) - hoi LAN LUOT TAT CA cac tu DA CHON (khong loc
+/// bot tu da tung tra loi dung truoc do - moi lan mo deu hoi du danh sach),
+/// giong nhu VocabularyQuizScreen. Tra loi DUNG se ghi vao thong ke "Tu da
+/// hoc" o Ho so (khong anh huong lan hoi ke tiep - tu do van tiep tuc duoc
+/// hoi lai o cac lan nhac sau, giup on lap lai xuyen suot ngay).
 class DailyQuizPopupScreen extends ConsumerStatefulWidget {
   const DailyQuizPopupScreen({super.key});
 
@@ -35,10 +36,10 @@ class _DailyQuizPopupScreenState extends ConsumerState<DailyQuizPopupScreen> {
   void _initIfNeeded(DailyWordsState state) {
     if (_initialized) return;
     _initialized = true;
-    final pending = state.pending;
-    if (pending.isEmpty) return;
+    final words = state.words;
+    if (words.isEmpty) return;
     final rnd = Random();
-    final order = List.of(pending)..shuffle(rnd);
+    final order = List.of(words)..shuffle(rnd);
     final pool = state.words.length >= 4
         ? state.words.map((w) => w.en).toList()
         : kVocabTopics.expand((t) => t.words.map((w) => w.en)).toList();

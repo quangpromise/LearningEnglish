@@ -280,8 +280,8 @@ class AppStrings {
       AppLanguage.en: 'Quick quiz',
     },
     'daily_quiz_empty': {
-      AppLanguage.vi: 'Bạn đã học hết các từ hôm nay rồi!',
-      AppLanguage.en: "You've learned all of today's words!",
+      AppLanguage.vi: 'Chưa có từ nào trong danh sách học hôm nay.',
+      AppLanguage.en: "There are no words in today's learning list.",
     },
     'daily_quiz_correct': {
       AppLanguage.vi: 'Chính xác! Đã ghi vào từ đã học.',
