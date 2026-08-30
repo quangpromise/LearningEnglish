@@ -114,197 +114,205 @@ class _DictionaryPopupState extends ConsumerState<DictionaryPopup> {
         color: Color(0xEB0F1326),
         borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Container(
-              width: 40,
-              height: 5,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(999),
+      // Cuon duoc thay vi Column co dinh - ban phim mo + ket qua tra dai
+      // cong lai co the vuot chieu cao man hinh, khien o nhap bi day/che
+      // khuat neu khong the cuon xuong xem phan con lai.
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(999),
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            ref.tr('dictionary_title'),
-            style: AppTextStyles.heading(size: 18),
-          ),
-          const SizedBox(height: 14),
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.glassFill,
-                    borderRadius: BorderRadius.circular(999),
-                    border: Border.all(color: AppColors.glassBorder),
-                  ),
-                  child: Text(
-                    isEnToVi
-                        ? ref.tr('dictionary_en_to_vi')
-                        : ref.tr('dictionary_vi_to_en'),
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.body(
-                      weight: FontWeight.w800,
-                      size: 13,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              GestureDetector(
-                onTap: _swapDirection,
-                child: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    gradient: AppColors.accentGradient,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.swap_horiz_rounded,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          GlowBox(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            borderRadius: 999,
-            child: Row(
+            const SizedBox(height: 16),
+            Text(
+              ref.tr('dictionary_title'),
+              style: AppTextStyles.heading(size: 18),
+            ),
+            const SizedBox(height: 14),
+            Row(
               children: [
                 Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    autofocus: true,
-                    style: AppTextStyles.body(),
-                    cursorColor: AppColors.purple,
-                    onSubmitted: (_) => _lookup(),
-                    decoration: InputDecoration(
-                      isDense: true,
-                      border: InputBorder.none,
-                      hintText: isEnToVi
-                          ? ref.tr('dictionary_hint_en')
-                          : ref.tr('dictionary_hint_vi'),
-                      hintStyle: AppTextStyles.muted(),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.glassFill,
+                      borderRadius: BorderRadius.circular(999),
+                      border: Border.all(color: AppColors.glassBorder),
+                    ),
+                    child: Text(
+                      isEnToVi
+                          ? ref.tr('dictionary_en_to_vi')
+                          : ref.tr('dictionary_vi_to_en'),
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.body(
+                        weight: FontWeight.w800,
+                        size: 13,
+                      ),
                     ),
                   ),
                 ),
+                const SizedBox(width: 10),
                 GestureDetector(
-                  onTap: _lookup,
-                  child: const Icon(
-                    Icons.search_rounded,
-                    color: AppColors.purple,
+                  onTap: _swapDirection,
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      gradient: AppColors.accentGradient,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.swap_horiz_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ),
                 ),
               ],
             ),
-          ),
-          const SizedBox(height: 16),
-          if (_loading)
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 12),
-                child: SizedBox(
-                  height: 20,
-                  width: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: AppColors.blue,
-                  ),
-                ),
-              ),
-            )
-          else if (_error != null)
-            Text(
-              _error!,
-              style: AppTextStyles.muted().copyWith(color: AppColors.pink),
-            )
-          else if (_searched && _translated != null)
+            const SizedBox(height: 14),
             GlowBox(
-              borderRadius: 18,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              borderRadius: 999,
+              child: Row(
                 children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          _translated!,
-                          style: AppTextStyles.body(
-                            size: 18,
-                            weight: FontWeight.w800,
-                          ),
-                        ),
+                  Expanded(
+                    child: TextField(
+                      controller: _controller,
+                      autofocus: true,
+                      style: AppTextStyles.body(),
+                      cursorColor: AppColors.purple,
+                      onSubmitted: (_) => _lookup(),
+                      decoration: InputDecoration(
+                        isDense: true,
+                        border: InputBorder.none,
+                        hintText: isEnToVi
+                            ? ref.tr('dictionary_hint_en')
+                            : ref.tr('dictionary_hint_vi'),
+                        hintStyle: AppTextStyles.muted(),
                       ),
-                      GestureDetector(
-                        onTap: () => AppTts.instance.speak(
-                          isEnToVi ? _controller.text.trim() : _translated!,
-                        ),
-                        child: const Icon(
-                          Icons.volume_up_rounded,
-                          color: AppColors.blue,
-                          size: 20,
-                        ),
-                      ),
-                    ],
-                  ),
-                  if (_ipa != null || _pos != null) ...[
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        if (_ipa != null)
-                          Text(
-                            _ipa!,
-                            style: AppTextStyles.body(
-                              size: 13,
-                              color: const Color(0xFF9DB4FF),
-                            ),
-                          ),
-                        if (_ipa != null && _pos != null)
-                          const SizedBox(width: 10),
-                        if (_pos != null)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 3,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.teal.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(999),
-                            ),
-                            child: Text(
-                              _pos!,
-                              style: const TextStyle(
-                                color: AppColors.teal,
-                                fontWeight: FontWeight.w800,
-                                fontSize: 11,
-                              ),
-                            ),
-                          ),
-                      ],
                     ),
-                  ],
-                  if (_definitionVi != null) ...[
-                    const SizedBox(height: 8),
-                    Text(_definitionVi!, style: AppTextStyles.muted(size: 12)),
-                  ],
+                  ),
+                  GestureDetector(
+                    onTap: _lookup,
+                    child: const Icon(
+                      Icons.search_rounded,
+                      color: AppColors.purple,
+                    ),
+                  ),
                 ],
               ),
             ),
-        ],
+            const SizedBox(height: 16),
+            if (_loading)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppColors.blue,
+                    ),
+                  ),
+                ),
+              )
+            else if (_error != null)
+              Text(
+                _error!,
+                style: AppTextStyles.muted().copyWith(color: AppColors.pink),
+              )
+            else if (_searched && _translated != null)
+              GlowBox(
+                borderRadius: 18,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            _translated!,
+                            style: AppTextStyles.body(
+                              size: 18,
+                              weight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () => AppTts.instance.speak(
+                            isEnToVi ? _controller.text.trim() : _translated!,
+                          ),
+                          child: const Icon(
+                            Icons.volume_up_rounded,
+                            color: AppColors.blue,
+                            size: 20,
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (_ipa != null || _pos != null) ...[
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          if (_ipa != null)
+                            Text(
+                              _ipa!,
+                              style: AppTextStyles.body(
+                                size: 13,
+                                color: const Color(0xFF9DB4FF),
+                              ),
+                            ),
+                          if (_ipa != null && _pos != null)
+                            const SizedBox(width: 10),
+                          if (_pos != null)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 3,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.teal.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                              child: Text(
+                                _pos!,
+                                style: const TextStyle(
+                                  color: AppColors.teal,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
+                    if (_definitionVi != null) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        _definitionVi!,
+                        style: AppTextStyles.muted(size: 12),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

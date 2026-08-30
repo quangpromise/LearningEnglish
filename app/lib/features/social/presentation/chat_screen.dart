@@ -15,11 +15,18 @@ Future<void> openChatPopup(BuildContext context, SocialUser friend) {
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (context) => FractionallySizedBox(
-      heightFactor: 0.92,
-      child: ClipRRect(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        child: ChatScreen(friend: friend),
+    // showModalBottomSheet KHONG tu dong tranh ban phim (Flutter khong lam
+    // dieu nay san cho bottom sheet, khac voi Scaffold thuong) - phai tu tru
+    // chieu cao ban phim vao day, neu khong o nhap tin nhan se bi ban phim
+    // che khuat hoan toan khi go chu.
+    builder: (context) => Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+      child: FractionallySizedBox(
+        heightFactor: 0.92,
+        child: ClipRRect(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          child: ChatScreen(friend: friend),
+        ),
       ),
     ),
   );

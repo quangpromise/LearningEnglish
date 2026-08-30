@@ -55,6 +55,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final query = _query.trim().toLowerCase();
+    final profileAsync = ref.watch(myProfileProvider);
+    final displayName = profileAsync.valueOrNull?.nameLabel ?? '';
     final favoritesAsync = ref.watch(favoriteSongTitlesProvider);
     final favoriteTitles = favoritesAsync.valueOrNull ?? <String>{};
     var filteredSongs = query.isEmpty
@@ -84,7 +86,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(ref.tr('home_greeting'), style: AppTextStyles.muted()),
-                    Text('Quang', style: AppTextStyles.heading(size: 20)),
+                    Text(displayName, style: AppTextStyles.heading(size: 20)),
                   ],
                 ),
                 Row(
