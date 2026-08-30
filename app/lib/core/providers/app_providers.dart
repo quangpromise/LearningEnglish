@@ -147,6 +147,10 @@ final myConversationsProvider = FutureProvider.autoDispose((ref) {
 /// để ẩn nút nổi "AI Voice Chat" ở màn đó (tránh chồng lên nút mic).
 final pronunciationTabActiveProvider = StateProvider<bool>((ref) => false);
 
+/// true khi màn AiVoiceChatScreen đang mở - dùng để ẩn nút nổi ngay trên
+/// chính màn hình đó (không cần nút mở lại tính năng đang mở sẵn).
+final aiVoiceChatScreenActiveProvider = StateProvider<bool>((ref) => false);
+
 const _appLanguagePrefKey = 'app_language';
 
 /// Ngôn ngữ giao diện hiện tại - lưu lại trên máy (SharedPreferences), khôi
