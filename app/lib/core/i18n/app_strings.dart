@@ -922,6 +922,56 @@ class AppStrings {
       AppLanguage.vi: 'Không mở được trình cài đặt: {msg}. Hãy cho phép "Cài đặt ứng dụng không rõ nguồn gốc" nếu được hỏi.',
       AppLanguage.en: 'Couldn\'t open the installer: {msg}. Allow "Install unknown apps" if prompted.',
     },
+
+    // Onboarding carousel (onboarding_screen.dart) - hien 1 lan duy nhat
+    // cho moi tai khoan, ngay sau khi dang nhap/dang ky thanh cong lan dau,
+    // truoc khi vao RootShell.
+    'onboarding_skip': {AppLanguage.vi: 'Bỏ qua', AppLanguage.en: 'Skip'},
+    'onboarding_next': {AppLanguage.vi: 'Tiếp theo', AppLanguage.en: 'Next'},
+    'onboarding_start': {
+      AppLanguage.vi: 'Bắt đầu học ngay',
+      AppLanguage.en: 'Start learning',
+    },
+    'onboarding_page1_title': {
+      AppLanguage.vi: 'Học tiếng Anh qua âm nhạc',
+      AppLanguage.en: 'Learn English through music',
+    },
+    'onboarding_page1_body': {
+      AppLanguage.vi: 'Nghe nhạc, xem lời bài hát song ngữ Anh-Việt theo thời gian thực, chạm vào bất kỳ từ nào để xem nghĩa và nghe phát âm mẫu.',
+      AppLanguage.en: 'Listen to songs, follow bilingual lyrics in real time, and tap any word to see its meaning and hear it pronounced.',
+    },
+    'onboarding_page2_title': {
+      AppLanguage.vi: 'Luyện phát âm có chấm điểm',
+      AppLanguage.en: 'Practice pronunciation with scoring',
+    },
+    'onboarding_page2_body': {
+      AppLanguage.vi: 'Ghi âm giọng nói của bạn, app sẽ so khớp với câu gốc và chấm điểm để bạn biết mình đang phát âm đúng đến đâu.',
+      AppLanguage.en: 'Record your voice and the app compares it to the original sentence, scoring how close your pronunciation is.',
+    },
+    'onboarding_page3_title': {
+      AppLanguage.vi: 'Học 10 từ mới mỗi ngày',
+      AppLanguage.en: 'Learn 10 new words a day',
+    },
+    'onboarding_page3_body': {
+      AppLanguage.vi: 'Chọn 10 từ muốn học, đặt giờ nhắc, app sẽ tự mở đố vui theo lịch để ôn lại — kể cả khi app đang đóng.',
+      AppLanguage.en: 'Pick 10 words to learn, set a reminder interval, and the app quizzes you on schedule — even while it\'s closed.',
+    },
+    'onboarding_page4_title': {
+      AppLanguage.vi: 'Trò chuyện với AI bằng giọng nói',
+      AppLanguage.en: 'Chat with AI using your voice',
+    },
+    'onboarding_page4_body': {
+      AppLanguage.vi: 'Chạm vào nút AI nổi ở mọi màn hình để trò chuyện tự do bằng tiếng Anh, được góp ý ngữ pháp và từ vựng ngay khi nói.',
+      AppLanguage.en: 'Tap the floating AI button on any screen to have a free conversation in English, with grammar and vocabulary feedback as you speak.',
+    },
+    'onboarding_page5_title': {
+      AppLanguage.vi: 'Đố vui & thi đấu bạn bè',
+      AppLanguage.en: 'Quizzes & compete with friends',
+    },
+    'onboarding_page5_body': {
+      AppLanguage.vi: 'Làm đố vui từ vựng, ngữ pháp theo chủ đề và leo hạng trên bảng xếp hạng cùng bạn bè.',
+      AppLanguage.en: 'Take vocabulary and grammar quizzes by topic and climb the leaderboard together with your friends.',
+    },
   };
 
   static String t(String key, AppLanguage lang) =>

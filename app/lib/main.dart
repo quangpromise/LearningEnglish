@@ -13,6 +13,8 @@ import 'core/tts/app_tts.dart';
 import 'features/ai_voice_chat/data/gemini_voices.dart';
 import 'features/auth/presentation/reset_password_screen.dart';
 import 'features/auth/presentation/sign_in_screen.dart';
+import 'features/onboarding/data/onboarding_repository.dart';
+import 'features/onboarding/presentation/onboarding_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -111,7 +113,28 @@ class _AuthGate extends ConsumerWidget {
     }
 
     final signedIn = session != null;
-    return signedIn ? const RootShell() : const SignInScreen();
+    if (!signedIn) return const SignInScreen();
+
+    // Hien carousel gioi thieu tinh nang dung 1 lan cho MOI tai khoan, ngay
+    // sau khi dang nhap/dang ky thanh cong lan dau - truoc khi vao
+    // RootShell. Dung FutureProvider.family thay vi setState de tu dong
+    // invalidate va chuyen man khi markSeen() xong (xem OnboardingScreen).
+    final userId = session.user.id;
+    final seenAsync = ref.watch(onboardingSeenProvider(userId));
+    return seenAsync.when(
+      data: (seen) => seen
+          ? const RootShell()
+          : OnboardingScreen(
+              userId: userId,
+              onDone: () => ref.invalidate(onboardingSeenProvider(userId)),
+            ),
+      loading: () => const ScreenBackground(
+        child: Center(child: CircularProgressIndicator()),
+      ),
+      // Loi doc SharedPreferences (hau nhu khong bao gio xay ra) - uu tien
+      // cho vao app thay vi ket nguoi dung o man cho vo han.
+      error: (_, _) => const RootShell(),
+    );
   }
 }
 
