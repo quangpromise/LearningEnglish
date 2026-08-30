@@ -11,6 +11,7 @@ import '../../settings/presentation/change_password_sheet.dart';
 import '../../settings/presentation/voice_settings_sheet.dart';
 import '../../social/presentation/friends_screen.dart';
 import '../../update/data/update_checker.dart';
+import '../../vocabulary/presentation/daily_quiz_popup_screen.dart';
 import '../../vocabulary/presentation/daily_words_controller.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -1001,7 +1002,19 @@ class _DailyWordsSection extends ConsumerWidget {
                 filled: !state.active,
                 onTap: state.pending.isEmpty && !state.active
                     ? null
-                    : () => state.active ? notifier.stop() : notifier.start(),
+                    : () async {
+                        if (state.active) {
+                          await notifier.stop();
+                          return;
+                        }
+                        await notifier.start();
+                        if (!context.mounted) return;
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const DailyQuizPopupScreen(),
+                          ),
+                        );
+                      },
               ),
             ),
             if (state.active) ...[
