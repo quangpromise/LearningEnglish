@@ -48,7 +48,7 @@ jobs:
           storeFile=keystore/release.keystore.jks
           EOF
 
-      - name: Build release APK (split per ABI)
+      - name: Build release APK (split per ABI, ban nho gon)
         env:
           # Dua secret qua bien moi truong (khong chen truc tiep ${{ }} vao
           # dong lenh) - neu secret bi dinh ky tu xuong dong thua luc paste,
@@ -69,14 +69,35 @@ jobs:
           CLEAN_GEMINI_KEY=$(printf '%s' "$GEMINI_DIRECT_KEY" | tr -d '\n\r')
           flutter build apk --release --split-per-abi --dart-define=SUPABASE_URL="$CLEAN_URL" --dart-define=SUPABASE_ANON_KEY="$CLEAN_ANON_KEY" --dart-define=GOOGLE_WEB_CLIENT_ID="$CLEAN_CLIENT_ID" --dart-define=BUILD_SHA="$BUILD_SHA" --dart-define=GEMINI_API_KEY_DIRECT="$CLEAN_GEMINI_KEY"
 
+      - name: Build release APK (universal, chua tat ca kien truc)
+        # Cac file --split-per-abi o tren doi hoi nguoi tai phai biet dung
+        # kien truc chip cua may (arm64-v8a/armeabi-v7a/x86_64) - chon nham
+        # file se bi Android tu choi cai voi loi "khong tuong thich". Ban
+        # universal nay gop ca 3 kien truc vao 1 file APK duy nhat nen may
+        # nao cung cai duoc, danh doi la dung luong lon hon - dung lam link
+        # tai mac dinh cho nguoi dung pho thong (xem update_checker.dart va
+        # docs/ci-apk-distribution.md).
+        env:
+          SB_URL: ${{ secrets.SUPABASE_URL }}
+          SB_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          GG_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID }}
+          BUILD_SHA: ${{ github.sha }}
+          GEMINI_DIRECT_KEY: ${{ secrets.GEMINI_API_KEY_DIRECT }}
+        run: |
+          CLEAN_URL=$(printf '%s' "$SB_URL" | tr -d '\n\r')
+          CLEAN_ANON_KEY=$(printf '%s' "$SB_ANON_KEY" | tr -d '\n\r')
+          CLEAN_CLIENT_ID=$(printf '%s' "$GG_CLIENT_ID" | tr -d '\n\r')
+          CLEAN_GEMINI_KEY=$(printf '%s' "$GEMINI_DIRECT_KEY" | tr -d '\n\r')
+          flutter build apk --release --dart-define=SUPABASE_URL="$CLEAN_URL" --dart-define=SUPABASE_ANON_KEY="$CLEAN_ANON_KEY" --dart-define=GOOGLE_WEB_CLIENT_ID="$CLEAN_CLIENT_ID" --dart-define=BUILD_SHA="$BUILD_SHA" --dart-define=GEMINI_API_KEY_DIRECT="$CLEAN_GEMINI_KEY"
+
       - name: Kiem tra dung luong APK (chan quy dinh cua library lam phinh app)
         run: |
           cd build/app/outputs/flutter-apk
           WARN_MB=22
           MAX_MB=30
           FAILED=0
-          echo "=== Dung luong APK theo kien truc ==="
-          for f in app-*-release.apk; do
+          echo "=== Dung luong APK theo kien truc (split-per-abi) ==="
+          for f in app-arm64-v8a-release.apk app-armeabi-v7a-release.apk app-x86_64-release.apk; do
             SIZE_MB=$(du -m "$f" | cut -f1)
             echo "$f: ${SIZE_MB}MB"
             if [ "$SIZE_MB" -gt "$MAX_MB" ]; then
@@ -86,6 +107,19 @@ jobs:
               echo "::warning::$f nang ${SIZE_MB}MB, vuot muc canh bao ${WARN_MB}MB - chua chan build nhung nen xem lai dependency vua them co can thiet khong."
             fi
           done
+          # Ban universal gop ca 3 kien truc nen NANG HON HAN theo thiet ke -
+          # dung nguong rieng cao hon nhieu, khong so sanh voi nguong split o tren.
+          UNIVERSAL_WARN_MB=65
+          UNIVERSAL_MAX_MB=85
+          UNIVERSAL_SIZE_MB=$(du -m app-release.apk | cut -f1)
+          echo "=== Dung luong APK universal (gop ca 3 kien truc) ==="
+          echo "app-release.apk: ${UNIVERSAL_SIZE_MB}MB"
+          if [ "$UNIVERSAL_SIZE_MB" -gt "$UNIVERSAL_MAX_MB" ]; then
+            echo "::error::app-release.apk nang ${UNIVERSAL_SIZE_MB}MB, vuot qua muc toi da cho phep ${UNIVERSAL_MAX_MB}MB cho ban universal."
+            FAILED=1
+          elif [ "$UNIVERSAL_SIZE_MB" -gt "$UNIVERSAL_WARN_MB" ]; then
+            echo "::warning::app-release.apk nang ${UNIVERSAL_SIZE_MB}MB, vuot muc canh bao ${UNIVERSAL_WARN_MB}MB."
+          fi
           if [ "$FAILED" -eq 1 ]; then
             exit 1
           fi
@@ -105,6 +139,7 @@ jobs:
           allowUpdates: true
           removeArtifacts: true
           artifacts: |
+            app/build/app/outputs/flutter-apk/app-release.apk
             app/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
             app/build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
             app/build/app/outputs/flutter-apk/app-x86_64-release.apk

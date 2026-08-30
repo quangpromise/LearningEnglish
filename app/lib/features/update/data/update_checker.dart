@@ -36,8 +36,12 @@ Future<UpdateInfo?> checkForUpdate() async {
     final versionAsset = assets
         .where((a) => a['name'] == 'version.txt')
         .firstOrNull;
+    // "app-release.apk" la ban universal (gom ca arm64-v8a/armeabi-v7a/x86_64
+    // trong 1 file) - dung ban nay cho AUTO-UPDATE de cai duoc tren MOI may,
+    // khong phu thuoc kien truc chip cua tung may (xem build-apk.yml va
+    // docs/ci-apk-distribution.md).
     final apkAsset = assets
-        .where((a) => a['name'] == 'app-arm64-v8a-release.apk')
+        .where((a) => a['name'] == 'app-release.apk')
         .firstOrNull;
     if (versionAsset == null || apkAsset == null) return null;
 
@@ -91,7 +95,7 @@ Future<String> debugCheckForUpdate() async {
         .where((a) => a['name'] == 'version.txt')
         .firstOrNull;
     final apkAsset = assets
-        .where((a) => a['name'] == 'app-arm64-v8a-release.apk')
+        .where((a) => a['name'] == 'app-release.apk')
         .firstOrNull;
     if (versionAsset == null || apkAsset == null) {
       return 'Release "latest" trên GitHub thiếu file version.txt hoặc APK.';

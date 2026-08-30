@@ -1,16 +1,26 @@
 # Tự động build & phát hành APK qua GitHub Actions
 
 Mỗi lần push code vào `main` (thay đổi trong `app/`), GitHub Actions tự động:
-1. Build APK release (`--split-per-abi`, đã bật R8 minify + shrink resources).
+1. Build APK release: 1 bản **universal** (gộp mọi kiến trúc CPU) + 3 bản `--split-per-abi` nhỏ gọn hơn (đã bật R8 minify + shrink resources).
 2. Cập nhật vào **1 GitHub Release cố định, tag `latest`** — link tải không bao giờ đổi, luôn là bản mới nhất.
 
-## Link tải cố định (bookmark lại, dùng mãi)
+## Link tải cố định — dùng file này khi chia sẻ cho người khác (bookmark lại, dùng mãi)
 ```
-https://github.com/quangpromise/LearningEnglish/releases/download/latest/app-arm64-v8a-release.apk
+https://github.com/quangpromise/LearningEnglish/releases/download/latest/app-release.apk
 ```
-(dùng file `arm64-v8a` cho hầu hết điện thoại; `armeabi-v7a`/`x86_64` chỉ dùng cho máy đời cũ/máy ảo — đổi tên file trong URL nếu cần)
+File này là bản **universal**, cài được trên MỌI điện thoại Android bất kể kiến trúc chip — luôn dùng file này khi gửi link cho người dùng phổ thông, kể cả khi không biết máy họ dùng chip gì. Tính năng "Kiểm tra cập nhật" trong app cũng tự tải đúng file này (xem `update_checker.dart`).
 
-Cũng có thể vào thẳng trang **[Releases](https://github.com/quangpromise/LearningEnglish/releases/tag/latest)** để xem cả 3 file + thời điểm build gần nhất.
+### Vì sao trước đây bị lỗi "không tương thích"?
+Trước đây chỉ phát hành 3 file `--split-per-abi` (`arm64-v8a`/`armeabi-v7a`/`x86_64`), mỗi file chỉ chứa thư viện native cho ĐÚNG 1 loại chip. Gửi nhầm file `arm64-v8a` (mặc định) cho máy dùng chip 32-bit đời cũ (`armeabi-v7a`) sẽ bị Android từ chối cài với lỗi không tương thích. Bản `app-release.apk` universal giải quyết dứt điểm vấn đề này bằng cách gộp cả 3 kiến trúc vào 1 file, đổi lại dung luợng lớn hơn (~60-70MB thay vì ~20MB).
+
+### 3 file split-per-abi (tùy chọn, nhẹ hơn — chỉ dùng khi biết chắc kiến trúc máy)
+```
+https://github.com/quangpromise/LearningEnglish/releases/download/latest/app-arm64-v8a-release.apk   (hầu hết điện thoại từ ~2017 trở lại)
+https://github.com/quangpromise/LearningEnglish/releases/download/latest/app-armeabi-v7a-release.apk (máy đời cũ, chip 32-bit)
+https://github.com/quangpromise/LearningEnglish/releases/download/latest/app-x86_64-release.apk      (máy ảo/tablet Intel)
+```
+
+Cũng có thể vào thẳng trang **[Releases](https://github.com/quangpromise/LearningEnglish/releases/tag/latest)** để xem cả 4 file + thời điểm build gần nhất.
 
 ## Setup 1 lần (cần bạn thao tác — chứa key nên phải thêm dạng "Secret")
 1. Vào **[Settings → Secrets and variables → Actions](https://github.com/quangpromise/LearningEnglish/settings/secrets/actions)** của repo.
