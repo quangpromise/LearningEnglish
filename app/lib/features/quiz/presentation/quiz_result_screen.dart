@@ -51,27 +51,37 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
             ),
             const SizedBox(height: 14),
             SizedBox(
-              width: 140,
-              height: 140,
+              width: 160,
+              height: 160,
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  CircularProgressIndicator(
-                    value: results.isEmpty ? 0 : correct / results.length,
-                    strokeWidth: 10,
-                    backgroundColor: Colors.white.withValues(alpha: 0.08),
-                    color: AppColors.blue,
+                  SizedBox(
+                    width: 160,
+                    height: 160,
+                    child: CircularProgressIndicator(
+                      value: results.isEmpty ? 0 : correct / results.length,
+                      strokeWidth: 10,
+                      backgroundColor: Colors.white.withValues(alpha: 0.08),
+                      color: AppColors.blue,
+                    ),
                   ),
                   Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
                         '$correct/${results.length}',
-                        style: AppTextStyles.heading(size: 26),
+                        style: AppTextStyles.heading(size: 24)
+                            .copyWith(height: 1.0),
                       ),
+                      const SizedBox(height: 4),
                       Text(
                         ref.tr('quiz_correct_count'),
-                        style: AppTextStyles.muted(size: 11),
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.muted(size: 11)
+                            .copyWith(height: 1.0),
                       ),
                     ],
                   ),

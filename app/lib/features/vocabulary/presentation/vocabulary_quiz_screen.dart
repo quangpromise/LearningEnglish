@@ -259,7 +259,8 @@ class _VocabularyQuizScreenState extends ConsumerState<VocabularyQuizScreen> {
                     children: [
                       Text(
                         '$correct/${_results.length}',
-                        style: AppTextStyles.heading(size: 24),
+                        style: AppTextStyles.heading(size: 24)
+                            .copyWith(height: 1.0),
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -267,7 +268,8 @@ class _VocabularyQuizScreenState extends ConsumerState<VocabularyQuizScreen> {
                         textAlign: TextAlign.center,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.muted(size: 11),
+                        style: AppTextStyles.muted(size: 11)
+                            .copyWith(height: 1.0),
                       ),
                     ],
                   ),

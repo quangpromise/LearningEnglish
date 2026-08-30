@@ -539,22 +539,32 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
                 child: Row(
                   children: [
                     SizedBox(
-                      width: 64,
-                      height: 64,
+                      width: 68,
+                      height: 68,
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
-                          CircularProgressIndicator(
-                            value: _score! / 100,
-                            strokeWidth: 6,
-                            backgroundColor: Colors.black12,
-                            color: AppColors.blue,
+                          SizedBox(
+                            width: 68,
+                            height: 68,
+                            child: CircularProgressIndicator(
+                              value: _score! / 100,
+                              strokeWidth: 6,
+                              backgroundColor: Colors.black12,
+                              color: AppColors.blue,
+                            ),
                           ),
                           Text(
                             '$_score%',
+                            textAlign: TextAlign.center,
+                            // height: 1.0 - Manrope (font mac dinh ke thua tu
+                            // Theme) co line-height mac dinh cao hon binh
+                            // thuong, khien chu bi tran/de xuong duoi ranh
+                            // gioi vong tron neu khong ep lai.
                             style: const TextStyle(
                               fontWeight: FontWeight.w800,
                               fontSize: 14,
+                              height: 1.0,
                               color: Colors.black,
                             ),
                           ),

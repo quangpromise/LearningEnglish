@@ -223,7 +223,8 @@ class _GrammarQuizScreenState extends ConsumerState<GrammarQuizScreen> {
                     children: [
                       Text(
                         '$correct/${_results.length}',
-                        style: AppTextStyles.heading(size: 24),
+                        style: AppTextStyles.heading(size: 24)
+                            .copyWith(height: 1.0),
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -231,7 +232,8 @@ class _GrammarQuizScreenState extends ConsumerState<GrammarQuizScreen> {
                         textAlign: TextAlign.center,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.muted(size: 11),
+                        style: AppTextStyles.muted(size: 11)
+                            .copyWith(height: 1.0),
                       ),
                     ],
                   ),
