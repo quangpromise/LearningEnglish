@@ -18,9 +18,17 @@ const _kFabSize = 58.0;
 /// hinh do nua vi de bi lech dong bo, khien nut bien mat luon sau khi quay
 /// lai neu dispose khong chay dung thoi diem mong doi).
 ///
-/// Giu (long-press) roi keo se DI CHUYEN nut den vi tri bat ky tren man
-/// hinh - vi tri duoc nho lai trong suot phien mo app (khong luu qua
-/// SharedPreferences, chi la tien loi tam thoi khi dang dung app).
+/// Cham nhanh (tha ra ma khong di chuyen nhieu) se MO man AI Voice Chat;
+/// nhan giu roi keo se DI CHUYEN nut den vi tri bat ky tren man hinh - vi
+/// tri duoc nho lai trong suot phien mo app (khong luu qua SharedPreferences,
+/// chi la tien loi tam thoi khi dang dung app).
+///
+/// Dung onPan* (khong dung onTap + onLongPress*) va tu phan biet cham/keo
+/// bang nguong khoang cach di chuyen - onLongPress* yeu cau nguoi dung giu
+/// YEN tay dung 500ms roi moi duoc phep di chuyen (LongPressGestureRecognizer
+/// tu HUY neu phat hien di chuyen truoc khi het thoi gian cho), khien thao
+/// tac "giu roi vuot" rat de that bai neu nguoi dung vo tinh nhich tay som -
+/// cach nay tu nhien va de thanh cong hon nhieu.
 class AiFabOverlay extends ConsumerStatefulWidget {
   const AiFabOverlay({super.key});
 
@@ -33,11 +41,15 @@ class _AiFabOverlayState extends ConsumerState<AiFabOverlay>
   late final AnimationController _pulseController;
 
   // null = chua tung keo, dung vi tri mac dinh (goc duoi ben phai, phia
-  // tren nut Menu). Sau khi nguoi dung giu-keo lan dau, luu toa do goc
+  // tren nut Menu). Sau khi nguoi dung keo lan dau, luu toa do goc
   // tren-trai thuc te de tu do di chuyen tu do.
   Offset? _position;
-  Offset _dragStartPosition = Offset.zero;
   bool _dragging = false;
+
+  // Tong khoang cach da di chuyen ke tu luc dat ngon tay xuong - vuot qua
+  // nguong nay moi tinh la "dang keo" (thay vi 1 cu cham/tap thong thuong).
+  double _totalMoveDistance = 0;
+  static const _dragThreshold = 8.0;
 
   @override
   void initState() {
@@ -68,20 +80,32 @@ class _AiFabOverlayState extends ConsumerState<AiFabOverlay>
     screenSize.height - _kFabSize - 96 - safePadding.bottom,
   );
 
-  void _onLongPressMoveUpdate(
-    LongPressMoveUpdateDetails details,
-    Size screenSize,
-  ) {
-    // offsetFromOrigin la do doi TICH LUY tu luc bat dau giu (khong phai
-    // delta tung frame) - phai cong voi vi tri LUC BAT DAU keo
-    // (_dragStartPosition), khong duoc cong don vao _position hien tai moi
-    // frame (se bi chay lech/nhanh dan).
-    final next = _dragStartPosition + details.offsetFromOrigin;
+  void _onPanStart(Offset currentPosition) {
+    // Dam bao _position co gia tri cu the (khong con null) truoc khi bat
+    // dau cong don delta - tranh tinh sai neu nguoi dung keo lan dau tien
+    // (luc do _position con null, dang dung vi tri mac dinh tinh toan rieng).
+    _position = currentPosition;
+    _totalMoveDistance = 0;
+    _dragging = false;
+  }
+
+  void _onPanUpdate(DragUpdateDetails details, Size screenSize) {
+    _totalMoveDistance += details.delta.distance;
+    final next = _position! + details.delta;
     final maxX = screenSize.width - _kFabSize;
     final maxY = screenSize.height - _kFabSize;
     setState(() {
       _position = Offset(next.dx.clamp(0, maxX), next.dy.clamp(0, maxY));
+      if (_totalMoveDistance > _dragThreshold) _dragging = true;
     });
+  }
+
+  void _onPanEnd(DragEndDetails details) {
+    final wasDragging = _dragging;
+    setState(() => _dragging = false);
+    // Neu ngon tay hau nhu khong di chuyen (duoi nguong), tinh la 1 cu cham
+    // binh thuong - mo man AI Voice Chat thay vi coi la vua keo xong.
+    if (!wasDragging) _open();
   }
 
   @override
@@ -103,14 +127,9 @@ class _AiFabOverlayState extends ConsumerState<AiFabOverlay>
           top: position.dy,
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
-            onTap: _open,
-            onLongPressStart: (_) => setState(() {
-              _dragging = true;
-              _dragStartPosition = position;
-            }),
-            onLongPressMoveUpdate: (details) =>
-                _onLongPressMoveUpdate(details, mq.size),
-            onLongPressEnd: (_) => setState(() => _dragging = false),
+            onPanStart: (_) => _onPanStart(position),
+            onPanUpdate: (details) => _onPanUpdate(details, mq.size),
+            onPanEnd: _onPanEnd,
             child: AnimatedBuilder(
               animation: _pulseController,
               builder: (context, child) {
