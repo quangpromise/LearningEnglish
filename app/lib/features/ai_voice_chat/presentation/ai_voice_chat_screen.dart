@@ -11,7 +11,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/config/env.dart';
 import '../../../core/i18n/app_strings.dart';
-import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/tts/app_tts.dart';
 import '../data/gemini_live_direct_client.dart';
@@ -65,14 +64,6 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
     // initState chi chay 1 lan luc mo app), phai khoi dong lai app moi thay
     // hieu luc. Gio doi tu dau cung deu bao ve day ngay lap tuc.
     GeminiVoiceSelection.instance.addListener(_onVoiceChanged);
-    // An nut noi "AI Voice Chat" trong luc dang o chinh man hinh nay - khong
-    // can nut mo lai tinh nang dang mo san. Doi sau frame dau de tranh sua
-    // provider ngay trong luc dang build.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        ref.read(aiVoiceChatScreenActiveProvider.notifier).state = true;
-      }
-    });
   }
 
   void _onVoiceChanged() {
@@ -106,7 +97,6 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
 
   @override
   void dispose() {
-    ref.read(aiVoiceChatScreenActiveProvider.notifier).state = false;
     GeminiVoiceSelection.instance.removeListener(_onVoiceChanged);
     _stateSub?.cancel();
     _audioSub?.cancel();

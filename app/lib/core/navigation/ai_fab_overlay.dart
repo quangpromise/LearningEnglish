@@ -13,8 +13,10 @@ const _kFabSize = 58.0;
 /// thanh dieu huong duoi, de nguoi dung mo tro chuyen AI bat ky luc nao.
 /// An rieng o tab Luyen phat am (pronunciationTabActiveProvider) vi man do
 /// da dung mic + can toan bo man hinh cho luyen tap, nut noi de chong/vuong;
-/// va an luon o chinh man AiVoiceChatScreen (aiVoiceChatScreenActiveProvider)
-/// vi khong can nut mo lai tinh nang dang mo san.
+/// va an luon o chinh man AiVoiceChatScreen - xac dinh qua [topRouteObserver]
+/// (KHONG dung Riverpod state tu doi trong initState/dispose cua chinh man
+/// hinh do nua vi de bi lech dong bo, khien nut bien mat luon sau khi quay
+/// lai neu dispose khong chay dung thoi diem mong doi).
 ///
 /// Giu (long-press) roi keo se DI CHUYEN nut den vi tri bat ky tren man
 /// hinh - vi tri duoc nho lai trong suot phien mo app (khong luu qua
@@ -54,9 +56,17 @@ class _AiFabOverlayState extends ConsumerState<AiFabOverlay>
 
   void _open() {
     rootNavigatorKey.currentState?.push(
-      MaterialPageRoute(builder: (_) => const AiVoiceChatScreen()),
+      MaterialPageRoute(
+        settings: const RouteSettings(name: kAiVoiceChatRouteName),
+        builder: (_) => const AiVoiceChatScreen(),
+      ),
     );
   }
+
+  Offset _defaultPosition(Size screenSize, EdgeInsets safePadding) => Offset(
+    screenSize.width - _kFabSize - 22,
+    screenSize.height - _kFabSize - 96 - safePadding.bottom,
+  );
 
   void _onLongPressMoveUpdate(
     LongPressMoveUpdateDetails details,
@@ -76,74 +86,76 @@ class _AiFabOverlayState extends ConsumerState<AiFabOverlay>
 
   @override
   Widget build(BuildContext context) {
-    final hidden =
-        ref.watch(pronunciationTabActiveProvider) ||
-        ref.watch(aiVoiceChatScreenActiveProvider);
-    if (hidden) return const SizedBox.shrink();
+    final pronunciationActive = ref.watch(pronunciationTabActiveProvider);
 
-    final mq = MediaQuery.of(context);
-    final position =
-        _position ??
-        Offset(
-          mq.size.width - _kFabSize - 22,
-          mq.size.height - _kFabSize - 96 - mq.padding.bottom,
-        );
+    return ValueListenableBuilder<String?>(
+      valueListenable: topRouteObserver.currentRouteName,
+      builder: (context, routeName, _) {
+        final hidden =
+            pronunciationActive || routeName == kAiVoiceChatRouteName;
+        if (hidden) return const SizedBox.shrink();
 
-    return Positioned(
-      left: position.dx,
-      top: position.dy,
-      child: GestureDetector(
-        onTap: _open,
-        onLongPressStart: (_) => setState(() {
-          _dragging = true;
-          _dragStartPosition = position;
-        }),
-        onLongPressMoveUpdate: (details) =>
-            _onLongPressMoveUpdate(details, mq.size),
-        onLongPressEnd: (_) => setState(() => _dragging = false),
-        child: AnimatedBuilder(
-          animation: _pulseController,
-          builder: (context, child) {
-            final glow = _dragging
-                ? 0.5
-                : 0.25 + (_pulseController.value * 0.25);
-            return AnimatedScale(
-              scale: _dragging ? 1.12 : 1.0,
-              duration: const Duration(milliseconds: 150),
-              child: Container(
-                width: _kFabSize,
-                height: _kFabSize,
-                decoration: BoxDecoration(
-                  gradient: AppColors.accentGradient,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.purple.withValues(alpha: glow),
-                      blurRadius: 22,
-                      spreadRadius: 2,
+        final mq = MediaQuery.of(context);
+        final position = _position ?? _defaultPosition(mq.size, mq.padding);
+
+        return Positioned(
+          left: position.dx,
+          top: position.dy,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: _open,
+            onLongPressStart: (_) => setState(() {
+              _dragging = true;
+              _dragStartPosition = position;
+            }),
+            onLongPressMoveUpdate: (details) =>
+                _onLongPressMoveUpdate(details, mq.size),
+            onLongPressEnd: (_) => setState(() => _dragging = false),
+            child: AnimatedBuilder(
+              animation: _pulseController,
+              builder: (context, child) {
+                final glow = _dragging
+                    ? 0.5
+                    : 0.25 + (_pulseController.value * 0.25);
+                return AnimatedScale(
+                  scale: _dragging ? 1.12 : 1.0,
+                  duration: const Duration(milliseconds: 150),
+                  child: Container(
+                    width: _kFabSize,
+                    height: _kFabSize,
+                    decoration: BoxDecoration(
+                      gradient: AppColors.accentGradient,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.purple.withValues(alpha: glow),
+                          blurRadius: 22,
+                          spreadRadius: 2,
+                        ),
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.35),
+                          blurRadius: 12,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.25),
+                        width: 1.4,
+                      ),
                     ),
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.35),
-                      blurRadius: 12,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.25),
-                    width: 1.4,
+                    child: child,
                   ),
-                ),
-                child: child,
+                );
+              },
+              child: const Icon(
+                Icons.auto_awesome_rounded,
+                color: Colors.white,
+                size: 26,
               ),
-            );
-          },
-          child: const Icon(
-            Icons.auto_awesome_rounded,
-            color: Colors.white,
-            size: 26,
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

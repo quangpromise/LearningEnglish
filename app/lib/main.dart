@@ -38,6 +38,7 @@ class LearnEnglishMusicApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       navigatorKey: rootNavigatorKey,
+      navigatorObservers: [topRouteObserver],
       title: 'Learn English Through Music',
       debugShowCheckedModeBanner: false,
       // Nut noi "AI Voice Chat" chong len TREN CUNG moi man hinh (bao gom
