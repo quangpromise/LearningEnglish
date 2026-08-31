@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 
 import '../../../core/config/env.dart';
@@ -20,7 +21,9 @@ const _repo = 'quangpromise/LearningEnglish';
 /// Trả về null nếu: chưa cấu hình BUILD_SHA (build cục bộ), không có mạng,
 /// hoặc app đang chạy đã là bản mới nhất.
 Future<UpdateInfo?> checkForUpdate() async {
-  if (Env.buildSha.isEmpty) return null;
+  // Ban Web khong cai file .apk duoc - khong kiem tra de tranh goi y sai
+  // "co ban moi, tai APK ve" ngay trong trinh duyet.
+  if (kIsWeb || Env.buildSha.isEmpty) return null;
 
   try {
     final releaseRes = await http
@@ -75,6 +78,9 @@ extension _FirstOrNull<T> on Iterable<T> {
 /// API khong xac thuc tu IP dung chung nha mang, cache CDN cua Release chua
 /// kip cap nhat...) thay vi phai doan mo qua lai nhieu vong nhu da xay ra.
 Future<String> debugCheckForUpdate() async {
+  if (kIsWeb) {
+    return 'Bản Web luôn là bản mới nhất mỗi lần tải lại trang - không cần kiểm tra cập nhật.';
+  }
   if (Env.buildSha.isEmpty) {
     return 'Bản build cục bộ (không có BUILD_SHA đóng gói sẵn) - không kiểm tra được. Chỉ hoạt động với bản build từ CI.';
   }

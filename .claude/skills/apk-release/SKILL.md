@@ -51,14 +51,33 @@ File ra tại `app/build/app/outputs/flutter-apk/app-release.apk`.
 - [ ] `flutter analyze` và `flutter test` sạch lỗi.
 - [ ] Nhạc dùng trong bản build đã xác minh license theo `docs/research-music-libraries.md` (không còn dữ liệu mẫu/demo).
 - [ ] Ghi chú thay đổi (changelog) cho bản phát hành.
-- [ ] **Dung lượng APK**: mỗi khi thêm package mới, kiểm tra tác động dung
-      lượng TRƯỚC khi merge — tải APK CI mới nhất, `unzip -l app-*.apk` xem
-      thư mục `lib/<abi>/` có file `.so` nào bất thường lớn không (case thật
-      đã gặp: `google_mlkit_translation` nhúng 1 file `libtranslate_jni.so`
-      ~16MB, chiếm 44% APK). CI đã có bước tự cảnh báo khi APK > 22MB và
-      **chặn build** khi > 30MB (xem `.github/workflows/build-apk.yml`) — nếu
-      build bị chặn vì lý do chính đáng (tính năng thật sự cần), tăng
-      ngưỡng `MAX_MB` trong workflow kèm ghi chú lý do, đừng lặng lẽ bỏ qua.
+- [ ] **Dung lượng APK — kiểm tra TRƯỚC MỖI LẦN phát hành, không chỉ khi thêm
+      package mới**:
+  1. Tải APK CI mới nhất, giải nén (`Expand-Archive`/`unzip`), liệt kê 20 file
+     lớn nhất theo dung lượng để biết thứ gì đang chiếm chỗ nhất (`lib/<abi>/*.so`,
+     `classes*.dex`, `assets/`...).
+  2. So sánh với lần kiểm tra gần nhất (xem bảng dưới) — nếu có file mới xuất
+     hiện hoặc phình to bất thường, tìm đúng package/thay đổi nào gây ra
+     trước khi merge (case thật đã gặp: `google_mlkit_translation` nhúng 1
+     file `libtranslate_jni.so` ~16MB, chiếm 44% APK).
+  3. **Chủ động tìm cách giảm** nếu còn dư địa hợp lý (không đánh đổi tính
+     năng): xoá dependency không còn dùng, dùng `--split-per-abi`/`--target-platform`
+     để bỏ kiến trúc không cần (đã áp dụng), thêm `--obfuscate --split-debug-info`
+     (đã áp dụng từ 2026-08-31 — xem `.github/workflows/build-apk.yml`), kiểm
+     tra `pubspec.yaml` `assets:` có file thừa không.
+  4. Baseline đã đo (`app-arm64-v8a-release.apk`, 2026-08-31, trước khi thêm
+     `--obfuscate`): `libflutter.so` ~11.2MB (chi phí cố định của Flutter
+     engine, KHÔNG giảm được — mọi app Flutter đều có phí này), `libapp.so`
+     ~7.75MB (code Dart đã biên dịch, tỉ lệ thuận với dependency đang dùng),
+     `classes.dex`+`classes2.dex` ~2.84MB (code Java/Kotlin của các plugin
+     Android, đã qua R8 minify), assets (sách/font/âm thanh) ~1.3MB (không
+     đáng kể). Nếu 1 trong các con số này phình to bất thường ở lần đo sau,
+     đó là dấu hiệu cần điều tra.
+  5. CI đã có bước tự cảnh báo khi APK > 22MB (bản split-per-abi) / 42MB (bản
+     universal) và **chặn build** khi vượt 30MB / 55MB (xem
+     `.github/workflows/build-apk.yml`) — nếu build bị chặn vì lý do chính
+     đáng (tính năng thật sự cần), tăng ngưỡng `MAX_MB` trong workflow kèm
+     ghi chú lý do, đừng lặng lẽ bỏ qua.
 
 ## 5. Host & hướng dẫn người dùng cài (sideload, không qua Google Play)
 1. Tạo GitHub Release mới trong repo, đính kèm file `app-release.apk`:
