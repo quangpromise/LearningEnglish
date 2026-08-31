@@ -19,18 +19,37 @@ import 'features/auth/presentation/sign_in_screen.dart';
 import 'features/onboarding/data/onboarding_repository.dart';
 import 'features/onboarding/presentation/onboarding_screen.dart';
 
+/// Chay 1 buoc khoi dong voi gioi han thoi gian + bo qua moi loi - dam bao
+/// KHONG buoc nao trong main() co the lam app "dung yen vinh vien o man hinh
+/// splash" (man hinh nen cua Android hien truoc khi runApp() duoc goi). Da
+/// tung gap dung 1 lan vi JustAudioBackground.init() treo (xem comment o
+/// duoi) - ap dung CHO CA CAC BUOC KHAC de phong truong hop buoc nao do (vd
+/// Supabase.initialize() mat mang, Firebase.initializeApp() timeout...) cung
+/// co the treo tuong tu ma chua tung bi bat qua try/catch rieng.
+Future<void> _runStartupStep(
+  Future<void> Function() step, {
+  Duration timeout = const Duration(seconds: 8),
+}) async {
+  try {
+    await step().timeout(timeout);
+  } catch (_) {}
+}
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   if (Env.isConfigured) {
-    await Supabase.initialize(
-      url: Env.supabaseUrl,
-      publishableKey: Env.supabaseAnonKey,
+    await _runStartupStep(
+      () => Supabase.initialize(
+        url: Env.supabaseUrl,
+        publishableKey: Env.supabaseAnonKey,
+      ),
+      timeout: const Duration(seconds: 10),
     );
   }
 
-  await AppTts.instance.restoreSavedVoice();
-  await GeminiVoiceSelection.instance.restoreSaved();
+  await _runStartupStep(() => AppTts.instance.restoreSavedVoice());
+  await _runStartupStep(() => GeminiVoiceSelection.instance.restoreSaved());
   // Nhac hoc hen gio + push chat deu dua tren flutter_local_notifications/
   // Firebase Messaging thiet ke cho mobile - tren web, lich hen gio khong
   // duoc trinh duyet ho tro va Firebase can cau hinh rieng (VAPID key,
@@ -38,8 +57,8 @@ Future<void> main() async {
   // thay vi de plugin nem loi luc khoi dong lam trang trang xoa (ca app web
   // khong load duoc) - xem docs/research-ios-distribution.md.
   if (!kIsWeb) {
-    await DailyQuizNotifications.instance.init();
-    await ChatPush.instance.init();
+    await _runStartupStep(() => DailyQuizNotifications.instance.init());
+    await _runStartupStep(() => ChatPush.instance.init());
     // Thong bao he thong + man hinh khoa cho bai dang phat (giong Spotify) -
     // kem nut tua lui/toi 10s + bai truoc/sau (fastForwardInterval/
     // rewindInterval mac dinh da la 10s, khong can khai bao lai). Da TUNG gay
@@ -49,15 +68,16 @@ Future<void> main() async {
     // GOC da duoc xu ly, bat lai theo yeu cau nguoi dung, van boc trong
     // try/catch + timeout de KHONG bao gio lam dung ca app duoc nua du co
     // that bai vi ly do nao khac chua luong truoc.
-    try {
-      await JustAudioBackground.init(
+    await _runStartupStep(
+      () => JustAudioBackground.init(
         androidNotificationChannelId: 'com.learnenglishmusic.audio',
         androidNotificationChannelName: 'Đang phát nhạc',
         androidNotificationOngoing: true,
         androidNotificationIcon: 'mipmap/ic_launcher',
         preloadArtwork: true,
-      ).timeout(const Duration(seconds: 5));
-    } catch (_) {}
+      ),
+      timeout: const Duration(seconds: 5),
+    );
   }
 
   runApp(const ProviderScope(child: LearnEnglishMusicApp()));
