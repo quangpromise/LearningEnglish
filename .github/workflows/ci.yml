@@ -30,3 +30,18 @@ jobs:
 
       - name: Run tests
         run: flutter test
+
+  # Cong gac ban quyen cua pipeline them bai hat (scripts/add_songs.py) chan
+  # nhung track khong chung minh duoc quyen dung thuong mai. Logic do chi co
+  # gia tri khi no thuc su chay - nen cho chay o CI luon.
+  song-pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Test pipeline thêm bài hát
+        run: python -m unittest discover -s scripts -p 'test_*.py' -v

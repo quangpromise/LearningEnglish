@@ -1,28 +1,30 @@
 """
-Them bai hat moi tu joshwoodward.com (CC-BY 4.0) vao app.
+Pipeline them bai hat vao app - dung chung cho MOI nguon nhac.
 
-Quy trinh 3 buoc, MOI BUOC CO NGUOI DUYET - co y khong lam 1 phat tu dau
-den cuoi, vi day la app DAY tieng Anh: loi sai 1 tu la day sai 1 tu.
+    python scripts/add_songs.py list-sources
+    python scripts/add_songs.py fetch joshwoodward TheSimpleLife
+    python scripts/add_songs.py verify the-simple-life
+    python scripts/add_songs.py emit the-simple-life
+    python scripts/realign_lyrics.py --only the-simple-life
 
-    1. python scripts/add_songs.py fetch TheSimpleLife
-       -> tai mp3 ve content/audio/, lay loi tu trang bai hat,
-          ghi ra content/pending/<slug>.json voi truong "vi" con TRONG
+Bon cong gac, khong cai nao bo qua duoc bang co:
 
-    2. Nguoi dich phan "vi" trong file json do (va doc lai phan "en" -
-       loi lay tu trang tac gia nhung van nen liec qua)
+  1. BAN QUYEN (song_licensing.py) - khai bao RIENG giay phep cho ban thu
+     va cho phan loi. Khong ro = tu choi. Giay phep ban thu KHONG tu dong
+     bao trum phan loi (docs/research-music-libraries.md §2).
 
-    3. python scripts/add_songs.py emit TheSimpleLife
-       -> chen Song(...) vao songs_data.dart + ghi cong vao ATTRIBUTION.md
-       Sau do chay: python scripts/realign_lyrics.py --only <slug>
-       de canh timestamp that bang ASR.
+  2. CO LOI HAT - app day tieng Anh bang loi bai hat; track instrumental
+     bi tu choi du giay phep co dep den may.
 
-Vi sao khong tu dong dich luon: ban dich may cho lyrics rat hay sai sac
-thai/an du, ma bang dich Anh-Viet chinh la noi dung hoc cua app chu khong
-phai chrome giao dien. Buoc 2 bat buoc co nguoi.
+  3. NGUOI DICH - truong "vi" do nguoi dien. Ban dich la NOI DUNG HOC cua
+     app chu khong phai chrome giao dien, dich may sai an du la day sai.
 
-Chi dung cho nguon da xac minh license bao trum CA PHAN LOI (xem
-docs/research-music-libraries.md §2). Josh Woodward tu viet + tu thu + tu
-so huu toan bo nen hop le tron ven.
+  4. CAN TIMESTAMP - `emit` chen moi dong o giay 0; bat buoc chay
+     realign_lyrics.py ngay sau, neu khong test karaoke se do.
+
+Them nguon moi: viet 1 lop trong song_sources.py, khai bao duoc gi thi
+khai bao, cho nao khong chac chan thi DE TRONG - cong gac se bat nguoi
+thuc hien tu xac minh, an toan hon la doan.
 """
 
 import argparse
@@ -30,21 +32,29 @@ import json
 import re
 import sys
 import unicodedata
-import urllib.request
 from pathlib import Path
 
+from song_licensing import KNOWN_LICENSES, evaluate
+from song_sources import SOURCES, http_get
+
 ROOT = Path(__file__).resolve().parent.parent
-DART_FILE = ROOT / "app" / "lib" / "features" / "music_player" / "data" / "songs_data.dart"
+DART_FILE = (
+    ROOT / "app" / "lib" / "features" / "music_player" / "data" / "songs_data.dart"
+)
 ATTRIBUTION_FILE = ROOT / "ATTRIBUTION.md"
 AUDIO_DIR = ROOT / "content" / "audio"
 PENDING_DIR = ROOT / "content" / "pending"
 
-SONG_PAGE = "https://www.joshwoodward.com/song/{slug}"
-USER_AGENT = "Mozilla/5.0 (compatible; LearningEnglish-song-importer/1.0)"
-
 LEVELS = ("Cơ bản", "Trung cấp", "Nâng cao")
-# Bang mau trong AppColors dung cho the bai hat o man Home.
+#: Bang mau trong AppColors dung cho the bai hat o man Home.
 COLORS = ("blue", "purple", "teal", "amber", "pink")
+
+#: Duoi nguong nay thi khong du loi de hoc, gan nhu chac la instrumental
+#: hoac trang nguon chi dang 1 doan trich.
+MIN_LYRIC_LINES = 4
+
+ATTRIBUTION_BEGIN = "<!-- BEGIN ghi cong tu dong: scripts/add_songs.py -->"
+ATTRIBUTION_END = "<!-- END ghi cong tu dong -->"
 
 
 # ---------------------------------------------------------------------------
@@ -74,31 +84,33 @@ def slugify(title: str) -> str:
     file mp3 dang co trong content/audio/)."""
     text = unicodedata.normalize("NFKD", title)
     text = "".join(c for c in text if not unicodedata.combining(c))
+    # Bo dau nhay TRUOC khi thay ky tu la bang gach ngang, neu khong
+    # "Don't" thanh "don-t" thay vi "dont" - lech voi ten file mp3 dang
+    # dat trong content/audio/.
+    text = re.sub(r"['’ʼ]", "", text)
     text = re.sub(r"[^a-zA-Z0-9]+", "-", text.lower())
     return text.strip("-")
 
 
 def render_song_block(song: dict) -> str:
-    lines = []
-    lines.append("  Song(")
-    lines.append(f"    title: {dart_string(song['title'])},")
-    lines.append(f"    artist: {dart_string(song['artist'])},")
-    lines.append(f"    duration: {dart_string(song['duration'])},")
-    lines.append(f"    level: {dart_string(song['level'])},")
-    lines.append(f"    color: AppColors.{song['color']},")
-    lines.append(
-        "    audioUrl: '${_audioBaseUrl}" + song["slug"] + ".mp3',"
-    )
-    lines.append("    lyrics: [")
+    out = [
+        "  Song(",
+        f"    title: {dart_string(song['title'])},",
+        f"    artist: {dart_string(song['artist'])},",
+        f"    duration: {dart_string(song['duration'])},",
+        f"    level: {dart_string(song['level'])},",
+        f"    color: AppColors.{song['color']},",
+        "    audioUrl: '${_audioBaseUrl}" + song["slug"] + ".mp3',",
+        "    lyrics: [",
+    ]
     for line in song["lines"]:
         # startSeconds de 0 - realign_lyrics.py se canh lai bang ASR ngay sau.
-        lines.append(
+        out.append(
             f"      LyricLine(0, {dart_string(line['en'])}, "
             f"{dart_string(line['vi'])}),"
         )
-    lines.append("    ],")
-    lines.append("  ),")
-    return "\n".join(lines) + "\n"
+    out += ["    ],", "  ),"]
+    return "\n".join(out) + "\n"
 
 
 def insert_into_dart(dart_text: str, song: dict) -> str:
@@ -106,134 +118,156 @@ def insert_into_dart(dart_text: str, song: dict) -> str:
     marker = "\n];"
     idx = dart_text.rfind(marker)
     if idx == -1:
-        raise SystemExit(
-            f"Khong tim thay cho ket thuc danh sach kSongs trong {DART_FILE}"
-        )
+        raise SystemExit(f"Khong tim thay cho ket thuc kSongs trong {DART_FILE}")
     return dart_text[: idx + 1] + render_song_block(song) + dart_text[idx + 1 :]
 
 
+# ---------------------------------------------------------------------------
+# Ghi cong
+# ---------------------------------------------------------------------------
+
+
+def render_attribution_entry(song: dict) -> str:
+    """1 muc ghi cong day du TASL + giay phep RIENG cho tung phan.
+
+    Ghi ca 2 phan (ban thu / phan loi) chu khong gop lam 1: co nhung track
+    ma 2 phan khac giay phep, va 6 thang sau khong ai nho lai duoc.
+    """
+    lic = song["license"]
+    lines = [
+        f"### {song['title']} — {song['artist']}",
+        "",
+        f"- Nguon: {song['source'].get('page_url') or '(tu nhap tay)'}",
+        f"- Adapter: `{song['source'].get('adapter', '?')}`",
+    ]
+    for part, label in (("recording", "Bản thu"), ("lyrics", "Phần lời")):
+        claim = lic.get(part) or {}
+        terms = KNOWN_LICENSES.get(claim.get("license_id", ""))
+        name = terms.name if terms else claim.get("license_id", "?")
+        entry = (
+            f"- {label}: **{name}** — {claim.get('evidence_url', '')} "
+            f"(xác minh: {claim.get('verified_by', '?')})"
+        )
+        if claim.get("note"):
+            entry += f"\n  - {claim['note']}"
+        lines.append(entry)
+    lines.append(f"- Nguồn lời: `{song.get('lyrics_origin', '?')}`")
+    return "\n".join(lines) + "\n"
+
+
 def append_attribution(text: str, song: dict) -> str:
-    """Them 1 dong ghi cong vao cuoi danh sach bullet trong ATTRIBUTION.md."""
-    bullets = list(re.finditer(r"^- \*\*\".*$", text, re.MULTILINE))
-    if not bullets:
-        raise SystemExit(
-            "Khong tim thay danh sach ghi cong trong ATTRIBUTION.md"
+    """Them muc ghi cong vao khoi duoc danh dau la sinh tu dong.
+
+    Dung khoi co marker thay vi chen vao danh sach nguoi viet tay: khoi
+    nguoi viet co van phong rieng, chen may vao do vua de vo vua kho doc
+    diff. Khoi nay ai cung biet la may ghi.
+    """
+    entry = render_attribution_entry(song)
+    if ATTRIBUTION_BEGIN not in text:
+        text = text.rstrip() + (
+            f"\n\n## Track thêm bằng pipeline\n\n"
+            f"Mục dưới đây do `scripts/add_songs.py` ghi, mỗi bài ghi riêng "
+            f"giấy phép của **bản thu** và của **phần lời** — hai bản quyền "
+            f"tách rời, xem `docs/research-music-libraries.md` §2.\n\n"
+            f"{ATTRIBUTION_BEGIN}\n{ATTRIBUTION_END}\n"
         )
-    last = bullets[-1]
-    entry = (
-        f"\n- **\"{song['title']}\"** — {song['artist']} — {song['source_url']}"
+    idx = text.index(ATTRIBUTION_END)
+    return text[:idx] + entry + "\n" + text[idx:]
+
+
+# ---------------------------------------------------------------------------
+# Doc/ghi ban ghi pending
+# ---------------------------------------------------------------------------
+
+
+def pending_path(slug: str) -> Path:
+    return PENDING_DIR / f"{slug}.json"
+
+
+def load_pending(slug: str):
+    path = pending_path(slug)
+    if not path.exists():
+        print(f"!! khong co {path.relative_to(ROOT)} — chay 'fetch' truoc")
+        return None
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def save_pending(song: dict):
+    PENDING_DIR.mkdir(parents=True, exist_ok=True)
+    pending_path(song["slug"]).write_text(
+        json.dumps(song, ensure_ascii=False, indent=2), encoding="utf-8"
     )
-    return text[: last.end()] + entry + text[last.end() :]
 
 
 # ---------------------------------------------------------------------------
-# Lay du lieu tu trang bai hat
+# Kiem tra
 # ---------------------------------------------------------------------------
 
 
-def http_get(url: str) -> bytes:
-    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-    with urllib.request.urlopen(req, timeout=60) as resp:
-        return resp.read()
+def content_problems(song: dict) -> list:
+    """Cac loi KHONG lien quan ban quyen: thieu du lieu, khong co loi hat..."""
+    problems = []
+    for field_name in ("title", "artist", "duration"):
+        if not (song.get(field_name) or "").strip():
+            problems.append(f"thieu '{field_name}'")
+    if song.get("level") not in LEVELS:
+        problems.append(f"level '{song.get('level')}' khong hop le, phai la 1 trong {LEVELS}")
+    if song.get("color") not in COLORS:
+        problems.append(f"color '{song.get('color')}' khong hop le, phai la 1 trong {COLORS}")
 
-
-def iter_jsonld(html: str):
-    for m in re.finditer(
-        r'<script[^>]+type=["\']application/ld\+json["\'][^>]*>(.*?)</script>',
-        html,
-        re.DOTALL | re.IGNORECASE,
-    ):
-        try:
-            data = json.loads(m.group(1))
-        except json.JSONDecodeError:
-            continue
-        # JSON-LD co the la 1 object, 1 mang, hoac boc trong @graph.
-        stack = [data]
-        while stack:
-            node = stack.pop()
-            if isinstance(node, list):
-                stack.extend(node)
-            elif isinstance(node, dict):
-                yield node
-                if "@graph" in node:
-                    stack.append(node["@graph"])
-
-
-def as_text(value) -> str:
-    """`lyrics` co the la chuoi thang, hoac {"@type":"CreativeWork","text":...}."""
-    if isinstance(value, str):
-        return value
-    if isinstance(value, dict):
-        for key in ("text", "name", "@value"):
-            if isinstance(value.get(key), str):
-                return value[key]
-    return ""
-
-
-def parse_iso_duration(value: str) -> str:
-    """'PT3M34S' -> '3:34'."""
-    m = re.match(r"^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$", value or "")
-    if not m:
-        return ""
-    hours, minutes, seconds = (int(g or 0) for g in m.groups())
-    minutes += hours * 60
-    return f"{minutes}:{seconds:02d}"
-
-
-def scrape_song(slug: str) -> dict:
-    url = SONG_PAGE.format(slug=slug)
-    print(f"  [GET] {url}", flush=True)
-    html = http_get(url).decode("utf-8", errors="replace")
-
-    title = artist = lyrics = duration = audio_url = ""
-    for node in iter_jsonld(html):
-        types = node.get("@type") or ""
-        types = types if isinstance(types, list) else [types]
-        if not any(
-            t in ("MusicComposition", "MusicRecording", "MusicAlbum")
-            for t in types
-        ):
-            continue
-        title = title or as_text(node.get("name"))
-        artist = artist or as_text(
-            node.get("composer") or node.get("byArtist") or node.get("author")
+    lines = song.get("lines") or []
+    if song.get("instrumental"):
+        problems.append(
+            "track duoc danh dau instrumental - app day tieng Anh bang loi bai "
+            "hat nen track khong loi khong dung duoc"
         )
-        lyrics = lyrics or as_text(node.get("lyrics"))
-        duration = duration or parse_iso_duration(as_text(node.get("duration")))
-        audio_url = audio_url or as_text(
-            node.get("audio") or node.get("contentUrl")
+    if len(lines) < MIN_LYRIC_LINES:
+        problems.append(
+            f"chi co {len(lines)} dong loi (toi thieu {MIN_LYRIC_LINES}) - "
+            f"kiem tra lai xem co phai instrumental hoac trang nguon chi dang "
+            f"1 doan trich khong"
         )
-
-    if not audio_url:
-        # Du phong: bat moi link .mp3 tren trang de nguoi dung tu chon.
-        found = re.findall(r'href=["\']([^"\']+\.mp3)["\']', html)
-        if len(found) == 1:
-            audio_url = found[0]
-        elif found:
-            print("  Tim thay nhieu link mp3, chon 1 roi truyen --audio-url:")
-            for f in found[:10]:
-                print(f"    {f}")
-
-    return {
-        "title": title,
-        "artist": artist or "Josh Woodward",
-        "duration": duration,
-        "lyrics": lyrics,
-        "audio_url": audio_url,
-        "source_url": url,
-    }
+    return problems
 
 
-def split_lyric_lines(raw: str) -> list:
-    lines = []
-    for line in re.split(r"(?:\r?\n|<br\s*/?>)+", raw):
-        line = re.sub(r"<[^>]+>", "", line).strip()
-        # Bo dong danh dau cau truc bai ([Chorus], [Verse 2]...) - khong phai
-        # loi hat nen khong hien len man hinh.
-        if not line or re.fullmatch(r"[\[(].*[\])]", line):
-            continue
-        lines.append(line)
-    return lines
+def untranslated_lines(song: dict) -> list:
+    return [
+        i + 1
+        for i, line in enumerate(song.get("lines") or [])
+        if not (line.get("vi") or "").strip()
+    ]
+
+
+def print_report(song: dict, allow_share_alike: bool) -> bool:
+    """In bao cao day du cho 1 bai. Tra ve True neu san sang `emit`."""
+    slug = song["slug"]
+    print(f"\n== {slug} — {song.get('title') or '(chua co ten)'} ==")
+    print(f"   nguon: {song['source'].get('adapter')} · "
+          f"{song['source'].get('page_url') or '(tu nhap tay)'}")
+
+    report = evaluate(song, allow_share_alike=allow_share_alike)
+    content = content_problems(song)
+    missing = untranslated_lines(song)
+    audio = AUDIO_DIR / f"{slug}.mp3"
+
+    for err in report.errors:
+        print(f"   [BAN QUYEN] {err}")
+    for warn in report.warnings:
+        print(f"   [luu y]     {warn}")
+    for ob in report.obligations:
+        print(f"   [nghia vu]  {ob}")
+    for problem in content:
+        print(f"   [noi dung]  {problem}")
+    if missing:
+        preview = ", ".join(f"#{i}" for i in missing[:5])
+        more = "..." if len(missing) > 5 else ""
+        print(f"   [dich]      con {len(missing)} dong chua dich ({preview}{more})")
+    if not audio.exists():
+        print(f"   [audio]     thieu {audio.relative_to(ROOT)}")
+
+    ready = report.ok and not content and not missing and audio.exists()
+    print(f"   -> {'SAN SANG emit' if ready else 'CHUA the emit'}")
+    return ready
 
 
 # ---------------------------------------------------------------------------
@@ -241,63 +275,88 @@ def split_lyric_lines(raw: str) -> list:
 # ---------------------------------------------------------------------------
 
 
+def cmd_list_sources(args) -> int:
+    print("Cac nguon dang ho tro:\n")
+    for name, source in SOURCES.items():
+        print(f"  {name:<14} {source.summary}")
+        print(f"  {'':<14} ref: {source.ref_help}\n")
+    print("Giay phep da tham dinh (khac -> bi tu choi):")
+    usable = [t for t in KNOWN_LICENSES.values() if t.commercial and t.derivatives]
+    for terms in usable:
+        flag = " (ShareAlike, can --allow-share-alike)" if terms.share_alike else ""
+        print(f"  {terms.id}{flag}")
+    return 0
+
+
 def cmd_fetch(args) -> int:
-    PENDING_DIR.mkdir(parents=True, exist_ok=True)
+    source = SOURCES[args.source]
     AUDIO_DIR.mkdir(parents=True, exist_ok=True)
     existing = DART_FILE.read_text(encoding="utf-8")
 
-    for i, page_slug in enumerate(args.slugs):
-        print(f"== {page_slug} ==")
-        info = scrape_song(page_slug)
-        if not info["title"]:
-            print("  !! khong doc duoc ten bai tu trang, bo qua")
+    for i, ref in enumerate(args.refs):
+        print(f"== {args.source}: {ref} ==")
+        draft = source.fetch(ref)
+        slug = args.slug or slugify(draft.get("title") or ref)
+        if not slug:
+            print("  !! khong suy duoc slug, truyen --slug")
             continue
-        if not info["lyrics"]:
-            print(
-                "  !! trang khong co san loi bai hat. Neu chac chan license "
-                "bao trum ca phan loi, co the chep loi bang ASR - xem "
-                "docs/research-music-libraries.md §3"
-            )
-            continue
-
-        slug = args.slug_override or slugify(info["title"])
         if f"{slug}.mp3" in existing:
-            print(f"  !! '{info['title']}' da co trong songs_data.dart, bo qua")
+            print(f"  !! '{slug}' da co trong songs_data.dart, bo qua")
             continue
 
-        audio_url = args.audio_url or info["audio_url"]
-        if not audio_url:
+        song = dict(draft)
+        song["slug"] = slug
+        song["level"] = args.level
+        song["color"] = args.color or COLORS[i % len(COLORS)]
+        song["lines"] = [
+            {"en": line, "vi": ""} if isinstance(line, str) else line
+            for line in draft.get("lines") or []
+        ]
+        if args.audio_url:
+            song["audio_url"] = args.audio_url
+
+        # Chi tai audio khi giay phep BAN THU khong sai ro rang - tranh tai
+        # ve mot track ma minh vua doc thay la NC/ND.
+        recording = (song.get("license") or {}).get("recording") or {}
+        terms = KNOWN_LICENSES.get(recording.get("license_id", ""))
+        blocked = terms is not None and not (terms.commercial and terms.derivatives)
+        if blocked:
+            print(
+                f"  !! ban thu la {terms.name} - khong dung thuong mai/phai sinh "
+                f"duoc, KHONG tai file ve"
+            )
+        elif not song.get("audio_url"):
             print("  !! khong tim thay file mp3, truyen tay bang --audio-url")
-            continue
-        dest = AUDIO_DIR / f"{slug}.mp3"
-        if dest.exists():
-            print(f"  [skip] {dest.name} da co san")
         else:
-            print(f"  [GET] {audio_url}")
-            dest.write_bytes(http_get(audio_url))
-            print(f"  -> {dest.relative_to(ROOT)} ({dest.stat().st_size:,} bytes)")
+            dest = AUDIO_DIR / f"{slug}.mp3"
+            if dest.exists():
+                print(f"  [skip] {dest.name} da co san")
+            else:
+                print(f"  [GET] {song['audio_url']}")
+                dest.write_bytes(http_get(song["audio_url"]))
+                print(f"  -> {dest.relative_to(ROOT)} ({dest.stat().st_size:,} bytes)")
 
-        lines = split_lyric_lines(info["lyrics"])
-        payload = {
-            "slug": slug,
-            "title": info["title"],
-            "artist": info["artist"],
-            "duration": info["duration"] or "0:00",
-            "level": args.level,
-            "color": args.color or COLORS[i % len(COLORS)],
-            "source_url": info["source_url"],
-            "license": "CC-BY 4.0",
-            "lines": [{"en": line, "vi": ""} for line in lines],
-        }
-        out = PENDING_DIR / f"{slug}.json"
-        out.write_text(
-            json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8"
-        )
-        print(f"  -> {out.relative_to(ROOT)} ({len(lines)} dong, can dich)")
+        save_pending(song)
+        print(f"  -> {pending_path(slug).relative_to(ROOT)}")
+        print_report(song, args.allow_share_alike)
 
-    print("\nBuoc tiep theo: dich phan \"vi\" trong content/pending/*.json,")
-    print("roi chay: python scripts/add_songs.py emit <slug>")
+    print("\nBuoc tiep theo: sua/dien not file trong content/pending/,")
+    print("dich phan \"vi\", roi chay: python scripts/add_songs.py verify <slug>")
     return 0
+
+
+def cmd_verify(args) -> int:
+    slugs = args.slugs or sorted(p.stem for p in PENDING_DIR.glob("*.json"))
+    if not slugs:
+        print("Khong co bai nao trong content/pending/")
+        return 0
+    all_ready = True
+    for slug in slugs:
+        song = load_pending(slug)
+        if song is None:
+            return 1
+        all_ready &= print_report(song, args.allow_share_alike)
+    return 0 if all_ready else 1
 
 
 def cmd_emit(args) -> int:
@@ -310,38 +369,34 @@ def cmd_emit(args) -> int:
     added = []
 
     for slug in args.slugs:
-        path = PENDING_DIR / f"{slug}.json"
-        if not path.exists():
-            print(f"!! khong co {path.relative_to(ROOT)} - chay 'fetch' truoc")
+        song = load_pending(slug)
+        if song is None:
             return 1
-        song = json.loads(path.read_text(encoding="utf-8"))
-
-        untranslated = [i for i, l in enumerate(song["lines"]) if not l["vi"].strip()]
-        if untranslated and not args.allow_untranslated:
-            print(
-                f"!! {slug}: con {len(untranslated)}/{len(song['lines'])} dong "
-                f"chua dich (dong dau tien: #{untranslated[0] + 1}). "
-                "Dich xong roi chay lai."
-            )
-            return 1
-        if not args.skip_audio_check:
-            audio = AUDIO_DIR / f"{slug}.mp3"
-            if not audio.exists():
-                print(f"!! thieu {audio.relative_to(ROOT)}")
-                return 1
         if f"{slug}.mp3" in dart_text:
             print(f"!! {slug} da co trong {dart_file.name}, bo qua")
             continue
-        if song["level"] not in LEVELS:
-            print(f"!! level '{song['level']}' khong hop le, phai la 1 trong {LEVELS}")
-            return 1
-        if song["color"] not in COLORS:
-            print(f"!! color '{song['color']}' khong hop le, phai la 1 trong {COLORS}")
+
+        report = evaluate(song, allow_share_alike=args.allow_share_alike)
+        problems = list(report.errors) + content_problems(song)
+        missing = untranslated_lines(song)
+        if missing:
+            problems.append(
+                f"con {len(missing)}/{len(song['lines'])} dong chua dich "
+                f"(dong dau tien: #{missing[0]})"
+            )
+        if not args.skip_audio_check and not (AUDIO_DIR / f"{slug}.mp3").exists():
+            problems.append(f"thieu content/audio/{slug}.mp3")
+
+        if problems:
+            print(f"!! {slug} chua the them:")
+            for problem in problems:
+                print(f"   - {problem}")
+            print("   (chay 'verify' de xem bao cao day du)")
             return 1
 
         dart_text = insert_into_dart(dart_text, song)
         attribution_text = append_attribution(attribution_text, song)
-        added.append(song)
+        added.append((song, report))
 
     if not added:
         print("Khong co bai nao duoc them.")
@@ -350,46 +405,51 @@ def cmd_emit(args) -> int:
     dart_file.write_text(dart_text, encoding="utf-8")
     attribution_file.write_text(attribution_text, encoding="utf-8")
     print(f"Da them {len(added)} bai vao {dart_file.name} + {attribution_file.name}:")
-    for song in added:
+    for song, report in added:
         print(f"  - {song['title']} ({len(song['lines'])} dong)")
+        for ob in report.obligations:
+            print(f"      nghia vu: {ob}")
+
+    slugs = [song["slug"] for song, _ in added]
     print("\nBuoc tiep theo:")
-    print(
-        "  1. python scripts/realign_lyrics.py --only "
-        + " --only ".join(s["slug"] for s in added)
-    )
-    print(
-        "     BAT BUOC - moi dong vua chen deu dang o giay 0. Neu commit ma"
-    )
-    print(
-        "     chua canh, test karaoke se bao loi vi cac dong chong len nhau."
-    )
+    print("  1. python scripts/realign_lyrics.py --only " + " --only ".join(slugs))
+    print("     BAT BUOC — moi dong vua chen deu dang o giay 0. Neu commit ma")
+    print("     chua canh, test karaoke se bao loi vi cac dong chong len nhau.")
     print("  2. cd app && dart format . && flutter analyze && flutter test")
-    print("  3. Them dong tuong ung vao bang §9 docs/research-music-libraries.md")
+    print("  3. Them dong tuong ung vao bang §10 docs/research-music-libraries.md")
     return 0
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     sub = parser.add_subparsers(dest="command", required=True)
 
-    p_fetch = sub.add_parser("fetch", help="Tai mp3 + loi bai hat ve content/pending/")
-    p_fetch.add_argument(
-        "slugs",
-        nargs="+",
-        help="Slug tren joshwoodward.com/song/<slug>, vd TheSimpleLife",
-    )
+    p_list = sub.add_parser("list-sources", help="Liet ke nguon + giay phep chap nhan")
+    p_list.set_defaults(func=cmd_list_sources)
+
+    p_fetch = sub.add_parser("fetch", help="Lay 1 bai tu nguon ve content/pending/")
+    p_fetch.add_argument("source", choices=sorted(SOURCES))
+    p_fetch.add_argument("refs", nargs="+", help="Xem 'list-sources' de biet dang ref")
     p_fetch.add_argument("--level", default="Trung cấp", choices=LEVELS)
     p_fetch.add_argument("--color", choices=COLORS)
-    p_fetch.add_argument("--audio-url", help="Chi dinh tay link mp3 neu khong tu tim duoc")
-    p_fetch.add_argument("--slug-override", help="Dat ten file khac ten suy tu tieu de")
+    p_fetch.add_argument("--audio-url", help="Chi dinh tay link mp3")
+    p_fetch.add_argument("--slug", help="Dat ten file khac ten suy tu tieu de")
+    p_fetch.add_argument("--allow-share-alike", action="store_true")
     p_fetch.set_defaults(func=cmd_fetch)
 
-    p_emit = sub.add_parser("emit", help="Chen bai da dich vao songs_data.dart")
-    p_emit.add_argument("slugs", nargs="+", help="Slug file trong content/pending/")
+    p_verify = sub.add_parser("verify", help="Cham ban quyen + do san sang")
+    p_verify.add_argument("slugs", nargs="*", help="Bo trong = cham het pending")
+    p_verify.add_argument("--allow-share-alike", action="store_true")
+    p_verify.set_defaults(func=cmd_verify)
+
+    p_emit = sub.add_parser("emit", help="Chen bai da du dieu kien vao app")
+    p_emit.add_argument("slugs", nargs="+")
     p_emit.add_argument(
-        "--allow-untranslated",
+        "--allow-share-alike",
         action="store_true",
-        help="Cho phep chen khi con dong chua dich (chi dung de thu)",
+        help="Chap nhan nghia vu ShareAlike cho lyrics cua bai nay (§5)",
     )
     p_emit.add_argument("--skip-audio-check", action="store_true")
     p_emit.add_argument("--dart-file", help="Ghi vao file khac (dung cho test)")

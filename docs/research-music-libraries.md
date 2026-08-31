@@ -117,52 +117,94 @@ Nói chung: **cả họ nhà stock-media license (Pixabay, Pexels, và các site
 
 ---
 
-## 7. Kế hoạch mở rộng, theo thứ tự ưu tiên
+## 7. Mở rộng thế nào cho có quy mô
 
-### Bước 1 — Khai thác nốt Josh Woodward (rủi ro ~0)
+### Cái gì thực sự chặn quy mô
 
-Hiện dùng **20/200+** bài. Cùng nghệ sĩ, cùng license đã kiểm chứng, lyrics đã đăng sẵn dạng JSON-LD, quy trình đã chạy trơn cho 20 bài đầu.
+Không phải audio. Nhạc CC có vocals thì tìm được. Thứ chặn quy mô là **việc xác minh quyền với PHẦN LỜI, tính theo từng track** (§2) — đó là công của con người, không tự động hoá được, và nó tỉ lệ thuận với số bài.
 
-- Chi phí: chỉ tốn công dịch + duyệt, **không** phát sinh rủi ro pháp lý mới
-- Đưa thư viện lên **60–80 bài** là hoàn toàn khả thi
-- Cần lọc theo tiêu chí sư phạm: lời rõ, tốc độ vừa, từ vựng phổ thông, không chủ đề nhạy cảm (đã từng loại "I Want to Destroy Something Beautiful" và "Wade" theo tiêu chí này)
+Nên câu hỏi đúng không phải *"nguồn nào nhiều bài nhất"* mà là:
 
-### Bước 2 — Đa dạng hoá giọng đọc (quan trọng về mặt sư phạm)
+> **Một lần xác minh mở khoá được bao nhiêu bài?**
 
-20 bài hiện tại đều là **một giọng nam Mỹ duy nhất**. Người học chỉ quen 1 giọng thì nghe người khác nói sẽ hụt. Cần thêm giọng nữ, giọng Anh-Anh, tốc độ khác nhau.
+Xếp theo tiêu chí đó:
 
-Nguồn: ccMixter mục "Free for Commercial Use" + FMA lọc CC-BY, chọn **singer-songwriter tự sở hữu toàn bộ** (§2), chép lời bằng Whisper rồi duyệt tay (§3).
+| Hạng | Đơn vị xác minh | Tỉ lệ | Ví dụ |
+|---|---|---|---|
+| **A** | 1 nghệ sĩ tự viết + tự thu + tự sở hữu, giấy phép áp cho **cả catalog** | 1 lần kiểm → **hàng trăm bài** | Josh Woodward (200+), Brad Sucks (CC-BY-SA) |
+| **B** | 1 netlabel có chính sách giấy phép áp cho cả hãng | 1 lần kiểm → **1 album** | blocSonic (cần xác minh, xem dưới) |
+| **C** | Nền tảng từng-track | 1 lần kiểm → **1 bài** | FMA, ccMixter |
 
-### Bước 3 — Nếu cần thêm số lượng: mở sang CC-BY-SA
+Hạng C **không mở rộng được** — mỗi bài là một lần truy chuỗi bản quyền. Chỉ dùng nó để **lấp lỗ hổng cụ thể** (cần một giọng nữ, cần một giọng Anh-Anh), đừng dùng để tăng số lượng.
 
-Brad Sucks là ứng viên tốt nhất (pop/rock, giọng rõ, có sẵn lyrics, tự sở hữu). Chỉ làm sau khi đã quyết xong §5.
+Ưu tiên đúng: **đi tìm thêm "Josh Woodward khác"** — nghệ sĩ tự sở hữu toàn bộ và phát hành cả catalog dưới CC-BY. Một nghệ sĩ như vậy đáng giá bằng hàng trăm lần lục FMA.
+
+### Thứ tự triển khai
+
+**Bước 1 — Khai thác nốt Josh Woodward (rủi ro ~0).** Đang dùng **20/200+** bài. Cùng nghệ sĩ, cùng giấy phép đã kiểm chứng, lời đã đăng sẵn, adapter đã có. Đưa thư viện lên **60–80 bài** là chuyện công sức dịch, không phát sinh rủi ro pháp lý mới. Cần lọc theo tiêu chí sư phạm: lời rõ, tốc độ vừa, từ vựng phổ thông, không chủ đề nhạy cảm.
+
+**Bước 2 — Đa dạng hoá giọng (quan trọng về mặt sư phạm).** 20 bài hiện tại đều **một giọng nam Mỹ duy nhất**. Người học chỉ quen 1 giọng thì nghe người khác nói sẽ hụt. Cần giọng nữ, giọng Anh-Anh, tốc độ khác nhau. Đây là chỗ hạng C hữu ích: dùng `fma`/`ccmixter` để lấp đúng những lỗ hổng đó, chấp nhận chi phí kiểm từng bài.
+
+**Bước 3 — Tìm nguồn hạng A/B mới.** Việc đáng đầu tư nhất nhưng chưa làm được trong phiên này (bị chặn mạng, §12). Hướng tìm:
+
+- **Netlabel CC** — `blocSonic` là netlabel chuyên phát hành nhạc CC. ⚠️ **Chưa xác minh**: rất nhiều netlabel dùng CC-BY-**NC** (cấm thương mại → loại thẳng). Phải mở trang chính sách giấy phép của hãng và kiểm trước khi mừng.
+- **Danh sách nghệ sĩ CC** trên wiki Creative Commons và các bài tổng hợp — lọc lấy người có **cả catalog** dưới CC-BY và **tự viết bài**.
+- Tiêu chí lọc nhanh khi gặp ứng viên mới: *(1)* có vocals tiếng Anh không, *(2)* nghệ sĩ có tự viết lời không, *(3)* giấy phép áp cho cả catalog hay từng bài, *(4)* có phải NC/ND không.
+
+**Bước 4 — Quyết định về CC-BY-SA.** Mở ra Brad Sucks và một mảng hạng A nữa. Chỉ làm sau khi chốt §5.
+
+### Đã loại vì không hợp mục đích học tiếng Anh
+
+Phần lớn nhạc "royalty-free" là **instrumental** (Incompetech, Chris Zabriskie, Kevin MacLeod, Scott Buckley, Alexander Nakarada…). Không có lời thì không dạy tiếng Anh được, dù giấy phép có sạch tới đâu. Pipeline chặn thẳng track instrumental ở §8 để khỏi mất công tải về rồi mới phát hiện.
 
 ---
 
-## 8. Công cụ: `scripts/add_songs.py`
+## 8. Công cụ: pipeline nạp bài hát
 
-Cho nguồn **Josh Woodward** (bước 1 của §7) đã có script tự động hoá, chia **3 bước, mỗi bước có người duyệt**:
+`scripts/add_songs.py` — **không gắn với riêng nguồn nào**. Mỗi nguồn là một adapter trong `scripts/song_sources.py`; cổng gác bản quyền nằm riêng trong `scripts/song_licensing.py`.
 
 ```bash
-# 1. Tải mp3 + lấy lời từ trang bài hát → content/pending/<slug>.json
-python scripts/add_songs.py fetch TheSimpleLife AnotherSong
-
-# 2. NGƯỜI dịch phần "vi" trong file json đó (script cố ý để trống)
-
-# 3. Chèn vào songs_data.dart + ghi công vào ATTRIBUTION.md
-python scripts/add_songs.py emit the-simple-life
-
-# 4. Căn timestamp thật bằng ASR — BẮT BUỘC
-python scripts/realign_lyrics.py --only the-simple-life
+python scripts/add_songs.py list-sources                        # nguồn + giấy phép chấp nhận
+python scripts/add_songs.py fetch joshwoodward TheSimpleLife    # → content/pending/<slug>.json
+python scripts/add_songs.py verify the-simple-life              # chấm bản quyền + độ sẵn sàng
+python scripts/add_songs.py emit the-simple-life                # chèn vào app
+python scripts/realign_lyrics.py --only the-simple-life         # căn timestamp — BẮT BUỘC
 ```
 
-**Vì sao không dịch tự động luôn:** bản dịch máy cho lyrics rất hay sai sắc thái/ẩn dụ, mà bảng dịch Anh–Việt **chính là nội dung học** của app chứ không phải chrome giao diện. Bước 2 bắt buộc có người. Lệnh `emit` sẽ **từ chối chạy** nếu còn dòng chưa dịch.
+### Nguồn đang hỗ trợ
 
-Các chốt chặn khác trong `emit`: thiếu file mp3, trùng bài đã có, `level`/`color` không hợp lệ → dừng và báo lỗi, không ghi gì.
+| Adapter | Adapter tự đọc được gì | Người phải tự làm gì |
+|---|---|---|
+| `joshwoodward` | Metadata, **lời có sẵn**, giấy phép **cả 2 phần** | Chỉ dịch |
+| `fma` | Giấy phép **bản thu** (từ link deed CC) | Xác minh **ai giữ bản quyền phần lời**, chép lời bằng ASR, dịch |
+| `ccmixter` | Giấy phép bản ghi remix + **danh sách nguồn gốc** | Truy từng nguồn gốc trong chuỗi, xác minh phần lời, chép lời, dịch |
+| `manual` | Không gì cả | Tất cả |
 
-⚠️ **Bước 4 không được bỏ.** Bài vừa chèn có mọi dòng ở giây 0; nếu commit khi chưa căn, test karaoke sẽ đỏ vì các dòng chồng lên nhau.
+Adapter **khai báo được gì thì khai, không đoán**. Chỗ nào không tự biết được (điển hình: giấy phép **phần lời** trên nền tảng nhiều nghệ sĩ) thì để trống, và cổng gác sẽ chặn cho tới khi có người điền.
 
-⚠️ Phần `fetch` (gọi mạng) **chưa chạy thử được** — phiên viết script bị chặn egress (§12). Phần sinh code Dart và các chốt chặn thì đã test kỹ, gồm cả escape `'`, `"`, `\`, và `$` (dấu `$` mở nội suy chuỗi trong Dart nên bắt buộc phải escape). Nếu `fetch` không đọc được trang, dùng `--audio-url` để chỉ tay link mp3.
+Chỉ `joshwoodward` được phép tự điền giấy phép cho cả phần lời — vì anh tự viết lời, tự thu âm, tự giữ bản quyền cả hai, phát hành toàn bộ catalog dưới CC-BY 4.0. Với nền tảng nhiều nghệ sĩ thì tuyệt đối không được suy như vậy (§2).
+
+### Bốn cổng gác
+
+1. **Bản quyền** — khai báo **riêng** giấy phép cho *bản thu* và cho *phần lời*, mỗi bên kèm `evidence_url` (trang chứng minh) và `verified_by` (`adapter` hay `human`). Quy tắc vàng: **không rõ = từ chối**.
+   - NC → chặn (cấm thương mại). ND → chặn (dịch + căn giờ **là** phái sinh).
+   - SA → chặn, trừ khi chạy với `--allow-share-alike`; khi đó nghĩa vụ ShareAlike được in ra và ghi vào `ATTRIBUTION.md`.
+   - Giấy phép họ stock-media (Pixabay/Pexels…) → chặn kèm đúng lý do ở §6.
+   - Lời chép bằng **ASR** → bắt buộc `verified_by: human` cho phần lời, vì chép lời từ bản thu là tạo phái sinh của **phần lời**, không phải của bản thu.
+   - Track remix còn nguồn gốc chưa truy → chặn.
+2. **Có lời hát** — track instrumental hoặc dưới 4 dòng lời bị từ chối. App dạy tiếng Anh bằng lời bài hát; giấy phép đẹp mấy cũng vô dụng nếu không có lời.
+3. **Người dịch** — `emit` từ chối chạy khi còn dòng `vi` trống.
+4. **Căn timestamp** — bài vừa chèn có mọi dòng ở giây 0; chưa căn mà commit thì test karaoke đỏ.
+
+### Ghi công
+
+`emit` tự ghi vào `ATTRIBUTION.md`, trong một khối có marker, **riêng giấy phép của bản thu và của phần lời** kèm link chứng minh — vì có track hai phần khác giấy phép nhau, và 6 tháng sau không ai nhớ lại được.
+
+### Test
+
+`scripts/test_add_songs.py` (37 test, chạy bằng `python -m unittest discover -s scripts -p 'test_*.py'`, đã gắn vào CI). Mỗi adapter tách `parse(html, ref)` thuần tuý khỏi `fetch(ref)` nên phần đọc trang test được bằng fixture HTML, **không cần mạng**.
+
+⚠️ Riêng phần `fetch` (gọi mạng thật) **chưa chạy thử được** — phiên viết bị chặn egress (§12). Nếu adapter không đọc được trang, dùng `--audio-url` để chỉ tay link mp3, hoặc dùng adapter `manual`.
 
 ## 9. Checklist bắt buộc khi thêm 1 bài hát
 
