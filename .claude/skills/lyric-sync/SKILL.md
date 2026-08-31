@@ -24,6 +24,7 @@ Toàn bộ phần vẽ lyric nằm trong `app/lib/features/music_player/presenta
 - `buildKaraokeLines()` chia mỗi `LyricLine` (chỉ có mốc **đầu dòng**) xuống **từng từ**, ước lượng độ dài mỗi từ theo **số âm tiết** chứ không chia đều theo số từ.
 - `PlayerScreen` đọc `player.position` bằng `Ticker` (mỗi khung hình) và đẩy vào 1 `ValueNotifier<double>`; chỉ RIÊNG dòng đang hát nghe notifier này nên không bị `setState` cả màn hình ở 60fps.
 - Từ đang hát được tô sáng dần từ trái sang phải bằng `ShaderMask` + `BlendMode.srcIn`. **Lưu ý:** quầng sáng (`Shadow`) phải vẽ thành lớp riêng bên dưới, KHÔNG để trong child của `ShaderMask` — nếu không phần bóng mờ nằm trong ô chữ sẽ bị tô trắng theo gradient và hiện ra thành mảng sáng hình chữ nhật quanh từ.
+- Dòng dịch tiếng Việt chạy cùng hiệu ứng, trên **đúng khoảng thời gian của dòng gốc** (cùng `start`, cùng `end`) nên 2 dòng luôn sáng tới đích cùng lúc. Đây KHÔNG phải ghép từ-đối-từ (bản dịch khác thứ tự từ), nó chỉ trả lời "câu này đã hát tới đâu". Tiếng Việt đơn âm tiết nên mỗi token = 1 âm tiết, không cần đếm cụm nguyên âm như tiếng Anh.
 - Nếu sau này có timestamp cấp-từ thật (ASR), chỉ cần sửa `buildKaraokeLines()` đọc thẳng dữ liệu đó — phần giao diện không phải đổi gì.
 
 ## Lưu ý hiệu năng

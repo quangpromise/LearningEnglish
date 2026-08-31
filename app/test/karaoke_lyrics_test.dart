@@ -70,6 +70,66 @@ void main() {
     });
   });
 
+  group('dong dich tieng Viet', () {
+    test('chay tren dung khoang thoi gian cua dong goc', () {
+      final line = buildKaraokeLines(const [
+        LyricLine(
+          9.6,
+          'Cold hands, sore feet',
+          'Đôi tay lạnh cóng, chân rã rời',
+        ),
+        LyricLine(14.4, 'next', 'sau'),
+      ]).first;
+      expect(line.viWords.first.start, line.words.first.start);
+      expect(line.viWords.last.end, closeTo(line.words.last.end, 1e-9));
+    });
+
+    test('moi tu tieng Viet la 1 am tiet nen chia gan nhu deu nhau', () {
+      final line = buildKaraokeLines(const [
+        LyricLine(0, 'x', 'một hai ba bốn'),
+        LyricLine(10, 'y', 'sau'),
+      ]).first;
+      expect(line.viWords.length, 4);
+      final spans = line.viWords.map((w) => w.end - w.start).toList();
+      for (final s in spans) {
+        expect(s, closeTo(spans.first, 1e-9));
+      }
+    });
+
+    test('dau cau cuoi tu duoc giu lau hon', () {
+      final line = buildKaraokeLines(const [
+        LyricLine(0, 'x', 'một, hai'),
+        LyricLine(10, 'y', 'sau'),
+      ]).first;
+      expect(
+        line.viWords[0].end - line.viWords[0].start,
+        greaterThan(line.viWords[1].end - line.viWords[1].start),
+      );
+    });
+
+    test('dong khong co ban dich thi khong co tu nao', () {
+      final line = buildKaraokeLines(const [
+        LyricLine(0, 'x', ''),
+        LyricLine(10, 'y', 'sau'),
+      ]).first;
+      expect(line.viWords, isEmpty);
+    });
+
+    test('voi du lieu that: moi dong deu co ban dich chay karaoke', () {
+      for (final song in kSongs) {
+        for (final line in buildKaraokeLines(song.lyrics)) {
+          expect(
+            line.viWords,
+            isNotEmpty,
+            reason: '${song.title} | ${line.en}',
+          );
+          expect(line.viWords.first.start, line.start);
+          expect(line.viWords.last.end, closeTo(line.end, 1e-9));
+        }
+      }
+    });
+  });
+
   group('KaraokeWord.progressAt', () {
     const word = KaraokeWord('hello', 2, 4);
 

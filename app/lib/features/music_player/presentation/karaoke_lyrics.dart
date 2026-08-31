@@ -38,13 +38,26 @@ class KaraokeLine {
     required this.start,
     required this.end,
     required this.words,
+    required this.viWords,
     required this.en,
     required this.vi,
   });
 
   final double start;
   final double end;
+
+  /// Tung tu tieng Anh kem moc thoi gian rieng.
   final List<KaraokeWord> words;
+
+  /// Tung tu cua dong DICH tieng Viet, trai deu tren DUNG khoang thoi gian
+  /// cua dong tieng Anh (cung [start], cung [end]).
+  ///
+  /// Day KHONG phai la ghep tu-doi-tu: ban dich khac thu tu tu so voi cau
+  /// goc nen tu thu i tieng Viet khong ung voi tu thu i tieng Anh. No chi
+  /// tra loi "cau nay da hat toi dau roi" bang tieng Viet, de nguoi hoc bam
+  /// duoc nghia theo dung nhip hat.
+  final List<KaraokeWord> viWords;
+
   final String en;
   final String vi;
 }
@@ -106,19 +119,55 @@ double _wordWeight(String word) {
   return weight;
 }
 
+/// "Trong so" thoi gian cua 1 tu tieng Viet. Tieng Viet la ngon ngu don am
+/// tiet - moi tu cach nhau bang dau cach chinh la 1 am tiet - nen khong can
+/// dem cum nguyen am nhu tieng Anh, chi can cong them cho dau cau.
+double _viWordWeight(String word) {
+  var weight = 1.0;
+  if (RegExp(r'[.!?]$').hasMatch(word)) {
+    weight += 0.9;
+  } else if (RegExp(r'[,;:–—-]$').hasMatch(word)) {
+    weight += 0.55;
+  }
+  return weight;
+}
+
+List<String> _tokenize(String text) =>
+    text.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
+
+/// Chia [duration] giay cho cac [tokens] theo ty le trong so, bat dau tu
+/// [start] va noi tiep nhau lien mach (het tu nay la sang tu ke tiep).
+List<KaraokeWord> _distribute(
+  List<String> tokens,
+  double start,
+  double duration,
+  double Function(String) weightOf,
+) {
+  final weights = tokens.map(weightOf).toList();
+  final totalWeight = weights.fold<double>(0, (a, b) => a + b);
+  final words = <KaraokeWord>[];
+  var cursor = start;
+  for (var i = 0; i < tokens.length; i++) {
+    final slice = totalWeight <= 0
+        ? duration / tokens.length
+        : duration * weights[i] / totalWeight;
+    words.add(KaraokeWord(tokens[i], cursor, cursor + slice));
+    cursor += slice;
+  }
+  return words;
+}
+
 /// Chuyen danh sach [LyricLine] (chi co moc dau dong) thanh timeline cap-tu.
 List<KaraokeLine> buildKaraokeLines(List<LyricLine> lyrics) {
   final lines = <KaraokeLine>[];
   for (var i = 0; i < lyrics.length; i++) {
     final line = lyrics[i];
     final start = line.startSeconds;
-    final tokens = line.en
-        .split(RegExp(r'\s+'))
-        .where((w) => w.isNotEmpty)
-        .toList();
+    final tokens = _tokenize(line.en);
 
-    final weights = tokens.map(_wordWeight).toList();
-    final totalWeight = weights.fold<double>(0, (a, b) => a + b);
+    final totalWeight = tokens
+        .map(_wordWeight)
+        .fold<double>(0, (a, b) => a + b);
     final natural = math.max(
       _kMinLineSeconds,
       totalWeight * _kSecondsPerSyllable,
@@ -144,21 +193,22 @@ List<KaraokeLine> buildKaraokeLines(List<LyricLine> lyrics) {
       duration = math.min(natural * 1.6, natural + (gap - natural) * 0.35);
     }
 
-    final words = <KaraokeWord>[];
-    var cursor = start;
-    for (var w = 0; w < tokens.length; w++) {
-      final slice = totalWeight <= 0
-          ? duration / tokens.length
-          : duration * weights[w] / totalWeight;
-      words.add(KaraokeWord(tokens[w], cursor, cursor + slice));
-      cursor += slice;
-    }
+    final words = _distribute(tokens, start, duration, _wordWeight);
+    // Dong dich chay tren DUNG khoang thoi gian cua dong goc, nen 2 dong
+    // luon sang toi dich cung luc.
+    final viWords = _distribute(
+      _tokenize(line.vi),
+      start,
+      duration,
+      _viWordWeight,
+    );
 
     lines.add(
       KaraokeLine(
         start: start,
-        end: words.isEmpty ? start + duration : cursor,
+        end: words.isEmpty ? start + duration : words.last.end,
         words: words,
+        viWords: viWords,
         en: line.en,
         vi: line.vi,
       ),
@@ -179,6 +229,12 @@ const bool _kBlurInactiveLines = true;
 const double _kWordSize = 19;
 const Color _kSungColor = Color(0xFFFFFFFF);
 const Color _kIdleColor = Color(0x4DEEF1FB);
+
+/// Dong dich tieng Viet: chu nho hon va mau sang nhat cung diu hon dong
+/// goc, de mat luon doc dong tieng Anh truoc.
+const double _kViWordSize = 13;
+const Color _kViSungColor = Color(0xF2EEF1FB);
+const Color _kViIdleColor = Color(0x3DEEF1FB);
 
 /// Do "nhoe" 2 ben mep vet quet trong 1 tu (0 = cat thang dung, cang lon
 /// cang mem).
@@ -279,46 +335,42 @@ class _LineTile extends StatelessWidget {
         ? 0.0
         : (distance == 2 ? 1.0 : 1.8);
 
-    Widget words;
-    if (isActive) {
-      words = ValueListenableBuilder<double>(
-        valueListenable: positionSeconds,
-        builder: (_, seconds, _) => _WordsRow(
+    // Ca dong goc lan dong dich deu chay tren cung 1 moc thoi gian, nen
+    // dung CHUNG 1 listener - neu tach 2 ValueListenableBuilder thi moi
+    // khung hinh phai danh thuc 2 lan cho cung 1 gia tri.
+    Widget rowsAt(double seconds) => Column(
+      children: [
+        _WordsRow(
           words: line.words,
           seconds: seconds,
-          onWordTap: onWordTap,
+          style: _RowStyle.lyric,
+          onWordTap: isActive ? onWordTap : null,
         ),
-      );
-    } else {
-      // Dong da hat qua giu mau sang (da thuoc), dong chua toi de mau mo -
-      // nho vay nguoi hoc luon thay ro minh dang o dau trong bai.
-      words = _WordsRow(
-        words: line.words,
-        seconds: offset < 0 ? line.end + 1 : line.start - 1,
-        onWordTap: null,
-      );
-    }
+        if (bilingual && line.viWords.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 5),
+            child: _WordsRow(
+              words: line.viWords,
+              seconds: seconds,
+              style: _RowStyle.translation,
+              onWordTap: null,
+            ),
+          ),
+      ],
+    );
+
+    final Widget rows = isActive
+        ? ValueListenableBuilder<double>(
+            valueListenable: positionSeconds,
+            builder: (_, seconds, _) => rowsAt(seconds),
+          )
+        // Dong da hat qua giu mau sang (da thuoc), dong chua toi de mau mo -
+        // nho vay nguoi hoc luon thay ro minh dang o dau trong bai.
+        : rowsAt(offset < 0 ? line.end + 1 : line.start - 1);
 
     Widget content = Padding(
       padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 2),
-      child: Column(
-        children: [
-          words,
-          if (bilingual && line.vi.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 5),
-              child: Text(
-                line.vi,
-                textAlign: TextAlign.center,
-                style: AppTextStyles.muted(size: isActive ? 13 : 12).copyWith(
-                  color: AppColors.textMuted.withValues(
-                    alpha: isActive ? 0.95 : 0.7,
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
+      child: rows,
     );
 
     if (_kBlurInactiveLines) {
@@ -357,15 +409,61 @@ class _LineTile extends StatelessWidget {
   }
 }
 
+/// Bo tham so ve cho 1 hang chu. Dong goc tieng Anh la nhan vat chinh (chu
+/// to, trang han, co nhun + quang sang manh); dong dich tieng Viet dung
+/// cung hieu ung nhung diu hon han de khong tranh mat voi dong goc.
+class _RowStyle {
+  const _RowStyle({
+    required this.textStyle,
+    required this.sungColor,
+    required this.idleColor,
+    required this.glowStrength,
+    required this.lift,
+    required this.gap,
+  });
+
+  /// Khoi tao 1 lan roi dung lai: `rowsAt()` chay lai moi khung hinh cho
+  /// dong dang hat nen khong nen dung lai TextStyle moi mieng.
+  static final _RowStyle lyric = _RowStyle(
+    textStyle: AppTextStyles.heading(size: _kWordSize).copyWith(height: 1.4),
+    sungColor: _kSungColor,
+    idleColor: _kIdleColor,
+    glowStrength: 1,
+    lift: _kWordLift,
+    gap: 3,
+  );
+
+  static final _RowStyle translation = _RowStyle(
+    textStyle: AppTextStyles.muted(size: _kViWordSize).copyWith(height: 1.35),
+    sungColor: _kViSungColor,
+    idleColor: _kViIdleColor,
+    glowStrength: 0.35,
+    lift: 0,
+    gap: 2,
+  );
+
+  final TextStyle textStyle;
+  final Color sungColor;
+  final Color idleColor;
+
+  /// He so nhan len do dam cua quang sang (0 = tat han).
+  final double glowStrength;
+
+  final double lift;
+  final double gap;
+}
+
 class _WordsRow extends StatelessWidget {
   const _WordsRow({
     required this.words,
     required this.seconds,
+    required this.style,
     required this.onWordTap,
   });
 
   final List<KaraokeWord> words;
   final double seconds;
+  final _RowStyle style;
   final void Function(String word)? onWordTap;
 
   @override
@@ -387,14 +485,20 @@ class _WordsRow extends StatelessWidget {
               AppColors.purple,
               n <= 1 ? 0.5 : i / (n - 1),
             )!,
-            onTap: onWordTap == null
-                ? null
-                : () => onWordTap!(
-                    words[i].text.replaceAll(RegExp('[^a-zA-Z]'), ''),
-                  ),
+            style: style,
+            onTap: _tapHandlerFor(words[i].text),
           ),
       ],
     );
+  }
+
+  VoidCallback? _tapHandlerFor(String text) {
+    final onTap = onWordTap;
+    if (onTap == null) return null;
+    final word = text.replaceAll(RegExp('[^a-zA-Z]'), '');
+    // Token chi gom dau cau (vd "-") khong tra tu dien duoc.
+    if (word.isEmpty) return null;
+    return () => onTap(word);
   }
 }
 
@@ -412,6 +516,7 @@ class _WordChip extends StatelessWidget {
     required this.progress,
     required this.afterglow,
     required this.glow,
+    required this.style,
     required this.onTap,
   });
 
@@ -422,33 +527,32 @@ class _WordChip extends StatelessWidget {
   final double afterglow;
 
   final Color glow;
+  final _RowStyle style;
   final VoidCallback? onTap;
+
+  List<Shadow>? _glowShadows(double strength) {
+    final alpha = strength * style.glowStrength;
+    if (alpha <= 0.01) return null;
+    return [
+      Shadow(color: glow.withValues(alpha: alpha), blurRadius: 18),
+      Shadow(color: glow.withValues(alpha: alpha * 0.5), blurRadius: 38),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
     final p = progress;
-    final base = AppTextStyles.heading(size: _kWordSize).copyWith(height: 1.4);
+    final base = style.textStyle;
 
     final Widget text;
     if (p <= 0) {
-      text = Text(word.text, style: base.copyWith(color: _kIdleColor));
+      text = Text(word.text, style: base.copyWith(color: style.idleColor));
     } else if (p >= 1) {
       text = Text(
         word.text,
         style: base.copyWith(
-          color: _kSungColor,
-          shadows: afterglow <= 0
-              ? null
-              : [
-                  Shadow(
-                    color: glow.withValues(alpha: 0.8 * afterglow),
-                    blurRadius: 16,
-                  ),
-                  Shadow(
-                    color: glow.withValues(alpha: 0.4 * afterglow),
-                    blurRadius: 32,
-                  ),
-                ],
+          color: style.sungColor,
+          shadows: _glowShadows(0.8 * afterglow),
         ),
       );
     } else {
@@ -459,29 +563,28 @@ class _WordChip extends StatelessWidget {
       // child cua ShaderMask: ShaderMask to lai moi diem anh nam trong o
       // chu bang mau cua gradient, nen phan bong mo nam trong o do se bi
       // to trang theo va hien ra thanh mot mang sang hinh chu nhat quanh tu.
+      final glowShadows = _glowShadows(0.95);
       text = Stack(
         alignment: Alignment.center,
         children: [
-          Text(
-            word.text,
-            style: base.copyWith(
-              color: Colors.transparent,
-              shadows: [
-                Shadow(color: glow.withValues(alpha: 0.95), blurRadius: 18),
-                Shadow(color: glow.withValues(alpha: 0.5), blurRadius: 38),
-              ],
+          if (glowShadows != null)
+            Text(
+              word.text,
+              style: base.copyWith(
+                color: Colors.transparent,
+                shadows: glowShadows,
+              ),
             ),
-          ),
           ShaderMask(
             blendMode: BlendMode.srcIn,
             shaderCallback: (rect) => LinearGradient(
               begin: Alignment.centerLeft,
               end: Alignment.centerRight,
-              colors: const [
-                _kSungColor,
-                _kSungColor,
-                _kIdleColor,
-                _kIdleColor,
+              colors: [
+                style.sungColor,
+                style.sungColor,
+                style.idleColor,
+                style.idleColor,
               ],
               stops: [
                 0,
@@ -501,9 +604,9 @@ class _WordChip extends StatelessWidget {
       child: Transform.translate(
         // Nhun nhe len roi ha xuong dung luc tu do duoc hat - tao "con song"
         // chay doc theo cau.
-        offset: Offset(0, -_kWordLift * math.sin(p * math.pi)),
+        offset: Offset(0, -style.lift * math.sin(p * math.pi)),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
+          padding: EdgeInsets.symmetric(horizontal: style.gap, vertical: 1),
           child: text,
         ),
       ),
