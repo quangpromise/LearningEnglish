@@ -8,7 +8,6 @@ import '../../features/music_player/data/favorites_repository.dart';
 import '../../features/profile/data/profile_repository.dart';
 import '../../features/quiz/data/leaderboard_repository.dart';
 import '../../features/rewards/data/rewards_repository.dart';
-import '../../features/social/data/call_repository.dart';
 import '../../features/social/data/social_repository.dart';
 import '../../features/stats/data/stats_repository.dart';
 import '../i18n/app_language.dart';
@@ -117,17 +116,6 @@ final pendingRequestCountProvider = StreamProvider.autoDispose(
 /// tren BAT KY man hinh nao, khong chi rieng man Tin nhan.
 final newIncomingMessageProvider = StreamProvider.autoDispose(
   (ref) => ref.watch(socialRepositoryProvider).watchNewIncomingMessages(),
-);
-
-final callRepositoryProvider = Provider<CallRepository>(
-  (ref) => CallRepository(ref.watch(supabaseClientProvider)),
-);
-
-/// Phat 1 su kien moi lan co cuoc goi MOI dang do chuong toi minh -
-/// RootShell lang nghe cai nay de hien man hinh "co cuoc goi den" tren BAT
-/// KY man hinh nao, giong newIncomingMessageProvider o tren.
-final incomingCallProvider = StreamProvider.autoDispose(
-  (ref) => ref.watch(callRepositoryProvider).watchIncomingCalls(),
 );
 
 /// Toàn bộ provider gắn với user hiện tại - gọi invalidate hết mỗi khi

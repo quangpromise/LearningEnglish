@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:audio_session/audio_session.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
@@ -58,6 +59,18 @@ class AppTts {
 
   bool _awaitCompletionConfigured = false;
 
+  /// Ep lai audio session ve che do "music" (loa ngoai) truoc moi lan doc -
+  /// sau khi dung mic (luyen phat am/speech_to_text), Android co the giu
+  /// nguyen audio mode cho ghi am, khien TTS phat ra qua loa THOAI (earpiece)
+  /// rat nho hoac nhu khong nghe duoc gi. Xem chi tiet trong
+  /// pronunciation_screen.dart/now_playing_service.dart.
+  Future<void> _ensureMusicSession() async {
+    try {
+      final session = await AudioSession.instance;
+      await session.configure(const AudioSessionConfiguration.music());
+    } catch (_) {}
+  }
+
   /// Gọi 1 lần lúc khởi động app để áp lại giọng đã lưu từ lần trước.
   Future<void> restoreSavedVoice() async {
     final prefs = await SharedPreferences.getInstance();
@@ -75,6 +88,7 @@ class AppTts {
   }
 
   Future<void> speak(String text) async {
+    await _ensureMusicSession();
     if (_selectedCloud != null) {
       try {
         await _speakCloud(text, _selectedCloud!);
@@ -92,6 +106,7 @@ class AppTts {
   /// biet chinh xac luc nao chuyen sang cau tiep theo thay vi doan mo dai
   /// (moi cau dai ngan khac nhau).
   Future<void> speakAndWait(String text) async {
+    await _ensureMusicSession();
     if (_selectedCloud != null) {
       try {
         await _speakCloud(text, _selectedCloud!);

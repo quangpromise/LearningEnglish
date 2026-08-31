@@ -8,10 +8,8 @@ import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/time_format.dart';
-import '../data/call_repository.dart';
 import '../data/chat_theme.dart';
 import '../data/social_repository.dart';
-import 'call_screen.dart';
 import 'emoji_reaction_picker.dart';
 import 'sticker_picker_sheet.dart';
 
@@ -205,19 +203,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Future<void> _startCall(CallType type) async {
-    final call = await ref
-        .read(callRepositoryProvider)
-        .startCall(widget.friend.id, type);
-    if (!mounted) return;
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) =>
-            CallScreen(call: call, peer: widget.friend, isCaller: true),
       ),
     );
   }
@@ -503,42 +488,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   ],
                 ),
                 const Spacer(),
-                GestureDetector(
-                  onTap: () => _startCall(CallType.voice),
-                  child: Container(
-                    width: 34,
-                    height: 34,
-                    decoration: BoxDecoration(
-                      color: AppColors.glassFill,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.glassBorder),
-                    ),
-                    child: const Icon(
-                      Icons.call_rounded,
-                      size: 16,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                GestureDetector(
-                  onTap: () => _startCall(CallType.video),
-                  child: Container(
-                    width: 34,
-                    height: 34,
-                    decoration: BoxDecoration(
-                      color: AppColors.glassFill,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.glassBorder),
-                    ),
-                    child: const Icon(
-                      Icons.videocam_rounded,
-                      size: 17,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
                 GestureDetector(
                   onTap: () => _showThemePicker(context, ref),
                   child: Container(

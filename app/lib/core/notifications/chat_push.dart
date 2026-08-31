@@ -1,27 +1,18 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../features/social/data/call_repository.dart';
 import '../../features/social/data/device_token_repository.dart';
 import '../../features/social/data/social_repository.dart';
 import '../../features/social/presentation/chat_screen.dart';
-import '../../features/social/presentation/incoming_call_screen.dart';
 import '../config/env.dart';
 import '../navigation/nav_keys.dart';
-
-/// Id kenh thong bao rieng cho cuoc goi den - importance/category/
-/// fullScreenIntent khac han tin nhan thuong (uu tien cao nhat, co the tu
-/// bat man hinh len ca khi dang khoa may, giong 1 cuoc goi dien thoai that).
-const kIncomingCallChannelId = 'incoming_call_v1';
 
 /// Id nut "Tra loi" tren chinh thong bao he thong (giong Messenger) - bam
 /// vao mo o nhap ngay tren thanh thong bao, KHONG mo app (showsUserInterface:
@@ -87,6 +78,15 @@ Future<void> _showChatNotification(RemoteMessage message) async {
   final bigPictureBytes = await _downloadBigPicture(
     data['media_url'] as String?,
   );
+  // Anh dai dien NGUOI GUI - hien o vi tri largeIcon (to, noi bat) giong moi
+  // app chat khac (Messenger/Zalo...). Rong neu ho chua dat avatar -> fallback
+  // ve logo app thay vi de trong.
+  final avatarBytes = await _downloadBigPicture(
+    data['sender_avatar_url'] as String?,
+  );
+  final AndroidBitmap<Object> largeIcon = avatarBytes != null
+      ? ByteArrayAndroidBitmap(avatarBytes)
+      : const DrawableResourceAndroidBitmap(_kAppLogoDrawable);
 
   await _localNotifications.show(
     // Dung hash cua sender_id lam id - tin nhan moi tu CUNG 1 nguoi se GHI
@@ -101,13 +101,11 @@ Future<void> _showChatNotification(RemoteMessage message) async {
         channelDescription: 'Thông báo khi có tin nhắn mới từ bạn bè',
         importance: Importance.high,
         priority: Priority.high,
-        largeIcon: const DrawableResourceAndroidBitmap(_kAppLogoDrawable),
+        largeIcon: largeIcon,
         styleInformation: bigPictureBytes != null
             ? BigPictureStyleInformation(
                 ByteArrayAndroidBitmap(bigPictureBytes),
-                largeIcon: const DrawableResourceAndroidBitmap(
-                  _kAppLogoDrawable,
-                ),
+                largeIcon: largeIcon,
                 contentTitle: senderName,
                 summaryText: content,
               )
@@ -127,104 +125,13 @@ Future<void> _showChatNotification(RemoteMessage message) async {
   );
 }
 
-/// Id 2 nut hanh dong tren thong bao cuoc goi - "Tra loi" MO app (de nguoi
-/// dung xac nhan trong IncomingCallScreen, khong tu dong vao thang cuoc goi
-/// de tranh accept nham), "Tu choi" xu ly ngam KHONG mo app (giong nut Tra
-/// loi nhanh cua tin nhan).
-const _kAcceptCallActionId = 'accept_call';
-const _kDeclineCallActionId = 'decline_call';
-
-/// Hien thong bao cuoc goi den - dung importance/category cao nhat +
-/// fullScreenIntent de Android tu bat man hinh len (giong cuoc goi dien
-/// thoai that) ngay ca khi may dang khoa, thay vi chi hien 1 dong o thanh
-/// trang thai nhu thong bao thuong.
-Future<void> _showIncomingCallNotification(RemoteMessage message) async {
-  final data = message.data;
-  final callId = data['call_id'] as String?;
-  final callerId = data['caller_id'] as String?;
-  final callerName = data['caller_name'] as String? ?? 'Bạn bè';
-  final callerAvatarUrl = data['caller_avatar_url'] as String? ?? '';
-  final channelName = data['channel_name'] as String?;
-  final callType = data['call_type'] as String? ?? 'voice';
-  if (callId == null || callerId == null || channelName == null) return;
-
-  final payload = jsonEncode({
-    'kind': 'call',
-    'call_id': callId,
-    'caller_id': callerId,
-    'caller_name': callerName,
-    'caller_avatar_url': callerAvatarUrl,
-    'channel_name': channelName,
-    'call_type': callType,
-  });
-
-  await _localNotifications.show(
-    id: callId.hashCode,
-    title: callerName,
-    body: callType == 'video' ? 'Cuộc gọi video đến' : 'Cuộc gọi thoại đến',
-    notificationDetails: NotificationDetails(
-      android: AndroidNotificationDetails(
-        kIncomingCallChannelId,
-        'Cuộc gọi đến',
-        channelDescription: 'Thông báo khi có cuộc gọi thoại/video đến',
-        importance: Importance.max,
-        priority: Priority.max,
-        category: AndroidNotificationCategory.call,
-        fullScreenIntent: true,
-        largeIcon: const DrawableResourceAndroidBitmap(_kAppLogoDrawable),
-        actions: [
-          const AndroidNotificationAction(
-            _kAcceptCallActionId,
-            'Trả lời',
-            showsUserInterface: true,
-            cancelNotification: true,
-          ),
-          const AndroidNotificationAction(
-            _kDeclineCallActionId,
-            'Từ chối',
-            showsUserInterface: false,
-            cancelNotification: true,
-          ),
-        ],
-      ),
-    ),
-    payload: payload,
-  );
-}
-
 /// PHAI la ham top-level (khong phai method trong class) kem annotation nay
 /// - Firebase Messaging chay ham nay trong 1 isolate rieng khi co tin nhan
 /// den luc app da bi tat han, tach biet hoan toan voi isolate chinh cua app.
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
-  if (message.data['type'] == 'incoming_call') {
-    await _showIncomingCallNotification(message);
-  } else {
-    await _showChatNotification(message);
-  }
-}
-
-/// Tu choi cuoc goi NGAY TU thong bao, khong mo app - co the chay o isolate
-/// NEN (app da dong han) nen phai tu dam bao Supabase da duoc khoi tao,
-/// giong het _sendQuickReply() ben duoi.
-Future<void> _declineCallInBackground(int callId) async {
-  try {
-    SupabaseClient client;
-    try {
-      client = Supabase.instance.client;
-    } catch (_) {
-      await Supabase.initialize(
-        url: Env.supabaseUrl,
-        publishableKey: Env.supabaseAnonKey,
-      );
-      client = Supabase.instance.client;
-    }
-    await CallRepository(client).updateStatus(callId, CallStatus.declined);
-  } catch (_) {
-    // Mat mang... - nguoi goi se tu thay cuoc goi khong duoc bat may sau
-    // vai chuc giay (het TTL cua push) thay vi crash 1 isolate nen.
-  }
+  await _showChatNotification(message);
 }
 
 /// Gui tin nhan tra loi nhanh ngay tu nut "Tra loi" tren thong bao he
@@ -250,40 +157,11 @@ Future<void> _sendQuickReply(String receiverId, String content) async {
   }
 }
 
-/// Dung chung cho ca 2 duong xu ly bam thong bao (foreground va background) -
-/// tu phan biet la thong bao TIN NHAN hay CUOC GOI bang cach thu doc payload
-/// dang JSON (cuoc goi) truoc, that bai thi coi payload la senderId thuan
-/// (tin nhan, cach cu van giu nguyen de tuong thich nguoc).
+/// Dung chung cho ca 2 duong xu ly bam thong bao (foreground va background).
 void _handleNotificationResponse(NotificationResponse response) {
-  final payload = response.payload;
-  if (payload == null) return;
+  final senderId = response.payload;
+  if (senderId == null) return;
 
-  Map<String, dynamic>? callData;
-  try {
-    final decoded = jsonDecode(payload);
-    if (decoded is Map && decoded['kind'] == 'call') {
-      callData = decoded.cast<String, dynamic>();
-    }
-  } catch (_) {
-    // Khong phai JSON - la payload tin nhan (senderId thuan), xu ly ben duoi.
-  }
-
-  if (callData != null) {
-    final callId = int.tryParse(callData['call_id'] as String? ?? '');
-    if (callId == null) return;
-    if (response.actionId == _kDeclineCallActionId) {
-      unawaited(_declineCallInBackground(callId));
-    } else {
-      // Bam "Tra loi" hoac bam thang vao noi dung thong bao - mo man hinh
-      // xac nhan cuoc goi (chi lam duoc ngay neu isolate CHINH con song; neu
-      // app da tat han, ChatPush.init() da luu san du lieu nay va RootShell
-      // se tu mo lai sau khi khoi dong xong - xem checkPendingCallLaunch()).
-      ChatPush.instance._openIncomingCall(callData);
-    }
-    return;
-  }
-
-  final senderId = payload;
   if (response.notificationResponseType ==
           NotificationResponseType.selectedNotificationAction &&
       response.actionId == _kReplyActionId) {
@@ -338,39 +216,22 @@ class ChatPush {
       importance: Importance.high,
       sound: RawResourceAndroidNotificationSound('notification_ding'),
     );
-    const callChannel = AndroidNotificationChannel(
-      kIncomingCallChannelId,
-      'Cuộc gọi đến',
-      description: 'Thông báo khi có cuộc gọi thoại/video đến',
-      importance: Importance.max,
-    );
     final androidImpl = _localNotifications
         .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin
         >();
     await androidImpl?.createNotificationChannel(channel);
-    await androidImpl?.createNotificationChannel(callChannel);
-
-    // App co the da bi TAT HAN va duoc mo lai chinh boi nguoi dung bam vao
-    // thong bao cuoc goi nay - luu lai du lieu cuoc goi de RootShell tu mo
-    // man hinh xac nhan ngay khi widget tree san sang (xem
-    // checkPendingCallLaunch(), goi tu root_shell.dart).
-    final launchDetails = await _localNotifications
-        .getNotificationAppLaunchDetails();
-    final launchPayload = launchDetails?.notificationResponse?.payload;
-    if (launchDetails?.didNotificationLaunchApp == true &&
-        launchPayload != null) {
-      try {
-        final decoded = jsonDecode(launchPayload);
-        if (decoded is Map && decoded['kind'] == 'call') {
-          _pendingCallData = decoded.cast<String, dynamic>();
-        }
-      } catch (_) {}
-    }
 
     await _localNotifications.initialize(
       settings: const InitializationSettings(
-        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+        // Icon nho tren thanh trang thai PHAI la 1 hinh trang/trong suot don
+        // gian - Android tu bo mau, chi giu kenh alpha de ve mau trang len
+        // nen thong bao. Dung thang icon app day mau (@mipmap/ic_launcher,
+        // nen xanh navy dac) se bi Android render thanh 1 khoi dac gan nhu
+        // vuong, trong nhu 1 bieu tuong khac hoan toan (nguoi dung bao "giong
+        // logo Apple") thay vi logo GymTalk - xem drawable-*/ic_stat_notify.png
+        // (duong net trang tren nen trong suot, tach tu chinh app icon).
+        android: AndroidInitializationSettings('@drawable/ic_stat_notify'),
       ),
       onDidReceiveNotificationResponse: _handleNotificationResponse,
       onDidReceiveBackgroundNotificationResponse: _onBackgroundNotificationTap,
@@ -439,60 +300,5 @@ class ChatPush {
     }
     if (friend == null || !context.mounted) return;
     await openChatPopup(context, friend);
-  }
-
-  /// Du lieu cuoc goi tu 1 thong bao da bam NHUNG chua mo duoc man hinh xac
-  /// nhan ngay (luc do isolate chinh/widget tree chua san sang - app dang
-  /// khoi dong lai tu trang thai da tat han). RootShell tieu thu gia tri
-  /// nay 1 lan duy nhat ngay sau frame dau tien (xem checkPendingCallLaunch).
-  Map<String, dynamic>? _pendingCallData;
-
-  Future<void> _openIncomingCall(Map<String, dynamic> callData) async {
-    final context = rootNavigatorKey.currentContext;
-    if (context == null) {
-      _pendingCallData = callData;
-      return;
-    }
-    _pushIncomingCallScreen(context, callData);
-  }
-
-  /// Goi tu root_shell.dart ngay sau khi widget tree da dung xong - xu ly
-  /// truong hop nguoi dung mo lai app bang cach bam vao thong bao cuoc goi
-  /// trong luc app dang o trang thai da tat han (khong con isolate chinh
-  /// nao song de _openIncomingCall xu ly ngay luc thong bao vua duoc bam).
-  void checkPendingCallLaunch(BuildContext context) {
-    final data = _pendingCallData;
-    if (data == null) return;
-    _pendingCallData = null;
-    _pushIncomingCallScreen(context, data);
-  }
-
-  void _pushIncomingCallScreen(
-    BuildContext context,
-    Map<String, dynamic> callData,
-  ) {
-    final call = Call(
-      id: int.parse(callData['call_id'] as String),
-      callerId: callData['caller_id'] as String,
-      calleeId: Supabase.instance.client.auth.currentUser?.id ?? '',
-      channelName: callData['channel_name'] as String,
-      type: (callData['call_type'] as String) == 'video'
-          ? CallType.video
-          : CallType.voice,
-      status: CallStatus.ringing,
-    );
-    final avatarUrl = callData['caller_avatar_url'] as String? ?? '';
-    final caller = SocialUser(
-      id: callData['caller_id'] as String,
-      username: null,
-      displayName: callData['caller_name'] as String?,
-      avatarUrl: avatarUrl.isEmpty ? null : avatarUrl,
-    );
-    Navigator.of(context, rootNavigator: true).push(
-      MaterialPageRoute(
-        builder: (_) => IncomingCallScreen(call: call, caller: caller),
-        fullscreenDialog: true,
-      ),
-    );
   }
 }

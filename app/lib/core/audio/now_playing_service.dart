@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:audio_session/audio_session.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -45,6 +46,15 @@ class NowPlayingService {
   /// nguoi dung bam vao 1 bai o Home (khong goi lai khi chi mo lai
   /// PlayerScreen cho phien dang phat san, xem PlayerScreen).
   Future<void> setQueueAndPlay(List<Song> songs, int startIndex) async {
+    // Ep lai audio session ve che do "music" (loa ngoai) truoc moi lan phat -
+    // sau khi dung mic (luyen phat am/speech_to_text), Android co the giu
+    // nguyen audio mode cho ghi am/goi thoai, khien nhac phat ra qua loa
+    // THOAI (earpiece) rat nho hoac nhu khong nghe duoc gi du file hoan toan
+    // binh thuong. Xem giai thich chi tiet trong pronunciation_screen.dart.
+    try {
+      final session = await AudioSession.instance;
+      await session.configure(const AudioSessionConfiguration.music());
+    } catch (_) {}
     _queue = songs;
     _queueController.add(_queue);
     final source = ConcatenatingAudioSource(

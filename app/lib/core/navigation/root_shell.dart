@@ -12,7 +12,6 @@ import '../../features/music_player/presentation/mini_player.dart';
 import '../../features/pronunciation/presentation/pronunciation_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/social/data/social_repository.dart';
-import '../../features/social/presentation/incoming_call_screen.dart';
 import '../../features/social/presentation/incoming_message_banner.dart';
 import '../../features/update/presentation/update_dialog.dart';
 
@@ -72,10 +71,6 @@ class _RootShellState extends ConsumerState<RootShell>
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       showUpdateDialogIfAvailable(context);
-      // Xu ly truong hop app vua duoc mo lai (tu trang thai da tat han)
-      // chinh boi nguoi dung bam vao 1 thong bao cuoc goi den - xem
-      // ChatPush.init()/checkPendingCallLaunch().
-      ChatPush.instance.checkPendingCallLaunch(context);
     });
     // Ngoai kiem tra luc mo app/resume, kiem tra dinh ky moi 15 phut - phong
     // truong hop nguoi dung khong bao gio dua app xuong nen (didChange
@@ -137,28 +132,6 @@ class _RootShellState extends ConsumerState<RootShell>
         sender: sender,
         preview: message.previewText,
         messageId: message.id,
-      );
-    });
-
-    // Co cuoc goi den - hien toan man tren CUNG (rootNavigator) bat ke dang
-    // o tab/man hinh con nao, giong dien thoai that khi co ai goi den.
-    ref.listen(incomingCallProvider, (previous, next) {
-      final call = next.valueOrNull;
-      if (call == null) return;
-      final friends = ref.read(myFriendsProvider).valueOrNull ?? const [];
-      SocialUser? caller;
-      for (final f in friends) {
-        if (f.id == call.callerId) {
-          caller = f;
-          break;
-        }
-      }
-      if (caller == null) return;
-      Navigator.of(context, rootNavigator: true).push(
-        MaterialPageRoute(
-          builder: (_) => IncomingCallScreen(call: call, caller: caller!),
-          fullscreenDialog: true,
-        ),
       );
     });
 

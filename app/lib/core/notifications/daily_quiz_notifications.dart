@@ -30,7 +30,9 @@ class DailyQuizNotifications {
     if (_initialized) return;
     tzdata.initializeTimeZones();
 
-    const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
+    // Xem giai thich chi tiet trong chat_push.dart: icon nho tren thanh trang
+    // thai PHAI la hinh trang/trong suot don gian, khong phai icon app day mau.
+    const androidInit = AndroidInitializationSettings('@drawable/ic_stat_notify');
     const initSettings = InitializationSettings(android: androidInit);
     await _plugin.initialize(
       settings: initSettings,
