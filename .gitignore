@@ -57,6 +57,9 @@ supabase/.temp/
 # Backend (AI Voice Chat)
 backend/**/node_modules/
 backend/**/__pycache__/
+# Bytecode cua MOI script Python trong repo (khong chi backend/) - truoc day
+# chi bo qua backend/**/ nen scripts/__pycache__/ van bi git theo doi.
+__pycache__/
 backend/**/*.pyc
 
 # Vung tam khi them bai hat moi (scripts/add_songs.py fetch) - ban dich
