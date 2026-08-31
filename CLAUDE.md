@@ -20,11 +20,12 @@ App học tiếng Anh bằng âm nhạc: người dùng nghe bài hát, xem lyri
 **Không dùng Jamendo API** để lấy nhạc trong bản phát hành thương mại — API của Jamendo chỉ miễn phí cho mục đích **phi thương mại**; dùng thương mại bắt buộc phải liên hệ mua license riêng (dù bản thân track có gắn nhãn CC).
 
 Chiến lược đúng: **tự lưu trữ (self-host)** một bộ nhạc đã chọn lọc thủ công, chỉ lấy các track có giấy phép cho phép thương mại rõ ràng, rồi host file audio + lyric trên server/CDN riêng (không gọi API bị giới hạn):
-- **Pixabay Music** — miễn phí thương mại, không cần ghi công. Không có API chính thức cho nhạc → tải thủ công, kiểm tra license từng track khi tải.
+- ~~**Pixabay Music**~~ — **KHÔNG dùng cho app này.** Pixabay Content License cấm phân phối content "trên cơ sở standalone" (giữ nguyên dạng gốc, không thêm công sức sáng tạo lên chính file đó) — mà app này stream nguyên file mp3 cho người dùng nghe. Xem phân tích đầy đủ trong `docs/research-music-libraries.md` §6.
 - **Incompetech (Kevin MacLeod)** — CC-BY, dùng thương mại được nếu ghi công tác giả.
 - **Free Music Archive / ccMixter** — không có API public, phải tự host file; chỉ chọn track gắn nhãn **CC0 hoặc CC-BY** (loại bỏ mọi track CC-BY-NC vì cấm thương mại).
 
 Quy tắc bắt buộc:
+- **Kiểm tra giấy phép có bao trùm cả LỜI bài hát không, không chỉ bản thu.** Một bài hát có 2 bản quyền riêng: bản thu (sound recording) và tác phẩm gốc gồm giai điệu + lời (composition). Giấy phép CC chỉ bao trùm phần người đăng thực sự sở hữu — nếu 1 người remix đăng bản thu của họ dưới CC-BY nhưng lời do người khác viết thì ta KHÔNG có quyền với phần lời, mà lời chính là thứ app này dùng nhiều nhất. → Ưu tiên singer-songwriter tự viết + tự thu + tự sở hữu toàn bộ, phát hành dưới CC 4.0.
 - Mỗi track thêm vào app phải có ghi chú nguồn + loại giấy phép trong `docs/research-music-libraries.md` hoặc file metadata đi kèm.
 - Track CC-BY phải có file `ATTRIBUTION.md` liệt kê tên tác giả/link gốc theo đúng yêu cầu giấy phép.
 - Ưu tiên bài indie/acoustic có lời rõ ràng, dễ nghe, phù hợp học tiếng Anh — không cần bài nổi tiếng.
