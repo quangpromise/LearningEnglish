@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+62
+version: 1.0.0+63
 
 environment:
   sdk: ^3.13.1
@@ -54,8 +54,11 @@ dependencies:
   path_provider: ^2.1.6
   # Đọc version/build number thật từ APK đã cài, hiện ở màn Hồ sơ
   package_info_plus: ^10.2.1
-  # Chọn ảnh từ thư viện/máy ảnh cho tính năng đặt Avatar
+  # Chọn ảnh từ thư viện/máy ảnh cho tính năng đặt Avatar + gửi ảnh trong chat
   image_picker: ^1.1.2
+  # Chọn file bất kỳ (PDF, tài liệu...) để gửi trong chat - miễn phí, mã
+  # nguồn mở (BSD-3), không có API tương đương trong image_picker.
+  file_picker: ^12.1.2
   # Phát âm mẫu bằng TTS gốc máy, offline, miễn phí
   flutter_tts: ^4.2.0
   # Quản lý state theo feature, thuận tiện khi nhiều người code song song
@@ -90,6 +93,12 @@ dependencies:
   # docs/setup-firebase-chat-push.md.
   firebase_core: ^4.14.0
   firebase_messaging: ^16.6.0
+  # Goi thoai/video 1-1 trong chat (Agora RTC) - SDK chinh thuc, mien phi
+  # ~10.000 phut/thang, xu ly toan bo ha tang tin hieu/may chu media/TURN
+  # thay vi phai tu dung WebRTC + tu van hanh server rieng.
+  agora_rtc_engine: ^6.5.2
+  # Xin quyen camera/mic dung dinh dang cross-platform, dung cho man goi.
+  permission_handler: ^11.3.1
 
 dev_dependencies:
   flutter_test:

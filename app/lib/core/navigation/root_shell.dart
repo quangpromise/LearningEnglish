@@ -12,6 +12,7 @@ import '../../features/music_player/presentation/mini_player.dart';
 import '../../features/pronunciation/presentation/pronunciation_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/social/data/social_repository.dart';
+import '../../features/social/presentation/incoming_call_screen.dart';
 import '../../features/social/presentation/incoming_message_banner.dart';
 import '../../features/update/presentation/update_dialog.dart';
 
@@ -26,17 +27,19 @@ class _RootShellState extends ConsumerState<RootShell>
     with WidgetsBindingObserver {
   int _tab = 0;
 
-  // Vocabulary va Grammar khong phai tab rieng - da chuyen thanh the truy
-  // cap nhanh ngay tren man Home (xem home_screen.dart). Reading va Quiz
-  // cung khong con la tab rieng - gom vao man Menu (tab cuoi cung) de
-  // thanh dieu huong duoi khong bi qua nhieu icon. AI Voice Chat cung
-  // khong con la tab rieng - da chuyen thanh nut noi (xem ai_fab_overlay.dart)
-  // hien tren MOI man hinh cua app thay vi chiem 1 cho co dinh o thanh tab.
+  // Vocabulary, Grammar va Phonics (bai hoc phat am IPA) khong phai tab
+  // rieng - da chuyen thanh the truy cap nhanh ngay tren man Home (xem
+  // home_screen.dart). Reading va Quiz cung khong con la tab rieng - gom vao
+  // man Menu (tab cuoi cung) de thanh dieu huong duoi khong bi qua nhieu
+  // icon. AI Voice Chat cung khong con la tab rieng - da chuyen thanh nut
+  // noi (xem ai_fab_overlay.dart) hien tren MOI man hinh cua app thay vi
+  // chiem 1 cho co dinh o thanh tab.
   //
-  // Khong con la list const: PronunciationScreen can biet no co dang la tab
-  // dang active hay khong (qua [isActive]) de tu doi cau luyen moi moi lan
-  // nguoi dung quay lai tab nay - IndexedStack giu nguyen state cua tat ca
-  // tab, initState() chi chay 1 lan duy nhat luc mo app nen khong tu doi cau
+  // Khong con la list const: PronunciationScreen (Luyen phat am - ghi am +
+  // cham diem, KHAC voi Phonics o tren) can biet no co dang la tab dang
+  // active hay khong (qua [isActive]) de tu doi cau luyen moi moi lan nguoi
+  // dung quay lai tab nay - IndexedStack giu nguyen state cua tat ca tab,
+  // initState() chi chay 1 lan duy nhat luc mo app nen khong tu doi cau
   // duoc neu khong co co che nay.
   List<Widget> _buildScreens() => [
     const HomeScreen(),
@@ -67,9 +70,13 @@ class _RootShellState extends ConsumerState<RootShell>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => showUpdateDialogIfAvailable(context),
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      showUpdateDialogIfAvailable(context);
+      // Xu ly truong hop app vua duoc mo lai (tu trang thai da tat han)
+      // chinh boi nguoi dung bam vao 1 thong bao cuoc goi den - xem
+      // ChatPush.init()/checkPendingCallLaunch().
+      ChatPush.instance.checkPendingCallLaunch(context);
+    });
     // Ngoai kiem tra luc mo app/resume, kiem tra dinh ky moi 15 phut - phong
     // truong hop nguoi dung khong bao gio dua app xuong nen (didChange
     // AppLifecycleState.resumed se khong bao gio ban), ho van thay thong
@@ -128,7 +135,30 @@ class _RootShellState extends ConsumerState<RootShell>
       showIncomingMessageBanner(
         context,
         sender: sender,
-        preview: message.content,
+        preview: message.previewText,
+        messageId: message.id,
+      );
+    });
+
+    // Co cuoc goi den - hien toan man tren CUNG (rootNavigator) bat ke dang
+    // o tab/man hinh con nao, giong dien thoai that khi co ai goi den.
+    ref.listen(incomingCallProvider, (previous, next) {
+      final call = next.valueOrNull;
+      if (call == null) return;
+      final friends = ref.read(myFriendsProvider).valueOrNull ?? const [];
+      SocialUser? caller;
+      for (final f in friends) {
+        if (f.id == call.callerId) {
+          caller = f;
+          break;
+        }
+      }
+      if (caller == null) return;
+      Navigator.of(context, rootNavigator: true).push(
+        MaterialPageRoute(
+          builder: (_) => IncomingCallScreen(call: call, caller: caller!),
+          fullscreenDialog: true,
+        ),
       );
     });
 

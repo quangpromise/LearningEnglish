@@ -2,6 +2,12 @@
     xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Goi thoai/video (Agora RTC, xem call_repository.dart). -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <!-- Bat buoc cho audio_service (dung boi just_audio_background) chay
          foreground service phat nhac o nen + thong bao/man hinh khoa - xem
          now_playing_service.dart. -->
@@ -16,6 +22,11 @@
          hoat dong ca khi app da dong/khoa may, can dat lich qua AlarmManager. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <!-- Cho phep thong bao cuoc goi den tu bat man hinh len ca khi may dang
+         khoa (fullScreenIntent trong chat_push.dart), giong 1 cuoc goi dien
+         thoai that - Android 14+ co the yeu cau nguoi dung tu cap lai trong
+         Settings neu bi thu hoi. -->
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <application
         android:label="GymTalk"
@@ -96,6 +107,10 @@
             </intent-filter>
         </receiver>
     </application>
+    <!-- Camera khong bat buoc de cai app - may khong co camera van goi
+         thoai (voice-only) binh thuong duoc. -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
          https://developer.android.com/reference/android/content/Intent#ACTION_PROCESS_TEXT.

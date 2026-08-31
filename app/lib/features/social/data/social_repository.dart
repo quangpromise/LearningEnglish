@@ -1,4 +1,20 @@
+import 'dart:typed_data';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+/// Chuoi hien thi ngan gon cho 1 tin nhan theo loai - dung chung cho danh
+/// sach hoi thoai (ConversationPreview) va banner tin nhan moi (root_shell.dart)
+/// de khong hien thang URL kho hieu khi tin la anh/sticker/file.
+String messageKindPreview({
+  required MessageKind kind,
+  String? content,
+  String? fileName,
+}) => switch (kind) {
+  MessageKind.sticker => '[Sticker]',
+  MessageKind.image => '[Hình ảnh]',
+  MessageKind.file => '📎 ${fileName ?? 'Tệp đính kèm'}',
+  MessageKind.text => content ?? '',
+};
 
 /// 1 user ban tim thay/ban be, kem trang thai quan he va online.
 class SocialUser {
@@ -11,6 +27,7 @@ class SocialUser {
     this.isOnline = false,
     this.lastSeenAt,
     this.requestCreatedAt,
+    this.nickname,
   });
 
   final String id;
@@ -26,10 +43,25 @@ class SocialUser {
   /// Chi co gia tri khi lay tu pendingRequests().
   final DateTime? requestCreatedAt;
 
-  String get label => displayName?.isNotEmpty == true
-      ? displayName!
-      : (username?.isNotEmpty == true ? username! : 'User');
+  /// Biet danh MINH tu dat cho nguoi nay (chi minh thay, xem
+  /// migration 0023_friend_nicknames.sql) - uu tien hien thi cao nhat neu co,
+  /// thay the ten that o MOI man hinh (yeu cau: "hien thi bat cu man hinh
+  /// nao chu khong phai ten nguoi do").
+  final String? nickname;
+
+  String get label => nickname?.isNotEmpty == true
+      ? nickname!
+      : (displayName?.isNotEmpty == true
+            ? displayName!
+            : (username?.isNotEmpty == true ? username! : 'User'));
 }
+
+/// 'text' - tin nhan chu thuong; 'sticker' - content la URL sticker (GIPHY,
+/// anh nen trong suot, khong luu vao storage cua minh nen khong tu het han);
+/// 'image'/'file' - content la URL file trong bucket 'chat_media' (tu xoa
+/// sau 1 ngay - xem migration 0016_chat_media.sql), fileName chi co gia tri
+/// o kind 'file' (ten goc de hien thi, vd "bao-cao.pdf").
+enum MessageKind { text, sticker, image, file }
 
 class ChatMessage {
   const ChatMessage({
@@ -39,6 +71,10 @@ class ChatMessage {
     required this.content,
     required this.createdAt,
     this.readAt,
+    this.kind = MessageKind.text,
+    this.fileName,
+    this.editedAt,
+    this.deletedAt,
   });
 
   factory ChatMessage.fromRow(Map<String, dynamic> row) => ChatMessage(
@@ -50,6 +86,17 @@ class ChatMessage {
     readAt: row['read_at'] != null
         ? DateTime.parse(row['read_at'] as String)
         : null,
+    kind: MessageKind.values.firstWhere(
+      (k) => k.name == (row['kind'] as String? ?? 'text'),
+      orElse: () => MessageKind.text,
+    ),
+    fileName: row['file_name'] as String?,
+    editedAt: row['edited_at'] != null
+        ? DateTime.parse(row['edited_at'] as String)
+        : null,
+    deletedAt: row['deleted_at'] != null
+        ? DateTime.parse(row['deleted_at'] as String)
+        : null,
   );
 
   final int id;
@@ -58,6 +105,47 @@ class ChatMessage {
   final String content;
   final DateTime createdAt;
   final DateTime? readAt;
+  final MessageKind kind;
+  final String? fileName;
+  final DateTime? editedAt;
+  final DateTime? deletedAt;
+
+  bool get isDeleted => deletedAt != null;
+  bool get isEdited => editedAt != null;
+
+  /// Tin nhan anh/file (khong phai sticker) qua han 1 ngay - link trong
+  /// storage gan nhu chac chan da bi cron don (xem cleanup_expired_chat_media())
+  /// nen hien "da het han" ngay thay vi doi tai that bai roi moi fallback.
+  bool get isExpiredMedia =>
+      (kind == MessageKind.image || kind == MessageKind.file) &&
+      DateTime.now().difference(createdAt) > const Duration(days: 1);
+
+  /// Dung cho banner tin nhan moi (kieu Messenger) - "[Hinh anh]"/"[Sticker]"/
+  /// ten file thay vi in thang URL.
+  String get previewText => isDeleted
+      ? 'Tin nhắn đã bị xóa'
+      : messageKindPreview(kind: kind, content: content, fileName: fileName);
+}
+
+/// 1 luot tha cam xuc (emoji) tren 1 tin nhan - moi nguoi CHI co toi da 1
+/// reaction/1 tin nhan (xem migration 0015_message_reactions.sql), bam lai
+/// emoji khac se thay the, bam lai cung emoji se bo (xu ly o client).
+class MessageReaction {
+  const MessageReaction({
+    required this.messageId,
+    required this.userId,
+    required this.emoji,
+  });
+
+  factory MessageReaction.fromRow(Map<String, dynamic> row) => MessageReaction(
+    messageId: row['message_id'] as int,
+    userId: row['user_id'] as String,
+    emoji: row['emoji'] as String,
+  );
+
+  final int messageId;
+  final String userId;
+  final String emoji;
 }
 
 /// 1 dong trong danh sach hoi thoai (man Tin nhan) - ban be kem tin nhan
@@ -67,18 +155,32 @@ class ConversationPreview {
   const ConversationPreview({
     required this.friend,
     this.lastMessage,
+    this.lastMessageKind = MessageKind.text,
+    this.lastMessageFileName,
     this.lastMessageAt,
     this.lastMessageIsMine = false,
+    this.lastMessageDeleted = false,
     this.unreadCount = 0,
   });
 
   final SocialUser friend;
   final String? lastMessage;
+  final MessageKind lastMessageKind;
+  final String? lastMessageFileName;
   final DateTime? lastMessageAt;
   final bool lastMessageIsMine;
+  final bool lastMessageDeleted;
   final int unreadCount;
 
   bool get hasUnread => unreadCount > 0;
+
+  String get lastMessagePreview => lastMessageDeleted
+      ? 'Tin nhắn đã bị xóa'
+      : messageKindPreview(
+          kind: lastMessageKind,
+          content: lastMessage,
+          fileName: lastMessageFileName,
+        );
 }
 
 /// Ket ban, tin nhan 1-1, va trang thai online - xem
@@ -120,8 +222,31 @@ class SocialRepository {
         lastSeenAt: m['last_seen_at'] != null
             ? DateTime.parse(m['last_seen_at'] as String)
             : null,
+        nickname: m['nickname'] as String?,
       );
     }).toList();
+  }
+
+  /// Dat/doi biet danh CHO RIENG minh voi 1 nguoi ban - hien thi thay the ten
+  /// that o MOI man hinh (xem SocialUser.label), khong anh huong nguoi kia.
+  /// Truyen null/rong de xoa biet danh, tra ve hien ten that.
+  Future<void> setNickname(String friendId, String? nickname) async {
+    final myId = _myId;
+    if (myId == null) return;
+    final trimmed = nickname?.trim();
+    if (trimmed == null || trimmed.isEmpty) {
+      await _supabase
+          .from('friend_nicknames')
+          .delete()
+          .eq('user_id', myId)
+          .eq('friend_id', friendId);
+    } else {
+      await _supabase.from('friend_nicknames').upsert({
+        'user_id': myId,
+        'friend_id': friendId,
+        'nickname': trimmed,
+      }, onConflict: 'user_id,friend_id');
+    }
   }
 
   Future<List<SocialUser>> fetchPendingRequests() async {
@@ -134,6 +259,7 @@ class SocialRepository {
         displayName: m['display_name'] as String?,
         avatarUrl: m['avatar_url'] as String?,
         requestCreatedAt: DateTime.parse(m['created_at'] as String),
+        nickname: m['nickname'] as String?,
       );
     }).toList();
   }
@@ -265,8 +391,15 @@ class SocialRepository {
           lastSeenAt: m['last_seen_at'] != null
               ? DateTime.parse(m['last_seen_at'] as String)
               : null,
+          nickname: m['nickname'] as String?,
         ),
         lastMessage: m['last_message'] as String?,
+        lastMessageKind: MessageKind.values.firstWhere(
+          (k) => k.name == (m['last_message_kind'] as String? ?? 'text'),
+          orElse: () => MessageKind.text,
+        ),
+        lastMessageFileName: m['last_message_file_name'] as String?,
+        lastMessageDeleted: m['last_message_deleted'] as bool? ?? false,
         lastMessageAt: m['last_message_at'] != null
             ? DateTime.parse(m['last_message_at'] as String)
             : null,
@@ -301,6 +434,135 @@ class SocialRepository {
       'receiver_id': receiverId,
       'content': content.trim(),
     });
+  }
+
+  /// Sua noi dung 1 tin nhan CHU (kind 'text') CUA CHINH MINH da gui - RLS
+  /// (messages_update_own) chan nguoi khac sua tin cua minh. Chi hop ly cho
+  /// tin nhan chu - anh/sticker/file khong the "sua" theo nghia nay.
+  Future<void> editMessage(int messageId, String newContent) async {
+    if (newContent.trim().isEmpty) return;
+    await _supabase
+        .from('messages')
+        .update({
+          'content': newContent.trim(),
+          'edited_at': DateTime.now().toIso8601String(),
+        })
+        .eq('id', messageId);
+  }
+
+  /// Xoa MEM 1 tin nhan CUA CHINH MINH (danh dau deleted_at, khong xoa dong
+  /// that su) - ben con lai thay 1 vet "Tin nhan da bi xoa" giong Messenger,
+  /// xem ChatMessage.isDeleted.
+  Future<void> deleteMessage(int messageId) async {
+    await _supabase
+        .from('messages')
+        .update({'deleted_at': DateTime.now().toIso8601String()})
+        .eq('id', messageId);
+  }
+
+  /// Gui 1 sticker (URL tu GIPHY) nhu 1 tin nhan rieng - content la URL,
+  /// khong can tai len bucket rieng (GIPHY tu host).
+  Future<void> sendSticker(String receiverId, String stickerUrl) async {
+    final myId = _myId;
+    if (myId == null) return;
+    await _supabase.from('messages').insert({
+      'sender_id': myId,
+      'receiver_id': receiverId,
+      'content': stickerUrl,
+      'kind': 'sticker',
+    });
+  }
+
+  /// Ten file ngau nhien, kho doan - dung cho duong dan trong bucket
+  /// 'chat_media' (public=true, xem migration 0016_chat_media.sql) thay vi
+  /// them 1 package 'uuid' rieng chi cho viec nay.
+  String _randomFileName(String ext) {
+    final rand =
+        (DateTime.now().microsecondsSinceEpoch ^ identityHashCode(this))
+            .toRadixString(36);
+    return '$rand.$ext';
+  }
+
+  Future<String> _uploadChatMedia(Uint8List bytes, String ext) async {
+    final myId = _myId!;
+    final path = '$myId/${_randomFileName(ext)}';
+    await _supabase.storage
+        .from('chat_media')
+        .uploadBinary(
+          path,
+          bytes,
+          fileOptions: const FileOptions(upsert: false),
+        );
+    return _supabase.storage.from('chat_media').getPublicUrl(path);
+  }
+
+  /// Tai anh len bucket 'chat_media' roi gui nhu 1 tin nhan - file TU XOA
+  /// sau 1 ngay (cron server, xem migration) de khong ton dung luong.
+  Future<void> sendImage(String receiverId, Uint8List bytes, String ext) async {
+    final myId = _myId;
+    if (myId == null) return;
+    final url = await _uploadChatMedia(bytes, ext);
+    await _supabase.from('messages').insert({
+      'sender_id': myId,
+      'receiver_id': receiverId,
+      'content': url,
+      'kind': 'image',
+    });
+  }
+
+  /// Tuong tu [sendImage] nhung cho file bat ky (PDF, tai lieu...) - giu lai
+  /// [fileName] GOC de hien thi (URL trong storage la ten ngau nhien).
+  Future<void> sendFile(
+    String receiverId,
+    Uint8List bytes,
+    String ext,
+    String fileName,
+  ) async {
+    final myId = _myId;
+    if (myId == null) return;
+    final url = await _uploadChatMedia(bytes, ext);
+    await _supabase.from('messages').insert({
+      'sender_id': myId,
+      'receiver_id': receiverId,
+      'content': url,
+      'kind': 'file',
+      'file_name': fileName,
+    });
+  }
+
+  /// Dat/thay reaction CUA MINH tren 1 tin nhan - upsert nen bam emoji khac
+  /// se tu thay the reaction cu, khong can xoa truoc.
+  Future<void> setReaction(int messageId, String emoji) async {
+    final myId = _myId;
+    if (myId == null) return;
+    await _supabase.from('message_reactions').upsert({
+      'message_id': messageId,
+      'user_id': myId,
+      'emoji': emoji,
+    }, onConflict: 'message_id,user_id');
+  }
+
+  /// Bo reaction CUA MINH tren 1 tin nhan (bam lai dung emoji da tha).
+  Future<void> removeReaction(int messageId) async {
+    final myId = _myId;
+    if (myId == null) return;
+    await _supabase
+        .from('message_reactions')
+        .delete()
+        .eq('message_id', messageId)
+        .eq('user_id', myId);
+  }
+
+  /// Realtime: TOAN BO reaction ma minh co quyen xem (RLS da gioi han chi
+  /// nhung tin nhan thuoc cuoc hoi thoai cua minh) - loc theo messageId cua
+  /// 1 cuoc hoi thoai cu the o phia UI (xem chat_screen.dart), giong cach
+  /// watchUnreadCount()/watchPendingRequestCount() da lam voi cac bang khac.
+  Stream<List<MessageReaction>> watchReactions() {
+    if (_myId == null) return const Stream.empty();
+    return _supabase
+        .from('message_reactions')
+        .stream(primaryKey: ['message_id', 'user_id'])
+        .map((rows) => rows.map(MessageReaction.fromRow).toList());
   }
 
   /// Realtime: moi lan co thay doi (tin nhan moi...), tra ve LAI TOAN BO

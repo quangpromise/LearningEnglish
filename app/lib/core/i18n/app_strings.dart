@@ -505,6 +505,23 @@ class AppStrings {
       AppLanguage.en: 'Request sent',
     },
     'friends_add_button': {AppLanguage.vi: 'Kết bạn', AppLanguage.en: 'Add'},
+    'friends_set_nickname_title': {
+      AppLanguage.vi: 'Đặt biệt danh',
+      AppLanguage.en: 'Set nickname',
+    },
+    'friends_save_nickname': {AppLanguage.vi: 'Lưu', AppLanguage.en: 'Save'},
+    'friends_unfriend_title': {
+      AppLanguage.vi: 'Hủy kết bạn',
+      AppLanguage.en: 'Unfriend',
+    },
+    'friends_unfriend_body': {
+      AppLanguage.vi: 'Bạn có thể gửi lại lời mời kết bạn sau nếu muốn.',
+      AppLanguage.en: 'You can send a friend request again later if you want.',
+    },
+    'friends_unfriend_confirm': {
+      AppLanguage.vi: 'Hủy kết bạn',
+      AppLanguage.en: 'Unfriend',
+    },
     'friends_online': {AppLanguage.vi: 'Đang online', AppLanguage.en: 'Online'},
     'friends_offline': {
       AppLanguage.vi: 'Không hoạt động',
@@ -527,6 +544,90 @@ class AppStrings {
       AppLanguage.en: 'Failed to send, please try again.',
     },
     'chat_seen': {AppLanguage.vi: 'Đã xem', AppLanguage.en: 'Seen'},
+    'chat_pick_image': {
+      AppLanguage.vi: 'Gửi ảnh',
+      AppLanguage.en: 'Send photo',
+    },
+    'chat_pick_file': {AppLanguage.vi: 'Gửi tệp', AppLanguage.en: 'Send file'},
+    'chat_upload_error': {
+      AppLanguage.vi: 'Gửi thất bại, thử lại nhé.',
+      AppLanguage.en: 'Upload failed, please try again.',
+    },
+    'chat_media_expired': {
+      AppLanguage.vi: 'Tệp đã hết hạn (tự xóa sau 1 ngày)',
+      AppLanguage.en: 'Expired (auto-deleted after 1 day)',
+    },
+    'call_permission_denied': {
+      AppLanguage.vi: 'Cần cấp quyền micro/camera để gọi.',
+      AppLanguage.en: 'Microphone/camera permission is required to call.',
+    },
+    'call_connect_error': {
+      AppLanguage.vi: 'Không kết nối được cuộc gọi.',
+      AppLanguage.en: 'Could not connect the call.',
+    },
+    'call_connecting': {
+      AppLanguage.vi: 'Đang kết nối...',
+      AppLanguage.en: 'Connecting...',
+    },
+    'call_ringing': {
+      AppLanguage.vi: 'Đang đổ chuông...',
+      AppLanguage.en: 'Ringing...',
+    },
+    'call_in_progress': {
+      AppLanguage.vi: 'Đang trong cuộc gọi',
+      AppLanguage.en: 'In call',
+    },
+    'call_incoming_video': {
+      AppLanguage.vi: 'Cuộc gọi video đến',
+      AppLanguage.en: 'Incoming video call',
+    },
+    'call_incoming_voice': {
+      AppLanguage.vi: 'Cuộc gọi thoại đến',
+      AppLanguage.en: 'Incoming voice call',
+    },
+    'call_decline': {AppLanguage.vi: 'Từ chối', AppLanguage.en: 'Decline'},
+    'call_accept': {AppLanguage.vi: 'Chấp nhận', AppLanguage.en: 'Accept'},
+    'chat_sticker_title': {
+      AppLanguage.vi: 'Sticker',
+      AppLanguage.en: 'Stickers',
+    },
+    'chat_sticker_search_hint': {
+      AppLanguage.vi: 'Tìm sticker...',
+      AppLanguage.en: 'Search stickers...',
+    },
+    'chat_sticker_load_error': {
+      AppLanguage.vi: 'Không tải được sticker, thử lại nhé.',
+      AppLanguage.en: "Couldn't load stickers, please try again.",
+    },
+    'chat_react': {AppLanguage.vi: 'Thả cảm xúc', AppLanguage.en: 'React'},
+    'chat_edit': {AppLanguage.vi: 'Chỉnh sửa', AppLanguage.en: 'Edit'},
+    'chat_delete': {AppLanguage.vi: 'Xóa', AppLanguage.en: 'Delete'},
+    'chat_delete_title': {
+      AppLanguage.vi: 'Xóa tin nhắn?',
+      AppLanguage.en: 'Delete message?',
+    },
+    'chat_delete_body': {
+      AppLanguage.vi: 'Người còn lại sẽ thấy tin nhắn này đã bị xóa.',
+      AppLanguage.en: 'The other person will see this message as deleted.',
+    },
+    'chat_delete_confirm': {AppLanguage.vi: 'Xóa', AppLanguage.en: 'Delete'},
+    'chat_message_deleted': {
+      AppLanguage.vi: 'Tin nhắn đã bị xóa',
+      AppLanguage.en: 'This message was deleted',
+    },
+    'chat_edited': {AppLanguage.vi: 'đã chỉnh sửa', AppLanguage.en: 'edited'},
+    'chat_editing_hint': {
+      AppLanguage.vi: 'Đang chỉnh sửa tin nhắn',
+      AppLanguage.en: 'Editing message',
+    },
+    'chat_theme_title': {
+      AppLanguage.vi: 'Đổi màu nền đoạn chat',
+      AppLanguage.en: 'Chat theme',
+    },
+    'chat_open_file_error': {
+      AppLanguage.vi: 'Không mở được tệp này.',
+      AppLanguage.en: "Couldn't open this file.",
+    },
     'conversations_no_message': {
       AppLanguage.vi: 'Chưa có tin nhắn nào',
       AppLanguage.en: 'No messages yet',
@@ -588,6 +689,14 @@ class AppStrings {
       AppLanguage.en: 'Learn new words across 46 familiar topics',
     },
     'home_song_count': {AppLanguage.vi: 'bài hát', AppLanguage.en: 'songs'},
+    'home_music_quick_title': {
+      AppLanguage.vi: 'Nghe nhạc',
+      AppLanguage.en: 'Listen to Music',
+    },
+    'home_music_quick_subtitle': {
+      AppLanguage.vi: 'Nghe nhạc học tiếng Anh, tìm bài hát yêu thích',
+      AppLanguage.en: 'Listen and learn English through songs',
+    },
     'home_search_results': {
       AppLanguage.vi: 'Kết quả tìm kiếm',
       AppLanguage.en: 'Search results',

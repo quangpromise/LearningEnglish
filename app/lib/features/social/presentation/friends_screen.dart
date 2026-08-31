@@ -372,10 +372,135 @@ class _FriendTile extends ConsumerWidget {
   const _FriendTile({required this.user});
   final SocialUser user;
 
+  Future<void> _showNicknameDialog(BuildContext context, WidgetRef ref) async {
+    final ctrl = TextEditingController(text: user.nickname ?? '');
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF12172E),
+        title: Text(
+          ref.tr('friends_set_nickname_title'),
+          style: const TextStyle(color: AppColors.textPrimary),
+        ),
+        content: TextField(
+          controller: ctrl,
+          autofocus: true,
+          style: AppTextStyles.body(),
+          decoration: InputDecoration(
+            hintText: user.displayName ?? user.username ?? '',
+            hintStyle: AppTextStyles.muted(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(ref.tr('common_cancel')),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(ctrl.text),
+            child: Text(ref.tr('friends_save_nickname')),
+          ),
+        ],
+      ),
+    );
+    ctrl.dispose();
+    if (result == null) return;
+    await ref.read(socialRepositoryProvider).setNickname(user.id, result);
+    ref.invalidate(myFriendsProvider);
+    ref.invalidate(myConversationsProvider);
+  }
+
+  Future<void> _confirmUnfriend(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF12172E),
+        title: Text(
+          ref.tr('friends_unfriend_title'),
+          style: const TextStyle(color: AppColors.textPrimary),
+        ),
+        content: Text(
+          ref.tr('friends_unfriend_body'),
+          style: AppTextStyles.muted(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(ref.tr('common_cancel')),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(
+              ref.tr('friends_unfriend_confirm'),
+              style: const TextStyle(color: AppColors.pink),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      await ref.read(socialRepositoryProvider).removeFriendship(user.id);
+      ref.invalidate(myFriendsProvider);
+      ref.invalidate(myConversationsProvider);
+    }
+  }
+
+  void _showOptions(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => Padding(
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            color: const Color(0xEB0F1326),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppColors.glassBorder),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(
+                  Icons.badge_outlined,
+                  color: AppColors.textPrimary,
+                ),
+                title: Text(
+                  ref.tr('friends_set_nickname_title'),
+                  style: AppTextStyles.body(),
+                ),
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  _showNicknameDialog(context, ref);
+                },
+              ),
+              ListTile(
+                leading: const Icon(
+                  Icons.person_remove_outlined,
+                  color: AppColors.pink,
+                ),
+                title: Text(
+                  ref.tr('friends_unfriend_title'),
+                  style: AppTextStyles.body(color: AppColors.pink),
+                ),
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  _confirmUnfriend(context, ref);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return GestureDetector(
       onTap: () => openChatPopup(context, user),
+      onLongPress: () => _showOptions(context, ref),
       child: GlowBox(
         borderRadius: 16,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -400,6 +525,18 @@ class _FriendTile extends ConsumerWidget {
                 ],
               ),
             ),
+            GestureDetector(
+              onTap: () => _showOptions(context, ref),
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 4),
+                child: Icon(
+                  Icons.more_vert_rounded,
+                  size: 18,
+                  color: AppColors.textMuted,
+                ),
+              ),
+            ),
+            const SizedBox(width: 4),
             const Icon(
               Icons.chat_bubble_outline_rounded,
               size: 18,

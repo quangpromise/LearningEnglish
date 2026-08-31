@@ -46,11 +46,15 @@ jobs:
           SB_URL: ${{ secrets.SUPABASE_URL }}
           SB_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
           GG_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID }}
+          GIPHY_KEY: ${{ secrets.GIPHY_API_KEY }}
+          AGORA_ID: ${{ secrets.AGORA_APP_ID }}
         run: |
           CLEAN_URL=$(printf '%s' "$SB_URL" | tr -d '\n\r')
           CLEAN_ANON_KEY=$(printf '%s' "$SB_ANON_KEY" | tr -d '\n\r')
           CLEAN_CLIENT_ID=$(printf '%s' "$GG_CLIENT_ID" | tr -d '\n\r')
-          flutter build web --release --base-href /LearningEnglish/ --dart-define=SUPABASE_URL="$CLEAN_URL" --dart-define=SUPABASE_ANON_KEY="$CLEAN_ANON_KEY" --dart-define=GOOGLE_WEB_CLIENT_ID="$CLEAN_CLIENT_ID"
+          CLEAN_GIPHY_KEY=$(printf '%s' "$GIPHY_KEY" | tr -d '\n\r')
+          CLEAN_AGORA_ID=$(printf '%s' "$AGORA_ID" | tr -d '\n\r')
+          flutter build web --release --base-href /LearningEnglish/ --dart-define=SUPABASE_URL="$CLEAN_URL" --dart-define=SUPABASE_ANON_KEY="$CLEAN_ANON_KEY" --dart-define=GOOGLE_WEB_CLIENT_ID="$CLEAN_CLIENT_ID" --dart-define=GIPHY_API_KEY="$CLEAN_GIPHY_KEY" --dart-define=AGORA_APP_ID="$CLEAN_AGORA_ID"
 
       - uses: actions/upload-pages-artifact@v3
         with:

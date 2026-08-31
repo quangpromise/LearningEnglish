@@ -177,13 +177,17 @@ class PillButton extends StatelessWidget {
 }
 
 class ScreenBackground extends StatelessWidget {
-  const ScreenBackground({super.key, required this.child});
+  const ScreenBackground({super.key, required this.child, this.gradient});
   final Widget child;
+
+  /// Cho phep 1 man hinh cu the (vd ChatScreen voi theme nen tuy chinh) doi
+  /// nen rieng thay vi dung mac dinh chung ca app.
+  final Gradient? gradient;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(gradient: AppColors.screenGradient),
+      decoration: BoxDecoration(gradient: gradient ?? AppColors.screenGradient),
       child: SafeArea(
         // Ep decoration mac dinh la none o tang goc man hinh: bat ky
         // TextStyle nao (kem ca cac TextStyle() viet tay khong qua

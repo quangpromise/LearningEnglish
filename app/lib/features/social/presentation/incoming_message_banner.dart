@@ -9,6 +9,7 @@ import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/social_repository.dart';
 import 'chat_screen.dart';
+import 'emoji_reaction_picker.dart';
 
 /// Am "ding" bao tin nhan (giong Messenger) khi popup trong app hien len -
 /// dung rieng 1 AudioPlayer (khac AppTts) vi day la hieu ung UI ngan, khong
@@ -40,6 +41,7 @@ void showIncomingMessageBanner(
   BuildContext context, {
   required SocialUser sender,
   required String preview,
+  required int messageId,
 }) {
   _playIncomingMessageSound();
   final overlay = Overlay.of(context);
@@ -48,6 +50,7 @@ void showIncomingMessageBanner(
     builder: (context) => _IncomingMessageBanner(
       sender: sender,
       preview: preview,
+      messageId: messageId,
       onDismiss: () => entry.remove(),
       onOpenChat: () {
         entry.remove();
@@ -62,12 +65,14 @@ class _IncomingMessageBanner extends ConsumerStatefulWidget {
   const _IncomingMessageBanner({
     required this.sender,
     required this.preview,
+    required this.messageId,
     required this.onDismiss,
     required this.onOpenChat,
   });
 
   final SocialUser sender;
   final String preview;
+  final int messageId;
   final VoidCallback onDismiss;
   final VoidCallback onOpenChat;
 
@@ -241,7 +246,35 @@ class _IncomingMessageBannerState extends ConsumerState<_IncomingMessageBanner>
                             ),
                           ),
                           if (!_replying) ...[
-                            const SizedBox(width: 8),
+                            const SizedBox(width: 6),
+                            // Tha cam xuc ngay tai day ma khong can mo chat -
+                            // dung chung 1 bo emoji voi ChatScreen (xem
+                            // emoji_reaction_picker.dart).
+                            GestureDetector(
+                              onTap: () => showEmojiReactionPicker(
+                                context,
+                                onSelected: (emoji) {
+                                  ref
+                                      .read(socialRepositoryProvider)
+                                      .setReaction(widget.messageId, emoji);
+                                  _dismiss();
+                                },
+                              ),
+                              child: Container(
+                                width: 34,
+                                height: 34,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.1),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.add_reaction_outlined,
+                                  size: 17,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
                             // Nut rieng, ro rang de mo o tra loi nhanh - truoc
                             // day chi bam vao ca hang moi mo duoc, kho nhan
                             // biet la co the tra loi ngay tai day.

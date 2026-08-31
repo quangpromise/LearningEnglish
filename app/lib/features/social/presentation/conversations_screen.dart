@@ -169,8 +169,8 @@ class _ConversationTile extends ConsumerWidget {
     final preview = conversation.lastMessage == null
         ? ref.tr('conversations_no_message')
         : conversation.lastMessageIsMine
-        ? '${ref.tr('conversations_you_prefix')}${conversation.lastMessage}'
-        : conversation.lastMessage!;
+        ? '${ref.tr('conversations_you_prefix')}${conversation.lastMessagePreview}'
+        : conversation.lastMessagePreview;
 
     return GestureDetector(
       onTap: () => openChatPopup(context, friend),

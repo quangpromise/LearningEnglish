@@ -97,14 +97,19 @@ class MiniPlayer extends StatelessWidget {
                             ],
                           ),
                         ),
-                        const SizedBox(width: 4),
-                        IconButton(
-                          onPressed: queue.length > 1 ? service.previous : null,
-                          icon: const Icon(
-                            Icons.skip_previous_rounded,
-                            color: AppColors.textPrimary,
-                            size: 22,
+                        _MiniIconBtn(
+                          icon: Icons.replay_10_rounded,
+                          size: 18,
+                          onTap: () => service.player.seek(
+                            Duration(
+                              seconds: (service.player.position.inSeconds - 10)
+                                  .clamp(0, 1 << 30),
+                            ),
                           ),
+                        ),
+                        _MiniIconBtn(
+                          icon: Icons.skip_previous_rounded,
+                          onTap: queue.length > 1 ? service.previous : null,
                         ),
                         StreamBuilder<PlayerState>(
                           stream: service.player.playerStateStream,
@@ -133,12 +138,17 @@ class MiniPlayer extends StatelessWidget {
                             );
                           },
                         ),
-                        IconButton(
-                          onPressed: queue.length > 1 ? service.next : null,
-                          icon: const Icon(
-                            Icons.skip_next_rounded,
-                            color: AppColors.textPrimary,
-                            size: 22,
+                        _MiniIconBtn(
+                          icon: Icons.skip_next_rounded,
+                          onTap: queue.length > 1 ? service.next : null,
+                        ),
+                        _MiniIconBtn(
+                          icon: Icons.forward_10_rounded,
+                          size: 18,
+                          onTap: () => service.player.seek(
+                            Duration(
+                              seconds: service.player.position.inSeconds + 10,
+                            ),
                           ),
                         ),
                       ],
@@ -185,5 +195,30 @@ class MiniPlayer extends StatelessWidget {
     final m = d.inMinutes;
     final s = d.inSeconds % 60;
     return '$m:${s.toString().padLeft(2, '0')}';
+  }
+}
+
+/// Nut icon nho gon cho thanh mini-player - IconButton mac dinh qua rong
+/// (48x48 min tap target) khien 4 nut (tua lui/bai truoc/bai sau/tua toi)
+/// cong them nut Phat tron o giua bi tran hang tren thanh hep.
+class _MiniIconBtn extends StatelessWidget {
+  const _MiniIconBtn({required this.icon, required this.onTap, this.size = 20});
+  final IconData icon;
+  final VoidCallback? onTap;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 3),
+        child: Icon(
+          icon,
+          size: size,
+          color: onTap != null ? AppColors.textPrimary : AppColors.textMuted,
+        ),
+      ),
+    );
   }
 }

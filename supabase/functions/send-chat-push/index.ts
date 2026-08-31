@@ -20,6 +20,8 @@ interface MessagePayload {
   receiver_id: string;
   content: string;
   message_id: number;
+  kind?: string;
+  file_name?: string | null;
 }
 
 // Chuyen PEM private key (tu service account JSON) thanh CryptoKey de ky JWT
@@ -136,6 +138,23 @@ Deno.serve(async (req) => {
   const senderName =
     senderProfile?.display_name || senderProfile?.username || 'Bạn bè';
 
+  // Tin nhan anh/file/sticker co 'content' la 1 URL - khong hien thang URL
+  // do trong noi dung thong bao (kho hieu, xau), thay bang mo ta ngan gon.
+  // 'content' GOC van duoc gui kem rieng (xem duoi) de client tu quyet dinh
+  // hien anh xem truoc that (vd sticker/anh dung BigPictureStyle) khi can.
+  const previewText = (() => {
+    switch (payload.kind) {
+      case 'sticker':
+        return '[Sticker]';
+      case 'image':
+        return '[Hình ảnh]';
+      case 'file':
+        return `📎 ${payload.file_name ?? 'Tệp đính kèm'}`;
+      default:
+        return payload.content;
+    }
+  })();
+
   const results = await Promise.all(
     tokens.map(async ({ fcm_token }: { fcm_token: string }) => {
       const res = await fetch(
@@ -161,7 +180,11 @@ Deno.serve(async (req) => {
                 sender_id: payload.sender_id,
                 sender_name: senderName,
                 sender_avatar_url: senderProfile?.avatar_url ?? '',
-                content: payload.content,
+                content: previewText,
+                kind: payload.kind ?? 'text',
+                media_url: payload.kind === 'sticker' || payload.kind === 'image'
+                  ? payload.content
+                  : '',
               },
               android: { priority: 'high' },
             },

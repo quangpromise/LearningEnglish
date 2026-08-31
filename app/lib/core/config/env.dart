@@ -38,4 +38,16 @@ class Env {
   static const geminiApiKeyDirect = String.fromEnvironment(
     'GEMINI_API_KEY_DIRECT',
   );
+
+  /// API key GIPHY (mien phi, dang ky tai developers.giphy.com) - dung cho
+  /// tinh nang sticker trong chat (xem sticker_repository.dart). Khong
+  /// hardcode gia tri that vao day, luon truyen qua
+  /// --dart-define=GIPHY_API_KEY=... (CI da cau hinh sẵn secret GIPHY_API_KEY).
+  static const giphyApiKey = String.fromEnvironment('GIPHY_API_KEY');
+
+  /// App ID cua project Agora (mien phi, dang ky tai console.agora.io) -
+  /// dung cho tinh nang goi thoai/video (xem call_repository.dart). KHONG
+  /// bi mat (App Certificate rieng moi bi mat, chi luu o Edge Function
+  /// agora-token) nen dua qua dart-define binh thuong nhu cac ID khac.
+  static const agoraAppId = String.fromEnvironment('AGORA_APP_ID');
 }

@@ -41,17 +41,14 @@ Future<void> main() async {
     await DailyQuizNotifications.instance.init();
     await ChatPush.instance.init();
     // Thong bao he thong + man hinh khoa cho bai dang phat (giong Spotify) -
-    // chi Android/iOS/macOS ho tro, KHONG co tren web nen bo qua cung nhom
-    // dieu kien nay. Phai goi TRUOC bat ky AudioPlayer nao duoc tao (o day
-    // la truoc khi NowPlayingService.instance duoc truy cap lan dau).
-    //
-    // BOC try/catch + timeout: day la buoc khoi tao DUY NHAT trong ca app co
-    // the treo VO HAN (cho phan hoi tu 1 Android Service) - tung thuc su lam
-    // dung yen ca app mai o man hinh splash tren may that khi service khong
-    // bind duoc (xem ghi chu trong proguard-rules.pro). Thong bao/man hinh
-    // khoa la tinh nang "co thi tot", KHONG dang danh doi voi rui ro
-    // lam sap toan bo app - that bai/timeout thi bo qua tinh nang nay
-    // trong im lang, van vao app binh thuong.
+    // kem nut tua lui/toi 10s + bai truoc/sau (fastForwardInterval/
+    // rewindInterval mac dinh da la 10s, khong can khai bao lai). Da TUNG gay
+    // treo splash vinh vien (R8 xoa mat class cua audio_service, xem
+    // proguard-rules.pro) va sau khi sua van mat tieng hoan toan (channel
+    // "_v2" bi khoa cung khong am, xem chat_push.dart) - ca 2 nguyen nhan
+    // GOC da duoc xu ly, bat lai theo yeu cau nguoi dung, van boc trong
+    // try/catch + timeout de KHONG bao gio lam dung ca app duoc nua du co
+    // that bai vi ly do nao khac chua luong truoc.
     try {
       await JustAudioBackground.init(
         androidNotificationChannelId: 'com.learnenglishmusic.audio',
