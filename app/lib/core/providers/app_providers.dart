@@ -73,11 +73,57 @@ final favoritesRepositoryProvider = Provider<FavoritesRepository>(
   (ref) => FavoritesRepository(ref.watch(supabaseClientProvider)),
 );
 
-/// Tên các bài hát user đã đánh dấu yêu thích. Gọi
-/// `ref.invalidate(favoriteSongTitlesProvider)` sau khi bật/tắt yêu thích.
-final favoriteSongTitlesProvider = FutureProvider.autoDispose(
-  (ref) => ref.watch(favoritesRepositoryProvider).fetchFavoriteTitles(),
-);
+/// Quan ly danh sach ten bai hat yeu thich - dung StateNotifier (khong phai
+/// FutureProvider thuan) de ho tro CAP NHAT UI NGAY LAP TUC (optimistic) khi
+/// bat/tat yeu thich, thay vi phai cho invalidate() goi lai fetchFavoriteTitles()
+/// tu server (co do tre, tung khien nguoi dung phai roi man hinh/quay lai moi
+/// thay tick cap nhat). Goi `ref.read(favoriteSongTitlesProvider.notifier)
+/// .toggle(title)` de bat/tat 1 bai - KHONG con dung ref.invalidate() nua.
+class FavoriteSongsNotifier extends StateNotifier<AsyncValue<Set<String>>> {
+  FavoriteSongsNotifier(this._repo) : super(const AsyncValue.loading()) {
+    _load();
+  }
+  final FavoritesRepository _repo;
+
+  Future<void> _load() async {
+    try {
+      state = AsyncValue.data(await _repo.fetchFavoriteTitles());
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  Future<void> toggle(String title) async {
+    final current = state.valueOrNull ?? <String>{};
+    final wasFavorite = current.contains(title);
+    // Cap nhat UI truoc (khong cho ghi server) - moi noi dang watch provider
+    // nay (danh sach bai hat, popup theo trinh do, man phat nhac) deu thay
+    // tick doi NGAY LAP TUC.
+    final optimistic = {...current};
+    if (wasFavorite) {
+      optimistic.remove(title);
+    } else {
+      optimistic.add(title);
+    }
+    state = AsyncValue.data(optimistic);
+    try {
+      if (wasFavorite) {
+        await _repo.removeFavorite(title);
+      } else {
+        await _repo.addFavorite(title);
+      }
+    } catch (_) {
+      // Ghi server that bai - khoi phuc lai trang thai cu de khong hien sai.
+      state = AsyncValue.data(current);
+    }
+  }
+}
+
+final favoriteSongTitlesProvider =
+    StateNotifierProvider.autoDispose<
+      FavoriteSongsNotifier,
+      AsyncValue<Set<String>>
+    >((ref) => FavoriteSongsNotifier(ref.watch(favoritesRepositoryProvider)));
 
 final socialRepositoryProvider = Provider<SocialRepository>(
   (ref) => SocialRepository(ref.watch(supabaseClientProvider)),

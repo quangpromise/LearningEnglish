@@ -245,8 +245,6 @@ class _LevelGroupList extends StatelessWidget {
   }
 
   void _openLevelPopup(BuildContext context, String level, List<Song> songs) {
-    final favoriteTitles =
-        ref.read(favoriteSongTitlesProvider).valueOrNull ?? <String>{};
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -289,17 +287,30 @@ class _LevelGroupList extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Expanded(
-                    child: ListView.separated(
-                      itemCount: songs.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 12),
-                      itemBuilder: (context, i) => _SongTile(
-                        song: songs[i],
-                        isFavorite: favoriteTitles.contains(songs[i].title),
-                        onTap: () {
-                          Navigator.of(context).maybePop();
-                          onOpen(songs, i);
-                        },
-                      ),
+                    // Consumer (khong phai ref.read 1 lan luc mo popup) - de
+                    // icon yeu thich tu cap nhat NGAY khi bam trong chinh
+                    // popup nay, thay vi giu nguyen trang thai cu cho toi khi
+                    // dong popup mo lai.
+                    child: Consumer(
+                      builder: (context, ref, _) {
+                        final favoriteTitles =
+                            ref.watch(favoriteSongTitlesProvider).valueOrNull ??
+                            <String>{};
+                        return ListView.separated(
+                          itemCount: songs.length,
+                          separatorBuilder: (_, _) => const SizedBox(height: 12),
+                          itemBuilder: (context, i) => _SongTile(
+                            song: songs[i],
+                            isFavorite: favoriteTitles.contains(
+                              songs[i].title,
+                            ),
+                            onTap: () {
+                              Navigator.of(context).maybePop();
+                              onOpen(songs, i);
+                            },
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ],
@@ -357,15 +368,10 @@ class _SongTile extends ConsumerWidget {
               ),
             ),
             GestureDetector(
-              onTap: () async {
-                final repo = ref.read(favoritesRepositoryProvider);
-                if (isFavorite) {
-                  await repo.removeFavorite(song.title);
-                } else {
-                  await repo.addFavorite(song.title);
-                }
-                ref.invalidate(favoriteSongTitlesProvider);
-              },
+              onTap: () =>
+                  ref.read(favoriteSongTitlesProvider.notifier).toggle(
+                    song.title,
+                  ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 6),
                 child: Icon(

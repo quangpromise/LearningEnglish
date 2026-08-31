@@ -204,15 +204,9 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
                           ? Icons.favorite_rounded
                           : Icons.favorite_border_rounded,
                       iconColor: isFavorite ? AppColors.pink : null,
-                      onTap: () async {
-                        final repo = ref.read(favoritesRepositoryProvider);
-                        if (isFavorite) {
-                          await repo.removeFavorite(_song.title);
-                        } else {
-                          await repo.addFavorite(_song.title);
-                        }
-                        ref.invalidate(favoriteSongTitlesProvider);
-                      },
+                      onTap: () => ref
+                          .read(favoriteSongTitlesProvider.notifier)
+                          .toggle(_song.title),
                     ),
                     const SizedBox(width: 8),
                     _CircleBtn(
