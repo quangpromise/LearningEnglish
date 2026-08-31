@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart' show ScrollCacheExtent;
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
 
@@ -12,6 +12,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../grammar/presentation/grammar_screen.dart';
 import '../../translation/presentation/word_popup_sheet.dart';
 import '../data/songs_data.dart';
+import 'karaoke_lyrics.dart';
 
 class PlayerScreen extends ConsumerStatefulWidget {
   const PlayerScreen({
@@ -30,7 +31,8 @@ class PlayerScreen extends ConsumerStatefulWidget {
   ConsumerState<PlayerScreen> createState() => _PlayerScreenState();
 }
 
-class _PlayerScreenState extends ConsumerState<PlayerScreen> {
+class _PlayerScreenState extends ConsumerState<PlayerScreen>
+    with SingleTickerProviderStateMixin {
   // Dung chung 1 AudioPlayer cho toan app (xem now_playing_service.dart) -
   // truoc day moi PlayerScreen tu tao AudioPlayer rieng, nen thoat 1 bai roi
   // mo bai khac ngay lap tuc (trong luc man hinh cu con dang chuyen canh,
@@ -43,9 +45,19 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   bool _bilingual = true;
   String? _error;
   bool _completedRecorded = false;
-  Timer? _positionTimer;
   StreamSubscription<PlayerState>? _stateSub;
   late List<GlobalKey> _lineKeys;
+
+  /// Lyric da duoc chia xuong tung tu kem moc thoi gian rieng (xem
+  /// karaoke_lyrics.dart) de chay hieu ung to sang tung chu theo giong hat.
+  late List<KaraokeLine> _karaoke;
+
+  /// Vi tri phat hien tai (giay), cap nhat MOI KHUNG HINH. Dung
+  /// ValueNotifier thay vi setState vi chi RIENG dong lyric dang hat can ve
+  /// lai o ~60fps - neu setState ca man hinh moi khung hinh thi anh bia,
+  /// nut bam, danh sach... deu bi build lai vo ich.
+  final ValueNotifier<double> _positionSeconds = ValueNotifier<double>(0);
+  Ticker? _ticker;
   late final DateTime _openedAt;
   bool _disposed = false;
 
@@ -58,8 +70,37 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     super.initState();
     _openedAt = DateTime.now();
     _index = widget.startIndex;
-    _lineKeys = List.generate(_song.lyrics.length, (_) => GlobalKey());
+    _prepareLyrics();
+    // Doc _player.position moi khung hinh thay vi Timer.periodic 250ms:
+    // hieu ung karaoke quet chu ben trong TUNG TU nen can vi tri muot, moc
+    // 250ms mot lan se thay chu nhay giat theo tung nac.
+    _ticker = createTicker(_onTick)..start();
     _loadAndPlay();
+  }
+
+  void _prepareLyrics() {
+    _lineKeys = List.generate(_song.lyrics.length, (_) => GlobalKey());
+    _karaoke = buildKaraokeLines(_song.lyrics);
+  }
+
+  /// Chay moi khung hinh: cap nhat vi tri phat cho hieu ung karaoke, va doi
+  /// dong dang hat khi vuot qua moc thoi gian cua dong ke tiep.
+  void _onTick(Duration _) {
+    if (!_isCurrentOwner) return;
+    final seconds = _player.position.inMilliseconds / 1000.0;
+    // ValueNotifier tu bo qua khi gia tri khong doi, nen luc dang tam dung
+    // se khong co listener nao bi danh thuc.
+    _positionSeconds.value = seconds;
+    var line = 0;
+    for (var i = 0; i < _karaoke.length; i++) {
+      if (seconds >= _karaoke[i].start) line = i;
+    }
+    if (line != _currentLine && mounted) {
+      setState(() => _currentLine = line);
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _scrollToCurrentLine(),
+      );
+    }
   }
 
   /// Chuyen sang bai ke tiep trong hang doi khi bai hien tai vua ket thuc -
@@ -72,7 +113,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
       _currentLine = 0;
       _completedRecorded = false;
       _error = null;
-      _lineKeys = List.generate(_song.lyrics.length, (_) => GlobalKey());
+      _prepareLyrics();
     });
     _loadAndPlay();
   }
@@ -83,9 +124,9 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     if (ctx != null) {
       Scrollable.ensureVisible(
         ctx,
-        alignment: 0.5,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
+        alignment: 0.42,
+        duration: const Duration(milliseconds: 420),
+        curve: Curves.easeOutCubic,
       );
     } else if (retriesLeft > 0) {
       // ListView.builder chỉ build các item gần vùng hiển thị — nếu dòng
@@ -110,33 +151,13 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     // luc await o tren dang cho - neu khong chan lai, timer duoc tao sau day
     // se lang nghe nham player dang phat bai KHAC.
     if (_disposed || !_isCurrentOwner) return;
-    _positionTimer?.cancel();
     _stateSub?.cancel();
-    // Doc truc tiep _player.position bang Timer.periodic thay vi
-    // positionStream: sau khi doi sang dung chung 1 AudioPlayer singleton
-    // (NowPlayingService), positionStream co luc khong phat tick nao cho toi
-    // khi nguoi dung tu tay bam pause/play - Timer poll truc tiep khong phu
-    // thuoc vao hanh vi phat tick cua stream nen luon chay dung tu dau.
-    _positionTimer = Timer.periodic(const Duration(milliseconds: 250), (_) {
-      if (!_isCurrentOwner) return;
-      final pos = _player.position;
-      final lyrics = _song.lyrics;
-      var line = 0;
-      for (var i = 0; i < lyrics.length; i++) {
-        if (pos.inMilliseconds / 1000 >= lyrics[i].startSeconds) line = i;
-      }
-      if (line != _currentLine && mounted) {
-        setState(() => _currentLine = line);
-        WidgetsBinding.instance.addPostFrameCallback(
-          (_) => _scrollToCurrentLine(),
-        );
-      }
-    });
     // Cuon lan dau ngay khi vua vao bai: neu dong dau tien (_currentLine=0)
     // trung voi dong tinh duoc tu vi tri hien tai, nhanh "line != _currentLine"
-    // o tren se KHONG bao gio dung (vi ca 2 deu la 0) nen _scrollToCurrentLine
-    // chua bao gio duoc goi - day la ly do truoc day phai tam dung/phat lai
-    // (lam _currentLine doi tam thoi) thi cuon moi bat dau chay.
+    // trong _onTick se KHONG bao gio dung (vi ca 2 deu la 0) nen
+    // _scrollToCurrentLine chua bao gio duoc goi - day la ly do truoc day
+    // phai tam dung/phat lai (lam _currentLine doi tam thoi) thi cuon moi
+    // bat dau chay.
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToCurrentLine());
     _stateSub = _player.playerStateStream.listen((state) {
       if (state.processingState == ProcessingState.completed &&
@@ -168,7 +189,8 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     if (elapsed > 0) {
       ref.read(statsRepositoryProvider).addPracticeSeconds(elapsed);
     }
-    _positionTimer?.cancel();
+    _ticker?.dispose();
+    _positionSeconds.dispose();
     _stateSub?.cancel();
     // Player la singleton dung chung toan app - KHONG duoc dispose() no o
     // day. Chi dung phat neu khong co man hinh nao khac da giat quyen
@@ -287,84 +309,18 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
             ],
             const SizedBox(height: 12),
             Expanded(
-              child: ListView.builder(
-                // Build sẵn nhiều dòng ở ngoài vùng hiển thị (không chỉ dòng
-                // đang thấy) để khi bài mới mở/seek xa, dòng đích đã có
-                // context sẵn cho Scrollable.ensureVisible thay vì null.
-                scrollCacheExtent: const ScrollCacheExtent.pixels(2000),
-                itemCount: lyrics.length,
-                itemBuilder: (context, i) {
-                  final line = lyrics[i];
-                  final isCurrent = i == _currentLine;
-                  return GestureDetector(
-                    key: _lineKeys[i],
-                    onTap: () => _player.seek(
-                      Duration(
-                        milliseconds: (line.startSeconds * 1000).round(),
-                      ),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: AnimatedOpacity(
-                        opacity: isCurrent ? 1 : 0.3,
-                        duration: const Duration(milliseconds: 300),
-                        child: Column(
-                          children: [
-                            Wrap(
-                              alignment: WrapAlignment.center,
-                              children: line.en.split(' ').map((w) {
-                                return GestureDetector(
-                                  onTap: isCurrent
-                                      ? () => _onWordTap(
-                                          w.replaceAll(RegExp('[^a-zA-Z]'), ''),
-                                        )
-                                      : null,
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 2,
-                                    ),
-                                    // Chi doi mau (gradient) khi la tu dang
-                                    // hat, KHONG doi kich thuoc chu - giu
-                                    // cung 1 font size cho moi tu de tranh
-                                    // hieu ung "zoom" nguoi dung khong muon.
-                                    child: isCurrent
-                                        ? ShaderMask(
-                                            shaderCallback: (rect) => AppColors
-                                                .accentGradient
-                                                .createShader(rect),
-                                            child: Text(
-                                              w,
-                                              style: AppTextStyles.heading(
-                                                size: 17,
-                                              ),
-                                            ),
-                                          )
-                                        : Text(
-                                            w,
-                                            style: AppTextStyles.heading(
-                                              size: 17,
-                                            ),
-                                          ),
-                                  ),
-                                );
-                              }).toList(),
-                            ),
-                            if (_bilingual)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 4),
-                                child: Text(
-                                  line.vi,
-                                  style: AppTextStyles.muted(
-                                    size: isCurrent ? 13 : 12,
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                },
+              child: KaraokeLyricsView(
+                lines: _karaoke,
+                activeIndex: _currentLine,
+                positionSeconds: _positionSeconds,
+                lineKeys: _lineKeys,
+                bilingual: _bilingual,
+                onSeekToLine: (i) => _player.seek(
+                  Duration(
+                    milliseconds: (lyrics[i].startSeconds * 1000).round(),
+                  ),
+                ),
+                onWordTap: _onWordTap,
               ),
             ),
             Row(
