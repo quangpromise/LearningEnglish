@@ -44,13 +44,23 @@ Future<void> main() async {
     // chi Android/iOS/macOS ho tro, KHONG co tren web nen bo qua cung nhom
     // dieu kien nay. Phai goi TRUOC bat ky AudioPlayer nao duoc tao (o day
     // la truoc khi NowPlayingService.instance duoc truy cap lan dau).
-    await JustAudioBackground.init(
-      androidNotificationChannelId: 'com.learnenglishmusic.audio',
-      androidNotificationChannelName: 'Đang phát nhạc',
-      androidNotificationOngoing: true,
-      androidNotificationIcon: 'mipmap/ic_launcher',
-      preloadArtwork: true,
-    );
+    //
+    // BOC try/catch + timeout: day la buoc khoi tao DUY NHAT trong ca app co
+    // the treo VO HAN (cho phan hoi tu 1 Android Service) - tung thuc su lam
+    // dung yen ca app mai o man hinh splash tren may that khi service khong
+    // bind duoc (xem ghi chu trong proguard-rules.pro). Thong bao/man hinh
+    // khoa la tinh nang "co thi tot", KHONG dang danh doi voi rui ro
+    // lam sap toan bo app - that bai/timeout thi bo qua tinh nang nay
+    // trong im lang, van vao app binh thuong.
+    try {
+      await JustAudioBackground.init(
+        androidNotificationChannelId: 'com.learnenglishmusic.audio',
+        androidNotificationChannelName: 'Đang phát nhạc',
+        androidNotificationOngoing: true,
+        androidNotificationIcon: 'mipmap/ic_launcher',
+        preloadArtwork: true,
+      ).timeout(const Duration(seconds: 5));
+    } catch (_) {}
   }
 
   runApp(const ProviderScope(child: LearnEnglishMusicApp()));
