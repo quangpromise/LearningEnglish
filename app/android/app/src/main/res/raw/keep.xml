@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Cac resource ben duoi CHI duoc tham chieu qua CHUOI STRING dung o Dart
+  (vd AndroidInitializationSettings('@drawable/ic_stat_notify'),
+  RawResourceAndroidNotificationSound('notification_ding')) - khong co dong
+  code/XML Android nao tham chieu truc tiep toi chung. Trinh rut gon resource
+  cua Android (isShrinkResources = true trong build.gradle.kts, dung de giam
+  dung luong APK) chi phan tich TINH (static analysis) cac tham chieu trong
+  ma bien dich, nen se coi day la resource "khong dung" va XOA MAT khoi ban
+  release - lam icon/am thanh thong bao that bai am tham (khong crash, chi
+  don gian la KHONG hien/KHONG keu) ma khong co dau hieu loi ro rang.
+  tools:keep buoc trinh rut gon giu lai du khong tim thay tham chieu tinh nao.
+  Xem https://developer.android.com/build/shrink-code#keep-resources
+-->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/ic_stat_notify,@raw/notification_ding" />
