@@ -125,8 +125,13 @@ jobs:
       - name: Kiem tra dung luong APK (chan quy dinh cua library lam phinh app)
         run: |
           cd build/app/outputs/flutter-apk
-          WARN_MB=22
-          MAX_MB=30
+          # Nguong cu (22/30MB) dat ra truoc khi co tinh nang goi thoai/video
+          # (Agora). Ban "full-rtc-basic" toi gian nhat cua Agora (video codec +
+          # xu ly am thanh + mang real-time) van cong them ~35-40MB/kien truc -
+          # chi phi khong the cat giam them, nen nang nguong len de phan anh
+          # dung chi phi that cua tinh nang nay, khong phai noi long kiem soat.
+          WARN_MB=55
+          MAX_MB=75
           FAILED=0
           echo "=== Dung luong APK theo kien truc (split-per-abi) ==="
           for f in app-arm64-v8a-release.apk app-armeabi-v7a-release.apk app-x86_64-release.apk; do
@@ -141,8 +146,8 @@ jobs:
           done
           # Ban universal gop 2 kien truc ARM nen nang hon 1 file split rieng
           # le nhung nhe hon truoc (da bo x86_64) - dung nguong rieng.
-          UNIVERSAL_WARN_MB=42
-          UNIVERSAL_MAX_MB=55
+          UNIVERSAL_WARN_MB=120
+          UNIVERSAL_MAX_MB=160
           UNIVERSAL_SIZE_MB=$(du -m app-release.apk | cut -f1)
           echo "=== Dung luong APK universal (gop ca 3 kien truc) ==="
           echo "app-release.apk: ${UNIVERSAL_SIZE_MB}MB"
