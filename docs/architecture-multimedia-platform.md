@@ -2,7 +2,17 @@
 
 Tài liệu **thiết kế**, chưa code. Mọi kết luận đều dẫn chiếu file thật trong repo.
 
-> **Bản v2 — đã qua phản biện.** Bản v1 có 6 claim sai và 1 mâu thuẫn nội tại; xem [§H](#h-những-gì-đã-sửa-sau-phản-biện) để biết đã sửa gì và vì sao. Đọc §H trước nếu bạn đã xem bản v1.
+> **Bản v3 — đã qua phản biện + Product đã chốt §F.** Bản v1 có 6 claim sai và 1 mâu thuẫn nội tại; xem [§H](#h-những-gì-đã-sửa-sau-phản-biện).
+
+**Quy ước đọc — mọi phát biểu trong tài liệu này thuộc đúng 1 trong 3 loại:**
+
+| Ký hiệu | Nghĩa |
+|---|---|
+| 📎 **Bằng chứng** | Đọc được từ code/config, có `file:dòng`. Đã verify lại toàn bộ ở §I |
+| 💭 **Giả thuyết** | Suy đoán kỹ thuật, **chưa đo**. Phải có thí nghiệm mới kết luận được |
+| ⚖️ **Quyết định** | Product/kỹ thuật đã chọn. Không suy ra từ code, xem §F |
+
+Không có phát biểu nào ngoài 3 loại này. Nếu bạn thấy một khẳng định không mang ký hiệu nào, đó là lỗi của tài liệu.
 
 ---
 
@@ -64,7 +74,7 @@ Cùng một bài toán, hai lời giải. Video sẽ thành bộ thứ ba.
 - `final int activeIndex` — **một** dòng active duy nhất, không biểu diễn được chồng lời.
 - `onWordTap: isActive ? onWordTap : null` (`:347`) — chỉ chạm được từ trên dòng đang hát. Với video/narration người học muốn chạm mọi từ đang thấy.
 - Không có `speakerId` → hội thoại cần sửa UI trong `_LineTile`.
-- Thiết kế thị giác gắn với nền tối: `_kSungColor` trắng, glow xanh→tím (`:228-247`), `ListView` cuộn toàn màn với cache 2000px. **Đè lên khung hình video sẽ không đọc được** và sai hình dạng (phụ đề cần 1–3 dòng, không phải danh sách cuộn).
+- Thiết kế thị giác gắn với nền tối: `_kSungColor` trắng, glow xanh→tím (`:230-231`), `ListView` cuộn toàn màn với cache 2000px. **Đè lên khung hình video sẽ không đọc được** và sai hình dạng (phụ đề cần 1–3 dòng, không phải danh sách cuộn).
 - Logic đồng bộ **không nằm trong widget** — nó ở `_onTick` (`player_screen.dart:88-104`), quét O(n) mỗi khung hình lấy "segment cuối có start ≤ t". Logic này không có khái niệm khoảng lặng → **phải viết lại** cho video.
 
 → Tái dùng được: **bộ vẽ quét-từ**. Không tái dùng được: container, bộ điều khiển active-index, và toàn bộ xử lý thị giác. Cần một biến thể `SubtitleOverlay` riêng cho video.
@@ -146,8 +156,11 @@ HomeScreen → PlayerScreen → NowPlayingService (1 AudioPlayer)
 
 ### C.2 Entity — bản đã cắt gọn
 
+⚠️ **`video` KHÔNG được đưa vào enum cho tới khi Spike 0 trả verdict GO** (⚖️ quyết định, §F.6). Trước đó chỉ có `audio` và `tts`. Xem danh sách cấm ở §D.
+
 ```dart
-enum MediaKind { audio, video, tts }   // tts = tổng hợp lúc chạy (Reading)
+enum MediaKind { audio, tts }          // `video` chỉ thêm sau khi Spike 0 = GO
+                                       // tts = tổng hợp lúc chạy (Reading)
 
 class Lesson {
   final String id;                  // slug ổn định, suy từ audioUrl — KHÔNG BAO GIỜ đổi
@@ -242,130 +255,177 @@ nguồn media → cổng gác license (đã có) → chọn cấp CEFR
 
 ---
 
-## D. Kế hoạch — sắp lại theo "rẻ nhất và đảo ngược được trước"
+## D. Kế hoạch — rẻ nhất và đảo ngược được trước
+
+### Kỷ luật phạm vi: ba việc TÁCH RIÊNG, không ghép vào đây
+
+⚖️ **Quyết định.** Ba phát hiện dưới đây là thật và đã verify, nhưng **không thuộc PR/workstream kiến trúc đa phương tiện**. Ghép vào sẽ làm phình phạm vi và che mất tín hiệu của việc chính.
+
+| Việc | Trạng thái | Ràng buộc |
+|---|---|---|
+| **Lỗi RLS thiếu policy UPDATE** (§A.3) | Issue riêng — **phát hiện có sẵn**, không do thay đổi nào gây ra | Phải xong **trước** khi động vào schema tiến độ, vì dual-write đi đúng nhánh UPDATE đang hỏng |
+| **Thiếu màn attribution** (§A.7) | Issue riêng | **Điều kiện tiên quyết trước khi scale nội dung licensed của bên thứ ba.** Với 20 bài CC-BY hiện tại thì là nợ; với một catalog nhiều nguồn thì là rủi ro tuân thủ |
+| **Transcode audio 280→96 kbps** (§B.7) | Workstream tối ưu riêng | Độc lập hoàn toàn. Làm lúc nào cũng được, không chặn gì |
 
 ### Spike 0 — Video có vừa APK không? (½ ngày, **trước mọi thứ**)
 
-Đây là **ẩn số lớn nhất** và chưa ai đo. Nếu trả lời là không, toàn bộ `MediaController`/`Media.kind`/kệ "Video Story" là việc chết.
+💭 **Giả thuyết cần đo, không phải kết luận.** 📎 `build-apk.yml:107-131` fail cứng ở 30MB/split, 55MB/universal.
 
-1. Nhánh vứt đi: `flutter pub add video_player`, 1 URL H.264 hardcode, không abstraction, không `Lesson`, không đụng DB.
-2. Push kèm `[build]` → đọc kết quả size-check của `build-apk.yml`. **Đây là go/no-go miễn phí.**
-3. Sideload lên máy Android rẻ nhất có. Kiểm: hardware decode, chạy đồng thời ticker karaoke 60fps, nhiệt sau 5 phút, pin, hành vi khi bấm Home, và bật một bài hát trong lúc video đang chạy.
+1. Nhánh vứt đi: `flutter pub add video_player`, 1 URL H.264 hardcode. **Không abstraction, không `Lesson`, không đụng DB.**
+2. Push kèm `[build]` → đọc size-check. **Đây là go/no-go miễn phí.**
+3. Sideload lên máy Android rẻ nhất có. Kiểm: hardware decode, chạy đồng thời ticker karaoke 60fps, nhiệt sau 5 phút, pin, bấm Home, và bật một bài hát trong lúc video chạy.
 4. Vứt nhánh.
 
-Chạy với **Impeller vẫn tắt**, trên đúng máy đã từng lỗi render chữ.
+📎 Chạy với **Impeller vẫn tắt** (`AndroidManifest.xml:34-39`), trên đúng máy đã từng lỗi render chữ.
+
+#### ⛔ Danh sách CẤM trước khi Spike 0 = GO
+
+⚖️ **Quyết định.** Không được xây, kể cả "để sẵn cho sau này":
+
+- `MediaController` hay bất kỳ abstraction media nào
+- `MediaKind.video` trong enum
+- Kệ "Video Story" ở Home
+- `Media.posterUrl`, `SubtitleOverlay`, hay bất cứ thứ gì chỉ có nghĩa khi có video
+
+Nếu Spike trả NO-GO thì toàn bộ những thứ trên là việc chết. Kế hoạch trở thành **audio-only** và ta mất nửa ngày thay vì hai phase.
 
 ### Phase 0 — Nền tảng (không đổi trải nghiệm người dùng)
 
 | Hạng mục | Chi tiết |
 |---|---|
-| **Sửa lỗi RLS trước tiên** | Thêm policy UPDATE, **hoặc** đổi sang `insert(ignoreDuplicates: true)`. Bỏ `.catchError((_) {})` nuốt lỗi ở `player_screen.dart:171` |
-| **ID ổn định** | Thêm `id` vào 20 `const Song(...)`, **suy từ slug trong `audioUrl`** (`dont-close-your-eyes`), **không** từ tiêu đề — tiêu đề chính là thứ đang hỏng |
-| **Bảng MỚI** | `user_lesson_progress(user_id, lesson_id, kind, …)`. **Không ALTER** bảng cũ — client cũ vẫn upsert `onConflict:'user_id,song_title'`, đổi PK là làm hỏng chúng. Rollback = `drop table` |
-| Dual-write | APK mới ghi cả hai. **Là vĩnh viễn** — bỏ đi chỉ tiết kiệm một khoá JSON, đổi lấy rủi ro regression |
-| Bỏ backfill | 20 bài lịch sử "đã nghe" không đáng một migration viết tay có 2 tiêu đề chứa dấu nháy (`"Don't Close Your Eyes"`, `'I\'m Letting Go'`). Ghi `lesson_id` từ nay trở đi |
+| **ID ổn định** | Thêm `id` vào 20 `const Song(...)`, 📎 suy từ slug trong `audioUrl` (`songs_data.dart:10-11`), **không** từ tiêu đề |
+| **Bảng MỚI** | `user_lesson_progress(user_id, lesson_id, kind, …)`. 📎 **Không ALTER** bảng cũ — client cũ vẫn upsert `onConflict:'user_id,song_title'`. Rollback = `drop table` |
+| Dual-write | ⚖️ **Là vĩnh viễn.** Bỏ đi chỉ tiết kiệm một khoá JSON, đổi lấy rủi ro regression |
+| Bỏ backfill | 📎 20 bài lịch sử không đáng một migration viết tay có 2 tiêu đề chứa dấu nháy (`songs_data.dart:50`, `:1239`) |
 | `LessonRepository` + `Segment` | Adapter `Song → Lesson`; `karaoke_lyrics.dart` nhận `Segment` |
-| **Màn Attribution** | Vài giờ. Đóng khoảng trống tuân thủ CC-BY §A.7 |
-| Gỡ coupling | `GrammarScreen` nhận `Segment`; `PronunciationScreen` nhận danh sách segment (**2 chỗ**: `_randomSongLine` và `_PracticeSourcePicker`) |
-| UI | **Không đổi trải nghiệm.** Nhưng *có* sửa file presentation và **làm vỡ import của cả 2 file test** — phải tính công |
-| Test | Bất biến **cấu trúc** (đúng số lượng, đúng start, tăng dần, không tràn) — **không** phải byte-identical, nếu không việc sửa 45 dòng lệch giờ sẽ bị coi là regression. Thêm fixture khoá `id → title`, CI fail nếu id đổi |
+| Gỡ coupling | `GrammarScreen` nhận `Segment`; `PronunciationScreen` nhận danh sách segment (📎 **2 chỗ**: `:107` và `:774`) |
+| UI | **Không đổi trải nghiệm.** Nhưng *có* sửa file presentation và 📎 **làm vỡ import của cả 2 file test** — phải tính công |
+| Test | Bất biến **cấu trúc** (đúng số lượng, đúng start, tăng dần, không tràn) — **không** byte-identical, nếu không việc sửa 45 dòng lệch giờ thành regression. Thêm fixture khoá `id → title` |
+| Phụ thuộc | ⚠️ Chờ issue RLS xong trước khi tạo bảng tiến độ |
 | Rủi ro | Thấp |
 
 ### Phase 1 — Câu chuyện đầu tiên, **không cần video**
 
-**Đây là thay đổi lớn nhất so với v1.** Story đầu tiên = **narration audio + một ảnh tĩnh + phụ đề song ngữ + shadowing**.
+⚖️ **Quyết định (giữ nguyên từ v2).** Story đầu tiên = **narration audio + ảnh tĩnh + phụ đề song ngữ + từ vựng + shadowing lồng trong bài**.
 
-- **Không cần package mới.** Chạy trên đúng đường `just_audio` đang có.
-- **Không dính rủi ro APK size, codec, nhiệt, Impeller.**
-- **Không dính câu hỏi pháp lý Pexels chưa ngã ngũ.**
-- Kiểm chứng đúng giả thuyết sản phẩm: *một micro-story B1 tự viết, narration TTS, có dạy tốt hơn bài hát không?*
+- **Không package mới.** Chạy trên đúng đường `just_audio` đang có.
+- **Không dính** rủi ro APK size, codec, nhiệt, Impeller.
+- **Không dính** câu hỏi pháp lý stock-media chưa ngã ngũ.
+- Kiểm chứng đúng giả thuyết sản phẩm: *micro-story B1 tự viết có dạy tốt hơn bài hát không?*
 
-Nếu câu chuyện tĩnh không thuyết phục được người học thì phần video vốn dĩ chưa bao giờ đáng làm.
+Kèm: tốc độ phát, lặp đoạn, ẩn/hiện EN, ẩn/hiện VI, và shadowing (§E — **1 ngày, không miễn phí**).
 
-Kèm theo: tốc độ phát, lặp đoạn, ẩn/hiện EN, ẩn/hiện VI, và **shadowing** (xem rủi ro bên dưới).
+### Phase 2 — Video (**chỉ khi Spike 0 = GO**)
 
-### Phase 1.5 — Transcode + CDN (độc lập, làm bất cứ lúc nào)
+`MediaController` mỏng + token "ai đang sở hữu playback" mà cả hai player đăng ký (📎 video→song hiện **không** có gì chặn: `player_screen.dart:199` chỉ dừng audio trong `dispose()`). Áp cùng cấu hình `audio_session` cho đường video. Thêm `didChangeAppLifecycleState → pause()`.
 
-`ffmpeg` về 96 kbps mono: 167MB → ~57MB. Sửa cùng lúc: phình repo, lãng phí checkout ở **cả hai** job CI, và cước dữ liệu của người dùng. Thêm `_audioBaseUrlV2` cho media **mới**; **giữ URL cũ sống vĩnh viễn**.
+💭 Với video: hạ karaoke từ quét-cấp-từ xuống highlight-cấp-dòng ~10Hz — cần đo lại sau spike.
 
-### Phase 2 — Video (chỉ khi Spike 0 pass)
+💭 Video: H.264 Main/High ≤ level 4.0, yuv420p, AAC, `-movflags +faststart`, 540–720p, ~600–800 kbps, ≤5MB/phút. Không làm HLS.
 
-`MediaController` mỏng + token "ai đang sở hữu playback" mà **cả hai** player đăng ký (video→song hiện **không** có gì chặn). Áp cùng cấu hình `audio_session` cho đường video, nếu không **lỗi phát ra loa tai nghe đã sửa một lần sẽ quay lại**. Thêm `didChangeAppLifecycleState → pause()` (video Android **không** tự dừng khi vào nền).
+### Phase 3+ — CEFR đa cấp, hội thoại
 
-**Với video: hạ karaoke từ quét-cấp-từ xuống highlight-cấp-dòng ~10Hz.** Không ai đọc phụ đề trên video cần quét từng âm tiết, và nó gỡ luôn bài toán nhiệt.
-
-Video: H.264 Main/High ≤ level 4.0, yuv420p, AAC, **`-movflags +faststart`**, 540–720p, ~600–800 kbps, **≤5MB/phút**. Không làm HLS.
-
-### Phase 3+ — CEFR đa cấp, hội thoại, catalog từ xa
-
-Chỉ mở khi Phase 1 chứng minh được nội dung tự sản xuất có hiệu quả.
+Chỉ mở khi Phase 1 chứng minh nội dung tự sản xuất có hiệu quả.
 
 ---
 
-## E. MVP — chấp nhận giả thuyết, **đổi phương tiện**
+## E. MVP
 
 ### Giả thuyết của Product
 
 > "Một video stock → một micro-story B1 → narration → phụ đề Anh/Việt → từ vựng → phát + shadowing."
 
-### Kết luận: **chấp nhận phần học, bác bỏ phần "video stock" cho MVP**
+### Kết luận: **chấp nhận phần học, đổi phương tiện cho MVP**
 
 | Thành phần | Đánh giá |
 |---|---|
-| Phụ đề song ngữ có timestamp | ✅ Bộ vẽ quét-từ tái dùng được; controller thì không |
-| Từ vựng + tra từ | ✅ `WordPopupSheet` đã generic thật |
-| Narration + căn giờ | ✅ TTS cho timestamp chính xác, rẻ hơn nhạc |
-| **Shadowing** | ⚠️ **KHÔNG rẻ** — `targetEn` là code chết (§A.5). Xem rủi ro dưới |
-| **Video** | 🔴 Chưa đo được có vừa APK không |
-| **Nguồn Pexels** | 🔴 **Mâu thuẫn với chính doc của repo** |
+| Phụ đề song ngữ có timestamp | 📎 Bộ vẽ quét-từ tái dùng được; controller thì không (§A.5) |
+| Từ vựng + tra từ | 📎 `WordPopupSheet` đã generic thật |
+| Narration + căn giờ | 💭 TTS cho timestamp chính xác vì tự tổng hợp từng segment |
+| **Shadowing** | 📎 **KHÔNG rẻ** — `targetEn` là code chết (`:66-68`). ~1 ngày |
+| **Video** | 💭 Chưa đo được có vừa APK không → Spike 0 |
+| **Nguồn stock footage** | 📎 Mâu thuẫn với `research-music-libraries.md` §6 |
 
-**Về Pexels:** `docs/research-music-libraries.md` §6 kết luận in đậm *"cả họ nhà stock-media license (Pixabay, Pexels…) đều không hợp với app này"*, và `song_licensing.py` có quy tắc vàng *"KHÔNG RÕ = TỪ CHỐI"*. Lập luận "đã có công sức sáng tạo nên không còn standalone" **dễ bảo vệ hơn** với video-dưới-narration so với cả bài hát — nhưng nó vẫn là câu hỏi pháp lý chưa ngã ngũ (chính §F.4 thừa nhận). **Không đặt câu hỏi pháp lý chưa có lời giải lên đường găng của MVP.**
+### MVP chốt
 
-### MVP đề xuất
+⚖️ **MVP-0** (½–1 ngày): ID ổn định + bảng tiến độ mới. Không ai thấy gì khác.
 
-**MVP-0 (½–1 ngày):** ID ổn định + bảng progress mới + sửa lỗi RLS + màn attribution. Không ai thấy gì khác. Đóng luôn 2 lỗi đang tồn tại.
+⚖️ **MVP-1:** 1 micro-story B1 tự viết + narration TTS + **ảnh tĩnh** + phụ đề Anh/Việt + ~10 từ vựng + tốc độ/lặp đoạn + shadowing lồng trong bài.
 
-**MVP-1:** 1 micro-story B1 tự viết + narration TTS + **ảnh tĩnh** + phụ đề Anh/Việt + ~10 từ vựng + tốc độ/lặp đoạn + shadowing.
+**Video là quyết định riêng**, mở khoá bởi Spike 0.
 
-**Video là quyết định riêng**, mở khoá bởi Spike 0, không nằm trong MVP.
+### Shadowing — 4 cái bẫy (📎 tất cả đã verify)
 
-### Shadowing — không miễn phí, và có 4 cái bẫy
+1. **Nhạc vẫn phát vào mic.** `player_screen.dart:199` chỉ dừng audio trong `dispose()`, push không gọi → STT chấm giọng ca sĩ.
+2. **Không có nút back.** `pronunciation_screen.dart:398` là `SizedBox(width: 48)`, comment ghi rõ màn này "không bao giờ được `Navigator.push`".
+3. **FAB AI đè lên.** Ẩn theo `pronunciationTabActiveProvider`, set theo **chỉ số tab** (`root_shell.dart:56-60`).
+4. **Hỏng audio session.** `_playRecording()` cấu hình lại `AudioSession` toàn cục + dùng `AudioPlayer` thứ hai.
 
-Đẩy `PronunciationScreen` như một route từ player sẽ vỡ:
-
-1. **Nhạc vẫn phát vào mic.** `PlayerScreen` chỉ dừng audio trong `dispose()` (`:199`), mà push không gọi dispose → STT chấm điểm giọng ca sĩ.
-2. **Không có nút back.** `:398` là `const SizedBox(width: 48)` với comment ghi rõ màn này "không bao giờ được `Navigator.push`".
-3. **Nút AI FAB đè lên.** Nó chỉ ẩn theo `pronunciationTabActiveProvider`, mà cờ đó set theo **chỉ số tab** (`root_shell.dart:56-60`).
-4. **Hỏng audio session.** `_playRecording()` cấu hình lại `AudioSession` **toàn cục** và dùng `AudioPlayer` thứ hai — đúng thứ `NowPlayingService` sinh ra để ngăn.
-
-**Và nó làm hỏng 2 chỉ số:** mỗi lần chấm ghi vào `user_pronunciation_attempts` → kéo `avg(score)` ở Profile; đồng thời `addPracticeSeconds` được gọi bởi **cả** `PlayerScreen.dispose()` **và** màn phát âm → **đếm trùng thời gian luyện**.
-
-→ Tách `PronunciationPractice(target)` thành widget không state tab, wrapper tab cấp câu ngẫu nhiên; `NowPlayingService.pauseIfCurrent()` khi push; ẩn FAB theo route; thêm cột `source` cho attempt. **Khoảng 1 ngày, không phải "chỉ push màn hình".**
+→ Tách `PronunciationPractice(target)` khỏi wrapper tab; `pauseIfCurrent()` khi push; ẩn FAB theo route; thêm cột `source` cho attempt.
 
 ---
 
-## F. Quyết định cần Product
+## F. Quyết định của Product — ĐÃ CHỐT
 
-1. **Ánh xạ 3 cấp cũ sang CEFR.** `'Cơ bản'/'Trung cấp'/'Nâng cao'` → `A2/B1/B2`?
-2. **Có hiển thị IELTS không?** Nếu có thì dạng dải.
-3. **Narration: TTS hay giọng người thật?** Định hình toàn bộ chi phí sản xuất.
-4. **Ai duyệt bản dịch VI ở quy mô lớn?** Pipeline bắt buộc có người, nhưng chưa có công cụ, hàng đợi, hay ước lượng thông lượng. Đây là trần thật của tốc độ sản xuất.
-5. **Thời gian luyện tính thế nào** khi shadowing lồng trong bài học? (Hiện đang đếm trùng.)
-6. **Có theo đuổi video không**, sau khi có kết quả Spike 0?
-7. **CC-BY-SA** — vẫn treo từ trước (`research-music-libraries.md` §5).
-8. **Reading có gộp vào `Lesson` không?** Kỹ thuật thì hợp (`MediaKind.tts`), nhưng UX đọc sách khác hẳn. Khuyến nghị **hoãn**.
+⚖️ Bốn quyết định dưới đây đã được chốt và là ràng buộc thiết kế, không phải gợi ý.
+
+### F.1 Ánh xạ cấp độ cũ → CEFR
+
+| Cũ | Mới |
+|---|---|
+| Cơ bản (Easy) | **A2** |
+| Trung cấp (Medium) | **B1** |
+| Nâng cao (Hard) | **B2** |
+
+> ⚠️ **Đây là ánh xạ MIGRATION TẠM, không phải tuyên bố tương đương CEFR/IELTS.** Ba nhãn cũ được gán bằng cảm tính biên tập, chưa từng chấm theo rubric nào. Sau khi có rubric (§C.4), **phải chấm lại từng bài** — kết quả có thể lệch khỏi ánh xạ này, và điều đó là bình thường, không phải lỗi.
+>
+> Không được dùng ánh xạ này làm căn cứ quảng bá trình độ.
+
+### F.2 Giọng cho MVP
+
+⚖️ **TTS chất lượng cao trước**, để validate vòng lặp sản phẩm. Giọng người thật để phase sau.
+
+Lý do hợp với code: 📎 `AppTts` đã hỗ trợ cả TTS máy lẫn cloud (`app_tts.dart`, 5 giọng `en-us/gb/au/in/ca`) và repo đã có Supabase Edge Function `tts`. Và 💭 TTS từng segment cho timestamp chính xác miễn phí — không cần ASR như bài hát.
+
+### F.3 Dịch tiếng Việt
+
+⚖️ **AI dịch nháp + BẮT BUỘC người duyệt trước khi publish.**
+
+⚠️ **Năng lực người duyệt là nút thắt sản xuất thật, phải coi là ràng buộc quy hoạch.** 📎 Repo có **một** người bảo trì (`git shortlog`: 51 commit). Nếu duyệt 1 bài mất 20–30 phút thì trần sản xuất là vài bài/tuần, **bất kể pipeline tự động tốt đến đâu**.
+
+Hệ quả cho kế hoạch: đừng thiết kế cho 500 bài. Thiết kế cho vài chục bài chất lượng cao, và đo thời gian duyệt thật ngay từ bài đầu tiên.
+
+### F.4 Tính thời gian học
+
+⚖️ **Shadowing nằm TRONG phiên học của bài, không cộng đôi.** Có thể tách breakdown listening/shadowing riêng cho analytics.
+
+📎 Hiện đang cộng đôi thật: `addPracticeSeconds` được gọi bởi **cả** `player_screen.dart:188-191` (dispose) **và** màn phát âm — với player còn mount bên dưới, cùng một khoảng thời gian bị đếm hai lần.
+
+→ Một phiên học ghi **một** khoảng thời gian; breakdown là cột phụ, không phải bản ghi thứ hai.
+
+### F.5–F.8 Còn treo
+
+| # | Câu hỏi | Chặn cái gì |
+|---|---|---|
+| F.5 | Có hiển thị IELTS không? Nếu có, dạng dải ("B1 ≈ 4.0–5.0") | Nhãn UI, không chặn code |
+| F.6 | **Có theo đuổi video không** — chờ verdict Spike 0 | Phase 2 toàn bộ |
+| F.7 | CC-BY-SA (`research-music-libraries.md` §5) | Mở rộng catalog nhạc |
+| F.8 | Reading có gộp vào `Lesson` không? Khuyến nghị **hoãn** | Không chặn gì |
 
 ---
 
-## G. Nợ kỹ thuật
+## G. Nợ kỹ thuật (phát hiện có sẵn, không do thay đổi nào gây ra)
 
-1. **45/504 khoảng cách < 0,75s** trong `songs_data.dart` (524 dòng, 504 khoảng cách). Nêu ngưỡng, nếu không con số không kiểm chứng được.
-2. **Thiếu policy UPDATE** khiến `.upsert()` hỏng âm thầm — §A.3.
-3. **Đếm trùng thời gian luyện** giữa `PlayerScreen.dispose()` và màn phát âm.
-4. **`docs/architecture.md`, `docs/roadmap.md`, `docs/ci-apk-distribution.md` đều lỗi thời.** Cái cuối nói build tự động mỗi lần push vào `main`, thực tế đã đổi thành gate `[build]`.
-5. **Ba màn quiz gần trùng nhau.** Không thuộc migration này.
-6. Không có: offline/cache, phát nền/màn hình khoá, wakelock, versioning nội dung khi sửa transcript, telemetry để đo giả thuyết MVP.
-7. **`features/crypto/`** (7 file) không liên quan học tiếng Anh.
+Tất cả đều 📎 đã verify. Ba mục đầu **tách issue riêng**, xem kỷ luật phạm vi ở §D.
+
+1. **Thiếu policy UPDATE** khiến `.upsert()` hỏng âm thầm — §A.3. → issue riêng, chặn Phase 0.
+2. **Không có màn attribution** — §A.7. → issue riêng, **tiên quyết trước khi scale nội dung bên thứ ba**.
+3. **Audio ~280 kbps** (167,4MB/20 file). → workstream tối ưu riêng.
+4. **Đếm trùng thời gian luyện** — §F.4.
+5. **45/504 khoảng cách < 0,75s** trong `songs_data.dart` (524 dòng, 504 khoảng cách; ngưỡng phải nêu, nếu không con số không kiểm chứng được).
+6. **`docs/architecture.md`, `docs/roadmap.md`, `docs/ci-apk-distribution.md` lỗi thời.** Cái cuối nói build tự động mỗi lần push vào `main`, thực tế đã đổi thành gate `[build]`.
+7. Không có: offline/cache, phát nền, wakelock, versioning nội dung khi sửa transcript, telemetry đo giả thuyết MVP.
+8. Ba màn quiz gần trùng nhau; `features/crypto/` không liên quan học tiếng Anh.
 
 ---
 
@@ -386,6 +446,70 @@ Và một **mâu thuẫn nội tại**: v1 đặt Pexels lên đường găng MV
 
 **Đã cắt:** bước JSON assets, `LevelProfile` (12 trường → enum + rubric markdown), `AssetProvenance` (15 → 5 trường), `variantGroupId`, `Segment.words`, `LessonKind` enum (→ `tags`), Phase catalog từ xa, gộp 3 màn quiz.
 
-**Đã thêm:** Spike 0 đo APK size trước mọi thứ; sửa lỗi RLS; ID suy từ slug thay vì tiêu đề; **bảng mới** thay vì ALTER bảng đang có client cũ dùng; màn attribution vào Phase 0; transcode audio; quy tắc append-only cho `content/audio`; token sở hữu playback cho video→song; hạ karaoke xuống cấp-dòng cho video; 4 cái bẫy của shadowing; đếm trùng thời gian luyện.
+**Đã thêm:** Spike 0 đo APK size trước mọi thứ; ID suy từ slug thay vì tiêu đề; **bảng mới** thay vì ALTER bảng đang có client cũ dùng; quy tắc append-only cho `content/audio`; token sở hữu playback cho video→song; hạ karaoke xuống cấp-dòng cho video; 4 cái bẫy của shadowing; đếm trùng thời gian luyện.
+
+### Bản v3 — Product chốt §F + siết kỷ luật phạm vi
+
+- **§F.1–F.4 đã chốt** (ánh xạ cấp độ, TTS trước, AI dịch + bắt buộc người duyệt, không cộng đôi thời gian học). Ánh xạ cấp độ được ghi rõ là **migration tạm**, không phải tuyên bố tương đương.
+- **Tách 3 việc ra khỏi workstream này:** lỗi RLS (issue riêng, chặn Phase 0), màn attribution (issue riêng, tiên quyết trước khi scale nội dung bên thứ ba), transcode audio (workstream tối ưu riêng). Bản v2 nhét cả ba vào Phase 0 — làm phình phạm vi và che mất tín hiệu của việc chính.
+- **Danh sách CẤM trước Spike 0 = GO:** không `MediaController`, không `MediaKind.video`, không kệ Video Story, không abstraction video nào. `MediaKind` khởi đầu chỉ có `audio` và `tts`.
+- **Thêm quy ước 📎/💭/⚖️** để không lẫn bằng chứng với giả thuyết, và **§I** ghi lại kết quả kiểm lại toàn bộ neo `file:dòng`.
 
 **Lý do cắt gọn mạnh tay:** `git shortlog` cho thấy repo có **một người** (51 commit) cộng 7 commit của Claude. `CODEOWNERS` gán `@quangpromise` cho mọi đường dẫn. Kế hoạch v1 được thiết kế cho một đội không tồn tại.
+
+---
+
+## I. Consistency pass — mọi claim đã được kiểm lại
+
+Chạy trước khi mở PR. Mục tiêu: **không có khẳng định nào trong tài liệu này mà không phải bằng chứng đọc được từ code, hoặc được đánh dấu rõ là giả thuyết/quyết định.**
+
+### I.1 Đếm dòng file nội dung — khớp 100%
+
+`songs_data` 2.497 · `vocabulary_data` 4.726 · `grammar_data` 1.609 · `phonics_data` 612 · `reading_data` 54 · `quiz_data` 114.
+
+### I.2 Neo `file:dòng` — 20/20 verify OK
+
+| Claim | Neo | KQ |
+|---|---|---|
+| Cờ tab phát âm set theo chỉ số tab | `root_shell.dart:56-60` | ✅ |
+| Kiểm cập nhật mỗi 15 phút | `root_shell.dart:66-76` | ✅ |
+| `.catchError` nuốt lỗi ghi tiến độ | `player_screen.dart:171` | ✅ |
+| Chỉ dừng audio trong `dispose()` | `player_screen.dart:199` | ✅ |
+| So sánh yêu thích bằng tiêu đề | `player_screen.dart:222` | ✅ |
+| `_onTick` quét O(n) mỗi khung hình | `player_screen.dart:88-104` | ✅ |
+| Chỉ chạm được từ trên dòng active | `karaoke_lyrics.dart:347` | ✅ |
+| `ListView` cache 2000px | `karaoke_lyrics.dart:285` | ✅ |
+| Màu gắn nền tối | `karaoke_lyrics.dart:230-231` | ✅ |
+| `initState` ghi đè `targetEn` | `pronunciation_screen.dart:66-68` | ✅ |
+| `targetEn` chỉ là fallback khi `kSongs` rỗng | `pronunciation_screen.dart:113` | ✅ |
+| Không có nút back | `pronunciation_screen.dart:398` | ✅ |
+| Chỗ thứ hai đọc `kSongs` | `pronunciation_screen.dart:774` | ✅ |
+| `WordPopupSheet` dùng ở AI Voice Chat | `ai_voice_chat_screen.dart:635` | ✅ |
+| Home lọc theo `title`/`artist` | `home_screen.dart:62-70` | ✅ |
+| `_audioBaseUrl` là `const` compile-time | `songs_data.dart:10-11` | ✅ |
+| Impeller bị tắt | `AndroidManifest.xml:34-39` | ✅ |
+| Test assert segment không chồng lấn | `karaoke_lyrics_test.dart:57-70` | ✅ |
+| Tiêu đề chứa dấu nháy | `songs_data.dart:50`, `:1239` | ✅ |
+| `.upsert()` trên bảng thiếu policy UPDATE | `stats_repository.dart:113,122`; `favorites_repository.dart:24` | ✅ |
+
+### I.3 Số đo
+
+- **167,4 MB / 20 file** audio → ~280 kbps trung bình.
+- **524 dòng lyric, 504 khoảng cách**; **45** khoảng cách < 0,75s, **49** < 1,0s, **0** ≤ 0.
+- `build-apk.yml:107-131`: cảnh báo 22MB, **fail 30MB**/split; cảnh báo 42MB, **fail 55MB**/universal. Gate `[build]` ở `:21`.
+- `git shortlog`: **1 người** (51 commit) + 7 commit Claude.
+
+### I.4 Đã sửa trong pass này
+
+- `karaoke_lyrics.dart:228-247` → **`:230-231`** (neo cũ lệch).
+- `pronunciation_screen.dart` chỗ đọc `kSongs` thứ nhất: nêu rõ `:107` (`_randomSongLine`), không chỉ nói chung chung.
+
+### I.5 Những gì **chưa** kiểm được ở môi trường này
+
+Đánh dấu 💭 trong tài liệu, **không được coi là đã biết**:
+
+- Video có vừa ngân sách APK không → **Spike 0**.
+- Hành vi decode/nhiệt/pin trên máy Android cấu hình thấp.
+- Độ chính xác timestamp TTS thực tế.
+- Kết luận pháp lý về stock footage dùng dưới narration → §F còn treo.
+
