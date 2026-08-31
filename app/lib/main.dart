@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:just_audio_background/just_audio_background.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/config/env.dart';
@@ -67,25 +66,20 @@ Future<void> main() async {
     // nhan mat hoat dong hoan toan du khong co loi nao xay ra that su. Chay
     // ngam KHONG chan runApp(), khong anh huong toi thoi gian khoi dong.
     unawaited(ChatPush.instance.init());
-    // Thong bao he thong + man hinh khoa cho bai dang phat (giong Spotify) -
-    // kem nut tua lui/toi 10s + bai truoc/sau (fastForwardInterval/
-    // rewindInterval mac dinh da la 10s, khong can khai bao lai). Da TUNG gay
-    // treo splash vinh vien (R8 xoa mat class cua audio_service, xem
-    // proguard-rules.pro) va sau khi sua van mat tieng hoan toan (channel
-    // "_v2" bi khoa cung khong am, xem chat_push.dart) - ca 2 nguyen nhan
-    // GOC da duoc xu ly, bat lai theo yeu cau nguoi dung, van boc trong
-    // try/catch + timeout de KHONG bao gio lam dung ca app duoc nua du co
-    // that bai vi ly do nao khac chua luong truoc.
-    await _runStartupStep(
-      () => JustAudioBackground.init(
-        androidNotificationChannelId: 'com.learnenglishmusic.audio',
-        androidNotificationChannelName: 'Đang phát nhạc',
-        androidNotificationOngoing: true,
-        androidNotificationIcon: 'mipmap/ic_launcher',
-        preloadArtwork: true,
-      ),
-      timeout: const Duration(seconds: 5),
-    );
+    // TAT HAN JustAudioBackground.init() (thong bao he thong + man hinh khoa
+    // cho bai dang phat, giong Spotify) - da lien tuc gay hong hoc CA VIEC
+    // PHAT NHAC (khong chi mat tinh nang thong bao): JustAudioBackground.init()
+    // doi JustAudioPlatform.instance sang mot native service rieng NGAY LUC
+    // goi; neu viec bind service do that bai/timeout (R8 xoa mat class cua
+    // audio_service, mang cham, thiet bi/OEM chan foreground service...),
+    // buoc doi nay KHONG bao gio duoc hoan tac, khien MOI AudioPlayer() tao
+    // ra sau do (kem ca AudioPlayer dung de phat nhac chinh trong
+    // NowPlayingService) deu bi hong theo - nguoi dung bao "khong tai duoc
+    // nhac" du link nhac hoan toan binh thuong va mang on dinh. Da thu sua
+    // qua ProGuard keep rules + try/catch + timeout nhieu lan nhung van tai
+    // dien khi doi AGP/Gradle. Nghe nhac la tinh nang CHINH cua app - danh
+    // doi mat thong bao/dieu khien man hinh khoa de dam bao phat nhac chac
+    // chan hoat dong, thay vi tiep tuc vá tung trieu chung.
   }
 
   runApp(const ProviderScope(child: LearnEnglishMusicApp()));
