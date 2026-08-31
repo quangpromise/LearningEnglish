@@ -139,20 +139,45 @@ Brad Sucks là ứng viên tốt nhất (pop/rock, giọng rõ, có sẵn lyrics
 
 ---
 
-## 8. Checklist bắt buộc khi thêm 1 bài hát
+## 8. Công cụ: `scripts/add_songs.py`
+
+Cho nguồn **Josh Woodward** (bước 1 của §7) đã có script tự động hoá, chia **3 bước, mỗi bước có người duyệt**:
+
+```bash
+# 1. Tải mp3 + lấy lời từ trang bài hát → content/pending/<slug>.json
+python scripts/add_songs.py fetch TheSimpleLife AnotherSong
+
+# 2. NGƯỜI dịch phần "vi" trong file json đó (script cố ý để trống)
+
+# 3. Chèn vào songs_data.dart + ghi công vào ATTRIBUTION.md
+python scripts/add_songs.py emit the-simple-life
+
+# 4. Căn timestamp thật bằng ASR — BẮT BUỘC
+python scripts/realign_lyrics.py --only the-simple-life
+```
+
+**Vì sao không dịch tự động luôn:** bản dịch máy cho lyrics rất hay sai sắc thái/ẩn dụ, mà bảng dịch Anh–Việt **chính là nội dung học** của app chứ không phải chrome giao diện. Bước 2 bắt buộc có người. Lệnh `emit` sẽ **từ chối chạy** nếu còn dòng chưa dịch.
+
+Các chốt chặn khác trong `emit`: thiếu file mp3, trùng bài đã có, `level`/`color` không hợp lệ → dừng và báo lỗi, không ghi gì.
+
+⚠️ **Bước 4 không được bỏ.** Bài vừa chèn có mọi dòng ở giây 0; nếu commit khi chưa căn, test karaoke sẽ đỏ vì các dòng chồng lên nhau.
+
+⚠️ Phần `fetch` (gọi mạng) **chưa chạy thử được** — phiên viết script bị chặn egress (§12). Phần sinh code Dart và các chốt chặn thì đã test kỹ, gồm cả escape `'`, `"`, `\`, và `$` (dấu `$` mở nội suy chuỗi trong Dart nên bắt buộc phải escape). Nếu `fetch` không đọc được trang, dùng `--audio-url` để chỉ tay link mp3.
+
+## 9. Checklist bắt buộc khi thêm 1 bài hát
 
 1. Tải file gốc, **lưu lại link trang license của đúng track đó** (không phải link trang chủ của nguồn).
 2. Xác nhận license là **CC0 hoặc CC-BY** (hoặc CC-BY-SA nếu đã có quyết định theo §5). Loại mọi track NC/ND.
 3. **Kiểm tra license có bao trùm cả phần lời không** (§2) — người đăng có tự viết + tự thu không? Nếu là remix, truy ngược tới bản acapella gốc và kiểm license của nó.
 4. Nghe thử: giọng có rõ không, tốc độ có hợp người học không, nội dung có phù hợp không.
-5. Ghi track vào bảng §9 bên dưới.
+5. Ghi track vào bảng §10 bên dưới.
 6. Nếu là CC-BY / CC-BY-SA: thêm dòng ghi công vào `ATTRIBUTION.md` đủ **TASL** (Title, Author, Source link, License link).
-7. Host audio trên CDN riêng (xem §10), không hotlink từ trang gốc.
+7. Host audio trên CDN riêng (xem §11), không hotlink từ trang gốc.
 8. Chạy `python scripts/realign_lyrics.py --only <ten-file>` để căn timestamp.
 
 ---
 
-## 9. Danh sách track đã thêm
+## 10. Danh sách track đã thêm
 
 | Track | Tác giả | Nguồn | License | Ghi công |
 |---|---|---|---|---|
@@ -165,7 +190,7 @@ Ghi chú chọn lọc: trong danh sách bài nổi bật trên trang chủ Josh 
 
 ---
 
-## 10. Kỹ thuật
+## 11. Kỹ thuật
 
 **Timestamp lyrics.** Đã căn bằng forced-alignment tự động (`scripts/realign_lyrics.py`, faster-whisper) trên file audio thật, chỉ lấy timestamp chứ không đổi lời. Chạy `--dry-run` để xem trước, `--only <ten-file-khong-duoi>` để chạy 1 bài.
 
@@ -177,8 +202,8 @@ Ghi chú chọn lọc: trong danh sách bài nổi bật trên trang chủ Josh 
 
 ---
 
-## 11. Giới hạn của nghiên cứu này
+## 12. Giới hạn của nghiên cứu này
 
 Phiên làm việc này bị chặn egress mạng, **không truy cập trực tiếp được** joshwoodward.com, pixabay.com, freemusicarchive.org, ccmixter.org, archive.org. Các kết luận về điều khoản license ở trên dựa trên **kết quả tìm kiếm web trích dẫn lại điều khoản**, không phải đọc trực tiếp trang license gốc.
 
-→ Trước khi thêm track thật, người thực hiện **phải tự mở trang license gốc của từng track và đọc lại** (đây cũng đã là bước 1–2 trong checklist §8). Riêng phần đính chính Pixabay ở §6 nên được xác nhận lại bằng cách đọc thẳng https://pixabay.com/service/license-summary/ trước khi coi là kết luận cuối cùng.
+→ Trước khi thêm track thật, người thực hiện **phải tự mở trang license gốc của từng track và đọc lại** (đây cũng đã là bước 1–2 trong checklist §9). Riêng phần đính chính Pixabay ở §6 nên được xác nhận lại bằng cách đọc thẳng https://pixabay.com/service/license-summary/ trước khi coi là kết luận cuối cùng.
