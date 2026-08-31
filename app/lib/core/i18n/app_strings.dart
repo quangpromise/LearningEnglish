@@ -522,6 +522,11 @@ class AppStrings {
       AppLanguage.vi: 'Nhắn gì đó...',
       AppLanguage.en: 'Type a message...',
     },
+    'chat_send_failed': {
+      AppLanguage.vi: 'Gửi tin nhắn thất bại, thử lại nhé.',
+      AppLanguage.en: 'Failed to send, please try again.',
+    },
+    'chat_seen': {AppLanguage.vi: 'Đã xem', AppLanguage.en: 'Seen'},
     'conversations_no_message': {
       AppLanguage.vi: 'Chưa có tin nhắn nào',
       AppLanguage.en: 'No messages yet',

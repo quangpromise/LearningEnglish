@@ -1,6 +1,9 @@
+import 'dart:typed_data';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../features/social/data/device_token_repository.dart';
@@ -9,12 +12,94 @@ import '../../features/social/presentation/chat_screen.dart';
 import '../navigation/nav_keys.dart';
 
 /// Id kenh thong bao rieng cho tin nhan chat, kem am thanh "ding" tuy chinh
-/// (file res/raw/notification_ding.wav) - PHAI trung voi `channel_id` ma
-/// Edge Function send-chat-push dat trong payload FCM (xem
-/// supabase/functions/send-chat-push/index.ts), neu khong Android se dung
-/// kenh mac dinh (van co am nhung la am chuong mac dinh cua may, khong phai
-/// am rieng cua app).
-const kChatMessagesChannelId = 'chat_messages';
+/// (file res/raw/notification_ding.wav) - phai tao 1 lan duy nhat truoc khi
+/// thong bao dau tien hien (Android khoa cung am thanh cua 1 kenh ngay tu
+/// luc tao, doi lai khong an thua). Hau to "_v2": may da cai ban build cu
+/// (channel "chat_messages" tao ma chua co am) se KHONG bao gio nhan am moi
+/// du sua code, vi Android khong cho doi cau hinh 1 kenh da ton tai - phai
+/// dat ten kenh MOI de buoc tao lai tu dau. Neu sau nay con doi am/importance
+/// lan nua, tang so o day len (_v3, _v4...).
+const kChatMessagesChannelId = 'chat_messages_v2';
+
+final _localNotifications = FlutterLocalNotificationsPlugin();
+
+/// Payload gui kem thong bao local de biet bam vao tin nhan cua AI - chi can
+/// sender_id, dung chung cho ca duong bam tu background lan tu terminated.
+String _payloadFor(String senderId) => senderId;
+
+/// Tai ve dung luong nho de lam anh dai dien tron trong thong bao he thong,
+/// giong Messenger - that bai (mat mang, avatar rong...) thi tra ve null,
+/// luc do thong bao chi hien icon mac dinh cua app thay vi crash ca luong.
+Future<Uint8List?> _downloadAvatar(String? url) async {
+  if (url == null || url.isEmpty) return null;
+  try {
+    final res = await http
+        .get(Uri.parse(url))
+        .timeout(const Duration(seconds: 5));
+    if (res.statusCode != 200) return null;
+    return res.bodyBytes;
+  } catch (_) {
+    return null;
+  }
+}
+
+/// Dung chung cho ca handler foreground/background: dung Firebase data-only
+/// message (KHONG dung truong `notification` cua FCM) roi tu dung thong bao
+/// bang flutter_local_notifications - day la cach DUY NHAT de gan anh dai
+/// dien nguoi gui lam "large icon" tron nhu Messenger, vi FCM tu hien thong
+/// bao he thong (khi dung truong `notification`) khong co cho de nhet 1 URL
+/// anh rieng cho tung tin, chi co 1 icon nho co dinh cua app.
+Future<void> _showChatNotification(RemoteMessage message) async {
+  final data = message.data;
+  final senderId = data['sender_id'] as String?;
+  final senderName = data['sender_name'] as String? ?? 'Bạn bè';
+  final content = data['content'] as String? ?? '';
+  if (senderId == null || content.isEmpty) return;
+
+  final avatarBytes = await _downloadAvatar(
+    data['sender_avatar_url'] as String?,
+  );
+
+  await _localNotifications.show(
+    // Dung hash cua sender_id lam id - tin nhan moi tu CUNG 1 nguoi se GHI
+    // DE thong bao cu thay vi chong chat nhieu thong bao rieng le.
+    id: senderId.hashCode,
+    title: senderName,
+    body: content,
+    notificationDetails: NotificationDetails(
+      android: AndroidNotificationDetails(
+        kChatMessagesChannelId,
+        'Tin nhắn',
+        channelDescription: 'Thông báo khi có tin nhắn mới từ bạn bè',
+        importance: Importance.high,
+        priority: Priority.high,
+        largeIcon: avatarBytes != null
+            ? ByteArrayAndroidBitmap(avatarBytes)
+            : null,
+      ),
+    ),
+    payload: _payloadFor(senderId),
+  );
+}
+
+/// PHAI la ham top-level (khong phai method trong class) kem annotation nay
+/// - Firebase Messaging chay ham nay trong 1 isolate rieng khi co tin nhan
+/// den luc app da bi tat han, tach biet hoan toan voi isolate chinh cua app.
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+  await _showChatNotification(message);
+}
+
+/// PHAI la ham top-level - flutter_local_notifications goi ham nay khi
+/// nguoi dung bam vao thong bao TRONG LUC app da bi tat han (khac voi
+/// onDidReceiveNotificationResponse chi chay duoc khi isolate chinh con song).
+@pragma('vm:entry-point')
+void _onBackgroundNotificationTap(NotificationResponse response) {
+  final senderId = response.payload;
+  if (senderId == null) return;
+  ChatPush.instance._openChatWith(senderId);
+}
 
 /// Push notification cho tin nhan chat qua Firebase Cloud Messaging - hoat
 /// dong ca khi app da dong han/khoa may (khac voi DailyQuizNotifications:
@@ -51,16 +136,30 @@ class ChatPush {
       importance: Importance.high,
       sound: RawResourceAndroidNotificationSound('notification_ding'),
     );
-    await FlutterLocalNotificationsPlugin()
+    final androidImpl = _localNotifications
         .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin
-        >()
-        ?.createNotificationChannel(channel);
+        >();
+    await androidImpl?.createNotificationChannel(channel);
+
+    await _localNotifications.initialize(
+      settings: const InitializationSettings(
+        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+      ),
+      onDidReceiveNotificationResponse: (response) {
+        final senderId = response.payload;
+        if (senderId != null) _openChatWith(senderId);
+      },
+      onDidReceiveBackgroundNotificationResponse: _onBackgroundNotificationTap,
+    );
 
     FirebaseMessaging.instance.onTokenRefresh.listen(_saveTokenForCurrentUser);
-    FirebaseMessaging.onMessageOpenedApp.listen(_handleTap);
-    final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
-    if (initialMessage != null) await _handleTap(initialMessage);
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    // Foreground: da co banner + am thanh rieng qua Realtime (xem
+    // incoming_message_banner.dart) hien thi tuc thi hon nhieu so voi cho
+    // FCM - bo qua data message trung lap luc app dang mo de khong hien 2
+    // thong bao cho 1 tin nhan.
+    FirebaseMessaging.onMessage.listen((_) {});
   }
 
   /// Goi ngay sau khi dang nhap thanh cong - xin quyen thong bao (bat buoc
@@ -98,13 +197,11 @@ class ChatPush {
     await DeviceTokenRepository.saveToken(userId: userId, token: token);
   }
 
-  /// Bam vao thong bao (tu background hoac tu app da bi tat han) - mo thang
-  /// khung chat voi nguoi gui. sender_id chac chan da la ban be (RLS bang
-  /// messages chi cho insert giua 2 nguoi da 'accepted') nen tim thang trong
-  /// danh sach ban be thay vi phai them 1 RPC tra cuu profile rieng.
-  Future<void> _handleTap(RemoteMessage message) async {
-    final senderId = message.data['sender_id'] as String?;
-    if (senderId == null) return;
+  /// Bam vao thong bao - mo thang khung chat voi nguoi gui. sender_id chac
+  /// chan da la ban be (RLS bang messages chi cho insert giua 2 nguoi da
+  /// 'accepted') nen tim thang trong danh sach ban be thay vi phai them 1
+  /// RPC tra cuu profile rieng.
+  Future<void> _openChatWith(String senderId) async {
     final context = rootNavigatorKey.currentContext;
     if (context == null) return;
 

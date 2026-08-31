@@ -217,6 +217,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       ),
                     );
                   }
+                  // Chi hien "Da xem" duoi tin nhan CUA MINH moi nhat da
+                  // duoc doc, giong Messenger - khong lap lai o moi tin.
+                  var lastMyReadIndex = -1;
+                  for (var i = 0; i < messages.length; i++) {
+                    if (messages[i].senderId == myId &&
+                        messages[i].readAt != null) {
+                      lastMyReadIndex = i;
+                    }
+                  }
                   return ListView.builder(
                     controller: _scrollCtrl,
                     itemCount: messages.length,
@@ -272,6 +281,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                               style: AppTextStyles.muted(size: 10),
                             ),
                           ),
+                          if (i == lastMyReadIndex)
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                bottom: 6,
+                                right: 4,
+                              ),
+                              child: Text(
+                                ref.tr('chat_seen'),
+                                style: AppTextStyles.muted(size: 10)
+                                    .copyWith(color: AppColors.teal),
+                              ),
+                            ),
                         ],
                       );
                     },

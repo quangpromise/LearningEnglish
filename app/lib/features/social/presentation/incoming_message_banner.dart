@@ -1,6 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
 
+import '../../../core/i18n/app_strings.dart';
+import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/social_repository.dart';
 import 'chat_screen.dart';
@@ -26,10 +31,11 @@ Future<void> _playIncomingMessageSound() async {
 
 /// Hien pop-up thong bao tin nhan moi kieu Messenger, tron len tren cung
 /// man hinh hien tai (bat ke dang o tab nao) trong luc app dang mo - tu
-/// bien mat sau vai giay, bam vao de mo ngay khung chat voi nguoi gui, kem
-/// am thanh "ding" bao co tin nhan moi. Day la thong bao TRONG APP (chi
-/// hoat dong khi app dang chay) - khi app da dong/khoa may, xem ChatPush
-/// (push notification he thong qua Firebase Cloud Messaging).
+/// bien mat sau 5 giay, bam vao de tra loi nhanh ngay tai cho (khong roi
+/// man hinh dang xem), kem am thanh "ding" bao co tin nhan moi. Day la
+/// thong bao TRONG APP (chi hoat dong khi app dang chay) - khi app da
+/// dong/khoa may, xem ChatPush (push notification he thong qua Firebase
+/// Cloud Messaging).
 void showIncomingMessageBanner(
   BuildContext context, {
   required SocialUser sender,
@@ -43,7 +49,7 @@ void showIncomingMessageBanner(
       sender: sender,
       preview: preview,
       onDismiss: () => entry.remove(),
-      onTap: () {
+      onOpenChat: () {
         entry.remove();
         openChatPopup(context, sender);
       },
@@ -52,27 +58,33 @@ void showIncomingMessageBanner(
   overlay.insert(entry);
 }
 
-class _IncomingMessageBanner extends StatefulWidget {
+class _IncomingMessageBanner extends ConsumerStatefulWidget {
   const _IncomingMessageBanner({
     required this.sender,
     required this.preview,
     required this.onDismiss,
-    required this.onTap,
+    required this.onOpenChat,
   });
 
   final SocialUser sender;
   final String preview;
   final VoidCallback onDismiss;
-  final VoidCallback onTap;
+  final VoidCallback onOpenChat;
 
   @override
-  State<_IncomingMessageBanner> createState() => _IncomingMessageBannerState();
+  ConsumerState<_IncomingMessageBanner> createState() =>
+      _IncomingMessageBannerState();
 }
 
-class _IncomingMessageBannerState extends State<_IncomingMessageBanner>
+class _IncomingMessageBannerState extends ConsumerState<_IncomingMessageBanner>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<Offset> _slide;
+  final _replyCtrl = TextEditingController();
+  final _replyFocus = FocusNode();
+  Timer? _autoDismissTimer;
+  bool _replying = false;
+  bool _sending = false;
 
   @override
   void initState() {
@@ -86,7 +98,12 @@ class _IncomingMessageBannerState extends State<_IncomingMessageBanner>
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
     _controller.forward();
-    Future.delayed(const Duration(seconds: 4), _dismiss);
+    _scheduleAutoDismiss();
+  }
+
+  void _scheduleAutoDismiss() {
+    _autoDismissTimer?.cancel();
+    _autoDismissTimer = Timer(const Duration(seconds: 5), _dismiss);
   }
 
   void _dismiss() async {
@@ -95,9 +112,40 @@ class _IncomingMessageBannerState extends State<_IncomingMessageBanner>
     widget.onDismiss();
   }
 
+  /// Bam vao banner - mo che do tra loi nhanh ngay tai cho thay vi chuyen
+  /// man hinh, va tam dung dong ho tu tat de nguoi dung co du thoi gian go.
+  void _startReplying() {
+    _autoDismissTimer?.cancel();
+    setState(() => _replying = true);
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _replyFocus.requestFocus(),
+    );
+  }
+
+  Future<void> _send() async {
+    final text = _replyCtrl.text.trim();
+    if (text.isEmpty || _sending) return;
+    setState(() => _sending = true);
+    try {
+      await ref
+          .read(socialRepositoryProvider)
+          .sendMessage(widget.sender.id, text);
+      if (!mounted) return;
+      _dismiss();
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _sending = false);
+      ScaffoldMessenger.maybeOf(context)
+          ?.showSnackBar(SnackBar(content: Text(ref.tr('chat_send_failed'))));
+    }
+  }
+
   @override
   void dispose() {
+    _autoDismissTimer?.cancel();
     _controller.dispose();
+    _replyCtrl.dispose();
+    _replyFocus.dispose();
     super.dispose();
   }
 
@@ -116,76 +164,139 @@ class _IncomingMessageBannerState extends State<_IncomingMessageBanner>
               key: ValueKey(widget.sender.id + widget.preview),
               direction: DismissDirection.up,
               onDismissed: (_) => widget.onDismiss(),
-              child: GestureDetector(
-                onTap: () {
-                  _controller.stop();
-                  widget.onTap();
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xEB0F1326),
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: AppColors.glassBorder),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.4),
-                        blurRadius: 20,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 42,
-                        height: 42,
-                        decoration: const BoxDecoration(
-                          gradient: AppColors.accentGradient,
-                          shape: BoxShape.circle,
-                        ),
-                        clipBehavior: Clip.antiAlias,
-                        child: widget.sender.avatarUrl != null
-                            ? Image.network(
-                                widget.sender.avatarUrl!,
-                                fit: BoxFit.cover,
-                              )
-                            : Center(
-                                child: Text(
-                                  widget.sender.label.isNotEmpty
-                                      ? widget.sender.label[0].toUpperCase()
-                                      : '?',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w800,
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xEB0F1326),
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: AppColors.glassBorder),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.4),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    GestureDetector(
+                      onTap: _replying ? null : _startReplying,
+                      behavior: HitTestBehavior.opaque,
+                      child: Row(
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              _controller.stop();
+                              widget.onOpenChat();
+                            },
+                            child: Container(
+                              width: 42,
+                              height: 42,
+                              decoration: const BoxDecoration(
+                                gradient: AppColors.accentGradient,
+                                shape: BoxShape.circle,
+                              ),
+                              clipBehavior: Clip.antiAlias,
+                              child: widget.sender.avatarUrl != null
+                                  ? Image.network(
+                                      widget.sender.avatarUrl!,
+                                      fit: BoxFit.cover,
+                                    )
+                                  : Center(
+                                      child: Text(
+                                        widget.sender.label.isNotEmpty
+                                            ? widget.sender.label[0]
+                                                  .toUpperCase()
+                                            : '?',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                    ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  widget.sender.label,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: AppTextStyles.body(
+                                    weight: FontWeight.w800,
                                   ),
                                 ),
-                              ),
+                                Text(
+                                  widget.preview,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: AppTextStyles.muted(size: 12.5),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              widget.sender.label,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: AppTextStyles.body(
-                                weight: FontWeight.w800,
+                    ),
+                    if (_replying) ...[
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: GlowBox(
+                              borderRadius: 999,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                              ),
+                              child: TextField(
+                                controller: _replyCtrl,
+                                focusNode: _replyFocus,
+                                style: AppTextStyles.body(size: 13),
+                                textInputAction: TextInputAction.send,
+                                onSubmitted: (_) => _send(),
+                                decoration: InputDecoration(
+                                  isDense: true,
+                                  border: InputBorder.none,
+                                  hintText: ref.tr('chat_input_hint'),
+                                  hintStyle: AppTextStyles.muted(size: 13),
+                                ),
                               ),
                             ),
-                            Text(
-                              widget.preview,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: AppTextStyles.muted(size: 12.5),
+                          ),
+                          const SizedBox(width: 8),
+                          GestureDetector(
+                            onTap: _sending ? null : _send,
+                            child: Container(
+                              width: 36,
+                              height: 36,
+                              decoration: const BoxDecoration(
+                                gradient: AppColors.accentGradient,
+                                shape: BoxShape.circle,
+                              ),
+                              child: _sending
+                                  ? const Padding(
+                                      padding: EdgeInsets.all(9),
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                  : const Icon(
+                                      Icons.send_rounded,
+                                      color: Colors.white,
+                                      size: 16,
+                                    ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ],
-                  ),
+                  ],
                 ),
               ),
             ),

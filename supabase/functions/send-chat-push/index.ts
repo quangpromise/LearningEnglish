@@ -111,7 +111,7 @@ Deno.serve(async (req) => {
       .eq('user_id', payload.receiver_id),
     adminClient
       .from('profiles')
-      .select('display_name, username')
+      .select('display_name, username, avatar_url')
       .eq('id', payload.sender_id)
       .single(),
   ]);
@@ -149,22 +149,21 @@ Deno.serve(async (req) => {
           body: JSON.stringify({
             message: {
               token: fcm_token,
-              notification: {
-                title: senderName,
-                body: payload.content,
-              },
+              // CO Y KHONG dung truong `notification` cua FCM - de Android
+              // tu hien thong bao thi khong co cho nao nhet URL anh dai
+              // dien RIENG cho tung tin nhan (chi co 1 icon nho co dinh cua
+              // app). Gui data-only de app tu dung thong bao qua
+              // flutter_local_notifications, moi co the tai anh dai dien
+              // nguoi gui lam "large icon" tron nhu Messenger (xem
+              // _showChatNotification trong chat_push.dart).
               data: {
                 type: 'chat_message',
                 sender_id: payload.sender_id,
+                sender_name: senderName,
+                sender_avatar_url: senderProfile?.avatar_url ?? '',
+                content: payload.content,
               },
-              // channel_id PHAI trung voi kenh thong bao co am thanh rieng
-              // duoc tao san trong app (xem ChatPush.init() trong
-              // chat_push.dart) - neu khong Android se dung kenh mac dinh
-              // (van co am nhung khong phai am "ding" rieng cua app).
-              android: {
-                priority: 'high',
-                notification: { channel_id: 'chat_messages' },
-              },
+              android: { priority: 'high' },
             },
           }),
         },

@@ -435,26 +435,48 @@ class _RequestTile extends ConsumerWidget {
           Expanded(
             child: Text(
               user.label,
-              style: const TextStyle(
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              // Truoc day dung TextStyle() tran khong khai bao fontSize, ke
+              // thua ambient text style va bi phong cuc to trong the trang
+              // (light: true) - AppTextStyles.body() luon co san fontSize
+              // co dinh, tranh lap lai loi nay.
+              style: AppTextStyles.body(
+                weight: FontWeight.w700,
                 color: Colors.black,
-                fontWeight: FontWeight.w700,
               ),
             ),
           ),
+          const SizedBox(width: 4),
           GestureDetector(
             onTap: onDecline,
-            child: const Padding(
-              padding: EdgeInsets.all(6),
-              child: Icon(Icons.close_rounded, size: 20, color: AppColors.pink),
+            child: Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: AppColors.pink.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.close_rounded,
+                size: 18,
+                color: AppColors.pink,
+              ),
             ),
           ),
+          const SizedBox(width: 8),
           GestureDetector(
             onTap: onAccept,
-            child: const Padding(
-              padding: EdgeInsets.all(6),
-              child: Icon(
-                Icons.check_circle_rounded,
-                size: 20,
+            child: Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: AppColors.teal.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.check_rounded,
+                size: 18,
                 color: AppColors.teal,
               ),
             ),
