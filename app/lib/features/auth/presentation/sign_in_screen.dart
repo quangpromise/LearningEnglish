@@ -159,22 +159,18 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                gradient: AppColors.accentGradient,
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: const Icon(
-                Icons.music_note_rounded,
-                color: Colors.white,
-                size: 32,
+            ClipRRect(
+              borderRadius: BorderRadius.circular(24),
+              child: Image.asset(
+                'assets/icon/app_icon_square.png',
+                width: 72,
+                height: 72,
+                fit: BoxFit.cover,
               ),
             ),
             const SizedBox(height: 18),
             Text(
-              'Learn English\nThrough Music',
+              'GymTalk',
               textAlign: TextAlign.center,
               style: AppTextStyles.heading(size: 22),
             ),

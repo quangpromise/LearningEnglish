@@ -103,6 +103,14 @@ final unreadMessageCountProvider = StreamProvider.autoDispose(
   (ref) => ref.watch(socialRepositoryProvider).watchUnreadCount(),
 );
 
+/// So loi moi ket ban dang cho - realtime, dung cho cham do tren nut "Ban
+/// be" (Profile va man Tin nhan) - tu giam khi chap nhan/tu choi vi cham
+/// invalidate() thu cong ngay sau do (xem friends_screen.dart), tu tang khi
+/// co loi moi moi qua Realtime khong can invalidate.
+final pendingRequestCountProvider = StreamProvider.autoDispose(
+  (ref) => ref.watch(socialRepositoryProvider).watchPendingRequestCount(),
+);
+
 /// Phat 1 su kien moi lan co tin nhan MOI (chua tung thay) gui den minh -
 /// RootShell lang nghe cai nay de hien pop-up thong bao kieu Messenger
 /// tren BAT KY man hinh nao, khong chi rieng man Tin nhan.
@@ -120,6 +128,7 @@ void invalidateUserScopedProviders(WidgetRef ref) {
   ref.invalidate(myFriendsProvider);
   ref.invalidate(myPendingRequestsProvider);
   ref.invalidate(unreadMessageCountProvider);
+  ref.invalidate(pendingRequestCountProvider);
   ref.invalidate(myConversationsProvider);
   ref.invalidate(favoriteSongTitlesProvider);
 }

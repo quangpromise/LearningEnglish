@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -37,7 +38,44 @@ Future<Uint8List?> _downloadAvatar(String? url) async {
         .get(Uri.parse(url))
         .timeout(const Duration(seconds: 5));
     if (res.statusCode != 200) return null;
-    return res.bodyBytes;
+    return await _cropToCircle(res.bodyBytes, size: 96);
+  } catch (_) {
+    return null;
+  }
+}
+
+/// Cat anh dai dien (thuong la anh vuong/chu nhat full-res tu server) thanh
+/// 1 hinh TRON kich thuoc co dinh nho - he thong Android khong tu dong bo
+/// tron/thu nho largeIcon nen neu dua thang bytes goc vao se hien vuong va
+/// to bat thuong so voi cac phan tu khac cua thong bao (giong Messenger).
+Future<Uint8List?> _cropToCircle(Uint8List bytes, {required int size}) async {
+  try {
+    final codec = await ui.instantiateImageCodec(bytes);
+    final frame = await codec.getNextFrame();
+    final src = frame.image;
+    final side = src.width < src.height ? src.width : src.height;
+    final srcRect = ui.Rect.fromLTWH(
+      (src.width - side) / 2,
+      (src.height - side) / 2,
+      side.toDouble(),
+      side.toDouble(),
+    );
+
+    final recorder = ui.PictureRecorder();
+    final canvas = ui.Canvas(recorder);
+    final dstSize = size.toDouble();
+    canvas.clipPath(
+      ui.Path()..addOval(ui.Rect.fromLTWH(0, 0, dstSize, dstSize)),
+    );
+    canvas.drawImageRect(
+      src,
+      srcRect,
+      ui.Rect.fromLTWH(0, 0, dstSize, dstSize),
+      ui.Paint()..filterQuality = ui.FilterQuality.high,
+    );
+    final circular = await recorder.endRecording().toImage(size, size);
+    final pngData = await circular.toByteData(format: ui.ImageByteFormat.png);
+    return pngData?.buffer.asUint8List();
   } catch (_) {
     return null;
   }

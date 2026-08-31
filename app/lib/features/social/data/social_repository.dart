@@ -190,6 +190,19 @@ class SocialRepository {
     );
   }
 
+  /// Realtime: so loi moi ket ban dang cho (nguoi khac gui toi minh, chua
+  /// chap nhan/tu choi) - dung cho cham do tren nut "Ban be", tuong tu
+  /// watchUnreadCount() ben duoi nhung theo dung bang friendships.
+  Stream<int> watchPendingRequestCount() {
+    final myId = _myId;
+    if (myId == null) return const Stream.empty();
+    return _supabase
+        .from('friendships')
+        .stream(primaryKey: ['requester_id', 'addressee_id'])
+        .eq('addressee_id', myId)
+        .map((rows) => rows.where((r) => r['status'] == 'pending').length);
+  }
+
   /// Realtime: so tin nhan CHUA DOC gui den minh, cap nhat ngay khi co tin
   /// nhan moi hoac khi minh danh dau da doc (khong can poll) - dung cho
   /// badge tren nut tin nhan o Home.

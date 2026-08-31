@@ -240,6 +240,28 @@ class _IncomingMessageBannerState extends ConsumerState<_IncomingMessageBanner>
                               ],
                             ),
                           ),
+                          if (!_replying) ...[
+                            const SizedBox(width: 8),
+                            // Nut rieng, ro rang de mo o tra loi nhanh - truoc
+                            // day chi bam vao ca hang moi mo duoc, kho nhan
+                            // biet la co the tra loi ngay tai day.
+                            GestureDetector(
+                              onTap: _startReplying,
+                              child: Container(
+                                width: 34,
+                                height: 34,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.1),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.reply_rounded,
+                                  size: 18,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),

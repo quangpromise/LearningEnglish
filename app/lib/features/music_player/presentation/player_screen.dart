@@ -15,17 +15,17 @@ import '../data/songs_data.dart';
 import 'karaoke_lyrics.dart';
 
 class PlayerScreen extends ConsumerStatefulWidget {
-  const PlayerScreen({
-    super.key,
-    required this.queue,
-    required this.startIndex,
-  });
+  const PlayerScreen({super.key, this.queue, this.startIndex});
 
   /// Danh sách bài hát sẽ phát nối tiếp nhau (tự động chuyển bài khi 1 bài
   /// kết thúc) - vd toàn bộ danh sách/kết quả tìm kiếm ở Home, bắt đầu từ
   /// bài người dùng vừa bấm.
-  final List<Song> queue;
-  final int startIndex;
+  ///
+  /// Để `null` (kèm [startIndex] cũng `null`) khi CHỈ MỞ LẠI phiên đang phát
+  /// sẵn (vd bấm vào mini-player) - lúc đó màn hình chỉ quan sát hàng đợi
+  /// hiện có của [NowPlayingService] thay vì phát lại từ đầu.
+  final List<Song>? queue;
+  final int? startIndex;
 
   @override
   ConsumerState<PlayerScreen> createState() => _PlayerScreenState();
@@ -33,19 +33,20 @@ class PlayerScreen extends ConsumerStatefulWidget {
 
 class _PlayerScreenState extends ConsumerState<PlayerScreen>
     with SingleTickerProviderStateMixin {
-  // Dung chung 1 AudioPlayer cho toan app (xem now_playing_service.dart) -
-  // truoc day moi PlayerScreen tu tao AudioPlayer rieng, nen thoat 1 bai roi
-  // mo bai khac ngay lap tuc (trong luc man hinh cu con dang chuyen canh,
-  // chua kip dispose) khien 2 AudioPlayer ton tai song song, phat de len nhau.
-  AudioPlayer get _player => NowPlayingService.instance.player;
-  int? _myGeneration;
+  // Dung chung 1 AudioPlayer + hang doi cho toan app (xem
+  // now_playing_service.dart) - man hinh nay chi la 1 "o quan sat" phien
+  // phat dang dien ra, KHONG con tu quan ly play/stop rieng nhu truoc, de
+  // roi man hinh nay (back ra ngoai) khong con lam dung nhac nua - dung y
+  // muon co mini-player + thong bao he thong tiep tuc dieu khien duoc.
+  NowPlayingService get _service => NowPlayingService.instance;
+  AudioPlayer get _player => _service.player;
+  List<Song> get _queue => _service.queue;
   late int _index;
-  Song get _song => widget.queue[_index];
+  Song get _song => _queue[_index];
   int _currentLine = 0;
   bool _bilingual = true;
   String? _error;
-  bool _completedRecorded = false;
-  StreamSubscription<PlayerState>? _stateSub;
+  StreamSubscription<int?>? _indexSub;
   late List<GlobalKey> _lineKeys;
 
   /// Lyric da duoc chia xuong tung tu kem moc thoi gian rieng (xem
@@ -59,23 +60,43 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
   final ValueNotifier<double> _positionSeconds = ValueNotifier<double>(0);
   Ticker? _ticker;
   late final DateTime _openedAt;
-  bool _disposed = false;
-
-  bool get _isCurrentOwner =>
-      _myGeneration != null &&
-      NowPlayingService.instance.isCurrent(_myGeneration!);
 
   @override
   void initState() {
     super.initState();
     _openedAt = DateTime.now();
-    _index = widget.startIndex;
+    final queue = widget.queue;
+    final startIndex = widget.startIndex;
+    if (queue != null && startIndex != null) {
+      _index = startIndex;
+      _service.setQueueAndPlay(queue, startIndex).catchError((_) {
+        if (mounted) setState(() => _error = ref.tr('player_load_error'));
+      });
+    } else {
+      // Mo lai phien dang phat san (vd tu mini-player) - hang doi chac chan
+      // khong rong vi mini-player chi hien khi co bai dang phat.
+      _index = _service.currentIndex ?? 0;
+    }
     _prepareLyrics();
     // Doc _player.position moi khung hinh thay vi Timer.periodic 250ms:
     // hieu ung karaoke quet chu ben trong TUNG TU nen can vi tri muot, moc
     // 250ms mot lan se thay chu nhay giat theo tung nac.
     _ticker = createTicker(_onTick)..start();
-    _loadAndPlay();
+    // Bai tu chuyen (nghe het/bam Bai sau-truoc/mini-player) - dong bo lai
+    // lyric va vi tri hien tai theo chi so THAT tu chinh AudioPlayer thay vi
+    // tu dem trong man hinh nay.
+    _indexSub = _player.currentIndexStream.listen((i) {
+      if (i == null || i == _index || !mounted || i >= _queue.length) return;
+      setState(() {
+        _index = i;
+        _currentLine = 0;
+        _error = null;
+        _prepareLyrics();
+      });
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _scrollToCurrentLine(),
+      );
+    });
   }
 
   void _prepareLyrics() {
@@ -86,7 +107,6 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
   /// Chay moi khung hinh: cap nhat vi tri phat cho hieu ung karaoke, va doi
   /// dong dang hat khi vuot qua moc thoi gian cua dong ke tiep.
   void _onTick(Duration _) {
-    if (!_isCurrentOwner) return;
     final seconds = _player.position.inMilliseconds / 1000.0;
     // ValueNotifier tu bo qua khi gia tri khong doi, nen luc dang tam dung
     // se khong co listener nao bi danh thuc.
@@ -101,21 +121,6 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
         (_) => _scrollToCurrentLine(),
       );
     }
-  }
-
-  /// Chuyen sang bai ke tiep trong hang doi khi bai hien tai vua ket thuc -
-  /// dung lai cung 1 man hinh (khong push man moi) de tao cam giac "nghe
-  /// lien tuc nhieu bai" thay vi phai tu quay lai Home chon bai tiep.
-  void _playNextInQueue() {
-    if (_index + 1 >= widget.queue.length) return;
-    setState(() {
-      _index++;
-      _currentLine = 0;
-      _completedRecorded = false;
-      _error = null;
-      _prepareLyrics();
-    });
-    _loadAndPlay();
   }
 
   void _scrollToCurrentLine([int retriesLeft = 5]) {
@@ -138,66 +143,18 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     }
   }
 
-  Future<void> _loadAndPlay() async {
-    final song = _song;
-    try {
-      _myGeneration = await NowPlayingService.instance.play(song.audioUrl);
-    } catch (e) {
-      if (mounted) {
-        setState(() => _error = ref.tr('player_load_error'));
-      }
-    }
-    // Man hinh co the da bi dong, hoac 1 bai khac da giat quyen phat trong
-    // luc await o tren dang cho - neu khong chan lai, timer duoc tao sau day
-    // se lang nghe nham player dang phat bai KHAC.
-    if (_disposed || !_isCurrentOwner) return;
-    _stateSub?.cancel();
-    // Cuon lan dau ngay khi vua vao bai: neu dong dau tien (_currentLine=0)
-    // trung voi dong tinh duoc tu vi tri hien tai, nhanh "line != _currentLine"
-    // trong _onTick se KHONG bao gio dung (vi ca 2 deu la 0) nen
-    // _scrollToCurrentLine chua bao gio duoc goi - day la ly do truoc day
-    // phai tam dung/phat lai (lam _currentLine doi tam thoi) thi cuon moi
-    // bat dau chay.
-    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToCurrentLine());
-    _stateSub = _player.playerStateStream.listen((state) {
-      if (state.processingState == ProcessingState.completed &&
-          !_completedRecorded &&
-          _isCurrentOwner) {
-        _completedRecorded = true;
-        ref
-            .read(statsRepositoryProvider)
-            .recordSongCompleted(song.title)
-            .then((_) => ref.invalidate(myStatsProvider))
-            .catchError((_) {});
-        _playNextInQueue();
-      }
-      // Moi lan nguoi dung bam tiep tuc phat (hoac tu dong resume), dam bao
-      // vi tri hien tai duoc cuon dung vao khung hinh - phong khi lan dau
-      // tien bi bo lo do ListView chua kip layout xong.
-      if (state.playing && _isCurrentOwner && mounted) {
-        WidgetsBinding.instance.addPostFrameCallback(
-          (_) => _scrollToCurrentLine(),
-        );
-      }
-    });
-  }
-
   @override
   void dispose() {
-    _disposed = true;
     final elapsed = DateTime.now().difference(_openedAt).inSeconds;
     if (elapsed > 0) {
       ref.read(statsRepositoryProvider).addPracticeSeconds(elapsed);
     }
     _ticker?.dispose();
     _positionSeconds.dispose();
-    _stateSub?.cancel();
-    // Player la singleton dung chung toan app - KHONG duoc dispose() no o
-    // day. Chi dung phat neu khong co man hinh nao khac da giat quyen
-    // (vd nguoi dung mo bai khac) trong luc man hinh nay dang dong.
-    if (_myGeneration != null) {
-      NowPlayingService.instance.stopIfCurrent(_myGeneration!);
-    }
+    _indexSub?.cancel();
+    // KHONG dung/stop AudioPlayer o day nua - day la diem khac biet chinh so
+    // voi truoc: roi man hinh nay (back ra ngoai) van tiep tuc phat, hien
+    // qua mini-player + thong bao he thong (xem NowPlayingService).
     super.dispose();
   }
 
@@ -234,8 +191,8 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
                   onTap: () => Navigator.of(context).pop(),
                 ),
                 Text(
-                  widget.queue.length > 1
-                      ? '${ref.tr('player_now_playing')} · ${_index + 1}/${widget.queue.length}'
+                  _queue.length > 1
+                      ? '${ref.tr('player_now_playing')} · ${_index + 1}/${_queue.length}'
                       : ref.tr('player_now_playing'),
                   style: AppTextStyles.muted(size: 11)
                       .copyWith(letterSpacing: 1),
@@ -291,10 +248,10 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
                   ),
                 ],
               ),
-              child: const Icon(
-                Icons.music_note_rounded,
-                color: Colors.white,
-                size: 56,
+              clipBehavior: Clip.antiAlias,
+              child: Image.asset(
+                'assets/icon/app_icon_square.png',
+                fit: BoxFit.cover,
               ),
             ),
             const SizedBox(height: 16),
@@ -345,22 +302,31 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
                 return Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    _CircleBtn(
+                      icon: Icons.shuffle_rounded,
+                      iconColor: _service.shuffleEnabled
+                          ? AppColors.purple
+                          : null,
+                      onTap: () {
+                        _service.toggleShuffle();
+                        setState(() {});
+                      },
+                    ),
+                    const SizedBox(width: 10),
                     IconButton(
-                      onPressed: () => _player.seek(
-                        Duration(
-                          seconds: (_player.position.inSeconds - 10).clamp(
-                            0,
-                            1 << 30,
-                          ),
-                        ),
-                      ),
+                      // Khi bat shuffle, thu tu phat khong con theo _index
+                      // (chi so goc, van dung cho lyric/tieu de) nua - luon
+                      // cho bam, just_audio tu bo qua neu khong con bai
+                      // truoc/sau trong thu tu phat thuc te.
+                      onPressed: _queue.length > 1
+                          ? () => _service.previous()
+                          : null,
                       icon: const Icon(
-                        Icons.replay_10_rounded,
+                        Icons.skip_previous_rounded,
                         color: AppColors.textPrimary,
-                        size: 26,
+                        size: 30,
                       ),
                     ),
-                    const SizedBox(width: 12),
                     GestureDetector(
                       onTap: () => playing ? _player.pause() : _player.play(),
                       child: Container(
@@ -386,15 +352,26 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
                     IconButton(
-                      onPressed: () => _player.seek(
-                        Duration(seconds: _player.position.inSeconds + 10),
-                      ),
+                      onPressed: _queue.length > 1
+                          ? () => _service.next()
+                          : null,
                       icon: const Icon(
-                        Icons.forward_10_rounded,
+                        Icons.skip_next_rounded,
                         color: AppColors.textPrimary,
-                        size: 26,
+                        size: 30,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    _CircleBtn(
+                      icon: Icons.replay_10_rounded,
+                      onTap: () => _player.seek(
+                        Duration(
+                          seconds: (_player.position.inSeconds - 10).clamp(
+                            0,
+                            1 << 30,
+                          ),
+                        ),
                       ),
                     ),
                   ],

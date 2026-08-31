@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/config/env.dart';
@@ -39,6 +40,17 @@ Future<void> main() async {
   if (!kIsWeb) {
     await DailyQuizNotifications.instance.init();
     await ChatPush.instance.init();
+    // Thong bao he thong + man hinh khoa cho bai dang phat (giong Spotify) -
+    // chi Android/iOS/macOS ho tro, KHONG co tren web nen bo qua cung nhom
+    // dieu kien nay. Phai goi TRUOC bat ky AudioPlayer nao duoc tao (o day
+    // la truoc khi NowPlayingService.instance duoc truy cap lan dau).
+    await JustAudioBackground.init(
+      androidNotificationChannelId: 'com.learnenglishmusic.audio',
+      androidNotificationChannelName: 'Đang phát nhạc',
+      androidNotificationOngoing: true,
+      androidNotificationIcon: 'mipmap/ic_launcher',
+      preloadArtwork: true,
+    );
   }
 
   runApp(const ProviderScope(child: LearnEnglishMusicApp()));
@@ -52,7 +64,7 @@ class LearnEnglishMusicApp extends StatelessWidget {
     return MaterialApp(
       navigatorKey: rootNavigatorKey,
       navigatorObservers: [topRouteObserver],
-      title: 'Learn English Through Music',
+      title: 'GymTalk',
       debugShowCheckedModeBanner: false,
       // Nut noi "AI Voice Chat" chong len TREN CUNG moi man hinh (bao gom
       // ca man hinh push tu Navigator, khong chi cac tab cua RootShell) -

@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+60
+version: 1.0.0+61
 
 environment:
   sdk: ^3.13.1
@@ -33,6 +33,11 @@ dependencies:
 
   # Phát nhạc thật (stream mp3 tự host) + đồng bộ lyric theo thời gian phát
   just_audio: ^0.9.42
+  # Tich hop media session he thong (thong bao + man hinh khoa) cho just_audio
+  # - hien ten bai/nghe si/logo app + nut Phat-Tam dung/Bai truoc/Bai sau ngay
+  # ca khi app o nen/khoa may, khong can tu viet AudioHandler rieng. Mien phi,
+  # mien nguon mo (MIT), chi bo sung tren nen just_audio da dung san.
+  just_audio_background: ^0.0.1-beta.13
   # Ghi âm + nhận diện giọng nói on-device cho tính năng luyện phát âm
   speech_to_text: ^7.0.0
   # Ghi lại file âm thanh thô để người dùng nghe lại chính giọng mình vừa
@@ -97,6 +102,10 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
 
+  # Tu dong sinh icon app (Android/iOS/Web) tu 1 file anh nguon duy nhat -
+  # chi dung 1 lan de build lai icon, khong phai dependency luc chay app.
+  flutter_launcher_icons: ^0.14.3
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
@@ -120,6 +129,7 @@ flutter:
   assets:
     - assets/audio/
     - assets/books/
+    - assets/icon/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
@@ -145,3 +155,20 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+# Cau hinh cho flutter_launcher_icons (goi `dart run flutter_launcher_icons`
+# sau khi doi anh nguon assets/icon/app_icon_square.png de sinh lai icon).
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/app_icon_square.png"
+  min_sdk_android: 21
+  # KHONG khai bao adaptive_icon_foreground bang chinh anh vuong nay - noi
+  # dung (dau nghe, ta) da sat mep nen se bi cham cua bien dang adaptive
+  # (circle/squircle) cua Android 8+ cat mat. De trong de Android tu dong
+  # inset icon cu (legacy) vao vung an toan khi tao adaptive icon thay the.
+  web:
+    generate: true
+    image_path: "assets/icon/app_icon_square.png"
+    background_color: "#0B1E4D"
+    theme_color: "#0B1E4D"

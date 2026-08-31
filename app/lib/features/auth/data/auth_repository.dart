@@ -127,7 +127,14 @@ class AuthRepository {
   }
 
   Future<void> signOut() async {
-    await GoogleSignIn().signOut();
+    // Tren web, GoogleSignIn() (khong truyen serverClientId) co the nem loi
+    // (chua initialize/khac client-id voi luc dang nhap, hoac tai khoan von
+    // dang nhap bang email/mat khau chua bao gio dung Google) - bo qua loi o
+    // day de KHONG chan mat buoc dang xuat Supabase thuc su quan trong ben
+    // duoi, day chinh la nguyen nhan "khong the dang xuat" tren web.
+    try {
+      await GoogleSignIn().signOut();
+    } catch (_) {}
     await _supabase.auth.signOut();
   }
 }

@@ -8,6 +8,7 @@ import '../providers/app_providers.dart';
 import '../theme/app_theme.dart';
 import '../../features/menu/presentation/menu_screen.dart';
 import '../../features/music_player/presentation/home_screen.dart';
+import '../../features/music_player/presentation/mini_player.dart';
 import '../../features/pronunciation/presentation/pronunciation_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/social/data/social_repository.dart';
@@ -134,55 +135,61 @@ class _RootShellState extends ConsumerState<RootShell>
     return Scaffold(
       backgroundColor: AppColors.bgTop,
       body: IndexedStack(index: _tab, children: _buildScreens()),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(
-            color: const Color(0xD90A0E1C),
-            border: Border.all(color: AppColors.glassBorder),
-            borderRadius: BorderRadius.circular(999),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.5),
-                blurRadius: 40,
-                offset: const Offset(0, 20),
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const MiniPlayer(),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: const Color(0xD90A0E1C),
+                border: Border.all(color: AppColors.glassBorder),
+                borderRadius: BorderRadius.circular(999),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    blurRadius: 40,
+                    offset: const Offset(0, 20),
+                  ),
+                ],
               ),
-            ],
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: List.generate(_icons.length, (i) {
+                  final active = i == _tab;
+                  return GestureDetector(
+                    onTap: () => _setTab(i),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      curve: Curves.easeOut,
+                      width: active ? 76 : 44,
+                      height: 44,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: active
+                            ? Colors.white.withValues(alpha: 0.12)
+                            : Colors.transparent,
+                        border: active
+                            ? Border.all(
+                                color: Colors.white.withValues(alpha: 0.35),
+                              )
+                            : null,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Icon(
+                        _icons[i],
+                        size: 22,
+                        color: active ? Colors.white : AppColors.textMuted,
+                      ),
+                    ),
+                  );
+                }),
+              ),
+            ),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: List.generate(_icons.length, (i) {
-              final active = i == _tab;
-              return GestureDetector(
-                onTap: () => _setTab(i),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  curve: Curves.easeOut,
-                  width: active ? 76 : 44,
-                  height: 44,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: active
-                        ? Colors.white.withValues(alpha: 0.12)
-                        : Colors.transparent,
-                    border: active
-                        ? Border.all(
-                            color: Colors.white.withValues(alpha: 0.35),
-                          )
-                        : null,
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: Icon(
-                    _icons[i],
-                    size: 22,
-                    color: active ? Colors.white : AppColors.textMuted,
-                  ),
-                ),
-              );
-            }),
-          ),
-        ),
+        ],
       ),
     );
   }

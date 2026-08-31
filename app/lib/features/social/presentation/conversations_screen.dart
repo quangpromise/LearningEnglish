@@ -49,24 +49,67 @@ class ConversationsScreen extends ConsumerWidget {
                   style: AppTextStyles.heading(size: 18),
                 ),
                 const Spacer(),
-                GestureDetector(
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const FriendsScreen()),
-                  ),
-                  child: Container(
-                    width: 34,
-                    height: 34,
-                    decoration: BoxDecoration(
-                      color: AppColors.glassFill,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.glassBorder),
-                    ),
-                    child: const Icon(
-                      Icons.people_alt_rounded,
-                      size: 17,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
+                Builder(
+                  builder: (context) {
+                    final pending =
+                        ref.watch(pendingRequestCountProvider).valueOrNull ?? 0;
+                    return GestureDetector(
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const FriendsScreen(),
+                        ),
+                      ),
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Container(
+                            width: 34,
+                            height: 34,
+                            decoration: BoxDecoration(
+                              color: AppColors.glassFill,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: AppColors.glassBorder),
+                            ),
+                            child: const Icon(
+                              Icons.people_alt_rounded,
+                              size: 17,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          if (pending > 0)
+                            Positioned(
+                              right: -2,
+                              top: -2,
+                              child: Container(
+                                padding: const EdgeInsets.all(3),
+                                constraints: const BoxConstraints(
+                                  minWidth: 16,
+                                  minHeight: 16,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.pink,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: AppColors.bgTop,
+                                    width: 2,
+                                  ),
+                                ),
+                                child: Text(
+                                  pending > 9 ? '9+' : '$pending',
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w800,
+                                    height: 1,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
               ],
             ),

@@ -1,66 +1,127 @@
 import 'dart:async';
 
 import 'package:just_audio/just_audio.dart';
+import 'package:just_audio_background/just_audio_background.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// AudioPlayer DUY NHẤT cho toàn app — trước đây mỗi PlayerScreen tự tạo
-/// 1 AudioPlayer riêng, nên nếu người dùng thoát 1 bài rồi mở bài khác
-/// NGAY LẬP TỨC (trong lúc màn hình cũ còn đang chuyển cảnh ~300ms và chưa
-/// kịp dispose), 2 AudioPlayer tồn tại song song và phát đè lên nhau.
-/// Dùng chung 1 player + "generation token" để loại bỏ hoàn toàn khả năng
-/// đó, thay vì chỉ chặn bằng timing.
+import '../../features/music_player/data/songs_data.dart';
+import '../../features/stats/data/stats_repository.dart';
+
+/// AudioPlayer + hang doi (playlist) DUY NHAT cho toan app - phat lien tuc
+/// ngay ca khi nguoi dung roi PlayerScreen (mini-player + thong bao he
+/// thong/man hinh khoa van dieu khien duoc), giong Spotify. Dung
+/// ConcatenatingAudioSource cua just_audio thay vi tu quan ly "bai ke tiep"
+/// bang tay nhu truoc - duoc loi ca next/previous/shuffle THAT (giu nguyen
+/// chi so logic, chi doi THU TU phat) va tu dong chuyen bai khi 1 bai ket
+/// thuc, khong can code rieng.
 class NowPlayingService {
-  NowPlayingService._();
+  NowPlayingService._() {
+    _initStatsTracking();
+  }
   static final NowPlayingService instance = NowPlayingService._();
 
   final AudioPlayer player = AudioPlayer();
-  int _generation = 0;
 
-  /// Dừng bài đang phát (nếu có) rồi phát bài mới. Trả về "generation" -
-  /// nếu trong lúc await mà có lượt play() khác gọi sau, generation hiện
-  /// tại sẽ khác đi, dùng [isCurrent] để tự biết mình đã bị thay thế.
-  Future<int> play(String url) async {
-    final myGeneration = ++_generation;
-    await player.stop();
-    if (!isCurrent(myGeneration)) return myGeneration;
-    await player.setUrl(url);
-    if (!isCurrent(myGeneration)) return myGeneration;
-    // Ep vi tri ve 0 truoc khi phat: dung chung 1 player cho nhieu bai, neu
-    // khong seek lai, "position" co the con giu gia tri cua bai TRUOC trong
-    // 1 khoang ngan sau setUrl(), khien dong loi bai hat nhay thang toi vi
-    // tri sai hoan toan ngay tu dau (vd bai truoc dang o phut 2, bai moi
-    // ngan hon nen moi dong loi deu bi coi la "da qua").
-    await player.seek(Duration.zero);
-    if (!isCurrent(myGeneration)) return myGeneration;
-    // KHONG await Future cua play(): just_audio's play() tra ve 1 Future CHI
-    // hoan tat khi phat xong/bi tam dung, khong phai ngay khi bat dau phat.
-    // Neu await, ham play() nay (va moi thu goi no) se bi treo cho toi khi
-    // het bai - day chinh la ly do truoc day phai bam dung/phat lai moi
-    // "unblock" duoc (bam dung lam Future cua play() hoan tat som).
-    unawaited(player.play());
-    // Nhung van can XAC NHAN playback thuc su da bat dau (playing == true)
-    // truoc khi tra ve - vi ban than lenh play() o tren la "ban roi quen",
-    // neu no loi ngam (nguon chua san sang, mang chap chon...) thi khong ai
-    // biet, vi tri phat dung yen o 0 mai mai (giong het trieu chung "loi
-    // khong dong bo") cho toi khi nguoi dung tu bam nut Play/Pause (goi
-    // player.play() truc tiep) moi thuc su chay - day la nguyen nhan that
-    // su cua bug "phai bam phat lai moi chay", KHONG phai do stream lyric.
-    try {
-      await player.playingStream
-          .firstWhere((playing) => playing)
-          .timeout(const Duration(seconds: 3));
-    } catch (_) {
-      if (isCurrent(myGeneration)) {
-        unawaited(player.play());
-      }
+  List<Song> _queue = [];
+  List<Song> get queue => _queue;
+  bool get hasQueue => _queue.isNotEmpty;
+
+  final _queueController = StreamController<List<Song>>.broadcast();
+
+  /// Phat ra moi khi hang doi doi (bai moi/xoa het) - dung cho MiniPlayer
+  /// biet luc nao can hien/an chinh no.
+  Stream<List<Song>> get queueStream => _queueController.stream;
+
+  Stream<int?> get currentIndexStream => player.currentIndexStream;
+  int? get currentIndex => player.currentIndex;
+  bool get shuffleEnabled => player.shuffleModeEnabled;
+
+  /// Anh dai dien dung chung cho MOI bai hat trong thong bao/man hinh khoa -
+  /// app chua co anh bia rieng tung bai, dung logo app thay the (dung yeu
+  /// cau "kem logo ung dung" o thong bao).
+  static final _artUri = Uri.parse('asset:///assets/icon/app_icon_square.png');
+
+  /// Bat dau phat 1 hang doi bai hat moi tu vi tri [startIndex] - goi khi
+  /// nguoi dung bam vao 1 bai o Home (khong goi lai khi chi mo lai
+  /// PlayerScreen cho phien dang phat san, xem PlayerScreen).
+  Future<void> setQueueAndPlay(List<Song> songs, int startIndex) async {
+    _queue = songs;
+    _queueController.add(_queue);
+    final source = ConcatenatingAudioSource(
+      children: songs
+          .map(
+            (s) => AudioSource.uri(
+              Uri.parse(s.audioUrl),
+              tag: MediaItem(
+                id: s.title,
+                title: s.title,
+                artist: s.artist,
+                artUri: _artUri,
+              ),
+            ),
+          )
+          .toList(),
+    );
+    // Tat shuffle moi lan bat dau 1 hang doi moi - tranh mang theo trang thai
+    // shuffle cua phien nghe truoc sang 1 danh sach bai hoan toan khac.
+    if (player.shuffleModeEnabled) {
+      await player.setShuffleModeEnabled(false);
     }
-    return myGeneration;
+    await player.setAudioSource(source, initialIndex: startIndex);
+    await player.play();
   }
 
-  bool isCurrent(int generation) => generation == _generation;
+  Future<void> next() => player.seekToNext();
+  Future<void> previous() => player.seekToPrevious();
 
-  /// Gọi khi rời màn phát nhạc — chỉ dừng nếu không có bài nào khác đã
-  /// giành quyền phát trong lúc đó (generation vẫn là của màn hình đang đóng).
-  void stopIfCurrent(int generation) {
-    if (isCurrent(generation)) player.stop();
+  /// Bat/tat phat ngau nhien - khi bat, xao lai THU TU phat ngay lap tuc
+  /// (giong nut shuffle cua Spotify), chi so logic (dung cho lyric/tieu de)
+  /// khong doi.
+  Future<void> toggleShuffle() async {
+    final enable = !player.shuffleModeEnabled;
+    if (enable) await player.shuffle();
+    await player.setShuffleModeEnabled(enable);
+  }
+
+  void clearQueue() {
+    _queue = [];
+    _queueController.add(_queue);
+    player.stop();
+  }
+
+  // --- Ghi nhan "hoc xong 1 bai" cho thong ke, hoat dong CA KHI PlayerScreen
+  // da dong (nguoi dung dang xem man hinh khac, chi con mini-player) - truoc
+  // day logic nay nam trong PlayerScreen nen chi ghi nhan duoc neu man hinh
+  // van con mo luc bai ket thuc. ---
+
+  Duration _trackedPosition = Duration.zero;
+  Duration? _trackedDuration;
+  int? _trackedIndex;
+
+  void _initStatsTracking() {
+    player.positionStream.listen((p) {
+      _trackedPosition = p;
+      _trackedDuration = player.duration;
+      _trackedIndex = player.currentIndex;
+    });
+    player.currentIndexStream.listen((newIndex) {
+      final prevIndex = _trackedIndex;
+      final dur = _trackedDuration;
+      // Chi tinh la "hoc xong" neu vi tri dung lai GAN sat cuoi bai truoc do
+      // (bai tu ket thuc) - phan biet voi nguoi dung tu bam Bai tiep theo bo
+      // qua giua chung, vi luc do vi tri con cach xa duration.
+      if (prevIndex != null &&
+          newIndex != null &&
+          newIndex != prevIndex &&
+          prevIndex < _queue.length &&
+          dur != null &&
+          dur.inMilliseconds > 0 &&
+          _trackedPosition.inMilliseconds >= dur.inMilliseconds - 1500) {
+        StatsRepository(Supabase.instance.client)
+            .recordSongCompleted(_queue[prevIndex].title)
+            .catchError((_) {});
+      }
+      _trackedIndex = newIndex;
+    });
   }
 }

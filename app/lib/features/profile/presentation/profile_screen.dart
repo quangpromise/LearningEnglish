@@ -452,52 +452,98 @@ class ProfileScreen extends ConsumerWidget {
                   const SizedBox(height: 14),
                   const _DailyWordsSection(),
                   const SizedBox(height: 14),
-                  GestureDetector(
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const FriendsScreen()),
-                    ),
-                    child: GlowBox(
-                      borderRadius: 20,
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 34,
-                            height: 34,
-                            decoration: BoxDecoration(
-                              color: AppColors.teal.withValues(alpha: 0.18),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Icon(
-                              Icons.people_alt_rounded,
-                              size: 16,
-                              color: AppColors.teal,
-                            ),
+                  Builder(
+                    builder: (context) {
+                      final pending =
+                          ref.watch(pendingRequestCountProvider).valueOrNull ??
+                          0;
+                      return GestureDetector(
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const FriendsScreen(),
                           ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  ref.tr('profile_friends_title'),
-                                  style: AppTextStyles.body(
-                                    weight: FontWeight.w800,
+                        ),
+                        child: GlowBox(
+                          borderRadius: 20,
+                          child: Row(
+                            children: [
+                              Stack(
+                                clipBehavior: Clip.none,
+                                children: [
+                                  Container(
+                                    width: 34,
+                                    height: 34,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.teal.withValues(
+                                        alpha: 0.18,
+                                      ),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: const Icon(
+                                      Icons.people_alt_rounded,
+                                      size: 16,
+                                      color: AppColors.teal,
+                                    ),
                                   ),
+                                  if (pending > 0)
+                                    Positioned(
+                                      right: -4,
+                                      top: -4,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(3),
+                                        constraints: const BoxConstraints(
+                                          minWidth: 16,
+                                          minHeight: 16,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.pink,
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: AppColors.bgTop,
+                                            width: 2,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          pending > 9 ? '9+' : '$pending',
+                                          textAlign: TextAlign.center,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.w800,
+                                            height: 1,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      ref.tr('profile_friends_title'),
+                                      style: AppTextStyles.body(
+                                        weight: FontWeight.w800,
+                                      ),
+                                    ),
+                                    Text(
+                                      ref.tr('profile_friends_subtitle'),
+                                      style: AppTextStyles.muted(size: 11),
+                                    ),
+                                  ],
                                 ),
-                                Text(
-                                  ref.tr('profile_friends_subtitle'),
-                                  style: AppTextStyles.muted(size: 11),
-                                ),
-                              ],
-                            ),
+                              ),
+                              const Icon(
+                                Icons.chevron_right_rounded,
+                                color: AppColors.textMuted,
+                              ),
+                            ],
                           ),
-                          const Icon(
-                            Icons.chevron_right_rounded,
-                            color: AppColors.textMuted,
-                          ),
-                        ],
-                      ),
-                    ),
+                        ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 14),
                   GestureDetector(

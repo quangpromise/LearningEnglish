@@ -1,6 +1,13 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Bat buoc cho audio_service (dung boi just_audio_background) chay
+         foreground service phat nhac o nen + thong bao/man hinh khoa - xem
+         now_playing_service.dart. -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <!-- Can de mo trinh cai dat Android ngay sau khi tai xong APK cap nhat
          (xem update_dialog.dart) - bat buoc tren Android 8+ cho app sideload. -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
@@ -11,7 +18,7 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <application
-        android:label="learn_english_music"
+        android:label="GymTalk"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -56,6 +63,27 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <!-- audio_service (just_audio_background) - foreground service phat
+             thong bao/man hinh khoa dieu khien nhac, kem nut media cung (tai
+             nghe/Bluetooth bam Play-Pause/Next). Khong tu dong duoc merge
+             tu thu vien, phai khai bao thu cong - xem now_playing_service.dart. -->
+        <service
+            android:name="com.ryanheise.audioservice.AudioService"
+            android:foregroundServiceType="mediaPlayback"
+            android:exported="true"
+            tools:ignore="Instantiatable">
+            <intent-filter>
+                <action android:name="android.media.browse.MediaBrowserService" />
+            </intent-filter>
+        </service>
+        <receiver
+            android:name="com.ryanheise.audioservice.MediaButtonReceiver"
+            android:exported="true"
+            tools:ignore="Instantiatable">
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
+            </intent-filter>
+        </receiver>
         <!-- Bat buoc de flutter_local_notifications dat lich va khoi phuc lai
              thong bao sau khi may khoi dong lai (xem docs/research-notifications.md). -->
         <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" />
