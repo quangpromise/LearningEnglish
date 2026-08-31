@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -29,8 +30,16 @@ Future<void> main() async {
 
   await AppTts.instance.restoreSavedVoice();
   await GeminiVoiceSelection.instance.restoreSaved();
-  await DailyQuizNotifications.instance.init();
-  await ChatPush.instance.init();
+  // Nhac hoc hen gio + push chat deu dua tren flutter_local_notifications/
+  // Firebase Messaging thiet ke cho mobile - tren web, lich hen gio khong
+  // duoc trinh duyet ho tro va Firebase can cau hinh rieng (VAPID key,
+  // service worker) chua lam trong ban web nay. Bo qua hoan toan tren web
+  // thay vi de plugin nem loi luc khoi dong lam trang trang xoa (ca app web
+  // khong load duoc) - xem docs/research-ios-distribution.md.
+  if (!kIsWeb) {
+    await DailyQuizNotifications.instance.init();
+    await ChatPush.instance.init();
+  }
 
   runApp(const ProviderScope(child: LearnEnglishMusicApp()));
 }

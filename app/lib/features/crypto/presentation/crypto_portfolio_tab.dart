@@ -75,8 +75,7 @@ class CryptoPortfolioTab extends ConsumerWidget {
                 ),
                 GestureDetector(
                   onTap: () =>
-                      ref.read(cryptoPrivacyModeProvider.notifier).state =
-                          !hidden,
+                      ref.read(cryptoPrivacyModeProvider.notifier).toggle(),
                   child: Container(
                     width: 34,
                     height: 34,
