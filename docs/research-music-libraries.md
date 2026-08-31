@@ -69,6 +69,7 @@ Việc "duyệt lại lời máy chép" rẻ hơn rất nhiều so với "tìm n
 | **CCTrax / Chosic** | Tùy track, hiện license từng bài | ⚠️ Dùng được, lọc thủ công | Chosic hiện sẵn license + sẵn đoạn attribution copy được cho từng track |
 | **Brad Sucks** (bradsucks.net) | **CC-BY-SA** 3.0 | ⚠️ Cần quyết định (xem §5) | Pop/rock, giọng Anh thật, **có kèm file lyrics**, tự sở hữu toàn bộ. Ứng viên tốt nhất ngoài Josh Woodward — nếu chấp nhận điều kiện ShareAlike |
 | **Pixabay Music** | Pixabay Content License | ❌ **Đổi kết luận — xem §6** | License cấm phân phối content "trên cơ sở standalone"; app này phát nguyên file mp3 → rủi ro thật |
+| **Pexels** | Pexels License | ❌ Không dùng được, **2 lý do** | (1) Pexels **không có nhạc** — mọi video trên Pexels đều đăng không kèm tiếng, và chính Pexels chỉ người dùng sang Pixabay để lấy nhạc. (2) Kể cả nếu có, Pexels License dùng **đúng cùng một điều khoản "Standalone"** với định nghĩa y hệt Pixabay (2 bên cùng thuộc Canva) → dính đúng vấn đề ở §6 |
 | **Jamendo API** | CC theo track | ❌ Đã loại từ trước | API chỉ miễn phí phi thương mại |
 | **Incompetech, Chris Zabriskie, Kevin MacLeod, Scott Buckley…** | CC-BY | ❌ Không dùng được cho tính năng chính | **Instrumental** — không có lời thì không dạy tiếng Anh được |
 | **Bản ghi thuộc public domain** | PD | ❌ Không phù hợp | Tính tới 2026 chỉ bản thu **từ 1925 trở về trước** mới hết hạn (Music Modernization Act, mốc 100 năm). Chất lượng thu âm thời tiền-điện và tiếng Anh cổ → không hợp người mới học |
@@ -106,6 +107,13 @@ App này **host file mp3 và stream nguyên vẹn cho người dùng nghe**. Fil
 Khác biệt then chốt so với video YouTube: ở đó nhạc là **nền** cho nội dung khác; ở đây bài hát **chính là** nội dung người dùng tới nghe.
 
 → **Không thêm track Pixabay vào app.** Nếu vẫn muốn dùng, phải hỏi Pixabay bằng văn bản trước.
+
+**Pexels cũng vậy — và còn không dùng được ngay từ đầu.** Pexels là câu hỏi tự nhiên tiếp theo (cùng nhà Canva với Pixabay), nhưng:
+
+1. **Pexels không có nhạc.** Mọi video trên Pexels đều đăng **không kèm tiếng**; chính trang trợ giúp của Pexels chỉ người dùng sang Pixabay khi cần nhạc. Không có kho audio để mà lấy.
+2. Kể cả nếu có, **Pexels License dùng đúng cùng điều khoản "Standalone"**, định nghĩa y hệt (*"no creative effort has been applied to the Content and it remains in substantially the same form"*), và liệt kê rõ cả **audio** trong danh sách bị cấm phân phối standalone → dính đúng vấn đề vừa nói ở trên.
+
+Nói chung: **cả họ nhà stock-media license (Pixabay, Pexels, và các site cùng mô hình) đều không hợp với app này**, vì mô hình của app là *giao nguyên bài hát cho người dùng nghe* — đúng thứ mà loại license đó cấm. Chỉ **Creative Commons / public domain** mới cho phép việc đó.
 
 ---
 
