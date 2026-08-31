@@ -1,0 +1,67 @@
+name: Build & Deploy Web
+
+# Khac voi build-apk.yml (chi build khi co "[build]" - phat hanh APK la
+# hanh dong co chu dich, ban thu cong tai mang), ban Web CHI la 1 trang tinh
+# luon phan anh dung code moi nhat tren main - deploy lai MOI LAN push (nhu
+# CI analyze-and-test) khong can cho tag rieng, vi khong ton chi phi/rui ro:
+# GitHub Pages + Actions mien phi khong gioi han cho repo public, va deploy
+# moi chi la ghi de 1 trang web tinh, khong phat sinh file tai ve moi cho
+# nguoi dung nhu APK.
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "app/**"
+      - ".github/workflows/build-web.yml"
+  workflow_dispatch: {}
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build web release
+        env:
+          SB_URL: ${{ secrets.SUPABASE_URL }}
+          SB_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          GG_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID }}
+        run: |
+          CLEAN_URL=$(printf '%s' "$SB_URL" | tr -d '\n\r')
+          CLEAN_ANON_KEY=$(printf '%s' "$SB_ANON_KEY" | tr -d '\n\r')
+          CLEAN_CLIENT_ID=$(printf '%s' "$GG_CLIENT_ID" | tr -d '\n\r')
+          flutter build web --release --base-href /LearningEnglish/ --dart-define=SUPABASE_URL="$CLEAN_URL" --dart-define=SUPABASE_ANON_KEY="$CLEAN_ANON_KEY" --dart-define=GOOGLE_WEB_CLIENT_ID="$CLEAN_CLIENT_ID"
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: app/build/web
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
