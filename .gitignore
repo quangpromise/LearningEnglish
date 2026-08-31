@@ -58,3 +58,8 @@ supabase/.temp/
 backend/**/node_modules/
 backend/**/__pycache__/
 backend/**/*.pyc
+
+# Vung tam khi them bai hat moi (scripts/add_songs.py fetch) - ban dich
+# duoc chen thang vao songs_data.dart o buoc emit, khong giu 2 ban de tranh
+# lech nhau.
+content/pending/
