@@ -46,7 +46,16 @@ class NowPlayingService {
   /// nguoi dung bam vao 1 bai o Home (khong goi lai khi chi mo lai
   /// PlayerScreen cho phien dang phat san, xem PlayerScreen).
   Future<void> setQueueAndPlay(List<Song> songs, int startIndex) async {
-    // Ep lai audio session ve che do "music" (loa ngoai) truoc moi lan phat -
+    // QUAN TRONG: gan _queue TRUOC bat ky await nao - PlayerScreen.initState()
+    // goi ham nay KHONG await (fire-and-forget) roi doc _service.queue[_index]
+    // NGAY SAU DO trong cung frame (xem _prepareLyrics()), dua vao viec ham
+    // async chi chay dong bo (khong nhuong lai control cho caller) cho toi
+    // await DAU TIEN. Neu dat 1 await nao truoc dong nay, _queue se van la
+    // gia tri CU (rong luc app moi mo) tai thoi diem PlayerScreen doc no,
+    // gay RangeError (danh sach rong) va man hinh phat nhac trang xoa.
+    _queue = songs;
+    _queueController.add(_queue);
+    // Ep lai audio session ve che do "music" (loa ngoai) truoc khi phat -
     // sau khi dung mic (luyen phat am/speech_to_text), Android co the giu
     // nguyen audio mode cho ghi am/goi thoai, khien nhac phat ra qua loa
     // THOAI (earpiece) rat nho hoac nhu khong nghe duoc gi du file hoan toan
@@ -55,8 +64,6 @@ class NowPlayingService {
       final session = await AudioSession.instance;
       await session.configure(const AudioSessionConfiguration.music());
     } catch (_) {}
-    _queue = songs;
-    _queueController.add(_queue);
     final source = ConcatenatingAudioSource(
       children: songs
           .map(

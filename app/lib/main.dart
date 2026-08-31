@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -58,7 +60,13 @@ Future<void> main() async {
   // khong load duoc) - xem docs/research-ios-distribution.md.
   if (!kIsWeb) {
     await _runStartupStep(() => DailyQuizNotifications.instance.init());
-    await _runStartupStep(() => ChatPush.instance.init());
+    // KHONG await/timeout ngan o day: ChatPush.init() (Firebase.initializeApp
+    // + tao notification channel + dang ky FCM background handler) co the
+    // mat vai chuc giay tren mang cham, va viec gan 1 timeout ngan (vd 8s) se
+    // BO NGANG qua trinh nay giua chung neu chua kip xong - lam push tin
+    // nhan mat hoat dong hoan toan du khong co loi nao xay ra that su. Chay
+    // ngam KHONG chan runApp(), khong anh huong toi thoi gian khoi dong.
+    unawaited(ChatPush.instance.init());
     // Thong bao he thong + man hinh khoa cho bai dang phat (giong Spotify) -
     // kem nut tua lui/toi 10s + bai truoc/sau (fastForwardInterval/
     // rewindInterval mac dinh da la 10s, khong can khai bao lai). Da TUNG gay
