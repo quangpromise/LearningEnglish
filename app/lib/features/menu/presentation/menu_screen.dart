@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../crypto/presentation/crypto_screen.dart';
+import '../../pronunciation/presentation/phonics_lessons_screen.dart';
 import '../../quiz/presentation/quiz_category_screen.dart';
 import '../../reading/presentation/reading_library_screen.dart';
 
@@ -41,6 +42,16 @@ class MenuScreen extends ConsumerWidget {
               subtitle: ref.tr('quiz_subtitle'),
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const QuizCategoryScreen()),
+              ),
+            ),
+            const SizedBox(height: 12),
+            _MenuItem(
+              icon: Icons.record_voice_over_rounded,
+              color: AppColors.teal,
+              title: ref.tr('phonics_title'),
+              subtitle: ref.tr('phonics_quick_subtitle'),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const PhonicsLessonsScreen()),
               ),
             ),
             const SizedBox(height: 12),

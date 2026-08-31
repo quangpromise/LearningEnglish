@@ -968,6 +968,25 @@ class AppStrings {
       AppLanguage.vi: 'Đố vui & thi đấu bạn bè',
       AppLanguage.en: 'Quizzes & compete with friends',
     },
+    // Phonics lessons feature (phonics_*.dart) - 12 bai hoc phat am co cau
+    // truc, vao tu man Menu.
+    'phonics_title': {
+      AppLanguage.vi: 'Bài học phát âm',
+      AppLanguage.en: 'Pronunciation Lessons',
+    },
+    'phonics_subtitle': {
+      AppLanguage.vi: '12 bài học từ âm cơ bản đến ngữ điệu, nối âm',
+      AppLanguage.en: '12 lessons from basic sounds to intonation & linking',
+    },
+    'phonics_quick_subtitle': {
+      AppLanguage.vi: '12 bài, đi từ âm cơ bản đến ngữ điệu',
+      AppLanguage.en: '12 lessons, from basic sounds to intonation',
+    },
+    'phonics_sound_count': {AppLanguage.vi: 'mục', AppLanguage.en: 'items'},
+    'phonics_lesson_label': {
+      AppLanguage.vi: 'Bài học',
+      AppLanguage.en: 'Lesson',
+    },
     'onboarding_page5_body': {
       AppLanguage.vi: 'Làm đố vui từ vựng, ngữ pháp theo chủ đề và leo hạng trên bảng xếp hạng cùng bạn bè.',
       AppLanguage.en: 'Take vocabulary and grammar quizzes by topic and climb the leaderboard together with your friends.',
