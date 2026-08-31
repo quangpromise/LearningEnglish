@@ -1,11 +1,20 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../features/social/data/device_token_repository.dart';
 import '../../features/social/data/social_repository.dart';
 import '../../features/social/presentation/chat_screen.dart';
 import '../navigation/nav_keys.dart';
+
+/// Id kenh thong bao rieng cho tin nhan chat, kem am thanh "ding" tuy chinh
+/// (file res/raw/notification_ding.wav) - PHAI trung voi `channel_id` ma
+/// Edge Function send-chat-push dat trong payload FCM (xem
+/// supabase/functions/send-chat-push/index.ts), neu khong Android se dung
+/// kenh mac dinh (van co am nhung la am chuong mac dinh cua may, khong phai
+/// am rieng cua app).
+const kChatMessagesChannelId = 'chat_messages';
 
 /// Push notification cho tin nhan chat qua Firebase Cloud Messaging - hoat
 /// dong ca khi app da dong han/khoa may (khac voi DailyQuizNotifications:
@@ -30,6 +39,23 @@ class ChatPush {
     } catch (_) {
       return;
     }
+
+    // Tao truoc kenh thong bao kem am thanh rieng - PHAI tao truoc khi
+    // thong bao dau tien den, vi Android khoa cung cau hinh 1 kenh (bao
+    // gom am thanh) ngay tu lan tao dau tien, sau do co doi channel_id
+    // trong payload cung khong doi duoc am thanh cua kenh da ton tai.
+    const channel = AndroidNotificationChannel(
+      kChatMessagesChannelId,
+      'Tin nhắn',
+      description: 'Thông báo khi có tin nhắn mới từ bạn bè',
+      importance: Importance.high,
+      sound: RawResourceAndroidNotificationSound('notification_ding'),
+    );
+    await FlutterLocalNotificationsPlugin()
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >()
+        ?.createNotificationChannel(channel);
 
     FirebaseMessaging.instance.onTokenRefresh.listen(_saveTokenForCurrentUser);
     FirebaseMessaging.onMessageOpenedApp.listen(_handleTap);

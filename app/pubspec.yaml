@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+56
+version: 1.0.0+57
 
 environment:
   sdk: ^3.13.1
@@ -108,11 +108,17 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+  # Am "ding" bao tin nhan moi - tu tong hop bang script (2 nguyen am sin
+  # 880Hz/1318Hz), KHONG lay tu nguon nhac ben ngoai nao nen khong dinh van
+  # de ban quyen. File giong het duoc copy sang android/app/src/main/res/raw/
+  # de dung lam am thanh cho notification channel he thong (xem chat_push.dart).
+  #
   # Sach public domain (het han ban quyen that su - xem ATTRIBUTION.md o
   # thu muc nay) tai truc tiep tu Project Gutenberg cho tinh nang Doc sach.
   # KHONG duoc them file sach nao khac vao day neu chua xac minh public
   # domain - xem quy tac ban quyen trong CLAUDE.md.
   assets:
+    - assets/audio/
     - assets/books/
 
   # An image asset can refer to one or more resolution-specific "variants", see

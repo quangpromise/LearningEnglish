@@ -157,7 +157,14 @@ Deno.serve(async (req) => {
                 type: 'chat_message',
                 sender_id: payload.sender_id,
               },
-              android: { priority: 'high' },
+              // channel_id PHAI trung voi kenh thong bao co am thanh rieng
+              // duoc tao san trong app (xem ChatPush.init() trong
+              // chat_push.dart) - neu khong Android se dung kenh mac dinh
+              // (van co am nhung khong phai am "ding" rieng cua app).
+              android: {
+                priority: 'high',
+                notification: { channel_id: 'chat_messages' },
+              },
             },
           }),
         },

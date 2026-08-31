@@ -264,8 +264,8 @@ class AppStrings {
       AppLanguage.en: 'Learn today',
     },
     'vocab_added_to_daily': {
-      AppLanguage.vi: 'Đã đặt làm danh sách học hôm nay',
-      AppLanguage.en: "Set as today's learning list",
+      AppLanguage.vi: 'Đã thêm {n} từ vào danh sách học hôm nay',
+      AppLanguage.en: "Added {n} words to today's learning list",
     },
     'word_saved_to_daily': {
       AppLanguage.vi: 'Đã thêm vào danh sách học hôm nay',

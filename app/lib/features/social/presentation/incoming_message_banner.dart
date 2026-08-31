@@ -1,20 +1,41 @@
 import 'package:flutter/material.dart';
+import 'package:just_audio/just_audio.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../data/social_repository.dart';
 import 'chat_screen.dart';
 
+/// Am "ding" bao tin nhan (giong Messenger) khi popup trong app hien len -
+/// dung rieng 1 AudioPlayer (khac AppTts) vi day la hieu ung UI ngan, khong
+/// phai giong noi - tao moi + dispose ngay sau khi phat xong de khong ro ri.
+Future<void> _playIncomingMessageSound() async {
+  final player = AudioPlayer();
+  try {
+    await player.setAsset('assets/audio/notification_ding.wav');
+    await player.play();
+    await player.playerStateStream.firstWhere(
+      (s) => s.processingState == ProcessingState.completed,
+    );
+  } catch (_) {
+    // Khong phat duoc am thanh (thiet bi tat am, loi giai ma...) - khong
+    // anh huong den viec hien banner.
+  } finally {
+    await player.dispose();
+  }
+}
+
 /// Hien pop-up thong bao tin nhan moi kieu Messenger, tron len tren cung
 /// man hinh hien tai (bat ke dang o tab nao) trong luc app dang mo - tu
-/// bien mat sau vai giay, bam vao de mo ngay khung chat voi nguoi gui.
-/// Day la thong bao TRONG APP (chi hoat dong khi app dang chay), khac voi
-/// push notification he thong (can Firebase Cloud Messaging + backend
-/// rieng - chua lam trong pham vi nay).
+/// bien mat sau vai giay, bam vao de mo ngay khung chat voi nguoi gui, kem
+/// am thanh "ding" bao co tin nhan moi. Day la thong bao TRONG APP (chi
+/// hoat dong khi app dang chay) - khi app da dong/khoa may, xem ChatPush
+/// (push notification he thong qua Firebase Cloud Messaging).
 void showIncomingMessageBanner(
   BuildContext context, {
   required SocialUser sender,
   required String preview,
 }) {
+  _playIncomingMessageSound();
   final overlay = Overlay.of(context);
   late OverlayEntry entry;
   entry = OverlayEntry(
