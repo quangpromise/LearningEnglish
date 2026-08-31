@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../core/audio/audio_service_diagnostics.dart';
 import '../../../core/config/env.dart';
 import '../../../core/i18n/app_language.dart';
 import '../../../core/i18n/app_strings.dart';
@@ -822,6 +823,24 @@ class ProfileScreen extends ConsumerWidget {
                           style: AppTextStyles.muted(size: 10),
                         );
                       },
+                    ),
+                  ),
+                  // TAM THOI - chan doan tai sao thong bao "dang phat nhac"/
+                  // dieu khien tai nghe Bluetooth khong hoat dong tren 1 so
+                  // may (khong xem duoc log thiet bi that) - xoa dong nay
+                  // sau khi da xac dinh xong nguyen nhan goc.
+                  const SizedBox(height: 4),
+                  Center(
+                    child: Text(
+                      AudioServiceDiagnostics.succeeded == true
+                          ? 'Nhạc nền: OK'
+                          : 'Nhạc nền lỗi: ${AudioServiceDiagnostics.errorMessage ?? "chưa chạy"}',
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.muted(size: 9).copyWith(
+                        color: AudioServiceDiagnostics.succeeded == true
+                            ? Colors.greenAccent
+                            : AppColors.amber,
+                      ),
                     ),
                   ),
                 ],

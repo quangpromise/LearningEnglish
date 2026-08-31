@@ -109,6 +109,8 @@ class MiniPlayer extends StatelessWidget {
                         ),
                         _MiniIconBtn(
                           icon: Icons.skip_previous_rounded,
+                          size: 26,
+                          padding: 6,
                           onTap: queue.length > 1 ? service.previous : null,
                         ),
                         StreamBuilder<PlayerState>(
@@ -140,6 +142,8 @@ class MiniPlayer extends StatelessWidget {
                         ),
                         _MiniIconBtn(
                           icon: Icons.skip_next_rounded,
+                          size: 26,
+                          padding: 6,
                           onTap: queue.length > 1 ? service.next : null,
                         ),
                         _MiniIconBtn(
@@ -202,17 +206,26 @@ class MiniPlayer extends StatelessWidget {
 /// (48x48 min tap target) khien 4 nut (tua lui/bai truoc/bai sau/tua toi)
 /// cong them nut Phat tron o giua bi tran hang tren thanh hep.
 class _MiniIconBtn extends StatelessWidget {
-  const _MiniIconBtn({required this.icon, required this.onTap, this.size = 20});
+  const _MiniIconBtn({
+    required this.icon,
+    required this.onTap,
+    this.size = 20,
+    this.padding = 3,
+  });
   final IconData icon;
   final VoidCallback? onTap;
   final double size;
+  final double padding;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      // behindTranslucent + padding lam vung cham lon hon phan icon ve ra,
+      // giup bam trung nut de hon ma khong can ve icon to hon.
+      behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 3),
+        padding: EdgeInsets.symmetric(horizontal: padding, vertical: 6),
         child: Icon(
           icon,
           size: size,

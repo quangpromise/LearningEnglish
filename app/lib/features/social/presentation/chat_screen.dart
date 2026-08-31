@@ -38,6 +38,18 @@ Future<void> openChatPopup(BuildContext context, SocialUser friend) {
   );
 }
 
+/// Mo anh o che do toan man hinh, nen den, cho phep pinch-zoom (InteractiveViewer)
+/// va vuot xuong/bam nut dong de thoat - giong cach xem anh cua Messenger/Zalo.
+void _openFullScreenImage(BuildContext context, String imageUrl) {
+  Navigator.of(context).push(
+    PageRouteBuilder(
+      opaque: false,
+      barrierColor: Colors.black,
+      pageBuilder: (context, _, _) => _FullScreenImageViewer(url: imageUrl),
+    ),
+  );
+}
+
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key, required this.friend});
   final SocialUser friend;
@@ -55,6 +67,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   /// dung cu de sua thay vi go tin moi, nut Gui doi thanh Luu (xem
   /// _send()/_startEditing()/_cancelEditing()).
   int? _editingMessageId;
+
+  /// Lan dau tien co du lieu tin nhan sau khi mo man hinh - nhay THANG xuong
+  /// cuoi (khong hieu ung truot, tranh nguoi dung thay canh truot dai tu tin
+  /// nhan cu nhat len). Cac lan sau (tin nhan MOI den trong luc dang xem)
+  /// moi dung hieu ung truot muot nhu Messenger.
+  bool _hasScrolledInitially = false;
 
   @override
   void initState() {
@@ -373,15 +391,27 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     }
   }
 
-  void _scrollToBottom() {
-    if (!_scrollCtrl.hasClients) return;
+  /// [animate] = false cho lan mo man hinh dau tien (nhay thang xuong cuoi,
+  /// khong hieu ung truot) - dung true (mac dinh) cho tin nhan MOI den trong
+  /// luc dang xem (truot muot nhu Messenger).
+  void _scrollToBottom({bool animate = true}) {
+    // KHONG kiem tra hasClients truoc khi dang ky postFrameCallback - lan
+    // goi DAU TIEN (ngay sau khi mo man hinh) ListView chua kip gan vao
+    // controller luc ham nay chay (dang giua build()), nen hasClients luon
+    // false va ham thoat som, KHONG BAO GIO cuon xuong duoc - day chinh la
+    // ly do mo lai 1 doan chat cu khong tu truot xuong tin nhan moi nhat.
+    // Chi kiem tra hasClients BEN TRONG callback (sau khi frame da layout xong).
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_scrollCtrl.hasClients) return;
-      _scrollCtrl.animateTo(
-        _scrollCtrl.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeOut,
-      );
+      if (animate) {
+        _scrollCtrl.animateTo(
+          _scrollCtrl.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOut,
+        );
+      } else {
+        _scrollCtrl.jumpTo(_scrollCtrl.position.maxScrollExtent);
+      }
     });
   }
 
@@ -520,7 +550,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   ),
                 ),
                 data: (messages) {
-                  _scrollToBottom();
+                  _scrollToBottom(animate: _hasScrolledInitially);
+                  _hasScrolledInitially = true;
                   // Ban nhan tin moi trong luc man hinh dang mo - danh dau
                   // doc ngay, khong doi nguoi dung roi man hinh roi quay lai.
                   if (messages.any(
@@ -850,19 +881,22 @@ class _MessageBubble extends ConsumerWidget {
       case MessageKind.image:
         return ClipRRect(
           borderRadius: BorderRadius.circular(16),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: maxWidth, maxHeight: 240),
-            child: Image.network(
-              message.content,
-              fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => _bubbleContainer(
-                isMine,
-                maxWidth,
-                Text(
-                  ref.tr('chat_media_expired'),
-                  style: AppTextStyles.body(
-                    size: 12.5,
-                    color: isMine ? Colors.white : AppColors.textMuted,
+          child: GestureDetector(
+            onTap: () => _openFullScreenImage(context, message.content),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: maxWidth, maxHeight: 240),
+              child: Image.network(
+                message.content,
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => _bubbleContainer(
+                  isMine,
+                  maxWidth,
+                  Text(
+                    ref.tr('chat_media_expired'),
+                    style: AppTextStyles.body(
+                      size: 12.5,
+                      color: isMine ? Colors.white : AppColors.textMuted,
+                    ),
                   ),
                 ),
               ),
@@ -937,6 +971,60 @@ class _MessageBubble extends ConsumerWidget {
         borderRadius: BorderRadius.circular(16),
       ),
       child: child,
+    );
+  }
+}
+
+/// Man hinh xem anh chat o che do toan man hinh - InteractiveViewer cho phep
+/// pinch-zoom (2 ngon tay) + keo di chuyen khi da zoom, giong Messenger/Zalo.
+/// Bam vao anh (khong keo/zoom) hoac nut dong de thoat.
+class _FullScreenImageViewer extends StatelessWidget {
+  const _FullScreenImageViewer({required this.url});
+  final String url;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: () => Navigator.of(context).maybePop(),
+              child: InteractiveViewer(
+                minScale: 1,
+                maxScale: 5,
+                child: Center(
+                  child: Image.network(
+                    url,
+                    errorBuilder: (_, _, _) => const Icon(
+                      Icons.broken_image_rounded,
+                      color: Colors.white54,
+                      size: 48,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 40,
+            right: 16,
+            child: GestureDetector(
+              onTap: () => Navigator.of(context).maybePop(),
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: const BoxDecoration(
+                  color: Colors.black45,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.close_rounded, color: Colors.white),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

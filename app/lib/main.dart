@@ -8,6 +8,7 @@ import 'package:just_audio_platform_interface/just_audio_platform_interface.dart
 import 'package:just_audio_platform_interface/method_channel_just_audio.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'core/audio/audio_service_diagnostics.dart';
 import 'core/config/env.dart';
 import 'core/navigation/ai_fab_overlay.dart';
 import 'core/navigation/nav_keys.dart';
@@ -87,10 +88,22 @@ Future<void> main() async {
         androidNotificationChannelId: 'com.learnenglishmusic.audio',
         androidNotificationChannelName: 'Đang phát nhạc',
         androidNotificationOngoing: true,
-        androidNotificationIcon: 'mipmap/ic_launcher',
+        // Icon nho tren thanh trang thai/thong bao PHAI la hinh trang/trong
+        // suot don gian (xem giai thich chi tiet trong chat_push.dart) -
+        // truoc day dung thang "mipmap/ic_launcher" (icon app day mau) cho
+        // CHINH thong bao "dang phat nhac" nay, co the la 1 phan nguyen nhan
+        // khien viec dung notification/service that bai tren 1 so may.
+        androidNotificationIcon: 'drawable/ic_stat_notify',
         preloadArtwork: true,
-      ).timeout(const Duration(seconds: 5));
-    } catch (_) {
+        // Nang tu 5s len 15s: 5s co the qua ngan tren may cham, cat ngang
+        // qua trinh bind foreground service dung luc no sap thanh cong that
+        // su (khong phai truong hop treo VO HAN nhu bug goc da tung gap) -
+        // van giu timeout (khong bo han) de tranh treo splash vinh vien neu
+        // that su rơi vao truong hop treo that.
+      ).timeout(const Duration(seconds: 15));
+      AudioServiceDiagnostics.recordSuccess();
+    } catch (e) {
+      AudioServiceDiagnostics.recordFailure(e);
       JustAudioPlatform.instance = MethodChannelJustAudio();
     }
   }
