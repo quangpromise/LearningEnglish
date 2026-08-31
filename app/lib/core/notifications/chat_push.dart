@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -140,6 +141,15 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 /// dung Supabase.instance.client, khac voi moi noi khac trong app.
 Future<void> _sendQuickReply(String receiverId, String content) async {
   try {
+    // Isolate nen ma flutter_local_notifications tao de chay handler nay
+    // (app da bi tat han) KHONG tu dong co WidgetsBinding san nhu isolate
+    // chinh - Supabase.initialize() ben duoi doc session da luu (qua
+    // SharedPreferences) can cac kenh plugin da san sang, neu khong co the
+    // tra ve session null (coi nhu chua dang nhap) khien tin nhan bi am
+    // tham bo qua (SocialRepository.sendMessage tu return neu userId null,
+    // KHONG nem loi) - day la nguyen nhan co the khien "tra loi tu thong
+    // bao" khong gui duoc du khong bao loi nao.
+    WidgetsFlutterBinding.ensureInitialized();
     SupabaseClient client;
     try {
       client = Supabase.instance.client;

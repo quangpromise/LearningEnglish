@@ -38,6 +38,11 @@ dependencies:
   # ca khi app o nen/khoa may, khong can tu viet AudioHandler rieng. Mien phi,
   # mien nguon mo (MIT), chi bo sung tren nen just_audio da dung san.
   just_audio_background: ^0.0.1-beta.13
+  # Da la dependency GIAN TIEP cua just_audio (transitive) - khai bao TRUC
+  # TIEP o day vi main.dart can dung thang MethodChannelJustAudio de "cuu"
+  # AudioPlayer khoi bi hong vinh vien neu JustAudioBackground.init() that
+  # bai/timeout (xem comment trong main.dart).
+  just_audio_platform_interface: ^4.6.0
   # Ghi âm + nhận diện giọng nói on-device cho tính năng luyện phát âm
   speech_to_text: ^7.0.0
   # Ghi lại file âm thanh thô để người dùng nghe lại chính giọng mình vừa

@@ -3,6 +3,9 @@ import 'dart:async';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:just_audio_background/just_audio_background.dart';
+import 'package:just_audio_platform_interface/just_audio_platform_interface.dart';
+import 'package:just_audio_platform_interface/method_channel_just_audio.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/config/env.dart';
@@ -66,20 +69,30 @@ Future<void> main() async {
     // nhan mat hoat dong hoan toan du khong co loi nao xay ra that su. Chay
     // ngam KHONG chan runApp(), khong anh huong toi thoi gian khoi dong.
     unawaited(ChatPush.instance.init());
-    // TAT HAN JustAudioBackground.init() (thong bao he thong + man hinh khoa
-    // cho bai dang phat, giong Spotify) - da lien tuc gay hong hoc CA VIEC
-    // PHAT NHAC (khong chi mat tinh nang thong bao): JustAudioBackground.init()
-    // doi JustAudioPlatform.instance sang mot native service rieng NGAY LUC
-    // goi; neu viec bind service do that bai/timeout (R8 xoa mat class cua
-    // audio_service, mang cham, thiet bi/OEM chan foreground service...),
-    // buoc doi nay KHONG bao gio duoc hoan tac, khien MOI AudioPlayer() tao
-    // ra sau do (kem ca AudioPlayer dung de phat nhac chinh trong
-    // NowPlayingService) deu bi hong theo - nguoi dung bao "khong tai duoc
-    // nhac" du link nhac hoan toan binh thuong va mang on dinh. Da thu sua
-    // qua ProGuard keep rules + try/catch + timeout nhieu lan nhung van tai
-    // dien khi doi AGP/Gradle. Nghe nhac la tinh nang CHINH cua app - danh
-    // doi mat thong bao/dieu khien man hinh khoa de dam bao phat nhac chac
-    // chan hoat dong, thay vi tiep tuc vá tung trieu chung.
+    // Thong bao he thong + man hinh khoa cho bai dang phat (giong Spotify).
+    // JustAudioBackground.init() doi JustAudioPlatform.instance sang 1 native
+    // service rieng NGAY LUC goi; neu viec bind service do that bai/timeout
+    // (R8 xoa mat class audio_service, mang cham, OEM chan foreground
+    // service...), truoc day buoc doi nay KHONG bao gio duoc hoan tac, khien
+    // MOI AudioPlayer() tao ra sau do (ke ca AudioPlayer chinh trong
+    // NowPlayingService) deu bi hong vinh vien theo - day CHINH LA nguyen
+    // nhan "khong tai duoc nhac" du link/mang hoan toan binh thuong, tai dien
+    // nhieu lan trong du an. FIX DUNG GOC (thay vi tat han tinh nang): neu
+    // init that bai/timeout, CHU DONG dat lai JustAudioPlatform.instance ve
+    // ban mac dinh (MethodChannelJustAudio, khong qua audio_service) - dam
+    // bao AudioPlayer van hoat dong binh thuong (chi mat thong bao/man hinh
+    // khoa cho LAN MO APP DO), thay vi de no o trang thai hong vinh vien.
+    try {
+      await JustAudioBackground.init(
+        androidNotificationChannelId: 'com.learnenglishmusic.audio',
+        androidNotificationChannelName: 'Đang phát nhạc',
+        androidNotificationOngoing: true,
+        androidNotificationIcon: 'mipmap/ic_launcher',
+        preloadArtwork: true,
+      ).timeout(const Duration(seconds: 5));
+    } catch (_) {
+      JustAudioPlatform.instance = MethodChannelJustAudio();
+    }
   }
 
   runApp(const ProviderScope(child: LearnEnglishMusicApp()));
