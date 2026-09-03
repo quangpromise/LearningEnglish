@@ -24,6 +24,8 @@ import 'features/auth/presentation/sign_in_screen.dart';
 import 'features/fitness/presentation/fitness_shell.dart';
 import 'features/onboarding/data/onboarding_repository.dart';
 import 'features/onboarding/presentation/onboarding_screen.dart';
+import 'features/social/data/social_repository.dart';
+import 'features/social/presentation/incoming_message_banner.dart';
 import 'features/wealth/presentation/wealth_shell.dart';
 
 /// Chay 1 buoc khoi dong voi gioi han thoi gian + bo qua moi loi - dam bao
@@ -209,6 +211,32 @@ class _AuthGate extends ConsumerWidget {
       } else if (event == AuthChangeEvent.signedOut) {
         ChatPush.instance.unregister();
       }
+    });
+
+    // Popup thong bao tin nhan moi kieu Messenger - dat o _AuthGate (LUON
+    // mount khi da dang nhap, bat ke dang o Hoc Tieng Anh/Fitness/Wealth)
+    // thay vi trong RootShell nhu truoc - truoc day banner nay CHI hien khi
+    // dang o Hoc Tieng Anh, Fitness/Wealth khong bao gio thay tin nhan moi
+    // trong luc app dang mo (chi thay qua push notification he thong khi
+    // app o nen).
+    ref.listen(newIncomingMessageProvider, (previous, next) {
+      final message = next.valueOrNull;
+      if (message == null) return;
+      final friends = ref.read(myFriendsProvider).valueOrNull ?? const [];
+      SocialUser? sender;
+      for (final f in friends) {
+        if (f.id == message.senderId) {
+          sender = f;
+          break;
+        }
+      }
+      if (sender == null) return;
+      showIncomingMessageBanner(
+        context,
+        sender: sender,
+        preview: message.previewText,
+        messageId: message.id,
+      );
     });
 
     if (authState.isLoading && session == null) {

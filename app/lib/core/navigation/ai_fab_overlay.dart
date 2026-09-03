@@ -66,11 +66,24 @@ class _AiFabOverlayState extends ConsumerState<AiFabOverlay>
     super.dispose();
   }
 
+  // Mo dang POPUP (bottom sheet gan full man hinh) thay vi day sang man
+  // rieng - dong bo voi cach moi tinh nang khac trong app da chuyen sang
+  // (xem app_popup.dart). Van giu RouteSettings(name: kAiVoiceChatRouteName)
+  // - showModalBottomSheet cung day 1 Route thuc su len Navigator nen
+  // topRouteObserver van nhan dien duoc de tu an nut noi ngay chinh man nay.
   void _open() {
-    rootNavigatorKey.currentState?.push(
-      MaterialPageRoute(
-        settings: const RouteSettings(name: kAiVoiceChatRouteName),
-        builder: (_) => const AiVoiceChatScreen(),
+    showModalBottomSheet(
+      context: context,
+      useRootNavigator: true,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      routeSettings: const RouteSettings(name: kAiVoiceChatRouteName),
+      builder: (_) => FractionallySizedBox(
+        heightFactor: 0.94,
+        child: ClipRRect(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+          child: const AiVoiceChatScreen(),
+        ),
       ),
     );
   }

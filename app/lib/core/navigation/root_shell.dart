@@ -8,8 +8,6 @@ import '../providers/app_providers.dart';
 import '../theme/app_theme.dart';
 import '../../features/music_player/presentation/center_media_button.dart';
 import '../../features/music_player/presentation/home_screen.dart';
-import '../../features/social/data/social_repository.dart';
-import '../../features/social/presentation/incoming_message_banner.dart';
 import '../../features/update/presentation/update_dialog.dart';
 
 /// Man goc cua Hoc Tieng Anh - CHI CON 1 man hinh that su (HomeScreen), moi
@@ -78,29 +76,9 @@ class _RootShellState extends ConsumerState<RootShell>
 
   @override
   Widget build(BuildContext context) {
-    // Bam pop-up thong bao tin nhan moi kieu Messenger - hoat dong tren
-    // BAT KY man hinh nao dang mo, chi khi app dang chay (khong phai push
-    // notification he thong, xem ghi chu trong incoming_message_banner.dart).
-    ref.listen(newIncomingMessageProvider, (previous, next) {
-      final message = next.valueOrNull;
-      if (message == null) return;
-      final friends = ref.read(myFriendsProvider).valueOrNull ?? const [];
-      SocialUser? sender;
-      for (final f in friends) {
-        if (f.id == message.senderId) {
-          sender = f;
-          break;
-        }
-      }
-      if (sender == null) return;
-      showIncomingMessageBanner(
-        context,
-        sender: sender,
-        preview: message.previewText,
-        messageId: message.id,
-      );
-    });
-
+    // Popup thong bao tin nhan moi kieu Messenger - da chuyen len _AuthGate
+    // trong main.dart (xem giai thich o do) de hoat dong o CA 3 app (truoc
+    // day chi dat o day nen Fitness/Wealth khong bao gio thay banner nay).
     return Scaffold(
       backgroundColor: AppColors.bgTop,
       body: const HomeScreen(),
