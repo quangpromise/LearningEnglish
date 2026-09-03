@@ -53,7 +53,10 @@ class HomeScreen extends ConsumerWidget {
                   ),
                   child: Tooltip(
                     message: ref.tr('home_dictionary_tooltip'),
-                    child: const _IconCircle(icon: Icons.menu_book_rounded),
+                    // Doi tu menu_book_rounded (trung voi icon Ngu phap
+                    // trong nhom "Doc viet" ben duoi, de nham lan) sang
+                    // translate_rounded - dac trung hon cho "tra tu dien".
+                    child: const _IconCircle(icon: Icons.translate_rounded),
                   ),
                 ),
               ),
