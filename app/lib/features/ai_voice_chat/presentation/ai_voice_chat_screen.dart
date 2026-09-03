@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:just_audio/just_audio.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -306,14 +307,6 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
     }
   }
 
-  /// TAM THOI - hien debug de tim nguyen nhan "im tieng AI Voice Chat", xoa
-  /// sau khi xac dinh xong nguyen nhan that (xem cung co che o voice_settings_sheet.dart).
-  void _showAudioDebug(String msg) {
-    if (!mounted) return;
-    ScaffoldMessenger.maybeOf(context)
-        ?.showSnackBar(SnackBar(content: Text('[DEBUG AI audio] $msg')));
-  }
-
   Future<void> _playResponse(List<int> wavBytes) async {
     // Gan future NGAY (dong bo, truoc await dau tien) de _onTranscript luon
     // thay _pendingAudioFuture != null va cho dung file cua luot nay - xem
@@ -321,20 +314,20 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
     final future = _saveReplyAudio(wavBytes);
     _pendingAudioFuture = future;
     final path = await future;
-    if (path == null) {
-      _showAudioDebug('khong luu duoc file wav');
-      return;
-    }
+    if (path == null) return;
     try {
-      final sessionInfo = await _ensurePlaybackSession();
-      await _player.setFilePath(path);
-      await _player.play();
-      _showAudioDebug(
-        '$sessionInfo, vol=${_player.volume}, playing=${_player.playing}, '
-        'state=${_player.processingState}, bytes=${wavBytes.length}',
+      await _ensurePlaybackSession();
+      // BAT BUOC phai co tag MediaItem - xem giai thich chi tiet trong
+      // app_tts.dart._speakCloud(). Day moi la NGUYEN NHAN THAT SU khien AI
+      // Voice Chat im tieng hoan toan tren ban release (xac dinh qua debug
+      // log thuc te: "type 'Null' is not a subtype of type 'MediaItem'" -
+      // KHONG phai audio focus/session nhu suy doan truoc do.
+      await _player.setFilePath(
+        path,
+        tag: MediaItem(id: 'ai_voice_reply', title: 'AI Voice Chat'),
       );
-    } catch (e) {
-      _showAudioDebug('LOI phat: $e');
+      await _player.play();
+    } catch (_) {
       // Loi phat lai khong lam gian doan phien chat - bo qua 1 luot noi.
     }
   }
@@ -354,7 +347,10 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
   Future<void> _replayAudio(String path) async {
     try {
       await _ensurePlaybackSession();
-      await _player.setFilePath(path);
+      await _player.setFilePath(
+        path,
+        tag: MediaItem(id: 'ai_voice_replay', title: 'AI Voice Chat'),
+      );
       await _player.play();
     } catch (_) {
       // Bo qua - file tam co the da bi he thong don dep.

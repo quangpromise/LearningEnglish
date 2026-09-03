@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:audio_session/audio_session.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -59,11 +60,6 @@ class AppTts {
 
   bool _awaitCompletionConfigured = false;
 
-  /// TAM THOI - thong tin chan doan cho lan speak() gan nhat, dung de hien
-  /// debug o voice_settings_sheet.dart trong luc tim nguyen nhan "im tieng
-  /// sau khi phat nhac". Xoa sau khi xac dinh xong nguyen nhan that.
-  String? lastDebugInfo;
-
   /// Ep lai audio session ve che do "music" (loa ngoai) truoc moi lan doc -
   /// sau khi dung mic (luyen phat am/speech_to_text), Android co the giu
   /// nguyen audio mode cho ghi am, khien TTS phat ra qua loa THOAI (earpiece)
@@ -100,32 +96,17 @@ class AppTts {
   }
 
   Future<void> speak(String text) async {
-    String sessionInfo = 'session: chua thu';
-    try {
-      final session = await AudioSession.instance;
-      await session.configure(const AudioSessionConfiguration.music());
-      final gotFocus = await session.setActive(true);
-      sessionInfo = 'session.setActive=$gotFocus';
-    } catch (e) {
-      sessionInfo = 'session loi: $e';
-    }
+    await _ensureMusicSession();
     if (_selectedCloud != null) {
       try {
         await _speakCloud(text, _selectedCloud!);
-        lastDebugInfo =
-            '$sessionInfo | cloud OK (${_selectedCloud!.locale}), '
-            'vol=${_cloudPlayer.volume}, playing=${_cloudPlayer.playing}';
         return;
-      } catch (e) {
+      } catch (_) {
         // Không có mạng / hết quota VoiceRSS -> rơi về giọng máy bên dưới.
-        lastDebugInfo = '$sessionInfo | cloud LOI: $e -> roi ve giong may';
       }
-    } else {
-      lastDebugInfo = '$sessionInfo | khong co giong cloud da chon';
     }
     await _deviceTts.stop();
-    final res = await _deviceTts.speak(text);
-    lastDebugInfo = '$lastDebugInfo | deviceTts.speak() tra ve $res';
+    await _deviceTts.speak(text);
   }
 
   /// Doc 1 doan text va CHO den khi doc xong (hoac bi stop()) moi hoan tat -
@@ -185,7 +166,21 @@ class AppTts {
     }
 
     await _cloudPlayer.stop();
-    await _cloudPlayer.setFilePath(file.path);
+    // BAT BUOC phai co tag MediaItem - JustAudioBackground.init() (main.dart)
+    // doi JustAudioPlatform.instance sang ban tich hop audio_service CHO CA
+    // APP (moi AudioPlayer() moi tao ra, khong rieng gi NowPlayingService),
+    // va noi bo just_audio_background ep kieu "source.tag as MediaItem"
+    // (xem just_audio_background.dart updateQueue()) khi nap 1 audio source
+    // MOI - thieu tag se ne CHUOI assert() (bi loai bo o BAN RELEASE, chi
+    // con hoat dong o debug) roi crash thang voi loi
+    // "type 'Null' is not a subtype of type 'MediaItem'" (obfuscated thanh
+    // ten lop la 'sG'...trong bao cao loi thuc te) - day chinh la nguyen
+    // nhan "im tieng" cua giong cloud tren ban release, KHONG lien quan gi
+    // toi audio focus/session nhu cac lan sua truoc.
+    await _cloudPlayer.setFilePath(
+      file.path,
+      tag: MediaItem(id: 'tts_${voice.locale}', title: 'Giọng đọc'),
+    );
     await _cloudPlayer.play();
   }
 }
