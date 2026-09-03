@@ -107,7 +107,8 @@ class Exercise {
   final String difficultyCode;
 
   MuscleGroup get muscleGroup => MuscleGroup.fromCode(muscleGroupCode);
-  ExerciseDifficulty get difficulty => ExerciseDifficulty.fromCode(difficultyCode);
+  ExerciseDifficulty get difficulty =>
+      ExerciseDifficulty.fromCode(difficultyCode);
 
   /// Danh sach ten nhom co theo dung thu tu voi [involvementPercents] (co
   /// chinh truoc, [secondaryMuscles] sau) - dung de ghep cap ten+% khi ve

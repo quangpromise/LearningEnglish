@@ -198,7 +198,9 @@ class _GroupChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: selected ? AppColors.purple.withValues(alpha: 0.25) : AppColors.glassFill,
+          color: selected
+              ? AppColors.purple.withValues(alpha: 0.25)
+              : AppColors.glassFill,
           borderRadius: BorderRadius.circular(999),
           border: Border.all(
             color: selected ? AppColors.purple : AppColors.glassBorder,
@@ -264,7 +266,9 @@ class _ExerciseTile extends StatelessWidget {
               ),
             ),
             Icon(
-              isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+              isFavorite
+                  ? Icons.favorite_rounded
+                  : Icons.favorite_border_rounded,
               size: 18,
               color: isFavorite ? AppColors.pink : AppColors.textMuted,
             ),

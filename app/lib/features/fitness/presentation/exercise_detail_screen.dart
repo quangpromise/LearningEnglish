@@ -16,10 +16,12 @@ class ExerciseDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final favoritesAsync = ref.watch(favoriteExerciseIdsProvider);
-    final isFavorite = favoritesAsync.valueOrNull?.contains(exercise.id) ?? false;
+    final isFavorite =
+        favoritesAsync.valueOrNull?.contains(exercise.id) ?? false;
     final muscles = exercise.displayedMuscles;
     final percents = exercise.involvementPercents;
-    final showInvolvement = percents.isNotEmpty && percents.length == muscles.length;
+    final showInvolvement =
+        percents.isNotEmpty && percents.length == muscles.length;
 
     return ScreenBackground(
       child: Padding(
@@ -53,8 +55,14 @@ class ExerciseDetailScreen extends ConsumerWidget {
               spacing: 8,
               runSpacing: 8,
               children: [
-                _Tag(label: exercise.difficulty.labelVi(), color: AppColors.amber),
-                _Tag(label: exercise.muscleGroup.labelVi(), color: AppColors.teal),
+                _Tag(
+                  label: exercise.difficulty.labelVi(),
+                  color: AppColors.amber,
+                ),
+                _Tag(
+                  label: exercise.muscleGroup.labelVi(),
+                  color: AppColors.teal,
+                ),
                 _Tag(label: exercise.equipment, color: AppColors.purple),
               ],
             ),
@@ -176,7 +184,11 @@ class _Tag extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: TextStyle(color: color, fontWeight: FontWeight.w800, fontSize: 11),
+        style: TextStyle(
+          color: color,
+          fontWeight: FontWeight.w800,
+          fontSize: 11,
+        ),
       ),
     );
   }
@@ -198,7 +210,9 @@ class _CircleBtn extends StatelessWidget {
         decoration: const BoxDecoration(
           color: AppColors.glassFill,
           shape: BoxShape.circle,
-          border: Border.fromBorderSide(BorderSide(color: AppColors.glassBorder)),
+          border: Border.fromBorderSide(
+            BorderSide(color: AppColors.glassBorder),
+          ),
         ),
         child: Icon(icon, size: 18, color: iconColor ?? AppColors.textPrimary),
       ),
