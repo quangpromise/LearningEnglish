@@ -101,20 +101,20 @@ class _IdleBar extends StatelessWidget {
         await NowPlayingService.instance.setQueueAndPlay(kSongs, 0);
         if (context.mounted) _openPlayerPopup(context);
       },
-      child: Row(
-        children: [
-          const SizedBox(width: 6),
-          Icon(Icons.music_note_rounded, size: 16, color: accentColor),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
+      child: Center(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.music_note_rounded, size: 16, color: accentColor),
+            const SizedBox(width: 8),
+            Text(
               'Chưa phát nhạc',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: AppTextStyles.muted(size: 11.5),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -153,7 +153,7 @@ class _PlayingBar extends StatelessWidget {
           color: AppColors.textPrimary,
           onTap: queue.length > 1 ? service.next : null,
         ),
-        const SizedBox(width: 6),
+        const SizedBox(width: 8),
         Expanded(
           child: StreamBuilder<int?>(
             stream: service.currentIndexStream,
@@ -174,20 +174,25 @@ class _PlayingBar extends StatelessWidget {
                     // thay the, giong vi tri "album art" trong widget tham
                     // khao.
                     Container(
-                      width: 36,
-                      height: 36,
+                      width: 32,
+                      height: 32,
                       decoration: BoxDecoration(
-                        color: song?.color ?? accentColor,
-                        borderRadius: BorderRadius.circular(10),
+                        color: (song?.color ?? accentColor).withValues(
+                          alpha: 0.85,
+                        ),
+                        borderRadius: BorderRadius.circular(9),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.18),
+                        ),
                       ),
                       alignment: Alignment.center,
                       child: const Icon(
                         Icons.music_note_rounded,
-                        size: 18,
+                        size: 16,
                         color: Colors.white,
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 9),
                     Expanded(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -381,7 +386,7 @@ class _WaveformPainter extends CustomPainter {
       final wave = playing
           ? (math.sin((t * 2 * math.pi * freq) + phase) + 1) / 2
           : 0.12;
-      final heightRatio = 0.12 + wave * 0.68;
+      final heightRatio = 0.1 + wave * 0.5;
       final h = size.height * heightRatio;
       // Xoay nhe hue quanh mau goc theo vi tri thanh - tao cam giac "mau
       // sac" thay vi 1 mau dong nhat le loi.
@@ -390,7 +395,7 @@ class _WaveformPainter extends CustomPainter {
           .withHue(hue < 0 ? hue + 360 : hue)
           .withLightness((baseHsl.lightness + 0.1).clamp(0.0, 1.0))
           .toColor()
-          .withValues(alpha: playing ? 0.28 : 0.14);
+          .withValues(alpha: playing ? 0.2 : 0.1);
       final paint = Paint()..color = barColor;
       final rect = Rect.fromLTWH(
         i * barWidth + barWidth * 0.2,
