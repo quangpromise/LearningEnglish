@@ -169,97 +169,73 @@ class _PlayingBar extends StatelessWidget {
               return GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: () => _openPlayerPopup(context),
-                child: Row(
+                // Bo han khoi "anh bia" gia (chi la 1 o mau + icon nhac
+                // chung, khong phai anh that cua bai hat) - vua chiem mat
+                // nhieu cho khien ten bai bi cat cut qua som, vua khong
+                // truyen tai thong tin gi them. Nhuong het khoang trong do
+                // cho ten bai/ca si/thanh tien trinh - can doi hon voi cum
+                // nut dieu khien ben trai.
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Anh bia thu nho - app chua co anh bia rieng tung bai
-                    // nen dung khoi mau cua bai hat (song.color, da dung
-                    // cung mau nay o danh sach "Goi y cho ban") + icon nhac
-                    // thay the, giong vi tri "album art" trong widget tham
-                    // khao.
-                    Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        color: (song?.color ?? accentColor).withValues(
-                          alpha: 0.85,
-                        ),
-                        borderRadius: BorderRadius.circular(9),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.18),
-                        ),
-                      ),
-                      alignment: Alignment.center,
-                      child: const Icon(
-                        Icons.music_note_rounded,
-                        size: 16,
-                        color: Colors.white,
+                    Text(
+                      song?.title ?? '',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.body(
+                        size: 12,
+                        weight: FontWeight.w800,
                       ),
                     ),
-                    const SizedBox(width: 9),
-                    Expanded(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            song?.title ?? '',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.body(
-                              size: 12,
-                              weight: FontWeight.w800,
+                    Text(
+                      song?.artist ?? '',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.muted(size: 10),
+                    ),
+                    const SizedBox(height: 4),
+                    // Thanh tien trinh chay + thoi gian - dung StreamBuilder
+                    // rieng (khong bao Column ngoai cung) de CHI phan nay
+                    // rebuild moi giay thay vi ca ten bai.
+                    StreamBuilder<Duration>(
+                      stream: service.player.positionStream,
+                      initialData: service.player.position,
+                      builder: (context, posSnap) {
+                        final pos = posSnap.data ?? Duration.zero;
+                        final dur = service.player.duration ?? Duration.zero;
+                        final ratio = dur.inMilliseconds > 0
+                            ? (pos.inMilliseconds / dur.inMilliseconds).clamp(
+                                0.0,
+                                1.0,
+                              )
+                            : 0.0;
+                        final remaining = dur - pos;
+                        return Row(
+                          children: [
+                            Expanded(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(999),
+                                child: LinearProgressIndicator(
+                                  value: ratio,
+                                  minHeight: 3,
+                                  backgroundColor: Colors.white.withValues(
+                                    alpha: 0.14,
+                                  ),
+                                  color: accentColor,
+                                ),
+                              ),
                             ),
-                          ),
-                          Text(
-                            song?.artist ?? '',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.muted(size: 10),
-                          ),
-                          const SizedBox(height: 4),
-                          // Thanh tien trinh chay + thoi gian - dung
-                          // StreamBuilder rieng (khong bao Column ngoai
-                          // cung) de CHI phan nay rebuild moi giay thay vi
-                          // ca ten bai/anh bia.
-                          StreamBuilder<Duration>(
-                            stream: service.player.positionStream,
-                            initialData: service.player.position,
-                            builder: (context, posSnap) {
-                              final pos = posSnap.data ?? Duration.zero;
-                              final dur =
-                                  service.player.duration ?? Duration.zero;
-                              final ratio = dur.inMilliseconds > 0
-                                  ? (pos.inMilliseconds / dur.inMilliseconds)
-                                        .clamp(0.0, 1.0)
-                                  : 0.0;
-                              final remaining = dur - pos;
-                              return Row(
-                                children: [
-                                  Expanded(
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(999),
-                                      child: LinearProgressIndicator(
-                                        value: ratio,
-                                        minHeight: 3,
-                                        backgroundColor: Colors.white
-                                            .withValues(alpha: 0.14),
-                                        color: accentColor,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    remaining.isNegative
-                                        ? '-0:00'
-                                        : '-${CenterMediaButton._fmt(remaining)}',
-                                    style: AppTextStyles.muted(size: 9),
-                                  ),
-                                ],
-                              );
-                            },
-                          ),
-                        ],
-                      ),
+                            const SizedBox(width: 6),
+                            Text(
+                              remaining.isNegative
+                                  ? '-0:00'
+                                  : '-${CenterMediaButton._fmt(remaining)}',
+                              style: AppTextStyles.muted(size: 9),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                   ],
                 ),
