@@ -61,7 +61,7 @@ class StatsRepository {
     try {
       results = await Future.wait([
         _supabase.rpc('my_stats_summary'),
-        _supabase.rpc('my_weekly_activity'),
+        _supabase.rpc('my_weekly_activity', params: {'p_source': 'english'}),
       ]);
     } on PostgrestException catch (e) {
       // "JWT issued at future" (PGRST303) - da xac nhan CHI xay ra ngay sau
@@ -78,14 +78,14 @@ class StatsRepository {
       try {
         results = await Future.wait([
           _supabase.rpc('my_stats_summary'),
-          _supabase.rpc('my_weekly_activity'),
+          _supabase.rpc('my_weekly_activity', params: {'p_source': 'english'}),
         ]);
       } on PostgrestException catch (e2) {
         if (e2.code != 'PGRST303') rethrow;
         await _supabase.auth.refreshSession();
         results = await Future.wait([
           _supabase.rpc('my_stats_summary'),
-          _supabase.rpc('my_weekly_activity'),
+          _supabase.rpc('my_weekly_activity', params: {'p_source': 'english'}),
         ]);
       }
     }

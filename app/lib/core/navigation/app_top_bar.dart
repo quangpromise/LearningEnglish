@@ -122,11 +122,22 @@ class AppTopBar extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                '${ref.tr('home_greeting')}, $displayName',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.heading(size: 17),
+              // Loi (khong phai dang tai) - cho bam vao TEN de tu tai lai,
+              // vi FutureProvider.autoDispose se KET LUON o trang thai loi
+              // (khong tu retry) neu khong ai invalidate no - truoc day
+              // nguoi dung bi ket "..." vinh vien khong co cach nao tu
+              // phuc hoi ngoai dong/mo lai app.
+              GestureDetector(
+                onTap: profileAsync.hasError
+                    ? () => ref.invalidate(myProfileProvider)
+                    : null,
+                child: Text(
+                  '${ref.tr('home_greeting')}, $displayName'
+                  '${profileAsync.hasError ? ' ↻' : ''}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.heading(size: 17),
+                ),
               ),
               const SizedBox(height: 3),
               const AppSwitcherPill(),
