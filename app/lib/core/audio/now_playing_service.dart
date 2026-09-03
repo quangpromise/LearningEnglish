@@ -63,6 +63,9 @@ class NowPlayingService {
     try {
       final session = await AudioSession.instance;
       await session.configure(const AudioSessionConfiguration.music());
+      // Xin lai audio focus - configure() khong tu lam viec nay (xem chu
+      // thich tuong tu trong app_tts.dart._ensureMusicSession).
+      await session.setActive(true);
     } catch (_) {}
     final source = ConcatenatingAudioSource(
       children: songs

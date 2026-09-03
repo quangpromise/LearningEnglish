@@ -68,6 +68,13 @@ class AppTts {
     try {
       final session = await AudioSession.instance;
       await session.configure(const AudioSessionConfiguration.music());
+      // BAT BUOC phai goi setActive(true) - configure() chi khai bao KIEU
+      // session, khong tu xin lai audio focus. Neu truoc do NowPlayingService
+      // da PHAT/TAM DUNG nhac (pause, khong phai stop/clearQueue), no van
+      // dang GIU audio focus - khong xin lai focus o day khien TTS phat ra
+      // am luong cuc nho hoac im hoan toan (bi he thong "duck" thay vi
+      // duoc uu tien) du configure() da chay khong loi.
+      await session.setActive(true);
     } catch (_) {}
   }
 

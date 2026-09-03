@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:audio_session/audio_session.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
@@ -288,6 +289,20 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
     }
   }
 
+  /// Ep audio session ve che do "music" + xin lai audio focus truoc khi phat
+  /// giong AI - man hinh nay dung mic ghi am lien tuc (record.AudioRecorder)
+  /// ngay truoc do, khien Android giu audio mode/focus cho ghi am. Neu khong
+  /// xin lai focus, giong AI phat ra qua loa THOAI rat nho hoac im hoan toan
+  /// du _player.play() khong bao loi gi - dung y het pattern da fix trong
+  /// app_tts.dart/now_playing_service.dart.
+  Future<void> _ensurePlaybackSession() async {
+    try {
+      final session = await AudioSession.instance;
+      await session.configure(const AudioSessionConfiguration.music());
+      await session.setActive(true);
+    } catch (_) {}
+  }
+
   Future<void> _playResponse(List<int> wavBytes) async {
     // Gan future NGAY (dong bo, truoc await dau tien) de _onTranscript luon
     // thay _pendingAudioFuture != null va cho dung file cua luot nay - xem
@@ -297,6 +312,7 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
     final path = await future;
     if (path == null) return;
     try {
+      await _ensurePlaybackSession();
       await _player.setFilePath(path);
       await _player.play();
     } catch (_) {
@@ -318,6 +334,7 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
 
   Future<void> _replayAudio(String path) async {
     try {
+      await _ensurePlaybackSession();
       await _player.setFilePath(path);
       await _player.play();
     } catch (_) {

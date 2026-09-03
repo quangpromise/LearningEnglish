@@ -222,28 +222,19 @@ class _AuthGate extends ConsumerWidget {
     // Phat hien tin nhan MOI bang cach so sanh previous/next CUA CHINH
     // RIVERPOD (framework tu quan ly, dam bao dung) thay vi tu theo doi
     // seenIds/isFirstSnapshot trong 1 closure rieng (cach cu, xem
-    // watchNewIncomingMessages() da bi xoa) - do la diem KHAC BIET DUY NHAT
-    // so voi unreadMessageCountProvider (van cap nhat dung, cung 1 bang
-    // messages), nen rat co the la nguyen nhan khien banner khong hien du
-    // da qua nhieu vong sua/dieu tra khac. incomingMessagesProvider tra ve
+    // watchNewIncomingMessages() da bi xoa). incomingMessagesProvider tra ve
     // NGUYEN DANH SACH tin nhan (giong het cau truc watchUnreadCount()),
     // "tin moi" la nhung id CHUA TUNG XUAT HIEN trong previous.
+    //
+    // NGUYEN NHAN THAT SU banner khong bao gio hien (xac dinh qua 1 ban debug
+    // tam thoi hien SnackBar moi lan provider doi trang thai): provider nay
+    // TUNG la autoDispose, nen moi khi _AuthGate build lai (vd mo/dong 1
+    // popup app khac), Riverpod huy roi tao lai provider - "previous" luon
+    // la null moi lan co tin nhan den, khien nhanh "previousMessages == null
+    // -> return" ben duoi CHAN MAT logic phat hien tin moi du du lieu van ve
+    // dung. Da bo autoDispose (xem incomingMessagesProvider trong
+    // app_providers.dart) de "previous" duoc bao toan giua cac lan.
     ref.listen(incomingMessagesProvider, (previous, next) async {
-      // TAM THOI - 2 lan sua truoc (dua tren suy luan tinh, khong tai hien
-      // duoc tren may test) deu khong giai quyet duoc (nguoi dung xac nhan
-      // dang dung dung build moi nhat). Hien SnackBar cho MOI lan provider
-      // nay doi trang thai de biet CHINH XAC no co nhan duoc su kien
-      // Realtime nao khong - xoa sau khi xac dinh xong nguyen nhan that.
-      final debugCtx = rootNavigatorKey.currentContext;
-      if (debugCtx != null && debugCtx.mounted) {
-        final msg = next.hasError
-            ? 'ERROR: ${next.error}'
-            : next.valueOrNull == null
-            ? 'loading (chua co du lieu)'
-            : 'data: ${next.value!.length} tin nhan, prev=${previous?.valueOrNull?.length ?? "null"}';
-        ScaffoldMessenger.maybeOf(debugCtx)
-            ?.showSnackBar(SnackBar(content: Text('[DEBUG msg] $msg')));
-      }
       try {
         final messages = next.valueOrNull;
         if (messages == null) return;

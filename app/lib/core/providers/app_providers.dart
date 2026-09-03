@@ -186,13 +186,19 @@ final pendingRequestCountProvider = StreamProvider.autoDispose(
 );
 
 /// Toan bo tin nhan gui DEN MINH, cap nhat Realtime - dung CUNG 1 cau truc
-/// truy van don gian voi watchUnreadCount() (khong tu theo doi trang thai
-/// "da thay chua" trong 1 closure rieng nhu ban cu newIncomingMessageProvider
-/// - cach cu la diem khac biet DUY NHAT so voi watchUnreadCount() (van luon
-/// cap nhat dung), nen rat co the la nguyen nhan banner tin nhan moi khong
-/// hien). _AuthGate (main.dart) tu so sanh previous/next CUA RIVERPOD de
-/// tim id tin nhan MOI, thay vi tin cay logic tu viet.
-final incomingMessagesProvider = StreamProvider.autoDispose(
+/// truy van don gian voi watchUnreadCount(). _AuthGate (main.dart) tu so
+/// sanh previous/next CUA RIVERPOD de tim id tin nhan MOI.
+///
+/// KHONG duoc autoDispose (khac unreadMessageCountProvider o tren) - da xac
+/// nhan bang debug log thuc te: vi la autoDispose va _AuthGate build lai
+/// (vd sau khi mo/dong 1 popup app khac), provider bi huy va tao lai, khien
+/// Riverpod luon dua "previous = null" vao callback ref.listen moi lan co
+/// tin nhan den - logic so sanh previous/next luon bi chan o buoc "previous
+/// == null -> return" nen banner KHONG BAO GIO hien duoc, du provider van
+/// nhan du lieu dung. Giu provider nay song SUOT vong doi app (giong 1
+/// singleton) de "previous" duoc bao toan giua cac lan co tin nhan moi;
+/// invalidate() thu cong khi doi tai khoan (xem invalidateUserScopedProviders).
+final incomingMessagesProvider = StreamProvider(
   (ref) => ref.watch(socialRepositoryProvider).watchIncomingMessages(),
 );
 
@@ -207,6 +213,7 @@ void invalidateUserScopedProviders(WidgetRef ref) {
   ref.invalidate(myPendingRequestsProvider);
   ref.invalidate(unreadMessageCountProvider);
   ref.invalidate(pendingRequestCountProvider);
+  ref.invalidate(incomingMessagesProvider);
   ref.invalidate(myConversationsProvider);
   ref.invalidate(favoriteSongTitlesProvider);
   ref.invalidate(favoriteExerciseIdsProvider);
