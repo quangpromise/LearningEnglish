@@ -43,6 +43,31 @@ class AuthRepository {
             'Kết nối tới máy chủ quá lâu — kiểm tra mạng và thử lại.',
           ),
         );
+
+    // Trigger handle_new_user (migration 0002) chi doc key 'avatar_url' tu
+    // raw_user_meta_data, nhung ID token cua Google tra ve claim 'picture'
+    // (khong phai 'avatar_url') - nen avatar luon trong sau khi dang nhap
+    // Google du trigger co chay. Bu lai truc tiep tu GoogleSignInAccount o
+    // day (luon co san, khong phu thuoc hinh dang claim JWT). CHI dien khi
+    // dang trong (khong ghi de) - tranh mat avatar/ten nguoi dung da tu
+    // doi thu cong trong app.
+    final userId = _supabase.auth.currentUser?.id;
+    if (userId != null) {
+      if (googleUser.displayName?.isNotEmpty ?? false) {
+        await _supabase
+            .from('profiles')
+            .update({'display_name': googleUser.displayName})
+            .eq('id', userId)
+            .isFilter('display_name', null);
+      }
+      if (googleUser.photoUrl?.isNotEmpty ?? false) {
+        await _supabase
+            .from('profiles')
+            .update({'avatar_url': googleUser.photoUrl})
+            .eq('id', userId)
+            .isFilter('avatar_url', null);
+      }
+    }
   }
 
   /// Đăng ký tài khoản mới bằng email + mật khẩu, kèm username hiển thị.
