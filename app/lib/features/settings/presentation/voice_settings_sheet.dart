@@ -36,6 +36,16 @@ class _VoiceSettingsSheetState extends ConsumerState<_VoiceSettingsSheet> {
     await AppTts.instance.selectCloudVoice(voice);
     setState(() {});
     await AppTts.instance.speak('Hello, this is a preview of my voice.');
+    // TAM THOI - hien thong tin chan doan de tim nguyen nhan "im tieng sau
+    // khi phat nhac", xoa sau khi xac dinh xong nguyen nhan that.
+    if (mounted) {
+      ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+        SnackBar(
+          content: Text('[DEBUG voice] ${AppTts.instance.lastDebugInfo}'),
+          duration: const Duration(seconds: 6),
+        ),
+      );
+    }
   }
 
   @override

@@ -59,6 +59,11 @@ class AppTts {
 
   bool _awaitCompletionConfigured = false;
 
+  /// TAM THOI - thong tin chan doan cho lan speak() gan nhat, dung de hien
+  /// debug o voice_settings_sheet.dart trong luc tim nguyen nhan "im tieng
+  /// sau khi phat nhac". Xoa sau khi xac dinh xong nguyen nhan that.
+  String? lastDebugInfo;
+
   /// Ep lai audio session ve che do "music" (loa ngoai) truoc moi lan doc -
   /// sau khi dung mic (luyen phat am/speech_to_text), Android co the giu
   /// nguyen audio mode cho ghi am, khien TTS phat ra qua loa THOAI (earpiece)
@@ -95,17 +100,32 @@ class AppTts {
   }
 
   Future<void> speak(String text) async {
-    await _ensureMusicSession();
+    String sessionInfo = 'session: chua thu';
+    try {
+      final session = await AudioSession.instance;
+      await session.configure(const AudioSessionConfiguration.music());
+      final gotFocus = await session.setActive(true);
+      sessionInfo = 'session.setActive=$gotFocus';
+    } catch (e) {
+      sessionInfo = 'session loi: $e';
+    }
     if (_selectedCloud != null) {
       try {
         await _speakCloud(text, _selectedCloud!);
+        lastDebugInfo =
+            '$sessionInfo | cloud OK (${_selectedCloud!.locale}), '
+            'vol=${_cloudPlayer.volume}, playing=${_cloudPlayer.playing}';
         return;
-      } catch (_) {
+      } catch (e) {
         // Không có mạng / hết quota VoiceRSS -> rơi về giọng máy bên dưới.
+        lastDebugInfo = '$sessionInfo | cloud LOI: $e -> roi ve giong may';
       }
+    } else {
+      lastDebugInfo = '$sessionInfo | khong co giong cloud da chon';
     }
     await _deviceTts.stop();
-    await _deviceTts.speak(text);
+    final res = await _deviceTts.speak(text);
+    lastDebugInfo = '$lastDebugInfo | deviceTts.speak() tra ve $res';
   }
 
   /// Doc 1 doan text va CHO den khi doc xong (hoac bi stop()) moi hoan tat -

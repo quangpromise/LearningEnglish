@@ -295,12 +295,23 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
   /// xin lai focus, giong AI phat ra qua loa THOAI rat nho hoac im hoan toan
   /// du _player.play() khong bao loi gi - dung y het pattern da fix trong
   /// app_tts.dart/now_playing_service.dart.
-  Future<void> _ensurePlaybackSession() async {
+  Future<String> _ensurePlaybackSession() async {
     try {
       final session = await AudioSession.instance;
       await session.configure(const AudioSessionConfiguration.music());
-      await session.setActive(true);
-    } catch (_) {}
+      final gotFocus = await session.setActive(true);
+      return 'setActive=$gotFocus';
+    } catch (e) {
+      return 'session loi: $e';
+    }
+  }
+
+  /// TAM THOI - hien debug de tim nguyen nhan "im tieng AI Voice Chat", xoa
+  /// sau khi xac dinh xong nguyen nhan that (xem cung co che o voice_settings_sheet.dart).
+  void _showAudioDebug(String msg) {
+    if (!mounted) return;
+    ScaffoldMessenger.maybeOf(context)
+        ?.showSnackBar(SnackBar(content: Text('[DEBUG AI audio] $msg')));
   }
 
   Future<void> _playResponse(List<int> wavBytes) async {
@@ -310,12 +321,20 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
     final future = _saveReplyAudio(wavBytes);
     _pendingAudioFuture = future;
     final path = await future;
-    if (path == null) return;
+    if (path == null) {
+      _showAudioDebug('khong luu duoc file wav');
+      return;
+    }
     try {
-      await _ensurePlaybackSession();
+      final sessionInfo = await _ensurePlaybackSession();
       await _player.setFilePath(path);
       await _player.play();
-    } catch (_) {
+      _showAudioDebug(
+        '$sessionInfo, vol=${_player.volume}, playing=${_player.playing}, '
+        'state=${_player.processingState}, bytes=${wavBytes.length}',
+      );
+    } catch (e) {
+      _showAudioDebug('LOI phat: $e');
       // Loi phat lai khong lam gian doan phien chat - bo qua 1 luot noi.
     }
   }
