@@ -50,6 +50,7 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
     final query = _query.trim().toLowerCase();
 
     return ScreenBackground(
+      backgroundImage: 'assets/fitness/fitness_background.jpg',
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
         child: Column(

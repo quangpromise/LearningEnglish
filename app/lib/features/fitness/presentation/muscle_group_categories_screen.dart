@@ -39,6 +39,7 @@ class _MuscleGroupCategoriesScreenState
   @override
   Widget build(BuildContext context) {
     return ScreenBackground(
+      backgroundImage: 'assets/fitness/fitness_background.jpg',
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
         child: Column(

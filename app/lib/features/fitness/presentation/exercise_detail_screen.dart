@@ -24,6 +24,7 @@ class ExerciseDetailScreen extends ConsumerWidget {
         percents.isNotEmpty && percents.length == muscles.length;
 
     return ScreenBackground(
+      backgroundImage: 'assets/fitness/fitness_background.jpg',
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
         child: Column(

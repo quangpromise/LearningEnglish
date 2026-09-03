@@ -8,6 +8,7 @@ import '../../../core/i18n/app_language.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../attribution/presentation/attribution_screen.dart';
 import '../../settings/presentation/change_password_sheet.dart';
 import '../../settings/presentation/voice_settings_sheet.dart';
 import '../../social/presentation/friends_screen.dart';
@@ -628,6 +629,48 @@ class ProfileScreen extends ConsumerWidget {
                                   style: AppTextStyles.muted(size: 11),
                                 ),
                               ],
+                            ),
+                          ),
+                          const Icon(
+                            Icons.chevron_right_rounded,
+                            color: AppColors.textMuted,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  GestureDetector(
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const AttributionScreen(),
+                      ),
+                    ),
+                    child: GlowBox(
+                      borderRadius: 20,
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 34,
+                            height: 34,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: AppColors.amber.withValues(alpha: 0.18),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.copyright_rounded,
+                              size: 16,
+                              color: AppColors.amber,
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Text(
+                              ref.tr('attribution_menu_title'),
+                              style: AppTextStyles.body(
+                                weight: FontWeight.w800,
+                              ),
                             ),
                           ),
                           const Icon(

@@ -188,29 +188,63 @@ class PillButton extends StatelessWidget {
 }
 
 class ScreenBackground extends StatelessWidget {
-  const ScreenBackground({super.key, required this.child, this.gradient});
+  const ScreenBackground({
+    super.key,
+    required this.child,
+    this.gradient,
+    this.backgroundImage,
+  });
   final Widget child;
 
   /// Cho phep 1 man hinh cu the (vd ChatScreen voi theme nen tuy chinh) doi
   /// nen rieng thay vi dung mac dinh chung ca app.
   final Gradient? gradient;
 
+  /// Anh nen phu (vd anh phong gym cho khu vuc Fitness) - ve duoi gradient
+  /// voi 1 lop toi phu len de chu/GlowBox van doc duoc, KHONG thay the han
+  /// gradient (gradient van ve tren cung de mep man hinh mo dan tu nhien).
+  final String? backgroundImage;
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(gradient: gradient ?? AppColors.screenGradient),
-      child: SafeArea(
-        // Ep decoration mac dinh la none o tang goc man hinh: bat ky
-        // TextStyle nao (kem ca cac TextStyle() viet tay khong qua
-        // AppTextStyles) khong tu khai bao decoration rieng se ke thua gia
-        // tri nay thay vi ke thua tu DefaultTextStyle cua Theme/Material o
-        // xa hon - nghi ngo day la nguyen nhan gach chan vang xuat hien
-        // khap noi trong app du khong co dong code nao chu dong "set" no.
-        child: DefaultTextStyle.merge(
-          style: const TextStyle(decoration: TextDecoration.none),
-          child: child,
+    return Stack(
+      children: [
+        // Positioned.fill BAT BUOC cho moi lop, ke ca gradient nen: 1
+        // Container khong con/khong width/height se co gian ve 0x0 duoi
+        // constraints long cua Stack (loose, khong phai tight nhu Container
+        // don truoc day) neu khong duoc ep fill kich thuoc Stack.
+        Positioned.fill(
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: gradient ?? AppColors.screenGradient,
+            ),
+          ),
         ),
-      ),
+        if (backgroundImage != null)
+          Positioned.fill(
+            child: Image.asset(backgroundImage!, fit: BoxFit.cover),
+          ),
+        if (backgroundImage != null)
+          // Lop toi phu tren anh nen de chu/GlowBox phia tren van doc duoc.
+          Positioned.fill(
+            child: Container(color: AppColors.bgTop.withValues(alpha: 0.72)),
+          ),
+        Positioned.fill(
+          child: SafeArea(
+            // Ep decoration mac dinh la none o tang goc man hinh: bat ky
+            // TextStyle nao (kem ca cac TextStyle() viet tay khong qua
+            // AppTextStyles) khong tu khai bao decoration rieng se ke thua
+            // gia tri nay thay vi ke thua tu DefaultTextStyle cua Theme/
+            // Material o xa hon - nghi ngo day la nguyen nhan gach chan vang
+            // xuat hien khap noi trong app du khong co dong code nao chu
+            // dong "set" no.
+            child: DefaultTextStyle.merge(
+              style: const TextStyle(decoration: TextDecoration.none),
+              child: child,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

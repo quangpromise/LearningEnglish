@@ -55,12 +55,14 @@ D:\Projects\Learn Engligh\
 - **grammar-researcher** — nhận câu/đoạn lyric, giải thích cấu trúc ngữ pháp, tạo bài tập liên quan, dùng LanguageTool để kiểm tra lỗi.
 - **pronunciation-researcher** — tra cứu IPA chuẩn (Anh-Anh/Anh-Mỹ), trọng âm, quy tắc nối âm, ví dụ minh họa cho từ/câu trong bài hát.
 - **library-researcher** — khi cần thêm tính năng mới (nguồn nhạc, ngôn ngữ mới...), tìm & so sánh thư viện phù hợp, ưu tiên miễn phí/mã nguồn mở, **luôn kiểm tra kỹ điều khoản license cho mục đích thương mại** trước khi đề xuất.
+- **finance-api-researcher** — dùng cho tính năng Quản lý tài sản: nghiên cứu/so sánh API chứng khoán VN-quốc tế + crypto, luôn kiểm tra có cần API key (phải giấu sau backend proxy), điều khoản thương mại, và dữ liệu thật hay phái sinh/tokenized trước khi đề xuất.
 
 ## Skills (`.claude/skills/`)
 - **grammar-check** — quy trình gọi LanguageTool chấm lỗi ngữ pháp câu trong lyric/luyện tập.
 - **pronunciation-check** — quy trình bật mic → ghi âm → chạy `speech_to_text` → so khớp transcript với câu gốc → tính điểm tương đồng → phản hồi từ phát âm sai.
 - **lyric-sync** — parse file `.lrc`, đồng bộ với vị trí phát nhạc để highlight từ đang hát.
 - **apk-release** — quy trình build & ký APK release, checklist trước phát hành, hướng dẫn host & hướng dẫn người dùng cài từ nguồn ngoài Play.
+- **wealth-data-sync** — quy trình gọi Edge Function proxy lấy giá cổ phiếu (Twelve Data quốc tế, SSI FastConnect VN ở Phase 2) cho tính năng Quản lý tài sản, kèm checklist xác minh nguồn dữ liệu mới.
 
 ## Quy ước
 - Cấu trúc code theo feature-first (mỗi tính năng 1 thư mục trong `lib/features/`).

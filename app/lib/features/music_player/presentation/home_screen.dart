@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/navigation/app_switcher_sheet.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../attribution/presentation/attribution_screen.dart';
-import '../../crypto/presentation/crypto_screen.dart';
-import '../../fitness/presentation/fitness_shell.dart';
 import '../../grammar/presentation/grammar_topics_screen.dart';
+import '../../profile/presentation/profile_quick_popup.dart';
 import '../../pronunciation/presentation/phonics_lessons_screen.dart';
 import '../../quiz/presentation/quiz_category_screen.dart';
 import '../../reading/presentation/reading_library_screen.dart';
@@ -35,13 +34,12 @@ class HomeScreen extends ConsumerWidget {
     final displayName = profileAsync.when(
       data: (p) => p.nameLabel,
       loading: () => '...',
-      error: (_, _) => ref.tr('home_greeting'),
+      error: (_, _) => '...',
     );
     final avatarUrl = profileAsync.valueOrNull?.avatarUrl;
-    final statsAsync = ref.watch(myStatsProvider);
-    final stats = statsAsync.valueOrNull;
 
     return ScreenBackground(
+      backgroundImage: 'assets/home/home_background.jpg',
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
         child: SingleChildScrollView(
@@ -49,38 +47,70 @@ class HomeScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Container(
-                    width: 46,
-                    height: 46,
-                    decoration: const BoxDecoration(
-                      color: AppColors.glassFill,
-                      shape: BoxShape.circle,
-                      border: Border.fromBorderSide(
-                        BorderSide(color: AppColors.blue, width: 1.4),
-                      ),
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: avatarUrl != null
-                        ? Image.network(avatarUrl, fit: BoxFit.cover)
-                        : const Icon(
-                            Icons.person_rounded,
-                            color: AppColors.blue,
+                  GestureDetector(
+                    onTap: () => showProfileQuickPopup(context),
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Container(
+                          width: 46,
+                          height: 46,
+                          decoration: const BoxDecoration(
+                            color: AppColors.glassFill,
+                            shape: BoxShape.circle,
+                            border: Border.fromBorderSide(
+                              BorderSide(color: AppColors.blue, width: 1.4),
+                            ),
                           ),
+                          clipBehavior: Clip.antiAlias,
+                          child: avatarUrl != null
+                              ? Image.network(avatarUrl, fit: BoxFit.cover)
+                              : const Icon(
+                                  Icons.person_rounded,
+                                  color: AppColors.blue,
+                                ),
+                        ),
+                        // Nut xo xuong canh avatar - bam mo popup ho so nhanh
+                        // (doi avatar tai cho), thay the cho tab Ho so da bo.
+                        Positioned(
+                          right: -2,
+                          bottom: -2,
+                          child: Container(
+                            width: 18,
+                            height: 18,
+                            decoration: BoxDecoration(
+                              color: AppColors.blue,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AppColors.bgTop,
+                                width: 2,
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              size: 12,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 14),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          ref.tr('home_greeting'),
-                          style: AppTextStyles.muted(),
+                          '${ref.tr('home_greeting')}, $displayName',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.heading(size: 17),
                         ),
-                        Text(
-                          displayName,
-                          style: AppTextStyles.heading(size: 18),
-                        ),
+                        const SizedBox(height: 3),
+                        const AppSwitcherPill(),
                       ],
                     ),
                   ),
@@ -94,76 +124,6 @@ class HomeScreen extends ConsumerWidget {
                     child: Tooltip(
                       message: ref.tr('home_dictionary_tooltip'),
                       child: const _IconCircle(icon: Icons.menu_book_rounded),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  Expanded(
-                    child: _StatTile(
-                      icon: Icons.local_fire_department_rounded,
-                      value: '${stats?.streakDays ?? 0}',
-                      label: ref.tr('home_stat_streak'),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _StatTile(
-                      icon: Icons.style_rounded,
-                      value: '${stats?.wordsLearned ?? 0}',
-                      label: ref.tr('home_stat_words'),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _StatTile(
-                      icon: Icons.record_voice_over_rounded,
-                      value: '${stats?.avgPronunciationScore ?? 0}%',
-                      label: ref.tr('home_stat_pronunciation'),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              Text(
-                ref.tr('home_level_section_title'),
-                style: AppTextStyles.heading(size: 14),
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    child: _LevelPill(
-                      label: ref.tr('song_level_basic'),
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const MusicHomeScreen(),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _LevelPill(
-                      label: ref.tr('song_level_intermediate'),
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const MusicHomeScreen(),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _LevelPill(
-                      label: ref.tr('song_level_advanced'),
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const MusicHomeScreen(),
-                        ),
-                      ),
                     ),
                   ),
                 ],
@@ -187,6 +147,15 @@ class HomeScreen extends ConsumerWidget {
                     onTap: () => Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (_) => const PhonicsLessonsScreen(),
+                      ),
+                    ),
+                  ),
+                  _CategoryItemData(
+                    icon: Icons.auto_stories_rounded,
+                    label: ref.tr('home_story_quick_title'),
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => StoryScreen(story: kStories.first),
                       ),
                     ),
                   ),
@@ -215,15 +184,6 @@ class HomeScreen extends ConsumerWidget {
                     ),
                   ),
                   _CategoryItemData(
-                    icon: Icons.auto_stories_rounded,
-                    label: ref.tr('home_story_quick_title'),
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => StoryScreen(story: kStories.first),
-                      ),
-                    ),
-                  ),
-                  _CategoryItemData(
                     icon: Icons.local_library_rounded,
                     label: ref.tr('reading_title'),
                     onTap: () => Navigator.of(context).push(
@@ -243,103 +203,8 @@ class HomeScreen extends ConsumerWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-              _CategorySection(
-                title: ref.tr('home_category_other'),
-                items: [
-                  _CategoryItemData(
-                    icon: Icons.fitness_center_rounded,
-                    label: ref.tr('fitness_menu_title'),
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const FitnessShell()),
-                    ),
-                  ),
-                  _CategoryItemData(
-                    icon: Icons.currency_bitcoin_rounded,
-                    label: ref.tr('crypto_title'),
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const CryptoScreen()),
-                    ),
-                  ),
-                  _CategoryItemData(
-                    icon: Icons.copyright_rounded,
-                    label: ref.tr('attribution_menu_title'),
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const AttributionScreen(),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _StatTile extends StatelessWidget {
-  const _StatTile({
-    required this.icon,
-    required this.value,
-    required this.label,
-  });
-  final IconData icon;
-  final String value;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return GlowBox(
-      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
-      borderRadius: 18,
-      child: Column(
-        children: [
-          Container(
-            width: 34,
-            height: 34,
-            decoration: BoxDecoration(
-              color: AppColors.blue.withValues(alpha: 0.15),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, size: 17, color: AppColors.blue),
-          ),
-          const SizedBox(height: 8),
-          Text(value, style: AppTextStyles.heading(size: 15)),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: AppTextStyles.muted(size: 10.5),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _LevelPill extends StatelessWidget {
-  const _LevelPill({required this.label, required this.onTap});
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: AppColors.glassFill,
-          borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: AppColors.glassBorder),
-        ),
-        child: Text(
-          label,
-          style: AppTextStyles.body(size: 12.5, weight: FontWeight.w700),
         ),
       ),
     );

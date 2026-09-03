@@ -9,7 +9,6 @@ import '../theme/app_theme.dart';
 import '../../features/music_player/presentation/home_screen.dart';
 import '../../features/music_player/presentation/mini_player.dart';
 import '../../features/pronunciation/presentation/pronunciation_screen.dart';
-import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/social/data/social_repository.dart';
 import '../../features/social/presentation/conversations_screen.dart';
 import '../../features/social/presentation/incoming_message_banner.dart';
@@ -41,18 +40,19 @@ class _RootShellState extends ConsumerState<RootShell>
   // dung quay lai tab nay - IndexedStack giu nguyen state cua tat ca tab,
   // initState() chi chay 1 lan duy nhat luc mo app nen khong tu doi cau
   // duoc neu khong co co che nay.
+  //
+  // Da bo tab Ho so - vao qua nut xo xuong canh avatar tren Home
+  // (profile_quick_popup.dart) thay vi chiem 1 cho co dinh tren thanh tab.
   List<Widget> _buildScreens() => [
     const HomeScreen(),
     PronunciationScreen(isActive: _tab == 1),
     const ConversationsScreen(),
-    const ProfileScreen(),
   ];
 
   static const _icons = [
     Icons.home_rounded,
     Icons.mic_rounded,
     Icons.chat_bubble_rounded,
-    Icons.person_rounded,
   ];
 
   static const _messagesTabIndex = 2;

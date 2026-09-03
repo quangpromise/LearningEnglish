@@ -633,6 +633,41 @@ class AppStrings {
       AppLanguage.vi: 'Không tải được avatar:',
       AppLanguage.en: "Couldn't upload avatar:",
     },
+    'profile_quick_open_full': {
+      AppLanguage.vi: 'Xem tất cả cài đặt',
+      AppLanguage.en: 'View all settings',
+    },
+
+    // App switcher (core/navigation/app_switcher_sheet.dart) - mo tu the
+    // duoi loi chao tren Home, chuyen doi giua cac "app" trong cung 1 APK.
+    'app_switcher_title': {
+      AppLanguage.vi: 'Chuyển đổi ứng dụng',
+      AppLanguage.en: 'Switch app',
+    },
+    'app_switcher_learn_english': {
+      AppLanguage.vi: 'Học Tiếng Anh',
+      AppLanguage.en: 'Learn English',
+    },
+    'app_switcher_fitness': {
+      AppLanguage.vi: 'Fitness',
+      AppLanguage.en: 'Fitness',
+    },
+    'app_switcher_wealth': {
+      AppLanguage.vi: 'Quản lý tài sản',
+      AppLanguage.en: 'Wealth management',
+    },
+    'app_switcher_current_badge': {
+      AppLanguage.vi: 'Đang dùng',
+      AppLanguage.en: 'Current',
+    },
+    'app_switcher_coming_soon': {
+      AppLanguage.vi: 'Sắp ra mắt',
+      AppLanguage.en: 'Coming soon',
+    },
+    'app_switcher_coming_soon_toast': {
+      AppLanguage.vi: 'Tính năng đang được phát triển, sẽ bổ sung sau.',
+      AppLanguage.en: 'This feature is still in development.',
+    },
 
     // Home screen
     'home_greeting': {AppLanguage.vi: 'Xin chào', AppLanguage.en: 'Hello'},
