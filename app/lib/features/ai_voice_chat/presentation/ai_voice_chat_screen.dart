@@ -3,11 +3,10 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:audio_session/audio_session.dart';
+import 'package:audioplayers/audioplayers.dart' as ap;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
-import 'package:just_audio/just_audio.dart';
-import 'package:just_audio_background/just_audio_background.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -43,7 +42,11 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
   StreamSubscription<VoiceChatState>? _stateSub;
   StreamSubscription<List<int>>? _audioSub;
   StreamSubscription<TranscriptEvent>? _transcriptSub;
-  final AudioPlayer _player = AudioPlayer();
+  // Dung `audioplayers` (KHONG dung just_audio) - xem giai thich chi tiet
+  // trong pubspec.yaml/app_tts.dart: just_audio_background chi ho tro DUY
+  // NHAT 1 AudioPlayer trong toan app (NowPlayingService.player), 1
+  // AudioPlayer just_audio THU HAI se luon nem loi khi phat.
+  final ap.AudioPlayer _player = ap.AudioPlayer();
   final ScrollController _scrollCtrl = ScrollController();
   final List<TranscriptEvent> _messages = [];
 
@@ -292,10 +295,10 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
 
   /// Ep audio session ve che do "music" + xin lai audio focus truoc khi phat
   /// giong AI - man hinh nay dung mic ghi am lien tuc (record.AudioRecorder)
-  /// ngay truoc do, khien Android giu audio mode/focus cho ghi am. Neu khong
-  /// xin lai focus, giong AI phat ra qua loa THOAI rat nho hoac im hoan toan
-  /// du _player.play() khong bao loi gi - dung y het pattern da fix trong
-  /// app_tts.dart/now_playing_service.dart.
+  /// ngay truoc do, khien Android giu audio mode/focus cho ghi am. _player
+  /// (audioplayers, xem khai bao field o tren) khong bi anh huong boi loi
+  /// "chi 1 AudioPlayer" cua just_audio_background nua, nhung van can xin
+  /// lai focus rieng vi mic co the doi mode cua toan he thong.
   Future<String> _ensurePlaybackSession() async {
     try {
       final session = await AudioSession.instance;
@@ -317,16 +320,7 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
     if (path == null) return;
     try {
       await _ensurePlaybackSession();
-      // BAT BUOC phai co tag MediaItem - xem giai thich chi tiet trong
-      // app_tts.dart._speakCloud(). Day moi la NGUYEN NHAN THAT SU khien AI
-      // Voice Chat im tieng hoan toan tren ban release (xac dinh qua debug
-      // log thuc te: "type 'Null' is not a subtype of type 'MediaItem'" -
-      // KHONG phai audio focus/session nhu suy doan truoc do.
-      await _player.setFilePath(
-        path,
-        tag: MediaItem(id: 'ai_voice_reply', title: 'AI Voice Chat'),
-      );
-      await _player.play();
+      await _player.play(ap.DeviceFileSource(path));
     } catch (_) {
       // Loi phat lai khong lam gian doan phien chat - bo qua 1 luot noi.
     }
@@ -347,11 +341,7 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
   Future<void> _replayAudio(String path) async {
     try {
       await _ensurePlaybackSession();
-      await _player.setFilePath(
-        path,
-        tag: MediaItem(id: 'ai_voice_replay', title: 'AI Voice Chat'),
-      );
-      await _player.play();
+      await _player.play(ap.DeviceFileSource(path));
     } catch (_) {
       // Bo qua - file tam co the da bi he thong don dep.
     }

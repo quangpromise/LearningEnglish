@@ -43,6 +43,16 @@ dependencies:
   # AudioPlayer khoi bi hong vinh vien neu JustAudioBackground.init() that
   # bai/timeout (xem comment trong main.dart).
   just_audio_platform_interface: ^4.6.0
+  # Phat file audio NGAN (giong doc TTS cloud, phan hoi giong AI Voice Chat) -
+  # BAT BUOC dung 1 goi KHAC just_audio cho 2 tinh nang nay, vi
+  # just_audio_background.dart tu gioi han cung "supports only a single
+  # player instance" (xem source that: neu AudioPlayer() thu 2 cua just_audio
+  # duoc tao sau khi JustAudioBackground.init() da chay, no nem
+  # PlatformException ngay lap tuc, bi nuot lang le boi try/catch, gay ra bug
+  # "im tieng" tuy thuoc thu tu dung tinh nang nao truoc). audioplayers la 1
+  # plugin HOAN TOAN TACH BIET (khong di qua JustAudioPlatform.instance) nen
+  # khong bi anh huong. Mien phi, mien nguon mo (MIT).
+  audioplayers: ^6.1.0
   # Ghi âm + nhận diện giọng nói on-device cho tính năng luyện phát âm
   speech_to_text: ^7.0.0
   # Ghi lại file âm thanh thô để người dùng nghe lại chính giọng mình vừa

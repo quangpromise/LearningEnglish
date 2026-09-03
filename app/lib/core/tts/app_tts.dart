@@ -2,9 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:audio_session/audio_session.dart';
+import 'package:audioplayers/audioplayers.dart' as ap;
 import 'package:flutter_tts/flutter_tts.dart';
-import 'package:just_audio/just_audio.dart';
-import 'package:just_audio_background/just_audio_background.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -46,12 +45,19 @@ const kCloudVoices = [
 /// Gemini (GeminiVoiceSelection) CHI con dung rieng cho AI Voice Chat trong
 /// luc dang tro chuyen truc tiep voi Gemini Live, khong lien quan gi den
 /// service nay nua.
+///
+/// _cloudPlayer dung package `audioplayers` (KHONG dung just_audio) - xem
+/// giai thich chi tiet trong pubspec.yaml: just_audio_background tu gioi
+/// han "chi ho tro 1 AudioPlayer duy nhat trong toan app", nen 1 AudioPlayer
+/// just_audio THU HAI (ngoai NowPlayingService.player) se luon nem loi ngay
+/// khi phat, bi nuot lang le boi try/catch va gay "im tieng" tuy thuoc thu
+/// tu dung tinh nang nao truoc.
 class AppTts {
   AppTts._();
   static final AppTts instance = AppTts._();
 
   final FlutterTts _deviceTts = FlutterTts();
-  final AudioPlayer _cloudPlayer = AudioPlayer();
+  final ap.AudioPlayer _cloudPlayer = ap.AudioPlayer();
 
   static const _prefCloudLocaleKey = 'tts_cloud_locale';
 
@@ -118,11 +124,7 @@ class AppTts {
     if (_selectedCloud != null) {
       try {
         await _speakCloud(text, _selectedCloud!);
-        await _cloudPlayer.playerStateStream.firstWhere(
-          (s) =>
-              s.processingState == ProcessingState.completed ||
-              s.processingState == ProcessingState.idle,
-        );
+        await _cloudPlayer.onPlayerComplete.first;
         return;
       } catch (_) {
         // Không có mạng / hết quota VoiceRSS -> rơi về giọng máy bên dưới.
@@ -166,21 +168,6 @@ class AppTts {
     }
 
     await _cloudPlayer.stop();
-    // BAT BUOC phai co tag MediaItem - JustAudioBackground.init() (main.dart)
-    // doi JustAudioPlatform.instance sang ban tich hop audio_service CHO CA
-    // APP (moi AudioPlayer() moi tao ra, khong rieng gi NowPlayingService),
-    // va noi bo just_audio_background ep kieu "source.tag as MediaItem"
-    // (xem just_audio_background.dart updateQueue()) khi nap 1 audio source
-    // MOI - thieu tag se ne CHUOI assert() (bi loai bo o BAN RELEASE, chi
-    // con hoat dong o debug) roi crash thang voi loi
-    // "type 'Null' is not a subtype of type 'MediaItem'" (obfuscated thanh
-    // ten lop la 'sG'...trong bao cao loi thuc te) - day chinh la nguyen
-    // nhan "im tieng" cua giong cloud tren ban release, KHONG lien quan gi
-    // toi audio focus/session nhu cac lan sua truoc.
-    await _cloudPlayer.setFilePath(
-      file.path,
-      tag: MediaItem(id: 'tts_${voice.locale}', title: 'Giọng đọc'),
-    );
-    await _cloudPlayer.play();
+    await _cloudPlayer.play(ap.DeviceFileSource(file.path));
   }
 }

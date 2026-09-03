@@ -235,6 +235,22 @@ class _AuthGate extends ConsumerWidget {
     // dung. Da bo autoDispose (xem incomingMessagesProvider trong
     // app_providers.dart) de "previous" duoc bao toan giua cac lan.
     ref.listen(incomingMessagesProvider, (previous, next) async {
+      // TAM THOI - da bo autoDispose (thang truoc) nhung nguoi dung xac nhan
+      // banner VAN chua hien. Hien debug de biet CHINH XAC provider co nhan
+      // duoc du lieu khong va "previous" co duoc bao toan giua cac lan hay
+      // khong (nghi ngo: watchIncomingMessages() co the bi "dong bang" voi
+      // 1 Stream.empty() vinh vien neu duoc tao luc _myId con null). Xoa
+      // sau khi xac dinh xong nguyen nhan that.
+      final debugCtx = rootNavigatorKey.currentContext;
+      if (debugCtx != null && debugCtx.mounted) {
+        final msg = next.hasError
+            ? 'ERROR: ${next.error}'
+            : next.valueOrNull == null
+            ? 'loading'
+            : 'data: ${next.value!.length} tin, prev=${previous?.valueOrNull?.length ?? "null"}, myId=${session?.user.id}';
+        ScaffoldMessenger.maybeOf(debugCtx)
+            ?.showSnackBar(SnackBar(content: Text('[DEBUG msg2] $msg')));
+      }
       try {
         final messages = next.valueOrNull;
         if (messages == null) return;
