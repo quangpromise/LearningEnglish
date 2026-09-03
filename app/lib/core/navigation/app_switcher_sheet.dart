@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../features/fitness/presentation/fitness_shell.dart';
+import '../../features/wealth/presentation/wealth_shell.dart';
 import '../i18n/app_strings.dart';
 import '../theme/app_theme.dart';
 
@@ -51,13 +52,6 @@ void showAppSwitcherSheet(BuildContext context) {
 
 class _AppSwitcherSheet extends ConsumerWidget {
   const _AppSwitcherSheet();
-
-  void _showComingSoon(BuildContext context, WidgetRef ref) {
-    Navigator.of(context).pop();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(ref.tr('app_switcher_coming_soon_toast'))),
-    );
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -111,11 +105,11 @@ class _AppSwitcherSheet extends ConsumerWidget {
             icon: Icons.account_balance_wallet_rounded,
             color: AppColors.amber,
             label: ref.tr('app_switcher_wealth'),
-            trailing: _CurrentBadge(
-              text: ref.tr('app_switcher_coming_soon'),
-              dim: true,
-            ),
-            onTap: () => _showComingSoon(context, ref),
+            onTap: () {
+              Navigator.of(context).pop();
+              Navigator.of(context)
+                  .push(MaterialPageRoute(builder: (_) => const WealthShell()));
+            },
           ),
         ],
       ),
@@ -170,24 +164,21 @@ class _AppSwitcherTile extends StatelessWidget {
 }
 
 class _CurrentBadge extends StatelessWidget {
-  const _CurrentBadge({required this.text, this.dim = false});
+  const _CurrentBadge({required this.text});
   final String text;
-  final bool dim;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: dim
-            ? AppColors.glassFill
-            : AppColors.blue.withValues(alpha: 0.18),
+        color: AppColors.blue.withValues(alpha: 0.18),
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
         text,
-        style: TextStyle(
-          color: dim ? AppColors.textMuted : AppColors.blue,
+        style: const TextStyle(
+          color: AppColors.blue,
           fontWeight: FontWeight.w800,
           fontSize: 10.5,
         ),

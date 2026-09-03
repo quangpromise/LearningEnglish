@@ -669,6 +669,100 @@ class AppStrings {
       AppLanguage.en: 'This feature is still in development.',
     },
 
+    // Wealth Management (features/wealth/) - Phase 1: Chi tieu/Thu nhap +
+    // Dau tu (crypto + co phieu quoc te).
+    'wealth_title': {
+      AppLanguage.vi: 'Quản lý tài sản',
+      AppLanguage.en: 'Wealth Management',
+    },
+    'wealth_tab_expense': {
+      AppLanguage.vi: 'Chi tiêu',
+      AppLanguage.en: 'Expense',
+    },
+    'wealth_tab_income': {AppLanguage.vi: 'Thu nhập', AppLanguage.en: 'Income'},
+    'wealth_tab_investments': {
+      AppLanguage.vi: 'Đầu tư',
+      AppLanguage.en: 'Investments',
+    },
+    'wealth_add_transaction': {
+      AppLanguage.vi: 'Thêm giao dịch',
+      AppLanguage.en: 'Add transaction',
+    },
+    'wealth_amount_hint': {
+      AppLanguage.vi: 'Số tiền (VNĐ)',
+      AppLanguage.en: 'Amount (VND)',
+    },
+    'wealth_note_hint': {
+      AppLanguage.vi: 'Ghi chú (không bắt buộc)',
+      AppLanguage.en: 'Note (optional)',
+    },
+    'wealth_save': {AppLanguage.vi: 'Lưu', AppLanguage.en: 'Save'},
+    'wealth_empty_expense': {
+      AppLanguage.vi: 'Chưa có giao dịch chi tiêu nào.',
+      AppLanguage.en: 'No expense transactions yet.',
+    },
+    'wealth_empty_income': {
+      AppLanguage.vi: 'Chưa có giao dịch thu nhập nào.',
+      AppLanguage.en: 'No income transactions yet.',
+    },
+    'wealth_filter_all': {AppLanguage.vi: 'Tất cả', AppLanguage.en: 'All'},
+    'wealth_filter_active': {
+      AppLanguage.vi: 'Chủ động',
+      AppLanguage.en: 'Active',
+    },
+    'wealth_filter_passive': {
+      AppLanguage.vi: 'Thụ động',
+      AppLanguage.en: 'Passive',
+    },
+    'wealth_total_expense': {
+      AppLanguage.vi: 'Tổng chi',
+      AppLanguage.en: 'Total expense',
+    },
+    'wealth_total_income': {
+      AppLanguage.vi: 'Tổng thu',
+      AppLanguage.en: 'Total income',
+    },
+    'wealth_investments_crypto_title': {
+      AppLanguage.vi: 'Crypto',
+      AppLanguage.en: 'Crypto',
+    },
+    'wealth_investments_crypto_subtitle': {
+      AppLanguage.vi: 'Theo dõi giá & danh mục crypto',
+      AppLanguage.en: 'Track crypto prices & portfolio',
+    },
+    'wealth_investments_stocks_title': {
+      AppLanguage.vi: 'Cổ phiếu quốc tế',
+      AppLanguage.en: 'International stocks',
+    },
+    'wealth_add_holding': {
+      AppLanguage.vi: 'Thêm mã cổ phiếu',
+      AppLanguage.en: 'Add stock holding',
+    },
+    'wealth_symbol_hint': {
+      AppLanguage.vi: 'Mã cổ phiếu (vd AAPL)',
+      AppLanguage.en: 'Symbol (e.g. AAPL)',
+    },
+    'wealth_quantity_hint': {
+      AppLanguage.vi: 'Số lượng',
+      AppLanguage.en: 'Quantity',
+    },
+    'wealth_avg_cost_hint': {
+      AppLanguage.vi: 'Giá vốn / cổ phiếu (USD)',
+      AppLanguage.en: 'Average cost / share (USD)',
+    },
+    'wealth_empty_holdings': {
+      AppLanguage.vi: 'Chưa có mã cổ phiếu nào trong danh mục.',
+      AppLanguage.en: 'No stock holdings yet.',
+    },
+    'wealth_quote_error': {
+      AppLanguage.vi: 'Không tải được giá hiện tại',
+      AppLanguage.en: 'Could not load current price',
+    },
+    'wealth_delete_confirm_title': {
+      AppLanguage.vi: 'Xoá mục này?',
+      AppLanguage.en: 'Delete this item?',
+    },
+
     // Home screen
     'home_greeting': {AppLanguage.vi: 'Xin chào', AppLanguage.en: 'Hello'},
     'home_dictionary_tooltip': {

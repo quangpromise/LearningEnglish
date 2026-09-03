@@ -13,6 +13,11 @@ import '../../features/rewards/data/rewards_repository.dart';
 import '../../features/social/data/social_repository.dart';
 import '../../features/stats/data/stats_repository.dart';
 import '../../features/story/data/lesson_progress_repository.dart';
+import '../../features/wealth/data/stocks_intl_repository.dart';
+import '../../features/wealth/data/wealth_holding_model.dart';
+import '../../features/wealth/data/wealth_holding_repository.dart';
+import '../../features/wealth/data/wealth_transaction_model.dart';
+import '../../features/wealth/data/wealth_transaction_repository.dart';
 import '../i18n/app_language.dart';
 
 final supabaseClientProvider = Provider<SupabaseClient>(
@@ -193,6 +198,8 @@ void invalidateUserScopedProviders(WidgetRef ref) {
   ref.invalidate(myConversationsProvider);
   ref.invalidate(favoriteSongTitlesProvider);
   ref.invalidate(favoriteExerciseIdsProvider);
+  ref.invalidate(wealthTransactionsProvider);
+  ref.invalidate(wealthHoldingsProvider);
 }
 
 /// Nhip realtime tu bang messages (khong quan tam noi dung, chi de kich
@@ -340,3 +347,54 @@ final favoriteExerciseIdsProvider =
 /// lien quan Fitness), giong het cach pronunciationTabActiveProvider an no
 /// o tab Luyen phat am.
 final fitnessModeActiveProvider = StateProvider<bool>((ref) => false);
+
+// --- Wealth Management (features/wealth/) - Phase 1: Chi tieu/Thu nhap +
+// Dau tu (crypto giu nguyen o CryptoScreen, co phieu quoc te qua Twelve
+// Data). Xem docs/research-wealth-stock-apis.md va
+// .claude/skills/wealth-data-sync/SKILL.md.
+
+/// true khi dang o trong khu vuc Quan ly tai san - dung de an nut noi AI
+/// Voice Chat, giong het [fitnessModeActiveProvider].
+final wealthModeActiveProvider = StateProvider<bool>((ref) => false);
+
+final wealthTransactionRepositoryProvider =
+    Provider<WealthTransactionRepository>(
+      (ref) => WealthTransactionRepository(ref.watch(supabaseClientProvider)),
+    );
+
+final wealthHoldingRepositoryProvider = Provider<WealthHoldingRepository>(
+  (ref) => WealthHoldingRepository(ref.watch(supabaseClientProvider)),
+);
+
+final stocksIntlRepositoryProvider = Provider<StocksIntlRepository>(
+  (ref) => StocksIntlRepository(ref.watch(supabaseClientProvider)),
+);
+
+/// Toan bo giao dich chi tieu/thu nhap cua user hien tai. Khac
+/// [favoriteExerciseIdsProvider] (khong can cap nhat lac quan tuc thi vi
+/// khong co thao tac "bam 1 phat doi trang thai" nhu yeu thich) -
+/// FutureProvider don gian + invalidate sau moi lan them/xoa la du.
+final wealthTransactionsProvider =
+    FutureProvider.autoDispose<List<WealthTransaction>>((ref) {
+      final userId = ref.watch(supabaseClientProvider).auth.currentUser?.id;
+      if (userId == null) return Future.value(<WealthTransaction>[]);
+      return ref.watch(wealthTransactionRepositoryProvider).fetchAll(userId);
+    });
+
+/// So nam giu co phieu quoc te (thu cong) cua user hien tai.
+final wealthHoldingsProvider = FutureProvider.autoDispose<List<WealthHolding>>((
+  ref,
+) {
+  final userId = ref.watch(supabaseClientProvider).auth.currentUser?.id;
+  if (userId == null) return Future.value(<WealthHolding>[]);
+  return ref.watch(wealthHoldingRepositoryProvider).fetchAll(userId);
+});
+
+/// Gia hien tai cho danh sach ma da nam giu - family theo danh sach symbol
+/// (join bang dau phay lam key) de tu dong goi lai khi danh sach holdings
+/// doi, khong can nguoi dung bam refresh thu cong tru khi muon lam moi gia.
+final stocksIntlQuotesProvider = FutureProvider.autoDispose
+    .family<List<StockQuote>, List<String>>(
+      (ref, symbols) =>
+          ref.watch(stocksIntlRepositoryProvider).fetchQuotes(symbols),
+    );
