@@ -219,10 +219,18 @@ class _AuthGate extends ConsumerWidget {
     // dang o Hoc Tieng Anh, Fitness/Wealth khong bao gio thay tin nhan moi
     // trong luc app dang mo (chi thay qua push notification he thong khi
     // app o nen).
-    ref.listen(newIncomingMessageProvider, (previous, next) {
+    ref.listen(newIncomingMessageProvider, (previous, next) async {
       final message = next.valueOrNull;
       if (message == null) return;
-      final friends = ref.read(myFriendsProvider).valueOrNull ?? const [];
+      // await ref.read(...future) thay vi ref.read(provider).valueOrNull -
+      // myFriendsProvider la autoDispose va gio it khi co man nao "watch"
+      // lien tuc no (Tin nhan chi con mo dang popup, khong con la tab luon
+      // mount nhu truoc), nen thuong bi dispose giua cac lan mo popup. Doc
+      // cache dong bo (.valueOrNull) tra ve null moi lan nhu vay, khien
+      // khong tim duoc nguoi gui va banner bi bo qua AM THAM. await ban
+      // future dam bao luon co du lieu that (fetch lai neu can) truoc khi
+      // quyet dinh co hien banner hay khong.
+      final friends = await ref.read(myFriendsProvider.future);
       SocialUser? sender;
       for (final f in friends) {
         if (f.id == message.senderId) {
@@ -231,6 +239,7 @@ class _AuthGate extends ConsumerWidget {
         }
       }
       if (sender == null) return;
+      if (!context.mounted) return;
       showIncomingMessageBanner(
         context,
         sender: sender,

@@ -71,9 +71,21 @@ class _AiFabOverlayState extends ConsumerState<AiFabOverlay>
   // (xem app_popup.dart). Van giu RouteSettings(name: kAiVoiceChatRouteName)
   // - showModalBottomSheet cung day 1 Route thuc su len Navigator nen
   // topRouteObserver van nhan dien duoc de tu an nut noi ngay chinh man nay.
+  //
+  // BAT BUOC dung rootNavigatorKey.currentContext (KHONG dung `context` cua
+  // chinh AiFabOverlay) - AiFabOverlay duoc chen vao qua
+  // MaterialApp.builder's Stack(children: [?child, AiFabOverlay()]) NGANG
+  // HANG (sibling) voi Navigator cua app, khong phai MOT HAU DUE cua no.
+  // `context` cua AiFabOverlay vi vay KHONG tim thay Navigator/Overlay nao
+  // qua Navigator.of(context)/Overlay.of(context), khien nut hoan toan vo
+  // tac dung (khong nem loi thay duoc vi showModalBottomSheet chay am tham
+  // that bai). rootNavigatorKey.currentContext luon la context CUA chinh
+  // Navigator goc, dam bao tim duoc.
   void _open() {
+    final navContext = rootNavigatorKey.currentContext;
+    if (navContext == null) return;
     showModalBottomSheet(
-      context: context,
+      context: navContext,
       useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

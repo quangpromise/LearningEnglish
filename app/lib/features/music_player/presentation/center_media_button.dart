@@ -133,6 +133,7 @@ class _PlayingBar extends StatelessWidget {
         _Btn(
           icon: Icons.skip_previous_rounded,
           color: AppColors.textPrimary,
+          size: 24,
           onTap: queue.length > 1 ? service.previous : null,
         ),
         StreamBuilder<PlayerState>(
@@ -143,6 +144,7 @@ class _PlayingBar extends StatelessWidget {
             return _Btn(
               icon: playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
               color: accentColor,
+              size: 28,
               onTap: () =>
                   playing ? service.player.pause() : service.player.play(),
             );
@@ -151,6 +153,7 @@ class _PlayingBar extends StatelessWidget {
         _Btn(
           icon: Icons.skip_next_rounded,
           color: AppColors.textPrimary,
+          size: 24,
           onTap: queue.length > 1 ? service.next : null,
         ),
         const SizedBox(width: 8),
@@ -416,10 +419,16 @@ class _WaveformPainter extends CustomPainter {
 }
 
 class _Btn extends StatelessWidget {
-  const _Btn({required this.icon, required this.onTap, required this.color});
+  const _Btn({
+    required this.icon,
+    required this.onTap,
+    required this.color,
+    this.size = 20,
+  });
   final IconData icon;
   final VoidCallback? onTap;
   final Color color;
+  final double size;
 
   @override
   Widget build(BuildContext context) {
@@ -430,7 +439,7 @@ class _Btn extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
         child: Icon(
           icon,
-          size: 20,
+          size: size,
           color: onTap != null ? color : color.withValues(alpha: 0.35),
         ),
       ),
