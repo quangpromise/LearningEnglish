@@ -56,6 +56,11 @@ class AppTopBar extends ConsumerWidget {
         GestureDetector(
           onTap: () => showModalBottomSheet(
             context: context,
+            // useRootNavigator: true - AppTopBar nam ben trong 1 Navigator
+            // LONG cua tung tab (xem root_shell.dart), phai neo popup vao
+            // Navigator GOC de no phu duoc TOAN MAN HINH (de len ca thanh
+            // Menu) thay vi bi gioi han trong vung than (body) cua tab do.
+            useRootNavigator: true,
             isScrollControlled: true,
             backgroundColor: Colors.transparent,
             builder: (_) => FractionallySizedBox(

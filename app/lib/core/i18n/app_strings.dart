@@ -683,6 +683,10 @@ class AppStrings {
       AppLanguage.vi: 'Assets Management',
       AppLanguage.en: 'Assets Management',
     },
+    'wealth_home_category_manage': {
+      AppLanguage.vi: 'Quản lý tài chính',
+      AppLanguage.en: 'Manage finances',
+    },
     'wealth_tab_expense': {
       AppLanguage.vi: 'Chi tiêu',
       AppLanguage.en: 'Expense',
@@ -1282,6 +1286,10 @@ class AppStrings {
     'fitness_library_title': {
       AppLanguage.vi: 'Thư viện bài tập',
       AppLanguage.en: 'Exercise library',
+    },
+    'fitness_home_category_workout': {
+      AppLanguage.vi: 'Luyện tập',
+      AppLanguage.en: 'Workout',
     },
     'fitness_categories_title': {
       AppLanguage.vi: 'Các bài tập',

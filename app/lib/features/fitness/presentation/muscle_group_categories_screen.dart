@@ -48,6 +48,7 @@ class _MuscleGroupCategoriesScreenState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             AppTopBar(
+              showBackButton: true,
               accentColor: AppColors.fitnessAccent,
               trailing: GestureDetector(
                 onTap: () => _openLibrary(),

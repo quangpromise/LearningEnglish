@@ -6,6 +6,7 @@ import '../../../core/navigation/app_top_bar.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../grammar/presentation/grammar_topics_screen.dart';
 import '../../pronunciation/presentation/phonics_lessons_screen.dart';
+import '../../pronunciation/presentation/pronunciation_screen.dart';
 import '../../quiz/presentation/quiz_category_screen.dart';
 import '../../reading/presentation/reading_library_screen.dart';
 import '../../story/data/story_data.dart';
@@ -59,6 +60,18 @@ class HomeScreen extends ConsumerWidget {
                     onTap: () => Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (_) => const PhonicsLessonsScreen(),
+                      ),
+                    ),
+                  ),
+                  _CategoryItemData(
+                    // "Luyen phat am" - truoc day 1 tab rieng o thanh Menu,
+                    // gio la 1 the trong nhom Nghe noi (giai phong cho thanh
+                    // nhac dai chiem giua thanh Menu, xem root_shell.dart).
+                    icon: Icons.mic_rounded,
+                    label: ref.tr('pron_title'),
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const PronunciationScreen(),
                       ),
                     ),
                   ),

@@ -44,14 +44,18 @@ class _AppSwitcherPillState extends ConsumerState<AppSwitcherPill> {
     final current = ref.read(currentAppSectionProvider);
     if (current == section) return;
     ref.read(currentAppSectionProvider.notifier).state = section;
-    Navigator.of(context).popUntil((r) => r.isFirst);
+    // rootNavigator: true - AppSwitcherPill nam trong AppTopBar, ben trong 1
+    // Navigator LONG cua tung tab (xem root_shell.dart/fitness_shell.dart/
+    // wealth_shell.dart, them de giu thanh Menu hien tren moi man hinh con).
+    // Chuyen "app" phai thoat het khoi Navigator long do, ve dung Navigator
+    // GOC cua toan app moi pop/push dung FitnessShell/WealthShell.
+    final rootNav = Navigator.of(context, rootNavigator: true);
+    rootNav.popUntil((r) => r.isFirst);
     switch (section) {
       case AppSection.fitness:
-        Navigator.of(context)
-            .push(MaterialPageRoute(builder: (_) => const FitnessShell()));
+        rootNav.push(MaterialPageRoute(builder: (_) => const FitnessShell()));
       case AppSection.wealth:
-        Navigator.of(context)
-            .push(MaterialPageRoute(builder: (_) => const WealthShell()));
+        rootNav.push(MaterialPageRoute(builder: (_) => const WealthShell()));
       case AppSection.learnEnglish:
         break;
     }

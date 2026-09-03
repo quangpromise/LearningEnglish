@@ -4,28 +4,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/navigation/app_top_bar.dart';
+import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../music_player/data/songs_data.dart';
 import 'pronunciation_practice.dart';
 
-/// Tab "Luyện phát âm" ở thanh điều hướng dưới - chọn NGẪU NHIÊN 1 câu lyric
-/// để luyện mỗi khi mở/quay lại tab, hoặc cho người dùng tự chọn qua bottom
-/// sheet "Đổi câu". Phần ghi âm/chấm điểm thật nằm ở [PronunciationPractice]
-/// (dùng lại được ở nơi khác, vd StoryScreen cho shadowing) - trước đây cả
-/// 2 việc gộp chung 1 State khiến `targetEn`/`targetVi` truyền vào qua
-/// constructor bị `initState()` ghi đè vô điều kiện, không widget nào bên
-/// ngoài `RootShell` truyền 2 tham số đó nên không ai gặp bug, nhưng bất kỳ
-/// use case mới nào (vd shadowing lồng trong bài học) đều sẽ dính - xem
-/// docs/architecture-multimedia-platform.md §A.5.
+/// Man "Luyen phat am" - truoc day la 1 tab co dinh o thanh Menu duoi (giu
+/// song qua IndexedStack), gio la 1 the truy cap nhanh trong nhom "Nghe noi"
+/// tren Home (push moi lan bam), nen MOI LAN MO la 1 instance HOAN TOAN MOI -
+/// khong con can theo doi "vua quay lai tab" (didUpdateWidget) nhu truoc,
+/// chi random 1 cau luyen trong initState() la du. Chon NGAU NHIEN 1 cau
+/// lyric de luyen, hoac cho nguoi dung tu chon qua bottom sheet "Doi cau".
+/// Phan ghi am/cham diem that nam o [PronunciationPractice] (dung lai duoc o
+/// noi khac, vd StoryScreen cho shadowing).
 class PronunciationScreen extends ConsumerStatefulWidget {
-  const PronunciationScreen({super.key, this.isActive = true});
-
-  /// True khi day dang la tab dang hien tren man hinh - RootShell giu man
-  /// nay song trong IndexedStack (khong bao gio dispose khi chuyen tab
-  /// khac), nen initState() chi chay 1 lan duy nhat luc mo app. Theo doi co
-  /// nay thay doi (qua didUpdateWidget) la cach duy nhat de biet "nguoi dung
-  /// vua quay lai tab nay" ma tu doi cau luyen moi.
-  final bool isActive;
+  const PronunciationScreen({super.key});
 
   @override
   ConsumerState<PronunciationScreen> createState() =>
@@ -36,31 +30,25 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
   late String _targetEn;
   late String _targetVi;
 
-  /// true trong luc PronunciationPractice dang ghi am/cham diem - chan
-  /// didUpdateWidget doi cau ngau nhien giua chung khi nguoi dung roi tab
-  /// nay (van dang ghi am o duoi IndexedStack) roi quay lai ngay.
-  bool _busy = false;
-
   @override
   void initState() {
     super.initState();
     final initial = _randomSongLine();
     _targetEn = initial.en;
     _targetVi = initial.vi;
+    // An FAB AI Voice Chat trong luc man nay mo - ca 2 deu dung mic, tranh
+    // xung dot quyen truy cap/xac nhan nham (xem ai_fab_overlay.dart).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ref.read(pronunciationTabActiveProvider.notifier).state = true;
+      }
+    });
   }
 
   @override
-  void didUpdateWidget(covariant PronunciationScreen oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    // Tab nay vua duoc kich hoat lai (truoc do dang o tab khac) - doi sang 1
-    // cau luyen ngau nhien khac.
-    if (!oldWidget.isActive && widget.isActive && !_busy) {
-      final next = _randomSongLine();
-      setState(() {
-        _targetEn = next.en;
-        _targetVi = next.vi;
-      });
-    }
+  void dispose() {
+    ref.read(pronunciationTabActiveProvider.notifier).state = false;
+    super.dispose();
   }
 
   _PracticeChoice _randomSongLine() {
@@ -96,22 +84,29 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
     return ScreenBackground(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
-        // SingleChildScrollView thay vi Column+Spacer nhu ban goc:
-        // PronunciationPractice dung mainAxisSize.min de dung lai duoc ca o
-        // day (man toan thoi gian, khong cuon) lan long trong StoryScreen
-        // (dang cuon san) - Spacer doi 1 Column co chieu cao GIOI HAN, se
-        // nem loi "kich thuoc vo han" trong ngu canh cuon. Center giu cam
-        // giac can giua doc nhu cu tren man hinh du cao.
-        child: Center(
-          child: SingleChildScrollView(
-            child: PronunciationPractice(
-              targetEn: _targetEn,
-              targetVi: _targetVi,
-              source: 'pronunciation_tab',
-              onChangeTarget: _pickPracticeSentence,
-              onBusyChanged: (busy) => _busy = busy,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const AppTopBar(showBackButton: true),
+            const SizedBox(height: 16),
+            // SingleChildScrollView thay vi Column+Spacer nhu ban goc:
+            // PronunciationPractice dung mainAxisSize.min de dung lai duoc
+            // ca o day (man toan thoi gian, khong cuon) lan long trong
+            // StoryScreen (dang cuon san) - Spacer doi 1 Column co chieu cao
+            // GIOI HAN, se nem loi "kich thuoc vo han" trong ngu canh cuon.
+            Expanded(
+              child: Center(
+                child: SingleChildScrollView(
+                  child: PronunciationPractice(
+                    targetEn: _targetEn,
+                    targetVi: _targetVi,
+                    source: 'pronunciation_tab',
+                    onChangeTarget: _pickPracticeSentence,
+                  ),
+                ),
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );

@@ -89,6 +89,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
     if (confirmed == true) {
       await ref.read(authRepositoryProvider).signOut();
+      // Man Ho so nay la 1 route (bottom sheet) DUNG TREN Navigator goc cua
+      // app - main.dart doi "home" tu RootShell sang SignInScreen ngay khi
+      // signedIn=false, nhung route bottom sheet nay khong tu dong mat vi no
+      // la 1 route rieng chong len tren, khong phai 1 phan cua subtree bi
+      // thay the. Phai tu tay pop het ve goc, neu khong popup Ho so se con
+      // hien de len tren man Dang nhap sau khi sign out.
+      if (context.mounted) Navigator.of(context).popUntil((r) => r.isFirst);
     }
   }
 

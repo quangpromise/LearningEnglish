@@ -27,11 +27,40 @@ class ProfileRepository {
 
   Future<MyProfile> fetchMyProfile() async {
     final userId = _supabase.auth.currentUser!.id;
-    final row = await _supabase
-        .from('profiles')
-        .select('email, display_name, username, avatar_url')
-        .eq('id', userId)
-        .single();
+    Map<String, dynamic> row;
+    try {
+      row = await _supabase
+          .from('profiles')
+          .select('email, display_name, username, avatar_url')
+          .eq('id', userId)
+          .single();
+    } on PostgrestException catch (e) {
+      // "JWT issued at future" (PGRST303) - CUNG 1 nguyen nhan da xac dinh o
+      // StatsRepository.fetchMyStats() (do lech dong ho THOANG QUA giua cac
+      // node Supabase, chi xay ra ngay sau khi cap nhat APK roi mo lai) -
+      // truoc day ham nay KHONG co retry nen khi dinh loi, avatar/ten se
+      // "?"/"..." VINH VIEN cho toi khi nguoi dung tu tat/mo lai app (khong
+      // co nut retry nao o AppTopBar de tu phuc hoi). Ap dung dung 1 pattern
+      // retry (doi dong ho dong bo -> thu lai -> lam moi session -> thu lan
+      // cuoi) da chung minh hoat dong ben StatsRepository.
+      if (e.code != 'PGRST303') rethrow;
+      await Future<void>.delayed(const Duration(seconds: 2));
+      try {
+        row = await _supabase
+            .from('profiles')
+            .select('email, display_name, username, avatar_url')
+            .eq('id', userId)
+            .single();
+      } on PostgrestException catch (e2) {
+        if (e2.code != 'PGRST303') rethrow;
+        await _supabase.auth.refreshSession();
+        row = await _supabase
+            .from('profiles')
+            .select('email, display_name, username, avatar_url')
+            .eq('id', userId)
+            .single();
+      }
+    }
     return MyProfile(
       email: row['email'] as String,
       displayName: row['display_name'] as String?,

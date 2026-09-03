@@ -8,7 +8,6 @@ import '../providers/app_providers.dart';
 import '../theme/app_theme.dart';
 import '../../features/music_player/presentation/center_media_button.dart';
 import '../../features/music_player/presentation/home_screen.dart';
-import '../../features/pronunciation/presentation/pronunciation_screen.dart';
 import '../../features/social/data/social_repository.dart';
 import '../../features/social/presentation/conversations_screen.dart';
 import '../../features/social/presentation/incoming_message_banner.dart';
@@ -34,36 +33,47 @@ class _RootShellState extends ConsumerState<RootShell>
   // cua app thay vi chiem 1 cho co dinh o thanh tab. Tin nhan truoc la 1 nut
   // rieng o header Home, gio chuyen thanh 1 tab canh Ho so cho de tim hon.
   //
-  // Khong con la list const: PronunciationScreen (Luyen phat am - ghi am +
-  // cham diem, KHAC voi Phonics o tren) can biet no co dang la tab dang
-  // active hay khong (qua [isActive]) de tu doi cau luyen moi moi lan nguoi
-  // dung quay lai tab nay - IndexedStack giu nguyen state cua tat ca tab,
-  // initState() chi chay 1 lan duy nhat luc mo app nen khong tu doi cau
-  // duoc neu khong co co che nay.
+  // "Luyen phat am" (PronunciationScreen) KHONG con la tab rieng - da chuyen
+  // thanh 1 the truy cap nhanh trong nhom "Nghe noi" tren Home (dung 1 cho
+  // MotORBIT voi Phonics), giai phong 1 vi tri o thanh Menu cho thanh nhac
+  // dai (CenterMediaButton) chiem khoang giua.
   //
   // Da bo tab Ho so - vao qua nut xo xuong canh avatar tren Home
   // (profile_quick_popup.dart) thay vi chiem 1 cho co dinh tren thanh tab.
+  //
+  // MOI TAB CO 1 Navigator RIENG (persistent-tab pattern) - man con (vd
+  // PhonicsLessonsScreen tu Home) duoc push VAO NAVIGATOR CUA TAB DO thay vi
+  // Navigator goc, nen Scaffold ngoai cung (voi bottomNavigationBar =
+  // thanh Menu + CenterMediaButton) KHONG BAO GIO bi che - dap ung yeu cau
+  // "Menu bar nen dai dien o TAT CA man hinh cua app". [NavigatorPopHandler]
+  // dam bao nut back he thong tra ve dung Navigator cua tab dang mo thay vi
+  // luon roi ve Navigator goc (mac dinh cua Flutter).
+  final _homeNavKey = GlobalKey<NavigatorState>();
+  final _messagesNavKey = GlobalKey<NavigatorState>();
+
+  List<GlobalKey<NavigatorState>> get _tabNavKeys => [
+    _homeNavKey,
+    _messagesNavKey,
+  ];
+
   List<Widget> _buildScreens() => [
-    const HomeScreen(),
-    PronunciationScreen(isActive: _tab == 1),
-    const ConversationsScreen(),
+    Navigator(
+      key: _homeNavKey,
+      onGenerateRoute: (_) =>
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+    ),
+    Navigator(
+      key: _messagesNavKey,
+      onGenerateRoute: (_) =>
+          MaterialPageRoute(builder: (_) => const ConversationsScreen()),
+    ),
   ];
 
-  static const _icons = [
-    Icons.home_rounded,
-    Icons.mic_rounded,
-    Icons.chat_bubble_rounded,
-  ];
+  static const _icons = [Icons.home_rounded, Icons.chat_bubble_rounded];
 
-  static const _messagesTabIndex = 2;
+  static const _messagesTabIndex = 1;
 
-  static const _pronunciationTabIndex = 1;
-
-  void _setTab(int i) {
-    setState(() => _tab = i);
-    ref.read(pronunciationTabActiveProvider.notifier).state =
-        i == _pronunciationTabIndex;
-  }
+  void _setTab(int i) => setState(() => _tab = i);
 
   Timer? _updateCheckTimer;
   Timer? _presenceTimer;
@@ -140,118 +150,132 @@ class _RootShellState extends ConsumerState<RootShell>
 
     return Scaffold(
       backgroundColor: AppColors.bgTop,
-      body: IndexedStack(index: _tab, children: _buildScreens()),
-      bottomNavigationBar: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // MiniPlayer rieng cua RootShell da bo - thay bang
-          // CenterMediaButton noi giua thanh menu (xem duoi), khong con la
-          // 1 the rieng chong len toan man hinh.
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-            child: Stack(
-              clipBehavior: Clip.none,
-              alignment: Alignment.topCenter,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 10,
+      body: NavigatorPopHandler(
+        onPopWithResult: (result) {
+          final nav = _tabNavKeys[_tab].currentState;
+          if (nav != null && nav.canPop()) nav.pop(result);
+        },
+        child: IndexedStack(index: _tab, children: _buildScreens()),
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          decoration: BoxDecoration(
+            color: const Color(0xD90A0E1C),
+            border: Border.all(color: AppColors.glassBorder),
+            borderRadius: BorderRadius.circular(999),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.5),
+                blurRadius: 40,
+                offset: const Offset(0, 20),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              _TabIcon(
+                icon: _icons[0],
+                active: _tab == 0,
+                onTap: () => _setTab(0),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: const CenterMediaButton(accentColor: AppColors.blue),
+              ),
+              const SizedBox(width: 6),
+              Builder(
+                builder: (context) {
+                  final unread =
+                      ref.watch(unreadMessageCountProvider).valueOrNull ?? 0;
+                  return _TabIcon(
+                    icon: _icons[_messagesTabIndex],
+                    active: _tab == _messagesTabIndex,
+                    badge: unread,
+                    onTap: () => _setTab(_messagesTabIndex),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 1 nut icon tab (Home/Tin nhan) o 2 dau thanh Menu - tach rieng thanh
+/// widget de con lai o giua danh cho CenterMediaButton (Expanded).
+class _TabIcon extends StatelessWidget {
+  const _TabIcon({
+    required this.icon,
+    required this.active,
+    required this.onTap,
+    this.badge = 0,
+  });
+  final IconData icon;
+  final bool active;
+  final int badge;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 44,
+        height: 44,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: active
+              ? Colors.white.withValues(alpha: 0.12)
+              : Colors.transparent,
+          border: active
+              ? Border.all(color: Colors.white.withValues(alpha: 0.35))
+              : null,
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Icon(
+              icon,
+              size: 22,
+              color: active ? Colors.white : AppColors.textMuted,
+            ),
+            if (badge > 0)
+              Positioned(
+                right: -4,
+                top: -2,
+                child: Container(
+                  padding: const EdgeInsets.all(3),
+                  constraints: const BoxConstraints(
+                    minWidth: 15,
+                    minHeight: 15,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xD90A0E1C),
-                    border: Border.all(color: AppColors.glassBorder),
-                    borderRadius: BorderRadius.circular(999),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.5),
-                        blurRadius: 40,
-                        offset: const Offset(0, 20),
-                      ),
-                    ],
+                    color: AppColors.pink,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: const Color(0xD90A0E1C),
+                      width: 2,
+                    ),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: List.generate(_icons.length, (i) {
-                      final active = i == _tab;
-                      final unread = i == _messagesTabIndex
-                          ? ref.watch(unreadMessageCountProvider).valueOrNull ??
-                                0
-                          : 0;
-                      return GestureDetector(
-                        onTap: () => _setTab(i),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          curve: Curves.easeOut,
-                          width: active ? 76 : 44,
-                          height: 44,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: active
-                                ? Colors.white.withValues(alpha: 0.12)
-                                : Colors.transparent,
-                            border: active
-                                ? Border.all(
-                                    color: Colors.white.withValues(alpha: 0.35),
-                                  )
-                                : null,
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                          child: Stack(
-                            clipBehavior: Clip.none,
-                            children: [
-                              Icon(
-                                _icons[i],
-                                size: 22,
-                                color: active
-                                    ? Colors.white
-                                    : AppColors.textMuted,
-                              ),
-                              if (unread > 0)
-                                Positioned(
-                                  right: -4,
-                                  top: -2,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(3),
-                                    constraints: const BoxConstraints(
-                                      minWidth: 15,
-                                      minHeight: 15,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.pink,
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: const Color(0xD90A0E1C),
-                                        width: 2,
-                                      ),
-                                    ),
-                                    child: Text(
-                                      unread > 9 ? '9+' : '$unread',
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 8,
-                                        fontWeight: FontWeight.w800,
-                                        height: 1,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                      );
-                    }),
+                  child: Text(
+                    badge > 9 ? '9+' : '$badge',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 8,
+                      fontWeight: FontWeight.w800,
+                      height: 1,
+                    ),
                   ),
                 ),
-                Transform.translate(
-                  offset: const Offset(0, -34),
-                  child: const CenterMediaButton(),
-                ),
-              ],
-            ),
-          ),
-        ],
+              ),
+          ],
+        ),
       ),
     );
   }

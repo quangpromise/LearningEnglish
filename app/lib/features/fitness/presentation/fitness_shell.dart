@@ -5,13 +5,18 @@ import '../../../core/navigation/mini_app_bottom_nav.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../social/presentation/conversations_screen.dart';
-import 'muscle_group_categories_screen.dart';
+import 'fitness_home_screen.dart';
 
 /// Man hinh goc cua khu vuc Fitness - vao tu app-switcher tren Home. Co
-/// thanh menu duoi rieng (giong RootShell nhung mau cam) voi 2 tab: Bai tap
-/// (MuscleGroupCategoriesScreen) va Tin nhan (dung CHUNG
-/// [ConversationsScreen] voi 2 khu vuc con lai). KHONG co tab/nut back rieng
-/// - Ho so mo qua avatar tren AppTopBar, thoat khoi Fitness qua app-switcher.
+/// thanh menu duoi rieng (giong RootShell nhung mau cam) voi 2 tab: Home
+/// (FitnessHomeScreen, gom danh muc tinh nang dang box - xem file do) va Tin
+/// nhan (dung CHUNG [ConversationsScreen] voi 2 khu vuc con lai). KHONG co
+/// tab/nut back rieng - Ho so mo qua avatar tren AppTopBar, thoat khoi
+/// Fitness qua app-switcher.
+///
+/// MOI TAB CO 1 Navigator RIENG (giong RootShell) de man con (vd
+/// ExerciseLibraryScreen tu FitnessHomeScreen) khong che mat thanh Menu -
+/// dap ung yeu cau "Menu bar dai dien o TAT CA man hinh cua app".
 class FitnessShell extends ConsumerStatefulWidget {
   const FitnessShell({super.key});
 
@@ -22,6 +27,14 @@ class FitnessShell extends ConsumerStatefulWidget {
 class _FitnessShellState extends ConsumerState<FitnessShell> {
   int _tab = 0;
   late final DateTime _openedAt;
+
+  final _homeNavKey = GlobalKey<NavigatorState>();
+  final _messagesNavKey = GlobalKey<NavigatorState>();
+
+  List<GlobalKey<NavigatorState>> get _tabNavKeys => [
+    _homeNavKey,
+    _messagesNavKey,
+  ];
 
   @override
   void initState() {
@@ -60,9 +73,27 @@ class _FitnessShellState extends ConsumerState<FitnessShell> {
     final unread = ref.watch(unreadMessageCountProvider).valueOrNull ?? 0;
     return Scaffold(
       backgroundColor: AppColors.bgTop,
-      body: IndexedStack(
-        index: _tab,
-        children: const [MuscleGroupCategoriesScreen(), ConversationsScreen()],
+      body: NavigatorPopHandler(
+        onPopWithResult: (result) {
+          final nav = _tabNavKeys[_tab].currentState;
+          if (nav != null && nav.canPop()) nav.pop(result);
+        },
+        child: IndexedStack(
+          index: _tab,
+          children: [
+            Navigator(
+              key: _homeNavKey,
+              onGenerateRoute: (_) =>
+                  MaterialPageRoute(builder: (_) => const FitnessHomeScreen()),
+            ),
+            Navigator(
+              key: _messagesNavKey,
+              onGenerateRoute: (_) => MaterialPageRoute(
+                builder: (_) => const ConversationsScreen(),
+              ),
+            ),
+          ],
+        ),
       ),
       bottomNavigationBar: MiniAppBottomNav(
         icons: _icons,

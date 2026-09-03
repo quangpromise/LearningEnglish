@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/navigation/app_top_bar.dart';
 import '../../../core/navigation/mini_app_bottom_nav.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../social/presentation/conversations_screen.dart';
-import 'wealth_expense_tab.dart';
-import 'wealth_income_tab.dart';
-import 'wealth_investments_tab.dart';
+import 'wealth_home_screen.dart';
 
-/// Man goc Quan ly tai san (Wealth Management), Phase 1: Chi tieu/Thu nhap +
-/// Dau tu (crypto + co phieu quoc te) + Tin nhan (dung CHUNG
-/// [ConversationsScreen] voi 2 khu vuc con lai). KHONG co tab/nut back rieng
-/// - Ho so mo qua avatar tren AppTopBar (giong moi man khac), thoat khoi
-/// Wealth qua app-switcher (chon "Hoc Tieng Anh").
+/// Man goc Quan ly tai san (Wealth Management) - 2 tab: Home
+/// (WealthHomeScreen, gom Chi tieu/Thu nhap/Dau tu thanh cac the danh muc -
+/// xem file do) va Tin nhan (dung CHUNG [ConversationsScreen] voi 2 khu vuc
+/// con lai). KHONG co tab/nut back rieng - Ho so mo qua avatar tren
+/// AppTopBar, thoat khoi Wealth qua app-switcher.
+///
+/// MOI TAB CO 1 Navigator RIENG (giong RootShell/FitnessShell) de man con
+/// (vd WealthDetailScreen tu WealthHomeScreen) khong che mat thanh Menu.
 class WealthShell extends ConsumerStatefulWidget {
   const WealthShell({super.key});
 
@@ -24,6 +24,14 @@ class WealthShell extends ConsumerStatefulWidget {
 
 class _WealthShellState extends ConsumerState<WealthShell> {
   int _tab = 0;
+
+  final _homeNavKey = GlobalKey<NavigatorState>();
+  final _messagesNavKey = GlobalKey<NavigatorState>();
+
+  List<GlobalKey<NavigatorState>> get _tabNavKeys => [
+    _homeNavKey,
+    _messagesNavKey,
+  ];
 
   @override
   void dispose() {
@@ -38,46 +46,42 @@ class _WealthShellState extends ConsumerState<WealthShell> {
   }
 
   static const _icons = [
-    Icons.receipt_long_rounded,
-    Icons.savings_rounded,
-    Icons.trending_up_rounded,
+    Icons.account_balance_wallet_rounded,
     Icons.chat_bubble_rounded,
   ];
-
-  Widget _buildBody() {
-    if (_tab == 3) return const ConversationsScreen();
-    return ScreenBackground(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const AppTopBar(accentColor: AppColors.wealthAccent),
-            const SizedBox(height: 16),
-            Expanded(
-              child: switch (_tab) {
-                0 => const WealthExpenseTab(),
-                1 => const WealthIncomeTab(),
-                _ => const WealthInvestmentsTab(),
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
     final unread = ref.watch(unreadMessageCountProvider).valueOrNull ?? 0;
     return Scaffold(
       backgroundColor: AppColors.bgTop,
-      body: _buildBody(),
+      body: NavigatorPopHandler(
+        onPopWithResult: (result) {
+          final nav = _tabNavKeys[_tab].currentState;
+          if (nav != null && nav.canPop()) nav.pop(result);
+        },
+        child: IndexedStack(
+          index: _tab,
+          children: [
+            Navigator(
+              key: _homeNavKey,
+              onGenerateRoute: (_) =>
+                  MaterialPageRoute(builder: (_) => const WealthHomeScreen()),
+            ),
+            Navigator(
+              key: _messagesNavKey,
+              onGenerateRoute: (_) => MaterialPageRoute(
+                builder: (_) => const ConversationsScreen(),
+              ),
+            ),
+          ],
+        ),
+      ),
       bottomNavigationBar: MiniAppBottomNav(
         icons: _icons,
         currentIndex: _tab,
         accentColor: AppColors.wealthAccent,
-        badgeCounts: [0, 0, 0, unread],
+        badgeCounts: [0, unread],
         onTap: (i) => setState(() => _tab = i),
       ),
     );
