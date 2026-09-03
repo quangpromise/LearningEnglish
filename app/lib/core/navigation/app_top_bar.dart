@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../features/profile/presentation/profile_quick_popup.dart';
+import '../../features/profile/presentation/profile_screen.dart';
 import '../i18n/app_strings.dart';
 import '../providers/app_providers.dart';
 import '../theme/app_theme.dart';
@@ -54,7 +54,8 @@ class AppTopBar extends ConsumerWidget {
           const SizedBox(width: 12),
         ],
         GestureDetector(
-          onTap: () => showProfileQuickPopup(context),
+          onTap: () => Navigator.of(context)
+              .push(MaterialPageRoute(builder: (_) => const ProfileScreen())),
           child: Stack(
             clipBehavior: Clip.none,
             children: [
@@ -75,8 +76,9 @@ class AppTopBar extends ConsumerWidget {
               ),
               // Nut xo xuong canh avatar - chi de BAO HIEU co the bam (cung
               // 1 vung cham voi avatar, KHONG phai 1 GestureDetector rieng)
-              // - bam vao avatar la mo thang popup ho so, khong qua buoc
-              // trung gian nao khac.
+              // - bam vao avatar mo THANG man Ho so day du (khong qua popup
+              // trung gian nua, theo yeu cau bam 1 phat toi luon thay vi
+              // phai bam them "Xem tat ca cai dat").
               Positioned(
                 right: -2,
                 bottom: -2,
