@@ -7,6 +7,12 @@ import '../i18n/app_strings.dart';
 import '../providers/app_providers.dart';
 import '../theme/app_theme.dart';
 
+/// Logo that nguoi dung cung cap dung lam icon dai dien cho Fitness/Hoc
+/// Tieng Anh o pill + dropdown chuyen doi app (Wealth van dung Material
+/// icon vi chua co logo rieng).
+const kFitnessLogoAsset = 'assets/fitness/fitness_logo.jpg';
+const kEnglishLogoAsset = 'assets/home/english_logo.jpg';
+
 /// Pill "chuyen doi ung dung" nam duoi loi chao (dat trong [AppTopBar],
 /// hien tren CA 3 khu vuc: Hoc Tieng Anh/Fitness/Wealth) - bam vao XO
 /// DANH SACH NGAY TAI CHO (dropdown noi, khong mo bottom sheet rieng) de
@@ -107,19 +113,22 @@ class _AppSwitcherPillState extends ConsumerState<AppSwitcherPill> {
     // (currentAppSectionProvider) thay vi 2 co bool rieng de (da gay loi
     // desync khi chuyen doi qua lai nhieu lan, xem _select() ben tren).
     final section = ref.watch(currentAppSectionProvider);
-    final (icon, color, labelKey) = switch (section) {
+    final (icon, image, color, labelKey) = switch (section) {
       AppSection.fitness => (
-        Icons.fitness_center_rounded,
+        null,
+        kFitnessLogoAsset,
         AppColors.fitnessAccent,
         'app_switcher_fitness',
       ),
       AppSection.wealth => (
         Icons.account_balance_wallet_rounded,
+        null,
         AppColors.wealthAccent,
         'app_switcher_wealth',
       ),
       AppSection.learnEnglish => (
-        Icons.school_rounded,
+        null,
+        kEnglishLogoAsset,
         AppColors.blue,
         'app_switcher_learn_english',
       ),
@@ -141,7 +150,7 @@ class _AppSwitcherPillState extends ConsumerState<AppSwitcherPill> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 13, color: color),
+              _AppIcon(icon: icon, imageAsset: image, color: color, size: 15),
               const SizedBox(width: 5),
               Flexible(
                 child: Text(
@@ -197,7 +206,7 @@ class _DropdownPanel extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             _AppSwitcherTile(
-              icon: Icons.school_rounded,
+              imageAsset: kEnglishLogoAsset,
               color: AppColors.blue,
               label: ref.tr('app_switcher_learn_english'),
               active: section == AppSection.learnEnglish,
@@ -205,7 +214,7 @@ class _DropdownPanel extends ConsumerWidget {
             ),
             const SizedBox(height: 6),
             _AppSwitcherTile(
-              icon: Icons.fitness_center_rounded,
+              imageAsset: kFitnessLogoAsset,
               color: AppColors.fitnessAccent,
               label: ref.tr('app_switcher_fitness'),
               active: section == AppSection.fitness,
@@ -228,13 +237,15 @@ class _DropdownPanel extends ConsumerWidget {
 
 class _AppSwitcherTile extends ConsumerWidget {
   const _AppSwitcherTile({
-    required this.icon,
+    this.icon,
+    this.imageAsset,
     required this.color,
     required this.label,
     required this.active,
     required this.onTap,
   });
-  final IconData icon;
+  final IconData? icon;
+  final String? imageAsset;
   final Color color;
   final String label;
   final bool active;
@@ -252,11 +263,17 @@ class _AppSwitcherTile extends ConsumerWidget {
             Container(
               width: 30,
               height: 30,
+              alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.18),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(icon, size: 15, color: color),
+              child: _AppIcon(
+                icon: icon,
+                imageAsset: imageAsset,
+                color: color,
+                size: 22,
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -271,6 +288,45 @@ class _AppSwitcherTile extends ConsumerWidget {
         ),
       ),
     );
+  }
+}
+
+/// 1 icon dai dien cho "app" trong pill/dropdown chuyen doi - hoac 1
+/// Material icon (Wealth, chua co logo rieng) hoac 1 logo anh that (Fitness/
+/// Hoc Tieng Anh, do nguoi dung cung cap) duoc TO LAI mau bang
+/// BlendMode.color: lay hue/sac (mau) tu [color] (accent cua app do) nhung
+/// giu nguyen do sang-toi (luminosity) cua anh goc - vua dam bao dong bo
+/// tong mau voi phan con lai cua app, vua khong lam mat het chi tiet cua
+/// logo nhu khi to phang 1 mau duy nhat.
+class _AppIcon extends StatelessWidget {
+  const _AppIcon({
+    this.icon,
+    this.imageAsset,
+    required this.color,
+    required this.size,
+  });
+  final IconData? icon;
+  final String? imageAsset;
+  final Color color;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    if (imageAsset != null) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(size / 2),
+        child: ColorFiltered(
+          colorFilter: ColorFilter.mode(color, BlendMode.color),
+          child: Image.asset(
+            imageAsset!,
+            width: size,
+            height: size,
+            fit: BoxFit.cover,
+          ),
+        ),
+      );
+    }
+    return Icon(icon, size: size, color: color);
   }
 }
 

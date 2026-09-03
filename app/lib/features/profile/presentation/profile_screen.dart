@@ -24,9 +24,9 @@ class ProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
-  // Tab Settings o vi tri 0 (trai), Activity o vi tri 1 (phai) - doi cho
-  // nhau theo yeu cau, nhung van mo mac dinh o Activity (index 1) nhu truoc.
-  int _tab = 1;
+  // Tab Settings o vi tri 0 (trai), Activity o vi tri 1 (phai) - mac dinh
+  // mo o Settings theo yeu cau.
+  int _tab = 0;
 
   /// Kiem tra cap nhat thu cong, hien chi tiet TUNG BUOC thay vi im lang -
   /// dung khi popup tu dong (showUpdateDialogIfAvailable, chay ngam luc mo
@@ -258,6 +258,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     // hoat dong rieng de hien); Wealth chua co so lieu hoat dong nao nen
     // giu 1 danh sach don (khong tab) giong truoc.
     final showTabs = isEnglishContext || isFitness;
+    // Mau nhan (avatar, tab dang chon...) doi theo "app" dang mo - dong bo
+    // voi mau chu dao cua tung khu vuc thay vi luon co dinh 1 mau (giong
+    // cach lam voi nut noi AI Voice Chat).
+    final accentGradient = switch (section) {
+      AppSection.fitness => AppColors.fitnessAccentGradient,
+      AppSection.wealth => AppColors.wealthAccentGradient,
+      AppSection.learnEnglish => AppColors.accentGradient,
+    };
     return ScreenBackground(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
@@ -304,7 +312,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         width: 60,
                         height: 60,
                         decoration: BoxDecoration(
-                          gradient: AppColors.accentGradient,
+                          gradient: accentGradient,
                           shape: BoxShape.circle,
                           image: profileAsync.valueOrNull?.avatarUrl != null
                               ? DecorationImage(
@@ -395,6 +403,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               _ProfileTabBar(
                 tab: _tab,
                 onChanged: (i) => setState(() => _tab = i),
+                accentGradient: accentGradient,
               ),
               const SizedBox(height: 14),
             ],
@@ -501,6 +510,39 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ? ref.watch(myStatsProvider).whenData((s) => s.weeklyActivity)
               : ref.watch(fitnessWeeklyActivityProvider),
         ),
+        if (isEnglishContext) ...[
+          const SizedBox(height: 14),
+          GestureDetector(
+            onTap: () => _confirmResetStats(context, ref),
+            child: GlowBox(
+              borderRadius: 20,
+              child: Row(
+                children: [
+                  Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color: AppColors.amber.withValues(alpha: 0.18),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.restart_alt_rounded,
+                      size: 16,
+                      color: AppColors.amber,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Text(
+                      ref.tr('profile_reset_stats'),
+                      style: AppTextStyles.body(weight: FontWeight.w800),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ],
     );
   }
@@ -727,39 +769,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
         ),
         const SizedBox(height: 14),
-        if (isEnglishContext) ...[
-          GestureDetector(
-            onTap: () => _confirmResetStats(context, ref),
-            child: GlowBox(
-              borderRadius: 20,
-              child: Row(
-                children: [
-                  Container(
-                    width: 34,
-                    height: 34,
-                    decoration: BoxDecoration(
-                      color: AppColors.amber.withValues(alpha: 0.18),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.restart_alt_rounded,
-                      size: 16,
-                      color: AppColors.amber,
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Text(
-                      ref.tr('profile_reset_stats'),
-                      style: AppTextStyles.body(weight: FontWeight.w800),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 14),
-        ],
         GestureDetector(
           onTap: () => _confirmSignOut(context, ref),
           child: GlowBox(
@@ -833,9 +842,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 }
 
 class _ProfileTabBar extends ConsumerWidget {
-  const _ProfileTabBar({required this.tab, required this.onChanged});
+  const _ProfileTabBar({
+    required this.tab,
+    required this.onChanged,
+    required this.accentGradient,
+  });
   final int tab;
   final ValueChanged<int> onChanged;
+  final Gradient accentGradient;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -859,6 +873,7 @@ class _ProfileTabBar extends ConsumerWidget {
             child: _ProfileTabButton(
               label: ref.tr('profile_tab_settings'),
               selected: tab == 0,
+              accentGradient: accentGradient,
               onTap: () => onChanged(0),
             ),
           ),
@@ -866,6 +881,7 @@ class _ProfileTabBar extends ConsumerWidget {
             child: _ProfileTabButton(
               label: ref.tr('profile_tab_activity'),
               selected: tab == 1,
+              accentGradient: accentGradient,
               onTap: () => onChanged(1),
             ),
           ),
@@ -880,10 +896,12 @@ class _ProfileTabButton extends StatelessWidget {
     required this.label,
     required this.selected,
     required this.onTap,
+    required this.accentGradient,
   });
   final String label;
   final bool selected;
   final VoidCallback onTap;
+  final Gradient accentGradient;
 
   @override
   Widget build(BuildContext context) {
@@ -893,7 +911,7 @@ class _ProfileTabButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 10),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          gradient: selected ? AppColors.accentGradient : null,
+          gradient: selected ? accentGradient : null,
           borderRadius: BorderRadius.circular(999),
         ),
         child: Text(

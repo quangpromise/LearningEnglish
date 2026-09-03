@@ -128,6 +128,21 @@ class _AiFabOverlayState extends ConsumerState<AiFabOverlay>
     // 2 khu vuc nay (theo yeu cau) - CHI an o tab Luyen phat am (co mic
     // rieng, tranh chong nhau) va o chinh man AI Voice Chat.
 
+    // Mau nut doi theo "app" dang mo (Hoc Tieng Anh/Fitness/Wealth) - dong
+    // bo voi mau chu dao cua tung khu vuc thay vi luon co dinh 1 mau.
+    final section = ref.watch(currentAppSectionProvider);
+    final (gradient, glowColor) = switch (section) {
+      AppSection.fitness => (
+        AppColors.fitnessAccentGradient,
+        AppColors.fitnessAccent,
+      ),
+      AppSection.wealth => (
+        AppColors.wealthAccentGradient,
+        AppColors.wealthAccent,
+      ),
+      AppSection.learnEnglish => (AppColors.accentGradient, AppColors.purple),
+    };
+
     return ValueListenableBuilder<String?>(
       valueListenable: topRouteObserver.currentRouteName,
       builder: (context, routeName, _) {
@@ -159,11 +174,11 @@ class _AiFabOverlayState extends ConsumerState<AiFabOverlay>
                     width: _kFabSize,
                     height: _kFabSize,
                     decoration: BoxDecoration(
-                      gradient: AppColors.accentGradient,
+                      gradient: gradient,
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.purple.withValues(alpha: glow),
+                          color: glowColor.withValues(alpha: glow),
                           blurRadius: 22,
                           spreadRadius: 2,
                         ),
