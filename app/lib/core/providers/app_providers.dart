@@ -10,6 +10,7 @@ import '../../features/quiz/data/leaderboard_repository.dart';
 import '../../features/rewards/data/rewards_repository.dart';
 import '../../features/social/data/social_repository.dart';
 import '../../features/stats/data/stats_repository.dart';
+import '../../features/story/data/lesson_progress_repository.dart';
 import '../i18n/app_language.dart';
 
 final supabaseClientProvider = Provider<SupabaseClient>(
@@ -64,6 +65,19 @@ final statsRepositoryProvider = Provider<StatsRepository>(
 final myStatsProvider = FutureProvider.autoDispose(
   (ref) => ref.watch(statsRepositoryProvider).fetchMyStats(),
 );
+
+final lessonProgressRepositoryProvider = Provider<LessonProgressRepository>(
+  (ref) => LessonProgressRepository(ref.watch(supabaseClientProvider)),
+);
+
+/// Đã hoàn thành 1 bài học (vd micro-story) chưa - key theo `lessonId`. Gọi
+/// `ref.invalidate(lessonCompletedProvider(lessonId))` sau khi đánh dấu hoàn
+/// thành để cập nhật badge trên UI ngay.
+final lessonCompletedProvider = FutureProvider.autoDispose
+    .family<bool, String>(
+      (ref, lessonId) =>
+          ref.watch(lessonProgressRepositoryProvider).isCompleted(lessonId),
+    );
 
 final leaderboardRepositoryProvider = Provider<LeaderboardRepository>(
   (ref) => LeaderboardRepository(ref.watch(supabaseClientProvider)),

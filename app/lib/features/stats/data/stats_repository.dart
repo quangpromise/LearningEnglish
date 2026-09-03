@@ -125,12 +125,17 @@ class StatsRepository {
     }, onConflict: 'user_id,song_title');
   }
 
-  Future<void> recordPronunciationScore(int score) async {
+  /// [source] phân biệt luyện từ tab "Luyện phát âm" (`pronunciation_tab`)
+  /// với shadowing lồng trong 1 bài học (vd `story:<id>`, xem migration
+  /// 0027_pronunciation_attempt_source.sql) - chỉ để phân tích sau này,
+  /// không ảnh hưởng điểm hay thống kê hiển thị.
+  Future<void> recordPronunciationScore(int score, {String? source}) async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) return;
     await _supabase.from('user_pronunciation_attempts').insert({
       'user_id': userId,
       'score': score,
+      'source': source,
     });
   }
 

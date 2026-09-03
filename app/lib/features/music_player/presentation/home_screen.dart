@@ -7,6 +7,8 @@ import '../../../core/theme/app_theme.dart';
 import '../../grammar/presentation/grammar_topics_screen.dart';
 import '../../pronunciation/presentation/phonics_lessons_screen.dart';
 import '../../social/presentation/conversations_screen.dart';
+import '../../story/data/story_data.dart';
+import '../../story/presentation/story_screen.dart';
 import '../../translation/presentation/dictionary_popup.dart';
 import '../../vocabulary/presentation/vocabulary_topics_screen.dart';
 import 'music_home_screen.dart';
@@ -27,78 +29,107 @@ class HomeScreen extends ConsumerWidget {
     return ScreenBackground(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(ref.tr('home_greeting'), style: AppTextStyles.muted()),
-                    Text(displayName, style: AppTextStyles.heading(size: 20)),
-                  ],
-                ),
-                Row(
-                  children: [
-                    const _MessagesButton(),
-                    const SizedBox(width: 10),
-                    GestureDetector(
-                      onTap: () => showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true,
-                        backgroundColor: Colors.transparent,
-                        builder: (_) => const DictionaryPopup(),
+        // SingleChildScrollView: them the "Chuyen ngan" lam 5 the truy cap
+        // nhanh (truoc la 4) - boc cuon phong khi may man hinh thap/chu to
+        // (accessibility) khien noi dung tran, thay vi gia dinh luon vua 1
+        // man hinh nhu truoc.
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        ref.tr('home_greeting'),
+                        style: AppTextStyles.muted(),
                       ),
-                      child: Tooltip(
-                        message: ref.tr('home_dictionary_tooltip'),
-                        child: const _IconCircle(icon: Icons.menu_book_rounded),
+                      Text(
+                        displayName,
+                        style: AppTextStyles.heading(size: 20),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      const _MessagesButton(),
+                      const SizedBox(width: 10),
+                      GestureDetector(
+                        onTap: () => showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (_) => const DictionaryPopup(),
+                        ),
+                        child: Tooltip(
+                          message: ref.tr('home_dictionary_tooltip'),
+                          child: const _IconCircle(
+                            icon: Icons.menu_book_rounded,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              _QuickAccessTile(
+                icon: Icons.style_rounded,
+                title: ref.tr('home_vocabulary_quick_title'),
+                subtitle: ref.tr('home_vocabulary_quick_subtitle'),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const VocabularyTopicsScreen(),
+                  ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            _QuickAccessTile(
-              icon: Icons.style_rounded,
-              title: ref.tr('home_vocabulary_quick_title'),
-              subtitle: ref.tr('home_vocabulary_quick_subtitle'),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const VocabularyTopicsScreen(),
+              ),
+              const SizedBox(height: 12),
+              _QuickAccessTile(
+                icon: Icons.menu_book_rounded,
+                title: ref.tr('grammar_topics_title'),
+                subtitle: ref.tr('grammar_topics_quick_subtitle'),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const GrammarTopicsScreen(),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 12),
-            _QuickAccessTile(
-              icon: Icons.menu_book_rounded,
-              title: ref.tr('grammar_topics_title'),
-              subtitle: ref.tr('grammar_topics_quick_subtitle'),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const GrammarTopicsScreen()),
+              const SizedBox(height: 12),
+              _QuickAccessTile(
+                icon: Icons.record_voice_over_rounded,
+                title: ref.tr('phonics_title'),
+                subtitle: ref.tr('phonics_quick_subtitle'),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const PhonicsLessonsScreen(),
+                  ),
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-            _QuickAccessTile(
-              icon: Icons.record_voice_over_rounded,
-              title: ref.tr('phonics_title'),
-              subtitle: ref.tr('phonics_quick_subtitle'),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const PhonicsLessonsScreen()),
+              const SizedBox(height: 12),
+              _QuickAccessTile(
+                icon: Icons.library_music_rounded,
+                title: ref.tr('home_music_quick_title'),
+                subtitle: ref.tr('home_music_quick_subtitle'),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const MusicHomeScreen()),
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-            _QuickAccessTile(
-              icon: Icons.library_music_rounded,
-              title: ref.tr('home_music_quick_title'),
-              subtitle: ref.tr('home_music_quick_subtitle'),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const MusicHomeScreen()),
+              const SizedBox(height: 12),
+              _QuickAccessTile(
+                icon: Icons.auto_stories_rounded,
+                title: ref.tr('home_story_quick_title'),
+                subtitle: ref.tr('home_story_quick_subtitle'),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => StoryScreen(story: kStories.first),
+                  ),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
