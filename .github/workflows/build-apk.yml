@@ -41,6 +41,26 @@ jobs:
         with:
           channel: stable
 
+      # Cache pub + Gradle giua cac lan chay - khong doi ket qua build, chi
+      # tranh tai lai dependency (pub packages + Gradle/Android SDK
+      # component) tu dau moi lan, giup rut ngan dang ke thoi gian build khi
+      # pubspec.yaml/gradle files khong doi so voi lan chay truoc.
+      - name: Cache pub packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: pub-${{ runner.os }}-${{ hashFiles('app/pubspec.lock') }}
+          restore-keys: pub-${{ runner.os }}-
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('app/android/**/*.gradle*', 'app/android/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: gradle-${{ runner.os }}-
+
       - name: Install dependencies
         run: flutter pub get
 
