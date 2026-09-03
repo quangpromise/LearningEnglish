@@ -24,7 +24,9 @@ class ProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
-  int _tab = 0;
+  // Tab Settings o vi tri 0 (trai), Activity o vi tri 1 (phai) - doi cho
+  // nhau theo yeu cau, nhung van mo mac dinh o Activity (index 1) nhu truoc.
+  int _tab = 1;
 
   /// Kiem tra cap nhat thu cong, hien chi tiet TUNG BUOC thay vi im lang -
   /// dung khi popup tu dong (showUpdateDialogIfAvailable, chay ngam luc mo
@@ -400,12 +402,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               child: !showTabs
                   ? _buildSettingsTab(isEnglishContext: false)
                   : (_tab == 0
-                        ? _buildActivityTab(
+                        ? _buildSettingsTab(isEnglishContext: isEnglishContext)
+                        : _buildActivityTab(
                             isEnglishContext: isEnglishContext,
                             isFitness: isFitness,
-                          )
-                        : _buildSettingsTab(
-                            isEnglishContext: isEnglishContext,
                           )),
             ),
           ],
@@ -857,14 +857,14 @@ class _ProfileTabBar extends ConsumerWidget {
         children: [
           Expanded(
             child: _ProfileTabButton(
-              label: ref.tr('profile_tab_activity'),
+              label: ref.tr('profile_tab_settings'),
               selected: tab == 0,
               onTap: () => onChanged(0),
             ),
           ),
           Expanded(
             child: _ProfileTabButton(
-              label: ref.tr('profile_tab_settings'),
+              label: ref.tr('profile_tab_activity'),
               selected: tab == 1,
               onTap: () => onChanged(1),
             ),
