@@ -22,19 +22,10 @@ class MuscleGroupCategoriesScreen extends ConsumerStatefulWidget {
 
 class _MuscleGroupCategoriesScreenState
     extends ConsumerState<MuscleGroupCategoriesScreen> {
-  final _searchController = TextEditingController();
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  void _openLibrary({MuscleGroup? group, String query = ''}) {
+  void _openLibrary({MuscleGroup? group}) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) =>
-            ExerciseLibraryScreen(initialGroup: group, initialQuery: query),
+        builder: (_) => ExerciseLibraryScreen(initialGroup: group),
       ),
     );
   }
@@ -53,36 +44,6 @@ class _MuscleGroupCategoriesScreenState
               trailing: GestureDetector(
                 onTap: () => _openLibrary(),
                 child: const _IconCircle(icon: Icons.list_alt_rounded),
-              ),
-            ),
-            const SizedBox(height: 16),
-            GlowBox(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
-              borderRadius: 999,
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.search,
-                    size: 18,
-                    color: AppColors.textMuted,
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: TextField(
-                      controller: _searchController,
-                      style: AppTextStyles.body(),
-                      cursorColor: AppColors.fitnessAccent,
-                      textInputAction: TextInputAction.search,
-                      onSubmitted: (v) => _openLibrary(query: v),
-                      decoration: InputDecoration(
-                        isDense: true,
-                        border: InputBorder.none,
-                        hintText: ref.tr('fitness_search_hint'),
-                        hintStyle: const TextStyle(color: AppColors.textMuted),
-                      ),
-                    ),
-                  ),
-                ],
               ),
             ),
             const SizedBox(height: 16),
