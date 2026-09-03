@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:audio_session/audio_session.dart';
+import 'package:flutter/widgets.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -15,11 +16,30 @@ import '../../features/stats/data/stats_repository.dart';
 /// bang tay nhu truoc - duoc loi ca next/previous/shuffle THAT (giu nguyen
 /// chi so logic, chi doi THU TU phat) va tu dong chuyen bai khi 1 bai ket
 /// thuc, khong can code rieng.
-class NowPlayingService {
+///
+/// implements WidgetsBindingObserver: chi de bat trang thai app bi TAT HAN
+/// (vuot khoi danh sach da mo, xem didChangeAppLifecycleState) - dung theo
+/// yeu cau nguoi dung "tat app thi nhac phai dung", khac voi truoc day (co
+/// chu dich giong Spotify: roi man hinh/thu nho app van tiep tuc phat).
+class NowPlayingService with WidgetsBindingObserver {
   NowPlayingService._() {
     _initStatsTracking();
+    WidgetsBinding.instance.addObserver(this);
   }
   static final NowPlayingService instance = NowPlayingService._();
+
+  /// AudioServiceActivity giu 1 Flutter engine RIENG song ngam de nhac tiep
+  /// tuc phat khi roi app (xem MainActivity.kt) - engine do KHONG bi huy khi
+  /// nguoi dung vuot app khoi danh sach da mo, chi mat Activity/View gan voi
+  /// no, nen WidgetsBinding bao trang thai "detached" (con engine, khong con
+  /// view nao) thay vi "paused" - day chinh la tin hieu duy nhat phan biet
+  /// duoc "tat han app" voi "chi thu nho/chuyen app khac" (paused/inactive).
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.detached) {
+      player.stop();
+    }
+  }
 
   final AudioPlayer player = AudioPlayer();
 
