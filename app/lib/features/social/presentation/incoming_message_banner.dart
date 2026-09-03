@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/navigation/nav_keys.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/social_repository.dart';
@@ -42,8 +43,20 @@ void showIncomingMessageBanner(
   required String preview,
   required int messageId,
 }) {
+  // KHONG dung Overlay.of(context) khi context la rootNavigatorKey.currentContext
+  // - do CHINH la context cua widget Navigator, tuc la 1 TO TIEN cua Overlay
+  // noi bo cua no (Navigator tu tao Overlay ben trong build() cua chinh no),
+  // khong phai con chau. Overlay.of() chi tim len TO TIEN nen luon that bai
+  // trong truong hop nay - o ban RELEASE (assert bao loi ro rang bi loai bo)
+  // that bai do lam lo ra 1 "Null check operator used on a null value" thay
+  // vi FlutterError de hieu, khien banner IM LANG khong bao gio hien (xac
+  // dinh qua debug log thuc te, khong phai suy doan). Dung thang
+  // NavigatorState.overlay - getter cong khai tra ve chinh OverlayState cua
+  // Navigator, khong can tim kiem theo cay widget nen luon dung.
+  final overlay =
+      Overlay.maybeOf(context) ?? rootNavigatorKey.currentState?.overlay;
+  if (overlay == null) return;
   _playIncomingMessageSound();
-  final overlay = Overlay.of(context);
   late OverlayEntry entry;
   entry = OverlayEntry(
     builder: (context) => _IncomingMessageBanner(

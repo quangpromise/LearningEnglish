@@ -226,31 +226,10 @@ class _AuthGate extends ConsumerWidget {
     // NGUYEN DANH SACH tin nhan (giong het cau truc watchUnreadCount()),
     // "tin moi" la nhung id CHUA TUNG XUAT HIEN trong previous.
     //
-    // NGUYEN NHAN THAT SU banner khong bao gio hien (xac dinh qua 1 ban debug
-    // tam thoi hien SnackBar moi lan provider doi trang thai): provider nay
-    // TUNG la autoDispose, nen moi khi _AuthGate build lai (vd mo/dong 1
-    // popup app khac), Riverpod huy roi tao lai provider - "previous" luon
-    // la null moi lan co tin nhan den, khien nhanh "previousMessages == null
-    // -> return" ben duoi CHAN MAT logic phat hien tin moi du du lieu van ve
-    // dung. Da bo autoDispose (xem incomingMessagesProvider trong
-    // app_providers.dart) de "previous" duoc bao toan giua cac lan.
+    // Provider nay KHONG duoc autoDispose (xem app_providers.dart) de
+    // "previous" duoc bao toan giua cac lan co tin nhan den - lan dau tung
+    // bi autoDispose huy/tao lai lien tuc khien "previous" luon la null.
     ref.listen(incomingMessagesProvider, (previous, next) async {
-      // TAM THOI - da bo autoDispose (thang truoc) nhung nguoi dung xac nhan
-      // banner VAN chua hien. Hien debug de biet CHINH XAC provider co nhan
-      // duoc du lieu khong va "previous" co duoc bao toan giua cac lan hay
-      // khong (nghi ngo: watchIncomingMessages() co the bi "dong bang" voi
-      // 1 Stream.empty() vinh vien neu duoc tao luc _myId con null). Xoa
-      // sau khi xac dinh xong nguyen nhan that.
-      final debugCtx = rootNavigatorKey.currentContext;
-      if (debugCtx != null && debugCtx.mounted) {
-        final msg = next.hasError
-            ? 'ERROR: ${next.error}'
-            : next.valueOrNull == null
-            ? 'loading'
-            : 'data: ${next.value!.length} tin, prev=${previous?.valueOrNull?.length ?? "null"}, myId=${session?.user.id}';
-        ScaffoldMessenger.maybeOf(debugCtx)
-            ?.showSnackBar(SnackBar(content: Text('[DEBUG msg2] $msg')));
-      }
       try {
         final messages = next.valueOrNull;
         if (messages == null) return;
@@ -264,11 +243,6 @@ class _AuthGate extends ConsumerWidget {
         final newOnes = messages
             .where((m) => !previousIds.contains(m.id) && m.receiverId == myId)
             .toList();
-        if (debugCtx != null && debugCtx.mounted) {
-          ScaffoldMessenger.maybeOf(debugCtx)?.showSnackBar(
-            SnackBar(content: Text('[DEBUG msg3] newOnes=${newOnes.length}')),
-          );
-        }
         if (newOnes.isEmpty) return;
         final latest = newOnes.reduce(
           (a, b) => a.createdAt.isAfter(b.createdAt) ? a : b,
@@ -307,15 +281,6 @@ class _AuthGate extends ConsumerWidget {
         // listener nay cho phan con lai cua phien - ghi log de con chan
         // doan tiep neu van con loi ke sau khi fix nay.
         debugPrint('Loi hien banner tin nhan moi: $e\n$st');
-        // TAM THOI - debugPrint KHONG hien tren APK release, nen loi o day
-        // (neu co) tu truoc gio hoan toan vo hinh. Hien SnackBar de biet
-        // CHINH XAC co loi gi khong. Xoa sau khi xac dinh xong nguyen nhan.
-        final debugCtx = rootNavigatorKey.currentContext;
-        if (debugCtx != null && debugCtx.mounted) {
-          ScaffoldMessenger.maybeOf(debugCtx)?.showSnackBar(
-            SnackBar(content: Text('[DEBUG msg4] LOI banner: $e')),
-          );
-        }
       }
     });
 
