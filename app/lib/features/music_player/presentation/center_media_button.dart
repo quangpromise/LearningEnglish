@@ -177,22 +177,29 @@ class _PlayingBar extends StatelessWidget {
                 // nut dieu khien ben trai.
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       song?.title ?? '',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
+                      // height: 1.0 - bo bot khoang leading mac dinh cua
+                      // font (Manrope tu them khoang trong TREN chu khien
+                      // ca khoi chu+progress bar nhin lech len tren so voi
+                      // cum nut dieu khien du hop chua no da can giua dung
+                      // ve mat toa do layout.
                       style: AppTextStyles.body(
                         size: 12,
                         weight: FontWeight.w800,
-                      ),
+                      ).copyWith(height: 1.0),
                     ),
                     Text(
                       song?.artist ?? '',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.muted(size: 10),
+                      style: AppTextStyles.muted(size: 10)
+                          .copyWith(height: 1.0),
                     ),
                     const SizedBox(height: 4),
                     // Thanh tien trinh chay + thoi gian - dung StreamBuilder
