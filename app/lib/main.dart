@@ -229,6 +229,21 @@ class _AuthGate extends ConsumerWidget {
     // NGUYEN DANH SACH tin nhan (giong het cau truc watchUnreadCount()),
     // "tin moi" la nhung id CHUA TUNG XUAT HIEN trong previous.
     ref.listen(incomingMessagesProvider, (previous, next) async {
+      // TAM THOI - 2 lan sua truoc (dua tren suy luan tinh, khong tai hien
+      // duoc tren may test) deu khong giai quyet duoc (nguoi dung xac nhan
+      // dang dung dung build moi nhat). Hien SnackBar cho MOI lan provider
+      // nay doi trang thai de biet CHINH XAC no co nhan duoc su kien
+      // Realtime nao khong - xoa sau khi xac dinh xong nguyen nhan that.
+      final debugCtx = rootNavigatorKey.currentContext;
+      if (debugCtx != null && debugCtx.mounted) {
+        final msg = next.hasError
+            ? 'ERROR: ${next.error}'
+            : next.valueOrNull == null
+            ? 'loading (chua co du lieu)'
+            : 'data: ${next.value!.length} tin nhan, prev=${previous?.valueOrNull?.length ?? "null"}';
+        ScaffoldMessenger.maybeOf(debugCtx)
+            ?.showSnackBar(SnackBar(content: Text('[DEBUG msg] $msg')));
+      }
       try {
         final messages = next.valueOrNull;
         if (messages == null) return;
