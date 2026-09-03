@@ -149,7 +149,10 @@ class _CategorySection extends StatelessWidget {
           Text(title, style: AppTextStyles.heading(size: 14)),
           const SizedBox(height: 14),
           Wrap(
-            spacing: 14,
+            // spaceBetween: cac icon dan deu tu mep trai sang mep phai cua
+            // box thay vi don het ve ben trai (de trong 1 khoang rong ben
+            // phai khi 1 hang chi co 2-3 icon trong khi box du rong cho 4).
+            alignment: WrapAlignment.spaceBetween,
             runSpacing: 14,
             children: items.map((item) => _CategoryItem(data: item)).toList(),
           ),

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/fitness/presentation/fitness_shell.dart';
 import '../../features/wealth/presentation/wealth_shell.dart';
 import '../i18n/app_strings.dart';
+import '../providers/app_providers.dart';
 import '../theme/app_theme.dart';
 
 /// Pill "chuyen doi ung dung" nam duoi loi chao (dat trong [AppTopBar],
@@ -91,6 +92,26 @@ class _AppSwitcherPillState extends ConsumerState<AppSwitcherPill> {
 
   @override
   Widget build(BuildContext context) {
+    // Hien dung "app" DANG DUNG (khong luon co dinh "Hoc Tieng Anh") - doc
+    // 2 co trang thai da co san (bat/tat luc vao/thoat FitnessShell/
+    // WealthShell) thay vi suy tu route, don gian va da dung dung o nhieu
+    // noi khac (ScreenBackground, ai_fab_overlay...).
+    final fitnessActive = ref.watch(fitnessModeActiveProvider);
+    final wealthActive = ref.watch(wealthModeActiveProvider);
+    final (icon, color, labelKey) = fitnessActive
+        ? (
+            Icons.fitness_center_rounded,
+            AppColors.fitnessAccent,
+            'app_switcher_fitness',
+          )
+        : wealthActive
+        ? (
+            Icons.account_balance_wallet_rounded,
+            AppColors.wealthAccent,
+            'app_switcher_wealth',
+          )
+        : (Icons.school_rounded, AppColors.blue, 'app_switcher_learn_english');
+
     return CompositedTransformTarget(
       link: _link,
       child: GestureDetector(
@@ -107,11 +128,11 @@ class _AppSwitcherPillState extends ConsumerState<AppSwitcherPill> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.school_rounded, size: 13, color: AppColors.blue),
+              Icon(icon, size: 13, color: color),
               const SizedBox(width: 5),
               Flexible(
                 child: Text(
-                  ref.tr('app_switcher_learn_english'),
+                  ref.tr(labelKey),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.muted(size: 12, weight: FontWeight.w700),
@@ -147,6 +168,9 @@ class _DropdownPanel extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final fitnessActive = ref.watch(fitnessModeActiveProvider);
+    final wealthActive = ref.watch(wealthModeActiveProvider);
+    final learnEnglishActive = !fitnessActive && !wealthActive;
     return Material(
       color: Colors.transparent,
       child: Container(
@@ -171,6 +195,7 @@ class _DropdownPanel extends ConsumerWidget {
               icon: Icons.school_rounded,
               color: AppColors.blue,
               label: ref.tr('app_switcher_learn_english'),
+              active: learnEnglishActive,
               onTap: onSelectLearnEnglish,
             ),
             const SizedBox(height: 6),
@@ -178,6 +203,7 @@ class _DropdownPanel extends ConsumerWidget {
               icon: Icons.fitness_center_rounded,
               color: AppColors.fitnessAccent,
               label: ref.tr('app_switcher_fitness'),
+              active: fitnessActive,
               onTap: onSelectFitness,
             ),
             const SizedBox(height: 6),
@@ -185,6 +211,7 @@ class _DropdownPanel extends ConsumerWidget {
               icon: Icons.account_balance_wallet_rounded,
               color: AppColors.wealthAccent,
               label: ref.tr('app_switcher_wealth'),
+              active: wealthActive,
               onTap: onSelectWealth,
             ),
           ],
@@ -194,20 +221,22 @@ class _DropdownPanel extends ConsumerWidget {
   }
 }
 
-class _AppSwitcherTile extends StatelessWidget {
+class _AppSwitcherTile extends ConsumerWidget {
   const _AppSwitcherTile({
     required this.icon,
     required this.color,
     required this.label,
+    required this.active,
     required this.onTap,
   });
   final IconData icon;
   final Color color;
   final String label;
+  final bool active;
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(14),
@@ -231,7 +260,33 @@ class _AppSwitcherTile extends StatelessWidget {
                 style: AppTextStyles.body(size: 13, weight: FontWeight.w700),
               ),
             ),
+            if (active)
+              _CurrentBadge(text: ref.tr('app_switcher_current_badge')),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CurrentBadge extends StatelessWidget {
+  const _CurrentBadge({required this.text});
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: AppColors.blue.withValues(alpha: 0.18),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: AppColors.blue,
+          fontWeight: FontWeight.w800,
+          fontSize: 10.5,
         ),
       ),
     );

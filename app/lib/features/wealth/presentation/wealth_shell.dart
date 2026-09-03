@@ -5,16 +5,16 @@ import '../../../core/navigation/app_top_bar.dart';
 import '../../../core/navigation/mini_app_bottom_nav.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../profile/presentation/profile_screen.dart';
+import '../../social/presentation/conversations_screen.dart';
 import 'wealth_expense_tab.dart';
 import 'wealth_income_tab.dart';
 import 'wealth_investments_tab.dart';
 
 /// Man goc Quan ly tai san (Wealth Management), Phase 1: Chi tieu/Thu nhap +
-/// Dau tu (crypto + co phieu quoc te) + Ho so (dung CHUNG [ProfileScreen]
-/// voi 2 khu vuc con lai). Co thanh menu duoi rieng (giong RootShell nhung
-/// mau vang) thay cho TabBar tren dau truoc day - dong bo voi kieu "menu
-/// bar rieng cho tung app" nhu Fitness.
+/// Dau tu (crypto + co phieu quoc te) + Tin nhan (dung CHUNG
+/// [ConversationsScreen] voi 2 khu vuc con lai). KHONG co tab/nut back rieng
+/// - Ho so mo qua avatar tren AppTopBar (giong moi man khac), thoat khoi
+/// Wealth qua app-switcher (chon "Hoc Tieng Anh").
 class WealthShell extends ConsumerStatefulWidget {
   const WealthShell({super.key});
 
@@ -43,21 +43,18 @@ class _WealthShellState extends ConsumerState<WealthShell> {
     Icons.receipt_long_rounded,
     Icons.savings_rounded,
     Icons.trending_up_rounded,
-    Icons.person_rounded,
+    Icons.chat_bubble_rounded,
   ];
 
   Widget _buildBody() {
-    if (_tab == 3) return const ProfileScreen();
+    if (_tab == 3) return const ConversationsScreen();
     return ScreenBackground(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const AppTopBar(
-              showBackButton: true,
-              accentColor: AppColors.wealthAccent,
-            ),
+            const AppTopBar(accentColor: AppColors.wealthAccent),
             const SizedBox(height: 16),
             Expanded(
               child: switch (_tab) {
@@ -74,6 +71,7 @@ class _WealthShellState extends ConsumerState<WealthShell> {
 
   @override
   Widget build(BuildContext context) {
+    final unread = ref.watch(unreadMessageCountProvider).valueOrNull ?? 0;
     return Scaffold(
       backgroundColor: AppColors.bgTop,
       body: _buildBody(),
@@ -81,6 +79,7 @@ class _WealthShellState extends ConsumerState<WealthShell> {
         icons: _icons,
         currentIndex: _tab,
         accentColor: AppColors.wealthAccent,
+        badgeCounts: [0, 0, 0, unread],
         onTap: (i) => setState(() => _tab = i),
       ),
     );

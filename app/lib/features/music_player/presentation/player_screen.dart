@@ -13,6 +13,7 @@ import '../../grammar/presentation/grammar_screen.dart';
 import '../../translation/presentation/word_popup_sheet.dart';
 import '../data/songs_data.dart';
 import 'karaoke_lyrics.dart';
+import 'suggested_for_you_tab.dart';
 
 class PlayerScreen extends ConsumerStatefulWidget {
   const PlayerScreen({super.key, this.queue, this.startIndex});
@@ -32,7 +33,7 @@ class PlayerScreen extends ConsumerStatefulWidget {
 }
 
 class _PlayerScreenState extends ConsumerState<PlayerScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   // Dung chung 1 AudioPlayer + hang doi cho toan app (xem
   // now_playing_service.dart) - man hinh nay chi la 1 "o quan sat" phien
   // phat dang dien ra, KHONG con tu quan ly play/stop rieng nhu truoc, de
@@ -60,10 +61,12 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
   final ValueNotifier<double> _positionSeconds = ValueNotifier<double>(0);
   Ticker? _ticker;
   late final DateTime _openedAt;
+  late final TabController _tabController;
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
     _openedAt = DateTime.now();
     final queue = widget.queue;
     final startIndex = widget.startIndex;
@@ -152,6 +155,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     _ticker?.dispose();
     _positionSeconds.dispose();
     _indexSub?.cancel();
+    _tabController.dispose();
     // KHONG dung/stop AudioPlayer o day nua - day la diem khac biet chinh so
     // voi truoc: roi man hinh nay (back ra ngoai) van tiep tuc phat, hien
     // qua mini-player + thong bao he thong (xem NowPlayingService).
@@ -227,150 +231,202 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
                 ),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 14),
             Container(
-              width: 170,
-              height: 170,
               decoration: BoxDecoration(
-                gradient: AppColors.accentGradient,
-                borderRadius: BorderRadius.circular(30),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.purple.withValues(alpha: 0.4),
-                    blurRadius: 60,
-                    offset: const Offset(0, 24),
-                  ),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.white.withValues(alpha: 0.06),
+                    Colors.white.withValues(alpha: 0.02),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.14)),
+              ),
+              padding: const EdgeInsets.all(4),
+              child: TabBar(
+                controller: _tabController,
+                indicator: BoxDecoration(
+                  gradient: AppColors.accentGradient,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                indicatorSize: TabBarIndicatorSize.tab,
+                labelColor: Colors.white,
+                unselectedLabelColor: AppColors.textMuted,
+                dividerColor: Colors.transparent,
+                labelStyle: const TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 12.5,
+                ),
+                tabs: [
+                  Tab(text: ref.tr('player_tab_now_playing')),
+                  Tab(text: ref.tr('player_tab_suggested')),
                 ],
               ),
-              clipBehavior: Clip.antiAlias,
-              child: Image.asset(
-                'assets/icon/app_icon_square.png',
-                fit: BoxFit.cover,
-              ),
             ),
-            const SizedBox(height: 16),
-            Text(_song.title, style: AppTextStyles.heading(size: 19)),
-            Text(_song.artist, style: AppTextStyles.muted()),
-            if (_error != null) ...[
-              const SizedBox(height: 8),
-              Text(
-                _error!,
-                style: AppTextStyles.muted().copyWith(color: AppColors.amber),
-              ),
-            ],
             const SizedBox(height: 12),
             Expanded(
-              child: KaraokeLyricsView(
-                lines: _karaoke,
-                activeIndex: _currentLine,
-                positionSeconds: _positionSeconds,
-                lineKeys: _lineKeys,
-                bilingual: _bilingual,
-                onSeekToLine: (i) => _player.seek(
-                  Duration(
-                    milliseconds: (lyrics[i].startSeconds * 1000).round(),
-                  ),
-                ),
-                onWordTap: _onWordTap,
-              ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  ref.tr('player_bilingual_toggle'),
-                  style: AppTextStyles.muted(),
-                ),
-                const SizedBox(width: 10),
-                Switch(
-                  value: _bilingual,
-                  activeTrackColor: AppColors.purple,
-                  onChanged: (v) => setState(() => _bilingual = v),
-                ),
-              ],
-            ),
-            StreamBuilder<PlayerState>(
-              stream: _player.playerStateStream,
-              builder: (context, snapshot) {
-                final playing = snapshot.data?.playing ?? false;
-                return Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _CircleBtn(
-                      icon: Icons.shuffle_rounded,
-                      iconColor: _service.shuffleEnabled
-                          ? AppColors.purple
-                          : null,
-                      onTap: () {
-                        _service.toggleShuffle();
-                        setState(() {});
-                      },
-                    ),
-                    const SizedBox(width: 10),
-                    IconButton(
-                      // Khi bat shuffle, thu tu phat khong con theo _index
-                      // (chi so goc, van dung cho lyric/tieu de) nua - luon
-                      // cho bam, just_audio tu bo qua neu khong con bai
-                      // truoc/sau trong thu tu phat thuc te.
-                      onPressed: _queue.length > 1
-                          ? () => _service.previous()
-                          : null,
-                      icon: const Icon(
-                        Icons.skip_previous_rounded,
-                        color: AppColors.textPrimary,
-                        size: 30,
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () => playing ? _player.pause() : _player.play(),
-                      child: Container(
-                        width: 68,
-                        height: 68,
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  Column(
+                    children: [
+                      Container(
+                        width: 170,
+                        height: 170,
                         decoration: BoxDecoration(
                           gradient: AppColors.accentGradient,
-                          shape: BoxShape.circle,
+                          borderRadius: BorderRadius.circular(30),
                           boxShadow: [
                             BoxShadow(
-                              color: AppColors.blue.withValues(alpha: 0.5),
-                              blurRadius: 40,
-                              offset: const Offset(0, 16),
+                              color: AppColors.purple.withValues(alpha: 0.4),
+                              blurRadius: 60,
+                              offset: const Offset(0, 24),
                             ),
                           ],
                         ),
-                        child: Icon(
-                          playing
-                              ? Icons.pause_rounded
-                              : Icons.play_arrow_rounded,
-                          color: Colors.white,
-                          size: 30,
+                        clipBehavior: Clip.antiAlias,
+                        child: Image.asset(
+                          'assets/icon/app_icon_square.png',
+                          fit: BoxFit.cover,
                         ),
                       ),
-                    ),
-                    IconButton(
-                      onPressed: _queue.length > 1
-                          ? () => _service.next()
-                          : null,
-                      icon: const Icon(
-                        Icons.skip_next_rounded,
-                        color: AppColors.textPrimary,
-                        size: 30,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    _CircleBtn(
-                      icon: Icons.replay_10_rounded,
-                      onTap: () => _player.seek(
-                        Duration(
-                          seconds: (_player.position.inSeconds - 10).clamp(
-                            0,
-                            1 << 30,
+                      const SizedBox(height: 16),
+                      Text(_song.title, style: AppTextStyles.heading(size: 19)),
+                      Text(_song.artist, style: AppTextStyles.muted()),
+                      if (_error != null) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          _error!,
+                          style: AppTextStyles.muted().copyWith(
+                            color: AppColors.amber,
                           ),
                         ),
+                      ],
+                      const SizedBox(height: 12),
+                      Expanded(
+                        child: KaraokeLyricsView(
+                          lines: _karaoke,
+                          activeIndex: _currentLine,
+                          positionSeconds: _positionSeconds,
+                          lineKeys: _lineKeys,
+                          bilingual: _bilingual,
+                          onSeekToLine: (i) => _player.seek(
+                            Duration(
+                              milliseconds: (lyrics[i].startSeconds * 1000)
+                                  .round(),
+                            ),
+                          ),
+                          onWordTap: _onWordTap,
+                        ),
                       ),
-                    ),
-                  ],
-                );
-              },
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            ref.tr('player_bilingual_toggle'),
+                            style: AppTextStyles.muted(),
+                          ),
+                          const SizedBox(width: 10),
+                          Switch(
+                            value: _bilingual,
+                            activeTrackColor: AppColors.purple,
+                            onChanged: (v) => setState(() => _bilingual = v),
+                          ),
+                        ],
+                      ),
+                      StreamBuilder<PlayerState>(
+                        stream: _player.playerStateStream,
+                        builder: (context, snapshot) {
+                          final playing = snapshot.data?.playing ?? false;
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              _CircleBtn(
+                                icon: Icons.shuffle_rounded,
+                                iconColor: _service.shuffleEnabled
+                                    ? AppColors.purple
+                                    : null,
+                                onTap: () {
+                                  _service.toggleShuffle();
+                                  setState(() {});
+                                },
+                              ),
+                              const SizedBox(width: 10),
+                              IconButton(
+                                // Khi bat shuffle, thu tu phat khong con theo
+                                // _index (chi so goc, van dung cho lyric/tieu
+                                // de) nua - luon cho bam, just_audio tu bo qua
+                                // neu khong con bai truoc/sau trong thu tu
+                                // phat thuc te.
+                                onPressed: _queue.length > 1
+                                    ? () => _service.previous()
+                                    : null,
+                                icon: const Icon(
+                                  Icons.skip_previous_rounded,
+                                  color: AppColors.textPrimary,
+                                  size: 30,
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () =>
+                                    playing ? _player.pause() : _player.play(),
+                                child: Container(
+                                  width: 68,
+                                  height: 68,
+                                  decoration: BoxDecoration(
+                                    gradient: AppColors.accentGradient,
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: AppColors.blue.withValues(
+                                          alpha: 0.5,
+                                        ),
+                                        blurRadius: 40,
+                                        offset: const Offset(0, 16),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Icon(
+                                    playing
+                                        ? Icons.pause_rounded
+                                        : Icons.play_arrow_rounded,
+                                    color: Colors.white,
+                                    size: 30,
+                                  ),
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: _queue.length > 1
+                                    ? () => _service.next()
+                                    : null,
+                                icon: const Icon(
+                                  Icons.skip_next_rounded,
+                                  color: AppColors.textPrimary,
+                                  size: 30,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              _CircleBtn(
+                                icon: Icons.replay_10_rounded,
+                                onTap: () => _player.seek(
+                                  Duration(
+                                    seconds: (_player.position.inSeconds - 10)
+                                        .clamp(0, 1 << 30),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                  SuggestedForYouTab(currentSong: _song),
+                ],
+              ),
             ),
           ],
         ),

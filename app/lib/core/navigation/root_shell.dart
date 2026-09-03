@@ -7,7 +7,6 @@ import '../notifications/chat_push.dart';
 import '../providers/app_providers.dart';
 import '../theme/app_theme.dart';
 import '../../features/music_player/presentation/home_screen.dart';
-import '../../features/music_player/presentation/mini_player.dart';
 import '../../features/pronunciation/presentation/pronunciation_screen.dart';
 import '../../features/social/data/social_repository.dart';
 import '../../features/social/presentation/conversations_screen.dart';
@@ -144,7 +143,9 @@ class _RootShellState extends ConsumerState<RootShell>
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const MiniPlayer(),
+          // MiniPlayer rieng cua RootShell da bo - thay bang GlobalMediaBar
+          // dat o tang MaterialApp.builder (main.dart), hien tren CA 3 khu
+          // vuc thay vi chi rieng Hoc Tieng Anh.
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
             child: Container(

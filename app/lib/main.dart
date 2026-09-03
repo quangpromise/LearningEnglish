@@ -21,6 +21,7 @@ import 'core/tts/app_tts.dart';
 import 'features/ai_voice_chat/data/gemini_voices.dart';
 import 'features/auth/presentation/reset_password_screen.dart';
 import 'features/auth/presentation/sign_in_screen.dart';
+import 'features/music_player/presentation/global_media_bar.dart';
 import 'features/onboarding/data/onboarding_repository.dart';
 import 'features/onboarding/presentation/onboarding_screen.dart';
 
@@ -121,12 +122,14 @@ class LearnEnglishMusicApp extends StatelessWidget {
       navigatorObservers: [topRouteObserver],
       title: 'GymTalk',
       debugShowCheckedModeBanner: false,
-      // Nut noi "AI Voice Chat" chong len TREN CUNG moi man hinh (bao gom
-      // ca man hinh push tu Navigator, khong chi cac tab cua RootShell) -
-      // xem ai_fab_overlay.dart de biet ly do va cach an rieng o tab Luyen
-      // phat am.
-      builder: (context, child) =>
-          Stack(children: [?child, const AiFabOverlay()]),
+      // Nut noi "AI Voice Chat" + thanh nhac dang phat (GlobalMediaBar) chong
+      // len TREN CUNG moi man hinh (bao gom ca man hinh push tu Navigator,
+      // khong chi cac tab cua RootShell) - hien tren CA 3 khu vuc (Hoc Tieng
+      // Anh/Fitness/Wealth) vi nhac co the tiep tuc phat du dang xem khu vuc
+      // nao. Xem ai_fab_overlay.dart / global_media_bar.dart.
+      builder: (context, child) => Stack(
+        children: [?child, const GlobalMediaBar(), const AiFabOverlay()],
+      ),
       theme: ThemeData(
         useMaterial3: true,
         brightness: Brightness.dark,

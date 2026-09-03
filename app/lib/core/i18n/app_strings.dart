@@ -882,6 +882,18 @@ class AppStrings {
       AppLanguage.vi: 'Song ngữ Anh – Việt',
       AppLanguage.en: 'Bilingual English – Vietnamese',
     },
+    'player_tab_now_playing': {
+      AppLanguage.vi: 'Đang phát',
+      AppLanguage.en: 'Now playing',
+    },
+    'player_tab_suggested': {
+      AppLanguage.vi: 'Gợi ý cho bạn',
+      AppLanguage.en: 'Suggested for you',
+    },
+    'player_suggested_empty': {
+      AppLanguage.vi: 'Chưa có gợi ý nào khác.',
+      AppLanguage.en: 'No other suggestions yet.',
+    },
 
     // Word popup
     'word_listen_pronunciation': {

@@ -14,12 +14,17 @@ class MiniAppBottomNav extends StatelessWidget {
     required this.currentIndex,
     required this.onTap,
     required this.accentColor,
+    this.badgeCounts,
   });
 
   final List<IconData> icons;
   final int currentIndex;
   final ValueChanged<int> onTap;
   final Color accentColor;
+
+  /// So badge hien tren tung icon, cung do dai voi [icons] - null hoac 0 o
+  /// vi tri nao thi khong hien badge o do (vd danh cho tab Tin nhan).
+  final List<int>? badgeCounts;
 
   @override
   Widget build(BuildContext context) {
@@ -43,6 +48,9 @@ class MiniAppBottomNav extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: List.generate(icons.length, (i) {
             final active = i == currentIndex;
+            final badge = badgeCounts != null && i < badgeCounts!.length
+                ? badgeCounts![i]
+                : 0;
             return GestureDetector(
               onTap: () => onTap(i),
               child: AnimatedContainer(
@@ -60,10 +68,45 @@ class MiniAppBottomNav extends StatelessWidget {
                       : null,
                   borderRadius: BorderRadius.circular(999),
                 ),
-                child: Icon(
-                  icons[i],
-                  size: 22,
-                  color: active ? accentColor : AppColors.textMuted,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Icon(
+                      icons[i],
+                      size: 22,
+                      color: active ? accentColor : AppColors.textMuted,
+                    ),
+                    if (badge > 0)
+                      Positioned(
+                        right: -4,
+                        top: -2,
+                        child: Container(
+                          padding: const EdgeInsets.all(3),
+                          constraints: const BoxConstraints(
+                            minWidth: 15,
+                            minHeight: 15,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.pink,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: const Color(0xD90A0E1C),
+                              width: 2,
+                            ),
+                          ),
+                          child: Text(
+                            badge > 9 ? '9+' : '$badge',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 8,
+                              fontWeight: FontWeight.w800,
+                              height: 1,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
             );

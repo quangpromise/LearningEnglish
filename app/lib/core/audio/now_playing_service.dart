@@ -29,7 +29,7 @@ class NowPlayingService {
 
   final _queueController = StreamController<List<Song>>.broadcast();
 
-  /// Phat ra moi khi hang doi doi (bai moi/xoa het) - dung cho MiniPlayer
+  /// Phat ra moi khi hang doi doi (bai moi/xoa het) - dung cho GlobalMediaBar
   /// biet luc nao can hien/an chinh no.
   Stream<List<Song>> get queueStream => _queueController.stream;
 

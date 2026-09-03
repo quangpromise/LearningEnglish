@@ -47,8 +47,12 @@ class AppColors {
   static const textPrimary = Color(0xFFEEF1FB);
   static const textMuted = Color(0x8DEEF1FB);
 
-  static const glassFill = Color(0x0DFFFFFF);
-  static const glassBorder = Color(0x17FFFFFF);
+  // Den (khong phai trang) va do dam cao hon truoc (0x0D -> 0x59) - man hinh
+  // co anh nen (Home/Fitness) truoc do qua trong suot, thay ro anh xuyen qua
+  // GlowBox lam chu kho doc; nen den lam diu anh nen ngay ben trong box ma
+  // van giu duoc hieu ung "kinh mo" (khong dac hoan toan).
+  static const glassFill = Color(0x59000000);
+  static const glassBorder = Color(0x26FFFFFF);
 
   static const accentGradient = LinearGradient(
     begin: Alignment.topLeft,

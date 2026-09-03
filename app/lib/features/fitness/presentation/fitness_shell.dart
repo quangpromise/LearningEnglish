@@ -4,13 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/navigation/mini_app_bottom_nav.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../profile/presentation/profile_screen.dart';
+import '../../social/presentation/conversations_screen.dart';
 import 'muscle_group_categories_screen.dart';
 
 /// Man hinh goc cua khu vuc Fitness - vao tu app-switcher tren Home. Co
 /// thanh menu duoi rieng (giong RootShell nhung mau cam) voi 2 tab: Bai tap
-/// (MuscleGroupCategoriesScreen) va Ho so (dung CHUNG [ProfileScreen] voi 2
-/// khu vuc con lai, khong tao man Ho so rieng cho tung app).
+/// (MuscleGroupCategoriesScreen) va Tin nhan (dung CHUNG
+/// [ConversationsScreen] voi 2 khu vuc con lai). KHONG co tab/nut back rieng
+/// - Ho so mo qua avatar tren AppTopBar, thoat khoi Fitness qua app-switcher.
 class FitnessShell extends ConsumerStatefulWidget {
   const FitnessShell({super.key});
 
@@ -40,20 +41,25 @@ class _FitnessShellState extends ConsumerState<FitnessShell> {
     super.dispose();
   }
 
-  static const _icons = [Icons.fitness_center_rounded, Icons.person_rounded];
+  static const _icons = [
+    Icons.fitness_center_rounded,
+    Icons.chat_bubble_rounded,
+  ];
 
   @override
   Widget build(BuildContext context) {
+    final unread = ref.watch(unreadMessageCountProvider).valueOrNull ?? 0;
     return Scaffold(
       backgroundColor: AppColors.bgTop,
       body: IndexedStack(
         index: _tab,
-        children: const [MuscleGroupCategoriesScreen(), ProfileScreen()],
+        children: const [MuscleGroupCategoriesScreen(), ConversationsScreen()],
       ),
       bottomNavigationBar: MiniAppBottomNav(
         icons: _icons,
         currentIndex: _tab,
         accentColor: AppColors.fitnessAccent,
+        badgeCounts: [0, unread],
         onTap: (i) => setState(() => _tab = i),
       ),
     );
