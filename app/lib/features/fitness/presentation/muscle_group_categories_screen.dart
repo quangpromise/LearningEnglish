@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
-import '../../../core/navigation/app_top_bar.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/exercise_model.dart';
 import 'exercise_library_screen.dart';
@@ -38,9 +38,8 @@ class _MuscleGroupCategoriesScreenState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            AppTopBar(
-              showBackButton: true,
-              accentColor: AppColors.fitnessAccent,
+            PopupHeader(
+              title: ref.tr('fitness_library_title'),
               trailing: GestureDetector(
                 onTap: () => _openLibrary(),
                 child: const _IconCircle(icon: Icons.list_alt_rounded),

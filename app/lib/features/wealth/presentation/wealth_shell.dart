@@ -1,20 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/navigation/mini_app_bottom_nav.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../social/presentation/conversations_screen.dart';
 import 'wealth_home_screen.dart';
 
-/// Man goc Quan ly tai san (Wealth Management) - 2 tab: Home
-/// (WealthHomeScreen, gom Chi tieu/Thu nhap/Dau tu thanh cac the danh muc -
-/// xem file do) va Tin nhan (dung CHUNG [ConversationsScreen] voi 2 khu vuc
-/// con lai). KHONG co tab/nut back rieng - Ho so mo qua avatar tren
-/// AppTopBar, thoat khoi Wealth qua app-switcher.
-///
-/// MOI TAB CO 1 Navigator RIENG (giong RootShell/FitnessShell) de man con
-/// (vd WealthDetailScreen tu WealthHomeScreen) khong che mat thanh Menu.
+/// Man goc Quan ly tai san - CHI CON 1 man Home that su (WealthHomeScreen,
+/// gom Chi tieu/Thu nhap/Dau tu thanh cac the danh muc), moi tinh nang khac
+/// va Tin nhan deu mo popup (xem app_popup.dart) thay vi la tab rieng, nen
+/// thanh Menu khong con nut Home. Ho so mo qua avatar tren AppTopBar cua
+/// WealthHomeScreen, thoat khoi Wealth qua app-switcher.
 class WealthShell extends ConsumerStatefulWidget {
   const WealthShell({super.key});
 
@@ -23,16 +21,6 @@ class WealthShell extends ConsumerStatefulWidget {
 }
 
 class _WealthShellState extends ConsumerState<WealthShell> {
-  int _tab = 0;
-
-  final _homeNavKey = GlobalKey<NavigatorState>();
-  final _messagesNavKey = GlobalKey<NavigatorState>();
-
-  List<GlobalKey<NavigatorState>> get _tabNavKeys => [
-    _homeNavKey,
-    _messagesNavKey,
-  ];
-
   @override
   void dispose() {
     // Xem giai thich trong FitnessShell.dispose(): tra ve Hoc Tieng Anh khi
@@ -45,44 +33,16 @@ class _WealthShellState extends ConsumerState<WealthShell> {
     super.dispose();
   }
 
-  static const _icons = [
-    Icons.account_balance_wallet_rounded,
-    Icons.chat_bubble_rounded,
-  ];
-
   @override
   Widget build(BuildContext context) {
     final unread = ref.watch(unreadMessageCountProvider).valueOrNull ?? 0;
     return Scaffold(
       backgroundColor: AppColors.bgTop,
-      body: NavigatorPopHandler(
-        onPopWithResult: (result) {
-          final nav = _tabNavKeys[_tab].currentState;
-          if (nav != null && nav.canPop()) nav.pop(result);
-        },
-        child: IndexedStack(
-          index: _tab,
-          children: [
-            Navigator(
-              key: _homeNavKey,
-              onGenerateRoute: (_) =>
-                  MaterialPageRoute(builder: (_) => const WealthHomeScreen()),
-            ),
-            Navigator(
-              key: _messagesNavKey,
-              onGenerateRoute: (_) => MaterialPageRoute(
-                builder: (_) => const ConversationsScreen(),
-              ),
-            ),
-          ],
-        ),
-      ),
+      body: const WealthHomeScreen(),
       bottomNavigationBar: MiniAppBottomNav(
-        icons: _icons,
-        currentIndex: _tab,
         accentColor: AppColors.wealthAccent,
-        badgeCounts: [0, unread],
-        onTap: (i) => setState(() => _tab = i),
+        unreadCount: unread,
+        onMessagesTap: () => openAppPopup(context, const ConversationsScreen()),
       ),
     );
   }

@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/navigation/app_top_bar.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/theme/app_theme.dart';
 
 /// Khung man hinh dung chung cho tung tinh nang Wealth khi duoc mo tu 1 the
-/// tren WealthHomeScreen (Chi tieu/Thu nhap/Dau tu) - truoc day 3 noi dung
-/// nay la 3 tab ngang hang trong 1 IndexedStack, gio moi cai la 1 man rieng
-/// duoc PUSH (giong cach Fitness/Hoc Tieng Anh to chuc tinh nang thanh cac
-/// the tren Home), nen can 1 AppTopBar(showBackButton) + khung Column+Expanded
-/// giong het cac man tinh nang khac.
+/// tren WealthHomeScreen (Chi tieu/Thu nhap/Dau tu) - moi tinh nang mo dang
+/// POPUP (xem app_popup.dart) thay vi push sang man rieng, nen dung
+/// PopupHeader (tieu de + nut dong, KHONG avatar - chi man Home chinh moi
+/// co avatar) thay vi AppTopBar.
 class WealthDetailScreen extends StatelessWidget {
-  const WealthDetailScreen({super.key, required this.child});
+  const WealthDetailScreen({
+    super.key,
+    required this.title,
+    required this.child,
+  });
+  final String title;
   final Widget child;
 
   @override
@@ -21,10 +25,7 @@ class WealthDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const AppTopBar(
-              showBackButton: true,
-              accentColor: AppColors.wealthAccent,
-            ),
+            PopupHeader(title: title),
             const SizedBox(height: 16),
             Expanded(child: child),
           ],

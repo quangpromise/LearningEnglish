@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/navigation/app_top_bar.dart';
 import '../../../core/theme/app_theme.dart';
 import 'wealth_detail_screen.dart';
@@ -16,10 +17,8 @@ import 'wealth_investments_tab.dart';
 class WealthHomeScreen extends ConsumerWidget {
   const WealthHomeScreen({super.key});
 
-  void _open(BuildContext context, Widget tab) {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (_) => WealthDetailScreen(child: tab)));
+  void _open(BuildContext context, String title, Widget tab) {
+    openAppPopup(context, WealthDetailScreen(title: title, child: tab));
   }
 
   @override
@@ -64,22 +63,31 @@ class WealthHomeScreen extends ConsumerWidget {
                               width: itemWidth,
                               icon: Icons.receipt_long_rounded,
                               label: ref.tr('wealth_tab_expense'),
-                              onTap: () =>
-                                  _open(context, const WealthExpenseTab()),
+                              onTap: () => _open(
+                                context,
+                                ref.tr('wealth_tab_expense'),
+                                const WealthExpenseTab(),
+                              ),
                             ),
                             _WealthTile(
                               width: itemWidth,
                               icon: Icons.savings_rounded,
                               label: ref.tr('wealth_tab_income'),
-                              onTap: () =>
-                                  _open(context, const WealthIncomeTab()),
+                              onTap: () => _open(
+                                context,
+                                ref.tr('wealth_tab_income'),
+                                const WealthIncomeTab(),
+                              ),
                             ),
                             _WealthTile(
                               width: itemWidth,
                               icon: Icons.trending_up_rounded,
                               label: ref.tr('wealth_tab_investments'),
-                              onTap: () =>
-                                  _open(context, const WealthInvestmentsTab()),
+                              onTap: () => _open(
+                                context,
+                                ref.tr('wealth_tab_investments'),
+                                const WealthInvestmentsTab(),
+                              ),
                             ),
                           ],
                         );

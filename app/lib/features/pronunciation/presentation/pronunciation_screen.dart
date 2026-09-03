@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
-import '../../../core/navigation/app_top_bar.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../music_player/data/songs_data.dart';
@@ -87,7 +87,7 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const AppTopBar(showBackButton: true),
+            PopupHeader(title: ref.tr('pron_title')),
             const SizedBox(height: 16),
             // SingleChildScrollView thay vi Column+Spacer nhu ban goc:
             // PronunciationPractice dung mainAxisSize.min de dung lai duoc

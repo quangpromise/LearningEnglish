@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/navigation/app_top_bar.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../grammar/presentation/grammar_topics_screen.dart';
@@ -57,11 +58,8 @@ class HomeScreen extends ConsumerWidget {
                   _CategoryItemData(
                     icon: Icons.graphic_eq_rounded,
                     label: ref.tr('phonics_title'),
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const PhonicsLessonsScreen(),
-                      ),
-                    ),
+                    onTap: () =>
+                        openAppPopup(context, const PhonicsLessonsScreen()),
                   ),
                   _CategoryItemData(
                     // "Luyen phat am" - truoc day 1 tab rieng o thanh Menu,
@@ -69,19 +67,15 @@ class HomeScreen extends ConsumerWidget {
                     // nhac dai chiem giua thanh Menu, xem root_shell.dart).
                     icon: Icons.mic_rounded,
                     label: ref.tr('pron_title'),
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const PronunciationScreen(),
-                      ),
-                    ),
+                    onTap: () =>
+                        openAppPopup(context, const PronunciationScreen()),
                   ),
                   _CategoryItemData(
                     icon: Icons.auto_stories_rounded,
                     label: ref.tr('home_story_quick_title'),
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => StoryScreen(story: kStories.first),
-                      ),
+                    onTap: () => openAppPopup(
+                      context,
+                      StoryScreen(story: kStories.first),
                     ),
                   ),
                 ],
@@ -93,38 +87,26 @@ class HomeScreen extends ConsumerWidget {
                   _CategoryItemData(
                     icon: Icons.style_rounded,
                     label: ref.tr('home_vocabulary_quick_title'),
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const VocabularyTopicsScreen(),
-                      ),
-                    ),
+                    onTap: () =>
+                        openAppPopup(context, const VocabularyTopicsScreen()),
                   ),
                   _CategoryItemData(
                     icon: Icons.menu_book_rounded,
                     label: ref.tr('grammar_topics_title'),
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const GrammarTopicsScreen(),
-                      ),
-                    ),
+                    onTap: () =>
+                        openAppPopup(context, const GrammarTopicsScreen()),
                   ),
                   _CategoryItemData(
                     icon: Icons.local_library_rounded,
                     label: ref.tr('reading_title'),
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const ReadingLibraryScreen(),
-                      ),
-                    ),
+                    onTap: () =>
+                        openAppPopup(context, const ReadingLibraryScreen()),
                   ),
                   _CategoryItemData(
                     icon: Icons.extension_rounded,
                     label: ref.tr('quiz_title'),
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const QuizCategoryScreen(),
-                      ),
-                    ),
+                    onTap: () =>
+                        openAppPopup(context, const QuizCategoryScreen()),
                   ),
                 ],
               ),

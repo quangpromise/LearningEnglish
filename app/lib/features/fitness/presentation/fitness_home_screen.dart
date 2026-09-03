@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/navigation/app_top_bar.dart';
 import '../../../core/theme/app_theme.dart';
 import 'muscle_group_categories_screen.dart';
@@ -55,11 +56,9 @@ class FitnessHomeScreen extends ConsumerWidget {
                               width: itemWidth,
                               icon: Icons.fitness_center_rounded,
                               label: ref.tr('fitness_library_title'),
-                              onTap: () => Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      const MuscleGroupCategoriesScreen(),
-                                ),
+                              onTap: () => openAppPopup(
+                                context,
+                                const MuscleGroupCategoriesScreen(),
                               ),
                             ),
                           ],

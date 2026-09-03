@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../notifications/chat_push.dart';
 import '../providers/app_providers.dart';
 import '../theme/app_theme.dart';
+import 'app_popup.dart';
 import '../../features/music_player/presentation/center_media_button.dart';
 import '../../features/music_player/presentation/home_screen.dart';
 import '../../features/social/data/social_repository.dart';
@@ -13,6 +14,12 @@ import '../../features/social/presentation/conversations_screen.dart';
 import '../../features/social/presentation/incoming_message_banner.dart';
 import '../../features/update/presentation/update_dialog.dart';
 
+/// Man goc cua Hoc Tieng Anh - CHI CON 1 man hinh that su (HomeScreen), moi
+/// tinh nang khac (Phonics, Story, Vocabulary, Grammar, Reading, Quiz, Luyen
+/// phat am...) va Tin nhan gio deu mo len dang POPUP tu Home (xem
+/// app_popup.dart) thay vi la tab/man rieng - nen thanh Menu KHONG CON nut
+/// Home nua (Home la man duy nhat, luon nam duoi popup), chi con thanh nhac
+/// dai + 1 nut Tin nhan (mo popup).
 class RootShell extends ConsumerStatefulWidget {
   const RootShell({super.key});
 
@@ -22,59 +29,6 @@ class RootShell extends ConsumerStatefulWidget {
 
 class _RootShellState extends ConsumerState<RootShell>
     with WidgetsBindingObserver {
-  int _tab = 0;
-
-  // Vocabulary, Grammar va Phonics (bai hoc phat am IPA) khong phai tab
-  // rieng - da chuyen thanh the truy cap nhanh ngay tren man Home (xem
-  // home_screen.dart). Da bo han tab Menu - Reading/Quiz/Fitness/Crypto/
-  // Attribution (truoc gom trong Menu) gio vao thang tu Home theo nhom danh
-  // muc, khong con man Menu rieng. AI Voice Chat khong phai tab rieng - da
-  // chuyen thanh nut noi (xem ai_fab_overlay.dart) hien tren MOI man hinh
-  // cua app thay vi chiem 1 cho co dinh o thanh tab. Tin nhan truoc la 1 nut
-  // rieng o header Home, gio chuyen thanh 1 tab canh Ho so cho de tim hon.
-  //
-  // "Luyen phat am" (PronunciationScreen) KHONG con la tab rieng - da chuyen
-  // thanh 1 the truy cap nhanh trong nhom "Nghe noi" tren Home (dung 1 cho
-  // MotORBIT voi Phonics), giai phong 1 vi tri o thanh Menu cho thanh nhac
-  // dai (CenterMediaButton) chiem khoang giua.
-  //
-  // Da bo tab Ho so - vao qua nut xo xuong canh avatar tren Home
-  // (profile_quick_popup.dart) thay vi chiem 1 cho co dinh tren thanh tab.
-  //
-  // MOI TAB CO 1 Navigator RIENG (persistent-tab pattern) - man con (vd
-  // PhonicsLessonsScreen tu Home) duoc push VAO NAVIGATOR CUA TAB DO thay vi
-  // Navigator goc, nen Scaffold ngoai cung (voi bottomNavigationBar =
-  // thanh Menu + CenterMediaButton) KHONG BAO GIO bi che - dap ung yeu cau
-  // "Menu bar nen dai dien o TAT CA man hinh cua app". [NavigatorPopHandler]
-  // dam bao nut back he thong tra ve dung Navigator cua tab dang mo thay vi
-  // luon roi ve Navigator goc (mac dinh cua Flutter).
-  final _homeNavKey = GlobalKey<NavigatorState>();
-  final _messagesNavKey = GlobalKey<NavigatorState>();
-
-  List<GlobalKey<NavigatorState>> get _tabNavKeys => [
-    _homeNavKey,
-    _messagesNavKey,
-  ];
-
-  List<Widget> _buildScreens() => [
-    Navigator(
-      key: _homeNavKey,
-      onGenerateRoute: (_) =>
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
-    ),
-    Navigator(
-      key: _messagesNavKey,
-      onGenerateRoute: (_) =>
-          MaterialPageRoute(builder: (_) => const ConversationsScreen()),
-    ),
-  ];
-
-  static const _icons = [Icons.home_rounded, Icons.chat_bubble_rounded];
-
-  static const _messagesTabIndex = 1;
-
-  void _setTab(int i) => setState(() => _tab = i);
-
   Timer? _updateCheckTimer;
   Timer? _presenceTimer;
 
@@ -126,7 +80,7 @@ class _RootShellState extends ConsumerState<RootShell>
   @override
   Widget build(BuildContext context) {
     // Bam pop-up thong bao tin nhan moi kieu Messenger - hoat dong tren
-    // BAT KY tab nao dang mo, chi khi app dang chay (khong phai push
+    // BAT KY man hinh nao dang mo, chi khi app dang chay (khong phai push
     // notification he thong, xem ghi chu trong incoming_message_banner.dart).
     ref.listen(newIncomingMessageProvider, (previous, next) {
       final message = next.valueOrNull;
@@ -148,15 +102,11 @@ class _RootShellState extends ConsumerState<RootShell>
       );
     });
 
+    final unread = ref.watch(unreadMessageCountProvider).valueOrNull ?? 0;
+
     return Scaffold(
       backgroundColor: AppColors.bgTop,
-      body: NavigatorPopHandler(
-        onPopWithResult: (result) {
-          final nav = _tabNavKeys[_tab].currentState;
-          if (nav != null && nav.canPop()) nav.pop(result);
-        },
-        child: IndexedStack(index: _tab, children: _buildScreens()),
-      ),
+      body: const HomeScreen(),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
         child: Container(
@@ -175,27 +125,13 @@ class _RootShellState extends ConsumerState<RootShell>
           ),
           child: Row(
             children: [
-              _TabIcon(
-                icon: _icons[0],
-                active: _tab == 0,
-                onTap: () => _setTab(0),
+              const Expanded(
+                child: CenterMediaButton(accentColor: AppColors.blue),
               ),
               const SizedBox(width: 6),
-              Expanded(
-                child: const CenterMediaButton(accentColor: AppColors.blue),
-              ),
-              const SizedBox(width: 6),
-              Builder(
-                builder: (context) {
-                  final unread =
-                      ref.watch(unreadMessageCountProvider).valueOrNull ?? 0;
-                  return _TabIcon(
-                    icon: _icons[_messagesTabIndex],
-                    active: _tab == _messagesTabIndex,
-                    badge: unread,
-                    onTap: () => _setTab(_messagesTabIndex),
-                  );
-                },
+              _MessagesButton(
+                unread: unread,
+                onTap: () => openAppPopup(context, const ConversationsScreen()),
               ),
             ],
           ),
@@ -205,18 +141,11 @@ class _RootShellState extends ConsumerState<RootShell>
   }
 }
 
-/// 1 nut icon tab (Home/Tin nhan) o 2 dau thanh Menu - tach rieng thanh
-/// widget de con lai o giua danh cho CenterMediaButton (Expanded).
-class _TabIcon extends StatelessWidget {
-  const _TabIcon({
-    required this.icon,
-    required this.active,
-    required this.onTap,
-    this.badge = 0,
-  });
-  final IconData icon;
-  final bool active;
-  final int badge;
+/// Nut Tin nhan duy nhat con lai o thanh Menu - mo popup thay vi chuyen tab
+/// (khong con khai niem "tab dang active" vi Home la man duy nhat).
+class _MessagesButton extends StatelessWidget {
+  const _MessagesButton({required this.unread, required this.onTap});
+  final int unread;
   final VoidCallback onTap;
 
   @override
@@ -227,24 +156,15 @@ class _TabIcon extends StatelessWidget {
         width: 44,
         height: 44,
         alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: active
-              ? Colors.white.withValues(alpha: 0.12)
-              : Colors.transparent,
-          border: active
-              ? Border.all(color: Colors.white.withValues(alpha: 0.35))
-              : null,
-          borderRadius: BorderRadius.circular(999),
-        ),
         child: Stack(
           clipBehavior: Clip.none,
           children: [
-            Icon(
-              icon,
+            const Icon(
+              Icons.chat_bubble_rounded,
               size: 22,
-              color: active ? Colors.white : AppColors.textMuted,
+              color: AppColors.textMuted,
             ),
-            if (badge > 0)
+            if (unread > 0)
               Positioned(
                 right: -4,
                 top: -2,
@@ -263,7 +183,7 @@ class _TabIcon extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    badge > 9 ? '9+' : '$badge',
+                    unread > 9 ? '9+' : '$unread',
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: Colors.white,

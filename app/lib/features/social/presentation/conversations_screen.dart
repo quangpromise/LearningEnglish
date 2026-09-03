@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/time_format.dart';
@@ -9,9 +10,10 @@ import '../data/social_repository.dart';
 import 'chat_screen.dart';
 import 'friends_screen.dart';
 
-/// Man hinh Tin nhan (nut chat o Home mo man nay) - danh sach ban be DA CO
-/// hoi thoai, moi dong chi hien tin nhan GAN NHAT (kieu Messenger), bam
-/// vao 1 dong se mo pop-up chat voi nguoi do.
+/// Man hinh Tin nhan - mo dang POPUP tu nut chat o thanh Menu cua ca 3 app
+/// (xem app_popup.dart), danh sach ban be DA CO hoi thoai, moi dong chi
+/// hien tin nhan GAN NHAT (kieu Messenger), bam vao 1 dong se mo pop-up
+/// chat voi nguoi do.
 class ConversationsScreen extends ConsumerWidget {
   const ConversationsScreen({super.key});
 
@@ -94,6 +96,8 @@ class ConversationsScreen extends ConsumerWidget {
                     );
                   },
                 ),
+                const SizedBox(width: 10),
+                const PopupCloseButton(),
               ],
             ),
             const SizedBox(height: 14),

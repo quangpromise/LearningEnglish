@@ -3,28 +3,21 @@ import 'package:flutter/material.dart';
 import '../../features/music_player/presentation/center_media_button.dart';
 import '../theme/app_theme.dart';
 
-/// Thanh menu duoi cho 1 "app" con (Fitness/Wealth) - cung kieu pill/vien
-/// tron nhu bottom nav chinh cua Hoc Tieng Anh (root_shell.dart), voi thanh
-/// nhac dai (CenterMediaButton) chiem khoang trong giua 2 icon tab, mau nhan
-/// theo [accentColor] cua khu vuc do (cam cho Fitness, vang cho Wealth).
+/// Thanh menu duoi cho 1 "app" con (Fitness/Wealth) - CHI CON 1 man Home
+/// that su (moi tinh nang khac mo popup, xem app_popup.dart), nen thanh nay
+/// khong con nut Home nua: chi con thanh nhac dai (CenterMediaButton, mau
+/// theo [accentColor] tung khu vuc) + 1 nut Tin nhan mo popup.
 class MiniAppBottomNav extends StatelessWidget {
   const MiniAppBottomNav({
     super.key,
-    required this.icons,
-    required this.currentIndex,
-    required this.onTap,
     required this.accentColor,
-    this.badgeCounts,
+    required this.onMessagesTap,
+    this.unreadCount = 0,
   });
 
-  final List<IconData> icons;
-  final int currentIndex;
-  final ValueChanged<int> onTap;
   final Color accentColor;
-
-  /// So badge hien tren tung icon, cung do dai voi [icons] - null hoac 0 o
-  /// vi tri nao thi khong hien badge o do (vd danh cho tab Tin nhan).
-  final List<int>? badgeCounts;
+  final VoidCallback onMessagesTap;
+  final int unreadCount;
 
   @override
   Widget build(BuildContext context) {
@@ -46,25 +39,9 @@ class MiniAppBottomNav extends StatelessWidget {
         ),
         child: Row(
           children: [
-            for (var i = 0; i < icons.length; i++) ...[
-              _NavIcon(
-                icon: icons[i],
-                active: i == currentIndex,
-                accentColor: accentColor,
-                badge: badgeCounts != null && i < badgeCounts!.length
-                    ? badgeCounts![i]
-                    : 0,
-                onTap: () => onTap(i),
-              ),
-              const SizedBox(width: 6),
-              // Thanh nhac chiem khoang giua CHI 1 LAN, sau icon dau tien -
-              // Fitness/Wealth chi co 2 tab (Home/Tin nhan) nen day chinh la
-              // "khoang trong con lai o giua Menu" theo yeu cau.
-              if (i == 0) ...[
-                Expanded(child: CenterMediaButton(accentColor: accentColor)),
-                const SizedBox(width: 6),
-              ],
-            ],
+            Expanded(child: CenterMediaButton(accentColor: accentColor)),
+            const SizedBox(width: 6),
+            _MessagesIcon(badge: unreadCount, onTap: onMessagesTap),
           ],
         ),
       ),
@@ -72,19 +49,10 @@ class MiniAppBottomNav extends StatelessWidget {
   }
 }
 
-class _NavIcon extends StatelessWidget {
-  const _NavIcon({
-    required this.icon,
-    required this.active,
-    required this.accentColor,
-    required this.onTap,
-    this.badge = 0,
-  });
-  final IconData icon;
-  final bool active;
-  final Color accentColor;
-  final int badge;
+class _MessagesIcon extends StatelessWidget {
+  const _MessagesIcon({required this.onTap, this.badge = 0});
   final VoidCallback onTap;
+  final int badge;
 
   @override
   Widget build(BuildContext context) {
@@ -94,22 +62,13 @@ class _NavIcon extends StatelessWidget {
         width: 44,
         height: 44,
         alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: active
-              ? accentColor.withValues(alpha: 0.22)
-              : Colors.transparent,
-          border: active
-              ? Border.all(color: accentColor.withValues(alpha: 0.6))
-              : null,
-          borderRadius: BorderRadius.circular(999),
-        ),
         child: Stack(
           clipBehavior: Clip.none,
           children: [
-            Icon(
-              icon,
+            const Icon(
+              Icons.chat_bubble_rounded,
               size: 22,
-              color: active ? accentColor : AppColors.textMuted,
+              color: AppColors.textMuted,
             ),
             if (badge > 0)
               Positioned(
