@@ -150,6 +150,8 @@ class _CategorySection extends StatelessWidget {
     // dung crossAxisAlignment.start nen GlowBox mac dinh chi rong bang noi
     // dung ben trong (Wrap co the), khien khung the loai bi hep lai va lech
     // sang trai thay vi keo dai het chieu rong man hinh nhu cac khung khac.
+    const spacing = 12.0;
+    const columns = 4;
     return SizedBox(
       width: double.infinity,
       child: GlowBox(
@@ -160,13 +162,27 @@ class _CategorySection extends StatelessWidget {
           children: [
             Text(title, style: AppTextStyles.heading(size: 14)),
             const SizedBox(height: 14),
-            Wrap(
-              // spaceBetween: cac icon dan deu tu mep trai sang mep phai cua
-              // box thay vi don het ve ben trai (de trong 1 khoang rong ben
-              // phai khi 1 hang chi co 2-3 icon trong khi box du rong cho 4).
-              alignment: WrapAlignment.spaceBetween,
-              runSpacing: 14,
-              children: items.map((item) => _CategoryItem(data: item)).toList(),
+            // LayoutBuilder tinh RIENG be rong 1 the theo cong thuc "vua du 4
+            // the/hang" - Wrap+spaceBetween truoc day dua vao SizedBox(width:
+            // 86) CO DINH, chi vua khop khi 1 hang co DUNG so luong the lap
+            // day het chieu rong (khien hang le - vd 3 the "English riddles"
+            // mot minh - bi dan sat mep thay vi dung cong thuc chia deu, va
+            // khong dam bao luon vua dung 4 the/hang tren moi kich thuoc man
+            // hinh nhu yeu cau).
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final itemWidth =
+                    (constraints.maxWidth - spacing * (columns - 1)) / columns;
+                return Wrap(
+                  spacing: spacing,
+                  runSpacing: 14,
+                  children: items
+                      .map(
+                        (item) => _CategoryItem(data: item, width: itemWidth),
+                      )
+                      .toList(),
+                );
+              },
             ),
           ],
         ),
@@ -187,15 +203,16 @@ class _CategoryItemData {
 }
 
 class _CategoryItem extends StatelessWidget {
-  const _CategoryItem({required this.data});
+  const _CategoryItem({required this.data, required this.width});
   final _CategoryItemData data;
+  final double width;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: data.onTap,
       child: SizedBox(
-        width: 86,
+        width: width,
         child: Column(
           children: [
             Container(

@@ -45,27 +45,45 @@ class WealthHomeScreen extends ConsumerWidget {
                       style: AppTextStyles.heading(size: 14),
                     ),
                     const SizedBox(height: 14),
-                    Wrap(
-                      alignment: WrapAlignment.spaceBetween,
-                      runSpacing: 14,
-                      children: [
-                        _WealthTile(
-                          icon: Icons.receipt_long_rounded,
-                          label: ref.tr('wealth_tab_expense'),
-                          onTap: () => _open(context, const WealthExpenseTab()),
-                        ),
-                        _WealthTile(
-                          icon: Icons.savings_rounded,
-                          label: ref.tr('wealth_tab_income'),
-                          onTap: () => _open(context, const WealthIncomeTab()),
-                        ),
-                        _WealthTile(
-                          icon: Icons.trending_up_rounded,
-                          label: ref.tr('wealth_tab_investments'),
-                          onTap: () =>
-                              _open(context, const WealthInvestmentsTab()),
-                        ),
-                      ],
+                    // LayoutBuilder tinh be rong 1 the theo cong thuc "vua du
+                    // 4 the/hang" - xem giai thich chi tiet trong
+                    // home_screen.dart._CategorySection (Wrap+spaceBetween +
+                    // width co dinh truoc day khong dam bao dung 4 the/hang).
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        const spacing = 12.0;
+                        const columns = 4;
+                        final itemWidth =
+                            (constraints.maxWidth - spacing * (columns - 1)) /
+                            columns;
+                        return Wrap(
+                          spacing: spacing,
+                          runSpacing: 14,
+                          children: [
+                            _WealthTile(
+                              width: itemWidth,
+                              icon: Icons.receipt_long_rounded,
+                              label: ref.tr('wealth_tab_expense'),
+                              onTap: () =>
+                                  _open(context, const WealthExpenseTab()),
+                            ),
+                            _WealthTile(
+                              width: itemWidth,
+                              icon: Icons.savings_rounded,
+                              label: ref.tr('wealth_tab_income'),
+                              onTap: () =>
+                                  _open(context, const WealthIncomeTab()),
+                            ),
+                            _WealthTile(
+                              width: itemWidth,
+                              icon: Icons.trending_up_rounded,
+                              label: ref.tr('wealth_tab_investments'),
+                              onTap: () =>
+                                  _open(context, const WealthInvestmentsTab()),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -83,17 +101,19 @@ class _WealthTile extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.onTap,
+    required this.width,
   });
   final IconData icon;
   final String label;
   final VoidCallback onTap;
+  final double width;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: SizedBox(
-        width: 86,
+        width: width,
         child: Column(
           children: [
             Container(
