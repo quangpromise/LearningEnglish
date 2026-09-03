@@ -350,9 +350,27 @@ class _NarrationBar extends StatelessWidget {
           ),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(positionLabel, style: AppTextStyles.muted(size: 11)),
+            child: Text(
+              positionLabel,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.muted(size: 11),
+            ),
           ),
-          Text(bilingualLabel, style: AppTextStyles.muted()),
+          const SizedBox(width: 8),
+          // Flexible (khong phai Text thuong) - nhan "Bilingual English –
+          // Vietnamese" (ban tieng Anh) kha dai, neu khong gioi han se choan
+          // het cho trong Row va ep positionLabel (Expanded) ben tren xuong
+          // gan nhu 0px, khien no bi be xuong dong TUNG KY TU MOT thay vi
+          // hien binh thuong tren 1 dong.
+          Flexible(
+            child: Text(
+              bilingualLabel,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.muted(),
+            ),
+          ),
           Switch(
             value: bilingual,
             activeTrackColor: color,
