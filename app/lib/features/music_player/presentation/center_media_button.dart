@@ -234,8 +234,11 @@ class _PlayingBar extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 4),
+        // Nut mo rong - dung icon 2 mui ten cheo huong ra ngoai (giong nut
+        // "phong to man hinh"), giong het cach cham vao anh bia/ten bai
+        // (Row ben tren) cung mo popup Dang phat - 2 cach lam CUNG 1 viec.
         _Btn(
-          icon: Icons.unfold_more_rounded,
+          icon: Icons.open_in_full_rounded,
           color: accentColor,
           onTap: () => _openPlayerPopup(context),
         ),
