@@ -264,6 +264,11 @@ class _AuthGate extends ConsumerWidget {
         final newOnes = messages
             .where((m) => !previousIds.contains(m.id) && m.receiverId == myId)
             .toList();
+        if (debugCtx != null && debugCtx.mounted) {
+          ScaffoldMessenger.maybeOf(debugCtx)?.showSnackBar(
+            SnackBar(content: Text('[DEBUG msg3] newOnes=${newOnes.length}')),
+          );
+        }
         if (newOnes.isEmpty) return;
         final latest = newOnes.reduce(
           (a, b) => a.createdAt.isAfter(b.createdAt) ? a : b,
@@ -302,6 +307,15 @@ class _AuthGate extends ConsumerWidget {
         // listener nay cho phan con lai cua phien - ghi log de con chan
         // doan tiep neu van con loi ke sau khi fix nay.
         debugPrint('Loi hien banner tin nhan moi: $e\n$st');
+        // TAM THOI - debugPrint KHONG hien tren APK release, nen loi o day
+        // (neu co) tu truoc gio hoan toan vo hinh. Hien SnackBar de biet
+        // CHINH XAC co loi gi khong. Xoa sau khi xac dinh xong nguyen nhan.
+        final debugCtx = rootNavigatorKey.currentContext;
+        if (debugCtx != null && debugCtx.mounted) {
+          ScaffoldMessenger.maybeOf(debugCtx)?.showSnackBar(
+            SnackBar(content: Text('[DEBUG msg4] LOI banner: $e')),
+          );
+        }
       }
     });
 

@@ -1,8 +1,8 @@
 import 'dart:async';
 
+import 'package:audioplayers/audioplayers.dart' as ap;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:just_audio/just_audio.dart';
 
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
@@ -12,16 +12,15 @@ import 'chat_screen.dart';
 import 'emoji_reaction_picker.dart';
 
 /// Am "ding" bao tin nhan (giong Messenger) khi popup trong app hien len -
-/// dung rieng 1 AudioPlayer (khac AppTts) vi day la hieu ung UI ngan, khong
-/// phai giong noi - tao moi + dispose ngay sau khi phat xong de khong ro ri.
+/// dung `audioplayers` (KHONG dung just_audio) vi just_audio_background chi
+/// ho tro DUY NHAT 1 AudioPlayer trong toan app (xem giai thich chi tiet
+/// trong pubspec.yaml/app_tts.dart) - tao moi + dispose ngay sau khi phat
+/// xong de khong ro ri.
 Future<void> _playIncomingMessageSound() async {
-  final player = AudioPlayer();
+  final player = ap.AudioPlayer();
   try {
-    await player.setAsset('assets/audio/notification_tone.mp3');
-    await player.play();
-    await player.playerStateStream.firstWhere(
-      (s) => s.processingState == ProcessingState.completed,
-    );
+    await player.play(ap.AssetSource('audio/notification_tone.mp3'));
+    await player.onPlayerComplete.first;
   } catch (_) {
     // Khong phat duoc am thanh (thiet bi tat am, loi giai ma...) - khong
     // anh huong den viec hien banner.
