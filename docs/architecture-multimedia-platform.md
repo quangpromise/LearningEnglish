@@ -426,6 +426,7 @@ Tất cả đều 📎 đã verify. Ba mục đầu **tách issue riêng**, xem 
 6. **`docs/architecture.md`, `docs/roadmap.md`, `docs/ci-apk-distribution.md` lỗi thời.** Cái cuối nói build tự động mỗi lần push vào `main`, thực tế đã đổi thành gate `[build]`.
 7. Không có: offline/cache, phát nền, wakelock, versioning nội dung khi sửa transcript, telemetry đo giả thuyết MVP.
 8. Ba màn quiz gần trùng nhau; `features/crypto/` không liên quan học tiếng Anh.
+9. **`features/attribution/data/attribution_data.dart` khoá theo `Song.title`** (string), không phải ID ổn định — cùng gốc rễ với mục #1 (`user_completed_songs.song_title`). `attribution_data_test.dart` so 2 tập hợp tiêu đề nên bắt được thiếu/thừa/đổi tên, nhưng **không** bắt được trường hợp 2 bài đổi tiêu đề cho nhau (tập hợp vẫn khớp, ghi công gán sai bài). Chấp nhận được cho MVP (20 bài, 1 người duyệt, tên bài không trùng nhau) — nhưng nếu Phase 0 sau này thêm `id` ổn định suy từ `audioUrl` cho `Song` (xem §D Phase 0, §C.2), nên đổi khoá ghi công theo `id` đó thay vì `title` cùng lúc.
 
 ---
 
