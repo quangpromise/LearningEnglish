@@ -653,8 +653,8 @@ class AppStrings {
       AppLanguage.en: 'Fitness',
     },
     'app_switcher_wealth': {
-      AppLanguage.vi: 'Quản lý tài sản',
-      AppLanguage.en: 'Wealth management',
+      AppLanguage.vi: 'Assets Management',
+      AppLanguage.en: 'Assets Management',
     },
     'app_switcher_current_badge': {
       AppLanguage.vi: 'Đang dùng',
@@ -672,8 +672,8 @@ class AppStrings {
     // Wealth Management (features/wealth/) - Phase 1: Chi tieu/Thu nhap +
     // Dau tu (crypto + co phieu quoc te).
     'wealth_title': {
-      AppLanguage.vi: 'Quản lý tài sản',
-      AppLanguage.en: 'Wealth Management',
+      AppLanguage.vi: 'Assets Management',
+      AppLanguage.en: 'Assets Management',
     },
     'wealth_tab_expense': {
       AppLanguage.vi: 'Chi tiêu',
