@@ -11,7 +11,18 @@ import 'exercise_detail_screen.dart';
 /// lat cat dau tien (khong co anh GIF minh hoa - FitViet ban goc cung moi la
 /// placeholder filename, chua co anh that).
 class ExerciseLibraryScreen extends ConsumerStatefulWidget {
-  const ExerciseLibraryScreen({super.key});
+  const ExerciseLibraryScreen({
+    super.key,
+    this.initialGroup,
+    this.initialQuery = '',
+  });
+
+  /// Nhom co duoc chon san khi mo tu 1 the trong
+  /// [MuscleGroupCategoriesScreen] - null nghia la "Tất cả".
+  final MuscleGroup? initialGroup;
+
+  /// Tu khoa go san khi mo tu o tim kiem cua man danh muc.
+  final String initialQuery;
 
   @override
   ConsumerState<ExerciseLibraryScreen> createState() =>
@@ -19,9 +30,11 @@ class ExerciseLibraryScreen extends ConsumerStatefulWidget {
 }
 
 class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
-  final _searchController = TextEditingController();
-  String _query = '';
-  MuscleGroup? _selectedGroup;
+  late final _searchController = TextEditingController(
+    text: widget.initialQuery,
+  );
+  late String _query = widget.initialQuery;
+  late MuscleGroup? _selectedGroup = widget.initialGroup;
 
   @override
   void dispose() {

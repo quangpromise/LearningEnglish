@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/providers/app_providers.dart';
-import 'exercise_library_screen.dart';
+import 'muscle_group_categories_screen.dart';
 
 /// Man hinh goc cua khu vuc Fitness - vao tu nhom "Khac" ngay tren Home (xem
 /// home_screen.dart). Phase 1 chi co 1 man (Thu vien bai tap); cau truc rieng
@@ -38,6 +38,6 @@ class _FitnessShellState extends ConsumerState<FitnessShell> {
 
   @override
   Widget build(BuildContext context) {
-    return const ExerciseLibraryScreen();
+    return const MuscleGroupCategoriesScreen();
   }
 }

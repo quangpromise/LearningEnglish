@@ -36,6 +36,16 @@ enum MuscleGroup {
     MuscleGroup.functional => 'Chức năng',
     MuscleGroup.cardio => 'Tim mạch',
   };
+
+  /// Anh minh hoa giai phau (nguoi mau 3D highlight vung co, cat tu app
+  /// tham khao - da xac nhan co ban quyen su dung) cho man danh sach nhom co.
+  String get imageAsset {
+    final fileName = switch (this) {
+      MuscleGroup.fullBody => 'full_body',
+      _ => name,
+    };
+    return 'assets/fitness/muscle_groups/$fileName.png';
+  }
 }
 
 enum ExerciseDifficulty {
