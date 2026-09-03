@@ -220,32 +220,52 @@ class _AuthGate extends ConsumerWidget {
     // trong luc app dang mo (chi thay qua push notification he thong khi
     // app o nen).
     ref.listen(newIncomingMessageProvider, (previous, next) async {
-      final message = next.valueOrNull;
-      if (message == null) return;
-      // await ref.read(...future) thay vi ref.read(provider).valueOrNull -
-      // myFriendsProvider la autoDispose va gio it khi co man nao "watch"
-      // lien tuc no (Tin nhan chi con mo dang popup, khong con la tab luon
-      // mount nhu truoc), nen thuong bi dispose giua cac lan mo popup. Doc
-      // cache dong bo (.valueOrNull) tra ve null moi lan nhu vay, khien
-      // khong tim duoc nguoi gui va banner bi bo qua AM THAM. await ban
-      // future dam bao luon co du lieu that (fetch lai neu can) truoc khi
-      // quyet dinh co hien banner hay khong.
-      final friends = await ref.read(myFriendsProvider.future);
-      SocialUser? sender;
-      for (final f in friends) {
-        if (f.id == message.senderId) {
-          sender = f;
-          break;
+      try {
+        final message = next.valueOrNull;
+        if (message == null) return;
+        // await ref.read(...future) thay vi ref.read(provider).valueOrNull -
+        // myFriendsProvider la autoDispose va gio it khi co man nao "watch"
+        // lien tuc no (Tin nhan chi con mo dang popup, khong con la tab
+        // luon mount nhu truoc), nen thuong bi dispose giua cac lan mo
+        // popup. Doc cache dong bo (.valueOrNull) tra ve null moi lan nhu
+        // vay, khien khong tim duoc nguoi gui va banner bi bo qua AM THAM.
+        // await ban future dam bao luon co du lieu that truoc khi quyet
+        // dinh co hien banner hay khong.
+        final friends = await ref.read(myFriendsProvider.future);
+        SocialUser? sender;
+        for (final f in friends) {
+          if (f.id == message.senderId) {
+            sender = f;
+            break;
+          }
         }
+        // KHONG bo qua banner chi vi khong khop duoc voi danh sach ban be
+        // (vd danh sach chua kip lam moi) - van hien banner voi thong tin
+        // toi thieu (id) thay vi im lang mat luon thong bao that su.
+        sender ??= SocialUser(
+          id: message.senderId,
+          username: null,
+          displayName: null,
+          avatarUrl: null,
+        );
+        // Dung context CUA NAVIGATOR GOC (khong dung `context` cua chinh
+        // _AuthGate) - dam bao luon la 1 context nam trong Overlay dang
+        // hoat dong, tranh moi kha nang be gay do vi tri Widget nay nam o
+        // trong cay (giong bai hoc rut ra tu loi nut AI Voice Chat).
+        final overlayContext = rootNavigatorKey.currentContext;
+        if (overlayContext == null || !overlayContext.mounted) return;
+        showIncomingMessageBanner(
+          overlayContext,
+          sender: sender,
+          preview: message.previewText,
+          messageId: message.id,
+        );
+      } catch (e, st) {
+        // KHONG de 1 loi bat ngo (vd parse tin nhan la) lam "chet" ca
+        // listener nay cho phan con lai cua phien - ghi log de con chan
+        // doan tiep neu van con loi ke sau khi fix nay.
+        debugPrint('Loi hien banner tin nhan moi: $e\n$st');
       }
-      if (sender == null) return;
-      if (!context.mounted) return;
-      showIncomingMessageBanner(
-        context,
-        sender: sender,
-        preview: message.previewText,
-        messageId: message.id,
-      );
     });
 
     if (authState.isLoading && session == null) {
