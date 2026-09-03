@@ -11,6 +11,17 @@
   don gian la KHONG hien/KHONG keu) ma khong co dau hieu loi ro rang.
   tools:keep buoc trinh rut gon giu lai du khong tim thay tham chieu tinh nao.
   Xem https://developer.android.com/build/shrink-code#keep-resources
+
+  @drawable/audio_service_* - icon nut Phat/Tam dung/Bai truoc/Bai sau tren
+  thong bao/man hinh khoa cho tinh nang nhac nen (package audio_service,
+  dung boi just_audio_background) - CUNG duoc tham chieu qua chuoi string
+  ("drawable/audio_service_skip_next"...) trong chinh source cua package do
+  (MediaControl.skipToNext/skipToPrevious/play/pause...), nen cung bi rut
+  gon xoa mat neu khong khai bao o day. Day rat co the la nguyen nhan THAT
+  SU khien 1 so may (vd Huawei/EMUI) chi hien ten bai/nghe si + 1 chevron
+  tren man hinh khoa ma khong co nut play/tam dung/bai truoc/sau - truoc day
+  tung ket luan nham la "gioi han rendering cua OS", trong khi that ra la
+  icon bi thieu tu phia app.
 -->
 <resources xmlns:tools="http://schemas.android.com/tools"
-    tools:keep="@drawable/ic_stat_notify,@raw/notification_tone" />
+    tools:keep="@drawable/ic_stat_notify,@raw/notification_tone,@drawable/audio_service_*" />
