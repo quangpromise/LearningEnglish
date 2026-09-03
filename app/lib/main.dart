@@ -219,22 +219,37 @@ class _AuthGate extends ConsumerWidget {
     // dang o Hoc Tieng Anh, Fitness/Wealth khong bao gio thay tin nhan moi
     // trong luc app dang mo (chi thay qua push notification he thong khi
     // app o nen).
-    ref.listen(newIncomingMessageProvider, (previous, next) async {
+    // Phat hien tin nhan MOI bang cach so sanh previous/next CUA CHINH
+    // RIVERPOD (framework tu quan ly, dam bao dung) thay vi tu theo doi
+    // seenIds/isFirstSnapshot trong 1 closure rieng (cach cu, xem
+    // watchNewIncomingMessages() da bi xoa) - do la diem KHAC BIET DUY NHAT
+    // so voi unreadMessageCountProvider (van cap nhat dung, cung 1 bang
+    // messages), nen rat co the la nguyen nhan khien banner khong hien du
+    // da qua nhieu vong sua/dieu tra khac. incomingMessagesProvider tra ve
+    // NGUYEN DANH SACH tin nhan (giong het cau truc watchUnreadCount()),
+    // "tin moi" la nhung id CHUA TUNG XUAT HIEN trong previous.
+    ref.listen(incomingMessagesProvider, (previous, next) async {
       try {
-        final message = next.valueOrNull;
-        if (message == null) return;
-        // await ref.read(...future) thay vi ref.read(provider).valueOrNull -
-        // myFriendsProvider la autoDispose va gio it khi co man nao "watch"
-        // lien tuc no (Tin nhan chi con mo dang popup, khong con la tab
-        // luon mount nhu truoc), nen thuong bi dispose giua cac lan mo
-        // popup. Doc cache dong bo (.valueOrNull) tra ve null moi lan nhu
-        // vay, khien khong tim duoc nguoi gui va banner bi bo qua AM THAM.
-        // await ban future dam bao luon co du lieu that truoc khi quyet
-        // dinh co hien banner hay khong.
+        final messages = next.valueOrNull;
+        if (messages == null) return;
+        // Chua co previous (lan dau provider nay duoc tao) - day la toan bo
+        // tin nhan CU da co san, KHONG phai tin moi, bo qua de khong spam
+        // banner cho tin da doc tu truoc.
+        final previousMessages = previous?.valueOrNull;
+        if (previousMessages == null) return;
+        final previousIds = previousMessages.map((m) => m.id).toSet();
+        final myId = session?.user.id;
+        final newOnes = messages
+            .where((m) => !previousIds.contains(m.id) && m.receiverId == myId)
+            .toList();
+        if (newOnes.isEmpty) return;
+        final latest = newOnes.reduce(
+          (a, b) => a.createdAt.isAfter(b.createdAt) ? a : b,
+        );
         final friends = await ref.read(myFriendsProvider.future);
         SocialUser? sender;
         for (final f in friends) {
-          if (f.id == message.senderId) {
+          if (f.id == latest.senderId) {
             sender = f;
             break;
           }
@@ -243,7 +258,7 @@ class _AuthGate extends ConsumerWidget {
         // (vd danh sach chua kip lam moi) - van hien banner voi thong tin
         // toi thieu (id) thay vi im lang mat luon thong bao that su.
         sender ??= SocialUser(
-          id: message.senderId,
+          id: latest.senderId,
           username: null,
           displayName: null,
           avatarUrl: null,
@@ -257,8 +272,8 @@ class _AuthGate extends ConsumerWidget {
         showIncomingMessageBanner(
           overlayContext,
           sender: sender,
-          preview: message.previewText,
-          messageId: message.id,
+          preview: latest.previewText,
+          messageId: latest.id,
         );
       } catch (e, st) {
         // KHONG de 1 loi bat ngo (vd parse tin nhan la) lam "chet" ca

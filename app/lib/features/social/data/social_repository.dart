@@ -342,36 +342,25 @@ class SocialRepository {
         .map((rows) => rows.where((r) => r['read_at'] == null).length);
   }
 
-  /// Phat ra 1 su kien moi lan co tin nhan MOI (chua tung thay) gui den
-  /// minh - dung de hien pop-up thong bao kieu Messenger tren moi man
-  /// hinh, khong chi rieng man Tin nhan. Bo qua lan phat dau tien (snapshot
-  /// tin nhan cu co san) - chi bao tin THAT SU moi den sau khi bat dau
-  /// theo doi.
-  Stream<ChatMessage> watchNewIncomingMessages() {
+  /// Realtime: TOAN BO tin nhan gui den minh (khong loc chua doc/da doc) -
+  /// cau truc giong het watchUnreadCount() o tren (da xac nhan hoat dong
+  /// dung), dung cho banner "tin nhan moi" kieu Messenger o _AuthGate
+  /// (main.dart) - noi do tu so sanh voi snapshot TRUOC (qua previous/next
+  /// cua Riverpod) de biet id nao la MOI, thay vi tu theo doi trang thai
+  /// "da thay chua" ngay trong 1 closure rieng nhu cach cu (da bo, xem
+  /// git history watchNewIncomingMessages).
+  Stream<List<ChatMessage>> watchIncomingMessages() {
     final myId = _myId;
     if (myId == null) return const Stream.empty();
-    final seenIds = <int>{};
-    var isFirstSnapshot = true;
     return _supabase
         .from('messages')
         .stream(primaryKey: ['id'])
         .eq('receiver_id', myId)
-        .map((rows) {
-          final messages = rows.map(ChatMessage.fromRow).toList()
-            ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
-          if (isFirstSnapshot) {
-            isFirstSnapshot = false;
-            seenIds.addAll(messages.map((m) => m.id));
-            return null;
-          }
-          ChatMessage? latestNew;
-          for (final m in messages) {
-            if (seenIds.add(m.id)) latestNew = m;
-          }
-          return latestNew;
-        })
-        .where((m) => m != null)
-        .cast<ChatMessage>();
+        .map(
+          (rows) =>
+              rows.map(ChatMessage.fromRow).toList()
+                ..sort((a, b) => a.createdAt.compareTo(b.createdAt)),
+        );
   }
 
   /// Danh sach hoi thoai (ban be + tin nhan gan nhat + so chua doc), sap

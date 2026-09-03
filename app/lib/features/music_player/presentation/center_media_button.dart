@@ -56,7 +56,16 @@ class CenterMediaButton extends StatelessWidget {
           // vien bo tron cua pill.
           child: ClipRRect(
             borderRadius: BorderRadius.circular(999),
+            // alignment: center - BAT BUOC. Stack mac dinh can cac phan tu
+            // KHONG Positioned theo topStart (goc TREN-trai), khong phai
+            // giua. Padding ben duoi (chua het icon+chu) co chieu cao NHO
+            // HON 64 (chi cao bang noi dung, ~46-48px do Row khong duoc ep
+            // gian ra du 64px) nen bi Stack dan LEN SAT TREN, de trong 1
+            // khoang trong CHI o duoi - day chinh la nguyen nhan "lech tren
+            // duoi" nguoi dung bao, KHONG phai do font/leading nhu 2 lan
+            // sua truoc (cac lan do khong giai quyet dung nguyen nhan goc).
             child: Stack(
+              alignment: Alignment.center,
               children: [
                 if (queue.isNotEmpty)
                   Positioned.fill(

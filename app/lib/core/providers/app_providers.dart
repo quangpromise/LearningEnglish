@@ -185,11 +185,15 @@ final pendingRequestCountProvider = StreamProvider.autoDispose(
   (ref) => ref.watch(socialRepositoryProvider).watchPendingRequestCount(),
 );
 
-/// Phat 1 su kien moi lan co tin nhan MOI (chua tung thay) gui den minh -
-/// RootShell lang nghe cai nay de hien pop-up thong bao kieu Messenger
-/// tren BAT KY man hinh nao, khong chi rieng man Tin nhan.
-final newIncomingMessageProvider = StreamProvider.autoDispose(
-  (ref) => ref.watch(socialRepositoryProvider).watchNewIncomingMessages(),
+/// Toan bo tin nhan gui DEN MINH, cap nhat Realtime - dung CUNG 1 cau truc
+/// truy van don gian voi watchUnreadCount() (khong tu theo doi trang thai
+/// "da thay chua" trong 1 closure rieng nhu ban cu newIncomingMessageProvider
+/// - cach cu la diem khac biet DUY NHAT so voi watchUnreadCount() (van luon
+/// cap nhat dung), nen rat co the la nguyen nhan banner tin nhan moi khong
+/// hien). _AuthGate (main.dart) tu so sanh previous/next CUA RIVERPOD de
+/// tim id tin nhan MOI, thay vi tin cay logic tu viet.
+final incomingMessagesProvider = StreamProvider.autoDispose(
+  (ref) => ref.watch(socialRepositoryProvider).watchIncomingMessages(),
 );
 
 /// Toàn bộ provider gắn với user hiện tại - gọi invalidate hết mỗi khi
