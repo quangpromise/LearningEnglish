@@ -1105,6 +1105,84 @@ class AppStrings {
       AppLanguage.vi: 'Làm đố vui từ vựng, ngữ pháp theo chủ đề và leo hạng trên bảng xếp hạng cùng bạn bè.',
       AppLanguage.en: 'Take vocabulary and grammar quizzes by topic and climb the leaderboard together with your friends.',
     },
+
+    // Attribution/Credits screen (features/attribution/)
+    'attribution_menu_title': {
+      AppLanguage.vi: 'Ghi công',
+      AppLanguage.en: 'Attribution',
+    },
+    'attribution_menu_subtitle': {
+      AppLanguage.vi: 'Nguồn & giấy phép nhạc dùng trong app',
+      AppLanguage.en: 'Sources & licenses for music used in the app',
+    },
+    'attribution_title': {
+      AppLanguage.vi: 'Ghi công',
+      AppLanguage.en: 'Attribution',
+    },
+    'attribution_subtitle': {
+      AppLanguage.vi: 'Nhạc trong app dùng giấy phép Creative Commons',
+      AppLanguage.en: 'Music in this app is used under Creative Commons',
+    },
+    'attribution_songs_suffix': {
+      AppLanguage.vi: 'bài hát',
+      AppLanguage.en: 'songs',
+    },
+    'attribution_view_license': {
+      AppLanguage.vi: 'Xem điều khoản giấy phép →',
+      AppLanguage.en: 'View license terms →',
+    },
+    'attribution_original_content_title': {
+      AppLanguage.vi: 'NỘI DUNG GỐC',
+      AppLanguage.en: 'ORIGINAL CONTENT',
+    },
+    'attribution_original_content_body': {
+      AppLanguage.vi:
+          'Từ vựng, ngữ pháp, câu đố và các bài học (Chuyện ngắn, phát âm...) '
+          'do đội ngũ app tự biên soạn, không trích từ nguồn bên ngoài nào '
+          'nên không cần ghi công.',
+      AppLanguage.en:
+          'Vocabulary, grammar, quizzes and lessons (Stories, pronunciation...) '
+          'are written in-house and not taken from any external source, so '
+          'no attribution is required.',
+    },
+
+    // Word popup (story)
+    'word_in_story': {
+      AppLanguage.vi: 'TRONG CHUYỆN NGẮN',
+      AppLanguage.en: 'IN THE STORY',
+    },
+
+    // Story feature (features/story/) - micro-story B1, xem
+    // docs/architecture-multimedia-platform.md Phase 1
+    'home_story_quick_title': {
+      AppLanguage.vi: 'Chuyện ngắn',
+      AppLanguage.en: 'Stories',
+    },
+    'home_story_quick_subtitle': {
+      AppLanguage.vi: 'Nghe + đọc 1 câu chuyện ngắn trình độ B1',
+      AppLanguage.en: 'Listen & read a short B1-level story',
+    },
+    'story_original_label': {
+      AppLanguage.vi: 'Nội dung gốc',
+      AppLanguage.en: 'Original content',
+    },
+    'story_completed_badge': {
+      AppLanguage.vi: 'Hoàn thành',
+      AppLanguage.en: 'Completed',
+    },
+    'story_segment_label': {AppLanguage.vi: 'Đoạn', AppLanguage.en: 'Line'},
+    'story_vocabulary_title': {
+      AppLanguage.vi: 'TỪ VỰNG TRONG BÀI',
+      AppLanguage.en: 'VOCABULARY IN THIS STORY',
+    },
+    'story_shadow_section_title': {
+      AppLanguage.vi: 'LUYỆN NÓI THEO (SHADOWING)',
+      AppLanguage.en: 'SHADOWING PRACTICE',
+    },
+    'story_shadow_title': {
+      AppLanguage.vi: 'Luyện nói theo đoạn này',
+      AppLanguage.en: 'Practice this line',
+    },
   };
 
   static String t(String key, AppLanguage lang) =>
