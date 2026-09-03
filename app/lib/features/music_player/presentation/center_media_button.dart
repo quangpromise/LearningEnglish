@@ -6,13 +6,12 @@ import '../../../core/theme/app_theme.dart';
 import '../data/songs_data.dart';
 import 'player_screen.dart';
 
-/// Thanh nhac dang phat DAI, NAM SAN NGAY TRONG thanh Menu duoi (khong con
-/// noi/chong len nhu truoc) - chiem het khoang trong con lai giua cac icon
-/// tab (dung [Expanded] tu noi goi). Luon hien MAC DINH ke ca khi chua co
-/// bai nao dang phat (trang thai rut gon, cham vao se tu phat bai dau tien)
-/// - dap ung yeu cau "mac dinh o Menubar" thay vi chi hien khi co nhac. Mau
-/// vien/icon nhan theo [accentColor] cua tung "app" (Hoc Tieng Anh/Fitness/
-/// Wealth) de dong bo voi phan con lai cua thanh Menu do.
+/// Thanh nhac dang phat DAI, NAM SAN NGAY TRONG thanh Menu duoi - thiet ke
+/// lai theo kieu "media widget" cua iOS/macOS (anh bia nho + ten bai/ca si +
+/// thanh tien trinh chay, prev/play/next 1 ben, nut mo rong 1 ben). Luon
+/// hien MAC DINH ke ca khi chua co bai nao dang phat (trang thai rut gon,
+/// cham vao se tu phat bai dau tien). Mau vien/icon nhan theo [accentColor]
+/// cua tung "app" (Hoc Tieng Anh/Fitness/Wealth).
 class CenterMediaButton extends StatelessWidget {
   const CenterMediaButton({super.key, required this.accentColor});
   final Color accentColor;
@@ -32,8 +31,8 @@ class CenterMediaButton extends StatelessWidget {
       builder: (context, queueSnap) {
         final queue = queueSnap.data ?? const <Song>[];
         return Container(
-          height: 46,
-          padding: const EdgeInsets.symmetric(horizontal: 6),
+          height: 58,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
           decoration: BoxDecoration(
             color: accentColor.withValues(alpha: 0.14),
             borderRadius: BorderRadius.circular(999),
@@ -93,11 +92,6 @@ class _PlayingBar extends StatelessWidget {
     return Row(
       children: [
         _Btn(
-          icon: Icons.unfold_more_rounded,
-          color: accentColor,
-          onTap: () => _openPlayerPopup(context),
-        ),
-        _Btn(
           icon: Icons.skip_previous_rounded,
           color: AppColors.textPrimary,
           onTap: queue.length > 1 ? service.previous : null,
@@ -115,54 +109,123 @@ class _PlayingBar extends StatelessWidget {
             );
           },
         ),
+        _Btn(
+          icon: Icons.skip_next_rounded,
+          color: AppColors.textPrimary,
+          onTap: queue.length > 1 ? service.next : null,
+        ),
+        const SizedBox(width: 6),
         Expanded(
           child: StreamBuilder<int?>(
             stream: service.currentIndexStream,
             initialData: service.currentIndex,
             builder: (context, indexSnap) {
               final index = indexSnap.data;
-              final title = (index != null && index < queue.length)
-                  ? queue[index].title
-                  : '';
-              return StreamBuilder<Duration>(
-                stream: service.player.positionStream,
-                initialData: service.player.position,
-                builder: (context, posSnap) {
-                  final pos = posSnap.data ?? Duration.zero;
-                  final dur = service.player.duration ?? Duration.zero;
-                  final remaining = dur - pos;
-                  return Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.body(
-                          size: 11,
-                          weight: FontWeight.w800,
-                        ),
+              final song = (index != null && index < queue.length)
+                  ? queue[index]
+                  : null;
+              return GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => _openPlayerPopup(context),
+                child: Row(
+                  children: [
+                    // Anh bia thu nho - app chua co anh bia rieng tung bai
+                    // nen dung khoi mau cua bai hat (song.color, da dung
+                    // cung mau nay o danh sach "Goi y cho ban") + icon nhac
+                    // thay the, giong vi tri "album art" trong widget tham
+                    // khao.
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: song?.color ?? accentColor,
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      Text(
-                        remaining.isNegative
-                            ? '-0:00'
-                            : '-${CenterMediaButton._fmt(remaining)}',
-                        style: AppTextStyles.muted(size: 9.5),
+                      alignment: Alignment.center,
+                      child: const Icon(
+                        Icons.music_note_rounded,
+                        size: 18,
+                        color: Colors.white,
                       ),
-                    ],
-                  );
-                },
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            song?.title ?? '',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTextStyles.body(
+                              size: 12,
+                              weight: FontWeight.w800,
+                            ),
+                          ),
+                          Text(
+                            song?.artist ?? '',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTextStyles.muted(size: 10),
+                          ),
+                          const SizedBox(height: 4),
+                          // Thanh tien trinh chay + thoi gian - dung
+                          // StreamBuilder rieng (khong bao Column ngoai
+                          // cung) de CHI phan nay rebuild moi giay thay vi
+                          // ca ten bai/anh bia.
+                          StreamBuilder<Duration>(
+                            stream: service.player.positionStream,
+                            initialData: service.player.position,
+                            builder: (context, posSnap) {
+                              final pos = posSnap.data ?? Duration.zero;
+                              final dur =
+                                  service.player.duration ?? Duration.zero;
+                              final ratio = dur.inMilliseconds > 0
+                                  ? (pos.inMilliseconds / dur.inMilliseconds)
+                                        .clamp(0.0, 1.0)
+                                  : 0.0;
+                              final remaining = dur - pos;
+                              return Row(
+                                children: [
+                                  Expanded(
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(999),
+                                      child: LinearProgressIndicator(
+                                        value: ratio,
+                                        minHeight: 3,
+                                        backgroundColor: Colors.white
+                                            .withValues(alpha: 0.14),
+                                        color: accentColor,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    remaining.isNegative
+                                        ? '-0:00'
+                                        : '-${CenterMediaButton._fmt(remaining)}',
+                                    style: AppTextStyles.muted(size: 9),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               );
             },
           ),
         ),
-        _Btn(
-          icon: Icons.skip_next_rounded,
-          color: AppColors.textPrimary,
-          onTap: queue.length > 1 ? service.next : null,
-        ),
         const SizedBox(width: 4),
+        _Btn(
+          icon: Icons.unfold_more_rounded,
+          color: accentColor,
+          onTap: () => _openPlayerPopup(context),
+        ),
       ],
     );
   }
