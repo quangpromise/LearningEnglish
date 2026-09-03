@@ -32,3 +32,15 @@ create policy "lesson_progress_update_own"
   on public.user_lesson_progress for update
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
+
+-- RLS chi loc HANG, khong tu cap quyen truy cap BANG - PostgreSQL van doi
+-- GRANT o cap bang truoc khi RLS duoc xet toi. Cac bang cu (user_completed_
+-- songs, user_favorite_songs) chay duoc du migration cua chung khong co
+-- GRANT tuong tu, nhieu kha nang nho 1 lan cap quyen mac dinh cho schema
+-- public tu luc tao du an tren Supabase Cloud (ALTER DEFAULT PRIVILEGES,
+-- nam ngoai lich su migration) - phat hien khi kiem thu bang mot instance
+-- Supabase local sach (`supabase start`), instance nay KHONG co buoc bootstrap
+-- do nen bang MOI hoan toan nay bi tu choi truy cap thang voi loi "permission
+-- denied". Ghi GRANT tuong minh o day de khong phu thuoc hanh vi ngam cua
+-- Cloud - dung cho ca moi truong dev local lan production.
+grant select, insert, update on public.user_lesson_progress to authenticated;

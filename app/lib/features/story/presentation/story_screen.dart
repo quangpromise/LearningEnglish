@@ -333,50 +333,57 @@ class _NarrationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GlowBox(
-      borderRadius: 999,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: onTogglePlay,
-            child: Icon(
-              playing
-                  ? Icons.pause_circle_filled_rounded
-                  : Icons.play_circle_fill_rounded,
-              size: 34,
-              color: color,
+    // Switch can Material ancestor de ve (ripple/thumb) - man nay (nhu moi
+    // man khac trong app) chi boc trong ScreenBackground (Container +
+    // SafeArea), khong co Scaffold/Material nao ben tren. Boc rieng o day
+    // thay vi o toan StoryScreen de khong doi shadow/background cua ca man.
+    return Material(
+      type: MaterialType.transparency,
+      child: GlowBox(
+        borderRadius: 999,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Row(
+          children: [
+            GestureDetector(
+              onTap: onTogglePlay,
+              child: Icon(
+                playing
+                    ? Icons.pause_circle_filled_rounded
+                    : Icons.play_circle_fill_rounded,
+                size: 34,
+                color: color,
+              ),
             ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              positionLabel,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.muted(size: 11),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                positionLabel,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.muted(size: 11),
+              ),
             ),
-          ),
-          const SizedBox(width: 8),
-          // Flexible (khong phai Text thuong) - nhan "Bilingual English –
-          // Vietnamese" (ban tieng Anh) kha dai, neu khong gioi han se choan
-          // het cho trong Row va ep positionLabel (Expanded) ben tren xuong
-          // gan nhu 0px, khien no bi be xuong dong TUNG KY TU MOT thay vi
-          // hien binh thuong tren 1 dong.
-          Flexible(
-            child: Text(
-              bilingualLabel,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.muted(),
+            const SizedBox(width: 8),
+            // Flexible (khong phai Text thuong) - nhan "Bilingual English –
+            // Vietnamese" (ban tieng Anh) kha dai, neu khong gioi han se choan
+            // het cho trong Row va ep positionLabel (Expanded) ben tren xuong
+            // gan nhu 0px, khien no bi be xuong dong TUNG KY TU MOT thay vi
+            // hien binh thuong tren 1 dong.
+            Flexible(
+              child: Text(
+                bilingualLabel,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.muted(),
+              ),
             ),
-          ),
-          Switch(
-            value: bilingual,
-            activeTrackColor: color,
-            onChanged: onToggleBilingual,
-          ),
-        ],
+            Switch(
+              value: bilingual,
+              activeTrackColor: color,
+              onChanged: onToggleBilingual,
+            ),
+          ],
+        ),
       ),
     );
   }
