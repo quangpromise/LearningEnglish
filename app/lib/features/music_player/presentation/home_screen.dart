@@ -28,7 +28,10 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return ScreenBackground(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
+        // Le ngang giam tu 24 -> 14 de khung the loai sat 2 canh man hinh
+        // hon (van deu 2 ben), du khong gian de icon ben trong dan deu ro
+        // hon thay vi bi ep vao giua khung qua hep.
+        padding: const EdgeInsets.fromLTRB(14, 12, 14, 16),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

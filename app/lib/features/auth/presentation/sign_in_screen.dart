@@ -86,8 +86,17 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     });
   }
 
-  Future<void> _signInWithGoogle() =>
-      _run(() => ref.read(authRepositoryProvider).signInWithGoogle());
+  Future<void> _signInWithGoogle() => _run(() async {
+    await ref.read(authRepositoryProvider).signInWithGoogle();
+    // BAT BUOC invalidate lai sau khi signInWithGoogle() tra ve: ham nay tu
+    // bu ten/avatar tu Google VAO SAU KHI da dang nhap xong (xem
+    // auth_repository.dart) - luc do myProfileProvider co the DA fetch mot
+    // lan roi (do _AuthGate nghe authStateChanges va invalidate ngay khi
+    // Supabase bao "da dang nhap", tuc la TRUOC khi buoc bu ten/avatar kip
+    // chay xong), nen van con hien du lieu cu/rong neu khong invalidate
+    // lai lan nua o day.
+    ref.invalidate(myProfileProvider);
+  });
 
   Future<void> _forgotPassword() {
     final identifier = _emailCtrl.text.trim();
@@ -154,6 +163,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   Widget build(BuildContext context) {
     final isSignUp = _mode == _Mode.signUp;
     return ScreenBackground(
+      backgroundImage: 'assets/fitness/fitness_background.jpg',
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(28),
         child: Column(

@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../notifications/chat_push.dart';
 import '../providers/app_providers.dart';
 import '../theme/app_theme.dart';
+import '../../features/music_player/presentation/center_media_button.dart';
 import '../../features/music_player/presentation/home_screen.dart';
 import '../../features/pronunciation/presentation/pronunciation_screen.dart';
 import '../../features/social/data/social_repository.dart';
@@ -143,95 +144,111 @@ class _RootShellState extends ConsumerState<RootShell>
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // MiniPlayer rieng cua RootShell da bo - thay bang GlobalMediaBar
-          // dat o tang MaterialApp.builder (main.dart), hien tren CA 3 khu
-          // vuc thay vi chi rieng Hoc Tieng Anh.
+          // MiniPlayer rieng cua RootShell da bo - thay bang
+          // CenterMediaButton noi giua thanh menu (xem duoi), khong con la
+          // 1 the rieng chong len toan man hinh.
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: const Color(0xD90A0E1C),
-                border: Border.all(color: AppColors.glassBorder),
-                borderRadius: BorderRadius.circular(999),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.5),
-                    blurRadius: 40,
-                    offset: const Offset(0, 20),
+            child: Stack(
+              clipBehavior: Clip.none,
+              alignment: Alignment.topCenter,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
                   ),
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: List.generate(_icons.length, (i) {
-                  final active = i == _tab;
-                  final unread = i == _messagesTabIndex
-                      ? ref.watch(unreadMessageCountProvider).valueOrNull ?? 0
-                      : 0;
-                  return GestureDetector(
-                    onTap: () => _setTab(i),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      curve: Curves.easeOut,
-                      width: active ? 76 : 44,
-                      height: 44,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: active
-                            ? Colors.white.withValues(alpha: 0.12)
-                            : Colors.transparent,
-                        border: active
-                            ? Border.all(
-                                color: Colors.white.withValues(alpha: 0.35),
-                              )
-                            : null,
-                        borderRadius: BorderRadius.circular(999),
+                  decoration: BoxDecoration(
+                    color: const Color(0xD90A0E1C),
+                    border: Border.all(color: AppColors.glassBorder),
+                    borderRadius: BorderRadius.circular(999),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.5),
+                        blurRadius: 40,
+                        offset: const Offset(0, 20),
                       ),
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          Icon(
-                            _icons[i],
-                            size: 22,
-                            color: active ? Colors.white : AppColors.textMuted,
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: List.generate(_icons.length, (i) {
+                      final active = i == _tab;
+                      final unread = i == _messagesTabIndex
+                          ? ref.watch(unreadMessageCountProvider).valueOrNull ??
+                                0
+                          : 0;
+                      return GestureDetector(
+                        onTap: () => _setTab(i),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          curve: Curves.easeOut,
+                          width: active ? 76 : 44,
+                          height: 44,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: active
+                                ? Colors.white.withValues(alpha: 0.12)
+                                : Colors.transparent,
+                            border: active
+                                ? Border.all(
+                                    color: Colors.white.withValues(alpha: 0.35),
+                                  )
+                                : null,
+                            borderRadius: BorderRadius.circular(999),
                           ),
-                          if (unread > 0)
-                            Positioned(
-                              right: -4,
-                              top: -2,
-                              child: Container(
-                                padding: const EdgeInsets.all(3),
-                                constraints: const BoxConstraints(
-                                  minWidth: 15,
-                                  minHeight: 15,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppColors.pink,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: const Color(0xD90A0E1C),
-                                    width: 2,
-                                  ),
-                                ),
-                                child: Text(
-                                  unread > 9 ? '9+' : '$unread',
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 8,
-                                    fontWeight: FontWeight.w800,
-                                    height: 1,
-                                  ),
-                                ),
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              Icon(
+                                _icons[i],
+                                size: 22,
+                                color: active
+                                    ? Colors.white
+                                    : AppColors.textMuted,
                               ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  );
-                }),
-              ),
+                              if (unread > 0)
+                                Positioned(
+                                  right: -4,
+                                  top: -2,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(3),
+                                    constraints: const BoxConstraints(
+                                      minWidth: 15,
+                                      minHeight: 15,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.pink,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: const Color(0xD90A0E1C),
+                                        width: 2,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      unread > 9 ? '9+' : '$unread',
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 8,
+                                        fontWeight: FontWeight.w800,
+                                        height: 1,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+                ),
+                Transform.translate(
+                  offset: const Offset(0, -20),
+                  child: const CenterMediaButton(),
+                ),
+              ],
             ),
           ),
         ],

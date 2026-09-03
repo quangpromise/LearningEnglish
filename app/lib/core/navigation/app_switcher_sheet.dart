@@ -53,18 +53,36 @@ class _AppSwitcherPillState extends ConsumerState<AppSwitcherPill> {
             followerAnchor: Alignment.topLeft,
             offset: const Offset(0, 8),
             child: _DropdownPanel(
+              // BAT BUOC popUntil((r) => r.isFirst) TRUOC KHI push 1 khu
+              // vuc moi (ke ca khi dang o Hoc Tieng Anh) - neu chi push
+              // chong len, bam qua lai Fitness/Wealth nhieu lan se xep
+              // CHONG nhieu FitnessShell/WealthShell trong CUNG 1 Navigator
+              // stack, khien 2 co trang thai (fitnessModeActiveProvider/
+              // wealthModeActiveProvider) cua nhieu instance de len nhau va
+              // cung bao "true" mot luc (dung nut Assets Management +
+              // Fitness deu hien "Current" nhu nhau). Luon quay ve goc roi
+              // moi push dam bao CHI 1 khu vuc con nam trong stack tai 1
+              // thoi diem.
               onSelectLearnEnglish: () {
                 _close();
+                if (!ref.read(fitnessModeActiveProvider) &&
+                    !ref.read(wealthModeActiveProvider)) {
+                  return; // da o Hoc Tieng Anh roi, khong lam gi them.
+                }
                 Navigator.of(context).popUntil((r) => r.isFirst);
               },
               onSelectFitness: () {
                 _close();
+                if (ref.read(fitnessModeActiveProvider)) return;
+                Navigator.of(context).popUntil((r) => r.isFirst);
                 Navigator.of(
                   context,
                 ).push(MaterialPageRoute(builder: (_) => const FitnessShell()));
               },
               onSelectWealth: () {
                 _close();
+                if (ref.read(wealthModeActiveProvider)) return;
+                Navigator.of(context).popUntil((r) => r.isFirst);
                 Navigator.of(
                   context,
                 ).push(MaterialPageRoute(builder: (_) => const WealthShell()));

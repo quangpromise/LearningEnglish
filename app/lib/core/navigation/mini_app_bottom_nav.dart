@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../features/music_player/presentation/center_media_button.dart';
 import '../theme/app_theme.dart';
 
 /// Thanh menu duoi cho 1 "app" con (Fitness/Wealth) - cung kieu pill/vien
@@ -30,88 +31,100 @@ class MiniAppBottomNav extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        decoration: BoxDecoration(
-          color: const Color(0xD90A0E1C),
-          border: Border.all(color: AppColors.glassBorder),
-          borderRadius: BorderRadius.circular(999),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.5),
-              blurRadius: 40,
-              offset: const Offset(0, 20),
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.topCenter,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: const Color(0xD90A0E1C),
+              border: Border.all(color: AppColors.glassBorder),
+              borderRadius: BorderRadius.circular(999),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.5),
+                  blurRadius: 40,
+                  offset: const Offset(0, 20),
+                ),
+              ],
             ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: List.generate(icons.length, (i) {
-            final active = i == currentIndex;
-            final badge = badgeCounts != null && i < badgeCounts!.length
-                ? badgeCounts![i]
-                : 0;
-            return GestureDetector(
-              onTap: () => onTap(i),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                curve: Curves.easeOut,
-                width: active ? 76 : 44,
-                height: 44,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: active
-                      ? accentColor.withValues(alpha: 0.22)
-                      : Colors.transparent,
-                  border: active
-                      ? Border.all(color: accentColor.withValues(alpha: 0.6))
-                      : null,
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Icon(
-                      icons[i],
-                      size: 22,
-                      color: active ? accentColor : AppColors.textMuted,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: List.generate(icons.length, (i) {
+                final active = i == currentIndex;
+                final badge = badgeCounts != null && i < badgeCounts!.length
+                    ? badgeCounts![i]
+                    : 0;
+                return GestureDetector(
+                  onTap: () => onTap(i),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeOut,
+                    width: active ? 76 : 44,
+                    height: 44,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: active
+                          ? accentColor.withValues(alpha: 0.22)
+                          : Colors.transparent,
+                      border: active
+                          ? Border.all(
+                              color: accentColor.withValues(alpha: 0.6),
+                            )
+                          : null,
+                      borderRadius: BorderRadius.circular(999),
                     ),
-                    if (badge > 0)
-                      Positioned(
-                        right: -4,
-                        top: -2,
-                        child: Container(
-                          padding: const EdgeInsets.all(3),
-                          constraints: const BoxConstraints(
-                            minWidth: 15,
-                            minHeight: 15,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.pink,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: const Color(0xD90A0E1C),
-                              width: 2,
-                            ),
-                          ),
-                          child: Text(
-                            badge > 9 ? '9+' : '$badge',
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 8,
-                              fontWeight: FontWeight.w800,
-                              height: 1,
-                            ),
-                          ),
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Icon(
+                          icons[i],
+                          size: 22,
+                          color: active ? accentColor : AppColors.textMuted,
                         ),
-                      ),
-                  ],
-                ),
-              ),
-            );
-          }),
-        ),
+                        if (badge > 0)
+                          Positioned(
+                            right: -4,
+                            top: -2,
+                            child: Container(
+                              padding: const EdgeInsets.all(3),
+                              constraints: const BoxConstraints(
+                                minWidth: 15,
+                                minHeight: 15,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.pink,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: const Color(0xD90A0E1C),
+                                  width: 2,
+                                ),
+                              ),
+                              child: Text(
+                                badge > 9 ? '9+' : '$badge',
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 8,
+                                  fontWeight: FontWeight.w800,
+                                  height: 1,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ),
+          Transform.translate(
+            offset: const Offset(0, -20),
+            child: const CenterMediaButton(),
+          ),
+        ],
       ),
     );
   }
