@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/exercise_model.dart';
@@ -64,7 +65,7 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'Thư viện bài tập',
+                    ref.tr('fitness_library_title'),
                     style: AppTextStyles.heading(size: 18),
                   ),
                 ),
@@ -88,11 +89,11 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
                       onChanged: (v) => setState(() => _query = v),
                       style: AppTextStyles.body(),
                       cursorColor: AppColors.purple,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         isDense: true,
                         border: InputBorder.none,
-                        hintText: 'Tìm bài tập...',
-                        hintStyle: TextStyle(color: AppColors.textMuted),
+                        hintText: ref.tr('fitness_search_placeholder'),
+                        hintStyle: const TextStyle(color: AppColors.textMuted),
                       ),
                     ),
                   ),
@@ -118,7 +119,7 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
                 scrollDirection: Axis.horizontal,
                 children: [
                   _GroupChip(
-                    label: 'Tất cả',
+                    label: ref.tr('fitness_filter_all'),
                     selected: _selectedGroup == null,
                     onTap: () => setState(() => _selectedGroup = null),
                   ),
@@ -126,7 +127,7 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
                     Padding(
                       padding: const EdgeInsets.only(left: 8),
                       child: _GroupChip(
-                        label: group.labelVi(),
+                        label: ref.tr(group.labelKey),
                         selected: _selectedGroup == group,
                         onTap: () => setState(() => _selectedGroup = group),
                       ),
@@ -144,7 +145,7 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
                 ),
                 error: (_, _) => Center(
                   child: Text(
-                    'Không tải được thư viện bài tập.',
+                    ref.tr('fitness_load_error'),
                     style: AppTextStyles.muted(),
                   ),
                 ),
@@ -162,7 +163,7 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
                   if (filtered.isEmpty) {
                     return Center(
                       child: Text(
-                        'Không tìm thấy bài tập phù hợp.',
+                        ref.tr('fitness_no_results'),
                         textAlign: TextAlign.center,
                         style: AppTextStyles.muted(),
                       ),
@@ -233,7 +234,7 @@ class _GroupChip extends StatelessWidget {
   }
 }
 
-class _ExerciseTile extends StatelessWidget {
+class _ExerciseTile extends ConsumerWidget {
   const _ExerciseTile({
     required this.exercise,
     required this.isFavorite,
@@ -244,7 +245,7 @@ class _ExerciseTile extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return GestureDetector(
       onTap: onTap,
       child: GlowBox(
@@ -274,7 +275,7 @@ class _ExerciseTile extends StatelessWidget {
                     style: AppTextStyles.body(weight: FontWeight.w800),
                   ),
                   Text(
-                    '${exercise.primaryMuscle} · ${exercise.difficulty.labelVi()}',
+                    '${exercise.primaryMuscle} · ${ref.tr(exercise.difficulty.labelKey)}',
                     style: AppTextStyles.muted(),
                   ),
                 ],

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/app_strings.dart';
 import '../../../core/navigation/app_top_bar.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/exercise_model.dart';
@@ -10,16 +12,16 @@ import 'exercise_library_screen.dart';
 /// phai" (nguoi dung cung cap anh, da xac nhan co ban quyen su dung, xem
 /// [MuscleGroup.imageAsset]). Bam vao 1 the se mo [ExerciseLibraryScreen] da
 /// loc san theo nhom co do.
-class MuscleGroupCategoriesScreen extends StatefulWidget {
+class MuscleGroupCategoriesScreen extends ConsumerStatefulWidget {
   const MuscleGroupCategoriesScreen({super.key});
 
   @override
-  State<MuscleGroupCategoriesScreen> createState() =>
+  ConsumerState<MuscleGroupCategoriesScreen> createState() =>
       _MuscleGroupCategoriesScreenState();
 }
 
 class _MuscleGroupCategoriesScreenState
-    extends State<MuscleGroupCategoriesScreen> {
+    extends ConsumerState<MuscleGroupCategoriesScreen> {
   final _searchController = TextEditingController();
 
   @override
@@ -72,11 +74,11 @@ class _MuscleGroupCategoriesScreenState
                       cursorColor: AppColors.fitnessAccent,
                       textInputAction: TextInputAction.search,
                       onSubmitted: (v) => _openLibrary(query: v),
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         isDense: true,
                         border: InputBorder.none,
-                        hintText: 'Tìm kiếm',
-                        hintStyle: TextStyle(color: AppColors.textMuted),
+                        hintText: ref.tr('fitness_search_hint'),
+                        hintStyle: const TextStyle(color: AppColors.textMuted),
                       ),
                     ),
                   ),
@@ -104,7 +106,7 @@ class _MuscleGroupCategoriesScreenState
   }
 }
 
-class _MuscleGroupCard extends StatelessWidget {
+class _MuscleGroupCard extends ConsumerWidget {
   const _MuscleGroupCard({required this.group, required this.onTap});
   final MuscleGroup group;
   final VoidCallback onTap;
@@ -114,7 +116,7 @@ class _MuscleGroupCard extends StatelessWidget {
   static const _cardBg = Color(0xFF0E1420);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return GestureDetector(
       onTap: onTap,
       child: ClipRRect(
@@ -163,7 +165,7 @@ class _MuscleGroupCard extends StatelessWidget {
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    group.labelVi(),
+                    ref.tr(group.labelKey),
                     style: AppTextStyles.heading(size: 17),
                   ),
                 ),

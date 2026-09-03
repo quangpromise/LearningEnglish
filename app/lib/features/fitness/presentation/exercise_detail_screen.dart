@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/exercise_model.dart';
@@ -56,11 +57,11 @@ class ExerciseDetailScreen extends ConsumerWidget {
               runSpacing: 8,
               children: [
                 _Tag(
-                  label: exercise.difficulty.labelVi(),
+                  label: ref.tr(exercise.difficulty.labelKey),
                   color: AppColors.amber,
                 ),
                 _Tag(
-                  label: exercise.muscleGroup.labelVi(),
+                  label: ref.tr(exercise.muscleGroup.labelKey),
                   color: AppColors.teal,
                 ),
                 _Tag(label: exercise.equipment, color: AppColors.purple),
@@ -72,7 +73,7 @@ class ExerciseDetailScreen extends ConsumerWidget {
                 children: [
                   if (showInvolvement) ...[
                     Text(
-                      'Mức độ tham gia nhóm cơ',
+                      ref.tr('fitness_involvement_title'),
                       style: AppTextStyles.heading(size: 14),
                     ),
                     const SizedBox(height: 12),
@@ -87,7 +88,7 @@ class ExerciseDetailScreen extends ConsumerWidget {
                     const SizedBox(height: 8),
                   ],
                   Text(
-                    'Hướng dẫn thực hiện',
+                    ref.tr('fitness_instructions_title'),
                     style: AppTextStyles.heading(size: 14),
                   ),
                   const SizedBox(height: 12),

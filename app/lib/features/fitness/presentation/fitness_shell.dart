@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/navigation/mini_app_bottom_nav.dart';
 import '../../../core/providers/app_providers.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../profile/presentation/profile_screen.dart';
 import 'muscle_group_categories_screen.dart';
 
-/// Man hinh goc cua khu vuc Fitness - vao tu nhom "Khac" ngay tren Home (xem
-/// home_screen.dart). Phase 1 chi co 1 man (Thu vien bai tap); cau truc rieng
-/// biet voi RootShell (khong phai 1 tab moi) de sau nay de dang them cac khu
-/// vuc khac (Chuong trinh tap, Dinh duong...) ben trong shell nay ma khong
-/// dung cham gi den thanh dieu huong chinh cua GymTalk.
+/// Man hinh goc cua khu vuc Fitness - vao tu app-switcher tren Home. Co
+/// thanh menu duoi rieng (giong RootShell nhung mau cam) voi 2 tab: Bai tap
+/// (MuscleGroupCategoriesScreen) va Ho so (dung CHUNG [ProfileScreen] voi 2
+/// khu vuc con lai, khong tao man Ho so rieng cho tung app).
 class FitnessShell extends ConsumerStatefulWidget {
   const FitnessShell({super.key});
 
@@ -17,6 +19,8 @@ class FitnessShell extends ConsumerStatefulWidget {
 }
 
 class _FitnessShellState extends ConsumerState<FitnessShell> {
+  int _tab = 0;
+
   @override
   void initState() {
     super.initState();
@@ -36,8 +40,22 @@ class _FitnessShellState extends ConsumerState<FitnessShell> {
     super.dispose();
   }
 
+  static const _icons = [Icons.fitness_center_rounded, Icons.person_rounded];
+
   @override
   Widget build(BuildContext context) {
-    return const MuscleGroupCategoriesScreen();
+    return Scaffold(
+      backgroundColor: AppColors.bgTop,
+      body: IndexedStack(
+        index: _tab,
+        children: const [MuscleGroupCategoriesScreen(), ProfileScreen()],
+      ),
+      bottomNavigationBar: MiniAppBottomNav(
+        icons: _icons,
+        currentIndex: _tab,
+        accentColor: AppColors.fitnessAccent,
+        onTap: (i) => setState(() => _tab = i),
+      ),
+    );
   }
 }

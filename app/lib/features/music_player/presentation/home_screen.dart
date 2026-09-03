@@ -179,7 +179,7 @@ class _CategoryItem extends StatelessWidget {
     return GestureDetector(
       onTap: data.onTap,
       child: SizedBox(
-        width: 72,
+        width: 86,
         child: Column(
           children: [
             Container(

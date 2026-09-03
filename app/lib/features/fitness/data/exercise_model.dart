@@ -37,6 +37,22 @@ enum MuscleGroup {
     MuscleGroup.cardio => 'Tim mạch',
   };
 
+  /// Key AppStrings tuong ung - dung o tang presentation (`ref.tr(...)`) de
+  /// nhan Chuong co dich theo App language, khac voi noi dung bai tap tho
+  /// (nameVi/instructions...) van giu nguyen tieng Viet vi la du lieu tinh
+  /// dong goi san, dich het 155 bai la qua muc cho Phase 1.
+  String get labelKey => switch (this) {
+    MuscleGroup.chest => 'fitness_muscle_chest',
+    MuscleGroup.back => 'fitness_muscle_back',
+    MuscleGroup.shoulders => 'fitness_muscle_shoulders',
+    MuscleGroup.arms => 'fitness_muscle_arms',
+    MuscleGroup.legs => 'fitness_muscle_legs',
+    MuscleGroup.core => 'fitness_muscle_core',
+    MuscleGroup.fullBody => 'fitness_muscle_full_body',
+    MuscleGroup.functional => 'fitness_muscle_functional',
+    MuscleGroup.cardio => 'fitness_muscle_cardio',
+  };
+
   /// Anh minh hoa giai phau (nguoi mau 3D highlight vung co, cat tu app
   /// tham khao - da xac nhan co ban quyen su dung) cho man danh sach nhom co.
   String get imageAsset {
@@ -64,6 +80,13 @@ enum ExerciseDifficulty {
     ExerciseDifficulty.beginner => 'Cơ bản',
     ExerciseDifficulty.intermediate => 'Trung cấp',
     ExerciseDifficulty.advanced => 'Nâng cao',
+  };
+
+  /// Xem ghi chu [MuscleGroup.labelKey].
+  String get labelKey => switch (this) {
+    ExerciseDifficulty.beginner => 'fitness_difficulty_beginner',
+    ExerciseDifficulty.intermediate => 'fitness_difficulty_intermediate',
+    ExerciseDifficulty.advanced => 'fitness_difficulty_advanced',
   };
 }
 

@@ -1252,10 +1252,78 @@ class AppStrings {
       AppLanguage.en: 'Take vocabulary and grammar quizzes by topic and climb the leaderboard together with your friends.',
     },
 
-    // Fitness (features/fitness/) - Phase 1: thu vien bai tap
+    // Fitness (features/fitness/) - Phase 1: thu vien bai tap. Chi dich CHU
+    // GIAO DIEN (tieu de, danh muc, trang thai...) - noi dung 155 bai tap
+    // (ten/huong dan) van giu nguyen tieng Viet, xem exercise_model.dart.
     'fitness_menu_title': {
       AppLanguage.vi: 'Fitness (Beta)',
       AppLanguage.en: 'Fitness (Beta)',
+    },
+    'fitness_library_title': {
+      AppLanguage.vi: 'Thư viện bài tập',
+      AppLanguage.en: 'Exercise library',
+    },
+    'fitness_categories_title': {
+      AppLanguage.vi: 'Các bài tập',
+      AppLanguage.en: 'Exercises',
+    },
+    'fitness_search_hint': {
+      AppLanguage.vi: 'Tìm kiếm',
+      AppLanguage.en: 'Search',
+    },
+    'fitness_search_placeholder': {
+      AppLanguage.vi: 'Tìm bài tập...',
+      AppLanguage.en: 'Search exercises...',
+    },
+    'fitness_filter_all': {AppLanguage.vi: 'Tất cả', AppLanguage.en: 'All'},
+    'fitness_load_error': {
+      AppLanguage.vi: 'Không tải được thư viện bài tập.',
+      AppLanguage.en: 'Could not load the exercise library.',
+    },
+    'fitness_no_results': {
+      AppLanguage.vi: 'Không tìm thấy bài tập phù hợp.',
+      AppLanguage.en: 'No matching exercises found.',
+    },
+    'fitness_involvement_title': {
+      AppLanguage.vi: 'Mức độ tham gia nhóm cơ',
+      AppLanguage.en: 'Muscle involvement',
+    },
+    'fitness_instructions_title': {
+      AppLanguage.vi: 'Hướng dẫn thực hiện',
+      AppLanguage.en: 'Instructions',
+    },
+    'fitness_muscle_chest': {AppLanguage.vi: 'Ngực', AppLanguage.en: 'Chest'},
+    'fitness_muscle_back': {AppLanguage.vi: 'Lưng', AppLanguage.en: 'Back'},
+    'fitness_muscle_shoulders': {
+      AppLanguage.vi: 'Vai',
+      AppLanguage.en: 'Shoulders',
+    },
+    'fitness_muscle_arms': {AppLanguage.vi: 'Tay', AppLanguage.en: 'Arms'},
+    'fitness_muscle_legs': {AppLanguage.vi: 'Chân', AppLanguage.en: 'Legs'},
+    'fitness_muscle_core': {AppLanguage.vi: 'Bụng', AppLanguage.en: 'Core'},
+    'fitness_muscle_full_body': {
+      AppLanguage.vi: 'Toàn thân',
+      AppLanguage.en: 'Full body',
+    },
+    'fitness_muscle_functional': {
+      AppLanguage.vi: 'Chức năng',
+      AppLanguage.en: 'Functional',
+    },
+    'fitness_muscle_cardio': {
+      AppLanguage.vi: 'Tim mạch',
+      AppLanguage.en: 'Cardio',
+    },
+    'fitness_difficulty_beginner': {
+      AppLanguage.vi: 'Cơ bản',
+      AppLanguage.en: 'Beginner',
+    },
+    'fitness_difficulty_intermediate': {
+      AppLanguage.vi: 'Trung cấp',
+      AppLanguage.en: 'Intermediate',
+    },
+    'fitness_difficulty_advanced': {
+      AppLanguage.vi: 'Nâng cao',
+      AppLanguage.en: 'Advanced',
     },
     'fitness_menu_subtitle': {
       AppLanguage.vi: 'Thư viện bài tập theo nhóm cơ',
