@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 
@@ -38,7 +40,6 @@ class CenterMediaButton extends StatelessWidget {
           // nhau/lech kich thuoc), nen mang nguyen mau nen kinh + do bong
           // cua pill Menu cu, chi doi vien sang mau accent cua tung app.
           height: 64,
-          padding: const EdgeInsets.symmetric(horizontal: 10),
           decoration: BoxDecoration(
             color: const Color(0xD90A0E1C),
             borderRadius: BorderRadius.circular(999),
@@ -51,9 +52,34 @@ class CenterMediaButton extends StatelessWidget {
               ),
             ],
           ),
-          child: queue.isEmpty
-              ? _IdleBar(accentColor: accentColor)
-              : _PlayingBar(accentColor: accentColor, queue: queue),
+          // ClipRRect de "song am" (waveform) o duoi khong tran ra ngoai
+          // vien bo tron cua pill.
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: Stack(
+              children: [
+                if (queue.isNotEmpty)
+                  Positioned.fill(
+                    child: StreamBuilder<PlayerState>(
+                      stream: service.player.playerStateStream,
+                      initialData: service.player.playerState,
+                      builder: (context, snap) {
+                        return _WaveformBackground(
+                          color: accentColor,
+                          playing: snap.data?.playing ?? false,
+                        );
+                      },
+                    ),
+                  ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: queue.isEmpty
+                      ? _IdleBar(accentColor: accentColor)
+                      : _PlayingBar(accentColor: accentColor, queue: queue),
+                ),
+              ],
+            ),
+          ),
         );
       },
     );
@@ -267,6 +293,121 @@ void _openPlayerPopup(BuildContext context) {
       ),
     ),
   );
+}
+
+/// Song am (waveform) mau sac giat len giat xuong lam nen cho thanh nhac -
+/// chi CHAY khi dang phat that su (playing=true), dung mot AnimationController
+/// lap vo han + CustomPainter ve nhieu thanh doc cao thap theo ham sin lech
+/// pha nhau (tao cam giac nhac dang "song" thay vi 1 nhip deu nhau) - mau
+/// xoay nhe quanh [color] (accent cua tung app) de vua dong bo vua co chut
+/// sac do khac nhau giua cac thanh, dung o do trong suot thap de khong de
+/// len chu/icon phia truoc.
+class _WaveformBackground extends StatefulWidget {
+  const _WaveformBackground({required this.color, required this.playing});
+  final Color color;
+  final bool playing;
+
+  @override
+  State<_WaveformBackground> createState() => _WaveformBackgroundState();
+}
+
+class _WaveformBackgroundState extends State<_WaveformBackground>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1800),
+    );
+    if (widget.playing) _controller.repeat();
+  }
+
+  @override
+  void didUpdateWidget(covariant _WaveformBackground oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.playing && !_controller.isAnimating) {
+      _controller.repeat();
+    } else if (!widget.playing && _controller.isAnimating) {
+      _controller.stop();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, _) => CustomPaint(
+        painter: _WaveformPainter(
+          t: _controller.value,
+          color: widget.color,
+          playing: widget.playing,
+        ),
+        child: const SizedBox.expand(),
+      ),
+    );
+  }
+}
+
+class _WaveformPainter extends CustomPainter {
+  _WaveformPainter({
+    required this.t,
+    required this.color,
+    required this.playing,
+  });
+  final double t;
+  final Color color;
+  final bool playing;
+
+  static const _barCount = 32;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final barWidth = size.width / _barCount;
+    final baseHsl = HSLColor.fromColor(color);
+    for (var i = 0; i < _barCount; i++) {
+      // Moi thanh lech pha + tan so hoi khac nhau 1 chut de trong tu nhien
+      // hon (khong phai tat ca nhay dong bo cung 1 nhip).
+      final phase = i * 0.55;
+      final freq = 1.0 + (i % 5) * 0.12;
+      final wave = playing
+          ? (math.sin((t * 2 * math.pi * freq) + phase) + 1) / 2
+          : 0.12;
+      final heightRatio = 0.12 + wave * 0.68;
+      final h = size.height * heightRatio;
+      // Xoay nhe hue quanh mau goc theo vi tri thanh - tao cam giac "mau
+      // sac" thay vi 1 mau dong nhat le loi.
+      final hue = (baseHsl.hue + (i - _barCount / 2) * 2.4) % 360;
+      final barColor = baseHsl
+          .withHue(hue < 0 ? hue + 360 : hue)
+          .withLightness((baseHsl.lightness + 0.1).clamp(0.0, 1.0))
+          .toColor()
+          .withValues(alpha: playing ? 0.28 : 0.14);
+      final paint = Paint()..color = barColor;
+      final rect = Rect.fromLTWH(
+        i * barWidth + barWidth * 0.2,
+        (size.height - h) / 2,
+        barWidth * 0.6,
+        h,
+      );
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(rect, const Radius.circular(3)),
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _WaveformPainter oldDelegate) =>
+      oldDelegate.t != t || oldDelegate.playing != playing;
 }
 
 class _Btn extends StatelessWidget {
