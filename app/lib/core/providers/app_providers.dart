@@ -73,11 +73,10 @@ final lessonProgressRepositoryProvider = Provider<LessonProgressRepository>(
 /// Đã hoàn thành 1 bài học (vd micro-story) chưa - key theo `lessonId`. Gọi
 /// `ref.invalidate(lessonCompletedProvider(lessonId))` sau khi đánh dấu hoàn
 /// thành để cập nhật badge trên UI ngay.
-final lessonCompletedProvider = FutureProvider.autoDispose
-    .family<bool, String>(
-      (ref, lessonId) =>
-          ref.watch(lessonProgressRepositoryProvider).isCompleted(lessonId),
-    );
+final lessonCompletedProvider = FutureProvider.autoDispose.family<bool, String>(
+  (ref, lessonId) =>
+      ref.watch(lessonProgressRepositoryProvider).isCompleted(lessonId),
+);
 
 final leaderboardRepositoryProvider = Provider<LeaderboardRepository>(
   (ref) => LeaderboardRepository(ref.watch(supabaseClientProvider)),

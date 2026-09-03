@@ -47,10 +47,7 @@ class HomeScreen extends ConsumerWidget {
                         ref.tr('home_greeting'),
                         style: AppTextStyles.muted(),
                       ),
-                      Text(
-                        displayName,
-                        style: AppTextStyles.heading(size: 20),
-                      ),
+                      Text(displayName, style: AppTextStyles.heading(size: 20)),
                     ],
                   ),
                   Row(

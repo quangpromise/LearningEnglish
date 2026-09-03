@@ -6,7 +6,9 @@ void main() {
   group('kSongAttributions', () {
     test('phu dung 1-1 voi kSongs - khong thieu, khong du, khong trung', () {
       final songTitles = kSongs.map((s) => s.title).toSet();
-      final attributionTitles = kSongAttributions.map((a) => a.songTitle).toSet();
+      final attributionTitles = kSongAttributions
+          .map((a) => a.songTitle)
+          .toSet();
       expect(
         attributionTitles,
         songTitles,

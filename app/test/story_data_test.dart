@@ -40,16 +40,19 @@ void main() {
       }
     });
 
-    test('moi tu vung co du IPA/nghia/cau vi du de WordPopupSheet-style UI dung', () {
-      for (final story in kStories) {
-        for (final word in story.vocabulary) {
-          expect(word.en.trim(), isNotEmpty, reason: story.title);
-          expect(word.ipa.trim(), isNotEmpty, reason: word.en);
-          expect(word.vi.trim(), isNotEmpty, reason: word.en);
-          expect(word.exampleEn.trim(), isNotEmpty, reason: word.en);
-          expect(word.exampleVi.trim(), isNotEmpty, reason: word.en);
+    test(
+      'moi tu vung co du IPA/nghia/cau vi du de WordPopupSheet-style UI dung',
+      () {
+        for (final story in kStories) {
+          for (final word in story.vocabulary) {
+            expect(word.en.trim(), isNotEmpty, reason: story.title);
+            expect(word.ipa.trim(), isNotEmpty, reason: word.en);
+            expect(word.vi.trim(), isNotEmpty, reason: word.en);
+            expect(word.exampleEn.trim(), isNotEmpty, reason: word.en);
+            expect(word.exampleVi.trim(), isNotEmpty, reason: word.en);
+          }
         }
-      }
-    });
+      },
+    );
   });
 }

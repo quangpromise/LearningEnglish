@@ -7,7 +7,8 @@ import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/tts/app_tts.dart';
 import '../../pronunciation/presentation/pronunciation_practice.dart';
-import '../../reading/data/gutenberg_text.dart' show isWordToken, tokenizeSentence;
+import '../../reading/data/gutenberg_text.dart'
+    show isWordToken, tokenizeSentence;
 import '../../translation/presentation/word_popup_sheet.dart';
 import '../../vocabulary/data/vocabulary_data.dart';
 import '../data/story_data.dart';
@@ -146,7 +147,8 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
     final story = widget.story;
     final current = _segments[_currentIndex];
     final completedAsync = ref.watch(lessonCompletedProvider(story.id));
-    final completed = _completedLocally || (completedAsync.valueOrNull ?? false);
+    final completed =
+        _completedLocally || (completedAsync.valueOrNull ?? false);
 
     return ScreenBackground(
       child: Padding(
@@ -369,19 +371,17 @@ class _SegmentTile extends StatelessWidget {
   Widget build(BuildContext context) {
     // GlowBox(light: active) doi nen sang mau khi active - chu phai DAM lai
     // (den) luc do, chu khong phai sang nhu tren nen kinh toi binh thuong.
-    final style = AppTextStyles.body(size: 15, weight: FontWeight.w700)
-        .copyWith(
-          height: 1.5,
-          color: active ? Colors.black : AppColors.textMuted,
-        );
+    final style = AppTextStyles.body(
+      size: 15,
+      weight: FontWeight.w700,
+    ).copyWith(height: 1.5, color: active ? Colors.black : AppColors.textMuted);
     final spans = <InlineSpan>[
       for (final token in tokenizeSentence(segment.en))
         if (isWordToken(token))
           TextSpan(
             text: token,
             style: style,
-            recognizer: TapGestureRecognizer()
-              ..onTap = () => onWordTap(token),
+            recognizer: TapGestureRecognizer()..onTap = () => onWordTap(token),
           )
         else
           TextSpan(text: token, style: style),

@@ -13,10 +13,8 @@ import '../data/attribution_data.dart';
 class AttributionScreen extends ConsumerWidget {
   const AttributionScreen({super.key});
 
-  Future<void> _open(String url) => launchUrl(
-    Uri.parse(url),
-    mode: LaunchMode.externalApplication,
-  );
+  Future<void> _open(String url) =>
+      launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -93,7 +91,8 @@ class AttributionScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 10),
                         GestureDetector(
-                          onTap: () => _open(kSongAttributions.first.licenseUrl),
+                          onTap: () =>
+                              _open(kSongAttributions.first.licenseUrl),
                           child: Text(
                             ref.tr('attribution_view_license'),
                             style: const TextStyle(

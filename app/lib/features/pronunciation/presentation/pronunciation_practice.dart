@@ -41,7 +41,7 @@ class PronunciationPractice extends ConsumerStatefulWidget {
   final String targetVi;
 
   /// Ghi vào cột `source` của `user_pronunciation_attempts` (xem migration
-  /// 0027) - vd 'pronunciation_tab' hoặc 'story:<id>'.
+  /// 0027) - vd `pronunciation_tab` hoặc `story:{id}`.
   final String source;
 
   /// Tiêu đề hiện phía trên - mặc định `pron_title` ("Luyện phát âm") khi
@@ -463,7 +463,8 @@ class _PronunciationPracticeState extends ConsumerState<PronunciationPractice> {
                     runSpacing: 6,
                     children: List.generate(result.targetWords.length, (i) {
                       final ok =
-                          i < result.wordResults.length && result.wordResults[i];
+                          i < result.wordResults.length &&
+                          result.wordResults[i];
                       return Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 10,
