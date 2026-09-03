@@ -357,6 +357,18 @@ final fitnessModeActiveProvider = StateProvider<bool>((ref) => false);
 /// Voice Chat, giong het [fitnessModeActiveProvider].
 final wealthModeActiveProvider = StateProvider<bool>((ref) => false);
 
+/// Anh nen "xung quanh" theo dung "app" dang mo (Hoc Tieng Anh/Fitness/
+/// Wealth) - [ScreenBackground] tu doc provider nay lam mac dinh khi khong
+/// truyen `backgroundImage` rieng, nen MOI man hinh dung ScreenBackground
+/// trong 1 khu vuc se tu dong co dung anh nen ma khong can sua tung file.
+final currentAppBackgroundProvider = Provider<String?>((ref) {
+  if (ref.watch(fitnessModeActiveProvider)) {
+    return 'assets/fitness/fitness_background.jpg';
+  }
+  if (ref.watch(wealthModeActiveProvider)) return null;
+  return 'assets/home/home_background.jpg';
+});
+
 final wealthTransactionRepositoryProvider =
     Provider<WealthTransactionRepository>(
       (ref) => WealthTransactionRepository(ref.watch(supabaseClientProvider)),

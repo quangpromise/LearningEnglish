@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/navigation/app_top_bar.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import 'wealth_expense_tab.dart';
@@ -47,20 +48,9 @@ class _WealthShellState extends ConsumerState<WealthShell>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                GestureDetector(
-                  onTap: () => Navigator.of(context).maybePop(),
-                  child: const _IconCircle(icon: Icons.chevron_left_rounded),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    ref.tr('wealth_title'),
-                    style: AppTextStyles.heading(size: 18),
-                  ),
-                ),
-              ],
+            AppTopBar(
+              showBackButton: true,
+              accentColor: AppColors.wealthAccent,
             ),
             const SizedBox(height: 16),
             Container(
@@ -80,7 +70,7 @@ class _WealthShellState extends ConsumerState<WealthShell>
               child: TabBar(
                 controller: _tabController,
                 indicator: BoxDecoration(
-                  gradient: AppColors.accentGradient,
+                  gradient: AppColors.wealthAccentGradient,
                   borderRadius: BorderRadius.circular(999),
                 ),
                 indicatorSize: TabBarIndicatorSize.tab,
@@ -112,25 +102,6 @@ class _WealthShellState extends ConsumerState<WealthShell>
           ],
         ),
       ),
-    );
-  }
-}
-
-class _IconCircle extends StatelessWidget {
-  const _IconCircle({required this.icon});
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 42,
-      height: 42,
-      decoration: const BoxDecoration(
-        color: AppColors.glassFill,
-        shape: BoxShape.circle,
-        border: Border.fromBorderSide(BorderSide(color: AppColors.glassBorder)),
-      ),
-      child: Icon(icon, size: 18, color: AppColors.textPrimary),
     );
   }
 }

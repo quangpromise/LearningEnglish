@@ -69,7 +69,7 @@ class WealthInvestmentsTab extends ConsumerWidget {
           loading: () => const Padding(
             padding: EdgeInsets.symmetric(vertical: 20),
             child: Center(
-              child: CircularProgressIndicator(color: AppColors.blue),
+              child: CircularProgressIndicator(color: AppColors.wealthAccent),
             ),
           ),
           error: (_, _) => Text(
@@ -233,6 +233,8 @@ class _AddHoldingSheetState extends ConsumerState<_AddHoldingSheet> {
               width: double.infinity,
               child: PillButton(
                 label: ref.tr('wealth_save'),
+                accentGradient: AppColors.wealthAccentGradient,
+                accentColor: AppColors.wealthAccent,
                 onTap: _saving ? null : _save,
               ),
             ),
@@ -259,7 +261,7 @@ class _HoldingField extends StatelessWidget {
       controller: controller,
       keyboardType: keyboardType,
       style: AppTextStyles.body(),
-      cursorColor: AppColors.blue,
+      cursorColor: AppColors.wealthAccent,
       decoration: InputDecoration(
         filled: true,
         fillColor: AppColors.glassFill,
@@ -338,7 +340,7 @@ class _HoldingTile extends StatelessWidget {
               height: 16,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                color: AppColors.blue,
+                color: AppColors.wealthAccent,
               ),
             ),
         ],

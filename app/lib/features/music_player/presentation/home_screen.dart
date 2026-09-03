@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
-import '../../../core/navigation/app_switcher_sheet.dart';
-import '../../../core/providers/app_providers.dart';
+import '../../../core/navigation/app_top_bar.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../grammar/presentation/grammar_topics_screen.dart';
-import '../../profile/presentation/profile_quick_popup.dart';
 import '../../pronunciation/presentation/phonics_lessons_screen.dart';
 import '../../quiz/presentation/quiz_category_screen.dart';
 import '../../reading/presentation/reading_library_screen.dart';
@@ -28,105 +26,26 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final profileAsync = ref.watch(myProfileProvider);
-    // Loading/loi: khong hien ten rong nhin nhu "mat chu" - giu placeholder
-    // ro rang thay vi chuoi rong.
-    final displayName = profileAsync.when(
-      data: (p) => p.nameLabel,
-      loading: () => '...',
-      error: (_, _) => '...',
-    );
-    final avatarUrl = profileAsync.valueOrNull?.avatarUrl;
-
     return ScreenBackground(
-      backgroundImage: 'assets/home/home_background.jpg',
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  GestureDetector(
-                    onTap: () => showProfileQuickPopup(context),
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Container(
-                          width: 46,
-                          height: 46,
-                          decoration: const BoxDecoration(
-                            color: AppColors.glassFill,
-                            shape: BoxShape.circle,
-                            border: Border.fromBorderSide(
-                              BorderSide(color: AppColors.blue, width: 1.4),
-                            ),
-                          ),
-                          clipBehavior: Clip.antiAlias,
-                          child: avatarUrl != null
-                              ? Image.network(avatarUrl, fit: BoxFit.cover)
-                              : const Icon(
-                                  Icons.person_rounded,
-                                  color: AppColors.blue,
-                                ),
-                        ),
-                        // Nut xo xuong canh avatar - bam mo popup ho so nhanh
-                        // (doi avatar tai cho), thay the cho tab Ho so da bo.
-                        Positioned(
-                          right: -2,
-                          bottom: -2,
-                          child: Container(
-                            width: 18,
-                            height: 18,
-                            decoration: BoxDecoration(
-                              color: AppColors.blue,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: AppColors.bgTop,
-                                width: 2,
-                              ),
-                            ),
-                            child: const Icon(
-                              Icons.keyboard_arrow_down_rounded,
-                              size: 12,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+              AppTopBar(
+                trailing: GestureDetector(
+                  onTap: () => showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (_) => const DictionaryPopup(),
                   ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${ref.tr('home_greeting')}, $displayName',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.heading(size: 17),
-                        ),
-                        const SizedBox(height: 3),
-                        const AppSwitcherPill(),
-                      ],
-                    ),
+                  child: Tooltip(
+                    message: ref.tr('home_dictionary_tooltip'),
+                    child: const _IconCircle(icon: Icons.menu_book_rounded),
                   ),
-                  GestureDetector(
-                    onTap: () => showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      backgroundColor: Colors.transparent,
-                      builder: (_) => const DictionaryPopup(),
-                    ),
-                    child: Tooltip(
-                      message: ref.tr('home_dictionary_tooltip'),
-                      child: const _IconCircle(icon: Icons.menu_book_rounded),
-                    ),
-                  ),
-                ],
+                ),
               ),
               const SizedBox(height: 22),
               _CategorySection(

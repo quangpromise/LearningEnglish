@@ -24,7 +24,6 @@ class ExerciseDetailScreen extends ConsumerWidget {
         percents.isNotEmpty && percents.length == muscles.length;
 
     return ScreenBackground(
-      backgroundImage: 'assets/fitness/fitness_background.jpg',
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
         child: Column(
@@ -162,7 +161,7 @@ class _InvolvementBar extends StatelessWidget {
             value: percent / 100,
             minHeight: 8,
             backgroundColor: Colors.white.withValues(alpha: 0.08),
-            valueColor: const AlwaysStoppedAnimation(AppColors.blue),
+            valueColor: const AlwaysStoppedAnimation(AppColors.fitnessAccent),
           ),
         ),
       ],

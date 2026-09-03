@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/navigation/app_top_bar.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/exercise_model.dart';
 import 'exercise_library_screen.dart';
@@ -39,30 +40,18 @@ class _MuscleGroupCategoriesScreenState
   @override
   Widget build(BuildContext context) {
     return ScreenBackground(
-      backgroundImage: 'assets/fitness/fitness_background.jpg',
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                GestureDetector(
-                  onTap: () => Navigator.of(context).maybePop(),
-                  child: const _IconCircle(icon: Icons.chevron_left_rounded),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'Các bài tập',
-                    style: AppTextStyles.heading(size: 18),
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () => _openLibrary(),
-                  child: const _IconCircle(icon: Icons.list_alt_rounded),
-                ),
-              ],
+            AppTopBar(
+              showBackButton: true,
+              accentColor: AppColors.fitnessAccent,
+              trailing: GestureDetector(
+                onTap: () => _openLibrary(),
+                child: const _IconCircle(icon: Icons.list_alt_rounded),
+              ),
             ),
             const SizedBox(height: 16),
             GlowBox(
@@ -80,7 +69,7 @@ class _MuscleGroupCategoriesScreenState
                     child: TextField(
                       controller: _searchController,
                       style: AppTextStyles.body(),
-                      cursorColor: AppColors.blue,
+                      cursorColor: AppColors.fitnessAccent,
                       textInputAction: TextInputAction.search,
                       onSubmitted: (v) => _openLibrary(query: v),
                       decoration: const InputDecoration(

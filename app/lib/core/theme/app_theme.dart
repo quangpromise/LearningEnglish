@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../providers/app_providers.dart';
 
 /// Design tokens theo `.claude/skills/ui-design-system/SKILL.md`.
 class AppColors {
@@ -14,14 +17,32 @@ class AppColors {
   static const bgMid = Color(0xFF10140D);
   static const bgBottom = Color(0xFF050604);
 
-  /// Van ten "blue" nhu cu nhung gia tri la CAM (theo mau tham khao app dat
-  /// lich kieu "valyioo") - day la mau NHAN CHINH dung khap noi trong app
-  /// (nut, active state, progress bar...).
-  static const blue = Color(0xFFF0883D);
+  /// Mau nhan chinh cua app "Hoc Tieng Anh" (mac dinh toan app, tru Fitness)
+  /// - da doi lai xanh nhu ban goc theo yeu cau, sau khi thu doi sang cam
+  /// cho toan app roi nhan ra can phan biet theo tung "app" trong switcher.
+  static const blue = Color(0xFF5B8CFF);
   static const purple = Color(0xFF9B6BFF);
   static const teal = Color(0xFF5BE0D0);
   static const amber = Color(0xFFFFB23C);
   static const pink = Color(0xFFFF6B9D);
+
+  /// Mau nhan chinh RIENG cho khu vuc Fitness (app-switcher) - dung thay the
+  /// [blue] trong moi man hinh duoi `features/fitness/`, KHONG dung o cac
+  /// man hinh khac.
+  static const fitnessAccent = Color(0xFFF0883D);
+  static const fitnessAccentGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [fitnessAccent, Color(0xFFF2A35C)],
+  );
+
+  /// Mau nhan chinh RIENG cho khu vuc Quan ly tai san (Wealth) - vang/gold.
+  static const wealthAccent = Color(0xFFD4AF37);
+  static const wealthAccentGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [wealthAccent, Color(0xFFF0D585)],
+  );
 
   static const textPrimary = Color(0xFFEEF1FB);
   static const textMuted = Color(0x8DEEF1FB);
@@ -29,12 +50,10 @@ class AppColors {
   static const glassFill = Color(0x0DFFFFFF);
   static const glassBorder = Color(0x17FFFFFF);
 
-  // Cam dam -> cam nhat, giu 1 tong mau nhat quan cho gradient nut/avatar
-  // dung khap app (khong con ghep voi purple/teal de tranh xung dot mau).
   static const accentGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [blue, Color(0xFFF2A35C)],
+    colors: [blue, purple],
   );
 
   static const screenGradient = LinearGradient(
@@ -129,6 +148,8 @@ class PillButton extends StatelessWidget {
     this.onTap,
     this.filled = true,
     this.icon,
+    this.accentGradient,
+    this.accentColor,
   });
 
   final String label;
@@ -136,8 +157,15 @@ class PillButton extends StatelessWidget {
   final bool filled;
   final Widget? icon;
 
+  /// Cho phep 1 khu vuc (vd Fitness) doi mau nhan rieng thay vi
+  /// [AppColors.accentGradient]/[AppColors.blue] mac dinh cua app.
+  final Gradient? accentGradient;
+  final Color? accentColor;
+
   @override
   Widget build(BuildContext context) {
+    final gradient = accentGradient ?? AppColors.accentGradient;
+    final shadowColor = accentColor ?? AppColors.blue;
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -146,14 +174,14 @@ class PillButton extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 16),
           decoration: BoxDecoration(
-            gradient: filled ? AppColors.accentGradient : null,
+            gradient: filled ? gradient : null,
             color: filled ? null : AppColors.glassFill,
             border: filled ? null : Border.all(color: AppColors.glassBorder),
             borderRadius: BorderRadius.circular(999),
             boxShadow: filled
                 ? [
                     BoxShadow(
-                      color: AppColors.blue.withValues(alpha: 0.45),
+                      color: shadowColor.withValues(alpha: 0.45),
                       blurRadius: 24,
                       offset: const Offset(0, 10),
                     ),
@@ -187,7 +215,7 @@ class PillButton extends StatelessWidget {
   }
 }
 
-class ScreenBackground extends StatelessWidget {
+class ScreenBackground extends ConsumerWidget {
   const ScreenBackground({
     super.key,
     required this.child,
@@ -200,13 +228,17 @@ class ScreenBackground extends StatelessWidget {
   /// nen rieng thay vi dung mac dinh chung ca app.
   final Gradient? gradient;
 
-  /// Anh nen phu (vd anh phong gym cho khu vuc Fitness) - ve duoi gradient
-  /// voi 1 lop toi phu len de chu/GlowBox van doc duoc, KHONG thay the han
-  /// gradient (gradient van ve tren cung de mep man hinh mo dan tu nhien).
+  /// Anh nen phu rieng cho MAN HINH NAY - thuong KHONG can truyen, de trong
+  /// se tu dong lay theo [currentAppBackgroundProvider] (dung "app" dang mo:
+  /// Hoc Tieng Anh/Fitness/Wealth) de moi man hinh trong 1 khu vuc tu dong
+  /// dong bo anh nen ma khong phai sua tung file. Chi truyen rieng khi 1 man
+  /// hinh CO CHU DINH khac voi mac dinh cua khu vuc no dang o.
   final String? backgroundImage;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final effectiveBackgroundImage =
+        backgroundImage ?? ref.watch(currentAppBackgroundProvider);
     return Stack(
       children: [
         // Positioned.fill BAT BUOC cho moi lop, ke ca gradient nen: 1
@@ -220,11 +252,11 @@ class ScreenBackground extends StatelessWidget {
             ),
           ),
         ),
-        if (backgroundImage != null)
+        if (effectiveBackgroundImage != null)
           Positioned.fill(
-            child: Image.asset(backgroundImage!, fit: BoxFit.cover),
+            child: Image.asset(effectiveBackgroundImage, fit: BoxFit.cover),
           ),
-        if (backgroundImage != null)
+        if (effectiveBackgroundImage != null)
           // Lop toi phu tren anh nen de chu/GlowBox phia tren van doc duoc.
           Positioned.fill(
             child: Container(color: AppColors.bgTop.withValues(alpha: 0.72)),

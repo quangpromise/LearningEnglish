@@ -50,7 +50,6 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
     final query = _query.trim().toLowerCase();
 
     return ScreenBackground(
-      backgroundImage: 'assets/fitness/fitness_background.jpg',
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
         child: Column(
@@ -139,7 +138,9 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
             Expanded(
               child: exercisesAsync.when(
                 loading: () => const Center(
-                  child: CircularProgressIndicator(color: AppColors.blue),
+                  child: CircularProgressIndicator(
+                    color: AppColors.fitnessAccent,
+                  ),
                 ),
                 error: (_, _) => Center(
                   child: Text(

@@ -21,7 +21,7 @@ class WealthExpenseTab extends ConsumerWidget {
         Expanded(
           child: txAsync.when(
             loading: () => const Center(
-              child: CircularProgressIndicator(color: AppColors.blue),
+              child: CircularProgressIndicator(color: AppColors.wealthAccent),
             ),
             error: (_, _) => Center(
               child: Text(
@@ -96,6 +96,8 @@ class WealthExpenseTab extends ConsumerWidget {
           width: double.infinity,
           child: PillButton(
             label: ref.tr('wealth_add_transaction'),
+            accentGradient: AppColors.wealthAccentGradient,
+            accentColor: AppColors.wealthAccent,
             icon: const Icon(Icons.add_rounded, size: 16, color: Colors.white),
             onTap: () => showAddWealthTransactionSheet(
               context,

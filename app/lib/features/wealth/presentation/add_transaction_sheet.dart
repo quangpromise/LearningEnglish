@@ -142,7 +142,7 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
                 decimal: true,
               ),
               style: AppTextStyles.body(),
-              cursorColor: AppColors.blue,
+              cursorColor: AppColors.wealthAccent,
               decoration: InputDecoration(
                 filled: true,
                 fillColor: AppColors.glassFill,
@@ -158,7 +158,7 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
             TextField(
               controller: _noteController,
               style: AppTextStyles.body(),
-              cursorColor: AppColors.blue,
+              cursorColor: AppColors.wealthAccent,
               decoration: InputDecoration(
                 filled: true,
                 fillColor: AppColors.glassFill,
@@ -175,6 +175,8 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
               width: double.infinity,
               child: PillButton(
                 label: ref.tr('wealth_save'),
+                accentGradient: AppColors.wealthAccentGradient,
+                accentColor: AppColors.wealthAccent,
                 onTap: _saving ? null : _save,
               ),
             ),
@@ -205,11 +207,11 @@ class _CategoryChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
         decoration: BoxDecoration(
           color: selected
-              ? AppColors.blue.withValues(alpha: 0.22)
+              ? AppColors.wealthAccent.withValues(alpha: 0.22)
               : AppColors.glassFill,
           borderRadius: BorderRadius.circular(999),
           border: Border.all(
-            color: selected ? AppColors.blue : AppColors.glassBorder,
+            color: selected ? AppColors.wealthAccent : AppColors.glassBorder,
           ),
         ),
         child: Row(
@@ -218,7 +220,7 @@ class _CategoryChip extends StatelessWidget {
             Icon(
               icon,
               size: 14,
-              color: selected ? AppColors.blue : AppColors.textMuted,
+              color: selected ? AppColors.wealthAccent : AppColors.textMuted,
             ),
             const SizedBox(width: 6),
             Text(
@@ -226,7 +228,9 @@ class _CategoryChip extends StatelessWidget {
               style: AppTextStyles.body(
                 size: 12,
                 weight: FontWeight.w700,
-                color: selected ? AppColors.blue : AppColors.textPrimary,
+                color: selected
+                    ? AppColors.wealthAccent
+                    : AppColors.textPrimary,
               ),
             ),
           ],
