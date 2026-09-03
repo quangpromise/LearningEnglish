@@ -38,6 +38,15 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
   bool _completedLocally = false;
   int _speechToken = 0;
 
+  /// true trong luc PronunciationPractice dang ghi am/cham diem doan hien
+  /// tai. PronunciationPractice duoc gan key: ValueKey(current.id) nen doi
+  /// _currentIndex (chon doan khac / bam Phat lai) se REMOUNT no - dispose()
+  /// cua widget cu chay ngay, huy ghi am/cham diem dang do MA KHONG BAO cho
+  /// nguoi dung, mat lang le ket qua ho vua luyen. Chan doi doan khi dang
+  /// ban, giong cach _busy cua PronunciationScreen (tab) chan doi cau ngau
+  /// nhien khi dang ghi am.
+  bool _shadowingBusy = false;
+
   List<StorySegment> get _segments => widget.story.segments;
 
   @override
@@ -114,12 +123,13 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
   void _togglePlay() {
     if (_playing) {
       _stopNarration();
-    } else {
+    } else if (!_shadowingBusy) {
       _playFrom(_currentIndex);
     }
   }
 
   void _selectSegment(int i) {
+    if (_shadowingBusy) return;
     if (_playing) {
       _playFrom(i);
     } else {
@@ -281,6 +291,10 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
                       // nguoi dung bam ghi am giua luc dang nghe - tam dung
                       // truoc (bay #1 trong §E cua tai lieu kien truc).
                       onBeforeRecord: _stopNarration,
+                      // Chan doi doan (tap doan khac / bam Phat lai) trong
+                      // luc dang ghi am/cham diem - xem _shadowingBusy o
+                      // tren, tranh remount lam mat ket qua dang luyen.
+                      onBusyChanged: (busy) => _shadowingBusy = busy,
                       // Man nay tu tinh TOAN BO thoi gian mo->dong lam 1
                       // phien hoc duy nhat o dispose() ben tren - shadowing
                       // KHONG tu cong gio rieng de tranh dem trung.
