@@ -235,9 +235,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     // Management) - cac muc chi lien quan hoc tieng Anh (thong ke tu/bai
     // hat/diem phat am, chon giong doc, "Hoc 10 tu", Ghi cong) CHI hien khi
     // mo tu chinh Hoc Tieng Anh, tranh gay nham lan khi xem tu 2 app kia.
-    final isFitness = ref.watch(fitnessModeActiveProvider);
-    final isWealth = ref.watch(wealthModeActiveProvider);
-    final isEnglishContext = !isFitness && !isWealth;
+    final section = ref.watch(currentAppSectionProvider);
+    final isFitness = section == AppSection.fitness;
+    final isEnglishContext = section == AppSection.learnEnglish;
     // Chia 2 tab Hoat dong/Cai dat cho Hoc Tieng Anh va Fitness (co du lieu
     // hoat dong rieng de hien); Wealth chua co so lieu hoat dong nao nen
     // giu 1 danh sach don (khong tab) giong truoc.
@@ -248,9 +248,34 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              ref.tr('profile_title'),
-              style: AppTextStyles.heading(size: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    ref.tr('profile_title'),
+                    style: AppTextStyles.heading(size: 16),
+                  ),
+                ),
+                // Man nay gio mo dang popup (bottom sheet) - can 1 nut dong
+                // ro rang thay vi chi dua vao vuot xuong/nut back he thong.
+                GestureDetector(
+                  onTap: () => Navigator.of(context).maybePop(),
+                  child: Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color: AppColors.glassFill,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.glassBorder),
+                    ),
+                    child: const Icon(
+                      Icons.close_rounded,
+                      size: 18,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
             Row(

@@ -350,33 +350,37 @@ final favoriteExerciseIdsProvider =
       ),
     );
 
-/// true khi dang o trong khu vuc Fitness (bat luc vao FitnessShell, tat luc
-/// thoat) - dung de an nut noi AI Voice Chat (danh cho hoc tieng Anh, khong
-/// lien quan Fitness), giong het cach pronunciationTabActiveProvider an no
-/// o tab Luyen phat am.
-final fitnessModeActiveProvider = StateProvider<bool>((ref) => false);
-
 // --- Wealth Management (features/wealth/) - Phase 1: Chi tieu/Thu nhap +
 // Dau tu (crypto giu nguyen o CryptoScreen, co phieu quoc te qua Twelve
 // Data). Xem docs/research-wealth-stock-apis.md va
 // .claude/skills/wealth-data-sync/SKILL.md.
 
-/// true khi dang o trong khu vuc Quan ly tai san - dung de an nut noi AI
-/// Voice Chat, giong het [fitnessModeActiveProvider].
-final wealthModeActiveProvider = StateProvider<bool>((ref) => false);
+/// "App" nao dang mo trong so 3 khu vuc cua ung dung.
+enum AppSection { learnEnglish, fitness, wealth }
+
+/// Nguon SU THAT DUY NHAT cho "app dang mo" - THAY THE hoan toan cach cu
+/// (2 `StateProvider<bool>` rieng le, bat/tat qua initState/dispose cua
+/// FitnessShell/WealthShell). Cach cu bi loi "lan dau dung, lan sau loan"
+/// vi phu thuoc dung thu tu dispose(man cu)/initState(man moi) qua
+/// addPostFrameCallback - neu nguoi dung bam chuyen doi nhanh hoac dieu
+/// huong khong theo dung 1 duong (vd nhan nut back he thong giua chung),
+/// 2 co co the lech pha nhau (ca 2 cung true, hoac ca 2 cung false).
+/// Gio CHI set truc tiep, dong bo, ngay tai noi bam chon trong
+/// app_switcher_sheet.dart - khong con phu thuoc lifecycle cua widget nao.
+final currentAppSectionProvider = StateProvider<AppSection>(
+  (ref) => AppSection.learnEnglish,
+);
 
 /// Anh nen "xung quanh" theo dung "app" dang mo (Hoc Tieng Anh/Fitness/
 /// Wealth) - [ScreenBackground] tu doc provider nay lam mac dinh khi khong
 /// truyen `backgroundImage` rieng, nen MOI man hinh dung ScreenBackground
 /// trong 1 khu vuc se tu dong co dung anh nen ma khong can sua tung file.
 final currentAppBackgroundProvider = Provider<String?>((ref) {
-  if (ref.watch(fitnessModeActiveProvider)) {
-    return 'assets/fitness/fitness_background.jpg';
-  }
-  if (ref.watch(wealthModeActiveProvider)) {
-    return 'assets/wealth/wealth_background.jpg';
-  }
-  return 'assets/home/home_background.jpg';
+  return switch (ref.watch(currentAppSectionProvider)) {
+    AppSection.fitness => 'assets/fitness/fitness_background.jpg',
+    AppSection.wealth => 'assets/wealth/wealth_background.jpg',
+    AppSection.learnEnglish => 'assets/home/home_background.jpg',
+  };
 });
 
 final wealthTransactionRepositoryProvider =

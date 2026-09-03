@@ -33,6 +33,30 @@ class _AppSwitcherPillState extends ConsumerState<AppSwitcherPill> {
     }
   }
 
+  // SUA LOI GOC: truoc day 2 StateProvider<bool> rieng (fitness/wealth) duoc
+  // bat/tat qua initState/dispose cua FitnessShell/WealthShell - thu tu
+  // dispose(man cu)/initState(man moi) khong dam bao, nen tu lan chuyen thu 2
+  // tro di 2 co co the desync (ca 2 cung true, hoac ca 2 cung false). Gio
+  // CHI 1 nguon that (currentAppSectionProvider) va no duoc set THANG,
+  // DONG BO, ngay tai noi bam - khong con phu thuoc lifecycle man hinh nao.
+  void _select(AppSection section) {
+    _close();
+    final current = ref.read(currentAppSectionProvider);
+    if (current == section) return;
+    ref.read(currentAppSectionProvider.notifier).state = section;
+    Navigator.of(context).popUntil((r) => r.isFirst);
+    switch (section) {
+      case AppSection.fitness:
+        Navigator.of(context)
+            .push(MaterialPageRoute(builder: (_) => const FitnessShell()));
+      case AppSection.wealth:
+        Navigator.of(context)
+            .push(MaterialPageRoute(builder: (_) => const WealthShell()));
+      case AppSection.learnEnglish:
+        break;
+    }
+  }
+
   void _openDropdown() {
     final overlay = Overlay.of(context);
     _entry = OverlayEntry(
@@ -52,42 +76,7 @@ class _AppSwitcherPillState extends ConsumerState<AppSwitcherPill> {
             targetAnchor: Alignment.bottomLeft,
             followerAnchor: Alignment.topLeft,
             offset: const Offset(0, 8),
-            child: _DropdownPanel(
-              // BAT BUOC popUntil((r) => r.isFirst) TRUOC KHI push 1 khu
-              // vuc moi (ke ca khi dang o Hoc Tieng Anh) - neu chi push
-              // chong len, bam qua lai Fitness/Wealth nhieu lan se xep
-              // CHONG nhieu FitnessShell/WealthShell trong CUNG 1 Navigator
-              // stack, khien 2 co trang thai (fitnessModeActiveProvider/
-              // wealthModeActiveProvider) cua nhieu instance de len nhau va
-              // cung bao "true" mot luc (dung nut Assets Management +
-              // Fitness deu hien "Current" nhu nhau). Luon quay ve goc roi
-              // moi push dam bao CHI 1 khu vuc con nam trong stack tai 1
-              // thoi diem.
-              onSelectLearnEnglish: () {
-                _close();
-                if (!ref.read(fitnessModeActiveProvider) &&
-                    !ref.read(wealthModeActiveProvider)) {
-                  return; // da o Hoc Tieng Anh roi, khong lam gi them.
-                }
-                Navigator.of(context).popUntil((r) => r.isFirst);
-              },
-              onSelectFitness: () {
-                _close();
-                if (ref.read(fitnessModeActiveProvider)) return;
-                Navigator.of(context).popUntil((r) => r.isFirst);
-                Navigator.of(
-                  context,
-                ).push(MaterialPageRoute(builder: (_) => const FitnessShell()));
-              },
-              onSelectWealth: () {
-                _close();
-                if (ref.read(wealthModeActiveProvider)) return;
-                Navigator.of(context).popUntil((r) => r.isFirst);
-                Navigator.of(
-                  context,
-                ).push(MaterialPageRoute(builder: (_) => const WealthShell()));
-              },
-            ),
+            child: _DropdownPanel(onSelect: (section) => _select(section)),
           ),
         ],
       ),
@@ -110,25 +99,27 @@ class _AppSwitcherPillState extends ConsumerState<AppSwitcherPill> {
 
   @override
   Widget build(BuildContext context) {
-    // Hien dung "app" DANG DUNG (khong luon co dinh "Hoc Tieng Anh") - doc
-    // 2 co trang thai da co san (bat/tat luc vao/thoat FitnessShell/
-    // WealthShell) thay vi suy tu route, don gian va da dung dung o nhieu
-    // noi khac (ScreenBackground, ai_fab_overlay...).
-    final fitnessActive = ref.watch(fitnessModeActiveProvider);
-    final wealthActive = ref.watch(wealthModeActiveProvider);
-    final (icon, color, labelKey) = fitnessActive
-        ? (
-            Icons.fitness_center_rounded,
-            AppColors.fitnessAccent,
-            'app_switcher_fitness',
-          )
-        : wealthActive
-        ? (
-            Icons.account_balance_wallet_rounded,
-            AppColors.wealthAccent,
-            'app_switcher_wealth',
-          )
-        : (Icons.school_rounded, AppColors.blue, 'app_switcher_learn_english');
+    // Hien dung "app" DANG DUNG - doc DUY NHAT 1 nguon that
+    // (currentAppSectionProvider) thay vi 2 co bool rieng de (da gay loi
+    // desync khi chuyen doi qua lai nhieu lan, xem _select() ben tren).
+    final section = ref.watch(currentAppSectionProvider);
+    final (icon, color, labelKey) = switch (section) {
+      AppSection.fitness => (
+        Icons.fitness_center_rounded,
+        AppColors.fitnessAccent,
+        'app_switcher_fitness',
+      ),
+      AppSection.wealth => (
+        Icons.account_balance_wallet_rounded,
+        AppColors.wealthAccent,
+        'app_switcher_wealth',
+      ),
+      AppSection.learnEnglish => (
+        Icons.school_rounded,
+        AppColors.blue,
+        'app_switcher_learn_english',
+      ),
+    };
 
     return CompositedTransformTarget(
       link: _link,
@@ -175,20 +166,12 @@ class _AppSwitcherPillState extends ConsumerState<AppSwitcherPill> {
 }
 
 class _DropdownPanel extends ConsumerWidget {
-  const _DropdownPanel({
-    required this.onSelectLearnEnglish,
-    required this.onSelectFitness,
-    required this.onSelectWealth,
-  });
-  final VoidCallback onSelectLearnEnglish;
-  final VoidCallback onSelectFitness;
-  final VoidCallback onSelectWealth;
+  const _DropdownPanel({required this.onSelect});
+  final ValueChanged<AppSection> onSelect;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final fitnessActive = ref.watch(fitnessModeActiveProvider);
-    final wealthActive = ref.watch(wealthModeActiveProvider);
-    final learnEnglishActive = !fitnessActive && !wealthActive;
+    final section = ref.watch(currentAppSectionProvider);
     return Material(
       color: Colors.transparent,
       child: Container(
@@ -213,24 +196,24 @@ class _DropdownPanel extends ConsumerWidget {
               icon: Icons.school_rounded,
               color: AppColors.blue,
               label: ref.tr('app_switcher_learn_english'),
-              active: learnEnglishActive,
-              onTap: onSelectLearnEnglish,
+              active: section == AppSection.learnEnglish,
+              onTap: () => onSelect(AppSection.learnEnglish),
             ),
             const SizedBox(height: 6),
             _AppSwitcherTile(
               icon: Icons.fitness_center_rounded,
               color: AppColors.fitnessAccent,
               label: ref.tr('app_switcher_fitness'),
-              active: fitnessActive,
-              onTap: onSelectFitness,
+              active: section == AppSection.fitness,
+              onTap: () => onSelect(AppSection.fitness),
             ),
             const SizedBox(height: 6),
             _AppSwitcherTile(
               icon: Icons.account_balance_wallet_rounded,
               color: AppColors.wealthAccent,
               label: ref.tr('app_switcher_wealth'),
-              active: wealthActive,
-              onTap: onSelectWealth,
+              active: section == AppSection.wealth,
+              onTap: () => onSelect(AppSection.wealth),
             ),
           ],
         ),

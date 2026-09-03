@@ -26,16 +26,14 @@ class _WealthShellState extends ConsumerState<WealthShell> {
   int _tab = 0;
 
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) ref.read(wealthModeActiveProvider.notifier).state = true;
-    });
-  }
-
-  @override
   void dispose() {
-    ref.read(wealthModeActiveProvider.notifier).state = false;
+    // Xem giai thich trong FitnessShell.dispose(): tra ve Hoc Tieng Anh khi
+    // man nay bi go (ke ca thoat qua nut back he thong), khong chi qua
+    // app-switcher, de currentAppSectionProvider khong bi "ket" o Wealth.
+    if (ref.read(currentAppSectionProvider) == AppSection.wealth) {
+      ref.read(currentAppSectionProvider.notifier).state =
+          AppSection.learnEnglish;
+    }
     super.dispose();
   }
 

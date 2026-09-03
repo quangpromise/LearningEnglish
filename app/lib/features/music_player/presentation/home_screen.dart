@@ -12,7 +12,6 @@ import '../../story/data/story_data.dart';
 import '../../story/presentation/story_screen.dart';
 import '../../translation/presentation/dictionary_popup.dart';
 import '../../vocabulary/presentation/vocabulary_topics_screen.dart';
-import 'music_home_screen.dart';
 
 /// Man Home - da bo han tab Menu rieng (xem root_shell.dart): moi tinh nang
 /// (ke ca nhung thu truoc gom trong Menu: Doc sach, Do vui, Fitness, Crypto,
@@ -54,15 +53,6 @@ class HomeScreen extends ConsumerWidget {
               _CategorySection(
                 title: ref.tr('home_category_listening'),
                 items: [
-                  _CategoryItemData(
-                    icon: Icons.library_music_rounded,
-                    label: ref.tr('home_music_quick_title'),
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const MusicHomeScreen(),
-                      ),
-                    ),
-                  ),
                   _CategoryItemData(
                     icon: Icons.graphic_eq_rounded,
                     label: ref.tr('phonics_title'),
@@ -143,23 +133,30 @@ class _CategorySection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GlowBox(
-      padding: const EdgeInsets.all(16),
-      borderRadius: 22,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: AppTextStyles.heading(size: 14)),
-          const SizedBox(height: 14),
-          Wrap(
-            // spaceBetween: cac icon dan deu tu mep trai sang mep phai cua
-            // box thay vi don het ve ben trai (de trong 1 khoang rong ben
-            // phai khi 1 hang chi co 2-3 icon trong khi box du rong cho 4).
-            alignment: WrapAlignment.spaceBetween,
-            runSpacing: 14,
-            children: items.map((item) => _CategoryItem(data: item)).toList(),
-          ),
-        ],
+    // SizedBox(width: double.infinity) BAT BUOC o day: Column cha (Home)
+    // dung crossAxisAlignment.start nen GlowBox mac dinh chi rong bang noi
+    // dung ben trong (Wrap co the), khien khung the loai bi hep lai va lech
+    // sang trai thay vi keo dai het chieu rong man hinh nhu cac khung khac.
+    return SizedBox(
+      width: double.infinity,
+      child: GlowBox(
+        padding: const EdgeInsets.all(16),
+        borderRadius: 22,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: AppTextStyles.heading(size: 14)),
+            const SizedBox(height: 14),
+            Wrap(
+              // spaceBetween: cac icon dan deu tu mep trai sang mep phai cua
+              // box thay vi don het ve ben trai (de trong 1 khoang rong ben
+              // phai khi 1 hang chi co 2-3 icon trong khi box du rong cho 4).
+              alignment: WrapAlignment.spaceBetween,
+              runSpacing: 14,
+              children: items.map((item) => _CategoryItem(data: item)).toList(),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -54,8 +54,20 @@ class AppTopBar extends ConsumerWidget {
           const SizedBox(width: 12),
         ],
         GestureDetector(
-          onTap: () => Navigator.of(context)
-              .push(MaterialPageRoute(builder: (_) => const ProfileScreen())),
+          onTap: () => showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (_) => FractionallySizedBox(
+              heightFactor: 0.94,
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(28),
+                ),
+                child: const ProfileScreen(),
+              ),
+            ),
+          ),
           child: Stack(
             clipBehavior: Clip.none,
             children: [

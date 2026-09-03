@@ -27,19 +27,10 @@ class _FitnessShellState extends ConsumerState<FitnessShell> {
   void initState() {
     super.initState();
     _openedAt = DateTime.now();
-    // Bat co "dang o Fitness" NGAY sau frame dau (khong lam trong initState
-    // truc tiep - sua state cua 1 provider khac ngay luc build dang chay se
-    // nem loi "Tried to modify a provider while the widget tree was building").
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) ref.read(fitnessModeActiveProvider.notifier).state = true;
-    });
   }
 
   @override
   void dispose() {
-    // Doc ref truc tiep (khong qua context) vi dispose() chay sau khi
-    // widget da bi go khoi cay, an toan de doc gia tri container o day.
-    ref.read(fitnessModeActiveProvider.notifier).state = false;
     // Ghi nhan thoi gian dung Fitness (nguon 'fitness', tach voi tieng Anh)
     // cho bieu do "Hoat dong tuan nay" o man Ho so - giong het cach
     // PlayerScreen ghi nhan thoi gian nghe nhac.
@@ -48,6 +39,13 @@ class _FitnessShellState extends ConsumerState<FitnessShell> {
       ref
           .read(statsRepositoryProvider)
           .addPracticeSeconds(elapsed, source: 'fitness');
+    }
+    // Man nay bi go (kem ca khi thoat bang nut back he thong, khong chi qua
+    // app-switcher) - tra currentAppSectionProvider ve Hoc Tieng Anh de tranh
+    // "ket lai" o Fitness du man da khong con tren stack.
+    if (ref.read(currentAppSectionProvider) == AppSection.fitness) {
+      ref.read(currentAppSectionProvider.notifier).state =
+          AppSection.learnEnglish;
     }
     super.dispose();
   }

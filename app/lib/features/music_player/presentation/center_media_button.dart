@@ -9,12 +9,20 @@ import 'player_screen.dart';
 /// Nut nhac dang phat - 1 khoi VUONG-BO-TRON GON (khong phai the ngang) NOI
 /// CAO HAN HAN cac icon menu khac de KHONG de len chung, nam CHINH GIUA
 /// thanh menu duoi. Xep 2 tang de giu be ngang hep: hang tren la nut mo
-/// rong (collapse/expand), hang duoi la 3 nut lui/phat-tam dung/toi bai.
-/// Chi hien khi co bai dang phat. Dat rieng 1 file de dung CHUNG cho ca
-/// thanh menu Hoc Tieng Anh (root_shell.dart) lan Fitness/Assets Management
+/// rong (collapse/expand, mo PlayerScreen dang popup), hang duoi la 3 nut
+/// lui/phat-tam dung/toi bai - rieng nut phat-tam dung co them thoi gian
+/// CON LAI cua bai hat ngay ben duoi (theo yeu cau). Chi hien khi co bai
+/// dang phat. Dat rieng 1 file de dung CHUNG cho ca thanh menu Hoc Tieng
+/// Anh (root_shell.dart) lan Fitness/Assets Management
 /// (mini_app_bottom_nav.dart).
 class CenterMediaButton extends StatelessWidget {
   const CenterMediaButton({super.key});
+
+  static String _fmt(Duration d) {
+    final m = d.inMinutes;
+    final s = d.inSeconds % 60;
+    return '$m:${s.toString().padLeft(2, '0')}';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +34,7 @@ class CenterMediaButton extends StatelessWidget {
         final queue = queueSnap.data ?? const <Song>[];
         if (queue.isEmpty) return const SizedBox(width: 66, height: 66);
         return Container(
-          width: 66,
+          width: 72,
           padding: const EdgeInsets.symmetric(vertical: 6),
           decoration: BoxDecoration(
             gradient: AppColors.accentGradient,
@@ -46,34 +54,57 @@ class CenterMediaButton extends StatelessWidget {
               _Btn(
                 icon: Icons.unfold_more_rounded,
                 size: 15,
-                onTap: () => Navigator.of(
-                  context,
-                ).push(MaterialPageRoute(builder: (_) => const PlayerScreen())),
+                onTap: () => _openPlayerPopup(context),
               ),
               const SizedBox(height: 2),
               Row(
                 mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   _Btn(
                     icon: Icons.skip_previous_rounded,
                     size: 16,
                     onTap: queue.length > 1 ? service.previous : null,
                   ),
-                  StreamBuilder<PlayerState>(
-                    stream: service.player.playerStateStream,
-                    initialData: service.player.playerState,
-                    builder: (context, snap) {
-                      final playing = snap.data?.playing ?? false;
-                      return _Btn(
-                        icon: playing
-                            ? Icons.pause_rounded
-                            : Icons.play_arrow_rounded,
-                        size: 18,
-                        onTap: () => playing
-                            ? service.player.pause()
-                            : service.player.play(),
-                      );
-                    },
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      StreamBuilder<PlayerState>(
+                        stream: service.player.playerStateStream,
+                        initialData: service.player.playerState,
+                        builder: (context, snap) {
+                          final playing = snap.data?.playing ?? false;
+                          return _Btn(
+                            icon: playing
+                                ? Icons.pause_rounded
+                                : Icons.play_arrow_rounded,
+                            size: 18,
+                            onTap: () => playing
+                                ? service.player.pause()
+                                : service.player.play(),
+                          );
+                        },
+                      ),
+                      StreamBuilder<Duration>(
+                        stream: service.player.positionStream,
+                        initialData: service.player.position,
+                        builder: (context, posSnap) {
+                          final pos = posSnap.data ?? Duration.zero;
+                          final dur = service.player.duration ?? Duration.zero;
+                          final remaining = dur - pos;
+                          return Text(
+                            remaining.isNegative
+                                ? '-0:00'
+                                : '-${_fmt(remaining)}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 8,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                   ),
                   _Btn(
                     icon: Icons.skip_next_rounded,
@@ -88,6 +119,24 @@ class CenterMediaButton extends StatelessWidget {
       },
     );
   }
+}
+
+/// Mo PlayerScreen dang POPUP (bottom sheet gan full man hinh, boc goc tren)
+/// thay vi day sang 1 man hinh rieng - theo yeu cau, giu cam giac "noi
+/// tren" nhat quan voi cach CenterMediaButton cung dang hien thi.
+void _openPlayerPopup(BuildContext context) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (_) => FractionallySizedBox(
+      heightFactor: 0.94,
+      child: ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        child: const PlayerScreen(),
+      ),
+    ),
+  );
 }
 
 class _Btn extends StatelessWidget {
