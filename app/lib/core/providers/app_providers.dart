@@ -371,6 +371,16 @@ final currentAppSectionProvider = StateProvider<AppSection>(
   (ref) => AppSection.learnEnglish,
 );
 
+/// Ghi nho "dang o Fitness/Wealth luc bam Sign out" de KHOI PHUC dung app do
+/// ngay sau khi dang nhap lai - thay vi luon quay ve Hoc Tieng Anh. Sign out
+/// (profile_screen.dart) doc currentAppSectionProvider ngay TRUOC khi goi
+/// signOut() roi luu vao day; main.dart doc lai va push dung Shell tuong
+/// ung khi bat su kien AuthChangeEvent.signedIn, sau do tu xoa (set null) de
+/// khong anh huong cac lan dang nhap binh thuong khac.
+final pendingRestoreAppSectionProvider = StateProvider<AppSection?>(
+  (ref) => null,
+);
+
 /// Anh nen "xung quanh" theo dung "app" dang mo (Hoc Tieng Anh/Fitness/
 /// Wealth) - [ScreenBackground] tu doc provider nay lam mac dinh khi khong
 /// truyen `backgroundImage` rieng, nen MOI man hinh dung ScreenBackground

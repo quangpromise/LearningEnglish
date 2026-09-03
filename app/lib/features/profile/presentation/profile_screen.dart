@@ -88,6 +88,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ),
     );
     if (confirmed == true) {
+      // Ghi nho dang o Fitness/Wealth NGAY TRUOC khi dang xuat (khong doi
+      // sau) - de main.dart khoi phuc dung app nay khi dang nhap lai, thay
+      // vi luon quay ve Hoc Tieng Anh (xem pendingRestoreAppSectionProvider).
+      final section = ref.read(currentAppSectionProvider);
+      if (section != AppSection.learnEnglish) {
+        ref.read(pendingRestoreAppSectionProvider.notifier).state = section;
+      }
       await ref.read(authRepositoryProvider).signOut();
       // Man Ho so nay la 1 route (bottom sheet) DUNG TREN Navigator goc cua
       // app - main.dart doi "home" tu RootShell sang SignInScreen ngay khi

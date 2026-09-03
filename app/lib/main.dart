@@ -21,8 +21,10 @@ import 'core/tts/app_tts.dart';
 import 'features/ai_voice_chat/data/gemini_voices.dart';
 import 'features/auth/presentation/reset_password_screen.dart';
 import 'features/auth/presentation/sign_in_screen.dart';
+import 'features/fitness/presentation/fitness_shell.dart';
 import 'features/onboarding/data/onboarding_repository.dart';
 import 'features/onboarding/presentation/onboarding_screen.dart';
+import 'features/wealth/presentation/wealth_shell.dart';
 
 /// Chay 1 buoc khoi dong voi gioi han thoi gian + bo qua moi loi - dam bao
 /// KHONG buoc nao trong main() co the lam app "dung yen vinh vien o man hinh
@@ -178,6 +180,32 @@ class _AuthGate extends ConsumerWidget {
       // ChatPush (khong lam gi neu chua cau hinh Firebase project).
       if (event == AuthChangeEvent.signedIn) {
         ChatPush.instance.registerCurrentUser();
+        // Khoi phuc dung Fitness/Wealth neu nguoi dung vua sign out tu 1
+        // trong 2 khu vuc do (xem pendingRestoreAppSectionProvider) - khong
+        // thi mac dinh RootShell (Hoc Tieng Anh) la du, khong lam gi them.
+        // addPostFrameCallback vi luc nay RootShell (route "/") co the chua
+        // kip mount xong trong cung frame voi su kien dang nhap.
+        final pending = ref.read(pendingRestoreAppSectionProvider);
+        if (pending != null && pending != AppSection.learnEnglish) {
+          ref.read(pendingRestoreAppSectionProvider.notifier).state = null;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ref.read(currentAppSectionProvider.notifier).state = pending;
+            final nav = rootNavigatorKey.currentState;
+            if (nav == null) return;
+            switch (pending) {
+              case AppSection.fitness:
+                nav.push(
+                  MaterialPageRoute(builder: (_) => const FitnessShell()),
+                );
+              case AppSection.wealth:
+                nav.push(
+                  MaterialPageRoute(builder: (_) => const WealthShell()),
+                );
+              case AppSection.learnEnglish:
+                break;
+            }
+          });
+        }
       } else if (event == AuthChangeEvent.signedOut) {
         ChatPush.instance.unregister();
       }
