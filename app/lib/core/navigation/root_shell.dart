@@ -6,12 +6,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../notifications/chat_push.dart';
 import '../providers/app_providers.dart';
 import '../theme/app_theme.dart';
-import '../../features/menu/presentation/menu_screen.dart';
 import '../../features/music_player/presentation/home_screen.dart';
 import '../../features/music_player/presentation/mini_player.dart';
 import '../../features/pronunciation/presentation/pronunciation_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/social/data/social_repository.dart';
+import '../../features/social/presentation/conversations_screen.dart';
 import '../../features/social/presentation/incoming_message_banner.dart';
 import '../../features/update/presentation/update_dialog.dart';
 
@@ -28,11 +28,12 @@ class _RootShellState extends ConsumerState<RootShell>
 
   // Vocabulary, Grammar va Phonics (bai hoc phat am IPA) khong phai tab
   // rieng - da chuyen thanh the truy cap nhanh ngay tren man Home (xem
-  // home_screen.dart). Reading va Quiz cung khong con la tab rieng - gom vao
-  // man Menu (tab cuoi cung) de thanh dieu huong duoi khong bi qua nhieu
-  // icon. AI Voice Chat cung khong con la tab rieng - da chuyen thanh nut
-  // noi (xem ai_fab_overlay.dart) hien tren MOI man hinh cua app thay vi
-  // chiem 1 cho co dinh o thanh tab.
+  // home_screen.dart). Da bo han tab Menu - Reading/Quiz/Fitness/Crypto/
+  // Attribution (truoc gom trong Menu) gio vao thang tu Home theo nhom danh
+  // muc, khong con man Menu rieng. AI Voice Chat khong phai tab rieng - da
+  // chuyen thanh nut noi (xem ai_fab_overlay.dart) hien tren MOI man hinh
+  // cua app thay vi chiem 1 cho co dinh o thanh tab. Tin nhan truoc la 1 nut
+  // rieng o header Home, gio chuyen thanh 1 tab canh Ho so cho de tim hon.
   //
   // Khong con la list const: PronunciationScreen (Luyen phat am - ghi am +
   // cham diem, KHAC voi Phonics o tren) can biet no co dang la tab dang
@@ -43,16 +44,18 @@ class _RootShellState extends ConsumerState<RootShell>
   List<Widget> _buildScreens() => [
     const HomeScreen(),
     PronunciationScreen(isActive: _tab == 1),
+    const ConversationsScreen(),
     const ProfileScreen(),
-    const MenuScreen(),
   ];
 
   static const _icons = [
     Icons.home_rounded,
     Icons.mic_rounded,
+    Icons.chat_bubble_rounded,
     Icons.person_rounded,
-    Icons.menu_rounded,
   ];
+
+  static const _messagesTabIndex = 2;
 
   static const _pronunciationTabIndex = 1;
 
@@ -162,6 +165,9 @@ class _RootShellState extends ConsumerState<RootShell>
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: List.generate(_icons.length, (i) {
                   final active = i == _tab;
+                  final unread = i == _messagesTabIndex
+                      ? ref.watch(unreadMessageCountProvider).valueOrNull ?? 0
+                      : 0;
                   return GestureDetector(
                     onTap: () => _setTab(i),
                     child: AnimatedContainer(
@@ -181,10 +187,45 @@ class _RootShellState extends ConsumerState<RootShell>
                             : null,
                         borderRadius: BorderRadius.circular(999),
                       ),
-                      child: Icon(
-                        _icons[i],
-                        size: 22,
-                        color: active ? Colors.white : AppColors.textMuted,
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Icon(
+                            _icons[i],
+                            size: 22,
+                            color: active ? Colors.white : AppColors.textMuted,
+                          ),
+                          if (unread > 0)
+                            Positioned(
+                              right: -4,
+                              top: -2,
+                              child: Container(
+                                padding: const EdgeInsets.all(3),
+                                constraints: const BoxConstraints(
+                                  minWidth: 15,
+                                  minHeight: 15,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.pink,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: const Color(0xD90A0E1C),
+                                    width: 2,
+                                  ),
+                                ),
+                                child: Text(
+                                  unread > 9 ? '9+' : '$unread',
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 8,
+                                    fontWeight: FontWeight.w800,
+                                    height: 1,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                     ),
                   );

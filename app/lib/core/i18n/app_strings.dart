@@ -66,14 +66,6 @@ class AppStrings {
       AppLanguage.en: 'Tap any word to see its meaning',
     },
 
-    // Menu tab (menu_screen.dart) - gom cac muc it dung hon vao 1 danh
-    // sach thay vi chiem rieng 1 tab o thanh dieu huong duoi.
-    'menu_title': {AppLanguage.vi: 'Menu', AppLanguage.en: 'Menu'},
-    'menu_subtitle': {
-      AppLanguage.vi: 'Các tính năng khác',
-      AppLanguage.en: 'More features',
-    },
-
     // Crypto feature (crypto_screen.dart) - bang xep hang gia coin, du lieu
     // lay tu API cong khai mien phi CoinGecko (khong can API key).
     'crypto_title': {AppLanguage.vi: 'Crypto', AppLanguage.en: 'Crypto'},
@@ -648,6 +640,31 @@ class AppStrings {
       AppLanguage.vi: 'Từ điển',
       AppLanguage.en: 'Dictionary',
     },
+    'home_stat_streak': {
+      AppLanguage.vi: 'Ngày liên tục',
+      AppLanguage.en: 'Day streak',
+    },
+    'home_stat_words': {
+      AppLanguage.vi: 'Từ đã học',
+      AppLanguage.en: 'Words learned',
+    },
+    'home_stat_pronunciation': {
+      AppLanguage.vi: 'Điểm phát âm',
+      AppLanguage.en: 'Pronunciation',
+    },
+    'home_level_section_title': {
+      AppLanguage.vi: 'Chọn trình độ',
+      AppLanguage.en: 'Choose your level',
+    },
+    'home_category_listening': {
+      AppLanguage.vi: 'Nghe nói',
+      AppLanguage.en: 'Listening & Speaking',
+    },
+    'home_category_reading': {
+      AppLanguage.vi: 'Đọc viết',
+      AppLanguage.en: 'Reading & Writing',
+    },
+    'home_category_other': {AppLanguage.vi: 'Khác', AppLanguage.en: 'Other'},
     'dictionary_title': {
       AppLanguage.vi: 'Từ điển Anh - Việt',
       AppLanguage.en: 'English - Vietnamese Dictionary',

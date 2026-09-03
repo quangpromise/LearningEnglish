@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/app_providers.dart';
 import 'exercise_library_screen.dart';
 
-/// Man hinh goc cua khu vuc Fitness - vao tu the "Fitness" trong Menu (xem
-/// menu_screen.dart). Phase 1 chi co 1 man (Thu vien bai tap); cau truc rieng
+/// Man hinh goc cua khu vuc Fitness - vao tu nhom "Khac" ngay tren Home (xem
+/// home_screen.dart). Phase 1 chi co 1 man (Thu vien bai tap); cau truc rieng
 /// biet voi RootShell (khong phai 1 tab moi) de sau nay de dang them cac khu
 /// vuc khac (Chuong trinh tap, Dinh duong...) ben trong shell nay ma khong
 /// dung cham gi den thanh dieu huong chinh cua GymTalk.

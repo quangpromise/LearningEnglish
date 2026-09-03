@@ -4,11 +4,20 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  static const bgTop = Color(0xFF0A0E1C);
-  static const bgMid = Color(0xFF0D1330);
-  static const bgBottom = Color(0xFF080B16);
+  // Doi sang bang mau "smart-home app" (nen den tuyet doi + xanh la neon lam
+  // mau nhan chinh) theo yeu cau thiet ke lai dong bo toan app - GIU NGUYEN
+  // TEN BIEN cu (bgTop/bgMid/bgBottom/blue/accentGradient...) va chi doi GIA
+  // TRI mau, de MOI man hinh dang dung cac ten nay (qua GlowBox/ScreenBackground/
+  // AppTextStyles ben duoi) tu dong ap dung mau moi ma khong phai sua tung
+  // file rieng le - giam toi da rui ro bo sot 1 man hinh nao do.
+  static const bgTop = Color(0xFF0A0D0A);
+  static const bgMid = Color(0xFF10140D);
+  static const bgBottom = Color(0xFF050604);
 
-  static const blue = Color(0xFF5B8CFF);
+  /// Van ten "blue" nhu cu nhung gia tri la CAM (theo mau tham khao app dat
+  /// lich kieu "valyioo") - day la mau NHAN CHINH dung khap noi trong app
+  /// (nut, active state, progress bar...).
+  static const blue = Color(0xFFF0883D);
   static const purple = Color(0xFF9B6BFF);
   static const teal = Color(0xFF5BE0D0);
   static const amber = Color(0xFFFFB23C);
@@ -20,10 +29,12 @@ class AppColors {
   static const glassFill = Color(0x0DFFFFFF);
   static const glassBorder = Color(0x17FFFFFF);
 
+  // Cam dam -> cam nhat, giu 1 tong mau nhat quan cho gradient nut/avatar
+  // dung khap app (khong con ghep voi purple/teal de tranh xung dot mau).
   static const accentGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [blue, purple],
+    colors: [blue, Color(0xFFF2A35C)],
   );
 
   static const screenGradient = LinearGradient(
