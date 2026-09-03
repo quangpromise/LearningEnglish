@@ -36,14 +36,35 @@ class FitnessHomeScreen extends ConsumerWidget {
                       style: AppTextStyles.heading(size: 14),
                     ),
                     const SizedBox(height: 14),
-                    _FitnessTile(
-                      icon: Icons.fitness_center_rounded,
-                      label: ref.tr('fitness_library_title'),
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const MuscleGroupCategoriesScreen(),
-                        ),
-                      ),
+                    // LayoutBuilder tinh be rong 1 the theo cong thuc "vua du
+                    // 4 the/hang" - dung CHUNG 1 quy tac voi Home Hoc Tieng
+                    // Anh va Wealth de dong bo tren ca 3 app (kem ca khi
+                    // hien chi co 1 the, san sang khi them tinh nang moi).
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        const spacing = 12.0;
+                        const columns = 4;
+                        final itemWidth =
+                            (constraints.maxWidth - spacing * (columns - 1)) /
+                            columns;
+                        return Wrap(
+                          spacing: spacing,
+                          runSpacing: 14,
+                          children: [
+                            _FitnessTile(
+                              width: itemWidth,
+                              icon: Icons.fitness_center_rounded,
+                              label: ref.tr('fitness_library_title'),
+                              onTap: () => Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      const MuscleGroupCategoriesScreen(),
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -61,17 +82,19 @@ class _FitnessTile extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.onTap,
+    required this.width,
   });
   final IconData icon;
   final String label;
   final VoidCallback onTap;
+  final double width;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: SizedBox(
-        width: 86,
+        width: width,
         child: Column(
           children: [
             Container(
