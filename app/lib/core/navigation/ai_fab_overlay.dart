@@ -111,12 +111,15 @@ class _AiFabOverlayState extends ConsumerState<AiFabOverlay>
   @override
   Widget build(BuildContext context) {
     final pronunciationActive = ref.watch(pronunciationTabActiveProvider);
+    final fitnessActive = ref.watch(fitnessModeActiveProvider);
 
     return ValueListenableBuilder<String?>(
       valueListenable: topRouteObserver.currentRouteName,
       builder: (context, routeName, _) {
         final hidden =
-            pronunciationActive || routeName == kAiVoiceChatRouteName;
+            pronunciationActive ||
+            fitnessActive ||
+            routeName == kAiVoiceChatRouteName;
         if (hidden) return const SizedBox.shrink();
 
         final mq = MediaQuery.of(context);

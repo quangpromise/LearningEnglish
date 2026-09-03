@@ -1,0 +1,4149 @@
+[
+  {
+    "id": 1,
+    "nameVi": "Đẩy ngực tạ đòn",
+    "nameEn": "Barbell Bench Press",
+    "primaryMuscle": "Ngực · chính",
+    "secondaryMuscles": [
+      "Vai trước",
+      "Tay sau"
+    ],
+    "involvementPercents": [
+      55,
+      20,
+      25
+    ],
+    "equipment": "Tạ đòn + ghế",
+    "instructions": [
+      "Nằm trên ghế, mắt dưới thanh đòn, chân đặt chắc xuống sàn.",
+      "Nắm đòn rộng hơn vai, siết bả vai, hạ đòn chạm giữa ngực.",
+      "Đẩy đòn lên theo đường thẳng, thở ra khi đẩy.",
+      "Không nảy đòn trên ngực, giữ cổ tay thẳng."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 4,
+    "suggestedRepsMin": 8,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 90,
+    "muscleGroupCode": "CHEST",
+    "movementType": "COMPOUND",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 2,
+    "nameVi": "Đẩy vai tạ đơn",
+    "nameEn": "Dumbbell Shoulder Press",
+    "primaryMuscle": "Vai trước · chính",
+    "secondaryMuscles": [
+      "Vai giữa",
+      "Tay sau"
+    ],
+    "involvementPercents": [
+      55,
+      23,
+      22
+    ],
+    "equipment": "Tạ đơn + ghế",
+    "instructions": [
+      "Ngồi thẳng lưng, tạ đơn ngang vai, lòng bàn tay hướng ra trước.",
+      "Siết bụng, đẩy tạ thẳng lên trên đầu, thở ra khi đẩy.",
+      "Hạ tạ có kiểm soát về vị trí ngang vai, không khóa khuỷu tay khi đẩy hết."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 4,
+    "suggestedRepsMin": 8,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 90,
+    "muscleGroupCode": "DELTOIDS",
+    "movementType": "COMPOUND",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 3,
+    "nameVi": "Cable fly",
+    "nameEn": "Cable Fly",
+    "primaryMuscle": "Ngực · chính",
+    "secondaryMuscles": [
+      "Vai trước"
+    ],
+    "involvementPercents": [
+      80,
+      20
+    ],
+    "equipment": "Máy cáp",
+    "instructions": [
+      "Đứng giữa hai cột cáp, tay cầm ngang vai, khuỷu tay hơi gập.",
+      "Kéo hai tay vào giữa trước ngực theo đường vòng cung, siết cơ ngực ở điểm cuối.",
+      "Trở về từ từ, giữ lực căng ở cáp suốt hiệp."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 12,
+    "suggestedRepsMax": 15,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "CHEST",
+    "movementType": "ISOLATION",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 4,
+    "nameVi": "Lateral raise",
+    "nameEn": "Lateral Raise",
+    "primaryMuscle": "Vai giữa · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Tạ đơn",
+    "instructions": [
+      "Đứng thẳng, tạ đơn hai bên hông, khuỷu tay hơi gập.",
+      "Nâng tạ sang ngang tới độ cao vai, giữ 1 giây ở đỉnh.",
+      "Hạ tạ có kiểm soát, không dùng lực đà."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 12,
+    "suggestedRepsMax": 15,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "DELTOIDS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 5,
+    "nameVi": "Squat tạ đòn",
+    "nameEn": "Barbell Squat",
+    "primaryMuscle": "Đùi trước · chính",
+    "secondaryMuscles": [
+      "Mông",
+      "Đùi sau",
+      "Bắp chân"
+    ],
+    "involvementPercents": [
+      45,
+      25,
+      20,
+      10
+    ],
+    "equipment": "Tạ đòn + giá đỡ",
+    "instructions": [
+      "Đặt đòn tạ sau gáy trên giá đỡ, bước ra với chân rộng bằng vai, mũi chân hơi mở.",
+      "Hít vào, gập gối và hông hạ người xuống, giữ lưng thẳng và đầu gối không vượt quá mũi chân.",
+      "Hạ tới khi đùi song song sàn, sau đó đạp gót chân đẩy người lên, thở ra khi đứng dậy."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 4,
+    "suggestedRepsMin": 6,
+    "suggestedRepsMax": 10,
+    "suggestedRestSeconds": 120,
+    "muscleGroupCode": "LEGS",
+    "movementType": "COMPOUND",
+    "difficultyCode": "ADVANCED"
+  },
+  {
+    "id": 6,
+    "nameVi": "Deadlift tạ đòn",
+    "nameEn": "Barbell Deadlift",
+    "primaryMuscle": "Lưng dưới · chính",
+    "secondaryMuscles": [
+      "Mông",
+      "Đùi sau",
+      "Lưng giữa"
+    ],
+    "involvementPercents": [
+      30,
+      30,
+      25,
+      15
+    ],
+    "equipment": "Tạ đòn",
+    "instructions": [
+      "Đứng trước đòn tạ, chân rộng bằng vai, cúi người nắm đòn với lưng thẳng, ngực ưỡn.",
+      "Đẩy sàn bằng gót chân và duỗi hông để nâng đòn lên, giữ đòn sát người suốt quãng đường.",
+      "Ở tư thế đứng thẳng, siết mông và lưng; sau đó hạ đòn có kiểm soát về sàn."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 4,
+    "suggestedRepsMin": 5,
+    "suggestedRepsMax": 8,
+    "suggestedRestSeconds": 150,
+    "muscleGroupCode": "BACK",
+    "movementType": "COMPOUND",
+    "difficultyCode": "ADVANCED"
+  },
+  {
+    "id": 7,
+    "nameVi": "Kéo xô cáp tay rộng",
+    "nameEn": "Wide-Grip Lat Pulldown",
+    "primaryMuscle": "Xô · chính",
+    "secondaryMuscles": [
+      "Tay trước",
+      "Vai"
+    ],
+    "involvementPercents": [
+      65,
+      25,
+      10
+    ],
+    "equipment": "Máy cáp",
+    "instructions": [
+      "Ngồi vào máy, nắm thanh kéo rộng hơn vai, ngả người ra sau nhẹ khoảng 30 độ.",
+      "Kéo thanh xuống chạm ngực trên, siết xô và kéo vai xuống-ra sau, thở ra khi kéo.",
+      "Trở về từ từ đến khi tay duỗi thẳng, cảm nhận xô được kéo giãn."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 4,
+    "suggestedRepsMin": 8,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 90,
+    "muscleGroupCode": "BACK",
+    "movementType": "COMPOUND",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 8,
+    "nameVi": "Row tạ đòn cúi người",
+    "nameEn": "Bent Over Barbell Row",
+    "primaryMuscle": "Lưng giữa · chính",
+    "secondaryMuscles": [
+      "Tay trước",
+      "Xô",
+      "Vai"
+    ],
+    "involvementPercents": [
+      40,
+      20,
+      30,
+      10
+    ],
+    "equipment": "Tạ đòn",
+    "instructions": [
+      "Gập gối nhẹ, cúi người từ hông tới khi lưng gần song song sàn, đòn tạ treo trước người.",
+      "Giữ lưng thẳng và thân trên cố định, kéo đòn về phía bụng, khuỷu tay sát người.",
+      "Siết lưng giữa ở điểm cuối, sau đó hạ đòn có kiểm soát về vị trí ban đầu."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 4,
+    "suggestedRepsMin": 8,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 90,
+    "muscleGroupCode": "BACK",
+    "movementType": "COMPOUND",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 9,
+    "nameVi": "Cuốn tay trước tạ đòn",
+    "nameEn": "Barbell Curl",
+    "primaryMuscle": "Tay trước · chính",
+    "secondaryMuscles": [
+      "Cẳng tay"
+    ],
+    "involvementPercents": [
+      80,
+      20
+    ],
+    "equipment": "Tạ đòn",
+    "instructions": [
+      "Đứng thẳng, nắm đòn rộng bằng vai, lòng bàn tay hướng ra trước, khuỷu tay sát người.",
+      "Giữ cánh tay trên cố định, cuốn đòn lên bằng lực tay trước, thở ra khi cuốn.",
+      "Siết tay trước ở đỉnh, sau đó hạ đòn có kiểm soát về vị trí ban đầu."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "BICEPS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 10,
+    "nameVi": "Đẩy cáp tay sau",
+    "nameEn": "Triceps Pushdown",
+    "primaryMuscle": "Tay sau · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Máy cáp",
+    "instructions": [
+      "Đứng trước máy cáp, nắm thanh chữ V hoặc thanh thẳng, khuỷu tay sát người và cố định.",
+      "Đẩy thanh xuống tới khi tay duỗi thẳng, chỉ có cẳng tay di chuyển, thở ra khi đẩy.",
+      "Giữ 1 giây ở điểm cuối, sau đó thả lên có kiểm soát về vị trí ban đầu."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 15,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "TRICEPS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 11,
+    "nameVi": "Đạp đùi máy",
+    "nameEn": "Leg Press",
+    "primaryMuscle": "Đùi trước · chính",
+    "secondaryMuscles": [
+      "Mông",
+      "Đùi sau",
+      "Bắp chân"
+    ],
+    "involvementPercents": [
+      50,
+      17,
+      17,
+      16
+    ],
+    "equipment": "Máy đạp đùi",
+    "instructions": [
+      "Ngồi vào máy, đặt chân lên bệ đạp rộng bằng vai, tháo chốt an toàn.",
+      "Hít vào, hạ bệ đạp có kiểm soát tới khi đùi và cẳng chân tạo góc 90 độ.",
+      "Đạp bệ trở về vị trí ban đầu bằng gót chân, không khóa thẳng gối, thở ra khi đạp."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 4,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 15,
+    "suggestedRestSeconds": 90,
+    "muscleGroupCode": "LEGS",
+    "movementType": "COMPOUND",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 12,
+    "nameVi": "Lunge tạ đơn",
+    "nameEn": "Dumbbell Lunges",
+    "primaryMuscle": "Đùi trước · chính",
+    "secondaryMuscles": [
+      "Mông",
+      "Đùi sau",
+      "Bắp chân"
+    ],
+    "involvementPercents": [
+      50,
+      17,
+      17,
+      16
+    ],
+    "equipment": "Tạ đơn",
+    "instructions": [
+      "Đứng thẳng, mỗi tay cầm một tạ đơn, thân trên giữ thẳng.",
+      "Bước một chân lên trước khoảng 60cm, hạ người xuống, đầu gối trước không vượt mũi chân.",
+      "Đạp gót chân trước để trở về vị trí đứng, đổi chân sau khi hoàn thành số lần quy định."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 75,
+    "muscleGroupCode": "LEGS",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 13,
+    "nameVi": "Gập bụng",
+    "nameEn": "Crunches",
+    "primaryMuscle": "Bụng · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Không thiết bị",
+    "instructions": [
+      "Nằm ngửa, gối gập, hai tay đặt nhẹ hai bên đầu, không đan tay sau gáy.",
+      "Ép lưng dưới xuống sàn, cuộn vai lên khỏi sàn khoảng 10cm, siết bụng và thở ra.",
+      "Giữ 1 giây ở điểm cuối, sau đó hạ xuống chậm rãi có kiểm soát."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 15,
+    "suggestedRepsMax": 20,
+    "suggestedRestSeconds": 45,
+    "muscleGroupCode": "ABS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 14,
+    "nameVi": "Hít đất",
+    "nameEn": "Pushups",
+    "primaryMuscle": "Ngực · chính",
+    "secondaryMuscles": [
+      "Vai",
+      "Tay sau"
+    ],
+    "involvementPercents": [
+      55,
+      23,
+      22
+    ],
+    "equipment": "Không thiết bị",
+    "instructions": [
+      "Chống hai tay xuống sàn rộng bằng vai, thân người thẳng từ đầu đến gót chân.",
+      "Hít vào, hạ người xuống tới khi ngực gần chạm sàn, khuỷu tay hướng chéo ra sau.",
+      "Đẩy người lên trở lại vị trí ban đầu, siết ngực và thở ra khi đẩy."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 15,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "CHEST",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 15,
+    "nameVi": "Đẩy hông tạ đòn",
+    "nameEn": "Barbell Hip Thrust",
+    "primaryMuscle": "Mông · chính",
+    "secondaryMuscles": [
+      "Đùi sau",
+      "Bắp chân"
+    ],
+    "involvementPercents": [
+      70,
+      25,
+      5
+    ],
+    "equipment": "Tạ đòn + ghế",
+    "instructions": [
+      "Ngồi trên sàn, lưng trên tựa vào mép ghế, đặt thanh đòn tạ ngang qua hông (lót đệm để giảm đau).",
+      "Đạp gót chân xuống sàn, đẩy hông lên cao hết mức, siết chặt mông ở đỉnh chuyển động.",
+      "Hạ hông xuống có kiểm soát về vị trí ban đầu, không để lưng dưới chạm sàn."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 4,
+    "suggestedRepsMin": 8,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 90,
+    "muscleGroupCode": "GLUTEUS",
+    "movementType": "COMPOUND",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 16,
+    "nameVi": "Cầu mông tạ đòn",
+    "nameEn": "Barbell Glute Bridge",
+    "primaryMuscle": "Mông · chính",
+    "secondaryMuscles": [
+      "Đùi sau",
+      "Bắp chân"
+    ],
+    "involvementPercents": [
+      55,
+      23,
+      22
+    ],
+    "equipment": "Tạ đòn",
+    "instructions": [
+      "Nằm ngửa trên sàn, đặt thanh đòn tạ ngang hông, gối gập, hai bàn chân đặt phẳng.",
+      "Đạp gót chân, đẩy hông lên cao, siết mông ở đỉnh chuyển động, giữ 1 giây.",
+      "Hạ hông xuống có kiểm soát về vị trí ban đầu."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 4,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 75,
+    "muscleGroupCode": "GLUTEUS",
+    "movementType": "COMPOUND",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 17,
+    "nameVi": "Đá mông sau",
+    "nameEn": "Glute Kickback",
+    "primaryMuscle": "Mông · chính",
+    "secondaryMuscles": [
+      "Đùi sau"
+    ],
+    "involvementPercents": [
+      65,
+      35
+    ],
+    "equipment": "Không thiết bị",
+    "instructions": [
+      "Quỳ trên sàn, hai tay chống thẳng dưới vai, gối tạo góc 90 độ, lưng thẳng.",
+      "Siết mông, đá một chân ra sau lên ngang lưng, giữ 1 giây ở đỉnh, thở ra khi đá.",
+      "Hạ chân về vị trí ban đầu, đổi bên sau khi hoàn thành số lần quy định."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 12,
+    "suggestedRepsMax": 15,
+    "suggestedRestSeconds": 45,
+    "muscleGroupCode": "GLUTEUS",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 18,
+    "nameVi": "Cầu mông một chân",
+    "nameEn": "Single Leg Glute Bridge",
+    "primaryMuscle": "Mông · chính",
+    "secondaryMuscles": [
+      "Đùi sau"
+    ],
+    "involvementPercents": [
+      80,
+      20
+    ],
+    "equipment": "Không thiết bị",
+    "instructions": [
+      "Nằm ngửa, gối gập, bàn chân phẳng trên sàn, co một chân lên sát ngực.",
+      "Đạp gót chân trụ, đẩy hông lên cao hết mức, siết mông ở đỉnh.",
+      "Hạ hông xuống có kiểm soát, đổi chân sau khi hoàn thành số lần quy định."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 45,
+    "muscleGroupCode": "GLUTEUS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 19,
+    "nameVi": "Cầu mông cơ bản",
+    "nameEn": "Butt Lift (Bridge)",
+    "primaryMuscle": "Mông · chính",
+    "secondaryMuscles": [
+      "Đùi sau"
+    ],
+    "involvementPercents": [
+      80,
+      20
+    ],
+    "equipment": "Không thiết bị",
+    "instructions": [
+      "Nằm ngửa, hai tay xuôi hai bên, gối gập, hai bàn chân rộng bằng vai.",
+      "Đạp gót chân, nâng hông lên khỏi sàn, giữ lưng thẳng, thở ra khi nâng, giữ 1 giây ở đỉnh.",
+      "Hạ hông xuống từ từ về vị trí ban đầu, hít vào khi hạ."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 12,
+    "suggestedRepsMax": 15,
+    "suggestedRestSeconds": 45,
+    "muscleGroupCode": "GLUTEUS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 20,
+    "nameVi": "Cầu mông trên bóng tập",
+    "nameEn": "Physioball Hip Bridge",
+    "primaryMuscle": "Mông · chính",
+    "secondaryMuscles": [
+      "Đùi sau"
+    ],
+    "involvementPercents": [
+      65,
+      35
+    ],
+    "equipment": "Bóng tập",
+    "instructions": [
+      "Tựa vùng vai lên bóng tập, hông không chạm sàn, hai bàn chân đặt phẳng rộng bằng vai.",
+      "Dùng lực mông và đùi sau đẩy hông lên cao, giữ thăng bằng trên bóng.",
+      "Giữ 1 giây ở đỉnh, sau đó hạ hông về vị trí ban đầu có kiểm soát."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 12,
+    "suggestedRepsMax": 15,
+    "suggestedRestSeconds": 45,
+    "muscleGroupCode": "GLUTEUS",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 21,
+    "nameVi": "Đá mông cáp một chân",
+    "nameEn": "One-Legged Cable Kickback",
+    "primaryMuscle": "Mông · chính",
+    "secondaryMuscles": [
+      "Đùi sau"
+    ],
+    "involvementPercents": [
+      80,
+      20
+    ],
+    "equipment": "Máy cáp",
+    "instructions": [
+      "Gắn dây cáp vào cổ chân, đứng đối diện máy cách khoảng 60cm, hai tay bám khung máy để giữ thăng bằng.",
+      "Siết bụng, đá chân ra sau theo đường vòng cung tới hết tầm, siết mông và giữ 1 giây ở đỉnh.",
+      "Đưa chân về vị trí ban đầu có kiểm soát, hoàn thành đủ số lần rồi đổi chân."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 12,
+    "suggestedRepsMax": 15,
+    "suggestedRestSeconds": 45,
+    "muscleGroupCode": "GLUTEUS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 22,
+    "nameVi": "Kéo cáp qua đùi",
+    "nameEn": "Pull Through",
+    "primaryMuscle": "Mông · chính",
+    "secondaryMuscles": [
+      "Đùi sau",
+      "Lưng dưới"
+    ],
+    "involvementPercents": [
+      55,
+      23,
+      22
+    ],
+    "equipment": "Máy cáp",
+    "instructions": [
+      "Đứng quay lưng vào máy cáp thấp, hai chân đứng rộng hai bên dây cáp, nắm dây giữa hai chân.",
+      "Gập hông, đưa tay ra sau càng xa càng tốt, gối hơi gập, giữ tay thẳng.",
+      "Đẩy hông về trước để đứng thẳng dậy, lực chủ yếu đến từ hông, không dùng vai kéo."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 12,
+    "suggestedRepsMax": 15,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "GLUTEUS",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 23,
+    "nameVi": "Bước lên bục nâng gối",
+    "nameEn": "Step-up with Knee Raise",
+    "primaryMuscle": "Mông · chính",
+    "secondaryMuscles": [
+      "Đùi sau",
+      "Đùi trước"
+    ],
+    "involvementPercents": [
+      55,
+      23,
+      22
+    ],
+    "equipment": "Bục/ghế",
+    "instructions": [
+      "Đứng đối diện bục hoặc ghế có độ cao phù hợp, hai chân chụm.",
+      "Bước một chân lên bục, đạp qua hông và gối chân trước để đứng thẳng lên, đồng thời nâng gối chân sau lên cao.",
+      "Bước xuống trở lại vị trí ban đầu, đổi chân sau khi hoàn thành số lần quy định."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "GLUTEUS",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 24,
+    "nameVi": "Duỗi hông dây kháng lực",
+    "nameEn": "Hip Extension with Bands",
+    "primaryMuscle": "Mông · chính",
+    "secondaryMuscles": [
+      "Đùi sau"
+    ],
+    "involvementPercents": [
+      65,
+      35
+    ],
+    "equipment": "Dây kháng lực",
+    "instructions": [
+      "Cố định một đầu dây kháng lực vào cột thấp, đầu kia buộc vào cổ chân, đứng đối diện điểm cố định và bám cột để giữ thăng bằng.",
+      "Giữ đầu và ngực thẳng, đưa chân có dây ra sau càng xa càng tốt, giữ gối thẳng.",
+      "Đưa chân trở về vị trí ban đầu có kiểm soát, hoàn thành đủ số lần rồi đổi chân."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 15,
+    "suggestedRepsMax": 15,
+    "suggestedRestSeconds": 45,
+    "muscleGroupCode": "GLUTEUS",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 25,
+    "nameVi": "Cuốn cổ tay cáp",
+    "nameEn": "Cable Wrist Curl",
+    "primaryMuscle": "Cẳng tay · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Máy cáp",
+    "instructions": [
+      "Ngồi trước máy cáp thấp gắn thanh thẳng, nắm thanh với lòng bàn tay ngửa lên, cẳng tay tựa lên đùi, cổ tay thả lỏng qua khỏi gối.",
+      "Cuốn cổ tay lên cao hết mức, siết và giữ 1 giây, thở ra khi cuốn.",
+      "Hạ cổ tay xuống có kiểm soát về vị trí ban đầu, chỉ cổ tay chuyển động, cẳng tay giữ cố định."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 15,
+    "suggestedRepsMax": 20,
+    "suggestedRestSeconds": 45,
+    "muscleGroupCode": "FOREARM",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 26,
+    "nameVi": "Cuốn cổ tay tạ đòn ngửa tay",
+    "nameEn": "Palms-Up Barbell Wrist Curl Over A Bench",
+    "primaryMuscle": "Cẳng tay · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Tạ đòn + ghế",
+    "instructions": [
+      "Quỳ trước ghế phẳng, nắm thanh đòn tạ với lòng bàn tay ngửa lên, đặt cẳng tay tựa lên ghế, cổ tay thả lỏng qua mép ghế.",
+      "Cuốn cổ tay lên cao hết mức và thở ra, giữ cẳng tay cố định.",
+      "Hạ cổ tay xuống có kiểm soát về vị trí ban đầu, hít vào khi hạ."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 15,
+    "suggestedRepsMax": 20,
+    "suggestedRestSeconds": 45,
+    "muscleGroupCode": "FOREARM",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 27,
+    "nameVi": "Cuốn cổ tay tạ đòn úp tay",
+    "nameEn": "Palms-Down Wrist Curl Over A Bench",
+    "primaryMuscle": "Cẳng tay · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Tạ đòn + ghế",
+    "instructions": [
+      "Quỳ trước ghế phẳng, nắm thanh đòn tạ với lòng bàn tay úp xuống, đặt cẳng tay tựa lên ghế, cổ tay thả lỏng qua mép ghế.",
+      "Cuốn cổ tay lên cao hết mức và thở ra, giữ cẳng tay cố định.",
+      "Hạ cổ tay xuống có kiểm soát về vị trí ban đầu, hít vào khi hạ."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 15,
+    "suggestedRepsMax": 20,
+    "suggestedRestSeconds": 45,
+    "muscleGroupCode": "FOREARM",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 28,
+    "nameVi": "Cuốn cổ tay tạ đơn ngửa tay",
+    "nameEn": "Seated Dumbbell Palms-Up Wrist Curl",
+    "primaryMuscle": "Cẳng tay · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Tạ đơn + ghế",
+    "instructions": [
+      "Ngồi trên mép ghế, hai tay cầm tạ đơn với lòng bàn tay ngửa lên, cẳng tay tựa lên đùi, cổ tay thả lỏng qua đầu gối.",
+      "Cuốn cổ tay lên cao hết mức và thở ra, giữ cẳng tay cố định.",
+      "Hạ cổ tay xuống có kiểm soát về vị trí ban đầu, hít vào khi hạ."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 15,
+    "suggestedRepsMax": 20,
+    "suggestedRestSeconds": 45,
+    "muscleGroupCode": "FOREARM",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 29,
+    "nameVi": "Cuốn cổ tay tạ đơn úp tay",
+    "nameEn": "Seated Dumbbell Palms-Down Wrist Curl",
+    "primaryMuscle": "Cẳng tay · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Tạ đơn + ghế",
+    "instructions": [
+      "Ngồi trên mép ghế, hai tay cầm tạ đơn với lòng bàn tay úp xuống, cẳng tay tựa lên đùi, cổ tay thả lỏng qua đầu gối.",
+      "Cuốn cổ tay lên cao hết mức và thở ra, giữ cẳng tay cố định.",
+      "Hạ cổ tay xuống có kiểm soát về vị trí ban đầu, hít vào khi hạ."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 15,
+    "suggestedRepsMax": 20,
+    "suggestedRestSeconds": 45,
+    "muscleGroupCode": "FOREARM",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 30,
+    "nameVi": "Cuốn dây cổ tay",
+    "nameEn": "Wrist Roller",
+    "primaryMuscle": "Cẳng tay · chính",
+    "secondaryMuscles": [
+      "Vai"
+    ],
+    "involvementPercents": [
+      80,
+      20
+    ],
+    "equipment": "Dụng cụ cuốn cổ tay",
+    "instructions": [
+      "Đứng thẳng, hai tay cầm thanh cuốn với lòng bàn tay úp xuống, nâng hai tay duỗi thẳng song song sàn.",
+      "Xoay cổ tay luân phiên để cuốn dây, kéo tạ lên tới thanh.",
+      "Từ từ xoay ngược chiều để hạ tạ xuống có kiểm soát về vị trí ban đầu."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 8,
+    "suggestedRepsMax": 10,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "FOREARM",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 31,
+    "nameVi": "Kẹp đĩa tạ",
+    "nameEn": "Plate Pinch",
+    "primaryMuscle": "Cẳng tay · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Đĩa tạ",
+    "instructions": [
+      "Chọn hai đĩa tạ mặt trơn, úp mặt trơn ra ngoài, ghép lại với nhau.",
+      "Dùng ngón tay và ngón cái kẹp chặt hai đĩa tạ, nhấc lên khỏi sàn.",
+      "Giữ tư thế kẹp càng lâu càng tốt, sau đó đổi tay."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 1,
+    "suggestedRepsMax": 1,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "FOREARM",
+    "movementType": "ISOLATION",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 32,
+    "nameVi": "Cuốn ngón tay tạ đòn",
+    "nameEn": "Finger Curls",
+    "primaryMuscle": "Cẳng tay · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Tạ đòn",
+    "instructions": [
+      "Đứng thẳng, hai tay cầm thanh đòn tạ với lòng bàn tay ngửa lên, rộng bằng vai.",
+      "Hạ thanh tạ xuống bằng cách duỗi các ngón tay, để tạ lăn xuống lòng bàn tay, chỉ giữ bằng đốt ngón cuối.",
+      "Cuốn tạ lên cao hết mức bằng cách nắm chặt các ngón tay lại, thở ra khi cuốn, giữ 1 giây ở đỉnh."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 15,
+    "suggestedRepsMax": 20,
+    "suggestedRestSeconds": 45,
+    "muscleGroupCode": "FOREARM",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 33,
+    "nameVi": "Vác khung đi bộ",
+    "nameEn": "Rickshaw Carry",
+    "primaryMuscle": "Cẳng tay · chính",
+    "secondaryMuscles": [
+      "Bụng",
+      "Mông",
+      "Đùi sau",
+      "Lưng dưới"
+    ],
+    "involvementPercents": [
+      45,
+      14,
+      14,
+      14,
+      13
+    ],
+    "equipment": "Khung kéo tạ",
+    "instructions": [
+      "Đứng giữa khung tạ đã có tải trọng phù hợp, nắm chặt hai tay cầm.",
+      "Đạp gót chân để nhấc khung lên, giữ ngực và đầu thẳng, lưng không cong.",
+      "Bước đi nhanh và có kiểm soát tới điểm đích, sau đó hạ khung xuống sàn."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 1,
+    "suggestedRepsMax": 1,
+    "suggestedRestSeconds": 90,
+    "muscleGroupCode": "FOREARM",
+    "movementType": "COMPOUND",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 34,
+    "nameVi": "Cử tạ giật đẩy",
+    "nameEn": "Clean and Jerk",
+    "primaryMuscle": "Toàn thân · chính",
+    "secondaryMuscles": [
+      "Vai",
+      "Đùi trước",
+      "Mông",
+      "Lưng dưới"
+    ],
+    "involvementPercents": [],
+    "equipment": "Tạ đòn",
+    "instructions": [
+      "Đứng trước thanh đòn tạ sát ống chân, nắm tạ rộng hơn vai, hạ hông thấp, lưng thẳng, ngực ưỡn.",
+      "Kéo tạ qua đầu gối rồi bung mạnh hông-gối-cổ chân tạo lực bật, kéo tạ lên cao và thu người xuống nhận tạ ở tư thế squat trước, tạ tựa trên vai.",
+      "Đứng thẳng dậy, hạ nhẹ gối rồi bật đẩy tạ qua đầu, tách chân để nhận tạ, cuối cùng đứng thẳng khóa tay hoàn thành động tác."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 5,
+    "suggestedRepsMin": 1,
+    "suggestedRepsMax": 3,
+    "suggestedRestSeconds": 180,
+    "muscleGroupCode": "FUNCTIONAL",
+    "movementType": "COMPOUND",
+    "difficultyCode": "ADVANCED"
+  },
+  {
+    "id": 35,
+    "nameVi": "Cử tạ giật (Clean)",
+    "nameEn": "Clean",
+    "primaryMuscle": "Đùi sau · chính",
+    "secondaryMuscles": [
+      "Mông",
+      "Lưng dưới",
+      "Vai",
+      "Cẳng tay"
+    ],
+    "involvementPercents": [],
+    "equipment": "Tạ đòn",
+    "instructions": [
+      "Đứng trước thanh đòn tạ sát ống chân, nắm tạ rộng hơn vai, hạ hông thấp, lưng thẳng.",
+      "Kéo tạ qua đầu gối, bung mạnh hông-gối-cổ chân tạo lực bật để tăng tốc tạ lên cao.",
+      "Thu người xuống nhanh, nhận tạ trên vai ở tư thế squat trước, sau đó đứng thẳng dậy hoàn thành động tác."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 5,
+    "suggestedRepsMin": 2,
+    "suggestedRepsMax": 3,
+    "suggestedRestSeconds": 150,
+    "muscleGroupCode": "FUNCTIONAL",
+    "movementType": "COMPOUND",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 36,
+    "nameVi": "Cử tạ thẳng (Snatch)",
+    "nameEn": "Snatch",
+    "primaryMuscle": "Đùi trước · chính",
+    "secondaryMuscles": [
+      "Tay trước",
+      "Mông",
+      "Đùi sau",
+      "Lưng dưới",
+      "Vai"
+    ],
+    "involvementPercents": [],
+    "equipment": "Tạ đòn",
+    "instructions": [
+      "Đứng chân rộng bằng vai, nắm tạ rộng hơn vai, hạ hông xuống như ngồi ghế, lưng thẳng.",
+      "Đẩy sàn bằng chân, kéo tạ sát người lên cao, khi tạ ngang đùi thì bung mạnh hông để tạo lực bật tối đa.",
+      "Nhanh chóng thu người xuống dưới tạ, khóa thẳng tay đỡ tạ qua đầu ở tư thế squat, sau đó đứng thẳng dậy."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 5,
+    "suggestedRepsMin": 1,
+    "suggestedRepsMax": 3,
+    "suggestedRestSeconds": 180,
+    "muscleGroupCode": "FUNCTIONAL",
+    "movementType": "COMPOUND",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 37,
+    "nameVi": "Clean từ đùi (Hang Clean)",
+    "nameEn": "Hang Clean",
+    "primaryMuscle": "Đùi trước · chính",
+    "secondaryMuscles": [
+      "Bắp chân",
+      "Cẳng tay",
+      "Mông",
+      "Đùi sau",
+      "Lưng dưới",
+      "Vai"
+    ],
+    "involvementPercents": [],
+    "equipment": "Tạ đòn",
+    "instructions": [
+      "Đứng thẳng, nắm tạ rộng bằng vai, hạ tạ xuống ngang giữa đùi, lưng thẳng và hơi ngả trước.",
+      "Bung mạnh hông, gối và cổ chân để đẩy tạ lên cao, đồng thời nhún vai về phía tai.",
+      "Thu người xuống nhanh, nhận tạ trên vai, sau đó đứng thẳng dậy hoàn thành động tác."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 4,
+    "suggestedRepsMin": 3,
+    "suggestedRepsMax": 5,
+    "suggestedRestSeconds": 120,
+    "muscleGroupCode": "FUNCTIONAL",
+    "movementType": "COMPOUND",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 38,
+    "nameVi": "Đẩy xe tạ",
+    "nameEn": "Sled Push",
+    "primaryMuscle": "Đùi trước · chính",
+    "secondaryMuscles": [
+      "Bắp chân",
+      "Ngực",
+      "Mông",
+      "Đùi sau",
+      "Tay sau"
+    ],
+    "involvementPercents": [],
+    "equipment": "Xe đẩy tạ",
+    "instructions": [
+      "Đặt mức tạ phù hợp lên xe đẩy, vào tư thế thấp, hai tay nắm chặt tay cầm, tay duỗi thẳng.",
+      "Nghiêng người về phía xe, đẩy đi nhanh hết mức có thể, tập trung lực từ hông và gối.",
+      "Giữ nhịp bước đều và liên tục cho tới hết quãng đường quy định."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 4,
+    "suggestedRepsMin": 1,
+    "suggestedRepsMax": 1,
+    "suggestedRestSeconds": 90,
+    "muscleGroupCode": "FUNCTIONAL",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 39,
+    "nameVi": "Lật lốp xe",
+    "nameEn": "Tire Flip",
+    "primaryMuscle": "Đùi trước · chính",
+    "secondaryMuscles": [
+      "Bắp chân",
+      "Ngực",
+      "Cẳng tay",
+      "Mông",
+      "Đùi sau",
+      "Lưng dưới",
+      "Vai",
+      "Tay sau"
+    ],
+    "involvementPercents": [],
+    "equipment": "Lốp xe tải",
+    "instructions": [
+      "Nắm chặt mép dưới lốp xe, đứng chân sau rộng, ngực áp sát lốp.",
+      "Bung mạnh hông-gối-cổ chân để nâng lốp lên, đẩy tạ qua điểm cân bằng.",
+      "Khi lốp nghiêng khoảng 45 độ, bước tới đẩy gối vào lốp và đẩy hẳn lốp lật sang bên kia."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 4,
+    "suggestedRepsMin": 3,
+    "suggestedRepsMax": 5,
+    "suggestedRestSeconds": 90,
+    "muscleGroupCode": "FUNCTIONAL",
+    "movementType": "COMPOUND",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 40,
+    "nameVi": "Vác bao cát lên bục",
+    "nameEn": "Sandbag Load",
+    "primaryMuscle": "Đùi trước · chính",
+    "secondaryMuscles": [
+      "Bụng",
+      "Tay trước",
+      "Bắp chân",
+      "Cẳng tay",
+      "Mông",
+      "Đùi sau",
+      "Lưng dưới",
+      "Vai"
+    ],
+    "involvementPercents": [],
+    "equipment": "Bao cát",
+    "instructions": [
+      "Ôm bao cát sát người, luồn tay xuống dưới càng sâu càng tốt.",
+      "Bung hông và gối để nhấc bao cát lên cao dần, giữ bao sát thân.",
+      "Di chuyển nhanh tới bục, nâng bao cát đặt lên bục, sau đó quay lại lấy bao tiếp theo."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 4,
+    "suggestedRepsMin": 5,
+    "suggestedRepsMax": 8,
+    "suggestedRestSeconds": 90,
+    "muscleGroupCode": "FUNCTIONAL",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 41,
+    "nameVi": "Nâng đá tạ",
+    "nameEn": "Atlas Stones",
+    "primaryMuscle": "Lưng dưới · chính",
+    "secondaryMuscles": [
+      "Bụng",
+      "Tay trước",
+      "Bắp chân",
+      "Cẳng tay",
+      "Mông",
+      "Đùi sau",
+      "Đùi trước"
+    ],
+    "involvementPercents": [],
+    "equipment": "Đá tạ",
+    "instructions": [
+      "Đứng trên đá tạ đặt giữa hai chân, gập hông ôm vòng tay quanh đá, luồn ngón tay xuống dưới đáy.",
+      "Kéo đá sát vào thân, đạp gót chân để nhấc đá rời khỏi sàn, khi đá qua gối thì ngồi ra sau đỡ đá lên đùi.",
+      "Hạ thấp người, nâng đá lên ngực rồi đứng thẳng dậy, đẩy đá lên cao đặt lên bục."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 5,
+    "suggestedRepsMin": 1,
+    "suggestedRepsMax": 1,
+    "suggestedRestSeconds": 150,
+    "muscleGroupCode": "FUNCTIONAL",
+    "movementType": "COMPOUND",
+    "difficultyCode": "ADVANCED"
+  },
+  {
+    "id": 42,
+    "nameVi": "Vác giàn yoke đi bộ",
+    "nameEn": "Yoke Walk",
+    "primaryMuscle": "Đùi trước · chính",
+    "secondaryMuscles": [
+      "Bụng",
+      "Bắp chân",
+      "Mông",
+      "Đùi sau",
+      "Lưng dưới"
+    ],
+    "involvementPercents": [],
+    "equipment": "Giàn yoke",
+    "instructions": [
+      "Đứng dưới giàn yoke, đặt khung lên sau vai, đầu nhìn thẳng, lưng ưỡn.",
+      "Đạp gót chân để nhấc giàn lên khỏi giá đỡ, giữ thăng bằng bằng cách bám hai bên khung.",
+      "Bước đi nhanh với bước ngắn, dứt khoát cho tới hết quãng đường quy định."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 4,
+    "suggestedRepsMin": 1,
+    "suggestedRepsMax": 1,
+    "suggestedRestSeconds": 90,
+    "muscleGroupCode": "FUNCTIONAL",
+    "movementType": "COMPOUND",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 43,
+    "nameVi": "Vác tạ đi bộ (Farmer's Walk)",
+    "nameEn": "Farmer's Walk",
+    "primaryMuscle": "Cẳng tay · chính",
+    "secondaryMuscles": [
+      "Bụng",
+      "Mông",
+      "Đùi sau",
+      "Lưng dưới",
+      "Đùi trước"
+    ],
+    "involvementPercents": [],
+    "equipment": "Tạ cầm tay nặng",
+    "instructions": [
+      "Đứng giữa hai tạ nặng (tạ đơn, tạ ấm, hoặc thanh cầm chuyên dụng).",
+      "Nắm chặt tay cầm, đạp gót chân nhấc tạ lên, giữ lưng thẳng và đầu hướng thẳng.",
+      "Bước đi nhanh với bước ngắn, đều nhịp thở, cho tới hết quãng đường quy định."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 4,
+    "suggestedRepsMin": 1,
+    "suggestedRepsMax": 1,
+    "suggestedRestSeconds": 90,
+    "muscleGroupCode": "FUNCTIONAL",
+    "movementType": "COMPOUND",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 44,
+    "nameVi": "Chạy bộ trên máy",
+    "nameEn": "Running, Treadmill",
+    "primaryMuscle": "Đùi trước · chính",
+    "secondaryMuscles": [
+      "Bắp chân",
+      "Mông",
+      "Đùi sau"
+    ],
+    "involvementPercents": [],
+    "equipment": "Máy chạy bộ",
+    "instructions": [
+      "Bước lên máy, chọn chế độ chạy phù hợp hoặc chỉnh tốc độ/độ dốc thủ công.",
+      "Giữ tư thế thẳng lưng, chạy với sải chân tự nhiên, chỉ bám tay vịn khi cần thiết.",
+      "Duy trì tốc độ ổn định trong suốt thời gian tập, giảm tốc độ dần trước khi kết thúc."
+    ],
+    "suggestedSetsMin": 1,
+    "suggestedSetsMax": 1,
+    "suggestedRepsMin": 1,
+    "suggestedRepsMax": 1,
+    "suggestedRestSeconds": 30,
+    "muscleGroupCode": "CARDIO",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 45,
+    "nameVi": "Đi bộ trên máy",
+    "nameEn": "Walking, Treadmill",
+    "primaryMuscle": "Đùi trước · chính",
+    "secondaryMuscles": [
+      "Bắp chân",
+      "Mông",
+      "Đùi sau"
+    ],
+    "involvementPercents": [],
+    "equipment": "Máy chạy bộ",
+    "instructions": [
+      "Bước lên máy, chọn chế độ đi bộ phù hợp hoặc chỉnh tốc độ/độ dốc thủ công.",
+      "Đi với nhịp độ nhanh vừa phải, không đi quá chậm, giữ lưng thẳng.",
+      "Duy trì tốc độ ổn định trong suốt thời gian tập, chỉ bám tay vịn khi cần thiết."
+    ],
+    "suggestedSetsMin": 1,
+    "suggestedSetsMax": 1,
+    "suggestedRepsMin": 1,
+    "suggestedRepsMax": 1,
+    "suggestedRestSeconds": 30,
+    "muscleGroupCode": "CARDIO",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 46,
+    "nameVi": "Đạp xe tại chỗ",
+    "nameEn": "Bicycling, Stationary",
+    "primaryMuscle": "Đùi trước · chính",
+    "secondaryMuscles": [
+      "Bắp chân",
+      "Mông",
+      "Đùi sau"
+    ],
+    "involvementPercents": [],
+    "equipment": "Xe đạp tập",
+    "instructions": [
+      "Ngồi lên xe, chỉnh yên xe vừa với chiều cao cơ thể.",
+      "Chọn chế độ tập hoặc mức kháng lực phù hợp, bắt đầu đạp đều nhịp.",
+      "Duy trì tốc độ đạp ổn định trong suốt thời gian tập, tăng dần kháng lực nếu muốn tăng độ khó."
+    ],
+    "suggestedSetsMin": 1,
+    "suggestedSetsMax": 1,
+    "suggestedRepsMin": 1,
+    "suggestedRepsMax": 1,
+    "suggestedRestSeconds": 30,
+    "muscleGroupCode": "CARDIO",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 47,
+    "nameVi": "Máy tập elliptical",
+    "nameEn": "Elliptical Trainer",
+    "primaryMuscle": "Đùi trước · chính",
+    "secondaryMuscles": [
+      "Bắp chân",
+      "Mông",
+      "Đùi sau"
+    ],
+    "involvementPercents": [],
+    "equipment": "Máy elliptical",
+    "instructions": [
+      "Bước lên máy, đặt chân vào bàn đạp, chọn chế độ tập phù hợp.",
+      "Đẩy tay cầm và đạp chân theo nhịp bầu dục tự nhiên, giữ lưng thẳng.",
+      "Duy trì nhịp độ ổn định trong suốt thời gian tập, có thể chỉnh độ dốc để tăng độ khó."
+    ],
+    "suggestedSetsMin": 1,
+    "suggestedSetsMax": 1,
+    "suggestedRepsMin": 1,
+    "suggestedRepsMax": 1,
+    "suggestedRestSeconds": 30,
+    "muscleGroupCode": "CARDIO",
+    "movementType": "COMPOUND",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 48,
+    "nameVi": "Chèo thuyền tại chỗ",
+    "nameEn": "Rowing, Stationary",
+    "primaryMuscle": "Đùi trước · chính",
+    "secondaryMuscles": [
+      "Tay trước",
+      "Bắp chân",
+      "Mông",
+      "Đùi sau",
+      "Lưng giữa"
+    ],
+    "involvementPercents": [],
+    "equipment": "Máy chèo thuyền",
+    "instructions": [
+      "Ngồi lên máy, đặt chân vào bàn đạp và cố định dây đai, gập người ra trước nắm tay cầm.",
+      "Đẩy chân duỗi thẳng, sau đó kéo tay cầm về phía bụng trên, siết vai ra sau.",
+      "Duỗi thẳng tay, gập gối, đưa người về trước để bắt đầu nhịp kéo tiếp theo."
+    ],
+    "suggestedSetsMin": 1,
+    "suggestedSetsMax": 1,
+    "suggestedRepsMin": 1,
+    "suggestedRepsMax": 1,
+    "suggestedRestSeconds": 30,
+    "muscleGroupCode": "CARDIO",
+    "movementType": "COMPOUND",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 49,
+    "nameVi": "Nhảy dây",
+    "nameEn": "Rope Jumping",
+    "primaryMuscle": "Đùi trước · chính",
+    "secondaryMuscles": [
+      "Bắp chân",
+      "Đùi sau"
+    ],
+    "involvementPercents": [],
+    "equipment": "Dây nhảy",
+    "instructions": [
+      "Cầm mỗi tay một đầu dây, đặt dây phía sau gót chân.",
+      "Vung tay quay dây qua đầu ra phía trước, bật nhảy nhẹ qua dây khi dây chạm đất.",
+      "Giữ nhịp quay và nhảy đều đặn, có thể đổi tốc độ để tăng độ khó."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 5,
+    "suggestedRepsMin": 30,
+    "suggestedRepsMax": 60,
+    "suggestedRestSeconds": 45,
+    "muscleGroupCode": "CARDIO",
+    "movementType": "COMPOUND",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 50,
+    "nameVi": "Máy leo cầu thang",
+    "nameEn": "Stairmaster",
+    "primaryMuscle": "Đùi trước · chính",
+    "secondaryMuscles": [
+      "Bắp chân",
+      "Mông",
+      "Đùi sau"
+    ],
+    "involvementPercents": [],
+    "equipment": "Máy leo cầu thang",
+    "instructions": [
+      "Bước lên máy, chọn chế độ tập phù hợp.",
+      "Bước chân lên xuống đều nhịp, đạp bàn đạp xuống nhưng không chạm sàn, bám tay vịn nhẹ để giữ thăng bằng.",
+      "Duy trì nhịp độ ổn định trong suốt thời gian tập."
+    ],
+    "suggestedSetsMin": 1,
+    "suggestedSetsMax": 1,
+    "suggestedRepsMin": 1,
+    "suggestedRepsMax": 1,
+    "suggestedRestSeconds": 30,
+    "muscleGroupCode": "CARDIO",
+    "movementType": "COMPOUND",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 51,
+    "nameVi": "Xe đạp nằm",
+    "nameEn": "Recumbent Bike",
+    "primaryMuscle": "Đùi trước · chính",
+    "secondaryMuscles": [
+      "Bắp chân",
+      "Mông",
+      "Đùi sau"
+    ],
+    "involvementPercents": [],
+    "equipment": "Xe đạp nằm",
+    "instructions": [
+      "Ngồi vào xe, chỉnh ghế phù hợp với chiều dài chân.",
+      "Chọn chế độ tập hoặc mức kháng lực phù hợp, bắt đầu đạp đều nhịp.",
+      "Duy trì tốc độ đạp ổn định trong suốt thời gian tập."
+    ],
+    "suggestedSetsMin": 1,
+    "suggestedSetsMax": 1,
+    "suggestedRepsMin": 1,
+    "suggestedRepsMax": 1,
+    "suggestedRestSeconds": 30,
+    "muscleGroupCode": "CARDIO",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 52,
+    "nameVi": "Chạy/đi bộ đường mòn",
+    "nameEn": "Trail Running/Walking",
+    "primaryMuscle": "Đùi trước · chính",
+    "secondaryMuscles": [
+      "Bắp chân",
+      "Mông",
+      "Đùi sau"
+    ],
+    "involvementPercents": [],
+    "equipment": "Không thiết bị",
+    "instructions": [
+      "Chọn giày phù hợp với địa hình, khởi động kỹ trước khi bắt đầu.",
+      "Chạy hoặc đi với nhịp độ phù hợp với độ dốc, bước ngắn và gập gối khi xuống dốc để giảm áp lực.",
+      "Duy trì nhịp thở đều, giảm tốc độ nếu địa hình trơn trượt hoặc gồ ghề."
+    ],
+    "suggestedSetsMin": 1,
+    "suggestedSetsMax": 1,
+    "suggestedRepsMin": 1,
+    "suggestedRepsMax": 1,
+    "suggestedRestSeconds": 30,
+    "muscleGroupCode": "CARDIO",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 53,
+    "nameVi": "Chạy nước rút đẩy xe tạ",
+    "nameEn": "Prowler Sprint",
+    "primaryMuscle": "Đùi sau · chính",
+    "secondaryMuscles": [
+      "Bắp chân",
+      "Ngực",
+      "Mông",
+      "Đùi trước",
+      "Vai"
+    ],
+    "involvementPercents": [],
+    "equipment": "Xe đẩy tạ",
+    "instructions": [
+      "Đặt mức tạ phù hợp lên xe đẩy, chọn tay cầm cao hoặc thấp tùy ý.",
+      "Nghiêng người về phía xe, tay duỗi thẳng bám chặt tay cầm.",
+      "Đẩy nhanh hết sức với bước chân ngắn, dứt khoát trên quãng đường ngắn."
+    ],
+    "suggestedSetsMin": 4,
+    "suggestedSetsMax": 6,
+    "suggestedRepsMin": 1,
+    "suggestedRepsMax": 1,
+    "suggestedRestSeconds": 90,
+    "muscleGroupCode": "CARDIO",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 54,
+    "nameVi": "Máy leo bậc thang",
+    "nameEn": "Step Mill",
+    "primaryMuscle": "Đùi trước · chính",
+    "secondaryMuscles": [
+      "Bắp chân",
+      "Mông",
+      "Đùi sau"
+    ],
+    "involvementPercents": [],
+    "equipment": "Máy leo cầu thang",
+    "instructions": [
+      "Bước lên máy, chọn chế độ tập phù hợp, chú ý không vấp khi bậc thang di chuyển.",
+      "Leo bậc thang đều nhịp, bám nhẹ tay vịn để giữ thăng bằng.",
+      "Duy trì nhịp độ ổn định trong suốt thời gian tập."
+    ],
+    "suggestedSetsMin": 1,
+    "suggestedSetsMax": 1,
+    "suggestedRepsMin": 1,
+    "suggestedRepsMax": 1,
+    "suggestedRestSeconds": 30,
+    "muscleGroupCode": "CARDIO",
+    "movementType": "COMPOUND",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 55,
+    "nameVi": "Giãn cơ đùi sau",
+    "nameEn": "Hamstring Stretch",
+    "primaryMuscle": "Đùi sau · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [],
+    "equipment": "Dây/khăn hỗ trợ",
+    "instructions": [
+      "Nằm ngửa, nâng một chân thẳng lên tạo góc 90 độ ở hông, chân còn lại duỗi thẳng trên sàn.",
+      "Vòng dây hoặc khăn qua lòng bàn chân, kéo nhẹ để tạo lực căng ở đùi sau và bắp chân.",
+      "Giữ 10-30 giây, thở đều, sau đó đổi chân."
+    ],
+    "suggestedSetsMin": 2,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 1,
+    "suggestedRepsMax": 1,
+    "suggestedRestSeconds": 15,
+    "muscleGroupCode": "STRETCHING",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 56,
+    "nameVi": "Giãn cơ đùi trước",
+    "nameEn": "Quad Stretch",
+    "primaryMuscle": "Đùi trước · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [],
+    "equipment": "Dây/khăn hỗ trợ",
+    "instructions": [
+      "Nằm nghiêng một bên, gập gối chân trên ra sau, vòng dây hoặc khăn qua mu bàn chân.",
+      "Kéo nhẹ dây qua vai để tăng độ căng ở đùi trước, giữ hông không bị xoay.",
+      "Giữ 10-20 giây, sau đó đổi bên."
+    ],
+    "suggestedSetsMin": 2,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 1,
+    "suggestedRepsMax": 1,
+    "suggestedRestSeconds": 15,
+    "muscleGroupCode": "STRETCHING",
+    "movementType": "ISOLATION",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 57,
+    "nameVi": "Giãn bắp chân dựa tường",
+    "nameEn": "Calf Stretch Hands Against Wall",
+    "primaryMuscle": "Bắp chân · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [],
+    "equipment": "Không thiết bị",
+    "instructions": [
+      "Đứng đối diện tường, một chân bước lên trước, chân sau duỗi thẳng.",
+      "Nghiêng người về trước, hai tay chống vào tường, giữ gót chân sau chạm sàn.",
+      "Giữ 10-20 giây, cảm nhận căng ở bắp chân sau, sau đó đổi bên."
+    ],
+    "suggestedSetsMin": 2,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 1,
+    "suggestedRepsMax": 1,
+    "suggestedRestSeconds": 15,
+    "muscleGroupCode": "STRETCHING",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 58,
+    "nameVi": "Giãn cơ liên sườn đứng",
+    "nameEn": "Standing Lateral Stretch",
+    "primaryMuscle": "Bụng · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [],
+    "equipment": "Không thiết bị",
+    "instructions": [
+      "Đứng hai chân rộng hơn hông, gối hơi chùng, tay phải đặt lên hông phải.",
+      "Giơ tay trái thẳng lên cao, nghiêng người sang phải, giữ trọng lượng đều hai chân.",
+      "Giữ 10-20 giây, cảm nhận căng dọc thân bên trái, sau đó đổi bên."
+    ],
+    "suggestedSetsMin": 2,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 1,
+    "suggestedRepsMax": 1,
+    "suggestedRestSeconds": 15,
+    "muscleGroupCode": "STRETCHING",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 59,
+    "nameVi": "Tư thế em bé",
+    "nameEn": "Child's Pose",
+    "primaryMuscle": "Lưng dưới · chính",
+    "secondaryMuscles": [
+      "Mông",
+      "Lưng giữa"
+    ],
+    "involvementPercents": [],
+    "equipment": "Không thiết bị",
+    "instructions": [
+      "Quỳ trên sàn, hai tay chống phía trước, từ từ hạ mông ngồi lên gót chân.",
+      "Để tay trượt dài trên sàn, gập người ra trước tối đa để giãn toàn bộ cột sống.",
+      "Thả lỏng vai, trán chạm sàn, hít thở sâu và giữ tư thế 20-30 giây."
+    ],
+    "suggestedSetsMin": 2,
+    "suggestedSetsMax": 2,
+    "suggestedRepsMin": 1,
+    "suggestedRepsMax": 1,
+    "suggestedRestSeconds": 15,
+    "muscleGroupCode": "STRETCHING",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 60,
+    "nameVi": "Giãn lưng tư thế mèo",
+    "nameEn": "Cat Stretch",
+    "primaryMuscle": "Lưng dưới · chính",
+    "secondaryMuscles": [
+      "Lưng giữa",
+      "Cầu vai"
+    ],
+    "involvementPercents": [],
+    "equipment": "Không thiết bị",
+    "instructions": [
+      "Quỳ bốn điểm trên sàn (tay và gối), lưng thẳng tự nhiên.",
+      "Hóp bụng, cong lưng lên cao, cúi đầu nhìn xuống rốn.",
+      "Giữ 15 giây, thở đều, sau đó thả lỏng về vị trí ban đầu."
+    ],
+    "suggestedSetsMin": 2,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 1,
+    "suggestedRepsMax": 1,
+    "suggestedRestSeconds": 15,
+    "muscleGroupCode": "STRETCHING",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 61,
+    "nameVi": "Giãn vai qua ngực",
+    "nameEn": "Shoulder Stretch",
+    "primaryMuscle": "Vai · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [],
+    "equipment": "Không thiết bị",
+    "instructions": [
+      "Đứng hoặc ngồi thẳng lưng, đưa tay trái ngang qua trước ngực.",
+      "Dùng tay phải giữ nhẹ khuỷu tay trái, kéo về phía ngực để tăng độ căng ở vai.",
+      "Giữ 10-20 giây, sau đó đổi bên."
+    ],
+    "suggestedSetsMin": 2,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 1,
+    "suggestedRepsMax": 1,
+    "suggestedRestSeconds": 15,
+    "muscleGroupCode": "STRETCHING",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 62,
+    "nameVi": "Giãn cơ tay sau",
+    "nameEn": "Triceps Stretch",
+    "primaryMuscle": "Tay sau · chính",
+    "secondaryMuscles": [
+      "Xô"
+    ],
+    "involvementPercents": [],
+    "equipment": "Không thiết bị",
+    "instructions": [
+      "Đứng hoặc ngồi thẳng lưng, đưa một tay ra sau đầu, khuỷu tay hướng lên trần.",
+      "Dùng tay còn lại giữ nhẹ khuỷu tay, kéo về phía sau đầu để tăng độ căng ở tay sau.",
+      "Giữ 10-20 giây, sau đó đổi bên."
+    ],
+    "suggestedSetsMin": 2,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 1,
+    "suggestedRepsMax": 1,
+    "suggestedRestSeconds": 15,
+    "muscleGroupCode": "STRETCHING",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 63,
+    "nameVi": "Giãn ngực và vai trước",
+    "nameEn": "Chest And Front Of Shoulder Stretch",
+    "primaryMuscle": "Ngực · chính",
+    "secondaryMuscles": [
+      "Vai"
+    ],
+    "involvementPercents": [],
+    "equipment": "Gậy hoặc khăn dài",
+    "instructions": [
+      "Đứng thẳng, hai tay cầm một cây gậy hoặc khăn dài, rộng hơn vai, lòng bàn tay úp xuống.",
+      "Từ từ nâng gậy lên cao rồi đưa ra sau đầu, giữ tay thẳng hết mức có thể.",
+      "Giữ 15-20 giây ở vị trí căng nhất, thở đều, sau đó đưa gậy trở về phía trước."
+    ],
+    "suggestedSetsMin": 2,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 1,
+    "suggestedRepsMax": 1,
+    "suggestedRestSeconds": 15,
+    "muscleGroupCode": "STRETCHING",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 64,
+    "nameVi": "Giãn háng và lưng",
+    "nameEn": "Groin and Back Stretch",
+    "primaryMuscle": "Háng · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [],
+    "equipment": "Không thiết bị",
+    "instructions": [
+      "Ngồi trên sàn, gập gối, hai bàn chân chạm nhau.",
+      "Đan tay sau đầu, cúi gập người xuống đưa khuỷu tay chạm vào đùi trong.",
+      "Trở về vị trí ngồi thẳng, lưng thẳng, đầu hướng lên, lặp lại đủ số lần."
+    ],
+    "suggestedSetsMin": 2,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 20,
+    "suggestedRestSeconds": 30,
+    "muscleGroupCode": "STRETCHING",
+    "movementType": "COMPOUND",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 65,
+    "nameVi": "Chuỗi giãn cơ toàn thân",
+    "nameEn": "World's Greatest Stretch",
+    "primaryMuscle": "Đùi sau · chính",
+    "secondaryMuscles": [
+      "Bắp chân",
+      "Mông",
+      "Đùi trước"
+    ],
+    "involvementPercents": [],
+    "equipment": "Không thiết bị",
+    "instructions": [
+      "Bước một chân lên trước thành tư thế lunge sâu, chân sau duỗi thẳng trên mũi chân, giữ 10-20 giây.",
+      "Đặt tay cùng bên chân trước xuống sàn cạnh gót chân, tay còn lại chống sàn hỗ trợ thăng bằng.",
+      "Đặt hai tay hai bên chân trước, nhấc mũi chân trước lên và duỗi thẳng gối để tăng căng đùi sau, giữ 10-20 giây rồi đổi bên."
+    ],
+    "suggestedSetsMin": 2,
+    "suggestedSetsMax": 2,
+    "suggestedRepsMin": 1,
+    "suggestedRepsMax": 1,
+    "suggestedRestSeconds": 15,
+    "muscleGroupCode": "STRETCHING",
+    "movementType": "COMPOUND",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 66,
+    "nameVi": "Giãn lưng trên",
+    "nameEn": "Upper Back Stretch",
+    "primaryMuscle": "Lưng giữa · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [],
+    "equipment": "Không thiết bị",
+    "instructions": [
+      "Đứng hoặc ngồi thẳng lưng, đan các ngón tay vào nhau, ngón cái hướng xuống.",
+      "Đưa hai tay ra phía trước, tròn vai và đẩy hai bả vai ra xa nhau.",
+      "Giữ 10-20 giây, cảm nhận căng ở lưng trên, thở đều."
+    ],
+    "suggestedSetsMin": 2,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 1,
+    "suggestedRepsMax": 1,
+    "suggestedRestSeconds": 15,
+    "muscleGroupCode": "STRETCHING",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 67,
+    "nameVi": "Giãn bắp chân ngồi",
+    "nameEn": "Seated Calf Stretch",
+    "primaryMuscle": "Bắp chân · chính",
+    "secondaryMuscles": [
+      "Đùi sau",
+      "Lưng dưới"
+    ],
+    "involvementPercents": [],
+    "equipment": "Dây/khăn hỗ trợ",
+    "instructions": [
+      "Ngồi thẳng lưng trên thảm tập, gập một gối, bàn chân đặt trên sàn để giữ thăng bằng.",
+      "Duỗi thẳng chân còn lại, gập bàn chân về phía cẳng chân.",
+      "Dùng dây hoặc khăn vòng qua mũi chân, kéo nhẹ về phía người, giữ 10-20 giây rồi đổi bên."
+    ],
+    "suggestedSetsMin": 2,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 1,
+    "suggestedRepsMax": 1,
+    "suggestedRestSeconds": 15,
+    "muscleGroupCode": "STRETCHING",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 68,
+    "nameVi": "Cuốn tay trước tạ đơn",
+    "nameEn": "Dumbbell Bicep Curl",
+    "primaryMuscle": "Tay trước · chính",
+    "secondaryMuscles": [
+      "Cẳng tay"
+    ],
+    "involvementPercents": [
+      80,
+      20
+    ],
+    "equipment": "Tạ đơn",
+    "instructions": [
+      "Đứng thẳng, hai tay cầm tạ đơn dọc thân, khuỷu tay sát người, lòng bàn tay hướng ra trước.",
+      "Cuốn tạ lên vai bằng lực tay trước, giữ khuỷu tay cố định, thở ra khi cuốn, giữ 1 giây ở đỉnh.",
+      "Hạ tạ xuống có kiểm soát về vị trí ban đầu, hít vào khi hạ."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "BICEPS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 69,
+    "nameVi": "Cuốn tay trước kiểu búa",
+    "nameEn": "Hammer Curls",
+    "primaryMuscle": "Tay trước · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Tạ đơn",
+    "instructions": [
+      "Đứng thẳng, hai tay cầm tạ đơn dọc thân, lòng bàn tay hướng vào người (grip trung tính).",
+      "Giữ khuỷu tay cố định, cuốn tạ lên vai, thở ra khi cuốn, giữ 1 giây ở đỉnh.",
+      "Hạ tạ xuống có kiểm soát về vị trí ban đầu."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "BICEPS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 70,
+    "nameVi": "Cuốn tay trước tập trung",
+    "nameEn": "Concentration Curls",
+    "primaryMuscle": "Tay trước · chính",
+    "secondaryMuscles": [
+      "Cẳng tay"
+    ],
+    "involvementPercents": [
+      80,
+      20
+    ],
+    "equipment": "Tạ đơn + ghế",
+    "instructions": [
+      "Ngồi trên ghế, chân mở rộng, tựa khuỷu tay vào mặt trong đùi cùng bên, cầm tạ đơn thả lỏng.",
+      "Cuốn tạ lên vai bằng lực tay trước, giữ khuỷu tay tì chặt vào đùi, thở ra khi cuốn.",
+      "Hạ tạ xuống có kiểm soát, hoàn thành đủ số lần rồi đổi tay."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "BICEPS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 71,
+    "nameVi": "Cuốn tay trước ghế nghiêng",
+    "nameEn": "Incline Dumbbell Curl",
+    "primaryMuscle": "Tay trước · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Tạ đơn + ghế nghiêng",
+    "instructions": [
+      "Ngồi tựa lưng vào ghế nghiêng, hai tay cầm tạ đơn thả thẳng xuống, lòng bàn tay hướng ra trước.",
+      "Giữ bắp tay trên cố định, cuốn tạ lên vai, thở ra khi cuốn, giữ 1 giây ở đỉnh.",
+      "Hạ tạ xuống có kiểm soát về vị trí ban đầu."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "BICEPS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 72,
+    "nameVi": "Cuốn tay trước ghế Scott",
+    "nameEn": "Preacher Curl",
+    "primaryMuscle": "Tay trước · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Ghế Scott + thanh EZ",
+    "instructions": [
+      "Ngồi vào ghế Scott, tựa bắp tay trên và ngực vào đệm, cầm thanh EZ ngang vai.",
+      "Hạ thanh xuống từ từ tới khi tay duỗi gần thẳng, hít vào khi hạ.",
+      "Cuốn thanh lên vai bằng lực tay trước, thở ra khi cuốn, siết chặt và giữ 1 giây ở đỉnh."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "BICEPS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 73,
+    "nameVi": "Cuốn tay trước thanh EZ",
+    "nameEn": "EZ-Bar Curl",
+    "primaryMuscle": "Tay trước · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Thanh EZ",
+    "instructions": [
+      "Đứng thẳng, hai tay cầm thanh EZ ở vị trí tay cầm ngoài, khuỷu tay sát người.",
+      "Cuốn thanh lên vai bằng lực tay trước, giữ bắp tay trên cố định, thở ra khi cuốn.",
+      "Hạ thanh xuống có kiểm soát về vị trí ban đầu, hít vào khi hạ."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "BICEPS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 74,
+    "nameVi": "Cuốn tay trước cáp kiểu búa",
+    "nameEn": "Cable Hammer Curls - Rope Attachment",
+    "primaryMuscle": "Tay trước · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Máy cáp + dây thừng",
+    "instructions": [
+      "Gắn dây thừng vào ròng rọc thấp, đứng cách máy khoảng 30cm, nắm dây với lòng bàn tay hướng vào nhau.",
+      "Giữ khuỷu tay sát người và cố định, cuốn dây lên tới khi tay trước chạm cẳng tay, thở ra khi cuốn.",
+      "Giữ 1 giây ở đỉnh, sau đó hạ dây xuống có kiểm soát về vị trí ban đầu."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "BICEPS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 75,
+    "nameVi": "Cuốn tay trước cáp đứng",
+    "nameEn": "Standing Biceps Cable Curl",
+    "primaryMuscle": "Tay trước · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Máy cáp",
+    "instructions": [
+      "Đứng thẳng, cầm thanh cáp nối với ròng rọc thấp, rộng bằng vai, lòng bàn tay ngửa lên.",
+      "Giữ bắp tay trên cố định, cuốn thanh lên vai, thở ra khi cuốn, giữ 1 giây ở đỉnh.",
+      "Hạ thanh xuống có kiểm soát về vị trí ban đầu."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "BICEPS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 76,
+    "nameVi": "Cuốn tay trước trên máy",
+    "nameEn": "Machine Bicep Curl",
+    "primaryMuscle": "Tay trước · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Máy tập",
+    "instructions": [
+      "Chỉnh ghế phù hợp, tựa bắp tay trên vào đệm, nắm chặt tay cầm.",
+      "Gập khuỷu tay để kéo cẳng tay về phía bắp tay trên, thở ra khi cuốn.",
+      "Giữ 1 giây ở đỉnh, sau đó thả về có kiểm soát, không để tạ chạm hẳn điểm dừng giữa các lần."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "BICEPS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 77,
+    "nameVi": "Cuốn tay trước Zottman",
+    "nameEn": "Zottman Curl",
+    "primaryMuscle": "Tay trước · chính",
+    "secondaryMuscles": [
+      "Cẳng tay"
+    ],
+    "involvementPercents": [
+      80,
+      20
+    ],
+    "equipment": "Tạ đơn",
+    "instructions": [
+      "Đứng thẳng, hai tay cầm tạ đơn dọc thân, lòng bàn tay hướng vào nhau.",
+      "Cuốn tạ lên vai với lòng bàn tay ngửa dần lên, tới đỉnh thì xoay cổ tay úp xuống.",
+      "Hạ tạ xuống chậm với lòng bàn tay úp, gần cuối thì xoay lại về vị trí ban đầu."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 8,
+    "suggestedRepsMax": 10,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "BICEPS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 78,
+    "nameVi": "Cuốn tay trước thanh EZ tay hẹp",
+    "nameEn": "Close-Grip EZ Bar Curl",
+    "primaryMuscle": "Tay trước · chính",
+    "secondaryMuscles": [
+      "Cẳng tay"
+    ],
+    "involvementPercents": [
+      80,
+      20
+    ],
+    "equipment": "Thanh EZ",
+    "instructions": [
+      "Đứng thẳng, hai tay cầm thanh EZ ở vị trí tay cầm trong hẹp, khuỷu tay sát người.",
+      "Cuốn thanh lên vai bằng lực tay trước, thở ra khi cuốn, giữ 1 giây ở đỉnh.",
+      "Hạ thanh xuống có kiểm soát về vị trí ban đầu, hít vào khi hạ."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "BICEPS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 79,
+    "nameVi": "Cuốn tay trước tạ đòn úp tay",
+    "nameEn": "Reverse Barbell Curl",
+    "primaryMuscle": "Tay trước · chính",
+    "secondaryMuscles": [
+      "Cẳng tay"
+    ],
+    "involvementPercents": [
+      80,
+      20
+    ],
+    "equipment": "Tạ đòn",
+    "instructions": [
+      "Đứng thẳng, hai tay cầm tạ đòn rộng bằng vai, lòng bàn tay úp xuống, khuỷu tay sát người.",
+      "Cuốn tạ lên vai bằng lực tay trước, thở ra khi cuốn, giữ 1 giây ở đỉnh.",
+      "Hạ tạ xuống có kiểm soát về vị trí ban đầu, hít vào khi hạ."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "BICEPS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 80,
+    "nameVi": "Đẩy cáp tay sau dây thừng",
+    "nameEn": "Triceps Pushdown - Rope Attachment",
+    "primaryMuscle": "Tay sau · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Máy cáp + dây thừng",
+    "instructions": [
+      "Gắn dây thừng vào ròng rọc cao, đứng thẳng người hơi ngả nhẹ về trước, giữ bắp tay trên sát người.",
+      "Đẩy dây xuống bằng lực tay sau tới khi tay duỗi thẳng, thở ra khi đẩy, giữ bắp tay trên cố định.",
+      "Giữ 1 giây ở đáy, sau đó đưa dây lên có kiểm soát về vị trí ban đầu."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 15,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "TRICEPS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 81,
+    "nameVi": "Đẩy ngực tạ đòn tay hẹp",
+    "nameEn": "Close-Grip Barbell Bench Press",
+    "primaryMuscle": "Tay sau · chính",
+    "secondaryMuscles": [
+      "Ngực",
+      "Vai"
+    ],
+    "involvementPercents": [
+      55,
+      23,
+      22
+    ],
+    "equipment": "Tạ đòn + ghế",
+    "instructions": [
+      "Nằm trên ghế, nắm đòn tạ rộng bằng vai, nâng đòn khỏi giá, tay duỗi thẳng phía trên ngực.",
+      "Hạ đòn xuống chạm giữa ngực, giữ khuỷu tay sát người suốt chuyển động, hít vào khi hạ.",
+      "Đẩy đòn lên bằng lực tay sau về vị trí ban đầu, thở ra khi đẩy, khóa tay ở đỉnh."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 4,
+    "suggestedRepsMin": 8,
+    "suggestedRepsMax": 10,
+    "suggestedRestSeconds": 90,
+    "muscleGroupCode": "TRICEPS",
+    "movementType": "COMPOUND",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 82,
+    "nameVi": "Ép tạ tay sau nằm",
+    "nameEn": "EZ-Bar Skullcrusher",
+    "primaryMuscle": "Tay sau · chính",
+    "secondaryMuscles": [
+      "Cẳng tay"
+    ],
+    "involvementPercents": [
+      80,
+      20
+    ],
+    "equipment": "Thanh EZ + ghế",
+    "instructions": [
+      "Nằm trên ghế, nắm thanh EZ tay hẹp, đưa tay thẳng vuông góc sàn phía trên trán.",
+      "Giữ bắp tay trên cố định, hạ thanh xuống gần trán bằng cách gập khuỷu tay, hít vào khi hạ.",
+      "Duỗi thẳng khuỷu tay đưa thanh về vị trí ban đầu, thở ra khi đẩy."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "TRICEPS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 83,
+    "nameVi": "Kéo cáp tay sau qua đầu",
+    "nameEn": "Triceps Overhead Extension with Rope",
+    "primaryMuscle": "Tay sau · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Máy cáp + dây thừng",
+    "instructions": [
+      "Gắn dây thừng vào ròng rọc thấp, quay lưng vào máy, đưa hai tay cầm dây ra sau đầu, khuỷu tay hướng lên.",
+      "Giữ bắp tay trên cố định, duỗi thẳng khuỷu tay đưa tay lên cao, thở ra khi đẩy.",
+      "Siết chặt tay sau ở đỉnh, sau đó hạ tạ xuống có kiểm soát về vị trí ban đầu."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "TRICEPS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 84,
+    "nameVi": "Dip tay sau trên ghế",
+    "nameEn": "Bench Dips",
+    "primaryMuscle": "Tay sau · chính",
+    "secondaryMuscles": [
+      "Ngực",
+      "Vai"
+    ],
+    "involvementPercents": [
+      55,
+      23,
+      22
+    ],
+    "equipment": "Ghế",
+    "instructions": [
+      "Ngồi trên mép ghế, hai tay chống xuống mép ghế rộng bằng vai, chân duỗi thẳng ra trước.",
+      "Hạ người xuống bằng cách gập khuỷu tay tới khi cánh tay và cẳng tay tạo góc gần 90 độ, hít vào khi hạ.",
+      "Đẩy người lên về vị trí ban đầu bằng lực tay sau, thở ra khi đẩy."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 15,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "TRICEPS",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 85,
+    "nameVi": "Dip tập trung tay sau",
+    "nameEn": "Dips - Triceps Version",
+    "primaryMuscle": "Tay sau · chính",
+    "secondaryMuscles": [
+      "Ngực",
+      "Vai"
+    ],
+    "involvementPercents": [
+      55,
+      23,
+      22
+    ],
+    "equipment": "Xà kép",
+    "instructions": [
+      "Chống thẳng người trên xà kép, tay gần khóa thẳng, thân trên giữ thẳng đứng.",
+      "Hạ người xuống từ từ, khuỷu tay sát người, tới khi tạo góc 90 độ, hít vào khi hạ.",
+      "Đẩy người lên về vị trí ban đầu bằng lực tay sau, thở ra khi đẩy."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 8,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 90,
+    "muscleGroupCode": "TRICEPS",
+    "movementType": "COMPOUND",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 86,
+    "nameVi": "Đẩy tạ đơn tay sau qua đầu",
+    "nameEn": "Standing Dumbbell Triceps Extension",
+    "primaryMuscle": "Tay sau · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Tạ đơn",
+    "instructions": [
+      "Đứng thẳng, hai tay nâng một tạ đơn qua đầu, tay duỗi thẳng, lòng bàn tay hướng lên.",
+      "Giữ khuỷu tay sát đầu, hạ tạ xuống sau gáy bằng cách gập khuỷu tay, hít vào khi hạ.",
+      "Duỗi thẳng khuỷu tay nâng tạ về vị trí ban đầu, thở ra khi đẩy."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "TRICEPS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 87,
+    "nameVi": "Đá tạ đơn tay sau",
+    "nameEn": "Tricep Dumbbell Kickback",
+    "primaryMuscle": "Tay sau · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Tạ đơn",
+    "instructions": [
+      "Gập người về trước, lưng thẳng, hai tay cầm tạ đơn, bắp tay trên song song sàn, khuỷu tay gập 90 độ.",
+      "Giữ bắp tay trên cố định, duỗi thẳng khuỷu tay đưa tạ ra sau, thở ra khi đẩy.",
+      "Giữ 1 giây ở đỉnh, sau đó hạ tạ xuống có kiểm soát về vị trí ban đầu."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 15,
+    "suggestedRestSeconds": 45,
+    "muscleGroupCode": "TRICEPS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 88,
+    "nameVi": "Ép tạ đơn tay sau nằm",
+    "nameEn": "Lying Dumbbell Tricep Extension",
+    "primaryMuscle": "Tay sau · chính",
+    "secondaryMuscles": [
+      "Ngực",
+      "Vai"
+    ],
+    "involvementPercents": [
+      80,
+      10,
+      10
+    ],
+    "equipment": "Tạ đơn + ghế",
+    "instructions": [
+      "Nằm trên ghế, hai tay cầm tạ đơn duỗi thẳng vuông góc sàn phía trên ngực.",
+      "Giữ bắp tay trên cố định, hạ tạ xuống gần hai bên tai bằng cách gập khuỷu tay, hít vào khi hạ.",
+      "Duỗi thẳng khuỷu tay nâng tạ về vị trí ban đầu, thở ra khi đẩy."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "TRICEPS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 89,
+    "nameVi": "Đẩy ngực tạ đơn tay hẹp",
+    "nameEn": "Close-Grip Dumbbell Press",
+    "primaryMuscle": "Tay sau · chính",
+    "secondaryMuscles": [
+      "Ngực",
+      "Vai"
+    ],
+    "involvementPercents": [
+      55,
+      23,
+      22
+    ],
+    "equipment": "Tạ đơn + ghế",
+    "instructions": [
+      "Nằm trên ghế, hai tay ép sát cầm chung một tạ đơn dựng đứng phía trên ngực, tay duỗi thẳng.",
+      "Hạ tạ xuống chạm ngực, giữ hai tay ép sát nhau suốt chuyển động, hít vào khi hạ.",
+      "Đẩy tạ lên về vị trí ban đầu bằng lực tay sau, thở ra khi đẩy."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "TRICEPS",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 90,
+    "nameVi": "Đẩy tay sau trên máy",
+    "nameEn": "Machine Triceps Extension",
+    "primaryMuscle": "Tay sau · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Máy tập",
+    "instructions": [
+      "Chỉnh ghế phù hợp, tựa bắp tay trên vào đệm, nắm chặt tay cầm.",
+      "Duỗi thẳng khuỷu tay đẩy cẳng tay ra xa bắp tay trên, thở ra khi đẩy.",
+      "Giữ 1 giây ở đỉnh, sau đó thả về có kiểm soát, không để tạ chạm hẳn điểm dừng giữa các lần."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "TRICEPS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 91,
+    "nameVi": "Dip trên máy",
+    "nameEn": "Dip Machine",
+    "primaryMuscle": "Tay sau · chính",
+    "secondaryMuscles": [
+      "Ngực",
+      "Vai"
+    ],
+    "involvementPercents": [
+      55,
+      23,
+      22
+    ],
+    "equipment": "Máy tập",
+    "instructions": [
+      "Ngồi vào máy, chọn mức tạ, nắm chặt tay cầm, khuỷu tay ép sát người tạo góc 90 độ.",
+      "Siết chặt tay sau, đẩy tay xuống dưới cho tới gần thẳng, thở ra khi đẩy.",
+      "Đưa tay trở lại vị trí ban đầu có kiểm soát, hít vào khi thả."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 15,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "TRICEPS",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 92,
+    "nameVi": "Đẩy vai tạ đòn",
+    "nameEn": "Barbell Shoulder Press",
+    "primaryMuscle": "Vai · chính",
+    "secondaryMuscles": [
+      "Ngực",
+      "Tay sau"
+    ],
+    "involvementPercents": [
+      55,
+      15,
+      30
+    ],
+    "equipment": "Tạ đòn",
+    "instructions": [
+      "Ngồi trên ghế có tựa lưng, nắm tạ đòn rộng hơn vai, lòng bàn tay hướng ra trước.",
+      "Nâng tạ lên trên đầu, khóa thẳng tay, giữ ở vị trí ngang vai và hơi phía trước đầu.",
+      "Hạ tạ xuống ngang vai có kiểm soát, hít vào khi hạ, sau đó đẩy lên lại, thở ra khi đẩy."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 4,
+    "suggestedRepsMin": 8,
+    "suggestedRepsMax": 10,
+    "suggestedRestSeconds": 90,
+    "muscleGroupCode": "DELTOIDS",
+    "movementType": "COMPOUND",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 93,
+    "nameVi": "Đẩy vai đứng tạ đòn",
+    "nameEn": "Standing Military Press",
+    "primaryMuscle": "Vai · chính",
+    "secondaryMuscles": [
+      "Tay sau"
+    ],
+    "involvementPercents": [
+      65,
+      35
+    ],
+    "equipment": "Tạ đòn",
+    "instructions": [
+      "Đứng thẳng, nắm tạ đòn rộng hơn vai, đặt tạ ngang xương đòn, chân rộng bằng vai.",
+      "Đẩy tạ lên trên đầu, khóa thẳng tay, giữ ở vị trí ngang vai và hơi phía trước đầu.",
+      "Hạ tạ xuống xương đòn có kiểm soát, hít vào khi hạ, thở ra khi đẩy lên."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 4,
+    "suggestedRepsMin": 8,
+    "suggestedRepsMax": 10,
+    "suggestedRestSeconds": 90,
+    "muscleGroupCode": "DELTOIDS",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 94,
+    "nameVi": "Đẩy vai tạ đơn kiểu Arnold",
+    "nameEn": "Arnold Dumbbell Press",
+    "primaryMuscle": "Vai · chính",
+    "secondaryMuscles": [
+      "Tay sau"
+    ],
+    "involvementPercents": [
+      65,
+      35
+    ],
+    "equipment": "Tạ đơn + ghế",
+    "instructions": [
+      "Ngồi tựa lưng, hai tay cầm tạ đơn ngang ngực trên, lòng bàn tay hướng vào người, khuỷu tay gập.",
+      "Đẩy tạ lên trong khi xoay cổ tay để lòng bàn tay hướng ra trước, duỗi thẳng tay trên đầu.",
+      "Hạ tạ xuống có kiểm soát, xoay cổ tay ngược lại về vị trí ban đầu."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 8,
+    "suggestedRepsMax": 10,
+    "suggestedRestSeconds": 90,
+    "muscleGroupCode": "DELTOIDS",
+    "movementType": "COMPOUND",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 95,
+    "nameVi": "Đẩy vai tạ đòn ngồi sau gáy",
+    "nameEn": "Seated Barbell Military Press",
+    "primaryMuscle": "Vai · chính",
+    "secondaryMuscles": [
+      "Tay sau"
+    ],
+    "involvementPercents": [
+      65,
+      35
+    ],
+    "equipment": "Tạ đòn + ghế",
+    "instructions": [
+      "Ngồi trên ghế đẩy vai, nắm tạ đòn rộng hơn vai sau gáy — chỉ tập bài này nếu vai có độ linh hoạt tốt, nên dùng tạ nhẹ hơn so với đẩy trước mặt.",
+      "Đẩy tạ lên trên đầu, khóa thẳng tay, giữ ở vị trí ngang vai.",
+      "Hạ tạ xuống sau gáy chậm và có kiểm soát, dừng lại ngay nếu cảm thấy đau hoặc căng cứng ở vai."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 8,
+    "suggestedRepsMax": 10,
+    "suggestedRestSeconds": 90,
+    "muscleGroupCode": "DELTOIDS",
+    "movementType": "COMPOUND",
+    "difficultyCode": "ADVANCED"
+  },
+  {
+    "id": 96,
+    "nameVi": "Nâng tạ đơn trước vai",
+    "nameEn": "Front Dumbbell Raise",
+    "primaryMuscle": "Vai · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Tạ đơn",
+    "instructions": [
+      "Đứng thẳng, hai tay cầm tạ đơn trước đùi, lòng bàn tay hướng vào đùi.",
+      "Nâng một tay lên phía trước tới ngang vai, khuỷu tay hơi gập, lòng bàn tay hướng xuống, thở ra khi nâng.",
+      "Hạ tay xuống có kiểm soát trong khi nâng tay còn lại, luân phiên hai bên."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "DELTOIDS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 97,
+    "nameVi": "Bay ngược vai sau",
+    "nameEn": "Reverse Flyes",
+    "primaryMuscle": "Vai · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Tạ đơn + ghế nghiêng",
+    "instructions": [
+      "Nằm sấp trên ghế nghiêng, ngực tựa vào đệm, hai tay cầm tạ đơn duỗi thẳng xuống dưới.",
+      "Giữ khuỷu tay hơi gập, mở hai tay ra hai bên theo đường vòng cung tới khi song song sàn, siết bả vai.",
+      "Hạ tạ xuống có kiểm soát về vị trí ban đầu."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 12,
+    "suggestedRepsMax": 15,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "DELTOIDS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 98,
+    "nameVi": "Bay cáp vai sau",
+    "nameEn": "Cable Rear Delt Fly",
+    "primaryMuscle": "Vai · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Máy cáp",
+    "instructions": [
+      "Chỉnh ròng rọc ngang đầu, bắt chéo tay nắm dây cáp đối diện (tay phải nắm dây trái, tay trái nắm dây phải).",
+      "Kéo hai tay ra sau và sang ngang, giữ tay thẳng, siết bả vai lại với nhau.",
+      "Giữ 1 giây ở cuối chuyển động, sau đó đưa tay về vị trí ban đầu có kiểm soát."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 12,
+    "suggestedRepsMax": 15,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "DELTOIDS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 99,
+    "nameVi": "Kéo cáp về mặt",
+    "nameEn": "Face Pull",
+    "primaryMuscle": "Vai · chính",
+    "secondaryMuscles": [
+      "Lưng giữa"
+    ],
+    "involvementPercents": [
+      65,
+      35
+    ],
+    "equipment": "Máy cáp + dây thừng",
+    "instructions": [
+      "Đứng đối diện ròng rọc cao gắn dây thừng, nắm hai đầu dây, tay duỗi thẳng phía trước.",
+      "Kéo dây về phía mặt, tách hai tay ra khi kéo, giữ bắp tay trên song song sàn, thở ra khi kéo.",
+      "Giữ 1 giây, sau đó đưa dây về vị trí ban đầu có kiểm soát."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 12,
+    "suggestedRepsMax": 15,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "DELTOIDS",
+    "movementType": "COMPOUND",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 100,
+    "nameVi": "Kéo tạ đòn thẳng đứng",
+    "nameEn": "Upright Barbell Row",
+    "primaryMuscle": "Vai · chính",
+    "secondaryMuscles": [
+      "Cầu vai"
+    ],
+    "involvementPercents": [
+      65,
+      35
+    ],
+    "equipment": "Tạ đòn",
+    "instructions": [
+      "Đứng thẳng, nắm tạ đòn hẹp hơn vai một chút, tạ tựa trước đùi, tay duỗi thẳng.",
+      "Kéo tạ lên dọc thân bằng lực vai, khuỷu tay hướng lên và ra ngoài, kéo tới gần cằm, thở ra khi kéo.",
+      "Hạ tạ xuống có kiểm soát về vị trí ban đầu, hít vào khi hạ."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "DELTOIDS",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 101,
+    "nameVi": "Đẩy vai cáp",
+    "nameEn": "Cable Shoulder Press",
+    "primaryMuscle": "Vai · chính",
+    "secondaryMuscles": [
+      "Tay sau"
+    ],
+    "involvementPercents": [
+      65,
+      35
+    ],
+    "equipment": "Máy cáp",
+    "instructions": [
+      "Đứng giữa hai cột cáp thấp, nắm tay cầm ngang vai, lòng bàn tay hướng ra trước.",
+      "Giữ đầu và ngực thẳng, đẩy tay cầm lên thẳng qua đầu, thở ra khi đẩy.",
+      "Hạ tay cầm xuống có kiểm soát về vị trí ban đầu, hít vào khi hạ."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "DELTOIDS",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 102,
+    "nameVi": "Nâng cáp trước vai",
+    "nameEn": "Front Cable Raise",
+    "primaryMuscle": "Vai · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Máy cáp",
+    "instructions": [
+      "Đứng quay lưng vào máy cáp thấp, nắm tay cầm một tay trước đùi, lòng bàn tay hướng vào đùi.",
+      "Nâng tay lên phía trước tới ngang vai, khuỷu tay hơi gập, thở ra khi nâng.",
+      "Hạ tay xuống có kiểm soát, hoàn thành đủ số lần rồi đổi tay."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "DELTOIDS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 103,
+    "nameVi": "Nâng tạ đơn sang ngang ngồi",
+    "nameEn": "Seated Side Lateral Raise",
+    "primaryMuscle": "Vai · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Tạ đơn + ghế",
+    "instructions": [
+      "Ngồi trên ghế, hai tay cầm tạ đơn thả thẳng hai bên, lòng bàn tay hướng vào người.",
+      "Nâng tạ sang ngang tới ngang vai, khuỷu tay hơi gập, thở ra khi nâng, giữ 1 giây ở đỉnh.",
+      "Hạ tạ xuống có kiểm soát về vị trí ban đầu, hít vào khi hạ."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 12,
+    "suggestedRepsMax": 15,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "DELTOIDS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 104,
+    "nameVi": "Đẩy vai bật gối (Push Press)",
+    "nameEn": "Push Press",
+    "primaryMuscle": "Vai · chính",
+    "secondaryMuscles": [
+      "Đùi trước",
+      "Tay sau"
+    ],
+    "involvementPercents": [
+      55,
+      23,
+      22
+    ],
+    "equipment": "Tạ đòn",
+    "instructions": [
+      "Đứng thẳng, đặt tạ đòn ngang vai trước, chân rộng bằng vai, khuỷu tay hướng ra trước.",
+      "Hơi chùng gối rồi bật mạnh chân để tạo lực đà, đồng thời đẩy tạ thẳng lên qua đầu.",
+      "Khóa thẳng tay ở đỉnh, sau đó hạ tạ xuống có kiểm soát về vị trí ngang vai."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 5,
+    "suggestedRepsMax": 6,
+    "suggestedRestSeconds": 120,
+    "muscleGroupCode": "DELTOIDS",
+    "movementType": "COMPOUND",
+    "difficultyCode": "ADVANCED"
+  },
+  {
+    "id": 105,
+    "nameVi": "Gập bụng toàn thân (Sit-up)",
+    "nameEn": "Sit-Up",
+    "primaryMuscle": "Bụng · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Không thiết bị",
+    "instructions": [
+      "Nằm ngửa, gối gập, cố định bàn chân dưới vật nặng hoặc nhờ người giữ, hai tay đặt nhẹ hai bên đầu, không đan tay kéo cổ.",
+      "Nâng thân trên lên tạo hình chữ V với đùi, thở ra khi nâng, giữ 1 giây ở đỉnh.",
+      "Hạ thân trên xuống có kiểm soát về vị trí ban đầu, hít vào khi hạ."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 15,
+    "suggestedRepsMax": 20,
+    "suggestedRestSeconds": 45,
+    "muscleGroupCode": "ABS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 106,
+    "nameVi": "Gập bụng ngược",
+    "nameEn": "Reverse Crunch",
+    "primaryMuscle": "Bụng · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Không thiết bị",
+    "instructions": [
+      "Nằm ngửa, hai tay xuôi hai bên lòng bàn tay úp sàn, nâng chân lên vuông góc sàn, đùi thẳng đứng.",
+      "Cuộn xương chậu lên, kéo gối về ngực, nâng hông khỏi sàn, thở ra khi cuộn.",
+      "Hạ hông và chân về vị trí ban đầu có kiểm soát, hít vào khi hạ."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 15,
+    "suggestedRepsMax": 20,
+    "suggestedRestSeconds": 45,
+    "muscleGroupCode": "ABS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 107,
+    "nameVi": "Gập bụng cáp quỳ",
+    "nameEn": "Cable Crunch",
+    "primaryMuscle": "Bụng · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Máy cáp + dây thừng",
+    "instructions": [
+      "Quỳ dưới ròng rọc cao gắn dây thừng, nắm dây kéo xuống hai bên mặt.",
+      "Gập eo để cuộn người xuống, khuỷu tay hướng về giữa đùi, siết bụng, thở ra khi gập.",
+      "Trở về vị trí ban đầu có kiểm soát, hít vào khi duỗi, giữ hông cố định suốt chuyển động."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 12,
+    "suggestedRepsMax": 15,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "ABS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 108,
+    "nameVi": "Plank chống khuỷu tay",
+    "nameEn": "Plank",
+    "primaryMuscle": "Bụng · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Không thiết bị",
+    "instructions": [
+      "Chống người trên sàn bằng mũi chân và cẳng tay, khuỷu tay ngay dưới vai.",
+      "Giữ thân người thẳng từ đầu đến gót chân, siết chặt bụng.",
+      "Giữ tư thế càng lâu càng tốt, thở đều, không để hông võng hoặc nhô cao."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 1,
+    "suggestedRepsMax": 1,
+    "suggestedRestSeconds": 30,
+    "muscleGroupCode": "ABS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 109,
+    "nameVi": "Plank nghiêng",
+    "nameEn": "Side Bridge",
+    "primaryMuscle": "Bụng · chính",
+    "secondaryMuscles": [
+      "Vai"
+    ],
+    "involvementPercents": [
+      80,
+      20
+    ],
+    "equipment": "Không thiết bị",
+    "instructions": [
+      "Nằm nghiêng, chống người lên bằng cẳng tay và mép ngoài bàn chân, khuỷu tay ngay dưới vai.",
+      "Nâng hông lên khỏi sàn tạo thành đường thẳng từ đầu đến chân, siết chặt bụng.",
+      "Giữ tư thế càng lâu càng tốt, thở đều, sau đó đổi bên."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 1,
+    "suggestedRepsMax": 1,
+    "suggestedRestSeconds": 30,
+    "muscleGroupCode": "ABS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 110,
+    "nameVi": "Xoay người Nga (Russian Twist)",
+    "nameEn": "Russian Twist",
+    "primaryMuscle": "Bụng · chính",
+    "secondaryMuscles": [
+      "Lưng dưới"
+    ],
+    "involvementPercents": [
+      65,
+      35
+    ],
+    "equipment": "Không thiết bị",
+    "instructions": [
+      "Ngồi trên sàn, gối gập, nâng thân trên tạo góc V với đùi, hai tay đan vào nhau duỗi thẳng trước ngực.",
+      "Xoay thân trên sang phải tới khi tay song song sàn, thở ra khi xoay.",
+      "Xoay về giữa rồi sang trái, luân phiên hai bên đủ số lần quy định."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 15,
+    "suggestedRepsMax": 20,
+    "suggestedRestSeconds": 45,
+    "muscleGroupCode": "ABS",
+    "movementType": "COMPOUND",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 111,
+    "nameVi": "Đạp xe đạp trên không",
+    "nameEn": "Air Bike",
+    "primaryMuscle": "Bụng · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Không thiết bị",
+    "instructions": [
+      "Nằm ngửa, lưng dưới ép sát sàn, hai tay đặt nhẹ sau đầu, nâng vai lên khỏi sàn.",
+      "Nâng gối lên vuông góc sàn, đạp chân theo nhịp xe đạp, đưa khuỷu tay chạm gối đối diện.",
+      "Luân phiên hai bên liên tục, thở ra mỗi lần chạm khuỷu tay vào gối."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 20,
+    "suggestedRepsMax": 30,
+    "suggestedRestSeconds": 45,
+    "muscleGroupCode": "ABS",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 112,
+    "nameVi": "Nâng chân treo xà",
+    "nameEn": "Hanging Leg Raise",
+    "primaryMuscle": "Bụng · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Xà đơn",
+    "instructions": [
+      "Treo người trên xà đơn, hai tay duỗi thẳng, chân duỗi thẳng xuống dưới.",
+      "Nâng hai chân lên tới khi thân tạo góc 90 độ với chân, thở ra khi nâng, giữ 1 giây ở đỉnh.",
+      "Hạ chân xuống có kiểm soát về vị trí ban đầu, hít vào khi hạ."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 8,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "ABS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "ADVANCED"
+  },
+  {
+    "id": 113,
+    "nameVi": "Lăn bánh xe bụng",
+    "nameEn": "Ab Roller",
+    "primaryMuscle": "Bụng · chính",
+    "secondaryMuscles": [
+      "Vai"
+    ],
+    "involvementPercents": [
+      65,
+      35
+    ],
+    "equipment": "Bánh xe tập bụng",
+    "instructions": [
+      "Quỳ trên sàn, hai tay cầm bánh xe tập bụng, đặt trước gối.",
+      "Lăn bánh xe về trước từ từ, duỗi thẳng người hết mức có thể mà không chạm sàn, hít vào khi lăn.",
+      "Kéo người trở lại vị trí ban đầu bằng lực bụng, siết chặt bụng suốt chuyển động, thở ra khi kéo về."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 8,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "ABS",
+    "movementType": "COMPOUND",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 114,
+    "nameVi": "Gập bụng trên máy",
+    "nameEn": "Ab Crunch Machine",
+    "primaryMuscle": "Bụng · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Máy tập",
+    "instructions": [
+      "Ngồi vào máy, đặt chân dưới đệm giữ, nắm tay cầm phía trên, khuỷu tay tựa đệm góc 90 độ.",
+      "Gập người xuống bằng lực bụng trong khi nâng nhẹ chân lên, thở ra khi gập.",
+      "Trở về vị trí ban đầu có kiểm soát, hít vào khi duỗi."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 12,
+    "suggestedRepsMax": 15,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "ABS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 115,
+    "nameVi": "Gập bụng ghế dốc",
+    "nameEn": "Decline Crunch",
+    "primaryMuscle": "Bụng · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Ghế dốc",
+    "instructions": [
+      "Cố định chân ở cuối ghế dốc, nằm xuống, hai tay đặt nhẹ hai bên đầu, không đan sau gáy.",
+      "Ép lưng dưới xuống ghế, cuộn vai lên khỏi ghế khoảng 10cm, siết bụng và thở ra.",
+      "Giữ 1 giây ở đỉnh, sau đó hạ xuống chậm rãi có kiểm soát về vị trí ban đầu."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 15,
+    "suggestedRepsMax": 20,
+    "suggestedRestSeconds": 45,
+    "muscleGroupCode": "ABS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 116,
+    "nameVi": "Dead Bug",
+    "nameEn": "Dead Bug",
+    "primaryMuscle": "Bụng · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Không thiết bị",
+    "instructions": [
+      "Nằm ngửa, hai tay duỗi thẳng lên trần, gối và hông gập 90 độ.",
+      "Ép lưng dưới sát sàn, siết bụng, sau đó duỗi thẳng một chân gần chạm sàn trong khi giữ lưng không võng.",
+      "Thu chân về vị trí ban đầu, luân phiên đổi chân, giữ lưng dưới ép sàn suốt chuyển động."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 45,
+    "muscleGroupCode": "ABS",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 117,
+    "nameVi": "Đẩy ngực tạ đòn ghế nghiêng",
+    "nameEn": "Barbell Incline Bench Press - Medium Grip",
+    "primaryMuscle": "Ngực · chính",
+    "secondaryMuscles": [
+      "Vai",
+      "Tay sau"
+    ],
+    "involvementPercents": [
+      55,
+      23,
+      22
+    ],
+    "equipment": "Tạ đòn + ghế nghiêng",
+    "instructions": [
+      "Nằm trên ghế nghiêng, nắm đòn tạ rộng vừa phải tạo góc 90 độ ở khuỷu tay, nâng đòn khỏi giá.",
+      "Hạ đòn xuống chạm ngực trên có kiểm soát, hít vào khi hạ.",
+      "Đẩy đòn lên bằng lực ngực về vị trí ban đầu, thở ra khi đẩy, siết ngực ở đỉnh."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 4,
+    "suggestedRepsMin": 8,
+    "suggestedRepsMax": 10,
+    "suggestedRestSeconds": 90,
+    "muscleGroupCode": "CHEST",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 118,
+    "nameVi": "Đẩy ngực tạ đòn ghế dốc xuống",
+    "nameEn": "Decline Barbell Bench Press",
+    "primaryMuscle": "Ngực · chính",
+    "secondaryMuscles": [
+      "Vai",
+      "Tay sau"
+    ],
+    "involvementPercents": [
+      55,
+      23,
+      22
+    ],
+    "equipment": "Tạ đòn + ghế dốc",
+    "instructions": [
+      "Cố định chân ở cuối ghế dốc, nằm xuống, nắm đòn tạ rộng vừa phải, nâng đòn khỏi giá.",
+      "Hạ đòn xuống chạm ngực dưới có kiểm soát, hít vào khi hạ.",
+      "Đẩy đòn lên bằng lực ngực về vị trí ban đầu, thở ra khi đẩy, siết ngực ở đỉnh."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 8,
+    "suggestedRepsMax": 10,
+    "suggestedRestSeconds": 90,
+    "muscleGroupCode": "CHEST",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 119,
+    "nameVi": "Đẩy ngực tạ đơn",
+    "nameEn": "Dumbbell Bench Press",
+    "primaryMuscle": "Ngực · chính",
+    "secondaryMuscles": [
+      "Vai",
+      "Tay sau"
+    ],
+    "involvementPercents": [
+      55,
+      23,
+      22
+    ],
+    "equipment": "Tạ đơn + ghế",
+    "instructions": [
+      "Nằm trên ghế, hai tay cầm tạ đơn ngang ngực, lòng bàn tay hướng ra trước, khuỷu tay tạo góc 90 độ.",
+      "Đẩy tạ lên bằng lực ngực tới khi tay duỗi thẳng, thở ra khi đẩy, siết ngực ở đỉnh.",
+      "Hạ tạ xuống có kiểm soát về vị trí ban đầu, hít vào khi hạ."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 4,
+    "suggestedRepsMin": 8,
+    "suggestedRepsMax": 10,
+    "suggestedRestSeconds": 90,
+    "muscleGroupCode": "CHEST",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 120,
+    "nameVi": "Đẩy ngực tạ đơn ghế nghiêng",
+    "nameEn": "Incline Dumbbell Press",
+    "primaryMuscle": "Ngực · chính",
+    "secondaryMuscles": [
+      "Vai",
+      "Tay sau"
+    ],
+    "involvementPercents": [
+      55,
+      23,
+      22
+    ],
+    "equipment": "Tạ đơn + ghế nghiêng",
+    "instructions": [
+      "Nằm trên ghế nghiêng, hai tay cầm tạ đơn ngang vai, lòng bàn tay hướng ra trước.",
+      "Đẩy tạ lên bằng lực ngực tới khi tay duỗi thẳng, thở ra khi đẩy, siết ngực ở đỉnh.",
+      "Hạ tạ xuống có kiểm soát về vị trí ban đầu, hít vào khi hạ."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 8,
+    "suggestedRepsMax": 10,
+    "suggestedRestSeconds": 90,
+    "muscleGroupCode": "CHEST",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 121,
+    "nameVi": "Đẩy ngực tạ đơn ghế dốc xuống",
+    "nameEn": "Decline Dumbbell Bench Press",
+    "primaryMuscle": "Ngực · chính",
+    "secondaryMuscles": [
+      "Vai",
+      "Tay sau"
+    ],
+    "involvementPercents": [
+      55,
+      23,
+      22
+    ],
+    "equipment": "Tạ đơn + ghế dốc",
+    "instructions": [
+      "Cố định chân ở cuối ghế dốc, nằm xuống, hai tay cầm tạ đơn ngang vai, lòng bàn tay hướng ra trước.",
+      "Hạ tạ xuống hai bên ngực có kiểm soát, hít vào khi hạ, cẳng tay giữ vuông góc sàn.",
+      "Đẩy tạ lên bằng lực ngực về vị trí ban đầu, thở ra khi đẩy, siết ngực ở đỉnh."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 8,
+    "suggestedRepsMax": 10,
+    "suggestedRestSeconds": 90,
+    "muscleGroupCode": "CHEST",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 122,
+    "nameVi": "Bay ngực tạ đơn",
+    "nameEn": "Dumbbell Flyes",
+    "primaryMuscle": "Ngực · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Tạ đơn + ghế",
+    "instructions": [
+      "Nằm trên ghế, hai tay cầm tạ đơn nâng thẳng trên ngực, lòng bàn tay hướng vào nhau, khuỷu tay hơi gập.",
+      "Hạ tạ ra hai bên theo đường vòng cung tới khi cảm nhận căng ở ngực, hít vào khi hạ, chỉ chuyển động ở vai.",
+      "Khép tay về vị trí ban đầu bằng lực ngực, siết ngực và thở ra khi khép."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "CHEST",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 123,
+    "nameVi": "Bay ngực tạ đơn ghế nghiêng",
+    "nameEn": "Incline Dumbbell Flyes",
+    "primaryMuscle": "Ngực · chính",
+    "secondaryMuscles": [
+      "Vai"
+    ],
+    "involvementPercents": [
+      65,
+      35
+    ],
+    "equipment": "Tạ đơn + ghế nghiêng",
+    "instructions": [
+      "Nằm trên ghế nghiêng dưới 30 độ, hai tay cầm tạ đơn nâng thẳng trên đầu, khuỷu tay hơi gập.",
+      "Hạ tạ ra hai bên theo đường vòng cung, xoay cổ tay để lòng bàn tay hướng vào nhau ở cuối, hít vào khi hạ.",
+      "Khép tay về vị trí ban đầu, xoay cổ tay ngược lại, siết ngực và thở ra khi khép."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "CHEST",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 124,
+    "nameVi": "Đẩy ngực trên máy",
+    "nameEn": "Machine Bench Press",
+    "primaryMuscle": "Ngực · chính",
+    "secondaryMuscles": [
+      "Vai",
+      "Tay sau"
+    ],
+    "involvementPercents": [
+      55,
+      23,
+      22
+    ],
+    "equipment": "Máy tập",
+    "instructions": [
+      "Ngồi vào máy, chọn mức tạ, nắm tay cầm với lòng bàn tay úp xuống, khuỷu tay ngang vai.",
+      "Đẩy tay cầm ra xa bằng lực ngực, thở ra khi đẩy, siết ngực ở đỉnh.",
+      "Đưa tay cầm về vị trí ban đầu có kiểm soát, hít vào khi thu về."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "CHEST",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 125,
+    "nameVi": "Ép ngực trên máy (Butterfly)",
+    "nameEn": "Butterfly",
+    "primaryMuscle": "Ngực · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Máy tập",
+    "instructions": [
+      "Ngồi vào máy, lưng tựa phẳng vào đệm, nắm tay cầm với bắp tay trên song song sàn.",
+      "Ép hai tay cầm vào nhau, siết chặt ngực ở giữa, thở ra khi ép.",
+      "Đưa tay cầm trở lại vị trí ban đầu chậm rãi, hít vào khi mở ra."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "CHEST",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 126,
+    "nameVi": "Dip tập trung ngực",
+    "nameEn": "Dips - Chest Version",
+    "primaryMuscle": "Ngực · chính",
+    "secondaryMuscles": [
+      "Vai",
+      "Tay sau"
+    ],
+    "involvementPercents": [
+      55,
+      23,
+      22
+    ],
+    "equipment": "Xà kép",
+    "instructions": [
+      "Chống thẳng người trên xà kép, tay khóa thẳng, thân người nghiêng về trước khoảng 30 độ.",
+      "Hạ người xuống từ từ, khuỷu tay mở nhẹ ra ngoài, tới khi cảm nhận căng ở ngực, hít vào khi hạ.",
+      "Đẩy người lên về vị trí ban đầu bằng lực ngực, siết ngực ở đỉnh, thở ra khi đẩy."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 8,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 90,
+    "muscleGroupCode": "CHEST",
+    "movementType": "COMPOUND",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 127,
+    "nameVi": "Hít đất tay rộng",
+    "nameEn": "Push-Up Wide",
+    "primaryMuscle": "Ngực · chính",
+    "secondaryMuscles": [
+      "Bụng",
+      "Vai",
+      "Tay sau"
+    ],
+    "involvementPercents": [
+      50,
+      17,
+      17,
+      16
+    ],
+    "equipment": "Không thiết bị",
+    "instructions": [
+      "Chống hai tay rộng hơn vai, thân người thẳng từ đầu đến gót chân, khuỷu tay duỗi thẳng.",
+      "Hạ ngực xuống gần sàn bằng cách gập khuỷu tay, hít vào khi hạ, giữ hông không võng.",
+      "Đẩy người lên về vị trí ban đầu bằng lực ngực, thở ra khi đẩy."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 12,
+    "suggestedRepsMax": 15,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "CHEST",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 128,
+    "nameVi": "Hít đất nâng cao tay",
+    "nameEn": "Incline Push-Up",
+    "primaryMuscle": "Ngực · chính",
+    "secondaryMuscles": [
+      "Vai",
+      "Tay sau"
+    ],
+    "involvementPercents": [
+      55,
+      23,
+      22
+    ],
+    "equipment": "Ghế/bục",
+    "instructions": [
+      "Đứng đối diện ghế hoặc bục chắc chắn, đặt hai tay lên mép rộng hơn vai một chút.",
+      "Bước chân ra sau, giữ thân người thẳng, hạ ngực xuống gần mép ghế bằng cách gập khuỷu tay.",
+      "Đẩy người lên về vị trí ban đầu bằng lực ngực, thở ra khi đẩy."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 12,
+    "suggestedRepsMax": 15,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "CHEST",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 129,
+    "nameVi": "Bay ngực cáp nằm",
+    "nameEn": "Flat Bench Cable Flyes",
+    "primaryMuscle": "Ngực · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Máy cáp + ghế",
+    "instructions": [
+      "Đặt ghế phẳng giữa hai ròng rọc thấp, nằm lên ghế sao cho ngực ngang hàng với ròng rọc.",
+      "Nắm hai tay cầm, mở tay ra hai bên với khuỷu tay hơi gập, cẳng tay song song sàn.",
+      "Khép hai tay lại theo đường vòng cung phía trên ngực, siết ngực và thở ra khi khép."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "CHEST",
+    "movementType": "ISOLATION",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 130,
+    "nameVi": "Kéo xà",
+    "nameEn": "Pullups",
+    "primaryMuscle": "Xô · chính",
+    "secondaryMuscles": [
+      "Tay trước",
+      "Lưng giữa"
+    ],
+    "involvementPercents": [
+      60,
+      25,
+      15
+    ],
+    "equipment": "Xà đơn",
+    "instructions": [
+      "Nắm xà rộng hơn vai, lòng bàn tay hướng ra trước, treo người với tay duỗi thẳng, ngực ưỡn.",
+      "Kéo người lên tới khi cằm qua xà, siết xô và lưng, thở ra khi kéo.",
+      "Hạ người xuống có kiểm soát về vị trí ban đầu, hít vào khi hạ."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 6,
+    "suggestedRepsMax": 10,
+    "suggestedRestSeconds": 90,
+    "muscleGroupCode": "BACK",
+    "movementType": "COMPOUND",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 131,
+    "nameVi": "Kéo xà ngửa tay",
+    "nameEn": "Chin-Up",
+    "primaryMuscle": "Xô · chính",
+    "secondaryMuscles": [
+      "Tay trước",
+      "Cẳng tay",
+      "Lưng giữa"
+    ],
+    "involvementPercents": [
+      50,
+      17,
+      17,
+      16
+    ],
+    "equipment": "Xà đơn",
+    "instructions": [
+      "Nắm xà hẹp hơn vai, lòng bàn tay hướng vào người, treo người với tay duỗi thẳng.",
+      "Kéo người lên tới khi đầu ngang xà, khuỷu tay sát người, thở ra khi kéo.",
+      "Hạ người xuống có kiểm soát về vị trí ban đầu, hít vào khi hạ."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 6,
+    "suggestedRepsMax": 10,
+    "suggestedRestSeconds": 90,
+    "muscleGroupCode": "BACK",
+    "movementType": "COMPOUND",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 132,
+    "nameVi": "Row tạ đơn một tay",
+    "nameEn": "One-Arm Dumbbell Row",
+    "primaryMuscle": "Xô · chính",
+    "secondaryMuscles": [
+      "Tay trước",
+      "Vai"
+    ],
+    "involvementPercents": [
+      55,
+      23,
+      22
+    ],
+    "equipment": "Tạ đơn + ghế",
+    "instructions": [
+      "Đặt một gối và một tay lên ghế phẳng, lưng thẳng song song sàn, tay còn lại cầm tạ đơn thả thẳng.",
+      "Kéo tạ lên sát hông, khuỷu tay hướng lên trần, giữ thân người cố định, thở ra khi kéo.",
+      "Hạ tạ xuống có kiểm soát về vị trí ban đầu, hoàn thành đủ số lần rồi đổi tay."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "BACK",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 133,
+    "nameVi": "Kéo cáp ngồi",
+    "nameEn": "Seated Cable Rows",
+    "primaryMuscle": "Xô · chính",
+    "secondaryMuscles": [
+      "Tay trước",
+      "Vai"
+    ],
+    "involvementPercents": [
+      55,
+      23,
+      22
+    ],
+    "equipment": "Máy cáp",
+    "instructions": [
+      "Ngồi vào máy, đặt chân lên bệ đỡ, gối hơi gập, nắm tay cầm chữ V, tay duỗi thẳng.",
+      "Kéo tay cầm về phía bụng, giữ lưng thẳng và ngực ưỡn, thở ra khi kéo, siết lưng ở đỉnh.",
+      "Đưa tay cầm về vị trí ban đầu có kiểm soát, hít vào khi duỗi."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "BACK",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 134,
+    "nameVi": "Row chữ T",
+    "nameEn": "T-Bar Row with Handle",
+    "primaryMuscle": "Lưng giữa · chính",
+    "secondaryMuscles": [
+      "Tay trước",
+      "Xô"
+    ],
+    "involvementPercents": [
+      55,
+      23,
+      22
+    ],
+    "equipment": "Tạ đòn + tay cầm chữ T",
+    "instructions": [
+      "Đứng trên thanh đòn tạ đã cố định một đầu, nắm tay cầm chữ T, đứng chân rộng, hông đẩy ra sau, ngực ưỡn.",
+      "Kéo tạ lên phía bụng trên bằng cách siết bả vai và gập khuỷu tay, thở ra khi kéo.",
+      "Hạ tạ xuống có kiểm soát về vị trí ban đầu, hít vào khi hạ."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 75,
+    "muscleGroupCode": "BACK",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 135,
+    "nameVi": "Kéo xô cáp tay hẹp",
+    "nameEn": "Close-Grip Front Lat Pulldown",
+    "primaryMuscle": "Xô · chính",
+    "secondaryMuscles": [
+      "Tay trước",
+      "Lưng giữa",
+      "Vai"
+    ],
+    "involvementPercents": [
+      50,
+      17,
+      17,
+      16
+    ],
+    "equipment": "Máy cáp",
+    "instructions": [
+      "Ngồi vào máy, chỉnh đệm gối vừa vặn, nắm thanh kéo hẹp hơn vai.",
+      "Kéo thanh xuống chạm ngực trên, ngả người nhẹ ra sau, siết xô, thở ra khi kéo.",
+      "Đưa thanh lên vị trí ban đầu có kiểm soát, hít vào khi duỗi."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "BACK",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 136,
+    "nameVi": "Kéo xô cáp một tay",
+    "nameEn": "One Arm Lat Pulldown",
+    "primaryMuscle": "Xô · chính",
+    "secondaryMuscles": [
+      "Tay trước",
+      "Lưng giữa"
+    ],
+    "involvementPercents": [
+      55,
+      23,
+      22
+    ],
+    "equipment": "Máy cáp",
+    "instructions": [
+      "Ngồi vào máy, chỉnh đệm gối vừa vặn, nắm tay cầm một tay với lòng bàn tay úp.",
+      "Kéo tay cầm xuống, ép khuỷu tay sát người, thở ra khi kéo.",
+      "Đưa tay cầm lên vị trí ban đầu có kiểm soát, hoàn thành đủ số lần rồi đổi tay."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "BACK",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 137,
+    "nameVi": "Nhún vai tạ đòn",
+    "nameEn": "Barbell Shrug",
+    "primaryMuscle": "Cầu vai · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Tạ đòn",
+    "instructions": [
+      "Đứng thẳng, chân rộng bằng vai, hai tay cầm tạ đòn trước đùi, lòng bàn tay hướng vào đùi.",
+      "Nhún vai lên cao hết mức, thở ra khi nhún, giữ 1 giây ở đỉnh.",
+      "Hạ vai xuống có kiểm soát về vị trí ban đầu, hít vào khi hạ, không dùng lực tay trước."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 12,
+    "suggestedRepsMax": 15,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "BACK",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 138,
+    "nameVi": "Nhún vai tạ đơn",
+    "nameEn": "Dumbbell Shrug",
+    "primaryMuscle": "Cầu vai · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Tạ đơn",
+    "instructions": [
+      "Đứng thẳng, hai tay cầm tạ đơn dọc thân, lòng bàn tay hướng vào người.",
+      "Nhún vai lên cao hết mức, thở ra khi nhún, giữ 1 giây ở đỉnh.",
+      "Hạ vai xuống có kiểm soát về vị trí ban đầu, hít vào khi hạ."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 12,
+    "suggestedRepsMax": 15,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "BACK",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 139,
+    "nameVi": "Ưỡn lưng trên ghế",
+    "nameEn": "Hyperextensions (Back Extensions)",
+    "primaryMuscle": "Lưng dưới · chính",
+    "secondaryMuscles": [
+      "Mông",
+      "Đùi sau"
+    ],
+    "involvementPercents": [
+      80,
+      10,
+      10
+    ],
+    "equipment": "Ghế ưỡn lưng",
+    "instructions": [
+      "Nằm sấp trên ghế ưỡn lưng, cố định cổ chân dưới đệm, hông tựa trên đệm trên, tay khoanh trước ngực.",
+      "Gập người xuống từ từ ở hông, giữ lưng thẳng, hít vào khi gập, tới khi cảm nhận căng đùi sau.",
+      "Nâng thân trên lên về vị trí ban đầu, siết lưng dưới, thở ra khi nâng, không ưỡn quá mức."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 12,
+    "suggestedRepsMax": 15,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "BACK",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 140,
+    "nameVi": "Kéo tạ từ giá đỡ (Rack Pull)",
+    "nameEn": "Rack Pulls",
+    "primaryMuscle": "Lưng giữa · chính",
+    "secondaryMuscles": [
+      "Cẳng tay",
+      "Mông",
+      "Đùi sau",
+      "Cầu vai"
+    ],
+    "involvementPercents": [
+      45,
+      14,
+      14,
+      14,
+      13
+    ],
+    "equipment": "Tạ đòn + giá đỡ",
+    "instructions": [
+      "Đặt thanh đòn tạ trên chốt giá đỡ ngang gối, đứng vào tư thế deadlift, chân dưới hông, lưng ưỡn.",
+      "Đạp sàn, duỗi thẳng hông và gối để kéo tạ lên, kéo vai ra sau ở đỉnh chuyển động.",
+      "Hạ tạ trở lại chốt giá đỡ có kiểm soát, lặp lại."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 5,
+    "suggestedRepsMax": 6,
+    "suggestedRestSeconds": 120,
+    "muscleGroupCode": "BACK",
+    "movementType": "COMPOUND",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 141,
+    "nameVi": "Row treo ngang (Inverted Row)",
+    "nameEn": "Inverted Row",
+    "primaryMuscle": "Lưng giữa · chính",
+    "secondaryMuscles": [
+      "Xô"
+    ],
+    "involvementPercents": [
+      65,
+      35
+    ],
+    "equipment": "Thanh đòn cố định",
+    "instructions": [
+      "Đặt thanh đòn ngang hông trên giá đỡ, nắm thanh rộng hơn vai, treo người dưới thanh, thân thẳng, gót chân chạm sàn.",
+      "Kéo ngực lên sát thanh bằng cách gập khuỷu tay, siết bả vai, thở ra khi kéo.",
+      "Hạ người xuống có kiểm soát về vị trí ban đầu, hít vào khi hạ."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "BACK",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 142,
+    "nameVi": "Row tạ đòn một tay cúi người",
+    "nameEn": "Bent Over One-Arm Long Bar Row",
+    "primaryMuscle": "Lưng giữa · chính",
+    "secondaryMuscles": [
+      "Tay trước",
+      "Xô",
+      "Lưng dưới",
+      "Cầu vai"
+    ],
+    "involvementPercents": [
+      45,
+      14,
+      14,
+      14,
+      13
+    ],
+    "equipment": "Tạ đòn",
+    "instructions": [
+      "Cố định một đầu thanh đòn tạ vào góc tường, gập người ra trước gần song song sàn, gối hơi gập.",
+      "Nắm đầu còn lại của thanh bằng một tay, tay kia chống lên gối, kéo tạ lên sát ngực dưới, khuỷu tay sát người.",
+      "Hạ tạ xuống có kiểm soát để căng xô, thở ra khi kéo lên, hoàn thành đủ số lần rồi đổi tay."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 75,
+    "muscleGroupCode": "BACK",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 143,
+    "nameVi": "Squat trước tạ đòn",
+    "nameEn": "Front Squat (Clean Grip)",
+    "primaryMuscle": "Đùi trước · chính",
+    "secondaryMuscles": [
+      "Bụng",
+      "Mông",
+      "Đùi sau"
+    ],
+    "involvementPercents": [
+      50,
+      17,
+      17,
+      16
+    ],
+    "equipment": "Tạ đòn + giá đỡ",
+    "instructions": [
+      "Đặt thanh đòn tựa trên vai trước, tay giữ tạ bằng ngón tay theo kiểu clean grip, khuỷu tay nâng cao.",
+      "Nhấc tạ khỏi giá, bước ra với chân rộng bằng vai, mũi chân hơi mở, giữ đầu và khuỷu tay cao.",
+      "Gập gối ngồi xuống giữa hai chân tới khi đùi sau chạm bắp chân, sau đó đạp sàn đứng thẳng dậy."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 4,
+    "suggestedRepsMin": 6,
+    "suggestedRepsMax": 8,
+    "suggestedRestSeconds": 120,
+    "muscleGroupCode": "LEGS",
+    "movementType": "COMPOUND",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 144,
+    "nameVi": "Squat ôm tạ ấm (Goblet Squat)",
+    "nameEn": "Goblet Squat",
+    "primaryMuscle": "Đùi trước · chính",
+    "secondaryMuscles": [
+      "Bắp chân",
+      "Mông",
+      "Đùi sau",
+      "Vai"
+    ],
+    "involvementPercents": [
+      45,
+      14,
+      14,
+      14,
+      13
+    ],
+    "equipment": "Tạ ấm",
+    "instructions": [
+      "Đứng thẳng, ôm tạ ấm sát ngực bằng hai tay, chân rộng bằng vai.",
+      "Squat xuống giữa hai chân tới khi đùi sau chạm bắp chân, giữ ngực và đầu thẳng, lưng thẳng.",
+      "Dùng khuỷu tay đẩy nhẹ gối ra ngoài ở đáy, sau đó đứng thẳng dậy trở về vị trí ban đầu."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 12,
+    "suggestedRepsMax": 15,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "LEGS",
+    "movementType": "COMPOUND",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 145,
+    "nameVi": "Lunge tạ đòn",
+    "nameEn": "Barbell Lunge",
+    "primaryMuscle": "Đùi trước · chính",
+    "secondaryMuscles": [
+      "Bắp chân",
+      "Mông",
+      "Đùi sau"
+    ],
+    "involvementPercents": [
+      50,
+      17,
+      17,
+      16
+    ],
+    "equipment": "Tạ đòn + giá đỡ",
+    "instructions": [
+      "Đặt thanh đòn sau vai, nhấc tạ khỏi giá, đứng thẳng với chân rộng bằng hông.",
+      "Bước một chân lên trước, hạ người xuống bằng cách gập gối, không để gối vượt quá mũi chân, hít vào khi hạ.",
+      "Đạp gót chân trước để đứng thẳng dậy, thở ra khi đẩy, hoàn thành đủ số lần rồi đổi chân."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 10,
+    "suggestedRepsMax": 12,
+    "suggestedRestSeconds": 90,
+    "muscleGroupCode": "LEGS",
+    "movementType": "COMPOUND",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 146,
+    "nameVi": "Duỗi đùi trên máy",
+    "nameEn": "Leg Extensions",
+    "primaryMuscle": "Đùi trước · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Máy tập",
+    "instructions": [
+      "Ngồi vào máy, đặt cẳng chân dưới đệm, gối tạo góc 90 độ, hai tay nắm tay cầm hai bên.",
+      "Duỗi thẳng chân lên hết mức bằng lực đùi trước, thở ra khi duỗi, giữ 1 giây ở đỉnh.",
+      "Hạ chân xuống có kiểm soát về vị trí ban đầu, hít vào khi hạ."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 12,
+    "suggestedRepsMax": 15,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "LEGS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 147,
+    "nameVi": "Gập đùi sau nằm sấp",
+    "nameEn": "Lying Leg Curls",
+    "primaryMuscle": "Đùi sau · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Máy tập",
+    "instructions": [
+      "Nằm sấp trên máy, đặt đệm dưới bắp chân, hai tay nắm tay cầm, chân duỗi thẳng.",
+      "Gập gối kéo đệm lên hết mức, thở ra khi gập, giữ 1 giây ở đỉnh, thân trên giữ cố định.",
+      "Duỗi chân về vị trí ban đầu có kiểm soát, hít vào khi duỗi."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 12,
+    "suggestedRepsMax": 15,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "LEGS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 148,
+    "nameVi": "Gập đùi sau ngồi",
+    "nameEn": "Seated Leg Curl",
+    "primaryMuscle": "Đùi sau · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Máy tập",
+    "instructions": [
+      "Ngồi vào máy, đặt bắp chân trên đệm, cố định đùi bằng đệm trên, nắm tay cầm hai bên.",
+      "Kéo đệm về sau bằng cách gập gối, thở ra khi kéo, giữ 1 giây ở đỉnh.",
+      "Duỗi chân về vị trí ban đầu có kiểm soát, hít vào khi duỗi."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 12,
+    "suggestedRepsMax": 15,
+    "suggestedRestSeconds": 60,
+    "muscleGroupCode": "LEGS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 149,
+    "nameVi": "Deadlift kiểu Romania",
+    "nameEn": "Romanian Deadlift",
+    "primaryMuscle": "Đùi sau · chính",
+    "secondaryMuscles": [
+      "Bắp chân",
+      "Mông",
+      "Lưng dưới"
+    ],
+    "involvementPercents": [
+      50,
+      5,
+      30,
+      15
+    ],
+    "equipment": "Tạ đòn",
+    "instructions": [
+      "Đứng thẳng, nắm tạ đòn rộng hơn vai một chút, lòng bàn tay úp xuống, gối hơi gập.",
+      "Đẩy hông ra sau, hạ tạ xuống dọc theo chân tới dưới gối, giữ lưng thẳng, gối chỉ gập nhẹ (không đặt tạ chạm sàn giữa các lần), hít vào khi hạ.",
+      "Đẩy hông về trước để đứng thẳng dậy, thở ra khi đứng, siết mông ở đỉnh."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 8,
+    "suggestedRepsMax": 10,
+    "suggestedRestSeconds": 90,
+    "muscleGroupCode": "LEGS",
+    "movementType": "COMPOUND",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 150,
+    "nameVi": "Deadlift kiểu Sumo",
+    "nameEn": "Sumo Deadlift",
+    "primaryMuscle": "Đùi trước · chính",
+    "secondaryMuscles": [
+      "Háng",
+      "Mông",
+      "Lưng dưới",
+      "Đùi sau"
+    ],
+    "involvementPercents": [
+      45,
+      14,
+      14,
+      14,
+      13
+    ],
+    "equipment": "Tạ đòn",
+    "instructions": [
+      "Đứng chân rất rộng, mũi chân hướng ra ngoài, tạ đòn ngang giữa bàn chân, gập hông nắm tạ.",
+      "Hạ hông thấp, ngực ưỡn, đầu nhìn thẳng, đạp sàn để nâng tạ lên, đẩy hông về trước khi tạ qua gối.",
+      "Đứng thẳng dậy hoàn toàn, siết mông ở đỉnh, sau đó hạ tạ xuống sàn có kiểm soát."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 6,
+    "suggestedRepsMax": 8,
+    "suggestedRestSeconds": 120,
+    "muscleGroupCode": "LEGS",
+    "movementType": "COMPOUND",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 151,
+    "nameVi": "Nâng người Glute-Ham (GHR)",
+    "nameEn": "Glute Ham Raise",
+    "primaryMuscle": "Đùi sau · chính",
+    "secondaryMuscles": [
+      "Bắp chân",
+      "Mông"
+    ],
+    "involvementPercents": [
+      55,
+      23,
+      22
+    ],
+    "equipment": "Máy GHR",
+    "instructions": [
+      "Đặt chân vào giữa hai con lăn của máy, nằm sấp, gối ngay sau đệm.",
+      "Bắt đầu từ tư thế gập, giữ lưng ưỡn, gập gối kéo người lên bằng lực đùi sau tới khi thân thẳng đứng.",
+      "Hạ người xuống trở lại vị trí ban đầu có kiểm soát, không để rơi tự do."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 8,
+    "suggestedRepsMax": 10,
+    "suggestedRestSeconds": 90,
+    "muscleGroupCode": "LEGS",
+    "movementType": "COMPOUND",
+    "difficultyCode": "INTERMEDIATE"
+  },
+  {
+    "id": 152,
+    "nameVi": "Nhón gót đứng trên máy",
+    "nameEn": "Standing Calf Raises",
+    "primaryMuscle": "Bắp chân · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Máy tập",
+    "instructions": [
+      "Đặt vai dưới đệm máy, mũi bàn chân đặt trên bệ, gót chân treo ngoài mép, đứng thẳng.",
+      "Nhón gót lên cao hết mức bằng cách duỗi cổ chân, thở ra khi nhón, giữ 1 giây ở đỉnh.",
+      "Hạ gót xuống có kiểm soát tới khi bắp chân căng, hít vào khi hạ."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 15,
+    "suggestedRepsMax": 20,
+    "suggestedRestSeconds": 45,
+    "muscleGroupCode": "LEGS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 153,
+    "nameVi": "Nhón gót ngồi trên máy",
+    "nameEn": "Seated Calf Raise",
+    "primaryMuscle": "Bắp chân · chính",
+    "secondaryMuscles": [],
+    "involvementPercents": [
+      100
+    ],
+    "equipment": "Máy tập",
+    "instructions": [
+      "Ngồi vào máy, đặt mũi bàn chân lên bệ, gót chân treo ngoài mép, đùi dưới đệm tì phía trên.",
+      "Nhón gót lên cao hết mức bằng cách duỗi cổ chân, thở ra khi nhón, giữ 1 giây ở đỉnh.",
+      "Hạ gót xuống có kiểm soát tới khi bắp chân căng, hít vào khi hạ."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 15,
+    "suggestedRepsMax": 20,
+    "suggestedRestSeconds": 45,
+    "muscleGroupCode": "LEGS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 154,
+    "nameVi": "Mở đùi trên máy",
+    "nameEn": "Thigh Abductor",
+    "primaryMuscle": "Đùi trước · chính",
+    "secondaryMuscles": [
+      "Mông"
+    ],
+    "involvementPercents": [
+      80,
+      20
+    ],
+    "equipment": "Máy tập",
+    "instructions": [
+      "Ngồi vào máy, đặt chân vào đệm hai bên, nắm tay cầm, thân trên giữ cố định.",
+      "Đẩy hai chân ra xa nhau bằng lực đùi ngoài, thở ra khi đẩy, giữ 1 giây ở đỉnh.",
+      "Khép chân về vị trí ban đầu có kiểm soát, hít vào khi khép."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 15,
+    "suggestedRepsMax": 20,
+    "suggestedRestSeconds": 45,
+    "muscleGroupCode": "LEGS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  },
+  {
+    "id": 155,
+    "nameVi": "Khép đùi trên máy",
+    "nameEn": "Thigh Adductor",
+    "primaryMuscle": "Đùi trước · chính",
+    "secondaryMuscles": [
+      "Mông",
+      "Đùi sau"
+    ],
+    "involvementPercents": [
+      80,
+      10,
+      10
+    ],
+    "equipment": "Máy tập",
+    "instructions": [
+      "Ngồi vào máy, đặt chân vào đệm hai bên, nắm tay cầm, thân trên giữ cố định.",
+      "Ép hai chân vào nhau bằng lực đùi trong, thở ra khi ép, giữ 1 giây ở đỉnh.",
+      "Mở chân về vị trí ban đầu có kiểm soát, hít vào khi mở."
+    ],
+    "suggestedSetsMin": 3,
+    "suggestedSetsMax": 3,
+    "suggestedRepsMin": 15,
+    "suggestedRepsMax": 20,
+    "suggestedRestSeconds": 45,
+    "muscleGroupCode": "LEGS",
+    "movementType": "ISOLATION",
+    "difficultyCode": "BEGINNER"
+  }
+]

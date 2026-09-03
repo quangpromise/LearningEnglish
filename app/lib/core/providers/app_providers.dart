@@ -4,6 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../features/auth/data/auth_repository.dart';
+import '../../features/fitness/data/exercise_model.dart';
+import '../../features/fitness/data/exercise_repository.dart';
 import '../../features/music_player/data/favorites_repository.dart';
 import '../../features/profile/data/profile_repository.dart';
 import '../../features/quiz/data/leaderboard_repository.dart';
@@ -190,6 +192,7 @@ void invalidateUserScopedProviders(WidgetRef ref) {
   ref.invalidate(pendingRequestCountProvider);
   ref.invalidate(myConversationsProvider);
   ref.invalidate(favoriteSongTitlesProvider);
+  ref.invalidate(favoriteExerciseIdsProvider);
 }
 
 /// Nhip realtime tu bang messages (khong quan tam noi dung, chi de kich
@@ -257,3 +260,83 @@ final appVersionProvider = FutureProvider((ref) async {
   final build = raw != null ? (raw % 1000).toString() : info.buildNumber;
   return 'v${info.version} ($build)';
 });
+
+// --- Fitness (Phase 1: Thu vien bai tap - port tu FitViet) ---
+
+final exerciseRepositoryProvider = Provider<ExerciseRepository>(
+  (ref) => ExerciseRepository(ref.watch(supabaseClientProvider)),
+);
+
+/// Toan bo 155 bai tap - noi dung TINH dong goi san trong app (giong
+/// songs_data.dart cua nhac), khong doi trong luc dung app nen FutureProvider
+/// thuan la du, khong can autoDispose (giu song suot doi app, repository tu
+/// cache lai sau lan doc dau).
+final exerciseListProvider = FutureProvider<List<Exercise>>(
+  (ref) => ref.watch(exerciseRepositoryProvider).getAllExercises(),
+);
+
+/// Danh sach id bai tap yeu thich cua user hien tai - StateNotifier (khong
+/// phai FutureProvider+invalidate) de ho tro cap nhat UI NGAY LAP TUC khi
+/// bam yeu thich, giong het mau cua [FavoriteSongsNotifier] o tren (da tung
+/// sua loi "phai roi man hinh/quay lai moi thay tick doi" tu chinh mau nay).
+class FavoriteExerciseIdsNotifier extends StateNotifier<AsyncValue<Set<int>>> {
+  FavoriteExerciseIdsNotifier(this._repo, this._userId)
+    : super(const AsyncValue.loading()) {
+    _load();
+  }
+  final ExerciseRepository _repo;
+  final String? _userId;
+
+  Future<void> _load() async {
+    final userId = _userId;
+    if (userId == null) {
+      state = const AsyncValue.data({});
+      return;
+    }
+    try {
+      state = AsyncValue.data(await _repo.getFavoriteIds(userId));
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  Future<void> toggle(int exerciseId) async {
+    final userId = _userId;
+    if (userId == null) return;
+    final current = state.valueOrNull ?? <int>{};
+    final wasFavorite = current.contains(exerciseId);
+    final optimistic = {...current};
+    if (wasFavorite) {
+      optimistic.remove(exerciseId);
+    } else {
+      optimistic.add(exerciseId);
+    }
+    state = AsyncValue.data(optimistic);
+    try {
+      if (wasFavorite) {
+        await _repo.removeFavorite(userId, exerciseId);
+      } else {
+        await _repo.addFavorite(userId, exerciseId);
+      }
+    } catch (_) {
+      state = AsyncValue.data(current);
+    }
+  }
+}
+
+final favoriteExerciseIdsProvider =
+    StateNotifierProvider.autoDispose<
+      FavoriteExerciseIdsNotifier,
+      AsyncValue<Set<int>>
+    >(
+      (ref) => FavoriteExerciseIdsNotifier(
+        ref.watch(exerciseRepositoryProvider),
+        ref.watch(supabaseClientProvider).auth.currentUser?.id,
+      ),
+    );
+
+/// true khi dang o trong khu vuc Fitness (bat luc vao FitnessShell, tat luc
+/// thoat) - dung de an nut noi AI Voice Chat (danh cho hoc tieng Anh, khong
+/// lien quan Fitness), giong het cach pronunciationTabActiveProvider an no
+/// o tab Luyen phat am.
+final fitnessModeActiveProvider = StateProvider<bool>((ref) => false);

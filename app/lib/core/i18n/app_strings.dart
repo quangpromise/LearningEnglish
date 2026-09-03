@@ -1106,6 +1106,16 @@ class AppStrings {
       AppLanguage.en: 'Take vocabulary and grammar quizzes by topic and climb the leaderboard together with your friends.',
     },
 
+    // Fitness (features/fitness/) - Phase 1: thu vien bai tap
+    'fitness_menu_title': {
+      AppLanguage.vi: 'Fitness (Beta)',
+      AppLanguage.en: 'Fitness (Beta)',
+    },
+    'fitness_menu_subtitle': {
+      AppLanguage.vi: 'Thư viện bài tập theo nhóm cơ',
+      AppLanguage.en: 'Exercise library by muscle group',
+    },
+
     // Attribution/Credits screen (features/attribution/)
     'attribution_menu_title': {
       AppLanguage.vi: 'Ghi công',

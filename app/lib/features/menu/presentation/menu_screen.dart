@@ -5,6 +5,7 @@ import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../attribution/presentation/attribution_screen.dart';
 import '../../crypto/presentation/crypto_screen.dart';
+import '../../fitness/presentation/fitness_shell.dart';
 import '../../quiz/presentation/quiz_category_screen.dart';
 import '../../reading/presentation/reading_library_screen.dart';
 
@@ -53,6 +54,16 @@ class MenuScreen extends ConsumerWidget {
               onTap: () => Navigator.of(
                 context,
               ).push(MaterialPageRoute(builder: (_) => const CryptoScreen())),
+            ),
+            const SizedBox(height: 12),
+            _MenuItem(
+              icon: Icons.fitness_center_rounded,
+              color: AppColors.pink,
+              title: ref.tr('fitness_menu_title'),
+              subtitle: ref.tr('fitness_menu_subtitle'),
+              onTap: () => Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const FitnessShell())),
             ),
             const SizedBox(height: 12),
             _MenuItem(
