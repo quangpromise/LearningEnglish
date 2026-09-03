@@ -225,71 +225,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     );
   }
 
-  void _showThemePicker(BuildContext context, WidgetRef ref) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Padding(
-        padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: const Color(0xEB0F1326),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: AppColors.glassBorder),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                ref.tr('chat_theme_title'),
-                style: AppTextStyles.heading(size: 16),
-              ),
-              const SizedBox(height: 14),
-              Wrap(
-                spacing: 14,
-                runSpacing: 14,
-                children: kChatThemes.map((theme) {
-                  final selected =
-                      ref.read(chatThemeProvider(widget.friend.id)) == theme.id;
-                  return GestureDetector(
-                    onTap: () {
-                      ref
-                          .read(chatThemeProvider(widget.friend.id).notifier)
-                          .setTheme(theme.id);
-                      Navigator.of(context).pop();
-                    },
-                    child: Column(
-                      children: [
-                        Container(
-                          width: 52,
-                          height: 52,
-                          decoration: BoxDecoration(
-                            gradient: theme.gradient,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: selected
-                                  ? Colors.white
-                                  : AppColors.glassBorder,
-                              width: selected ? 3 : 1,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(theme.label, style: AppTextStyles.muted(size: 11)),
-                      ],
-                    ),
-                  );
-                }).toList(),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   void _showAttachSheet() {
     showModalBottomSheet(
       context: context,
@@ -516,24 +451,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       style: AppTextStyles.muted(size: 11),
                     ),
                   ],
-                ),
-                const Spacer(),
-                GestureDetector(
-                  onTap: () => _showThemePicker(context, ref),
-                  child: Container(
-                    width: 34,
-                    height: 34,
-                    decoration: BoxDecoration(
-                      color: AppColors.glassFill,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.glassBorder),
-                    ),
-                    child: const Icon(
-                      Icons.palette_outlined,
-                      size: 17,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
                 ),
               ],
             ),
