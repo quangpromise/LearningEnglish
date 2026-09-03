@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -7,18 +6,12 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../config/env.dart';
 import '../../features/social/data/device_token_repository.dart';
 import '../../features/social/data/social_repository.dart';
 import '../../features/social/presentation/chat_screen.dart';
 import '../navigation/nav_keys.dart';
-
-/// Id hanh dong "Tra loi" tren thong bao - dung de phan biet voi cham vao
-/// than thong bao (mo khung chat) trong onDidReceiveNotificationResponse.
-const _kReplyActionId = 'reply';
 
 /// Id kenh thong bao rieng cho tin nhan chat, kem am thanh tuy chinh (file
 /// res/raw/notification_tone.mp3) - phai tao 1 lan duy nhat truoc khi thong
@@ -110,95 +103,10 @@ Future<void> _showChatNotification(RemoteMessage message) async {
                 summaryText: content,
               )
             : null,
-        // Nut "Tra loi" ngay tren thong bao (RemoteInput) - DA TUNG BI GO BO
-        // co chu dich (xem giai thich cu trong _handleNotificationAction ben
-        // duoi ve rui ro mat tin nhan am tham tren may Xiaomi/Oppo/Vivo do
-        // he thong giet tien trinh truoc khi gui xong qua mang), nhung nguoi
-        // dung yeu cau THEM LAI, chap nhan rui ro do de doi lay tien loi
-        // tra loi nhanh khong can mo app.
-        actions: [
-          const AndroidNotificationAction(
-            _kReplyActionId,
-            'Trả lời',
-            showsUserInterface: false,
-            inputs: [AndroidNotificationActionInput(label: 'Nhắn gì đó...')],
-          ),
-        ],
       ),
     ),
     payload: _payloadFor(senderId),
   );
-}
-
-/// Key SharedPreferences luu hang doi cac tin "Tra loi" TU THONG BAO chua
-/// chac chan da gui thanh cong - xem giai thich rui ro trong
-/// _handleNotificationAction ben duoi. Danh sach cac object
-/// {"receiverId": ..., "text": ..., "queuedAt": ...}.
-const _kPendingRepliesKey = 'pending_chat_replies';
-
-Future<List<Map<String, dynamic>>> _readPendingReplies() async {
-  final prefs = await SharedPreferences.getInstance();
-  final raw = prefs.getString(_kPendingRepliesKey);
-  if (raw == null) return [];
-  try {
-    return (jsonDecode(raw) as List).cast<Map<String, dynamic>>();
-  } catch (_) {
-    return [];
-  }
-}
-
-Future<void> _writePendingReplies(List<Map<String, dynamic>> list) async {
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.setString(_kPendingRepliesKey, jsonEncode(list));
-}
-
-/// Ghi 1 tin "Tra loi" vao hang doi TRUOC KHI thu gui qua mang - neu tien
-/// trinh bi he dieu hanh giet ngay sau do (xem rui ro da biet ben duoi),
-/// tin nhan van con luu lai de gui bu vao lan mo app ke tiep
-/// (xem flushPendingReplies) thay vi mat am tham vinh vien.
-Future<void> _enqueuePendingReply(String receiverId, String text) async {
-  final list = await _readPendingReplies();
-  list.add({
-    'receiverId': receiverId,
-    'text': text,
-    'queuedAt': DateTime.now().toIso8601String(),
-  });
-  await _writePendingReplies(list);
-}
-
-Future<void> _removePendingReply(String receiverId, String text) async {
-  final list = await _readPendingReplies();
-  list.removeWhere((e) => e['receiverId'] == receiverId && e['text'] == text);
-  await _writePendingReplies(list);
-}
-
-/// Gui bu moi tin "Tra loi" con ket lai trong hang doi (xem
-/// _enqueuePendingReply) - goi tu ChatPush.init() moi lan app khoi dong
-/// THAT SU (isolate chinh, session da san sang, tien trinh khong bi giet
-/// giua chung), nen day la co hoi dang tin cay NHAT de gui lai nhung tin
-/// nhan ma lan gui truoc (tu isolate nen cua thong bao) co the da that bai.
-Future<void> flushPendingReplies() async {
-  try {
-    final list = await _readPendingReplies();
-    if (list.isEmpty) return;
-    if (Supabase.instance.client.auth.currentUser?.id == null) return;
-    final repo = SocialRepository(Supabase.instance.client);
-    final remaining = <Map<String, dynamic>>[];
-    for (final item in list) {
-      final receiverId = item['receiverId'] as String?;
-      final text = item['text'] as String?;
-      if (receiverId == null || text == null) continue;
-      try {
-        await repo.sendMessage(receiverId, text);
-      } catch (_) {
-        remaining.add(item);
-      }
-    }
-    await _writePendingReplies(remaining);
-  } catch (_) {
-    // Supabase chua duoc cau hinh/khoi tao - bo qua, khong lam gian doan
-    // luc khoi dong app.
-  }
 }
 
 /// PHAI la ham top-level (khong phai method trong class) kem annotation nay
@@ -211,64 +119,17 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 }
 
 /// Dung chung cho ca 2 duong xu ly thong bao (foreground va background/da
-/// tat han): bam vao than thong bao -> mo khung chat; bam nut "Tra loi" ->
-/// gui thang tin nhan qua Supabase KHONG mo app.
+/// tat han): bam vao than thong bao -> mo khung chat.
 ///
-/// RUI RO DA BIET (nguoi dung xac nhan chap nhan): hanh dong "Tra loi" tren
-/// Android LUON duoc flutter_local_notifications xu ly qua 1 BroadcastReceiver
-/// tao FlutterEngine RIENG (khac isolate chinh cua app, ke ca khi app dang mo
-/// san), va receiver do KHONG goi goAsync() - he dieu hanh co the giet tien
-/// trinh do TRUOC KHI gui xong qua mang. THEM VAO DO: Supabase.initialize()
-/// goi lai trong 1 isolate MOI chi await xong buoc doc session da luu tu
-/// dia (setInitialSession) chu KHONG dam bao lien tuc voi moi truong hop -
-/// vi 2 ly do nay cong lai, khong the tin cay 100% 1 lan goi sendMessage()
-/// duy nhat se thanh cong. FIX: ghi tin nhan vao hang doi ben dia
-/// (_enqueuePendingReply) TRUOC KHI thu gui - neu lan gui ngay nay that bai
-/// (session chua san sang / tien trinh bi giet giua chung), tin nhan VAN
-/// CON trong hang doi va se duoc ChatPush.flushPendingReplies() gui bu vao
-/// lan mo app THAT SU ke tiep (isolate chinh, chac chan session da san sang
-/// va tien trinh khong bi giet giua chung) - khong con mat tin nhan am tham
-/// vinh vien, chi co the bi CHAM (den khi nguoi dung mo app lai) thay vi mat.
-Future<void> _handleNotificationAction(NotificationResponse response) async {
+/// GHI CHU: tinh nang "Tra loi" ngay tren thong bao (RemoteInput, khong can
+/// mo app) DA TUNG duoc them roi go bo lai theo yeu cau nguoi dung - hanh
+/// dong do chay trong 1 isolate/tien trinh nen rieng (BroadcastReceiver cua
+/// flutter_local_notifications, khong goi goAsync()) nen khong dam bao gui
+/// xong truoc khi bi he thong dung, gay mat tin nhan am tham khong on dinh.
+/// KHONG them lai neu chua co giai phap kien truc khac dang tin cay hon.
+void _handleNotificationAction(NotificationResponse response) {
   final senderId = response.payload;
   if (senderId == null) return;
-
-  if (response.actionId == _kReplyActionId) {
-    final text = response.input?.trim();
-    if (text == null || text.isEmpty) return;
-    await _enqueuePendingReply(senderId, text);
-    try {
-      // Isolate nay co the la isolate CHINH (app dang mo) hoac 1 isolate
-      // MOI HOAN TOAN (app da tat han) - Supabase.instance nem loi neu chua
-      // duoc khoi tao trong isolate hien tai, initialize() lai o day se tu
-      // phuc hoi session da luu (SharedPreferences) neu co, khong lam gi
-      // neu Supabase da san sang roi (goi 2 lan khong hai).
-      if (Env.isConfigured) {
-        try {
-          Supabase.instance;
-        } catch (_) {
-          await Supabase.initialize(
-            url: Env.supabaseUrl,
-            publishableKey: Env.supabaseAnonKey,
-          );
-        }
-      }
-      // Chi coi la gui thanh cong khi CHAC CHAN co user dang dang nhap -
-      // sendMessage() tu no se IM LANG bo qua (khong throw) neu chua co
-      // user, khien code cu tuong da gui xong du chua he insert gi ca.
-      final myId = Supabase.instance.client.auth.currentUser?.id;
-      if (myId != null) {
-        await SocialRepository(Supabase.instance.client)
-            .sendMessage(senderId, text);
-        await _removePendingReply(senderId, text);
-      }
-      // myId con null - de nguyen trong hang doi, gui bu o lan mo app ke tiep.
-    } catch (_) {
-      // Van con trong hang doi - se duoc gui bu sau, khong mat tin nhan.
-    }
-    return;
-  }
-
   ChatPush.instance._openChatWith(senderId);
 }
 
@@ -296,13 +157,6 @@ class ChatPush {
   /// qua trong im lang de khong lam crash app, tinh nang push don gian
   /// chua hoat dong cho toi khi setup xong (xem docs/setup-firebase-chat-push.md).
   Future<void> init() async {
-    // Goi TRUOC ca buoc Firebase - day la isolate CHINH cua app (main.dart da
-    // await Supabase.initialize() xong truoc khi goi init() nay), nen session
-    // chac chan da san sang va tien trinh chac chan khong bi giet giua chung.
-    // Gui bu moi tin "Tra loi" nao con ket ket trong hang doi tu lan truoc do
-    // isolate nen (BroadcastReceiver) khong gui kip - xem
-    // _handleNotificationAction de biet ly do hang doi nay ton tai.
-    unawaited(flushPendingReplies());
     try {
       await Firebase.initializeApp();
       _firebaseReady = true;
@@ -338,7 +192,7 @@ class ChatPush {
         // (duong net trang tren nen trong suot, tach tu chinh app icon).
         android: AndroidInitializationSettings('@drawable/ic_stat_notify'),
       ),
-      onDidReceiveNotificationResponse: (r) => _handleNotificationAction(r),
+      onDidReceiveNotificationResponse: _handleNotificationAction,
       onDidReceiveBackgroundNotificationResponse: _onBackgroundNotificationTap,
     );
 
