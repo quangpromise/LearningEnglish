@@ -6,20 +6,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../notifications/chat_push.dart';
 import '../providers/app_providers.dart';
 import '../theme/app_theme.dart';
-import 'app_popup.dart';
 import '../../features/music_player/presentation/center_media_button.dart';
 import '../../features/music_player/presentation/home_screen.dart';
 import '../../features/social/data/social_repository.dart';
-import '../../features/social/presentation/conversations_screen.dart';
 import '../../features/social/presentation/incoming_message_banner.dart';
 import '../../features/update/presentation/update_dialog.dart';
 
 /// Man goc cua Hoc Tieng Anh - CHI CON 1 man hinh that su (HomeScreen), moi
 /// tinh nang khac (Phonics, Story, Vocabulary, Grammar, Reading, Quiz, Luyen
 /// phat am...) va Tin nhan gio deu mo len dang POPUP tu Home (xem
-/// app_popup.dart) thay vi la tab/man rieng - nen thanh Menu KHONG CON nut
-/// Home nua (Home la man duy nhat, luon nam duoi popup), chi con thanh nhac
-/// dai + 1 nut Tin nhan (mo popup).
+/// app_popup.dart) thay vi la tab/man rieng. Nut Tin nhan da chuyen len
+/// headpage (AppTopBar, ngay sau dong "Hello, ten" - xem home_screen.dart)
+/// nen thanh Menu duoi khong con icon nao, chi con thanh nhac dai chiem het
+/// chieu rong.
 class RootShell extends ConsumerStatefulWidget {
   const RootShell({super.key});
 
@@ -102,8 +101,6 @@ class _RootShellState extends ConsumerState<RootShell>
       );
     });
 
-    final unread = ref.watch(unreadMessageCountProvider).valueOrNull ?? 0;
-
     return Scaffold(
       backgroundColor: AppColors.bgTop,
       body: const HomeScreen(),
@@ -123,78 +120,7 @@ class _RootShellState extends ConsumerState<RootShell>
               ),
             ],
           ),
-          child: Row(
-            children: [
-              const Expanded(
-                child: CenterMediaButton(accentColor: AppColors.blue),
-              ),
-              const SizedBox(width: 6),
-              _MessagesButton(
-                unread: unread,
-                onTap: () => openAppPopup(context, const ConversationsScreen()),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Nut Tin nhan duy nhat con lai o thanh Menu - mo popup thay vi chuyen tab
-/// (khong con khai niem "tab dang active" vi Home la man duy nhat).
-class _MessagesButton extends StatelessWidget {
-  const _MessagesButton({required this.unread, required this.onTap});
-  final int unread;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 44,
-        height: 44,
-        alignment: Alignment.center,
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            const Icon(
-              Icons.chat_bubble_rounded,
-              size: 22,
-              color: AppColors.textMuted,
-            ),
-            if (unread > 0)
-              Positioned(
-                right: -4,
-                top: -2,
-                child: Container(
-                  padding: const EdgeInsets.all(3),
-                  constraints: const BoxConstraints(
-                    minWidth: 15,
-                    minHeight: 15,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.pink,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: const Color(0xD90A0E1C),
-                      width: 2,
-                    ),
-                  ),
-                  child: Text(
-                    unread > 9 ? '9+' : '$unread',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 8,
-                      fontWeight: FontWeight.w800,
-                      height: 1,
-                    ),
-                  ),
-                ),
-              ),
-          ],
+          child: const CenterMediaButton(accentColor: AppColors.blue),
         ),
       ),
     );

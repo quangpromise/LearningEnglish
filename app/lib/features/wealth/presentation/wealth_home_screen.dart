@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/navigation/app_popup.dart';
 import '../../../core/navigation/app_top_bar.dart';
+import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../social/presentation/conversations_screen.dart';
 import 'wealth_detail_screen.dart';
 import 'wealth_expense_tab.dart';
 import 'wealth_income_tab.dart';
@@ -23,13 +25,19 @@ class WealthHomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final unread = ref.watch(unreadMessageCountProvider).valueOrNull ?? 0;
     return ScreenBackground(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(14, 12, 14, 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const AppTopBar(accentColor: AppColors.wealthAccent),
+            AppTopBar(
+              accentColor: AppColors.wealthAccent,
+              unreadCount: unread,
+              onMessagesTap: () =>
+                  openAppPopup(context, const ConversationsScreen()),
+            ),
             const SizedBox(height: 22),
             SizedBox(
               width: double.infinity,

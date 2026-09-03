@@ -18,6 +18,8 @@ class AppTopBar extends ConsumerWidget {
     this.showBackButton = false,
     this.trailing,
     this.accentColor = AppColors.blue,
+    this.onMessagesTap,
+    this.unreadCount = 0,
   });
 
   /// true cho man duoc mo qua Navigator.push (Fitness/Wealth) de co duong
@@ -32,6 +34,13 @@ class AppTopBar extends ConsumerWidget {
   /// minh (vd AppColors.fitnessAccent, AppColors.wealthAccent) de header
   /// dong bo voi phan con lai cua man hinh.
   final Color accentColor;
+
+  /// Nut Tin nhan - chuyen tu thanh Menu duoi len headpage, dat NGAY SAU
+  /// dong chu "Hello, ten" theo yeu cau. Null (mac dinh) an han nut nay -
+  /// chi 3 man Home chinh (HomeScreen/FitnessHomeScreen/WealthHomeScreen)
+  /// truyen vao, cac man popup dung AppTopBar voi showBackButton khong can.
+  final VoidCallback? onMessagesTap;
+  final int unreadCount;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -127,17 +136,30 @@ class AppTopBar extends ConsumerWidget {
               // (khong tu retry) neu khong ai invalidate no - truoc day
               // nguoi dung bi ket "..." vinh vien khong co cach nao tu
               // phuc hoi ngoai dong/mo lai app.
-              GestureDetector(
-                onTap: profileAsync.hasError
-                    ? () => ref.invalidate(myProfileProvider)
-                    : null,
-                child: Text(
-                  '${ref.tr('home_greeting')}, $displayName'
-                  '${profileAsync.hasError ? ' ↻' : ''}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.heading(size: 17),
-                ),
+              Row(
+                children: [
+                  Flexible(
+                    child: GestureDetector(
+                      onTap: profileAsync.hasError
+                          ? () => ref.invalidate(myProfileProvider)
+                          : null,
+                      child: Text(
+                        '${ref.tr('home_greeting')}, $displayName'
+                        '${profileAsync.hasError ? ' ↻' : ''}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.heading(size: 17),
+                      ),
+                    ),
+                  ),
+                  if (onMessagesTap != null) ...[
+                    const SizedBox(width: 8),
+                    _MessagesIconButton(
+                      unreadCount: unreadCount,
+                      onTap: onMessagesTap!,
+                    ),
+                  ],
+                ],
               ),
               const SizedBox(height: 3),
               const AppSwitcherPill(),
@@ -146,6 +168,53 @@ class AppTopBar extends ConsumerWidget {
         ),
         ?trailing,
       ],
+    );
+  }
+}
+
+class _MessagesIconButton extends StatelessWidget {
+  const _MessagesIconButton({required this.onTap, this.unreadCount = 0});
+  final VoidCallback onTap;
+  final int unreadCount;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          const Icon(
+            Icons.chat_bubble_rounded,
+            size: 20,
+            color: AppColors.textMuted,
+          ),
+          if (unreadCount > 0)
+            Positioned(
+              right: -5,
+              top: -4,
+              child: Container(
+                padding: const EdgeInsets.all(3),
+                constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
+                decoration: BoxDecoration(
+                  color: AppColors.pink,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.bgTop, width: 2),
+                ),
+                child: Text(
+                  unreadCount > 9 ? '9+' : '$unreadCount',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 7,
+                    fontWeight: FontWeight.w800,
+                    height: 1,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

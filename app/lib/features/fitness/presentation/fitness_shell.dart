@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/navigation/app_popup.dart';
 import '../../../core/navigation/mini_app_bottom_nav.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../social/presentation/conversations_screen.dart';
 import 'fitness_home_screen.dart';
 
 /// Man goc cua khu vuc Fitness - CHI CON 1 man Home that su
@@ -52,14 +50,11 @@ class _FitnessShellState extends ConsumerState<FitnessShell> {
 
   @override
   Widget build(BuildContext context) {
-    final unread = ref.watch(unreadMessageCountProvider).valueOrNull ?? 0;
-    return Scaffold(
+    return const Scaffold(
       backgroundColor: AppColors.bgTop,
-      body: const FitnessHomeScreen(),
+      body: FitnessHomeScreen(),
       bottomNavigationBar: MiniAppBottomNav(
         accentColor: AppColors.fitnessAccent,
-        unreadCount: unread,
-        onMessagesTap: () => openAppPopup(context, const ConversationsScreen()),
       ),
     );
   }

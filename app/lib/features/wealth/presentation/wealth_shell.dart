@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/navigation/app_popup.dart';
 import '../../../core/navigation/mini_app_bottom_nav.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../social/presentation/conversations_screen.dart';
 import 'wealth_home_screen.dart';
 
 /// Man goc Quan ly tai san - CHI CON 1 man Home that su (WealthHomeScreen,
@@ -35,14 +33,11 @@ class _WealthShellState extends ConsumerState<WealthShell> {
 
   @override
   Widget build(BuildContext context) {
-    final unread = ref.watch(unreadMessageCountProvider).valueOrNull ?? 0;
-    return Scaffold(
+    return const Scaffold(
       backgroundColor: AppColors.bgTop,
-      body: const WealthHomeScreen(),
+      body: WealthHomeScreen(),
       bottomNavigationBar: MiniAppBottomNav(
         accentColor: AppColors.wealthAccent,
-        unreadCount: unread,
-        onMessagesTap: () => openAppPopup(context, const ConversationsScreen()),
       ),
     );
   }

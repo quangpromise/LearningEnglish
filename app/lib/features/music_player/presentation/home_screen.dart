@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/navigation/app_popup.dart';
 import '../../../core/navigation/app_top_bar.dart';
+import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../social/presentation/conversations_screen.dart';
 import '../../grammar/presentation/grammar_topics_screen.dart';
 import '../../pronunciation/presentation/phonics_lessons_screen.dart';
 import '../../pronunciation/presentation/pronunciation_screen.dart';
@@ -27,6 +29,7 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final unread = ref.watch(unreadMessageCountProvider).valueOrNull ?? 0;
     return ScreenBackground(
       child: Padding(
         // Le ngang giam tu 24 -> 14 de khung the loai sat 2 canh man hinh
@@ -38,6 +41,9 @@ class HomeScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               AppTopBar(
+                unreadCount: unread,
+                onMessagesTap: () =>
+                    openAppPopup(context, const ConversationsScreen()),
                 trailing: GestureDetector(
                   onTap: () => showModalBottomSheet(
                     context: context,
