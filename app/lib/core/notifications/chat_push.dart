@@ -7,10 +7,15 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../config/env.dart';
 import '../../features/social/data/device_token_repository.dart';
 import '../../features/social/data/social_repository.dart';
 import '../../features/social/presentation/chat_screen.dart';
 import '../navigation/nav_keys.dart';
+
+/// Id hanh dong "Tra loi" tren thong bao - dung de phan biet voi cham vao
+/// than thong bao (mo khung chat) trong onDidReceiveNotificationResponse.
+const _kReplyActionId = 'reply';
 
 /// Id kenh thong bao rieng cho tin nhan chat, kem am thanh tuy chinh (file
 /// res/raw/notification_tone.mp3) - phai tao 1 lan duy nhat truoc khi thong
@@ -102,6 +107,20 @@ Future<void> _showChatNotification(RemoteMessage message) async {
                 summaryText: content,
               )
             : null,
+        // Nut "Tra loi" ngay tren thong bao (RemoteInput) - DA TUNG BI GO BO
+        // co chu dich (xem giai thich cu trong _handleNotificationAction ben
+        // duoi ve rui ro mat tin nhan am tham tren may Xiaomi/Oppo/Vivo do
+        // he thong giet tien trinh truoc khi gui xong qua mang), nhung nguoi
+        // dung yeu cau THEM LAI, chap nhan rui ro do de doi lay tien loi
+        // tra loi nhanh khong can mo app.
+        actions: [
+          const AndroidNotificationAction(
+            _kReplyActionId,
+            'Trả lời',
+            showsUserInterface: false,
+            inputs: [AndroidNotificationActionInput(label: 'Nhắn gì đó...')],
+          ),
+        ],
       ),
     ),
     payload: _payloadFor(senderId),
@@ -117,29 +136,59 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await _showChatNotification(message);
 }
 
-/// Dung chung cho ca 2 duong xu ly bam thong bao (foreground va background) -
-/// CHI con 1 hanh vi duy nhat: bam vao than thong bao -> mo khung chat. Da BO
-/// nut "Tra loi" inline ngay tren thanh thong bao (showsUserInterface: false)
-/// vi day la GIOI HAN KIEN TRUC cua flutter_local_notifications tren Android:
-/// moi hanh dong loai nay LUON duoc xu ly qua 1 BroadcastReceiver tao FlutterEngine
-/// RIENG (khong dung chung voi isolate chinh cua app, ke ca khi app dang mo
-/// san), va receiver do KHONG goi goAsync() - nghia la he dieu hanh co the
-/// (va thuong xuyen tren may co che tiet kiem pin manh nhu Xiaomi/Oppo/Vivo)
-/// giet tien trinh do TRUOC KHI viec gui tin nhan qua mang kip hoan tat, khien
-/// tin nhan bi mat am tham khong bao loi. Khong sua duoc tu code Dart - phai
-/// mo app that su de gui tin nhan moi dam bao chac chan.
-void _handleNotificationResponse(NotificationResponse response) {
+/// Dung chung cho ca 2 duong xu ly thong bao (foreground va background/da
+/// tat han): bam vao than thong bao -> mo khung chat; bam nut "Tra loi" ->
+/// gui thang tin nhan qua Supabase KHONG mo app.
+///
+/// RUI RO DA BIET (nguoi dung xac nhan chap nhan): day/vay hanh dong "Tra
+/// loi" tren Android LUON duoc flutter_local_notifications xu ly qua 1
+/// BroadcastReceiver tao FlutterEngine RIENG (khac isolate chinh cua app, ke
+/// ca khi app dang mo san), va receiver do KHONG goi goAsync() - nghia la he
+/// dieu hanh co the (va thuong xuyen tren may tiet kiem pin manh nhu Xiaomi/
+/// Oppo/Vivo) giet tien trinh do TRUOC KHI viec gui tin nhan qua mang kip
+/// hoan tat, khien tin nhan bi mat am tham khong bao loi. Khong co cach nao
+/// sua tu phia Dart - day la gioi han kien truc cua Android/plugin.
+Future<void> _handleNotificationAction(NotificationResponse response) async {
   final senderId = response.payload;
   if (senderId == null) return;
+
+  if (response.actionId == _kReplyActionId) {
+    final text = response.input?.trim();
+    if (text == null || text.isEmpty) return;
+    try {
+      // Isolate nay co the la isolate CHINH (app dang mo) hoac 1 isolate
+      // MOI HOAN TOAN (app da tat han) - Supabase.instance nem loi neu chua
+      // duoc khoi tao trong isolate hien tai, initialize() lai o day se tu
+      // phuc hoi session da luu (SharedPreferences) neu co, khong lam gi
+      // neu Supabase da san sang roi (goi 2 lan khong hai).
+      if (Env.isConfigured) {
+        try {
+          Supabase.instance;
+        } catch (_) {
+          await Supabase.initialize(
+            url: Env.supabaseUrl,
+            publishableKey: Env.supabaseAnonKey,
+          );
+        }
+      }
+      await SocialRepository(Supabase.instance.client)
+          .sendMessage(senderId, text);
+    } catch (_) {
+      // Im lang - day chinh la rui ro da ghi chu o tren (khong co giao dien
+      // nao o day de bao loi cho nguoi dung trong isolate nen).
+    }
+    return;
+  }
+
   ChatPush.instance._openChatWith(senderId);
 }
 
 /// PHAI la ham top-level - flutter_local_notifications goi ham nay khi
-/// nguoi dung bam vao thong bao TRONG LUC app da bi tat han (khac voi
+/// nguoi dung tuong tac voi thong bao TRONG LUC app da bi tat han (khac voi
 /// onDidReceiveNotificationResponse chi chay duoc khi isolate chinh con song).
 @pragma('vm:entry-point')
 void _onBackgroundNotificationTap(NotificationResponse response) =>
-    _handleNotificationResponse(response);
+    _handleNotificationAction(response);
 
 /// Push notification cho tin nhan chat qua Firebase Cloud Messaging - hoat
 /// dong ca khi app da dong han/khoa may (khac voi DailyQuizNotifications:
@@ -193,7 +242,7 @@ class ChatPush {
         // (duong net trang tren nen trong suot, tach tu chinh app icon).
         android: AndroidInitializationSettings('@drawable/ic_stat_notify'),
       ),
-      onDidReceiveNotificationResponse: _handleNotificationResponse,
+      onDidReceiveNotificationResponse: (r) => _handleNotificationAction(r),
       onDidReceiveBackgroundNotificationResponse: _onBackgroundNotificationTap,
     );
 
