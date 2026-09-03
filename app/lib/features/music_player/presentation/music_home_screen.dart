@@ -298,12 +298,11 @@ class _LevelGroupList extends StatelessWidget {
                             <String>{};
                         return ListView.separated(
                           itemCount: songs.length,
-                          separatorBuilder: (_, _) => const SizedBox(height: 12),
+                          separatorBuilder: (_, _) =>
+                              const SizedBox(height: 12),
                           itemBuilder: (context, i) => _SongTile(
                             song: songs[i],
-                            isFavorite: favoriteTitles.contains(
-                              songs[i].title,
-                            ),
+                            isFavorite: favoriteTitles.contains(songs[i].title),
                             onTap: () {
                               Navigator.of(context).maybePop();
                               onOpen(songs, i);
@@ -368,10 +367,9 @@ class _SongTile extends ConsumerWidget {
               ),
             ),
             GestureDetector(
-              onTap: () =>
-                  ref.read(favoriteSongTitlesProvider.notifier).toggle(
-                    song.title,
-                  ),
+              onTap: () => ref
+                  .read(favoriteSongTitlesProvider.notifier)
+                  .toggle(song.title),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 6),
                 child: Icon(
