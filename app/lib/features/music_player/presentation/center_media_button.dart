@@ -31,12 +31,25 @@ class CenterMediaButton extends StatelessWidget {
       builder: (context, queueSnap) {
         final queue = queueSnap.data ?? const <Song>[];
         return Container(
-          height: 58,
-          padding: const EdgeInsets.symmetric(horizontal: 8),
+          // Full size nhu pill Menu CU (truoc day la 1 Container rieng boc
+          // ngoai icon Home/Tin nhan + thanh nhac, cao ~64 do padding doc
+          // 10+10 quanh icon 44) - gio thanh nhac La CHINH NO 1 pill day du
+          // (khong con bi boc trong 1 Container trang tri khac gay long
+          // nhau/lech kich thuoc), nen mang nguyen mau nen kinh + do bong
+          // cua pill Menu cu, chi doi vien sang mau accent cua tung app.
+          height: 64,
+          padding: const EdgeInsets.symmetric(horizontal: 10),
           decoration: BoxDecoration(
-            color: accentColor.withValues(alpha: 0.14),
+            color: const Color(0xD90A0E1C),
             borderRadius: BorderRadius.circular(999),
-            border: Border.all(color: accentColor.withValues(alpha: 0.45)),
+            border: Border.all(color: accentColor.withValues(alpha: 0.55)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.5),
+                blurRadius: 40,
+                offset: const Offset(0, 20),
+              ),
+            ],
           ),
           child: queue.isEmpty
               ? _IdleBar(accentColor: accentColor)

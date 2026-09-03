@@ -104,24 +104,14 @@ class _RootShellState extends ConsumerState<RootShell>
     return Scaffold(
       backgroundColor: AppColors.bgTop,
       body: const HomeScreen(),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-          decoration: BoxDecoration(
-            color: const Color(0xD90A0E1C),
-            border: Border.all(color: AppColors.glassBorder),
-            borderRadius: BorderRadius.circular(999),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.5),
-                blurRadius: 40,
-                offset: const Offset(0, 20),
-              ),
-            ],
-          ),
-          child: const CenterMediaButton(accentColor: AppColors.blue),
-        ),
+      // Khong con boc them 1 Container trang tri rieng nhu truoc (Menu
+      // truoc day can no de xep icon Home/Tin nhan CANH thanh nhac) - gio
+      // Menu CHI CON thanh nhac, boc 2 lop pill long nhau tao khoang trong
+      // thua/lech kich thuoc so voi Menu cu. CenterMediaButton tu ve pill
+      // day du (full size nhu Menu cu) o day, chi con Padding le ngoai.
+      bottomNavigationBar: const Padding(
+        padding: EdgeInsets.fromLTRB(16, 0, 16, 20),
+        child: CenterMediaButton(accentColor: AppColors.blue),
       ),
     );
   }
