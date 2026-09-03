@@ -11,13 +11,20 @@ import '../../../core/theme/app_theme.dart';
 import '../../attribution/presentation/attribution_screen.dart';
 import '../../settings/presentation/change_password_sheet.dart';
 import '../../settings/presentation/voice_settings_sheet.dart';
-import '../../social/presentation/friends_screen.dart';
+import '../../stats/data/stats_repository.dart';
 import '../../update/data/update_checker.dart';
 import '../../vocabulary/presentation/daily_quiz_popup_screen.dart';
 import '../../vocabulary/presentation/daily_words_controller.dart';
 
-class ProfileScreen extends ConsumerWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  int _tab = 0;
 
   /// Kiem tra cap nhat thu cong, hien chi tiet TUNG BUOC thay vi im lang -
   /// dung khi popup tu dong (showUpdateDialogIfAvailable, chay ngam luc mo
@@ -221,9 +228,20 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final statsAsync = ref.watch(myStatsProvider);
     final profileAsync = ref.watch(myProfileProvider);
+    // Ho so dung CHUNG cho ca 3 "app" (Hoc Tieng Anh/Fitness/Assets
+    // Management) - cac muc chi lien quan hoc tieng Anh (thong ke tu/bai
+    // hat/diem phat am, chon giong doc, "Hoc 10 tu", Ghi cong) CHI hien khi
+    // mo tu chinh Hoc Tieng Anh, tranh gay nham lan khi xem tu 2 app kia.
+    final isFitness = ref.watch(fitnessModeActiveProvider);
+    final isWealth = ref.watch(wealthModeActiveProvider);
+    final isEnglishContext = !isFitness && !isWealth;
+    // Chia 2 tab Hoat dong/Cai dat cho Hoc Tieng Anh va Fitness (co du lieu
+    // hoat dong rieng de hien); Wealth chua co so lieu hoat dong nao nen
+    // giu 1 danh sach don (khong tab) giong truoc.
+    final showTabs = isEnglishContext || isFitness;
     return ScreenBackground(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
@@ -332,565 +350,583 @@ class ProfileScreen extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 20),
+            if (showTabs) ...[
+              _ProfileTabBar(
+                tab: _tab,
+                onChanged: (i) => setState(() => _tab = i),
+              ),
+              const SizedBox(height: 14),
+            ],
             Expanded(
-              child: ListView(
+              child: !showTabs
+                  ? _buildSettingsTab(isEnglishContext: false)
+                  : (_tab == 0
+                        ? _buildActivityTab(
+                            isEnglishContext: isEnglishContext,
+                            isFitness: isFitness,
+                          )
+                        : _buildSettingsTab(
+                            isEnglishContext: isEnglishContext,
+                          )),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActivityTab({
+    required bool isEnglishContext,
+    required bool isFitness,
+  }) {
+    final statsAsync = ref.watch(myStatsProvider);
+    return ListView(
+      children: [
+        if (isEnglishContext) ...[
+          statsAsync.when(
+            loading: () => const Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Center(
+                child: CircularProgressIndicator(color: AppColors.blue),
+              ),
+            ),
+            // Khong hien nguyen object exception ra man hinh -
+            // fetchMyStats() da tu thu lai truong hop loi tam thoi
+            // thuong gap (PGRST303 ngay sau khi cap nhat APK), neu
+            // van that bai o day thi la loi that su, chi can 1 dong
+            // thong bao ngan + nut thu lai thay vi chi tiet ky thuat.
+            error: (e, _) => GestureDetector(
+              onTap: () => ref.invalidate(myStatsProvider),
+              child: Row(
                 children: [
-                  statsAsync.when(
-                    loading: () => const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 24),
-                      child: Center(
-                        child: CircularProgressIndicator(color: AppColors.blue),
-                      ),
-                    ),
-                    // Khong hien nguyen object exception ra man hinh -
-                    // fetchMyStats() da tu thu lai truong hop loi tam thoi
-                    // thuong gap (PGRST303 ngay sau khi cap nhat APK), neu
-                    // van that bai o day thi la loi that su, chi can 1 dong
-                    // thong bao ngan + nut thu lai thay vi chi tiet ky thuat.
-                    error: (e, _) => GestureDetector(
-                      onTap: () => ref.invalidate(myStatsProvider),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              ref.tr('profile_stats_error'),
-                              style: AppTextStyles.muted(),
-                            ),
-                          ),
-                          Text(
-                            ref.tr('profile_stats_retry'),
-                            style: AppTextStyles.body(
-                              size: 12,
-                              weight: FontWeight.w700,
-                              color: AppColors.blue,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    data: (stats) => GridView.count(
-                      crossAxisCount: 2,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      mainAxisSpacing: 12,
-                      crossAxisSpacing: 12,
-                      childAspectRatio: 1.5,
-                      children: [
-                        _StatCard(
-                          icon: Icons.menu_book_rounded,
-                          color: AppColors.blue,
-                          value: '${stats.wordsLearned}',
-                          label: ref.tr('profile_words_learned'),
-                        ),
-                        _StatCard(
-                          icon: Icons.music_note_rounded,
-                          color: AppColors.purple,
-                          value: '${stats.songsCompleted}',
-                          label: ref.tr('profile_songs_completed'),
-                        ),
-                        _StatCard(
-                          icon: Icons.mic_rounded,
-                          color: AppColors.teal,
-                          value: stats.avgPronunciationScore > 0
-                              ? '${stats.avgPronunciationScore}%'
-                              : '—',
-                          label: ref.tr('profile_avg_score'),
-                        ),
-                        _StatCard(
-                          icon: Icons.timer_outlined,
-                          color: AppColors.amber,
-                          value: stats.practiceTimeLabel,
-                          label: ref.tr('profile_practice_time'),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  GestureDetector(
-                    onTap: () => showVoiceSettingsSheet(context),
-                    child: GlowBox(
-                      borderRadius: 20,
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 34,
-                            height: 34,
-                            decoration: BoxDecoration(
-                              color: AppColors.blue.withValues(alpha: 0.18),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Icon(
-                              Icons.record_voice_over_rounded,
-                              size: 16,
-                              color: AppColors.blue,
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  ref.tr('profile_voice_title'),
-                                  style: AppTextStyles.body(
-                                    weight: FontWeight.w800,
-                                  ),
-                                ),
-                                Text(
-                                  ref.tr('profile_voice_subtitle'),
-                                  style: AppTextStyles.muted(size: 11),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const Icon(
-                            Icons.chevron_right_rounded,
-                            color: AppColors.textMuted,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  const _DailyWordsSection(),
-                  const SizedBox(height: 14),
-                  Builder(
-                    builder: (context) {
-                      final pending =
-                          ref.watch(pendingRequestCountProvider).valueOrNull ??
-                          0;
-                      return GestureDetector(
-                        onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const FriendsScreen(),
-                          ),
-                        ),
-                        child: GlowBox(
-                          borderRadius: 20,
-                          child: Row(
-                            children: [
-                              Stack(
-                                clipBehavior: Clip.none,
-                                children: [
-                                  Container(
-                                    width: 34,
-                                    height: 34,
-                                    decoration: BoxDecoration(
-                                      color: AppColors.teal.withValues(
-                                        alpha: 0.18,
-                                      ),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: const Icon(
-                                      Icons.people_alt_rounded,
-                                      size: 16,
-                                      color: AppColors.teal,
-                                    ),
-                                  ),
-                                  if (pending > 0)
-                                    Positioned(
-                                      right: -4,
-                                      top: -4,
-                                      child: Container(
-                                        padding: const EdgeInsets.all(3),
-                                        constraints: const BoxConstraints(
-                                          minWidth: 16,
-                                          minHeight: 16,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: AppColors.pink,
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: AppColors.bgTop,
-                                            width: 2,
-                                          ),
-                                        ),
-                                        child: Text(
-                                          pending > 9 ? '9+' : '$pending',
-                                          textAlign: TextAlign.center,
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 9,
-                                            fontWeight: FontWeight.w800,
-                                            height: 1,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                ],
-                              ),
-                              const SizedBox(width: 14),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      ref.tr('profile_friends_title'),
-                                      style: AppTextStyles.body(
-                                        weight: FontWeight.w800,
-                                      ),
-                                    ),
-                                    Text(
-                                      ref.tr('profile_friends_subtitle'),
-                                      style: AppTextStyles.muted(size: 11),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const Icon(
-                                Icons.chevron_right_rounded,
-                                color: AppColors.textMuted,
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 14),
-                  GestureDetector(
-                    onTap: () => showChangePasswordSheet(context),
-                    child: GlowBox(
-                      borderRadius: 20,
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 34,
-                            height: 34,
-                            decoration: BoxDecoration(
-                              color: AppColors.purple.withValues(alpha: 0.18),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Icon(
-                              Icons.lock_reset_rounded,
-                              size: 16,
-                              color: AppColors.purple,
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  ref.tr('profile_change_password'),
-                                  style: AppTextStyles.body(
-                                    weight: FontWeight.w800,
-                                  ),
-                                ),
-                                Text(
-                                  ref.tr('profile_change_password_subtitle'),
-                                  style: AppTextStyles.muted(size: 11),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const Icon(
-                            Icons.chevron_right_rounded,
-                            color: AppColors.textMuted,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  GestureDetector(
-                    onTap: () => _showLanguagePicker(context, ref),
-                    child: GlowBox(
-                      borderRadius: 20,
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 34,
-                            height: 34,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: AppColors.teal.withValues(alpha: 0.18),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              ref.watch(appLanguageProvider).flag,
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  ref.tr('profile_language_title'),
-                                  style: AppTextStyles.body(
-                                    weight: FontWeight.w800,
-                                  ),
-                                ),
-                                Text(
-                                  ref.tr('profile_language_subtitle'),
-                                  style: AppTextStyles.muted(size: 11),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const Icon(
-                            Icons.chevron_right_rounded,
-                            color: AppColors.textMuted,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  GestureDetector(
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const AttributionScreen(),
-                      ),
-                    ),
-                    child: GlowBox(
-                      borderRadius: 20,
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 34,
-                            height: 34,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: AppColors.amber.withValues(alpha: 0.18),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Icon(
-                              Icons.copyright_rounded,
-                              size: 16,
-                              color: AppColors.amber,
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Text(
-                              ref.tr('attribution_menu_title'),
-                              style: AppTextStyles.body(
-                                weight: FontWeight.w800,
-                              ),
-                            ),
-                          ),
-                          const Icon(
-                            Icons.chevron_right_rounded,
-                            color: AppColors.textMuted,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  GestureDetector(
-                    onTap: () => _checkForUpdateNow(context),
-                    child: GlowBox(
-                      borderRadius: 20,
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 34,
-                            height: 34,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: AppColors.blue.withValues(alpha: 0.18),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Icon(
-                              Icons.system_update_rounded,
-                              size: 16,
-                              color: AppColors.blue,
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Check for updates',
-                                  style: AppTextStyles.body(
-                                    weight: FontWeight.w800,
-                                  ),
-                                ),
-                                Text(
-                                  'See exactly why the update popup did or didn\'t show',
-                                  style: AppTextStyles.muted(size: 11),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const Icon(
-                            Icons.chevron_right_rounded,
-                            color: AppColors.textMuted,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  GlowBox(
-                    borderRadius: 22,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          ref.tr('profile_weekly_activity'),
-                          style: AppTextStyles.muted(size: 11)
-                              .copyWith(letterSpacing: 0.6),
-                        ),
-                        const SizedBox(height: 14),
-                        SizedBox(
-                          height: 70,
-                          child: statsAsync.when(
-                            loading: () => const SizedBox.shrink(),
-                            error: (_, _) => const SizedBox.shrink(),
-                            data: (stats) {
-                              final week = stats.weeklyActivity;
-                              if (week.isEmpty) {
-                                return Center(
-                                  child: Text(
-                                    ref.tr('profile_no_activity'),
-                                    style: AppTextStyles.muted(size: 11),
-                                  ),
-                                );
-                              }
-                              // Quy đổi giây -> chiều cao thanh: tỉ lệ theo
-                              // ngày luyện tập nhiều nhất trong tuần, thanh
-                              // tối thiểu 14px để vẫn thấy được ngày 0 giây.
-                              final maxSeconds = week
-                                  .map((d) => d.seconds)
-                                  .fold(0, (a, b) => a > b ? a : b);
-                              return Row(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: week.map((d) {
-                                  final ratio = maxSeconds > 0
-                                      ? d.seconds / maxSeconds
-                                      : 0.0;
-                                  final height = 14.0 + ratio * 46.0;
-                                  return _Bar(
-                                    h: height,
-                                    d: d.weekdayLabel,
-                                    low: d.seconds == 0,
-                                  );
-                                }).toList(),
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  GestureDetector(
-                    onTap: () => _confirmResetStats(context, ref),
-                    child: GlowBox(
-                      borderRadius: 20,
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 34,
-                            height: 34,
-                            decoration: BoxDecoration(
-                              color: AppColors.amber.withValues(alpha: 0.18),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Icon(
-                              Icons.restart_alt_rounded,
-                              size: 16,
-                              color: AppColors.amber,
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Text(
-                              ref.tr('profile_reset_stats'),
-                              style: AppTextStyles.body(
-                                weight: FontWeight.w800,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  GestureDetector(
-                    onTap: () => _confirmSignOut(context, ref),
-                    child: GlowBox(
-                      borderRadius: 20,
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 34,
-                            height: 34,
-                            decoration: BoxDecoration(
-                              color: AppColors.pink.withValues(alpha: 0.18),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Icon(
-                              Icons.logout_rounded,
-                              size: 16,
-                              color: AppColors.pink,
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Text(
-                              ref.tr('profile_sign_out'),
-                              style: AppTextStyles.body(
-                                weight: FontWeight.w800,
-                                color: AppColors.pink,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  Center(
-                    child: Consumer(
-                      builder: (context, innerRef, _) {
-                        final versionAsync = innerRef.watch(appVersionProvider);
-                        final version = versionAsync.valueOrNull ?? '';
-                        final buildLabel = Env.buildSha.isNotEmpty
-                            ? 'commit ${Env.buildSha.substring(0, 7)}'
-                            : 'local';
-                        return Text(
-                          version.isEmpty
-                              ? buildLabel
-                              : '$version · $buildLabel',
-                          style: AppTextStyles.muted(size: 10),
-                        );
-                      },
-                    ),
-                  ),
-                  // TAM THOI - chan doan tai sao thong bao "dang phat nhac"/
-                  // dieu khien tai nghe Bluetooth khong hoat dong tren 1 so
-                  // may (khong xem duoc log thiet bi that) - xoa dong nay
-                  // sau khi da xac dinh xong nguyen nhan goc.
-                  const SizedBox(height: 4),
-                  Center(
+                  Expanded(
                     child: Text(
-                      AudioServiceDiagnostics.succeeded == true
-                          ? 'Nhạc nền: OK'
-                          : 'Nhạc nền lỗi: ${AudioServiceDiagnostics.errorMessage ?? "chưa chạy"}',
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.muted(size: 9).copyWith(
-                        color: AudioServiceDiagnostics.succeeded == true
-                            ? Colors.greenAccent
-                            : AppColors.amber,
-                      ),
+                      ref.tr('profile_stats_error'),
+                      style: AppTextStyles.muted(),
+                    ),
+                  ),
+                  Text(
+                    ref.tr('profile_stats_retry'),
+                    style: AppTextStyles.body(
+                      size: 12,
+                      weight: FontWeight.w700,
+                      color: AppColors.blue,
                     ),
                   ),
                 ],
               ),
             ),
+            data: (stats) => GridView.count(
+              crossAxisCount: 2,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+              childAspectRatio: 1.5,
+              children: [
+                _StatCard(
+                  icon: Icons.menu_book_rounded,
+                  color: AppColors.blue,
+                  value: '${stats.wordsLearned}',
+                  label: ref.tr('profile_words_learned'),
+                ),
+                _StatCard(
+                  icon: Icons.music_note_rounded,
+                  color: AppColors.purple,
+                  value: '${stats.songsCompleted}',
+                  label: ref.tr('profile_songs_completed'),
+                ),
+                _StatCard(
+                  icon: Icons.mic_rounded,
+                  color: AppColors.teal,
+                  value: stats.avgPronunciationScore > 0
+                      ? '${stats.avgPronunciationScore}%'
+                      : '—',
+                  label: ref.tr('profile_avg_score'),
+                ),
+                _StatCard(
+                  icon: Icons.timer_outlined,
+                  color: AppColors.amber,
+                  value: stats.practiceTimeLabel,
+                  label: ref.tr('profile_practice_time'),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          const _DailyWordsSection(),
+          const SizedBox(height: 14),
+        ],
+        _WeeklyActivityCard(
+          activityAsync: isEnglishContext
+              ? ref.watch(myStatsProvider).whenData((s) => s.weeklyActivity)
+              : ref.watch(fitnessWeeklyActivityProvider),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSettingsTab({required bool isEnglishContext}) {
+    return ListView(
+      children: [
+        if (isEnglishContext) ...[
+          GestureDetector(
+            onTap: () => showVoiceSettingsSheet(context),
+            child: GlowBox(
+              borderRadius: 20,
+              child: Row(
+                children: [
+                  Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color: AppColors.blue.withValues(alpha: 0.18),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.record_voice_over_rounded,
+                      size: 16,
+                      color: AppColors.blue,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          ref.tr('profile_voice_title'),
+                          style: AppTextStyles.body(weight: FontWeight.w800),
+                        ),
+                        Text(
+                          ref.tr('profile_voice_subtitle'),
+                          style: AppTextStyles.muted(size: 11),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(
+                    Icons.chevron_right_rounded,
+                    color: AppColors.textMuted,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 14),
+        ],
+        GestureDetector(
+          onTap: () => showChangePasswordSheet(context),
+          child: GlowBox(
+            borderRadius: 20,
+            child: Row(
+              children: [
+                Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: AppColors.purple.withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.lock_reset_rounded,
+                    size: 16,
+                    color: AppColors.purple,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        ref.tr('profile_change_password'),
+                        style: AppTextStyles.body(weight: FontWeight.w800),
+                      ),
+                      Text(
+                        ref.tr('profile_change_password_subtitle'),
+                        style: AppTextStyles.muted(size: 11),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppColors.textMuted,
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 14),
+        GestureDetector(
+          onTap: () => _showLanguagePicker(context, ref),
+          child: GlowBox(
+            borderRadius: 20,
+            child: Row(
+              children: [
+                Container(
+                  width: 34,
+                  height: 34,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: AppColors.teal.withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    ref.watch(appLanguageProvider).flag,
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        ref.tr('profile_language_title'),
+                        style: AppTextStyles.body(weight: FontWeight.w800),
+                      ),
+                      Text(
+                        ref.tr('profile_language_subtitle'),
+                        style: AppTextStyles.muted(size: 11),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppColors.textMuted,
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 14),
+        if (isEnglishContext) ...[
+          GestureDetector(
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const AttributionScreen()),
+            ),
+            child: GlowBox(
+              borderRadius: 20,
+              child: Row(
+                children: [
+                  Container(
+                    width: 34,
+                    height: 34,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: AppColors.amber.withValues(alpha: 0.18),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.copyright_rounded,
+                      size: 16,
+                      color: AppColors.amber,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Text(
+                      ref.tr('attribution_menu_title'),
+                      style: AppTextStyles.body(weight: FontWeight.w800),
+                    ),
+                  ),
+                  const Icon(
+                    Icons.chevron_right_rounded,
+                    color: AppColors.textMuted,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 14),
+        ],
+        GestureDetector(
+          onTap: () => _checkForUpdateNow(context),
+          child: GlowBox(
+            borderRadius: 20,
+            child: Row(
+              children: [
+                Container(
+                  width: 34,
+                  height: 34,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: AppColors.blue.withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.system_update_rounded,
+                    size: 16,
+                    color: AppColors.blue,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Check for updates',
+                        style: AppTextStyles.body(weight: FontWeight.w800),
+                      ),
+                      Text(
+                        'See exactly why the update popup did or didn\'t show',
+                        style: AppTextStyles.muted(size: 11),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppColors.textMuted,
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 14),
+        if (isEnglishContext) ...[
+          GestureDetector(
+            onTap: () => _confirmResetStats(context, ref),
+            child: GlowBox(
+              borderRadius: 20,
+              child: Row(
+                children: [
+                  Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color: AppColors.amber.withValues(alpha: 0.18),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.restart_alt_rounded,
+                      size: 16,
+                      color: AppColors.amber,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Text(
+                      ref.tr('profile_reset_stats'),
+                      style: AppTextStyles.body(weight: FontWeight.w800),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 14),
+        ],
+        GestureDetector(
+          onTap: () => _confirmSignOut(context, ref),
+          child: GlowBox(
+            borderRadius: 20,
+            child: Row(
+              children: [
+                Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: AppColors.pink.withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.logout_rounded,
+                    size: 16,
+                    color: AppColors.pink,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(
+                    ref.tr('profile_sign_out'),
+                    style: AppTextStyles.body(
+                      weight: FontWeight.w800,
+                      color: AppColors.pink,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 14),
+        Center(
+          child: Consumer(
+            builder: (context, innerRef, _) {
+              final versionAsync = innerRef.watch(appVersionProvider);
+              final version = versionAsync.valueOrNull ?? '';
+              final buildLabel = Env.buildSha.isNotEmpty
+                  ? 'commit ${Env.buildSha.substring(0, 7)}'
+                  : 'local';
+              return Text(
+                version.isEmpty ? buildLabel : '$version · $buildLabel',
+                style: AppTextStyles.muted(size: 10),
+              );
+            },
+          ),
+        ),
+        // TAM THOI - chan doan tai sao thong bao "dang phat nhac"/
+        // dieu khien tai nghe Bluetooth khong hoat dong tren 1 so
+        // may (khong xem duoc log thiet bi that) - xoa dong nay
+        // sau khi da xac dinh xong nguyen nhan goc.
+        const SizedBox(height: 4),
+        Center(
+          child: Text(
+            AudioServiceDiagnostics.succeeded == true
+                ? 'Nhạc nền: OK'
+                : 'Nhạc nền lỗi: ${AudioServiceDiagnostics.errorMessage ?? "chưa chạy"}',
+            textAlign: TextAlign.center,
+            style: AppTextStyles.muted(size: 9).copyWith(
+              color: AudioServiceDiagnostics.succeeded == true
+                  ? Colors.greenAccent
+                  : AppColors.amber,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ProfileTabBar extends ConsumerWidget {
+  const _ProfileTabBar({required this.tab, required this.onChanged});
+  final int tab;
+  final ValueChanged<int> onChanged;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white.withValues(alpha: 0.06),
+            Colors.white.withValues(alpha: 0.02),
           ],
         ),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.14)),
+      ),
+      padding: const EdgeInsets.all(4),
+      child: Row(
+        children: [
+          Expanded(
+            child: _ProfileTabButton(
+              label: ref.tr('profile_tab_activity'),
+              selected: tab == 0,
+              onTap: () => onChanged(0),
+            ),
+          ),
+          Expanded(
+            child: _ProfileTabButton(
+              label: ref.tr('profile_tab_settings'),
+              selected: tab == 1,
+              onTap: () => onChanged(1),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileTabButton extends StatelessWidget {
+  const _ProfileTabButton({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          gradient: selected ? AppColors.accentGradient : null,
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: selected ? Colors.white : AppColors.textMuted,
+            fontWeight: FontWeight.w800,
+            fontSize: 12.5,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Bieu do "Hoat dong tuan nay" - dung chung cho ca man Hoc Tieng Anh
+/// (nguon 'english', qua myStatsProvider) va Fitness (nguon 'fitness', qua
+/// fitnessWeeklyActivityProvider) - nhan 1 `AsyncValue<List<DailyActivity>>`
+/// da chuan hoa san thay vi tu doc provider, de dung duoc voi ca 2 nguon.
+class _WeeklyActivityCard extends ConsumerWidget {
+  const _WeeklyActivityCard({required this.activityAsync});
+  final AsyncValue<List<DailyActivity>> activityAsync;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return GlowBox(
+      borderRadius: 22,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            ref.tr('profile_weekly_activity'),
+            style: AppTextStyles.muted(size: 11).copyWith(letterSpacing: 0.6),
+          ),
+          const SizedBox(height: 14),
+          SizedBox(
+            height: 70,
+            child: activityAsync.when(
+              loading: () => const SizedBox.shrink(),
+              error: (_, _) => const SizedBox.shrink(),
+              data: (week) {
+                if (week.isEmpty) {
+                  return Center(
+                    child: Text(
+                      ref.tr('profile_no_activity'),
+                      style: AppTextStyles.muted(size: 11),
+                    ),
+                  );
+                }
+                // Quy đổi giây -> chiều cao thanh: tỉ lệ theo ngày luyện
+                // tập nhiều nhất trong tuần, thanh tối thiểu 14px để vẫn
+                // thấy được ngày 0 giây.
+                final maxSeconds = week
+                    .map((d) => d.seconds)
+                    .fold(0, (a, b) => a > b ? a : b);
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: week.map((d) {
+                    final ratio = maxSeconds > 0 ? d.seconds / maxSeconds : 0.0;
+                    final height = 14.0 + ratio * 46.0;
+                    return _Bar(
+                      h: height,
+                      d: d.weekdayLabel,
+                      low: d.seconds == 0,
+                    );
+                  }).toList(),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

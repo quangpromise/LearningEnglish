@@ -139,9 +139,38 @@ class StatsRepository {
     });
   }
 
-  Future<void> addPracticeSeconds(int seconds) async {
+  /// [source] phan biet thoi gian luyen tap Hoc Tieng Anh ('english', mac
+  /// dinh) voi thoi gian dung Fitness ('fitness') - dung rieng cho bieu do
+  /// "Hoat dong tuan nay" o man Ho so khi mo tu tung khu vuc (xem migration
+  /// 0031_activity_source.sql). Tong chung (user_practice_time, dung cho
+  /// the "Thoi gian luyen tap") van cong don ca 2 nguon, khong doi.
+  Future<void> addPracticeSeconds(
+    int seconds, {
+    String source = 'english',
+  }) async {
     if (seconds <= 0) return;
-    await _supabase.rpc('add_practice_seconds', params: {'delta': seconds});
+    await _supabase.rpc(
+      'add_practice_seconds',
+      params: {'delta': seconds, 'p_source': source},
+    );
+  }
+
+  /// Rieng bieu do 7 ngay gan nhat theo 1 nguon cu the - dung cho man Ho so
+  /// khi xem tu Fitness (khong can ca UserStats day du nhu ben Hoc Tieng Anh).
+  Future<List<DailyActivity>> fetchWeeklyActivity({
+    String source = 'english',
+  }) async {
+    final rows = await _supabase.rpc(
+      'my_weekly_activity',
+      params: {'p_source': source},
+    );
+    return (rows as List).map((r) {
+      final m = r as Map<String, dynamic>;
+      return DailyActivity(
+        date: DateTime.parse(m['activity_date'] as String),
+        seconds: m['seconds'] as int? ?? 0,
+      );
+    }).toList();
   }
 
   Future<void> resetStats() async {

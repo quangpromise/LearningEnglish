@@ -422,6 +422,14 @@ class AppStrings {
       AppLanguage.vi: 'HOẠT ĐỘNG TUẦN NÀY',
       AppLanguage.en: 'THIS WEEK\'S ACTIVITY',
     },
+    'profile_tab_activity': {
+      AppLanguage.vi: 'Hoạt động',
+      AppLanguage.en: 'Activity',
+    },
+    'profile_tab_settings': {
+      AppLanguage.vi: 'Cài đặt',
+      AppLanguage.en: 'Settings',
+    },
     'profile_reset_stats': {
       AppLanguage.vi: 'Đặt lại thống kê',
       AppLanguage.en: 'Reset statistics',

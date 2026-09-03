@@ -73,6 +73,14 @@ final myStatsProvider = FutureProvider.autoDispose(
   (ref) => ref.watch(statsRepositoryProvider).fetchMyStats(),
 );
 
+/// Rieng bieu do "Hoat dong tuan nay" khi man Ho so duoc mo tu Fitness -
+/// tach khoi [myStatsProvider] (nguon 'english') de khong tron thoi gian
+/// dung 2 khu vuc lai voi nhau.
+final fitnessWeeklyActivityProvider = FutureProvider.autoDispose(
+  (ref) =>
+      ref.watch(statsRepositoryProvider).fetchWeeklyActivity(source: 'fitness'),
+);
+
 final lessonProgressRepositoryProvider = Provider<LessonProgressRepository>(
   (ref) => LessonProgressRepository(ref.watch(supabaseClientProvider)),
 );

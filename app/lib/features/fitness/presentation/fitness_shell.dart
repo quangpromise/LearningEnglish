@@ -21,10 +21,12 @@ class FitnessShell extends ConsumerStatefulWidget {
 
 class _FitnessShellState extends ConsumerState<FitnessShell> {
   int _tab = 0;
+  late final DateTime _openedAt;
 
   @override
   void initState() {
     super.initState();
+    _openedAt = DateTime.now();
     // Bat co "dang o Fitness" NGAY sau frame dau (khong lam trong initState
     // truc tiep - sua state cua 1 provider khac ngay luc build dang chay se
     // nem loi "Tried to modify a provider while the widget tree was building").
@@ -38,6 +40,15 @@ class _FitnessShellState extends ConsumerState<FitnessShell> {
     // Doc ref truc tiep (khong qua context) vi dispose() chay sau khi
     // widget da bi go khoi cay, an toan de doc gia tri container o day.
     ref.read(fitnessModeActiveProvider.notifier).state = false;
+    // Ghi nhan thoi gian dung Fitness (nguon 'fitness', tach voi tieng Anh)
+    // cho bieu do "Hoat dong tuan nay" o man Ho so - giong het cach
+    // PlayerScreen ghi nhan thoi gian nghe nhac.
+    final elapsed = DateTime.now().difference(_openedAt).inSeconds;
+    if (elapsed > 0) {
+      ref
+          .read(statsRepositoryProvider)
+          .addPracticeSeconds(elapsed, source: 'fitness');
+    }
     super.dispose();
   }
 
