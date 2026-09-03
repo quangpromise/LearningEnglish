@@ -365,7 +365,9 @@ final currentAppBackgroundProvider = Provider<String?>((ref) {
   if (ref.watch(fitnessModeActiveProvider)) {
     return 'assets/fitness/fitness_background.jpg';
   }
-  if (ref.watch(wealthModeActiveProvider)) return null;
+  if (ref.watch(wealthModeActiveProvider)) {
+    return 'assets/wealth/wealth_background.jpg';
+  }
   return 'assets/home/home_background.jpg';
 });
 
