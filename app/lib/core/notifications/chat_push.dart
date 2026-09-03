@@ -12,16 +12,16 @@ import '../../features/social/data/social_repository.dart';
 import '../../features/social/presentation/chat_screen.dart';
 import '../navigation/nav_keys.dart';
 
-/// Id kenh thong bao rieng cho tin nhan chat, kem am thanh "ding" tuy chinh
-/// (file res/raw/notification_ding.wav) - phai tao 1 lan duy nhat truoc khi
-/// thong bao dau tien hien (Android khoa cung am thanh cua 1 kenh ngay tu
-/// luc tao, doi lai khong an thua). Hau to "_v3": van con nguoi dung khong
-/// nghe duoc am du channel "_v2" da co cau hinh am dung tu dau - kha nang
-/// cao may do da tao channel "_v2" tu 1 ban build rat som (truoc khi file
-/// am thanh duoc them dung cach) nen bi khoa cung KHONG am vinh vien, giong
-/// het ly do lan truoc phai doi tu "chat_messages" sang "_v2". Neu sau nay
-/// con doi am/importance lan nua, tang tiep len "_v4"...
-const kChatMessagesChannelId = 'chat_messages_v3';
+/// Id kenh thong bao rieng cho tin nhan chat, kem am thanh tuy chinh (file
+/// res/raw/notification_tone.mp3) - phai tao 1 lan duy nhat truoc khi thong
+/// bao dau tien hien (Android khoa cung am thanh cua 1 kenh ngay tu luc tao,
+/// doi lai khong an thua). Hau to "_v4": doi am thanh tu notification_ding
+/// sang notification_tone - BAT BUOC tang hau to (giong 2 lan truoc, "_v2"
+/// roi "_v3") vi may nguoi dung DA CO channel "_v3" bi khoa cung am cu tu
+/// truoc, doi code ma khong doi ten channel se khong co tac dung gi (Android
+/// tiep tuc dung am da khoa cua channel cu). Neu sau nay con doi am/
+/// importance lan nua, tang tiep len "_v5"...
+const kChatMessagesChannelId = 'chat_messages_v4';
 
 final _localNotifications = FlutterLocalNotificationsPlugin();
 
@@ -174,7 +174,7 @@ class ChatPush {
       'Tin nhắn',
       description: 'Thông báo khi có tin nhắn mới từ bạn bè',
       importance: Importance.high,
-      sound: RawResourceAndroidNotificationSound('notification_ding'),
+      sound: RawResourceAndroidNotificationSound('notification_tone'),
     );
     final androidImpl = _localNotifications
         .resolvePlatformSpecificImplementation<

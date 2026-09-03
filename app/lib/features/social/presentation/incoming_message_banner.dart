@@ -17,7 +17,7 @@ import 'emoji_reaction_picker.dart';
 Future<void> _playIncomingMessageSound() async {
   final player = AudioPlayer();
   try {
-    await player.setAsset('assets/audio/notification_ding.wav');
+    await player.setAsset('assets/audio/notification_tone.mp3');
     await player.play();
     await player.playerStateStream.firstWhere(
       (s) => s.processingState == ProcessingState.completed,

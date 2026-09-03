@@ -2,7 +2,7 @@
 <!--
   Cac resource ben duoi CHI duoc tham chieu qua CHUOI STRING dung o Dart
   (vd AndroidInitializationSettings('@drawable/ic_stat_notify'),
-  RawResourceAndroidNotificationSound('notification_ding')) - khong co dong
+  RawResourceAndroidNotificationSound('notification_tone')) - khong co dong
   code/XML Android nao tham chieu truc tiep toi chung. Trinh rut gon resource
   cua Android (isShrinkResources = true trong build.gradle.kts, dung de giam
   dung luong APK) chi phan tich TINH (static analysis) cac tham chieu trong
@@ -13,4 +13,4 @@
   Xem https://developer.android.com/build/shrink-code#keep-resources
 -->
 <resources xmlns:tools="http://schemas.android.com/tools"
-    tools:keep="@drawable/ic_stat_notify,@raw/notification_ding" />
+    tools:keep="@drawable/ic_stat_notify,@raw/notification_tone" />
