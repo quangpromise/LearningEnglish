@@ -3,6 +3,18 @@ name: Build & Publish APK
 permissions:
   contents: write
 
+# Nhieu lan push kem "[build]" gan nhau (vd sua nhieu loi lien tiep trong 1
+# buoi) co the khien 2 lan chay CUNG GHI vao 1 release "latest" duy nhat -
+# neu lan chay cua commit CU hoan tat SAU lan chay cua commit MOI (do thoi
+# gian cho hang doi runner khac nhau, khong lien quan gi den thu tu commit),
+# no se GHI DE APK/mo ta cua ban MOI bang noi dung CU hon, khien nguoi dung
+# cai lai van thay ban cu ma khong biet. cancel-in-progress: true dam bao khi
+# co lan chay MOI hon bat dau, lan chay CU dang do se bi huy ngay - chi con
+# lan MOI NHAT duoc phep hoan tat va publish, khong con tranh chap thu tu.
+concurrency:
+  group: build-apk-release
+  cancel-in-progress: true
+
 on:
   push:
     branches: [main]
@@ -156,7 +168,13 @@ jobs:
           retention-days: 90
 
       - name: Ghi commit SHA để app tự kiểm tra bản cập nhật
-        run: echo -n "${{ github.sha }}" > build/app/outputs/flutter-apk/version.txt
+        run: |
+          echo -n "${{ github.sha }}" > build/app/outputs/flutter-apk/version.txt
+          # github.event.repository.updated_at la thoi gian METADATA chung
+          # cua ca repo (khong chac chan gan voi lan push nay), tung khien
+          # mo ta release nhin nhu "cu" du ban build that ra rat moi. Dung
+          # gio thuc te cua chinh lan chay nay cho chinh xac.
+          echo "BUILD_TIME_UTC=$(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> "$GITHUB_ENV"
 
       - name: Publish to rolling "latest" release
         uses: ncipollo/release-action@v1
@@ -164,8 +182,8 @@ jobs:
           tag: latest
           name: "Bản build mới nhất (tự động)"
           body: |
-            Build tự động từ commit ${{ github.sha }} — ${{ github.event.head_commit.message }}
-            Cập nhật lúc: ${{ github.event.repository.updated_at }}
+            Build tự động từ commit ${{ github.sha }} — ${{ github.event.head_commit.message || 'workflow_dispatch (bam thu cong)' }}
+            Cập nhật lúc: ${{ env.BUILD_TIME_UTC }}
           prerelease: true
           allowUpdates: true
           removeArtifacts: true
