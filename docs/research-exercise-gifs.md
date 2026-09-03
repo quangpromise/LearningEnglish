@@ -1,5 +1,17 @@
 # Nghiên cứu nguồn ảnh động (GIF) minh hoạ bài tập (tính năng Fitness)
 
+> **Cập nhật (đã áp dụng)**: kết luận ban đầu bên dưới cho rằng FitViet chưa
+> từng có ảnh thật là **sai** — kiểm tra lại trực tiếp `app/src/main/res/
+> drawable-nodpi/` của FitViet cho thấy có **2 ảnh JPG thật/bài** (tư thế bắt
+> đầu + kết thúc động tác) cho phần lớn bài tập. Đã tải, ánh xạ theo tên
+> (155/155 bài khớp được, xem `photoSlug` trong `exercises_seed.json`), nén
+> xuống ~3MB tổng (từ 17MB gốc) và đóng gói vào `app/assets/fitness/
+> exercise_photos/`. Man chi tiet bai tap (`exercise_photo_animator.dart`)
+> tu doi qua lai 2 anh moi 900ms de mo phong hieu ung dong, KHONG can mua
+> nguon GIF ngoai nhu khuyen nghi ban dau. Nguoi dung xac nhan la chu so
+> huu FitViet nen dung anh nay khong co van de ban quyen. Phan nghien cuu
+> ben duoi van giu lai de tham khao neu sau muon nang cap len GIF dong that.
+
 Thư viện 155 bài tập (`app/assets/fitness/exercises_seed.json`, port từ FitViet)
 hiện chỉ có text hướng dẫn từng bước, chưa có ảnh động minh hoạ động tác.
 FitViet gốc cũng chưa từng có GIF thật — chỉ có tên file placeholder trỏ tới

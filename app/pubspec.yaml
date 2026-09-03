@@ -140,6 +140,7 @@ flutter:
     - assets/icon/
     - assets/fitness/
     - assets/fitness/muscle_groups/
+    - assets/fitness/exercise_photos/
     - assets/home/
     - assets/wealth/
 

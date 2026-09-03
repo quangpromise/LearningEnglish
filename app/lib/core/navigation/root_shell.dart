@@ -245,7 +245,7 @@ class _RootShellState extends ConsumerState<RootShell>
                   ),
                 ),
                 Transform.translate(
-                  offset: const Offset(0, -20),
+                  offset: const Offset(0, -34),
                   child: const CenterMediaButton(),
                 ),
               ],

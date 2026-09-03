@@ -5,6 +5,7 @@ import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/exercise_model.dart';
+import 'exercise_photo_animator.dart';
 
 /// Chi tiet 1 bai tap - huong dan tung buoc + thanh % tham gia cua tung
 /// nhom co (an neu involvementPercents rong - day la tin hieu CHU DONG
@@ -48,6 +49,8 @@ class ExerciseDetailScreen extends ConsumerWidget {
                 ),
               ],
             ),
+            const SizedBox(height: 12),
+            ExercisePhotoAnimator(assets: exercise.photoAssets),
             const SizedBox(height: 16),
             Text(exercise.nameVi, style: AppTextStyles.heading(size: 20)),
             Text(exercise.nameEn, style: AppTextStyles.muted()),

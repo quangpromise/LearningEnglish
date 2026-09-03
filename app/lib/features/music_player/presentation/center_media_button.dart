@@ -6,11 +6,10 @@ import '../../../core/theme/app_theme.dart';
 import '../data/songs_data.dart';
 import 'player_screen.dart';
 
-/// Nut nhac dang phat - 1 khoi TRON GON, NOI CAO HON cac icon menu khac,
-/// nam CHINH GIUA thanh menu duoi (giong y minh hoa "hexagon vi" nguoi
-/// dung gui: 1 khoi noi bat nam giua Search/Statistics), NHUNG van du 4
-/// tinh nang: lui bai/phat-tam dung/toi bai/mo rong (collapse) - thu nho
-/// kich thuoc tung nut de vua trong 1 khoi gon thay vi the ngang day du.
+/// Nut nhac dang phat - 1 khoi VUONG-BO-TRON GON (khong phai the ngang) NOI
+/// CAO HAN HAN cac icon menu khac de KHONG de len chung, nam CHINH GIUA
+/// thanh menu duoi. Xep 2 tang de giu be ngang hep: hang tren la nut mo
+/// rong (collapse/expand), hang duoi la 3 nut lui/phat-tam dung/toi bai.
 /// Chi hien khi co bai dang phat. Dat rieng 1 file de dung CHUNG cho ca
 /// thanh menu Hoc Tieng Anh (root_shell.dart) lan Fitness/Assets Management
 /// (mini_app_bottom_nav.dart).
@@ -25,13 +24,13 @@ class CenterMediaButton extends StatelessWidget {
       initialData: service.queue,
       builder: (context, queueSnap) {
         final queue = queueSnap.data ?? const <Song>[];
-        if (queue.isEmpty) return const SizedBox(height: 56);
+        if (queue.isEmpty) return const SizedBox(width: 66, height: 66);
         return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 6),
-          height: 56,
+          width: 66,
+          padding: const EdgeInsets.symmetric(vertical: 6),
           decoration: BoxDecoration(
             gradient: AppColors.accentGradient,
-            borderRadius: BorderRadius.circular(999),
+            borderRadius: BorderRadius.circular(22),
             border: Border.all(color: AppColors.bgTop, width: 3),
             boxShadow: [
               BoxShadow(
@@ -41,46 +40,47 @@ class CenterMediaButton extends StatelessWidget {
               ),
             ],
           ),
-          child: Row(
+          child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               _Btn(
-                icon: Icons.skip_previous_rounded,
-                size: 18,
-                onTap: queue.length > 1 ? service.previous : null,
-              ),
-              StreamBuilder<PlayerState>(
-                stream: service.player.playerStateStream,
-                initialData: service.player.playerState,
-                builder: (context, snap) {
-                  final playing = snap.data?.playing ?? false;
-                  return _Btn(
-                    icon: playing
-                        ? Icons.pause_rounded
-                        : Icons.play_arrow_rounded,
-                    size: 20,
-                    onTap: () => playing
-                        ? service.player.pause()
-                        : service.player.play(),
-                  );
-                },
-              ),
-              _Btn(
-                icon: Icons.skip_next_rounded,
-                size: 18,
-                onTap: queue.length > 1 ? service.next : null,
-              ),
-              Container(
-                width: 1,
-                height: 22,
-                color: Colors.white.withValues(alpha: 0.35),
-              ),
-              _Btn(
                 icon: Icons.unfold_more_rounded,
-                size: 16,
+                size: 15,
                 onTap: () => Navigator.of(
                   context,
                 ).push(MaterialPageRoute(builder: (_) => const PlayerScreen())),
+              ),
+              const SizedBox(height: 2),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _Btn(
+                    icon: Icons.skip_previous_rounded,
+                    size: 16,
+                    onTap: queue.length > 1 ? service.previous : null,
+                  ),
+                  StreamBuilder<PlayerState>(
+                    stream: service.player.playerStateStream,
+                    initialData: service.player.playerState,
+                    builder: (context, snap) {
+                      final playing = snap.data?.playing ?? false;
+                      return _Btn(
+                        icon: playing
+                            ? Icons.pause_rounded
+                            : Icons.play_arrow_rounded,
+                        size: 18,
+                        onTap: () => playing
+                            ? service.player.pause()
+                            : service.player.play(),
+                      );
+                    },
+                  ),
+                  _Btn(
+                    icon: Icons.skip_next_rounded,
+                    size: 16,
+                    onTap: queue.length > 1 ? service.next : null,
+                  ),
+                ],
               ),
             ],
           ),
@@ -102,7 +102,7 @@ class _Btn extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
         child: Icon(
           icon,
           size: size,

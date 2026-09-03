@@ -42,6 +42,7 @@ class ExerciseRepository {
         muscleGroupCode: map['muscleGroupCode'] as String,
         movementType: map['movementType'] as String,
         difficultyCode: map['difficultyCode'] as String,
+        photoSlug: map['photoSlug'] as String,
       );
     }).toList();
     _cachedExercises = exercises;

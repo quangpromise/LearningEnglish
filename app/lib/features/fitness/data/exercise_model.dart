@@ -113,6 +113,7 @@ class Exercise {
     required this.muscleGroupCode,
     required this.movementType,
     required this.difficultyCode,
+    required this.photoSlug,
   });
 
   final int id;
@@ -139,9 +140,22 @@ class Exercise {
   final String movementType;
   final String difficultyCode;
 
+  /// Ten file goc (khong duoi/hau to `_0`/`_1`) cua 2 anh minh hoa dong tac
+  /// (tu the bat dau/ket thuc) - anh that lay tu chinh app FitViet
+  /// (`res/drawable-nodpi/`, nguoi dung xac nhan co ban quyen su dung, xem
+  /// docs/research-exercise-gifs.md), ghep tu dong bang [photoAssets].
+  final String photoSlug;
+
   MuscleGroup get muscleGroup => MuscleGroup.fromCode(muscleGroupCode);
   ExerciseDifficulty get difficulty =>
       ExerciseDifficulty.fromCode(difficultyCode);
+
+  /// 2 duong dan anh (tu the bat dau/ket thuc) de tao hieu ung dong don
+  /// gian (doi qua lai) trong man chi tiet, thay vi phai co GIF that.
+  List<String> get photoAssets => [
+    'assets/fitness/exercise_photos/${photoSlug}_0.jpg',
+    'assets/fitness/exercise_photos/${photoSlug}_1.jpg',
+  ];
 
   /// Danh sach ten nhom co theo dung thu tu voi [involvementPercents] (co
   /// chinh truoc, [secondaryMuscles] sau) - dung de ghep cap ten+% khi ve

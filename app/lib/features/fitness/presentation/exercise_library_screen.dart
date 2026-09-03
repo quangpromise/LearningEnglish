@@ -253,16 +253,22 @@ class _ExerciseTile extends ConsumerWidget {
         borderRadius: 20,
         child: Row(
           children: [
-            Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                color: AppColors.teal.withValues(alpha: 0.9),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: const Icon(
-                Icons.fitness_center_rounded,
-                color: Colors.white,
+            ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child: Image.asset(
+                exercise.photoAssets.first,
+                width: 52,
+                height: 52,
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => Container(
+                  width: 52,
+                  height: 52,
+                  color: AppColors.teal.withValues(alpha: 0.9),
+                  child: const Icon(
+                    Icons.fitness_center_rounded,
+                    color: Colors.white,
+                  ),
+                ),
               ),
             ),
             const SizedBox(width: 14),
