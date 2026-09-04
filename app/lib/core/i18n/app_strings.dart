@@ -1071,6 +1071,30 @@ class AppStrings {
       AppLanguage.vi: 'Tên chủ nợ / người nợ',
       AppLanguage.en: 'Creditor / debtor name',
     },
+    'wealth_debt_entries_suffix': {
+      AppLanguage.vi: 'khoản',
+      AppLanguage.en: 'entries',
+    },
+    'wealth_debt_split_mode': {
+      AppLanguage.vi: 'Chia cho nhiều người',
+      AppLanguage.en: 'Split among multiple people',
+    },
+    'wealth_debt_split_total_hint': {
+      AppLanguage.vi: 'Tổng số tiền',
+      AppLanguage.en: 'Total amount',
+    },
+    'wealth_debt_split_add_person': {
+      AppLanguage.vi: 'Thêm người',
+      AppLanguage.en: 'Add person',
+    },
+    'wealth_debt_split_equal': {
+      AppLanguage.vi: 'Chia đều',
+      AppLanguage.en: 'Split evenly',
+    },
+    'wealth_debt_view_history': {
+      AppLanguage.vi: 'Xem lịch sử',
+      AppLanguage.en: 'View history',
+    },
     'wealth_pay_by': {
       AppLanguage.vi: 'Thanh toán bằng',
       AppLanguage.en: 'Pay by',

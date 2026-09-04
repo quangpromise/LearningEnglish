@@ -163,19 +163,8 @@ class _FitnessTile extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             SizedBox(
-              height: 26,
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  style: AppTextStyles.body(
-                    size: 10.5,
-                    weight: FontWeight.w600,
-                  ),
-                ),
-              ),
+              height: 28,
+              child: TileLabelText(label: label, maxWidth: width),
             ),
           ],
         ),

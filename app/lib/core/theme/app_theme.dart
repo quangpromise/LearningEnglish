@@ -284,3 +284,67 @@ class ScreenBackground extends ConsumerWidget {
     );
   }
 }
+
+/// Nhan chu duoi 1 icon-tile (Home cua 3 "app") - cho phep xuong toi da 2
+/// dong tai ranh gioi TU (space) binh thuong, nhung tu GIAM CO CHU truoc khi
+/// wrap neu TU DAI NHAT trong nhan (vd "Pronunciation", "Management",
+/// "Entertainment") van rong hon [maxWidth] o co chu mac dinh - tranh dung
+/// Text(maxLines:2) tran vao giua 1 tu dai roi "roi" lai 1-2 chu cai le loi
+/// xuong dong 2 (bug da bi bao cao truoc day). Khac voi FittedBox+maxLines:1
+/// (chi 1 dong, luon co giam neu dai) - widget nay UU TIEN giu co chu binh
+/// thuong va CHO PHEP xuong 2 dong o cac ranh gioi tu, chi giam co chu khi
+/// that su can thiet (1 tu don le qua dai).
+class TileLabelText extends StatelessWidget {
+  const TileLabelText({
+    super.key,
+    required this.label,
+    required this.maxWidth,
+    this.baseSize = 10.5,
+    this.minSize = 8.5,
+    this.weight = FontWeight.w600,
+    this.color,
+  });
+
+  final String label;
+  final double maxWidth;
+  final double baseSize;
+  final double minSize;
+  final FontWeight weight;
+  final Color? color;
+
+  double _widestWordWidth(double fontSize) {
+    var widest = 0.0;
+    for (final word in label.split(' ')) {
+      final painter = TextPainter(
+        text: TextSpan(
+          text: word,
+          style: AppTextStyles.body(size: fontSize, weight: weight),
+        ),
+        textDirection: TextDirection.ltr,
+        maxLines: 1,
+      )..layout();
+      if (painter.width > widest) widest = painter.width;
+    }
+    return widest;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    var fontSize = baseSize;
+    while (fontSize > minSize && _widestWordWidth(fontSize) > maxWidth) {
+      fontSize -= 0.5;
+    }
+    return Text(
+      label,
+      textAlign: TextAlign.center,
+      maxLines: 2,
+      softWrap: true,
+      overflow: TextOverflow.ellipsis,
+      style: AppTextStyles.body(
+        size: fontSize,
+        weight: weight,
+        color: color,
+      ).copyWith(height: 1.15),
+    );
+  }
+}

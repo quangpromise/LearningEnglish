@@ -8,9 +8,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_format.dart';
 import '../data/wealth_debt_model.dart';
 import 'add_debt_sheet.dart';
-import 'confirm_delete.dart';
 import 'debt_person_history_screen.dart';
-import 'pay_debt_sheet.dart';
 
 /// Man No (Phase E) - 2 tab "Dang no" (minh no nguoi khac) va "Nguoi khac no
 /// minh". So sach doc lap, KHONG cong vao tong tai san o Home/Vi (xem ke
@@ -107,7 +105,10 @@ class _DebtScreenState extends State<DebtScreen>
                   labelColor: Colors.white,
                   unselectedLabelColor: AppColors.textMuted,
                   dividerColor: Colors.transparent,
-                  labelStyle: const TextStyle(fontWeight: FontWeight.w800),
+                  labelStyle: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                  ),
                   tabs: [
                     Tab(text: ref.tr('wealth_debt_tab_i_owe')),
                     Tab(text: ref.tr('wealth_debt_tab_owed_to_me')),
@@ -188,18 +189,18 @@ class _SummaryTile extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: AppTextStyles.muted(size: 11)),
+          Text(label, style: AppTextStyles.muted(size: 12.5)),
           const SizedBox(height: 4),
           if (totalsByCurrency.isEmpty)
             Text(
               formatVnd(0),
-              style: AppTextStyles.heading(size: 15).copyWith(color: color),
+              style: AppTextStyles.heading(size: 18).copyWith(color: color),
             )
           else
             for (final entry in totalsByCurrency.entries)
               Text(
                 formatByCurrency(entry.value, entry.key),
-                style: AppTextStyles.heading(size: 15).copyWith(color: color),
+                style: AppTextStyles.heading(size: 18).copyWith(color: color),
               ),
         ],
       ),
@@ -238,10 +239,20 @@ class _DebtList extends ConsumerWidget {
                   ),
                 );
               }
+              // Gop nhieu khoan no cua CUNG 1 nguoi thanh 1 the duy nhat -
+              // chi tiet tung khoan (ngay gio + note) chuyen het vao
+              // DebtPersonHistoryScreen thay vi hien lap lai ten nguoi
+              // nhieu lan o danh sach chinh (xem yeu cau nguoi dung).
+              final groups = <String, List<WealthDebt>>{};
+              for (final d in debts) {
+                groups.putIfAbsent(d.personId, () => []).add(d);
+              }
+              final groupList = groups.values.toList();
               return ListView.separated(
-                itemCount: debts.length,
+                itemCount: groupList.length,
                 separatorBuilder: (_, _) => const SizedBox(height: 10),
-                itemBuilder: (context, i) => _DebtTile(debt: debts[i]),
+                itemBuilder: (context, i) =>
+                    _PersonGroupTile(debts: groupList[i]),
               );
             },
           ),
@@ -262,195 +273,91 @@ class _DebtList extends ConsumerWidget {
   }
 }
 
-class _DebtTile extends ConsumerWidget {
-  const _DebtTile({required this.debt});
-  final WealthDebt debt;
+/// The gop TAT CA khoan no cua 1 nguoi (cung 1 chieu) - tong so du con lai
+/// theo tung loai tien te, bam vao mo lich su chi tiet tung khoan (ngay gio
+/// + note + tra/thu tung phan) trong DebtPersonHistoryScreen. Sua/xoa tung
+/// khoan cu the cung chuyen het vao man lich su do.
+class _PersonGroupTile extends StatelessWidget {
+  const _PersonGroupTile({required this.debts});
+  final List<WealthDebt> debts;
+
+  Map<String, double> _totalsByCurrency() {
+    final map = <String, double>{};
+    for (final d in debts) {
+      map[d.currency] = (map[d.currency] ?? 0) + d.remainingAmount;
+    }
+    return map;
+  }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Dismissible(
-      key: ValueKey(debt.id),
-      direction: DismissDirection.endToStart,
-      confirmDismiss: (_) => confirmDelete(context, ref),
-      background: Container(
-        alignment: Alignment.centerRight,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        decoration: BoxDecoration(
-          color: AppColors.pink.withValues(alpha: 0.18),
-          borderRadius: BorderRadius.circular(16),
+  Widget build(BuildContext context) {
+    final first = debts.first;
+    final allSettled = debts.every((d) => d.isSettled);
+    final totals = _totalsByCurrency();
+    return GestureDetector(
+      onTap: () => openAppPopup(
+        context,
+        DebtPersonHistoryScreen(
+          personId: first.personId,
+          personName: first.personName,
         ),
-        child: const Icon(Icons.delete_outline_rounded, color: AppColors.pink),
       ),
-      onDismissed: (_) async {
-        final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
-        if (userId == null) return;
-        await ref.read(wealthDebtRepositoryProvider).delete(userId, debt.id);
-        // Xoa khoan no cascade xoa het wealth_debt_payments + cac dong
-        // wealth_balance_entries da sinh ra tu no (qua FK ON DELETE CASCADE)
-        // - PHAI invalidate luon Vi de khong hien so du cu (da tru/cong sai
-        // do cac lan tra no truoc do van con tinh trong tong).
-        ref.invalidate(walletBalanceEntriesProvider);
-        ref.invalidate(debtsProvider(debt.direction));
-        ref.invalidate(debtsByPersonProvider(debt.personId));
-      },
       child: GlowBox(
         borderRadius: 16,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
           children: [
-            Row(
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    first.personName,
+                    style: AppTextStyles.body(
+                      size: 16,
+                      weight: FontWeight.w800,
+                    ),
+                  ),
+                  if (debts.length > 1)
+                    Consumer(
+                      builder: (context, ref, _) => Text(
+                        '${debts.length} ${ref.tr('wealth_debt_entries_suffix')}',
+                        style: AppTextStyles.muted(size: 12),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        debt.personName,
-                        style: AppTextStyles.body(weight: FontWeight.w800),
-                      ),
-                      if (debt.note?.isNotEmpty == true)
-                        Text(debt.note!, style: AppTextStyles.muted(size: 11)),
-                    ],
+                for (final entry in totals.entries)
+                  Text(
+                    formatByCurrency(entry.value, entry.key),
+                    style: AppTextStyles.body(size: 16, weight: FontWeight.w800)
+                        .copyWith(
+                          color: first.isIOwe ? AppColors.pink : AppColors.teal,
+                        ),
                   ),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      formatByCurrency(debt.remainingAmount, debt.currency),
-                      style: AppTextStyles.body(weight: FontWeight.w800)
-                          .copyWith(
-                            color: debt.isIOwe
-                                ? AppColors.pink
-                                : AppColors.teal,
-                          ),
-                    ),
-                    if (debt.isSettled)
-                      Text(
-                        ref.tr('wealth_debt_settled'),
-                        style: AppTextStyles.muted(size: 10.5),
-                      ),
-                  ],
-                ),
-                GestureDetector(
-                  onTap: () => openAppPopup(
-                    context,
-                    DebtPersonHistoryScreen(
-                      personId: debt.personId,
-                      personName: debt.personName,
+                if (allSettled)
+                  Consumer(
+                    builder: (context, ref, _) => Text(
+                      ref.tr('wealth_debt_settled'),
+                      style: AppTextStyles.muted(size: 11.5),
                     ),
                   ),
-                  child: const Padding(
-                    padding: EdgeInsets.only(left: 8),
-                    child: Icon(
-                      Icons.history_rounded,
-                      size: 18,
-                      color: AppColors.textMuted,
-                    ),
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () => _showEditDebtDialog(context, ref, debt),
-                  child: const Padding(
-                    padding: EdgeInsets.only(left: 8),
-                    child: Icon(
-                      Icons.edit_rounded,
-                      size: 18,
-                      color: AppColors.textMuted,
-                    ),
-                  ),
-                ),
               ],
             ),
-            if (!debt.isSettled) ...[
-              const SizedBox(height: 10),
-              SizedBox(
-                width: double.infinity,
-                child: PillButton(
-                  label: debt.isIOwe
-                      ? ref.tr('wealth_debt_pay')
-                      : ref.tr('wealth_debt_collect'),
-                  accentColor: debt.isIOwe ? AppColors.pink : AppColors.teal,
-                  filled: false,
-                  onTap: () => showPayDebtSheet(context, debt),
-                ),
+            const Padding(
+              padding: EdgeInsets.only(left: 8),
+              child: Icon(
+                Icons.chevron_right_rounded,
+                size: 22,
+                color: AppColors.textMuted,
               ),
-            ],
+            ),
           ],
         ),
       ),
     );
   }
-}
-
-/// Sua note luon duoc, sua SO TIEN GOC chi khi chua co lan tra nao
-/// (remaining_amount == original_amount) - tranh lam sai lech so du da tru
-/// dan qua cac lan tra truoc do.
-Future<void> _showEditDebtDialog(
-  BuildContext context,
-  WidgetRef ref,
-  WealthDebt debt,
-) async {
-  final noteController = TextEditingController(text: debt.note ?? '');
-  final canEditAmount = debt.remainingAmount == debt.originalAmount;
-  final amountController = TextEditingController(
-    text: debt.originalAmount.toStringAsFixed(0),
-  );
-  final result = await showDialog<bool>(
-    context: context,
-    builder: (dialogContext) => AlertDialog(
-      backgroundColor: AppColors.bgMid,
-      title: Text(debt.personName, style: AppTextStyles.heading(size: 16)),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (canEditAmount)
-            TextField(
-              controller: amountController,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              style: AppTextStyles.body(),
-              decoration: InputDecoration(
-                hintText: ref.tr('wallet_amount_hint'),
-              ),
-            ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: noteController,
-            style: AppTextStyles.body(),
-            decoration: InputDecoration(hintText: ref.tr('wallet_note_hint')),
-          ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(dialogContext).pop(false),
-          child: Text(ref.tr('common_cancel')),
-        ),
-        TextButton(
-          onPressed: () => Navigator.of(dialogContext).pop(true),
-          child: Text(ref.tr('common_confirm')),
-        ),
-      ],
-    ),
-  );
-  if (result != true) return;
-  final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
-  if (userId == null) return;
-  final newAmount = canEditAmount
-      ? double.tryParse(amountController.text.trim().replaceAll(',', '.'))
-      : null;
-  await ref
-      .read(wealthDebtRepositoryProvider)
-      .updateNoteAndAmount(
-        userId,
-        debt.id,
-        note: noteController.text.trim().isEmpty
-            ? null
-            : noteController.text.trim(),
-        amount: newAmount != null && newAmount > 0 ? newAmount : null,
-      );
-  ref.invalidate(debtsProvider(debt.direction));
-  ref.invalidate(debtsByPersonProvider(debt.personId));
 }
