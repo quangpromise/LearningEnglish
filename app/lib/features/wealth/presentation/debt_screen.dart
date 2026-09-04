@@ -205,7 +205,13 @@ class _DebtTile extends ConsumerWidget {
         final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
         if (userId == null) return;
         await ref.read(wealthDebtRepositoryProvider).delete(userId, debt.id);
+        // Xoa khoan no cascade xoa het wealth_debt_payments + cac dong
+        // wealth_balance_entries da sinh ra tu no (qua FK ON DELETE CASCADE)
+        // - PHAI invalidate luon Vi de khong hien so du cu (da tru/cong sai
+        // do cac lan tra no truoc do van con tinh trong tong).
+        ref.invalidate(walletBalanceEntriesProvider);
         ref.invalidate(debtsProvider(debt.direction));
+        ref.invalidate(debtsByPersonProvider(debt.personId));
       },
       child: GlowBox(
         borderRadius: 16,
