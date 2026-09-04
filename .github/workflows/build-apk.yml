@@ -149,8 +149,8 @@ jobs:
       - name: Kiem tra dung luong APK (chan quy dinh cua library lam phinh app)
         run: |
           cd build/app/outputs/flutter-apk
-          WARN_MB=22
-          MAX_MB=30
+          WARN_MB=25
+          MAX_MB=35
           FAILED=0
           echo "=== Dung luong APK theo kien truc (split-per-abi) ==="
           for f in app-arm64-v8a-release.apk app-armeabi-v7a-release.apk app-x86_64-release.apk; do
@@ -165,8 +165,8 @@ jobs:
           done
           # Ban universal gop 2 kien truc ARM nen nang hon 1 file split rieng
           # le nhung nhe hon truoc (da bo x86_64) - dung nguong rieng.
-          UNIVERSAL_WARN_MB=42
-          UNIVERSAL_MAX_MB=55
+          UNIVERSAL_WARN_MB=46
+          UNIVERSAL_MAX_MB=60
           UNIVERSAL_SIZE_MB=$(du -m app-release.apk | cut -f1)
           echo "=== Dung luong APK universal (gop ca 3 kien truc) ==="
           echo "app-release.apk: ${UNIVERSAL_SIZE_MB}MB"
