@@ -155,13 +155,24 @@ class _DebtEntryCard extends ConsumerWidget {
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 2),
                         child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Expanded(
-                              child: Text(
-                                '${p.occurredAt.day.toString().padLeft(2, '0')}/'
-                                '${p.occurredAt.month.toString().padLeft(2, '0')} · '
-                                '${p.paymentBankName ?? ref.tr('wallet_section_cash')}',
-                                style: AppTextStyles.muted(size: 11),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '${p.occurredAt.day.toString().padLeft(2, '0')}/'
+                                    '${p.occurredAt.month.toString().padLeft(2, '0')} · '
+                                    '${p.paymentBankName ?? ref.tr('wallet_section_cash')}',
+                                    style: AppTextStyles.muted(size: 11),
+                                  ),
+                                  if (p.note?.isNotEmpty == true)
+                                    Text(
+                                      p.note!,
+                                      style: AppTextStyles.body(size: 11),
+                                    ),
+                                ],
                               ),
                             ),
                             Text(

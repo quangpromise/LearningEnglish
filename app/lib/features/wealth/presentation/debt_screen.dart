@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_format.dart';
@@ -332,12 +333,11 @@ class _DebtTile extends ConsumerWidget {
                   ],
                 ),
                 GestureDetector(
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => DebtPersonHistoryScreen(
-                        personId: debt.personId,
-                        personName: debt.personName,
-                      ),
+                  onTap: () => openAppPopup(
+                    context,
+                    DebtPersonHistoryScreen(
+                      personId: debt.personId,
+                      personName: debt.personName,
                     ),
                   ),
                   child: const Padding(

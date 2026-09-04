@@ -5,6 +5,8 @@ import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_format.dart';
+import '../data/vn_bank_model.dart';
+import 'add_balance_entry_sheet.dart';
 import 'wallet_existing_assets_tab.dart';
 
 /// Toan bo lich su bien dong cua 1 tai khoan (Tien mat hoac 1 ngan hang cu
@@ -54,6 +56,24 @@ class WalletAccountHistoryScreen extends ConsumerWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(title, style: AppTextStyles.heading(size: 18)),
+                ),
+                GestureDetector(
+                  onTap: () => showAddBalanceEntrySheet(
+                    context,
+                    ref,
+                    initialBank: accountType == 'bank'
+                        ? VnBank(
+                            code: bankCode ?? kOtherBankCode,
+                            shortName: bankName ?? title,
+                            name: bankName ?? title,
+                            logoUrl: null,
+                          )
+                        : null,
+                  ),
+                  child: const Icon(
+                    Icons.add_circle_rounded,
+                    color: AppColors.wealthAccent,
+                  ),
                 ),
               ],
             ),

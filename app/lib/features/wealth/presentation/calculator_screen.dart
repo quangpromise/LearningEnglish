@@ -22,6 +22,17 @@ class _CalculatorScreenState extends ConsumerState<CalculatorScreen> {
   _Op? _pendingOp;
   bool _justEvaluated = false;
   bool _startFresh = false;
+  // Dong chu nho phia tren ket qua chinh - hien lai phep tinh dang go/vua
+  // tinh (vd "500.000 + 300.000" hoac "500.000 + 300.000 =") de nguoi dung
+  // doi chieu lai truoc khi tin vao ket qua, giong may tinh dien thoai.
+  String _historyText = '';
+
+  String _opSymbol(_Op op) => switch (op) {
+    _Op.add => '+',
+    _Op.subtract => '−',
+    _Op.multiply => '×',
+    _Op.divide => '÷',
+  };
 
   String _formatNumber(double n) {
     if (n == n.roundToDouble() && n.abs() < 1e15) {
@@ -45,6 +56,7 @@ class _CalculatorScreenState extends ConsumerState<CalculatorScreen> {
         }
         _display += digit;
       }
+      _updateHistoryWhileTyping();
     });
   }
 
@@ -57,7 +69,18 @@ class _CalculatorScreenState extends ConsumerState<CalculatorScreen> {
       } else if (!_display.contains('.')) {
         _display += '.';
       }
+      _updateHistoryWhileTyping();
     });
+  }
+
+  /// Cap nhat [_historyText] khi dang go/sua so hang thu 2 (sau khi da co
+  /// [_pendingOp]) - khong lam gi neu chua chon phep tinh nao.
+  void _updateHistoryWhileTyping() {
+    if (_first != null && _pendingOp != null) {
+      _historyText =
+          '${_formatNumber(_first!)} ${_opSymbol(_pendingOp!)} '
+          '$_display';
+    }
   }
 
   void _toggleSign() {
@@ -83,6 +106,7 @@ class _CalculatorScreenState extends ConsumerState<CalculatorScreen> {
       _pendingOp = null;
       _justEvaluated = false;
       _startFresh = false;
+      _historyText = '';
     });
   }
 
@@ -94,6 +118,7 @@ class _CalculatorScreenState extends ConsumerState<CalculatorScreen> {
       } else {
         _display = _display.substring(0, _display.length - 1);
       }
+      _updateHistoryWhileTyping();
     });
   }
 
@@ -117,6 +142,7 @@ class _CalculatorScreenState extends ConsumerState<CalculatorScreen> {
       _pendingOp = op;
       _startFresh = true;
       _justEvaluated = false;
+      _historyText = '${_formatNumber(_first!)} ${_opSymbol(op)}';
     });
   }
 
@@ -125,6 +151,9 @@ class _CalculatorScreenState extends ConsumerState<CalculatorScreen> {
       if (_first == null || _pendingOp == null) return;
       final current = double.tryParse(_display) ?? 0;
       final result = _apply(_first!, current, _pendingOp!);
+      _historyText =
+          '${_formatNumber(_first!)} ${_opSymbol(_pendingOp!)} '
+          '${_formatNumber(current)} =';
       _display = result.isNaN ? 'Error' : _formatNumber(result);
       _first = null;
       _pendingOp = null;
@@ -171,6 +200,18 @@ class _CalculatorScreenState extends ConsumerState<CalculatorScreen> {
               ),
             ),
             const Spacer(),
+            if (_historyText.isNotEmpty)
+              Align(
+                alignment: Alignment.centerRight,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    _historyText,
+                    style: AppTextStyles.muted(size: 18),
+                  ),
+                ),
+              ),
+            const SizedBox(height: 6),
             Align(
               alignment: Alignment.centerRight,
               child: FittedBox(

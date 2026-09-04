@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_format.dart';
@@ -33,8 +34,50 @@ class WalletExistingAssetsTab extends ConsumerWidget {
         final bankEntries = entries
             .where((e) => e.accountType == 'bank')
             .toList();
+        final hidden = ref.watch(wealthPrivacyModeProvider);
+        final netWorth = ref.watch(netWorthVndProvider);
         return ListView(
           children: [
+            GlowBox(
+              padding: const EdgeInsets.all(16),
+              borderRadius: 18,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          ref.tr('wallet_total_assets'),
+                          style: AppTextStyles.muted(size: 11),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          hidden
+                              ? '•••••••'
+                              : (netWorth == null
+                                    ? '...'
+                                    : formatVnd(netWorth)),
+                          style: AppTextStyles.heading(size: 20),
+                        ),
+                      ],
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () =>
+                        ref.read(wealthPrivacyModeProvider.notifier).toggle(),
+                    child: Icon(
+                      hidden
+                          ? Icons.visibility_off_rounded
+                          : Icons.visibility_rounded,
+                      color: AppColors.textMuted,
+                      size: 20,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
             Text(
               ref.tr('wallet_section_cash'),
               style: AppTextStyles.heading(size: 14),
@@ -125,12 +168,11 @@ class _CashCard extends ConsumerWidget {
                 child: GestureDetector(
                   onTap: entries.isEmpty
                       ? null
-                      : () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => WalletAccountHistoryScreen(
-                              title: ref.tr('wallet_section_cash'),
-                              accountType: 'cash',
-                            ),
+                      : () => openAppPopup(
+                          context,
+                          WalletAccountHistoryScreen(
+                            title: ref.tr('wallet_section_cash'),
+                            accountType: 'cash',
                           ),
                         ),
                   child: Column(
@@ -170,12 +212,11 @@ class _CashCard extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 6),
                 child: GestureDetector(
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => WalletAccountHistoryScreen(
-                        title: ref.tr('wallet_section_cash'),
-                        accountType: 'cash',
-                      ),
+                  onTap: () => openAppPopup(
+                    context,
+                    WalletAccountHistoryScreen(
+                      title: ref.tr('wallet_section_cash'),
+                      accountType: 'cash',
                     ),
                   ),
                   child: Text(
@@ -209,14 +250,13 @@ class _BankCard extends ConsumerWidget {
         .where((e) => e.currency == 'USD')
         .fold<double>(0, (s, e) => s + e.amount);
     final bankCode = entries.isEmpty ? null : entries.first.bankCode;
-    void openHistory() => Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => WalletAccountHistoryScreen(
-          title: label,
-          accountType: 'bank',
-          bankCode: bankCode,
-          bankName: label,
-        ),
+    void openHistory() => openAppPopup(
+      context,
+      WalletAccountHistoryScreen(
+        title: label,
+        accountType: 'bank',
+        bankCode: bankCode,
+        bankName: label,
       ),
     );
     return GlowBox(

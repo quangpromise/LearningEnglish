@@ -31,7 +31,6 @@ class WealthHomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final unread = ref.watch(unreadMessageCountProvider).valueOrNull ?? 0;
-    final name = ref.watch(myProfileProvider).valueOrNull?.nameLabel ?? '';
     final hidden = ref.watch(wealthPrivacyModeProvider);
     final netWorth = ref.watch(netWorthVndProvider);
     return ScreenBackground(
@@ -53,11 +52,6 @@ class WealthHomeScreen extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    '${ref.tr('home_greeting')}, $name',
-                    style: AppTextStyles.body(size: 13),
-                  ),
-                  const SizedBox(height: 6),
                   Row(
                     children: [
                       Expanded(
@@ -125,11 +119,8 @@ class WealthHomeScreen extends ConsumerWidget {
                               width: itemWidth,
                               icon: Icons.account_balance_wallet_rounded,
                               label: ref.tr('wallet_title'),
-                              onTap: () => Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) => const WalletScreen(),
-                                ),
-                              ),
+                              onTap: () =>
+                                  openAppPopup(context, const WalletScreen()),
                             ),
                             _WealthTile(
                               width: itemWidth,
@@ -145,41 +136,32 @@ class WealthHomeScreen extends ConsumerWidget {
                               width: itemWidth,
                               icon: Icons.handshake_rounded,
                               label: ref.tr('wealth_debt_title'),
-                              onTap: () => Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) => const DebtScreen(),
-                                ),
-                              ),
+                              onTap: () =>
+                                  openAppPopup(context, const DebtScreen()),
                             ),
                             _WealthTile(
                               width: itemWidth,
                               icon: Icons.event_repeat_rounded,
                               label: ref.tr('wealth_service_title'),
-                              onTap: () => Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      const RecurringServicesScreen(),
-                                ),
+                              onTap: () => openAppPopup(
+                                context,
+                                const RecurringServicesScreen(),
                               ),
                             ),
                             _WealthTile(
                               width: itemWidth,
                               icon: Icons.show_chart_rounded,
                               label: ref.tr('wealth_market_title'),
-                              onTap: () => Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) => const MarketScreen(),
-                                ),
-                              ),
+                              onTap: () =>
+                                  openAppPopup(context, const MarketScreen()),
                             ),
                             _WealthTile(
                               width: itemWidth,
                               icon: Icons.calculate_rounded,
                               label: ref.tr('wealth_calculator_title'),
-                              onTap: () => Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) => const CalculatorScreen(),
-                                ),
+                              onTap: () => openAppPopup(
+                                context,
+                                const CalculatorScreen(),
                               ),
                             ),
                           ],

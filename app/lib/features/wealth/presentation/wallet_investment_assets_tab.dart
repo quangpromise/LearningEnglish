@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_format.dart';
@@ -16,11 +17,22 @@ import 'stock_portfolio_screen.dart';
 /// Kim loai quy/Nha dat, moi the mo 1 man Portfolio rieng. Thay the
 /// WealthInvestmentsTab cu (chi co Crypto+Co phieu, Crypto la link ngoai
 /// sang CryptoScreen thay vi Portfolio thuc).
-class WalletInvestmentAssetsTab extends ConsumerWidget {
+class WalletInvestmentAssetsTab extends ConsumerStatefulWidget {
   const WalletInvestmentAssetsTab({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<WalletInvestmentAssetsTab> createState() =>
+      _WalletInvestmentAssetsTabState();
+}
+
+class _WalletInvestmentAssetsTabState
+    extends ConsumerState<WalletInvestmentAssetsTab> {
+  // 'VND' | 'USD' - chi anh huong cach HIEN THI (khong doi cach luu tru),
+  // vi tat ca gia tri deu da duoc quy doi VND lam mau so chung ben trong.
+  String _displayCurrency = 'VND';
+
+  @override
+  Widget build(BuildContext context) {
     final hidden = ref.watch(investmentPrivacyModeProvider);
 
     // Crypto: gia tri = gia OKX/CoinGecko (USD) x so luong, quy doi VND.
@@ -85,6 +97,16 @@ class WalletInvestmentAssetsTab extends ConsumerWidget {
     final total =
         cryptoValueVnd + stockValueVnd + metalValueVnd + realEstateValueVnd;
 
+    // Moi gia tri duoc luu ben trong bang VND - khi nguoi dung chon xem
+    // theo USD thi chia lai cho ty gia (usdVnd), bo qua neu ty gia chua
+    // tai duoc (hien thi tam VND).
+    String display(double vnd) {
+      if (_displayCurrency == 'USD' && usdVnd != null && usdVnd > 0) {
+        return formatUsd(vnd / usdVnd);
+      }
+      return formatVnd(vnd);
+    }
+
     return ListView(
       children: [
         GlowBox(
@@ -102,12 +124,17 @@ class WalletInvestmentAssetsTab extends ConsumerWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      hidden ? '•••••••' : formatVnd(total),
+                      hidden ? '•••••••' : display(total),
                       style: AppTextStyles.heading(size: 20),
                     ),
                   ],
                 ),
               ),
+              _CurrencyToggleChip(
+                currency: _displayCurrency,
+                onChanged: (c) => setState(() => _displayCurrency = c),
+              ),
+              const SizedBox(width: 10),
               GestureDetector(
                 onTap: () =>
                     ref.read(investmentPrivacyModeProvider.notifier).toggle(),
@@ -127,44 +154,62 @@ class WalletInvestmentAssetsTab extends ConsumerWidget {
           icon: Icons.currency_bitcoin_rounded,
           color: AppColors.amber,
           title: ref.tr('wealth_investments_crypto_title'),
-          value: hidden ? null : formatVnd(cryptoValueVnd),
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const CryptoPortfolioScreen()),
-          ),
+          value: hidden ? null : display(cryptoValueVnd),
+          onTap: () => openAppPopup(context, const CryptoPortfolioScreen()),
         ),
         const SizedBox(height: 10),
         _InvestmentTile(
           icon: Icons.show_chart_rounded,
           color: AppColors.blue,
           title: ref.tr('wealth_investments_stocks_title'),
-          value: hidden ? null : formatVnd(stockValueVnd),
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const StockPortfolioScreen()),
-          ),
+          value: hidden ? null : display(stockValueVnd),
+          onTap: () => openAppPopup(context, const StockPortfolioScreen()),
         ),
         const SizedBox(height: 10),
         _InvestmentTile(
           icon: Icons.diamond_rounded,
           color: AppColors.wealthAccent,
           title: ref.tr('wealth_investments_metal_title'),
-          value: hidden ? null : formatVnd(metalValueVnd),
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const MetalPortfolioScreen()),
-          ),
+          value: hidden ? null : display(metalValueVnd),
+          onTap: () => openAppPopup(context, const MetalPortfolioScreen()),
         ),
         const SizedBox(height: 10),
         _InvestmentTile(
           icon: Icons.home_work_rounded,
           color: AppColors.teal,
           title: ref.tr('wealth_investments_real_estate_title'),
-          value: hidden ? null : formatVnd(realEstateValueVnd),
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => const RealEstatePortfolioScreen(),
-            ),
-          ),
+          value: hidden ? null : display(realEstateValueVnd),
+          onTap: () => openAppPopup(context, const RealEstatePortfolioScreen()),
         ),
       ],
+    );
+  }
+}
+
+/// Chuyen doi hien thi tong gia tri dau tu giua VND/USD - chi doi CACH HIEN
+/// THI (gia tri goc luu VND khong doi), dung khi nguoi dung muon xem theo
+/// gia USD (vi du de so sanh voi gia coin/co phieu the gioi).
+class _CurrencyToggleChip extends StatelessWidget {
+  const _CurrencyToggleChip({required this.currency, required this.onChanged});
+  final String currency;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => onChanged(currency == 'VND' ? 'USD' : 'VND'),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: AppColors.glassFill,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: AppColors.glassBorder),
+        ),
+        child: Text(
+          currency,
+          style: AppTextStyles.body(weight: FontWeight.w800, size: 12),
+        ),
+      ),
     );
   }
 }
