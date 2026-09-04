@@ -24,12 +24,14 @@ class _DebtPersonPickerFieldState extends ConsumerState<DebtPersonPickerField> {
   @override
   Widget build(BuildContext context) {
     final personsAsync = ref.watch(debtPersonsProvider);
+    final allNames = (personsAsync.valueOrNull ?? []).map((p) => p.name);
+    // Chua go gi thi hien LUON tat ca ten da luu truoc do (chon nhanh, khong
+    // bat phai go it nhat 1 chu moi thay goi y) - go roi thi loc theo query.
     final suggestions = _query.isEmpty
-        ? const <String>[]
-        : (personsAsync.valueOrNull ?? [])
-              .map((p) => p.name)
+        ? allNames.take(8).toList()
+        : allNames
               .where((n) => n.toLowerCase().contains(_query.toLowerCase()))
-              .take(5)
+              .take(8)
               .toList();
 
     return Column(

@@ -127,136 +127,140 @@ class _AddBalanceEntrySheetState extends ConsumerState<_AddBalanceEntrySheet> {
   @override
   Widget build(BuildContext context) {
     final bank = widget.bank;
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
-        decoration: const BoxDecoration(
-          color: Color(0xFF12172E),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                bank == null ? ref.tr('wallet_section_cash') : bank.shortName,
-                style: AppTextStyles.heading(size: 16),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: _DirectionChip(
-                      label: ref.tr('wallet_amount_direction_add'),
-                      selected: _isAdd,
-                      onTap: () => setState(() => _isAdd = true),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _DirectionChip(
-                      label: ref.tr('wallet_amount_direction_subtract'),
-                      selected: !_isAdd,
-                      onTap: () => setState(() => _isAdd = false),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _amountController,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      resizeToAvoidBottomInset: true,
+      body: Align(
+        alignment: Alignment.bottomCenter,
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
+          decoration: const BoxDecoration(
+            color: Color(0xFF12172E),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  bank == null ? ref.tr('wallet_section_cash') : bank.shortName,
+                  style: AppTextStyles.heading(size: 16),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _DirectionChip(
+                        label: ref.tr('wallet_amount_direction_add'),
+                        selected: _isAdd,
+                        onTap: () => setState(() => _isAdd = true),
                       ),
-                      inputFormatters: [ThousandsInputFormatter()],
-                      style: AppTextStyles.body(),
-                      cursorColor: AppColors.wealthAccent,
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: AppColors.glassFill,
-                        hintText: ref.tr('wallet_amount_hint'),
-                        hintStyle: const TextStyle(color: AppColors.textMuted),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                          borderSide: BorderSide.none,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _DirectionChip(
+                        label: ref.tr('wallet_amount_direction_subtract'),
+                        selected: !_isAdd,
+                        onTap: () => setState(() => _isAdd = false),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _amountController,
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        inputFormatters: [ThousandsInputFormatter()],
+                        style: AppTextStyles.body(),
+                        cursorColor: AppColors.wealthAccent,
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: AppColors.glassFill,
+                          hintText: ref.tr('wallet_amount_hint'),
+                          hintStyle: const TextStyle(
+                            color: AppColors.textMuted,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide.none,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  _CurrencyToggle(
-                    currency: _currency,
-                    onChanged: (c) => setState(() => _currency = c),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: _noteController,
-                style: AppTextStyles.body(),
-                cursorColor: AppColors.wealthAccent,
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: AppColors.glassFill,
-                  hintText: ref.tr('wallet_note_hint'),
-                  hintStyle: const TextStyle(color: AppColors.textMuted),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
+                    const SizedBox(width: 8),
+                    _CurrencyToggle(
+                      currency: _currency,
+                      onChanged: (c) => setState(() => _currency = c),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: _noteController,
+                  style: AppTextStyles.body(),
+                  cursorColor: AppColors.wealthAccent,
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: AppColors.glassFill,
+                    hintText: ref.tr('wallet_note_hint'),
+                    hintStyle: const TextStyle(color: AppColors.textMuted),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide.none,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 10),
-              GestureDetector(
-                onTap: _pickDateTime,
-                child: Container(
+                const SizedBox(height: 10),
+                GestureDetector(
+                  onTap: _pickDateTime,
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.glassFill,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.schedule_rounded,
+                          size: 16,
+                          color: AppColors.textMuted,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '${_occurredAt.day.toString().padLeft(2, '0')}/'
+                          '${_occurredAt.month.toString().padLeft(2, '0')}/'
+                          '${_occurredAt.year} '
+                          '${_occurredAt.hour.toString().padLeft(2, '0')}:'
+                          '${_occurredAt.minute.toString().padLeft(2, '0')}',
+                          style: AppTextStyles.body(size: 13),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.glassFill,
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.schedule_rounded,
-                        size: 16,
-                        color: AppColors.textMuted,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        '${_occurredAt.day.toString().padLeft(2, '0')}/'
-                        '${_occurredAt.month.toString().padLeft(2, '0')}/'
-                        '${_occurredAt.year} '
-                        '${_occurredAt.hour.toString().padLeft(2, '0')}:'
-                        '${_occurredAt.minute.toString().padLeft(2, '0')}',
-                        style: AppTextStyles.body(size: 13),
-                      ),
-                    ],
+                  child: PillButton(
+                    label: ref.tr('wallet_save'),
+                    accentGradient: AppColors.wealthAccentGradient,
+                    accentColor: AppColors.wealthAccent,
+                    onTap: _saving ? null : _save,
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: PillButton(
-                  label: ref.tr('wallet_save'),
-                  accentGradient: AppColors.wealthAccentGradient,
-                  accentColor: AppColors.wealthAccent,
-                  onTap: _saving ? null : _save,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

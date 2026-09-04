@@ -817,6 +817,58 @@ class AppStrings {
       AppLanguage.en: 'Delete this item?',
     },
     'wealth_market_title': {AppLanguage.vi: 'Market', AppLanguage.en: 'Market'},
+    'wealth_dashboard_title': {
+      AppLanguage.vi: 'Tổng quan',
+      AppLanguage.en: 'Dashboard',
+    },
+    'wealth_dashboard_net_worth': {
+      AppLanguage.vi: 'Tổng tài sản ròng',
+      AppLanguage.en: 'Total net worth',
+    },
+    'wealth_dashboard_expense_month': {
+      AppLanguage.vi: 'Chi tiêu',
+      AppLanguage.en: 'Expense',
+    },
+    'wealth_dashboard_income_month': {
+      AppLanguage.vi: 'Thu nhập',
+      AppLanguage.en: 'Income',
+    },
+    'wealth_dashboard_period_day': {
+      AppLanguage.vi: 'Ngày',
+      AppLanguage.en: 'Day',
+    },
+    'wealth_dashboard_period_week': {
+      AppLanguage.vi: 'Tuần',
+      AppLanguage.en: 'Week',
+    },
+    'wealth_dashboard_period_month': {
+      AppLanguage.vi: 'Tháng',
+      AppLanguage.en: 'Month',
+    },
+    'wealth_dashboard_debt_summary': {
+      AppLanguage.vi: 'Công nợ',
+      AppLanguage.en: 'Debt overview',
+    },
+    'wealth_dashboard_services_summary': {
+      AppLanguage.vi: 'Dịch vụ định kỳ',
+      AppLanguage.en: 'Recurring services',
+    },
+    'wealth_dashboard_services_active': {
+      AppLanguage.vi: 'Đang theo dõi',
+      AppLanguage.en: 'Active',
+    },
+    'wealth_dashboard_services_expiring': {
+      AppLanguage.vi: 'Sắp hết hạn',
+      AppLanguage.en: 'Expiring soon',
+    },
+    'wealth_dashboard_nearest_expiry': {
+      AppLanguage.vi: 'Gần hết hạn nhất',
+      AppLanguage.en: 'Nearest expiry',
+    },
+    'wealth_dashboard_no_services': {
+      AppLanguage.vi: 'Chưa có dịch vụ nào',
+      AppLanguage.en: 'No services yet',
+    },
     'wealth_expense_category_food': {
       AppLanguage.vi: 'Ăn uống',
       AppLanguage.en: 'Food',
@@ -1066,6 +1118,22 @@ class AppStrings {
     'wealth_debt_settled': {
       AppLanguage.vi: 'Đã trả xong',
       AppLanguage.en: 'Settled',
+    },
+    'wealth_debt_net_off_title': {
+      AppLanguage.vi: 'Bù trừ nợ 2 chiều',
+      AppLanguage.en: 'Net off both directions',
+    },
+    'wealth_debt_net_off_desc': {
+      AppLanguage.vi: 'Người này vừa nợ mình vừa được mình nợ - bù trừ để chỉ còn 1 khoản chênh lệch.',
+      AppLanguage.en: 'This person both owes you and is owed by you - net them off into a single remaining balance.',
+    },
+    'wealth_debt_net_off_button': {
+      AppLanguage.vi: 'Bù trừ ngay',
+      AppLanguage.en: 'Net off now',
+    },
+    'wealth_debt_net_off_confirm': {
+      AppLanguage.vi: 'Xác nhận bù trừ',
+      AppLanguage.en: 'Confirm netting',
     },
     'wealth_debt_person_hint': {
       AppLanguage.vi: 'Tên chủ nợ / người nợ',

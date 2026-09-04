@@ -176,143 +176,147 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
   @override
   Widget build(BuildContext context) {
     final isExpense = widget.type == WealthTransactionType.expense;
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
-        decoration: const BoxDecoration(
-          color: Color(0xFF12172E),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                _isEditing
-                    ? ref.tr('wealth_edit_transaction')
-                    : ref.tr('wealth_add_transaction'),
-                style: AppTextStyles.heading(size: 16),
-              ),
-              const SizedBox(height: 16),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: isExpense
-                    ? [
-                        for (final c in WealthExpenseCategory.values)
-                          _CategoryChip(
-                            icon: c.icon,
-                            label: ref.tr(c.labelKey),
-                            selected: _categoryCode == c.code,
-                            onTap: () => setState(() => _categoryCode = c.code),
-                          ),
-                      ]
-                    : [
-                        for (final c in WealthIncomeCategory.values)
-                          _CategoryChip(
-                            icon: c.icon,
-                            label: ref.tr(c.labelKey),
-                            selected: _categoryCode == c.code,
-                            onTap: () => setState(() => _categoryCode = c.code),
-                          ),
-                      ],
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _amountController,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                inputFormatters: [ThousandsInputFormatter()],
-                style: AppTextStyles.body(),
-                cursorColor: AppColors.wealthAccent,
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: AppColors.glassFill,
-                  hintText: ref.tr('wealth_amount_hint'),
-                  hintStyle: const TextStyle(color: AppColors.textMuted),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: _noteController,
-                style: AppTextStyles.body(),
-                cursorColor: AppColors.wealthAccent,
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: AppColors.glassFill,
-                  hintText: ref.tr('wealth_note_hint'),
-                  hintStyle: const TextStyle(color: AppColors.textMuted),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-              if (isExpense) ...[
-                const SizedBox(height: 10),
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      resizeToAvoidBottomInset: true,
+      body: Align(
+        alignment: Alignment.bottomCenter,
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
+          decoration: const BoxDecoration(
+            color: Color(0xFF12172E),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Text(
-                  ref.tr('wealth_pay_by'),
-                  style: AppTextStyles.muted(size: 11),
+                  _isEditing
+                      ? ref.tr('wealth_edit_transaction')
+                      : ref.tr('wealth_add_transaction'),
+                  style: AppTextStyles.heading(size: 16),
                 ),
-                const SizedBox(height: 6),
-                PaymentSplitEditor(
-                  totalAmount: _amount,
-                  onChanged: (splits) => _splits = splits,
+                const SizedBox(height: 16),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: isExpense
+                      ? [
+                          for (final c in WealthExpenseCategory.values)
+                            _CategoryChip(
+                              icon: c.icon,
+                              label: ref.tr(c.labelKey),
+                              selected: _categoryCode == c.code,
+                              onTap: () =>
+                                  setState(() => _categoryCode = c.code),
+                            ),
+                        ]
+                      : [
+                          for (final c in WealthIncomeCategory.values)
+                            _CategoryChip(
+                              icon: c.icon,
+                              label: ref.tr(c.labelKey),
+                              selected: _categoryCode == c.code,
+                              onTap: () =>
+                                  setState(() => _categoryCode = c.code),
+                            ),
+                        ],
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _amountController,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  inputFormatters: [ThousandsInputFormatter()],
+                  style: AppTextStyles.body(),
+                  cursorColor: AppColors.wealthAccent,
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: AppColors.glassFill,
+                    hintText: ref.tr('wealth_amount_hint'),
+                    hintStyle: const TextStyle(color: AppColors.textMuted),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: _noteController,
+                  style: AppTextStyles.body(),
+                  cursorColor: AppColors.wealthAccent,
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: AppColors.glassFill,
+                    hintText: ref.tr('wealth_note_hint'),
+                    hintStyle: const TextStyle(color: AppColors.textMuted),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+                if (isExpense) ...[
+                  const SizedBox(height: 10),
+                  Text(
+                    ref.tr('wealth_pay_by'),
+                    style: AppTextStyles.muted(size: 11),
+                  ),
+                  const SizedBox(height: 6),
+                  PaymentSplitEditor(
+                    totalAmount: _amount,
+                    onChanged: (splits) => _splits = splits,
+                  ),
+                ],
+                const SizedBox(height: 10),
+                GestureDetector(
+                  onTap: _pickDateTime,
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.glassFill,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.schedule_rounded,
+                          size: 16,
+                          color: AppColors.textMuted,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '${_occurredAt.day.toString().padLeft(2, '0')}/'
+                          '${_occurredAt.month.toString().padLeft(2, '0')}/'
+                          '${_occurredAt.year} '
+                          '${_occurredAt.hour.toString().padLeft(2, '0')}:'
+                          '${_occurredAt.minute.toString().padLeft(2, '0')}',
+                          style: AppTextStyles.body(size: 13),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: PillButton(
+                    label: ref.tr('wealth_save'),
+                    accentGradient: AppColors.wealthAccentGradient,
+                    accentColor: AppColors.wealthAccent,
+                    onTap: _saving || !_splitsValid ? null : _save,
+                  ),
                 ),
               ],
-              const SizedBox(height: 10),
-              GestureDetector(
-                onTap: _pickDateTime,
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.glassFill,
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.schedule_rounded,
-                        size: 16,
-                        color: AppColors.textMuted,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        '${_occurredAt.day.toString().padLeft(2, '0')}/'
-                        '${_occurredAt.month.toString().padLeft(2, '0')}/'
-                        '${_occurredAt.year} '
-                        '${_occurredAt.hour.toString().padLeft(2, '0')}:'
-                        '${_occurredAt.minute.toString().padLeft(2, '0')}',
-                        style: AppTextStyles.body(size: 13),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: PillButton(
-                  label: ref.tr('wealth_save'),
-                  accentGradient: AppColors.wealthAccentGradient,
-                  accentColor: AppColors.wealthAccent,
-                  onTap: _saving || !_splitsValid ? null : _save,
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),

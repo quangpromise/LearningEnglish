@@ -80,10 +80,20 @@ class DebtPersonHistoryScreen extends ConsumerWidget {
                       ),
                     );
                   }
+                  final netOffCurrency = _findNetOffCurrency(debts);
                   return ListView.separated(
-                    itemCount: debts.length,
+                    itemCount: debts.length + (netOffCurrency == null ? 0 : 1),
                     separatorBuilder: (_, _) => const SizedBox(height: 10),
-                    itemBuilder: (context, i) => _DebtEntryCard(debt: debts[i]),
+                    itemBuilder: (context, i) {
+                      if (netOffCurrency != null && i == 0) {
+                        return _NetOffCard(
+                          debts: debts,
+                          currency: netOffCurrency,
+                        );
+                      }
+                      final debtIndex = netOffCurrency == null ? i : i - 1;
+                      return _DebtEntryCard(debt: debts[debtIndex]);
+                    },
                   );
                 },
               ),
@@ -92,6 +102,152 @@ class DebtPersonHistoryScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+}
+
+/// Tra ve loai tien te DAU TIEN ma nguoi nay co CA HAI chieu no (dang no +
+/// nguoi khac no minh) deu con du > 0 - null neu khong co chieu nao trung
+/// (vd chi no 1 chieu, hoac 2 chieu nhung khac loai tien te).
+String? _findNetOffCurrency(List<WealthDebt> debts) {
+  final iOweByCurrency = <String, double>{};
+  final owedByCurrency = <String, double>{};
+  for (final d in debts) {
+    if (d.isSettled) continue;
+    final map = d.isIOwe ? iOweByCurrency : owedByCurrency;
+    map[d.currency] = (map[d.currency] ?? 0) + d.remainingAmount;
+  }
+  for (final currency in iOweByCurrency.keys) {
+    if ((owedByCurrency[currency] ?? 0) > 0) return currency;
+  }
+  return null;
+}
+
+/// The goi y bu tru khi 1 nguoi VUA no minh VUA duoc minh no (cung 1 loai
+/// tien te) - giam khoan NHO HON ve 0 (settled) va tru phan chenh lech do
+/// vao khoan LON HON, khong dong den Vi (day chi la but toan bu tru tren
+/// giay, khong co tien mat/chuyen khoan thuc te nao xay ra).
+class _NetOffCard extends ConsumerWidget {
+  const _NetOffCard({required this.debts, required this.currency});
+  final List<WealthDebt> debts;
+  final String currency;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final iOwe =
+        debts
+            .where((d) => d.isIOwe && d.currency == currency && !d.isSettled)
+            .toList()
+          ..sort((a, b) => a.occurredAt.compareTo(b.occurredAt));
+    final owed =
+        debts
+            .where((d) => !d.isIOwe && d.currency == currency && !d.isSettled)
+            .toList()
+          ..sort((a, b) => a.occurredAt.compareTo(b.occurredAt));
+    final totalIOwe = iOwe.fold<double>(0, (s, d) => s + d.remainingAmount);
+    final totalOwed = owed.fold<double>(0, (s, d) => s + d.remainingAmount);
+    final net = totalIOwe < totalOwed ? totalIOwe : totalOwed;
+    final remainder = (totalIOwe - totalOwed).abs();
+    final remainderIsIOwe = totalIOwe > totalOwed;
+
+    return GlowBox(
+      borderRadius: 18,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            ref.tr('wealth_debt_net_off_title'),
+            style: AppTextStyles.body(weight: FontWeight.w800),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            ref.tr('wealth_debt_net_off_desc'),
+            style: AppTextStyles.muted(size: 11.5),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '${formatByCurrency(net, currency)} → '
+            '${formatByCurrency(remainder, currency)} '
+            '(${remainderIsIOwe ? ref.tr('wealth_debt_tab_i_owe') : ref.tr('wealth_debt_tab_owed_to_me')})',
+            style: AppTextStyles.body(size: 13, weight: FontWeight.w700)
+                .copyWith(
+                  color: remainderIsIOwe ? AppColors.pink : AppColors.teal,
+                ),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: double.infinity,
+            child: PillButton(
+              label: ref.tr('wealth_debt_net_off_button'),
+              accentGradient: AppColors.wealthAccentGradient,
+              accentColor: AppColors.wealthAccent,
+              onTap: () => _confirmAndNetOff(context, ref, iOwe, owed, net),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _confirmAndNetOff(
+    BuildContext context,
+    WidgetRef ref,
+    List<WealthDebt> iOwe,
+    List<WealthDebt> owed,
+    double net,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.bgMid,
+        title: Text(
+          ref.tr('wealth_debt_net_off_confirm'),
+          style: AppTextStyles.heading(size: 16),
+        ),
+        content: Text(
+          formatByCurrency(net, currency),
+          style: AppTextStyles.body(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(ref.tr('common_cancel')),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(ref.tr('common_confirm')),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
+    if (userId == null) return;
+    final repo = ref.read(wealthDebtRepositoryProvider);
+    var remaining = net;
+    for (final d in iOwe) {
+      if (remaining <= 0) break;
+      final apply = remaining >= d.remainingAmount
+          ? d.remainingAmount
+          : remaining;
+      await repo.applyPayment(userId, d.id, apply);
+      remaining -= apply;
+    }
+    remaining = net;
+    for (final d in owed) {
+      if (remaining <= 0) break;
+      final apply = remaining >= d.remainingAmount
+          ? d.remainingAmount
+          : remaining;
+      await repo.applyPayment(userId, d.id, apply);
+      remaining -= apply;
+    }
+    ref.invalidate(debtsProvider('i_owe'));
+    ref.invalidate(debtsProvider('owed_to_me'));
+    if (iOwe.isNotEmpty) {
+      ref.invalidate(debtsByPersonProvider(iOwe.first.personId));
+    } else if (owed.isNotEmpty) {
+      ref.invalidate(debtsByPersonProvider(owed.first.personId));
+    }
   }
 }
 

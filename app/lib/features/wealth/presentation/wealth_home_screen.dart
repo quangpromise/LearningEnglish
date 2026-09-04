@@ -12,6 +12,7 @@ import 'calculator_screen.dart';
 import 'debt_screen.dart';
 import 'market_screen.dart';
 import 'recurring_services_screen.dart';
+import 'wealth_dashboard_screen.dart';
 import 'wealth_detail_screen.dart';
 import 'wealth_expense_tab.dart';
 import 'wallet_screen.dart';
@@ -45,6 +46,9 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
     final netWorth = ref.watch(netWorthVndProvider);
     final investmentTotal = ref.watch(totalInvestmentValueVndProvider);
     final displayValue = _showInvestment ? investmentTotal : netWorth;
+    final (investmentPnl, investmentPnlPercent) = ref.watch(
+      investmentPnlProvider,
+    );
     return ScreenBackground(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(14, 12, 14, 16),
@@ -125,6 +129,20 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
                         : ref.tr('wallet_total_assets'),
                     style: AppTextStyles.muted(size: 11),
                   ),
+                  if (_showInvestment && !hidden && investmentPnl != 0) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      '${investmentPnl >= 0 ? '+' : ''}${formatVnd(investmentPnl)}'
+                      '${investmentPnlPercent == null ? '' : ' (${investmentPnlPercent >= 0 ? '+' : ''}${investmentPnlPercent.toStringAsFixed(1)}%)'}',
+                      style: AppTextStyles.body(
+                        size: 12,
+                        weight: FontWeight.w700,
+                        color: investmentPnl >= 0
+                            ? AppColors.teal
+                            : AppColors.pink,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -157,6 +175,15 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
                           spacing: spacing,
                           runSpacing: 14,
                           children: [
+                            _WealthTile(
+                              width: itemWidth,
+                              icon: Icons.dashboard_rounded,
+                              label: ref.tr('wealth_dashboard_title'),
+                              onTap: () => openAppPopup(
+                                context,
+                                const WealthDashboardScreen(),
+                              ),
+                            ),
                             _WealthTile(
                               width: itemWidth,
                               icon: Icons.account_balance_wallet_rounded,

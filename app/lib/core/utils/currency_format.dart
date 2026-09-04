@@ -1,14 +1,16 @@
 /// Dinh dang tien te cho khu vuc Quan ly tai san - viet tay bang regex thay
 /// vi them dependency `intl` moi (dung quy uoc "khong them dep khi chua can"
-/// cua du an), vi chi can 2 kieu dinh dang co dinh (VND dau cham, USD dau
-/// phay).
+/// cua du an). VND dung dau PHAY phan cach hang nghin (theo yeu cau nguoi
+/// dung, dong bo voi cach go so tien co dau phay o cac o nhap - xem
+/// ThousandsInputFormatter), USD cung dau phay (chuan quoc te) + dau cham
+/// thap phan.
 String formatVnd(num value) {
   final rounded = value.round();
   final negative = rounded < 0;
   final digits = rounded.abs().toString();
   final buffer = StringBuffer();
   for (var i = 0; i < digits.length; i++) {
-    if (i > 0 && (digits.length - i) % 3 == 0) buffer.write('.');
+    if (i > 0 && (digits.length - i) % 3 == 0) buffer.write(',');
     buffer.write(digits[i]);
   }
   return '${negative ? '-' : ''}$buffer ₫';

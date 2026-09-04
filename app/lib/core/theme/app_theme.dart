@@ -170,6 +170,12 @@ class PillButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final gradient = accentGradient ?? AppColors.accentGradient;
     final shadowColor = accentColor ?? AppColors.blue;
+    // Khi khong filled (outline), TRUOC DAY luon dung mau vien/chu trung
+    // tinh (glassBorder/textPrimary trang) du co truyen accentColor - khien
+    // nut trong mo nhat, khong noi bat mau rieng cua tung man (vd Debt
+    // pay/collect da truyen pink/teal nhung khong hien ra). Gio dung thang
+    // accentColor lam vien + mau chu de nut ro rang, "co mau" hon.
+    final outlineColor = accentColor ?? AppColors.wealthAccent;
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -179,8 +185,10 @@ class PillButton extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 16),
           decoration: BoxDecoration(
             gradient: filled ? gradient : null,
-            color: filled ? null : AppColors.glassFill,
-            border: filled ? null : Border.all(color: AppColors.glassBorder),
+            color: filled ? null : outlineColor.withValues(alpha: 0.14),
+            border: filled
+                ? null
+                : Border.all(color: outlineColor.withValues(alpha: 0.6)),
             borderRadius: BorderRadius.circular(999),
             boxShadow: filled
                 ? [
@@ -208,7 +216,11 @@ class PillButton extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
-                  style: AppTextStyles.body(size: 14, weight: FontWeight.w800),
+                  style: AppTextStyles.body(
+                    size: 14,
+                    weight: FontWeight.w800,
+                    color: filled ? null : outlineColor,
+                  ),
                 ),
               ),
             ],
@@ -300,7 +312,7 @@ class TileLabelText extends StatelessWidget {
     required this.label,
     required this.maxWidth,
     this.baseSize = 10.5,
-    this.minSize = 8.5,
+    this.minSize = 6.5,
     this.weight = FontWeight.w600,
     this.color,
   });

@@ -685,6 +685,88 @@ final totalInvestmentValueVndProvider = Provider.autoDispose<double>((ref) {
   return cryptoValueVnd + stockValueVnd + metalValueVnd + realEstateValueVnd;
 });
 
+/// So tien lai/lo (VND) + % lai/lo cua TOAN BO Tai san dau tu, gop tu 3
+/// nguon co "moc so sanh" (Crypto dung % thay doi 24h lam moc, Co phieu/Kim
+/// loai dung gia von avgCost lam moc - Nha dat KHONG co moc nao nen bo qua)
+/// - dung cho the tong o Home khi dang xem "Tong tai san dau tu". Tra ve
+/// pnlPercent null neu khong co du lieu moc nao de tinh %.
+final investmentPnlProvider = Provider.autoDispose<(double, double?)>((ref) {
+  final cryptoHoldings = ref.watch(cryptoPortfolioProvider);
+  final liveCoins = ref.watch(liveCoinsProvider(CryptoCurrency.usd));
+  final coinById = {for (final c in liveCoins) c.id: c};
+  final usdVnd = ref.watch(wealthVnAssetsProvider).valueOrNull?.usdVnd;
+  double cryptoPnlVnd = 0;
+  double cryptoCostVnd = 0;
+  if (usdVnd != null) {
+    for (final h in cryptoHoldings) {
+      final c = coinById[h.coinId];
+      if (c == null) continue;
+      final valueNow = c.price * h.quantity * usdVnd;
+      final valueBefore = valueNow / (1 + c.change24hPercent / 100);
+      cryptoPnlVnd += valueNow - valueBefore;
+      cryptoCostVnd += valueBefore;
+    }
+  }
+
+  final stockHoldings =
+      ref.watch(wealthHoldingsProvider('stock_intl')).valueOrNull ?? [];
+  final stockSymbols = stockHoldings
+      .map((h) => h.symbol ?? '')
+      .where((s) => s.isNotEmpty)
+      .toList();
+  final stockQuotes =
+      ref.watch(stocksIntlQuotesProvider(stockSymbols)).valueOrNull ?? [];
+  final stockPriceBySymbol = {for (final q in stockQuotes) q.symbol: q.price};
+  double stockPnlVnd = 0;
+  double stockCostVnd = 0;
+  if (usdVnd != null) {
+    for (final h in stockHoldings) {
+      final qty = h.quantity ?? 0;
+      final avgCost = h.avgCost ?? 0;
+      final price = stockPriceBySymbol[h.symbol] ?? avgCost;
+      stockPnlVnd += (price - avgCost) * qty * usdVnd;
+      stockCostVnd += avgCost * qty * usdVnd;
+    }
+  }
+
+  final snap = ref.watch(wealthVnAssetsProvider).valueOrNull;
+  final goldHoldings =
+      ref.watch(wealthHoldingsProvider('gold')).valueOrNull ?? [];
+  final silverHoldings =
+      ref.watch(wealthHoldingsProvider('silver')).valueOrNull ?? [];
+  final copperHoldings =
+      ref.watch(wealthHoldingsProvider('copper')).valueOrNull ?? [];
+  double metalValueVnd = 0;
+  double metalCostVnd = 0;
+  for (final h in [...goldHoldings, ...silverHoldings, ...copperHoldings]) {
+    metalCostVnd += (h.avgCost ?? 0) * (h.quantity ?? 0);
+  }
+  if (snap != null) {
+    final goldPrice = snap.goldSjcSell ?? snap.goldPnjSell;
+    if (goldPrice != null) {
+      for (final h in goldHoldings) {
+        metalValueVnd += goldPrice * (h.quantity ?? 0);
+      }
+    }
+    if (snap.xagVndPerLuong != null) {
+      for (final h in silverHoldings) {
+        metalValueVnd += snap.xagVndPerLuong! * (h.quantity ?? 0);
+      }
+    }
+    if (snap.xcuVndPerKg != null) {
+      for (final h in copperHoldings) {
+        metalValueVnd += snap.xcuVndPerKg! * (h.quantity ?? 0);
+      }
+    }
+  }
+  final metalPnlVnd = metalValueVnd - metalCostVnd;
+
+  final totalPnl = cryptoPnlVnd + stockPnlVnd + metalPnlVnd;
+  final totalCost = cryptoCostVnd + stockCostVnd + metalCostVnd;
+  final pnlPercent = totalCost == 0 ? null : totalPnl / totalCost * 100;
+  return (totalPnl, pnlPercent);
+});
+
 /// Bat/tat che so tien bang mot dau `••••••` - dung chung 1 controller cho
 /// ca 2 nut con mat (tong o Home la [wealthPrivacyModeProvider], tong tab
 /// Tai san dau tu la [investmentPrivacyModeProvider]) vi cung 1 logic, chi

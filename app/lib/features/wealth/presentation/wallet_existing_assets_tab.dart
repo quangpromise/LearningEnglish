@@ -156,6 +156,13 @@ class _CashCard extends ConsumerWidget {
     final totalUsd = entries
         .where((e) => e.currency == 'USD')
         .fold<double>(0, (s, e) => s + e.amount);
+    void openHistory() => openAppPopup(
+      context,
+      WalletAccountHistoryScreen(
+        title: ref.tr('wallet_section_cash'),
+        accountType: 'cash',
+      ),
+    );
     return GlowBox(
       padding: const EdgeInsets.all(16),
       borderRadius: 18,
@@ -166,15 +173,7 @@ class _CashCard extends ConsumerWidget {
             children: [
               Expanded(
                 child: GestureDetector(
-                  onTap: entries.isEmpty
-                      ? null
-                      : () => openAppPopup(
-                          context,
-                          WalletAccountHistoryScreen(
-                            title: ref.tr('wallet_section_cash'),
-                            accountType: 'cash',
-                          ),
-                        ),
+                  onTap: entries.isEmpty ? null : openHistory,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -205,31 +204,35 @@ class _CashCard extends ConsumerWidget {
                 style: AppTextStyles.muted(),
               ),
             )
-          else ...[
-            const SizedBox(height: 10),
-            for (final e in entries.take(5)) WalletEntryRow(entry: e),
-            if (entries.length > 5)
-              Padding(
-                padding: const EdgeInsets.only(top: 6),
-                child: GestureDetector(
-                  onTap: () => openAppPopup(
-                    context,
-                    WalletAccountHistoryScreen(
-                      title: ref.tr('wallet_section_cash'),
-                      accountType: 'cash',
+          else
+            // Ca khoi xem truoc (toi da 5 dong) + link "xem tat ca" deu bam
+            // vao la mo LICH SU DAY DU - dong rieng KHONG con tu sua/xoa
+            // truc tiep tai day nua (interactive:false) de tranh nham lan
+            // "tuong bam vao se mo lich su nhung lai mo sua dong do" nhu
+            // nguoi dung da bao cao; sua/xoa chuyen het vao man lich su.
+            GestureDetector(
+              onTap: openHistory,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 10),
+                  for (final e in entries.take(5))
+                    WalletEntryRow(entry: e, interactive: false),
+                  if (entries.length > 5)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Text(
+                        ref.tr('wallet_view_all_history'),
+                        style: AppTextStyles.body(
+                          size: 11,
+                          weight: FontWeight.w700,
+                          color: AppColors.wealthAccent,
+                        ),
+                      ),
                     ),
-                  ),
-                  child: Text(
-                    ref.tr('wallet_view_all_history'),
-                    style: AppTextStyles.body(
-                      size: 11,
-                      weight: FontWeight.w700,
-                      color: AppColors.wealthAccent,
-                    ),
-                  ),
-                ),
+                ],
               ),
-          ],
+            ),
         ],
       ),
     );
@@ -259,15 +262,15 @@ class _BankCard extends ConsumerWidget {
         bankName: label,
       ),
     );
-    return GlowBox(
-      padding: const EdgeInsets.all(16),
-      borderRadius: 18,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          GestureDetector(
-            onTap: openHistory,
-            child: Row(
+    return GestureDetector(
+      onTap: openHistory,
+      child: GlowBox(
+        padding: const EdgeInsets.all(16),
+        borderRadius: 18,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
                 Expanded(
                   child: Text(
@@ -281,19 +284,18 @@ class _BankCard extends ConsumerWidget {
                 ),
               ],
             ),
-          ),
-          if (totalUsd != 0)
-            Align(
-              alignment: Alignment.centerRight,
-              child: Text(formatUsd(totalUsd), style: AppTextStyles.muted()),
-            ),
-          const SizedBox(height: 8),
-          for (final e in entries.take(5)) WalletEntryRow(entry: e),
-          if (entries.length > 5)
-            Padding(
-              padding: const EdgeInsets.only(top: 6),
-              child: GestureDetector(
-                onTap: openHistory,
+            if (totalUsd != 0)
+              Align(
+                alignment: Alignment.centerRight,
+                child: Text(formatUsd(totalUsd), style: AppTextStyles.muted()),
+              ),
+            const SizedBox(height: 8),
+            // interactive:false - xem cach giai thich o _CashCard ben tren.
+            for (final e in entries.take(5))
+              WalletEntryRow(entry: e, interactive: false),
+            if (entries.length > 5)
+              Padding(
+                padding: const EdgeInsets.only(top: 6),
                 child: Text(
                   ref.tr('wallet_view_all_history'),
                   style: AppTextStyles.body(
@@ -303,20 +305,55 @@ class _BankCard extends ConsumerWidget {
                   ),
                 ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
 
 class WalletEntryRow extends ConsumerWidget {
-  const WalletEntryRow({super.key, required this.entry});
+  const WalletEntryRow({
+    super.key,
+    required this.entry,
+    this.interactive = true,
+  });
   final WealthBalanceEntry entry;
+  // false = chi xem (dung trong khoi xem truoc tren man Vi chinh) - khong
+  // bam de sua, khong vuot de xoa, tranh nham lan voi bam-de-mo-lich-su cua
+  // ca khoi xem truoc do.
+  final bool interactive;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isPositive = entry.amount >= 0;
+    final content = Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              entry.note?.isNotEmpty == true
+                  ? entry.note!
+                  : '${entry.occurredAt.day.toString().padLeft(2, '0')}/'
+                        '${entry.occurredAt.month.toString().padLeft(2, '0')}',
+              style: AppTextStyles.muted(size: 12),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          Text(
+            formatByCurrency(entry.amount, entry.currency),
+            style: AppTextStyles.body(
+              size: 12,
+              weight: FontWeight.w700,
+              color: isPositive ? AppColors.teal : AppColors.pink,
+            ),
+          ),
+        ],
+      ),
+    );
+    if (!interactive) return content;
     return Dismissible(
       key: ValueKey(entry.id),
       direction: DismissDirection.endToStart,
@@ -390,32 +427,7 @@ class WalletEntryRow extends ConsumerWidget {
       },
       child: GestureDetector(
         onTap: () => showAddBalanceEntrySheet(context, ref, existing: entry),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  entry.note?.isNotEmpty == true
-                      ? entry.note!
-                      : '${entry.occurredAt.day.toString().padLeft(2, '0')}/'
-                            '${entry.occurredAt.month.toString().padLeft(2, '0')}',
-                  style: AppTextStyles.muted(size: 12),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              Text(
-                formatByCurrency(entry.amount, entry.currency),
-                style: AppTextStyles.body(
-                  size: 12,
-                  weight: FontWeight.w700,
-                  color: isPositive ? AppColors.teal : AppColors.pink,
-                ),
-              ),
-            ],
-          ),
-        ),
+        child: content,
       ),
     );
   }
