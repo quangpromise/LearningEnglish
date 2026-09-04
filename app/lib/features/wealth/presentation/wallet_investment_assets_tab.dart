@@ -17,23 +17,17 @@ import 'stock_portfolio_screen.dart';
 /// Kim loai quy/Nha dat, moi the mo 1 man Portfolio rieng. Thay the
 /// WealthInvestmentsTab cu (chi co Crypto+Co phieu, Crypto la link ngoai
 /// sang CryptoScreen thay vi Portfolio thuc).
-class WalletInvestmentAssetsTab extends ConsumerStatefulWidget {
+class WalletInvestmentAssetsTab extends ConsumerWidget {
   const WalletInvestmentAssetsTab({super.key});
 
   @override
-  ConsumerState<WalletInvestmentAssetsTab> createState() =>
-      _WalletInvestmentAssetsTabState();
-}
-
-class _WalletInvestmentAssetsTabState
-    extends ConsumerState<WalletInvestmentAssetsTab> {
-  // 'VND' | 'USD' - chi anh huong cach HIEN THI (khong doi cach luu tru),
-  // vi tat ca gia tri deu da duoc quy doi VND lam mau so chung ben trong.
-  String _displayCurrency = 'VND';
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final hidden = ref.watch(investmentPrivacyModeProvider);
+    // 'VND' | 'USD' - chi anh huong cach HIEN THI (khong doi cach luu tru),
+    // vi tat ca gia tri deu da duoc quy doi VND lam mau so chung ben trong.
+    // Luu qua SharedPreferences (investmentDisplayCurrencyProvider) de giu
+    // nguyen lua chon o lan mo lai sau, khong tu reset ve VND.
+    final displayCurrency = ref.watch(investmentDisplayCurrencyProvider);
 
     // Crypto: gia tri = gia OKX/CoinGecko (USD) x so luong, quy doi VND.
     // KHONG co gia von (avgCost) duoc luu cho tung lan mua nen dung % thay
@@ -133,7 +127,7 @@ class _WalletInvestmentAssetsTabState
     // theo USD thi chia lai cho ty gia (usdVnd), bo qua neu ty gia chua
     // tai duoc (hien thi tam VND).
     String display(double vnd) {
-      if (_displayCurrency == 'USD' && usdVnd != null && usdVnd > 0) {
+      if (displayCurrency == 'USD' && usdVnd != null && usdVnd > 0) {
         return formatUsd(vnd / usdVnd);
       }
       return formatVnd(vnd);
@@ -163,8 +157,9 @@ class _WalletInvestmentAssetsTabState
                 ),
               ),
               _CurrencyToggleChip(
-                currency: _displayCurrency,
-                onChanged: (c) => setState(() => _displayCurrency = c),
+                currency: displayCurrency,
+                onChanged: (c) =>
+                    ref.read(investmentDisplayCurrencyProvider.notifier).set(c),
               ),
               const SizedBox(width: 10),
               GestureDetector(

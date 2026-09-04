@@ -2,16 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/currency_format.dart';
+import '../../crypto/presentation/crypto_coin_row.dart';
 import '../../crypto/presentation/crypto_market_tab.dart';
-import '../../crypto/presentation/crypto_watchlist_tab.dart';
+import '../../crypto/presentation/crypto_providers.dart';
+import '../data/exchange_rate_repository.dart';
+import '../data/stocks_intl_repository.dart';
 import 'market_metals_tab.dart';
 import 'market_real_estate_tab.dart';
 import 'market_stocks_tab.dart';
 
-/// Man Market (Phase F) - 4 tab gia thi truong real-time cho 4 loai tai san
-/// dau tu: Crypto (giu nguyen CoinGecko+OKX WebSocket, chi con Market+
-/// Watchlist vi Portfolio da chuyen sang Vi), Chung khoan, Kim loai, Nha dat.
+/// Man Market (Phase F, redesign theo yeu cau gop chung) - 2 tab o TREN
+/// CUNG: "Market" (chon loai tai san bang chip ben trong: Crypto/Co phieu/
+/// Kim loai hiem/Nha dat, giong cach 1 san giao dich that gop chung cac thi
+/// truong) va "Watchlist" (gop TAT CA item da "theo doi" tu moi loai tai
+/// san vao 1 danh sach duy nhat) - thay the cau truc cu la 4 tab rieng biet
+/// (bi tran chu khi isScrollable + 4 tab dai).
 class MarketScreen extends StatefulWidget {
   const MarketScreen({super.key});
 
@@ -19,14 +27,17 @@ class MarketScreen extends StatefulWidget {
   State<MarketScreen> createState() => _MarketScreenState();
 }
 
+enum _MarketCategory { crypto, stocks, metals, realEstate }
+
 class _MarketScreenState extends State<MarketScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
+  _MarketCategory _category = _MarketCategory.crypto;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 2, vsync: this);
   }
 
   @override
@@ -93,7 +104,6 @@ class _MarketScreenState extends State<MarketScreen>
                 padding: const EdgeInsets.all(4),
                 child: TabBar(
                   controller: _tabController,
-                  isScrollable: true,
                   indicator: BoxDecoration(
                     gradient: AppColors.wealthAccentGradient,
                     borderRadius: BorderRadius.circular(999),
@@ -102,12 +112,13 @@ class _MarketScreenState extends State<MarketScreen>
                   labelColor: Colors.white,
                   unselectedLabelColor: AppColors.textMuted,
                   dividerColor: Colors.transparent,
-                  labelStyle: const TextStyle(fontWeight: FontWeight.w800),
+                  labelStyle: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                  ),
                   tabs: [
-                    const Tab(text: 'Crypto'),
-                    Tab(text: ref.tr('wealth_investments_stocks_title')),
-                    Tab(text: ref.tr('wealth_investments_metal_title')),
-                    Tab(text: ref.tr('wealth_investments_real_estate_title')),
+                    Tab(text: ref.tr('crypto_tab_market')),
+                    Tab(text: ref.tr('crypto_tab_watchlist')),
                   ],
                 ),
               ),
@@ -116,11 +127,21 @@ class _MarketScreenState extends State<MarketScreen>
             Expanded(
               child: TabBarView(
                 controller: _tabController,
-                children: const [
-                  _CryptoMarketAndWatchlist(),
-                  MarketStocksTab(),
-                  MarketMetalsTab(),
-                  MarketRealEstateTab(),
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Consumer(
+                        builder: (context, ref, _) => _CategoryChipRow(
+                          selected: _category,
+                          onChanged: (c) => setState(() => _category = c),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Expanded(child: _buildCategoryContent()),
+                    ],
+                  ),
+                  const _UnifiedWatchlistTab(),
                 ],
               ),
             ),
@@ -129,62 +150,296 @@ class _MarketScreenState extends State<MarketScreen>
       ),
     );
   }
+
+  Widget _buildCategoryContent() {
+    switch (_category) {
+      case _MarketCategory.crypto:
+        return const CryptoMarketTab();
+      case _MarketCategory.stocks:
+        return const MarketStocksTab();
+      case _MarketCategory.metals:
+        return const MarketMetalsTab();
+      case _MarketCategory.realEstate:
+        return const MarketRealEstateTab();
+    }
+  }
 }
 
-/// Nhung lai Market+Watchlist cua Crypto (khong co Portfolio - da chuyen
-/// sang Vi) bang 1 TabBar phu nho ben trong, giu nguyen toggle USD/VND.
-class _CryptoMarketAndWatchlist extends ConsumerStatefulWidget {
-  const _CryptoMarketAndWatchlist();
+/// Hang chip chon loai tai san dang xem trong tab "Market" - thay the 4 tab
+/// rieng bi tran chu truoc day, chip co the xuong dong neu khong vua 1 hang.
+class _CategoryChipRow extends ConsumerWidget {
+  const _CategoryChipRow({required this.selected, required this.onChanged});
+  final _MarketCategory selected;
+  final ValueChanged<_MarketCategory> onChanged;
 
   @override
-  ConsumerState<_CryptoMarketAndWatchlist> createState() =>
-      _CryptoMarketAndWatchlistState();
-}
-
-class _CryptoMarketAndWatchlistState
-    extends ConsumerState<_CryptoMarketAndWatchlist>
-    with SingleTickerProviderStateMixin {
-  late final TabController _innerTab;
-
-  @override
-  void initState() {
-    super.initState();
-    _innerTab = TabController(length: 2, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _innerTab.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget build(BuildContext context, WidgetRef ref) {
+    final items = [
+      (_MarketCategory.crypto, 'Crypto'),
+      (_MarketCategory.stocks, ref.tr('wealth_investments_stocks_title')),
+      (_MarketCategory.metals, ref.tr('wealth_investments_metal_title')),
+      (
+        _MarketCategory.realEstate,
+        ref.tr('wealth_investments_real_estate_title'),
+      ),
+    ];
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
       children: [
-        TabBar(
-          controller: _innerTab,
-          labelColor: AppColors.wealthAccent,
-          unselectedLabelColor: AppColors.textMuted,
-          indicatorColor: AppColors.wealthAccent,
-          labelStyle: const TextStyle(
-            fontWeight: FontWeight.w700,
-            fontSize: 12,
+        for (final item in items)
+          GestureDetector(
+            onTap: () => onChanged(item.$1),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+              decoration: BoxDecoration(
+                color: selected == item.$1
+                    ? AppColors.wealthAccent.withValues(alpha: 0.22)
+                    : AppColors.glassFill,
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(
+                  color: selected == item.$1
+                      ? AppColors.wealthAccent
+                      : AppColors.glassBorder,
+                ),
+              ),
+              child: Text(
+                item.$2,
+                style: AppTextStyles.body(
+                  size: 12,
+                  weight: FontWeight.w700,
+                  color: selected == item.$1
+                      ? AppColors.wealthAccent
+                      : AppColors.textPrimary,
+                ),
+              ),
+            ),
           ),
-          tabs: [
-            Tab(text: ref.tr('crypto_tab_market')),
-            Tab(text: ref.tr('crypto_tab_watchlist')),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Expanded(
-          child: TabBarView(
-            controller: _innerTab,
-            children: const [CryptoMarketTab(), CryptoWatchlistTab()],
-          ),
-        ),
       ],
+    );
+  }
+}
+
+/// Gop TAT CA item da "theo doi" tu moi loai tai san (Crypto qua
+/// [cryptoWatchlistProvider] rieng, Co phieu/Kim loai qua
+/// [assetWatchlistProvider] chung) vao 1 danh sach duy nhat, chia theo tung
+/// nhom neu nhom do co it nhat 1 item.
+class _UnifiedWatchlistTab extends ConsumerWidget {
+  const _UnifiedWatchlistTab();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currency = ref.watch(cryptoCurrencyProvider);
+    final cryptoWatchlist = ref.watch(cryptoWatchlistProvider);
+    final liveCoins = ref.watch(liveCoinsProvider(currency));
+    final watchedCoins = liveCoins
+        .where((c) => cryptoWatchlist.contains(c.id))
+        .toList();
+
+    final assetWatchlist = ref.watch(assetWatchlistProvider);
+    final watchedStockSymbols = assetWatchlist
+        .where((k) => k.startsWith('stock:'))
+        .map((k) => k.substring('stock:'.length))
+        .toList();
+    final stockQuotesAsync = ref.watch(
+      stocksIntlQuotesProvider(watchedStockSymbols),
+    );
+    final stockQuotes = stockQuotesAsync.valueOrNull ?? [];
+    final stockPriceBySymbol = {for (final q in stockQuotes) q.symbol: q};
+
+    final watchedMetalKeys = assetWatchlist
+        .where((k) => k.startsWith('metal:'))
+        .toList();
+    final snap = ref.watch(wealthVnAssetsProvider).valueOrNull;
+
+    final isEmpty =
+        watchedCoins.isEmpty &&
+        watchedStockSymbols.isEmpty &&
+        watchedMetalKeys.isEmpty;
+
+    if (isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.star_border_rounded,
+                color: AppColors.textMuted,
+                size: 40,
+              ),
+              const SizedBox(height: 10),
+              Text(
+                ref.tr('crypto_watchlist_empty'),
+                textAlign: TextAlign.center,
+                style: AppTextStyles.muted(),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return ListView(
+      children: [
+        if (watchedCoins.isNotEmpty) ...[
+          Text('Crypto', style: AppTextStyles.heading(size: 13)),
+          const SizedBox(height: 8),
+          for (final coin in watchedCoins) ...[
+            CryptoCoinRow(coin: coin, currency: currency),
+            const SizedBox(height: 8),
+          ],
+          const SizedBox(height: 8),
+        ],
+        if (watchedStockSymbols.isNotEmpty) ...[
+          Text(
+            ref.tr('wealth_investments_stocks_title'),
+            style: AppTextStyles.heading(size: 13),
+          ),
+          const SizedBox(height: 8),
+          for (final symbol in watchedStockSymbols) ...[
+            _StockWatchRow(symbol: symbol, quote: stockPriceBySymbol[symbol]),
+            const SizedBox(height: 8),
+          ],
+          const SizedBox(height: 8),
+        ],
+        if (watchedMetalKeys.isNotEmpty) ...[
+          Text(
+            ref.tr('wealth_investments_metal_title'),
+            style: AppTextStyles.heading(size: 13),
+          ),
+          const SizedBox(height: 8),
+          for (final key in watchedMetalKeys) ...[
+            _MetalWatchRow(watchKey: key, snap: snap),
+            const SizedBox(height: 8),
+          ],
+        ],
+      ],
+    );
+  }
+}
+
+class _StockWatchRow extends ConsumerWidget {
+  const _StockWatchRow({required this.symbol, required this.quote});
+  final String symbol;
+  final StockQuote? quote;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isUp = (quote?.changePercent ?? 0) >= 0;
+    return GlowBox(
+      borderRadius: 16,
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => ref
+                .read(assetWatchlistProvider.notifier)
+                .toggle('stock:$symbol'),
+            child: const Padding(
+              padding: EdgeInsets.only(right: 10),
+              child: Icon(
+                Icons.star_rounded,
+                size: 20,
+                color: AppColors.wealthAccent,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              symbol,
+              style: AppTextStyles.body(weight: FontWeight.w800),
+            ),
+          ),
+          if (quote != null) ...[
+            Text(
+              '\$${quote!.price.toStringAsFixed(2)}',
+              style: AppTextStyles.body(weight: FontWeight.w700, size: 12),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              '${isUp ? '+' : ''}${quote!.changePercent.toStringAsFixed(2)}%',
+              style: TextStyle(
+                color: isUp ? AppColors.teal : AppColors.pink,
+                fontWeight: FontWeight.w800,
+                fontSize: 11,
+              ),
+            ),
+          ] else
+            const SizedBox(
+              width: 14,
+              height: 14,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MetalWatchRow extends ConsumerWidget {
+  const _MetalWatchRow({required this.watchKey, required this.snap});
+  final String watchKey;
+  final WealthVnAssetSnapshot? snap;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    String labelKey;
+    double? price;
+    String unitKey;
+    switch (watchKey) {
+      case 'metal:gold_sjc':
+        labelKey = 'wealth_metal_gold_sjc';
+        price = snap?.goldSjcSell;
+        unitKey = 'wealth_metal_unit_luong';
+      case 'metal:gold_pnj':
+        labelKey = 'wealth_metal_gold_pnj';
+        price = snap?.goldPnjSell;
+        unitKey = 'wealth_metal_unit_luong';
+      case 'metal:silver':
+        labelKey = 'wealth_metal_silver_world';
+        price = snap?.xagVndPerLuong;
+        unitKey = 'wealth_metal_unit_luong';
+      default:
+        labelKey = 'wealth_metal_copper_world';
+        price = snap?.xcuVndPerKg;
+        unitKey = 'wealth_metal_unit_kg';
+    }
+    return GlowBox(
+      borderRadius: 16,
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () =>
+                ref.read(assetWatchlistProvider.notifier).toggle(watchKey),
+            child: const Padding(
+              padding: EdgeInsets.only(right: 10),
+              child: Icon(
+                Icons.star_rounded,
+                size: 20,
+                color: AppColors.wealthAccent,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              ref.tr(labelKey),
+              style: AppTextStyles.body(weight: FontWeight.w800),
+            ),
+          ),
+          if (price != null)
+            Text(
+              '${formatVnd(price)}/${ref.tr(unitKey)}',
+              style: AppTextStyles.body(weight: FontWeight.w700, size: 12),
+            )
+          else
+            const SizedBox(
+              width: 14,
+              height: 14,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+        ],
+      ),
     );
   }
 }

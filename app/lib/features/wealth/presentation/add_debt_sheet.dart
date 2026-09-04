@@ -71,14 +71,17 @@ class _AddDebtSheetState extends ConsumerState<_AddDebtSheet> {
         }
       }
     });
+    if (_splitMode) _splitEqually();
   }
 
   void _addSplitPerson() {
     setState(() => _splitPeople.add(_SplitPersonRow()));
+    _splitEqually();
   }
 
   void _removeSplitPerson(int i) {
     setState(() => _splitPeople.removeAt(i).dispose());
+    _splitEqually();
   }
 
   double get _totalAmount =>
@@ -274,7 +277,13 @@ class _AddDebtSheetState extends ConsumerState<_AddDebtSheet> {
                           borderSide: BorderSide.none,
                         ),
                       ),
-                      onChanged: (_) => setState(() {}),
+                      onChanged: (_) {
+                        if (_splitMode) {
+                          _splitEqually();
+                        } else {
+                          setState(() {});
+                        }
+                      },
                     ),
                   ),
                   const SizedBox(width: 8),

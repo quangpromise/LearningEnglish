@@ -54,10 +54,30 @@ class MarketStocksTab extends ConsumerWidget {
                   final symbol = _kWatchSymbols[i];
                   final quote = bySymbol[symbol];
                   final isUp = (quote?.changePercent ?? 0) >= 0;
+                  final watchlist = ref.watch(assetWatchlistProvider);
+                  final watchKey = 'stock:$symbol';
+                  final isFavorite = watchlist.contains(watchKey);
                   return GlowBox(
                     borderRadius: 16,
                     child: Row(
                       children: [
+                        GestureDetector(
+                          onTap: () => ref
+                              .read(assetWatchlistProvider.notifier)
+                              .toggle(watchKey),
+                          child: Padding(
+                            padding: const EdgeInsets.only(right: 10),
+                            child: Icon(
+                              isFavorite
+                                  ? Icons.star_rounded
+                                  : Icons.star_border_rounded,
+                              size: 20,
+                              color: isFavorite
+                                  ? AppColors.wealthAccent
+                                  : AppColors.textMuted,
+                            ),
+                          ),
+                        ),
                         Expanded(
                           child: Text(
                             symbol,

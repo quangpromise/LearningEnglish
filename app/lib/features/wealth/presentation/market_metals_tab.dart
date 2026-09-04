@@ -31,6 +31,7 @@ class MarketMetalsTab extends ConsumerWidget {
             const SizedBox(height: 12),
             if (snap.goldSjcBuy != null || snap.goldSjcSell != null)
               _MetalCard(
+                watchKey: 'metal:gold_sjc',
                 title: ref.tr('wealth_metal_gold_sjc'),
                 buy: snap.goldSjcBuy,
                 sell: snap.goldSjcSell,
@@ -39,6 +40,7 @@ class MarketMetalsTab extends ConsumerWidget {
             if (snap.goldPnjBuy != null || snap.goldPnjSell != null) ...[
               const SizedBox(height: 10),
               _MetalCard(
+                watchKey: 'metal:gold_pnj',
                 title: ref.tr('wealth_metal_gold_pnj'),
                 buy: snap.goldPnjBuy,
                 sell: snap.goldPnjSell,
@@ -48,6 +50,7 @@ class MarketMetalsTab extends ConsumerWidget {
             if (snap.xagVndPerLuong != null) ...[
               const SizedBox(height: 10),
               _MetalCard(
+                watchKey: 'metal:silver',
                 title: ref.tr('wealth_metal_silver_world'),
                 sell: snap.xagVndPerLuong,
                 unit: ref.tr('wealth_metal_unit_luong'),
@@ -56,6 +59,7 @@ class MarketMetalsTab extends ConsumerWidget {
             if (snap.xcuVndPerKg != null) ...[
               const SizedBox(height: 10),
               _MetalCard(
+                watchKey: 'metal:copper',
                 title: ref.tr('wealth_metal_copper_world'),
                 sell: snap.xcuVndPerKg,
                 unit: ref.tr('wealth_metal_unit_kg'),
@@ -77,11 +81,13 @@ class MarketMetalsTab extends ConsumerWidget {
 
 class _MetalCard extends ConsumerWidget {
   const _MetalCard({
+    required this.watchKey,
     required this.title,
     this.buy,
     this.sell,
     required this.unit,
   });
+  final String watchKey;
   final String title;
   final double? buy;
   final double? sell;
@@ -89,10 +95,25 @@ class _MetalCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isFavorite = ref.watch(assetWatchlistProvider).contains(watchKey);
     return GlowBox(
       borderRadius: 16,
       child: Row(
         children: [
+          GestureDetector(
+            onTap: () =>
+                ref.read(assetWatchlistProvider.notifier).toggle(watchKey),
+            child: Padding(
+              padding: const EdgeInsets.only(right: 10),
+              child: Icon(
+                isFavorite ? Icons.star_rounded : Icons.star_border_rounded,
+                size: 20,
+                color: isFavorite
+                    ? AppColors.wealthAccent
+                    : AppColors.textMuted,
+              ),
+            ),
+          ),
           Expanded(
             child: Text(
               title,

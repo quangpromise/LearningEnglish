@@ -8,6 +8,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_format.dart';
 import '../data/wealth_debt_model.dart';
 import 'add_debt_sheet.dart';
+import 'confirm_delete.dart';
 import 'debt_person_history_screen.dart';
 
 /// Man No (Phase E) - 2 tab "Dang no" (minh no nguoi khac) va "Nguoi khac no
@@ -277,7 +278,7 @@ class _DebtList extends ConsumerWidget {
 /// theo tung loai tien te, bam vao mo lich su chi tiet tung khoan (ngay gio
 /// + note + tra/thu tung phan) trong DebtPersonHistoryScreen. Sua/xoa tung
 /// khoan cu the cung chuyen het vao man lich su do.
-class _PersonGroupTile extends StatelessWidget {
+class _PersonGroupTile extends ConsumerWidget {
   const _PersonGroupTile({required this.debts});
   final List<WealthDebt> debts;
 
@@ -290,72 +291,104 @@ class _PersonGroupTile extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final first = debts.first;
     final allSettled = debts.every((d) => d.isSettled);
     final totals = _totalsByCurrency();
-    return GestureDetector(
-      onTap: () => openAppPopup(
-        context,
-        DebtPersonHistoryScreen(
-          personId: first.personId,
-          personName: first.personName,
+    return Dismissible(
+      key: ValueKey('${first.personId}_${first.direction}'),
+      direction: DismissDirection.endToStart,
+      confirmDismiss: (_) => confirmDelete(context, ref),
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        decoration: BoxDecoration(
+          color: AppColors.pink.withValues(alpha: 0.18),
+          borderRadius: BorderRadius.circular(16),
         ),
+        child: const Icon(Icons.delete_outline_rounded, color: AppColors.pink),
       ),
-      child: GlowBox(
-        borderRadius: 16,
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    first.personName,
-                    style: AppTextStyles.body(
-                      size: 16,
-                      weight: FontWeight.w800,
+      onDismissed: (_) async {
+        final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
+        if (userId == null) return;
+        // Xoa TAT CA khoan no cua nguoi nay (cung 1 chieu) - moi khoan
+        // cascade xoa het payments + balance entries lien quan.
+        final repo = ref.read(wealthDebtRepositoryProvider);
+        for (final d in debts) {
+          await repo.delete(userId, d.id);
+        }
+        ref.invalidate(walletBalanceEntriesProvider);
+        ref.invalidate(debtsProvider(first.direction));
+        ref.invalidate(debtsByPersonProvider(first.personId));
+      },
+      child: GestureDetector(
+        onTap: () => openAppPopup(
+          context,
+          DebtPersonHistoryScreen(
+            personId: first.personId,
+            personName: first.personName,
+          ),
+        ),
+        child: GlowBox(
+          borderRadius: 16,
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      first.personName,
+                      style: AppTextStyles.body(
+                        size: 16,
+                        weight: FontWeight.w800,
+                      ),
                     ),
-                  ),
-                  if (debts.length > 1)
+                    if (debts.length > 1)
+                      Consumer(
+                        builder: (context, ref, _) => Text(
+                          '${debts.length} ${ref.tr('wealth_debt_entries_suffix')}',
+                          style: AppTextStyles.muted(size: 12),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  for (final entry in totals.entries)
+                    Text(
+                      formatByCurrency(entry.value, entry.key),
+                      style:
+                          AppTextStyles.body(
+                            size: 16,
+                            weight: FontWeight.w800,
+                          ).copyWith(
+                            color: first.isIOwe
+                                ? AppColors.pink
+                                : AppColors.teal,
+                          ),
+                    ),
+                  if (allSettled)
                     Consumer(
                       builder: (context, ref, _) => Text(
-                        '${debts.length} ${ref.tr('wealth_debt_entries_suffix')}',
-                        style: AppTextStyles.muted(size: 12),
+                        ref.tr('wealth_debt_settled'),
+                        style: AppTextStyles.muted(size: 11.5),
                       ),
                     ),
                 ],
               ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                for (final entry in totals.entries)
-                  Text(
-                    formatByCurrency(entry.value, entry.key),
-                    style: AppTextStyles.body(size: 16, weight: FontWeight.w800)
-                        .copyWith(
-                          color: first.isIOwe ? AppColors.pink : AppColors.teal,
-                        ),
-                  ),
-                if (allSettled)
-                  Consumer(
-                    builder: (context, ref, _) => Text(
-                      ref.tr('wealth_debt_settled'),
-                      style: AppTextStyles.muted(size: 11.5),
-                    ),
-                  ),
-              ],
-            ),
-            const Padding(
-              padding: EdgeInsets.only(left: 8),
-              child: Icon(
-                Icons.chevron_right_rounded,
-                size: 22,
-                color: AppColors.textMuted,
+              const Padding(
+                padding: EdgeInsets.only(left: 8),
+                child: Icon(
+                  Icons.chevron_right_rounded,
+                  size: 22,
+                  color: AppColors.textMuted,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

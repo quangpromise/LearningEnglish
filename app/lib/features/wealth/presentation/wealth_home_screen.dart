@@ -79,25 +79,41 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
                       GestureDetector(
                         onTap: () =>
                             setState(() => _showInvestment = !_showInvestment),
-                        child: const Padding(
-                          padding: EdgeInsets.only(right: 12),
-                          child: Icon(
+                        child: Container(
+                          width: 34,
+                          height: 34,
+                          decoration: BoxDecoration(
+                            color: AppColors.glassFill,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: AppColors.glassBorder),
+                          ),
+                          child: const Icon(
                             Icons.sync_alt_rounded,
-                            color: AppColors.textMuted,
-                            size: 20,
+                            color: AppColors.wealthAccent,
+                            size: 18,
                           ),
                         ),
                       ),
+                      const SizedBox(width: 16),
                       GestureDetector(
                         onTap: () => ref
                             .read(wealthPrivacyModeProvider.notifier)
                             .toggle(),
-                        child: Icon(
-                          hidden
-                              ? Icons.visibility_off_rounded
-                              : Icons.visibility_rounded,
-                          color: AppColors.textMuted,
-                          size: 20,
+                        child: Container(
+                          width: 34,
+                          height: 34,
+                          decoration: BoxDecoration(
+                            color: AppColors.glassFill,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: AppColors.glassBorder),
+                          ),
+                          child: Icon(
+                            hidden
+                                ? Icons.visibility_off_rounded
+                                : Icons.visibility_rounded,
+                            color: AppColors.wealthAccent,
+                            size: 18,
+                          ),
                         ),
                       ),
                     ],

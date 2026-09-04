@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../features/auth/data/auth_repository.dart';
 import '../../features/crypto/data/crypto_currency.dart';
 import '../../features/crypto/presentation/crypto_providers.dart';
+import '../../features/wealth/data/asset_watchlist_repository.dart';
 import '../../features/fitness/data/community_post_model.dart';
 import '../../features/fitness/data/community_repository.dart';
 import '../../features/fitness/data/exercise_model.dart';
@@ -715,6 +716,60 @@ final wealthPrivacyModeProvider =
 final investmentPrivacyModeProvider =
     StateNotifierProvider<_PrivacyModeController, bool>(
       (ref) => _PrivacyModeController('wealth_investment_privacy_mode_v1'),
+    );
+
+const _investmentDisplayCurrencyKey = 'wealth_investment_display_currency_v1';
+
+/// Luu lai lua chon xem tong Tai san dau tu theo VND/USD (SharedPreferences)
+/// - giu nguyen lua chon nay o cac lan mo lai man sau, khong reset ve VND
+/// moi lan mo Vi.
+class _InvestmentDisplayCurrencyController extends StateNotifier<String> {
+  _InvestmentDisplayCurrencyController() : super('VND') {
+    _load();
+  }
+
+  Future<void> _load() async {
+    final prefs = await SharedPreferences.getInstance();
+    state = prefs.getString(_investmentDisplayCurrencyKey) ?? 'VND';
+  }
+
+  Future<void> set(String currency) async {
+    state = currency;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_investmentDisplayCurrencyKey, currency);
+  }
+}
+
+final investmentDisplayCurrencyProvider =
+    StateNotifierProvider<_InvestmentDisplayCurrencyController, String>(
+      (ref) => _InvestmentDisplayCurrencyController(),
+    );
+
+/// Danh sach "theo doi" gop chung cho Co phieu + Kim loai o man Market (xem
+/// [AssetWatchlistRepository]) - moi phan tu la key "type:id". Goi `.toggle`
+/// de bat/tat 1 item, `.contains` de kiem tra trang thai hien tai cua item.
+class AssetWatchlistController extends StateNotifier<Set<String>> {
+  AssetWatchlistController() : super({}) {
+    _load();
+  }
+
+  Future<void> _load() async {
+    state = await AssetWatchlistRepository.load();
+  }
+
+  bool contains(String key) => state.contains(key);
+
+  Future<void> toggle(String key) async {
+    final next = {...state};
+    if (!next.remove(key)) next.add(key);
+    state = next;
+    await AssetWatchlistRepository.save(next);
+  }
+}
+
+final assetWatchlistProvider =
+    StateNotifierProvider<AssetWatchlistController, Set<String>>(
+      (ref) => AssetWatchlistController(),
     );
 
 // --- No (Debt) - Phase E: "Dang no" (minh no nguoi khac) / "Nguoi khac no

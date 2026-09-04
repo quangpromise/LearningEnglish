@@ -753,8 +753,8 @@ class AppStrings {
       AppLanguage.en: 'Total investment assets',
     },
     'wealth_investments_metal_title': {
-      AppLanguage.vi: 'Vàng / Bạc / Đồng',
-      AppLanguage.en: 'Gold / Silver / Copper',
+      AppLanguage.vi: 'Kim loại hiếm',
+      AppLanguage.en: 'Rare metals',
     },
     'wealth_metal_world_price_note': {
       AppLanguage.vi: 'Giá thế giới quy đổi, không phải giá bán lẻ trong nước.',
