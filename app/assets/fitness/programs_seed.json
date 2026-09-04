@@ -1,0 +1,143 @@
+[
+  {
+    "id": 1,
+    "titleVi": "Tăng cơ toàn thân 8 tuần",
+    "level": "Trung cấp",
+    "equipment": "Phòng gym",
+    "sessionsPerWeek": 4,
+    "durationWeeks": 8,
+    "tags": ["Tăng cơ", "Phòng gym"],
+    "days": [
+      {
+        "dayOfWeek": 1,
+        "exercises": [
+          {"exerciseId": 1, "targetSets": 4, "targetRepsMin": 8, "targetRepsMax": 12, "orderIndex": 0, "supersetGroup": null},
+          {"exerciseId": 8, "targetSets": 4, "targetRepsMin": 8, "targetRepsMax": 12, "orderIndex": 1, "supersetGroup": null},
+          {"exerciseId": 2, "targetSets": 3, "targetRepsMin": 8, "targetRepsMax": 12, "orderIndex": 2, "supersetGroup": null},
+          {"exerciseId": 7, "targetSets": 3, "targetRepsMin": 10, "targetRepsMax": 12, "orderIndex": 3, "supersetGroup": null},
+          {"exerciseId": 9, "targetSets": 3, "targetRepsMin": 10, "targetRepsMax": 12, "orderIndex": 4, "supersetGroup": null},
+          {"exerciseId": 10, "targetSets": 3, "targetRepsMin": 10, "targetRepsMax": 12, "orderIndex": 5, "supersetGroup": null}
+        ]
+      },
+      {
+        "dayOfWeek": 2,
+        "exercises": [
+          {"exerciseId": 5, "targetSets": 4, "targetRepsMin": 6, "targetRepsMax": 10, "orderIndex": 0, "supersetGroup": null},
+          {"exerciseId": 11, "targetSets": 3, "targetRepsMin": 10, "targetRepsMax": 12, "orderIndex": 1, "supersetGroup": null},
+          {"exerciseId": 12, "targetSets": 3, "targetRepsMin": 10, "targetRepsMax": 12, "orderIndex": 2, "supersetGroup": null},
+          {"exerciseId": 152, "targetSets": 3, "targetRepsMin": 12, "targetRepsMax": 15, "orderIndex": 3, "supersetGroup": null},
+          {"exerciseId": 13, "targetSets": 3, "targetRepsMin": 15, "targetRepsMax": 20, "orderIndex": 4, "supersetGroup": null}
+        ]
+      },
+      {"dayOfWeek": 3, "exercises": []},
+      {
+        "dayOfWeek": 4,
+        "exercises": [
+          {"exerciseId": 117, "targetSets": 4, "targetRepsMin": 8, "targetRepsMax": 12, "orderIndex": 0, "supersetGroup": null},
+          {"exerciseId": 133, "targetSets": 4, "targetRepsMin": 8, "targetRepsMax": 12, "orderIndex": 1, "supersetGroup": null},
+          {"exerciseId": 92, "targetSets": 3, "targetRepsMin": 8, "targetRepsMax": 12, "orderIndex": 2, "supersetGroup": null},
+          {"exerciseId": 130, "targetSets": 3, "targetRepsMin": 6, "targetRepsMax": 10, "orderIndex": 3, "supersetGroup": null},
+          {"exerciseId": 69, "targetSets": 3, "targetRepsMin": 10, "targetRepsMax": 12, "orderIndex": 4, "supersetGroup": null},
+          {"exerciseId": 83, "targetSets": 3, "targetRepsMin": 10, "targetRepsMax": 12, "orderIndex": 5, "supersetGroup": null}
+        ]
+      },
+      {
+        "dayOfWeek": 5,
+        "exercises": [
+          {"exerciseId": 149, "targetSets": 4, "targetRepsMin": 8, "targetRepsMax": 10, "orderIndex": 0, "supersetGroup": null},
+          {"exerciseId": 143, "targetSets": 3, "targetRepsMin": 8, "targetRepsMax": 10, "orderIndex": 1, "supersetGroup": null},
+          {"exerciseId": 146, "targetSets": 3, "targetRepsMin": 10, "targetRepsMax": 12, "orderIndex": 2, "supersetGroup": null},
+          {"exerciseId": 147, "targetSets": 3, "targetRepsMin": 10, "targetRepsMax": 12, "orderIndex": 3, "supersetGroup": null},
+          {"exerciseId": 153, "targetSets": 3, "targetRepsMin": 12, "targetRepsMax": 15, "orderIndex": 4, "supersetGroup": null},
+          {"exerciseId": 112, "targetSets": 3, "targetRepsMin": 10, "targetRepsMax": 15, "orderIndex": 5, "supersetGroup": null}
+        ]
+      },
+      {"dayOfWeek": 6, "exercises": []},
+      {"dayOfWeek": 7, "exercises": []}
+    ]
+  },
+  {
+    "id": 2,
+    "titleVi": "Sức mạnh cơ bản 5×5",
+    "level": "Mới bắt đầu",
+    "equipment": "Phòng gym",
+    "sessionsPerWeek": 3,
+    "durationWeeks": 12,
+    "tags": ["Tăng cơ", "Phòng gym"],
+    "days": [
+      {
+        "dayOfWeek": 1,
+        "exercises": [
+          {"exerciseId": 5, "targetSets": 5, "targetRepsMin": 5, "targetRepsMax": 5, "orderIndex": 0, "supersetGroup": null},
+          {"exerciseId": 1, "targetSets": 5, "targetRepsMin": 5, "targetRepsMax": 5, "orderIndex": 1, "supersetGroup": null},
+          {"exerciseId": 8, "targetSets": 5, "targetRepsMin": 5, "targetRepsMax": 5, "orderIndex": 2, "supersetGroup": null}
+        ]
+      },
+      {"dayOfWeek": 2, "exercises": []},
+      {
+        "dayOfWeek": 3,
+        "exercises": [
+          {"exerciseId": 5, "targetSets": 5, "targetRepsMin": 5, "targetRepsMax": 5, "orderIndex": 0, "supersetGroup": null},
+          {"exerciseId": 93, "targetSets": 5, "targetRepsMin": 5, "targetRepsMax": 5, "orderIndex": 1, "supersetGroup": null},
+          {"exerciseId": 6, "targetSets": 1, "targetRepsMin": 5, "targetRepsMax": 5, "orderIndex": 2, "supersetGroup": null}
+        ]
+      },
+      {"dayOfWeek": 4, "exercises": []},
+      {
+        "dayOfWeek": 5,
+        "exercises": [
+          {"exerciseId": 5, "targetSets": 5, "targetRepsMin": 5, "targetRepsMax": 5, "orderIndex": 0, "supersetGroup": null},
+          {"exerciseId": 1, "targetSets": 5, "targetRepsMin": 5, "targetRepsMax": 5, "orderIndex": 1, "supersetGroup": null},
+          {"exerciseId": 8, "targetSets": 5, "targetRepsMin": 5, "targetRepsMax": 5, "orderIndex": 2, "supersetGroup": null}
+        ]
+      },
+      {"dayOfWeek": 6, "exercises": []},
+      {"dayOfWeek": 7, "exercises": []}
+    ]
+  },
+  {
+    "id": 3,
+    "titleVi": "Giảm mỡ 30 ngày tại nhà",
+    "level": "Mọi trình độ",
+    "equipment": "Tại nhà",
+    "sessionsPerWeek": 3,
+    "durationWeeks": 4,
+    "tags": ["Giảm mỡ", "Tại nhà"],
+    "days": [
+      {
+        "dayOfWeek": 1,
+        "exercises": [
+          {"exerciseId": 14, "targetSets": 3, "targetRepsMin": 12, "targetRepsMax": 15, "orderIndex": 0, "supersetGroup": null},
+          {"exerciseId": 13, "targetSets": 3, "targetRepsMin": 15, "targetRepsMax": 20, "orderIndex": 1, "supersetGroup": null},
+          {"exerciseId": 111, "targetSets": 3, "targetRepsMin": 15, "targetRepsMax": 20, "orderIndex": 2, "supersetGroup": null},
+          {"exerciseId": 108, "targetSets": 3, "targetRepsMin": 1, "targetRepsMax": 1, "orderIndex": 3, "supersetGroup": null},
+          {"exerciseId": 18, "targetSets": 3, "targetRepsMin": 12, "targetRepsMax": 15, "orderIndex": 4, "supersetGroup": null}
+        ]
+      },
+      {"dayOfWeek": 2, "exercises": []},
+      {
+        "dayOfWeek": 3,
+        "exercises": [
+          {"exerciseId": 127, "targetSets": 3, "targetRepsMin": 10, "targetRepsMax": 15, "orderIndex": 0, "supersetGroup": null},
+          {"exerciseId": 106, "targetSets": 3, "targetRepsMin": 15, "targetRepsMax": 20, "orderIndex": 1, "supersetGroup": null},
+          {"exerciseId": 110, "targetSets": 3, "targetRepsMin": 15, "targetRepsMax": 20, "orderIndex": 2, "supersetGroup": null},
+          {"exerciseId": 109, "targetSets": 3, "targetRepsMin": 1, "targetRepsMax": 1, "orderIndex": 3, "supersetGroup": null},
+          {"exerciseId": 19, "targetSets": 3, "targetRepsMin": 12, "targetRepsMax": 15, "orderIndex": 4, "supersetGroup": null}
+        ]
+      },
+      {"dayOfWeek": 4, "exercises": []},
+      {
+        "dayOfWeek": 5,
+        "exercises": [
+          {"exerciseId": 128, "targetSets": 3, "targetRepsMin": 12, "targetRepsMax": 15, "orderIndex": 0, "supersetGroup": null},
+          {"exerciseId": 116, "targetSets": 3, "targetRepsMin": 10, "targetRepsMax": 12, "orderIndex": 1, "supersetGroup": null},
+          {"exerciseId": 13, "targetSets": 3, "targetRepsMin": 15, "targetRepsMax": 20, "orderIndex": 2, "supersetGroup": null},
+          {"exerciseId": 108, "targetSets": 3, "targetRepsMin": 1, "targetRepsMax": 1, "orderIndex": 3, "supersetGroup": null},
+          {"exerciseId": 19, "targetSets": 3, "targetRepsMin": 12, "targetRepsMax": 15, "orderIndex": 4, "supersetGroup": null}
+        ]
+      },
+      {"dayOfWeek": 6, "exercises": []},
+      {"dayOfWeek": 7, "exercises": []}
+    ]
+  }
+]

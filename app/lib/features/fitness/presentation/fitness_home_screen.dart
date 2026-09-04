@@ -8,6 +8,7 @@ import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../social/presentation/conversations_screen.dart';
 import 'muscle_group_categories_screen.dart';
+import 'programs_list_screen.dart';
 
 /// Man Home cua khu vuc Fitness - theo dung mau Home cua Hoc Tieng Anh (xem
 /// music_player/presentation/home_screen.dart): 1 khung nhom danh muc voi
@@ -32,6 +33,10 @@ class FitnessHomeScreen extends ConsumerWidget {
                   openAppPopup(context, const ConversationsScreen()),
             ),
             const SizedBox(height: 22),
+            _ActiveProgramCard(
+              onTap: () => openAppPopup(context, const ProgramsListScreen()),
+            ),
+            const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
               child: GlowBox(
@@ -62,6 +67,15 @@ class FitnessHomeScreen extends ConsumerWidget {
                           children: [
                             _FitnessTile(
                               width: itemWidth,
+                              icon: Icons.calendar_month_rounded,
+                              label: ref.tr('fitness_programs_title'),
+                              onTap: () => openAppPopup(
+                                context,
+                                const ProgramsListScreen(),
+                              ),
+                            ),
+                            _FitnessTile(
+                              width: itemWidth,
                               icon: Icons.fitness_center_rounded,
                               label: ref.tr('fitness_library_title'),
                               onTap: () => openAppPopup(
@@ -76,6 +90,58 @@ class FitnessHomeScreen extends ConsumerWidget {
                   ],
                 ),
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The nho hien "giao an dang theo" (neu co) ngay tren Home Fitness - giup
+/// nguoi dung khong phai vao Giao an moi biet minh dang theo chuong trinh
+/// nao, port tinh than tu hero card cua Dashboard FitViet (rut gon, khong
+/// lam bieu do/goi y - ngoai pham vi Phase 2 nay).
+class _ActiveProgramCard extends ConsumerWidget {
+  const _ActiveProgramCard({required this.onTap});
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final activeId = ref.watch(activeProgramIdProvider).valueOrNull;
+    final programsAsync = ref.watch(programListProvider);
+    final activeProgram = activeId == null
+        ? null
+        : programsAsync.valueOrNull?.where((p) => p.id == activeId).firstOrNull;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: GlowBox(
+        padding: const EdgeInsets.all(16),
+        borderRadius: 22,
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                activeProgram?.titleVi ??
+                    ref.tr('fitness_home_no_active_program'),
+                style: AppTextStyles.body(weight: FontWeight.w800),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              ref.tr('fitness_home_view_programs'),
+              style: AppTextStyles.body(
+                size: 12.5,
+                weight: FontWeight.w700,
+              ).copyWith(color: AppColors.fitnessAccent),
+            ),
+            const Icon(
+              Icons.chevron_right_rounded,
+              size: 18,
+              color: AppColors.fitnessAccent,
             ),
           ],
         ),

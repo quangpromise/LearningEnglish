@@ -6,6 +6,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../features/auth/data/auth_repository.dart';
 import '../../features/fitness/data/exercise_model.dart';
 import '../../features/fitness/data/exercise_repository.dart';
+import '../../features/fitness/data/program_model.dart';
+import '../../features/fitness/data/program_repository.dart';
+import '../../features/fitness/data/workout_repository.dart';
 import '../../features/music_player/data/favorites_repository.dart';
 import '../../features/profile/data/profile_repository.dart';
 import '../../features/quiz/data/leaderboard_repository.dart';
@@ -217,6 +220,7 @@ void invalidateUserScopedProviders(WidgetRef ref) {
   ref.invalidate(myConversationsProvider);
   ref.invalidate(favoriteSongTitlesProvider);
   ref.invalidate(favoriteExerciseIdsProvider);
+  ref.invalidate(activeProgramIdProvider);
   ref.invalidate(wealthTransactionsProvider);
   ref.invalidate(wealthHoldingsProvider);
 }
@@ -360,6 +364,33 @@ final favoriteExerciseIdsProvider =
         ref.watch(supabaseClientProvider).auth.currentUser?.id,
       ),
     );
+
+// --- Fitness (Phase 2: Giao an + Tap luyen - port tu FitViet, xem
+// docs/research-exercise-gifs.md ve nguon anh minh hoa da dung o Phase 1) ---
+
+final programRepositoryProvider = Provider<ProgramRepository>(
+  (ref) => ProgramRepository(),
+);
+
+/// Toan bo chuong trinh tap - noi dung TINH dong goi san (giong
+/// exerciseListProvider), khong can autoDispose.
+final programListProvider = FutureProvider<List<Program>>(
+  (ref) => ref.watch(programRepositoryProvider).getAllPrograms(),
+);
+
+final workoutRepositoryProvider = Provider<WorkoutRepository>(
+  (ref) => WorkoutRepository(ref.watch(supabaseClientProvider)),
+);
+
+/// Id chuong trinh dang theo cua user hien tai - null neu chua chon giao an
+/// nao. Invalidate thu cong sau khi goi setActiveProgramId() (xem
+/// program_detail_screen.dart), giong cach favoriteExerciseIdsProvider lam
+/// sau khi toggle yeu thich.
+final activeProgramIdProvider = FutureProvider.autoDispose<int?>((ref) {
+  final userId = ref.watch(supabaseClientProvider).auth.currentUser?.id;
+  if (userId == null) return Future.value(null);
+  return ref.watch(workoutRepositoryProvider).getActiveProgramId(userId);
+});
 
 // --- Wealth Management (features/wealth/) - Phase 1: Chi tieu/Thu nhap +
 // Dau tu (crypto giu nguyen o CryptoScreen, co phieu quoc te qua Twelve

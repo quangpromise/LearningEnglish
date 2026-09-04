@@ -1358,6 +1358,137 @@ class AppStrings {
       AppLanguage.en: 'Exercise library by muscle group',
     },
 
+    // Fitness Phase 2: Giao an (Programs) + Tap luyen (Workout) - port tu FitViet
+    'fitness_programs_title': {
+      AppLanguage.vi: 'Giáo án',
+      AppLanguage.en: 'Programs',
+    },
+    'fitness_programs_load_error': {
+      AppLanguage.vi: 'Không tải được danh sách giáo án.',
+      AppLanguage.en: 'Could not load the programs list.',
+    },
+    'fitness_program_sessions_per_week': {
+      AppLanguage.vi: '{n} buổi/tuần',
+      AppLanguage.en: '{n} sessions/week',
+    },
+    'fitness_program_duration_weeks': {
+      AppLanguage.vi: '{n} tuần',
+      AppLanguage.en: '{n} weeks',
+    },
+    'fitness_program_set_active': {
+      AppLanguage.vi: 'Đặt làm giáo án hiện tại',
+      AppLanguage.en: 'Set as current program',
+    },
+    'fitness_program_active_badge': {
+      AppLanguage.vi: 'Đang theo',
+      AppLanguage.en: 'Active',
+    },
+    'fitness_program_rest_day': {
+      AppLanguage.vi: 'Ngày nghỉ',
+      AppLanguage.en: 'Rest day',
+    },
+    'fitness_program_weekday_1': {
+      AppLanguage.vi: 'Thứ Hai',
+      AppLanguage.en: 'Monday',
+    },
+    'fitness_program_weekday_2': {
+      AppLanguage.vi: 'Thứ Ba',
+      AppLanguage.en: 'Tuesday',
+    },
+    'fitness_program_weekday_3': {
+      AppLanguage.vi: 'Thứ Tư',
+      AppLanguage.en: 'Wednesday',
+    },
+    'fitness_program_weekday_4': {
+      AppLanguage.vi: 'Thứ Năm',
+      AppLanguage.en: 'Thursday',
+    },
+    'fitness_program_weekday_5': {
+      AppLanguage.vi: 'Thứ Sáu',
+      AppLanguage.en: 'Friday',
+    },
+    'fitness_program_weekday_6': {
+      AppLanguage.vi: 'Thứ Bảy',
+      AppLanguage.en: 'Saturday',
+    },
+    'fitness_program_weekday_7': {
+      AppLanguage.vi: 'Chủ Nhật',
+      AppLanguage.en: 'Sunday',
+    },
+    'fitness_program_start_today': {
+      AppLanguage.vi: 'Bắt đầu tập hôm nay',
+      AppLanguage.en: 'Start today\'s workout',
+    },
+    'fitness_home_no_active_program': {
+      AppLanguage.vi: 'Bạn chưa chọn giáo án nào',
+      AppLanguage.en: 'You haven\'t picked a program yet',
+    },
+    'fitness_home_view_programs': {
+      AppLanguage.vi: 'Xem giáo án',
+      AppLanguage.en: 'View programs',
+    },
+    'fitness_workout_preview_title': {
+      AppLanguage.vi: 'Bài tập hôm nay',
+      AppLanguage.en: 'Today\'s workout',
+    },
+    'fitness_workout_sets_reps': {
+      AppLanguage.vi: '{sets} set × {min}–{max} reps',
+      AppLanguage.en: '{sets} sets × {min}–{max} reps',
+    },
+    'fitness_workout_recommended_weight': {
+      AppLanguage.vi: 'Gợi ý: {kg}kg',
+      AppLanguage.en: 'Recommended: {kg}kg',
+    },
+    'fitness_workout_begin': {
+      AppLanguage.vi: 'Bắt đầu',
+      AppLanguage.en: 'Begin',
+    },
+    'fitness_workout_set_label': {
+      AppLanguage.vi: 'Set {current}/{total}',
+      AppLanguage.en: 'Set {current}/{total}',
+    },
+    'fitness_workout_weight_kg': {
+      AppLanguage.vi: 'Mức tạ (kg)',
+      AppLanguage.en: 'Weight (kg)',
+    },
+    'fitness_workout_reps': {AppLanguage.vi: 'Số reps', AppLanguage.en: 'Reps'},
+    'fitness_workout_complete_set': {
+      AppLanguage.vi: 'Xong set',
+      AppLanguage.en: 'Finish set',
+    },
+    'fitness_workout_resting': {
+      AppLanguage.vi: 'Đang nghỉ',
+      AppLanguage.en: 'Resting',
+    },
+    'fitness_workout_add_rest': {
+      AppLanguage.vi: '+15s',
+      AppLanguage.en: '+15s',
+    },
+    'fitness_workout_skip_rest': {
+      AppLanguage.vi: 'Bỏ qua',
+      AppLanguage.en: 'Skip',
+    },
+    'fitness_workout_finished_title': {
+      AppLanguage.vi: 'Hoàn thành buổi tập!',
+      AppLanguage.en: 'Workout complete!',
+    },
+    'fitness_workout_duration': {
+      AppLanguage.vi: 'Thời lượng',
+      AppLanguage.en: 'Duration',
+    },
+    'fitness_workout_total_volume': {
+      AppLanguage.vi: 'Tổng khối lượng',
+      AppLanguage.en: 'Total volume',
+    },
+    'fitness_workout_total_sets': {
+      AppLanguage.vi: 'Số set',
+      AppLanguage.en: 'Sets',
+    },
+    'fitness_workout_back_home': {
+      AppLanguage.vi: 'Về trang chủ',
+      AppLanguage.en: 'Back home',
+    },
+
     // Attribution/Credits screen (features/attribution/)
     'attribution_menu_title': {
       AppLanguage.vi: 'Ghi công',
