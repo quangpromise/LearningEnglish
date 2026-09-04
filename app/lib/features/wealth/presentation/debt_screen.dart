@@ -207,70 +207,86 @@ class _DebtTile extends ConsumerWidget {
         await ref.read(wealthDebtRepositoryProvider).delete(userId, debt.id);
         ref.invalidate(debtsProvider(debt.direction));
       },
-      child: GestureDetector(
-        onTap: debt.isSettled ? null : () => showPayDebtSheet(context, debt),
-        child: GlowBox(
-          borderRadius: 16,
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+      child: GlowBox(
+        borderRadius: 16,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        debt.personName,
+                        style: AppTextStyles.body(weight: FontWeight.w800),
+                      ),
+                      if (debt.note?.isNotEmpty == true)
+                        Text(debt.note!, style: AppTextStyles.muted(size: 11)),
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      debt.personName,
+                      formatByCurrency(debt.remainingAmount, debt.currency),
                       style: AppTextStyles.body(weight: FontWeight.w800),
                     ),
-                    if (debt.note?.isNotEmpty == true)
-                      Text(debt.note!, style: AppTextStyles.muted(size: 11)),
+                    if (debt.isSettled)
+                      Text(
+                        ref.tr('wealth_debt_settled'),
+                        style: AppTextStyles.muted(size: 10.5),
+                      ),
                   ],
                 ),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    formatByCurrency(debt.remainingAmount, debt.currency),
-                    style: AppTextStyles.body(weight: FontWeight.w800),
-                  ),
-                  if (debt.isSettled)
-                    Text(
-                      ref.tr('wealth_debt_settled'),
-                      style: AppTextStyles.muted(size: 10.5),
+                GestureDetector(
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => DebtPersonHistoryScreen(
+                        personId: debt.personId,
+                        personName: debt.personName,
+                      ),
                     ),
-                ],
-              ),
-              GestureDetector(
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => DebtPersonHistoryScreen(
-                      personId: debt.personId,
-                      personName: debt.personName,
+                  ),
+                  child: const Padding(
+                    padding: EdgeInsets.only(left: 8),
+                    child: Icon(
+                      Icons.history_rounded,
+                      size: 18,
+                      color: AppColors.textMuted,
                     ),
                   ),
                 ),
-                child: const Padding(
-                  padding: EdgeInsets.only(left: 8),
-                  child: Icon(
-                    Icons.history_rounded,
-                    size: 18,
-                    color: AppColors.textMuted,
+                GestureDetector(
+                  onTap: () => _showEditDebtDialog(context, ref, debt),
+                  child: const Padding(
+                    padding: EdgeInsets.only(left: 8),
+                    child: Icon(
+                      Icons.edit_rounded,
+                      size: 18,
+                      color: AppColors.textMuted,
+                    ),
                   ),
                 ),
-              ),
-              GestureDetector(
-                onTap: () => _showEditDebtDialog(context, ref, debt),
-                child: const Padding(
-                  padding: EdgeInsets.only(left: 8),
-                  child: Icon(
-                    Icons.edit_rounded,
-                    size: 18,
-                    color: AppColors.textMuted,
-                  ),
+              ],
+            ),
+            if (!debt.isSettled) ...[
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: PillButton(
+                  label: debt.isIOwe
+                      ? ref.tr('wealth_debt_pay')
+                      : ref.tr('wealth_debt_collect'),
+                  accentColor: AppColors.wealthAccent,
+                  filled: false,
+                  onTap: () => showPayDebtSheet(context, debt),
                 ),
               ),
             ],
-          ),
+          ],
         ),
       ),
     );
