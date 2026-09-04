@@ -129,94 +129,99 @@ class _PayDebtSheetState extends ConsumerState<_PayDebtSheet> {
           color: Color(0xFF12172E),
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              debt.isIOwe
-                  ? ref.tr('wealth_debt_pay')
-                  : ref.tr('wealth_debt_collect'),
-              style: AppTextStyles.heading(size: 16),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _amountController,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                debt.isIOwe
+                    ? ref.tr('wealth_debt_pay')
+                    : ref.tr('wealth_debt_collect'),
+                style: AppTextStyles.heading(size: 16),
               ),
-              style: AppTextStyles.body(),
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: AppColors.glassFill,
-                hintText: ref.tr('wallet_amount_hint'),
-                hintStyle: const TextStyle(color: AppColors.textMuted),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide.none,
+              const SizedBox(height: 16),
+              TextField(
+                controller: _amountController,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
                 ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Text(ref.tr('wealth_pay_by'), style: AppTextStyles.muted(size: 11)),
-            const SizedBox(height: 6),
-            Row(
-              children: [
-                Expanded(
-                  child: _Chip(
-                    label: ref.tr('wallet_section_cash'),
-                    selected: _payByCash,
-                    onTap: () => setState(() {
-                      _payByCash = true;
-                      _payByBank = null;
-                    }),
+                style: AppTextStyles.body(),
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: AppColors.glassFill,
+                  hintText: ref.tr('wallet_amount_hint'),
+                  hintStyle: const TextStyle(color: AppColors.textMuted),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide.none,
                   ),
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _Chip(
-                    label:
-                        _payByBank?.shortName ?? ref.tr('wealth_pay_by_bank'),
-                    selected: !_payByCash,
-                    onTap: () async {
-                      final bank = await showBankPickerSheet(context);
-                      if (bank != null) {
-                        setState(() {
-                          _payByCash = false;
-                          _payByBank = bank;
-                        });
-                      }
-                    },
+              ),
+              const SizedBox(height: 10),
+              Text(
+                ref.tr('wealth_pay_by'),
+                style: AppTextStyles.muted(size: 11),
+              ),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  Expanded(
+                    child: _Chip(
+                      label: ref.tr('wallet_section_cash'),
+                      selected: _payByCash,
+                      onTap: () => setState(() {
+                        _payByCash = true;
+                        _payByBank = null;
+                      }),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _Chip(
+                      label:
+                          _payByBank?.shortName ?? ref.tr('wealth_pay_by_bank'),
+                      selected: !_payByCash,
+                      onTap: () async {
+                        final bank = await showBankPickerSheet(context);
+                        if (bank != null) {
+                          setState(() {
+                            _payByCash = false;
+                            _payByBank = bank;
+                          });
+                        }
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: _noteController,
+                style: AppTextStyles.body(),
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: AppColors.glassFill,
+                  hintText: ref.tr('wallet_note_hint'),
+                  hintStyle: const TextStyle(color: AppColors.textMuted),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide.none,
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: _noteController,
-              style: AppTextStyles.body(),
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: AppColors.glassFill,
-                hintText: ref.tr('wallet_note_hint'),
-                hintStyle: const TextStyle(color: AppColors.textMuted),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide.none,
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: PillButton(
+                  label: ref.tr('wallet_save'),
+                  accentGradient: AppColors.wealthAccentGradient,
+                  accentColor: AppColors.wealthAccent,
+                  onTap: _saving ? null : _save,
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: PillButton(
-                label: ref.tr('wallet_save'),
-                accentGradient: AppColors.wealthAccentGradient,
-                accentColor: AppColors.wealthAccent,
-                onTap: _saving ? null : _save,
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

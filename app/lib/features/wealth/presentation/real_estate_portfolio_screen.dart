@@ -6,6 +6,7 @@ import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_format.dart';
 import '../data/wealth_holding_model.dart';
+import 'confirm_delete.dart';
 
 const _kAssetType = 'real_estate';
 
@@ -129,6 +130,7 @@ class _PropertyTile extends ConsumerWidget {
     return Dismissible(
       key: ValueKey(holding.id),
       direction: DismissDirection.endToStart,
+      confirmDismiss: (_) => confirmDelete(context, ref),
       background: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -274,75 +276,77 @@ class _PropertySheetState extends ConsumerState<_PropertySheet> {
           color: Color(0xFF12172E),
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              ref.tr('wealth_real_estate_add'),
-              style: AppTextStyles.heading(size: 16),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _nameController,
-              enabled: widget.existing == null,
-              style: AppTextStyles.body(),
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: AppColors.glassFill,
-                hintText: ref.tr('wealth_real_estate_name_hint'),
-                hintStyle: const TextStyle(color: AppColors.textMuted),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide.none,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                ref.tr('wealth_real_estate_add'),
+                style: AppTextStyles.heading(size: 16),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _nameController,
+                enabled: widget.existing == null,
+                style: AppTextStyles.body(),
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: AppColors.glassFill,
+                  hintText: ref.tr('wealth_real_estate_name_hint'),
+                  hintStyle: const TextStyle(color: AppColors.textMuted),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: _noteController,
-              enabled: widget.existing == null,
-              style: AppTextStyles.body(),
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: AppColors.glassFill,
-                hintText: ref.tr('wallet_note_hint'),
-                hintStyle: const TextStyle(color: AppColors.textMuted),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide.none,
+              const SizedBox(height: 10),
+              TextField(
+                controller: _noteController,
+                enabled: widget.existing == null,
+                style: AppTextStyles.body(),
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: AppColors.glassFill,
+                  hintText: ref.tr('wallet_note_hint'),
+                  hintStyle: const TextStyle(color: AppColors.textMuted),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: _valueController,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              style: AppTextStyles.body(),
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: AppColors.glassFill,
-                hintText: ref.tr('wealth_real_estate_value_hint'),
-                hintStyle: const TextStyle(color: AppColors.textMuted),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide.none,
+              const SizedBox(height: 10),
+              TextField(
+                controller: _valueController,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                style: AppTextStyles.body(),
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: AppColors.glassFill,
+                  hintText: ref.tr('wealth_real_estate_value_hint'),
+                  hintStyle: const TextStyle(color: AppColors.textMuted),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: PillButton(
-                label: ref.tr('wallet_save'),
-                accentGradient: AppColors.wealthAccentGradient,
-                accentColor: AppColors.wealthAccent,
-                onTap: _saving ? null : _save,
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: PillButton(
+                  label: ref.tr('wallet_save'),
+                  accentGradient: AppColors.wealthAccentGradient,
+                  accentColor: AppColors.wealthAccent,
+                  onTap: _saving ? null : _save,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

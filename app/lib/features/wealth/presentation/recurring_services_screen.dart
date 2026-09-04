@@ -7,6 +7,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_format.dart';
 import '../data/recurring_service_model.dart';
 import 'add_service_sheet.dart';
+import 'confirm_delete.dart';
 import 'renew_service_sheet.dart';
 
 /// Man Dich vu dinh ky (Phase G) - theo doi phi dich vu dang dung (Netflix,
@@ -118,6 +119,7 @@ class _ServiceCard extends ConsumerWidget {
     return Dismissible(
       key: ValueKey(service.id),
       direction: DismissDirection.endToStart,
+      confirmDismiss: (_) => confirmDelete(context, ref),
       background: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.symmetric(horizontal: 20),

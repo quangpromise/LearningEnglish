@@ -8,6 +8,7 @@ import '../../../core/utils/currency_format.dart';
 import '../data/wealth_category.dart';
 import '../data/wealth_transaction_model.dart';
 import 'add_transaction_sheet.dart';
+import 'confirm_delete.dart';
 import 'wealth_transaction_tile.dart';
 
 enum _IncomeFilter { all, active, passive }
@@ -112,6 +113,7 @@ class _WealthIncomeTabState extends ConsumerState<WealthIncomeTab> {
                         return Dismissible(
                           key: ValueKey(t.id),
                           direction: DismissDirection.endToStart,
+                          confirmDismiss: (_) => confirmDelete(context, ref),
                           background: Container(
                             alignment: Alignment.centerRight,
                             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -150,6 +152,7 @@ class _WealthIncomeTabState extends ConsumerState<WealthIncomeTab> {
                               amount: t.amount,
                               amountColor: AppColors.teal,
                               sign: '+',
+                              occurredAt: t.occurredAt,
                               trailing: _KindBadge(passive: category.isPassive),
                             ),
                           ),

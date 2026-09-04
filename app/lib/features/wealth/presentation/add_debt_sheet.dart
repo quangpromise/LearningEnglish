@@ -89,92 +89,94 @@ class _AddDebtSheetState extends ConsumerState<_AddDebtSheet> {
           color: Color(0xFF12172E),
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              widget.direction == 'i_owe'
-                  ? ref.tr('wealth_debt_add_i_owe')
-                  : ref.tr('wealth_debt_add_owed_to_me'),
-              style: AppTextStyles.heading(size: 16),
-            ),
-            const SizedBox(height: 16),
-            DebtPersonPickerField(controller: _personController),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _amountController,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                widget.direction == 'i_owe'
+                    ? ref.tr('wealth_debt_add_i_owe')
+                    : ref.tr('wealth_debt_add_owed_to_me'),
+                style: AppTextStyles.heading(size: 16),
+              ),
+              const SizedBox(height: 16),
+              DebtPersonPickerField(controller: _personController),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _amountController,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      style: AppTextStyles.body(),
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: AppColors.glassFill,
+                        hintText: ref.tr('wallet_amount_hint'),
+                        hintStyle: const TextStyle(color: AppColors.textMuted),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
                     ),
-                    style: AppTextStyles.body(),
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: AppColors.glassFill,
-                      hintText: ref.tr('wallet_amount_hint'),
-                      hintStyle: const TextStyle(color: AppColors.textMuted),
-                      border: OutlineInputBorder(
+                  ),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () => setState(
+                      () => _currency = _currency == 'VND' ? 'USD' : 'VND',
+                    ),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 14,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.glassFill,
                         borderRadius: BorderRadius.circular(14),
-                        borderSide: BorderSide.none,
+                        border: Border.all(color: AppColors.glassBorder),
+                      ),
+                      child: Text(
+                        _currency,
+                        style: AppTextStyles.body(
+                          weight: FontWeight.w800,
+                          size: 13,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                GestureDetector(
-                  onTap: () => setState(
-                    () => _currency = _currency == 'VND' ? 'USD' : 'VND',
-                  ),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 14,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.glassFill,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: AppColors.glassBorder),
-                    ),
-                    child: Text(
-                      _currency,
-                      style: AppTextStyles.body(
-                        weight: FontWeight.w800,
-                        size: 13,
-                      ),
-                    ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: _noteController,
+                style: AppTextStyles.body(),
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: AppColors.glassFill,
+                  hintText: ref.tr('wallet_note_hint'),
+                  hintStyle: const TextStyle(color: AppColors.textMuted),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide.none,
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: _noteController,
-              style: AppTextStyles.body(),
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: AppColors.glassFill,
-                hintText: ref.tr('wallet_note_hint'),
-                hintStyle: const TextStyle(color: AppColors.textMuted),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide.none,
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: PillButton(
+                  label: ref.tr('wallet_save'),
+                  accentGradient: AppColors.wealthAccentGradient,
+                  accentColor: AppColors.wealthAccent,
+                  onTap: _saving ? null : _save,
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: PillButton(
-                label: ref.tr('wallet_save'),
-                accentGradient: AppColors.wealthAccentGradient,
-                accentColor: AppColors.wealthAccent,
-                onTap: _saving ? null : _save,
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

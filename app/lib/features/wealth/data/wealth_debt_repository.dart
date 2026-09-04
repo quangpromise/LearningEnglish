@@ -76,6 +76,31 @@ class WealthDebtRepository {
         .eq('user_id', userId);
   }
 
+  /// Cong lai [amount] vao remaining_amount - dung khi xoa truc tiep 1 dong
+  /// wealth_balance_entries co source='debt_payment' tu man Vi (thay vi xoa
+  /// tu man No): payment da bi xoa nen phai hoan lai remaining_amount va
+  /// mo lai settled_at neu khoan no truoc do da settled.
+  Future<void> restoreAmount(
+    String userId,
+    String debtId,
+    double amount,
+  ) async {
+    final row = await _supabase
+        .from('wealth_debts')
+        .select('remaining_amount, original_amount')
+        .eq('id', debtId)
+        .eq('user_id', userId)
+        .single();
+    final original = (row['original_amount'] as num).toDouble();
+    final restored = ((row['remaining_amount'] as num).toDouble() + amount)
+        .clamp(0, original);
+    await _supabase
+        .from('wealth_debts')
+        .update({'remaining_amount': restored, 'settled_at': null})
+        .eq('id', debtId)
+        .eq('user_id', userId);
+  }
+
   Future<void> updateNote(String userId, String id, String? note) async {
     await _supabase
         .from('wealth_debts')

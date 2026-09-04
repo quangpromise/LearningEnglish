@@ -6,6 +6,7 @@ import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/stocks_intl_repository.dart';
 import '../data/wealth_holding_model.dart';
+import 'confirm_delete.dart';
 
 const _kAssetType = 'stock_intl';
 
@@ -87,6 +88,7 @@ class StockPortfolioScreen extends ConsumerWidget {
                         Dismissible(
                           key: ValueKey(h.id),
                           direction: DismissDirection.endToStart,
+                          confirmDismiss: (_) => confirmDelete(context, ref),
                           background: Container(
                             alignment: Alignment.centerRight,
                             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -242,50 +244,52 @@ class _AddHoldingSheetState extends ConsumerState<_AddHoldingSheet> {
           color: Color(0xFF12172E),
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              widget.existing == null
-                  ? ref.tr('wealth_add_holding')
-                  : ref.tr('wealth_edit_holding'),
-              style: AppTextStyles.heading(size: 16),
-            ),
-            const SizedBox(height: 16),
-            _HoldingField(
-              controller: _symbolController,
-              hint: ref.tr('wealth_symbol_hint'),
-              keyboardType: TextInputType.text,
-              enabled: widget.existing == null,
-            ),
-            const SizedBox(height: 10),
-            _HoldingField(
-              controller: _quantityController,
-              hint: ref.tr('wealth_quantity_hint'),
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                widget.existing == null
+                    ? ref.tr('wealth_add_holding')
+                    : ref.tr('wealth_edit_holding'),
+                style: AppTextStyles.heading(size: 16),
               ),
-            ),
-            const SizedBox(height: 10),
-            _HoldingField(
-              controller: _avgCostController,
-              hint: ref.tr('wealth_avg_cost_hint'),
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
+              const SizedBox(height: 16),
+              _HoldingField(
+                controller: _symbolController,
+                hint: ref.tr('wealth_symbol_hint'),
+                keyboardType: TextInputType.text,
+                enabled: widget.existing == null,
               ),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: PillButton(
-                label: ref.tr('wealth_save'),
-                accentGradient: AppColors.wealthAccentGradient,
-                accentColor: AppColors.wealthAccent,
-                onTap: _saving ? null : _save,
+              const SizedBox(height: 10),
+              _HoldingField(
+                controller: _quantityController,
+                hint: ref.tr('wealth_quantity_hint'),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
               ),
-            ),
-          ],
+              const SizedBox(height: 10),
+              _HoldingField(
+                controller: _avgCostController,
+                hint: ref.tr('wealth_avg_cost_hint'),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: PillButton(
+                  label: ref.tr('wealth_save'),
+                  accentGradient: AppColors.wealthAccentGradient,
+                  accentColor: AppColors.wealthAccent,
+                  onTap: _saving ? null : _save,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

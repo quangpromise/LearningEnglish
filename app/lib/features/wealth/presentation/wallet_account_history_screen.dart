@@ -1,0 +1,147 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../core/i18n/app_strings.dart';
+import '../../../core/providers/app_providers.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/currency_format.dart';
+import 'wallet_existing_assets_tab.dart';
+
+/// Toan bo lich su bien dong cua 1 tai khoan (Tien mat hoac 1 ngan hang cu
+/// the) - man Vi chinh chi xem truoc toi da 5 dong gan nhat, bam vao the
+/// tong mo man nay de xem HET, tai dung [WalletEntryRow] (da co san sua/xoa)
+/// cho tung dong.
+class WalletAccountHistoryScreen extends ConsumerWidget {
+  const WalletAccountHistoryScreen({
+    super.key,
+    required this.title,
+    required this.accountType,
+    this.bankCode,
+    this.bankName,
+  });
+  final String title;
+  final String accountType; // 'cash' | 'bank'
+  final String? bankCode;
+  final String? bankName;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final entriesAsync = ref.watch(walletBalanceEntriesProvider);
+    return ScreenBackground(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                GestureDetector(
+                  onTap: () => Navigator.of(context).maybePop(),
+                  child: Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color: AppColors.glassFill,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.glassBorder),
+                    ),
+                    child: const Icon(
+                      Icons.chevron_left_rounded,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(title, style: AppTextStyles.heading(size: 18)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: entriesAsync.when(
+                loading: () => const Center(
+                  child: CircularProgressIndicator(
+                    color: AppColors.wealthAccent,
+                  ),
+                ),
+                error: (_, _) => Center(
+                  child: Text(
+                    ref.tr('wealth_load_error'),
+                    style: AppTextStyles.muted(),
+                  ),
+                ),
+                data: (all) {
+                  final entries = all.where((e) {
+                    if (e.accountType != accountType) return false;
+                    if (accountType != 'bank') return true;
+                    return (bankCode != null && e.bankCode == bankCode) ||
+                        (bankCode == null && e.bankName == bankName);
+                  }).toList();
+                  if (entries.isEmpty) {
+                    return Center(
+                      child: Text(
+                        accountType == 'cash'
+                            ? ref.tr('wallet_empty_cash')
+                            : ref.tr('wallet_empty_bank'),
+                        style: AppTextStyles.muted(),
+                      ),
+                    );
+                  }
+                  final totalVnd = entries
+                      .where((e) => e.currency == 'VND')
+                      .fold<double>(0, (s, e) => s + e.amount);
+                  final totalUsd = entries
+                      .where((e) => e.currency == 'USD')
+                      .fold<double>(0, (s, e) => s + e.amount);
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      GlowBox(
+                        borderRadius: 18,
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                ref.tr('wallet_total_assets'),
+                                style: AppTextStyles.muted(size: 12),
+                              ),
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  formatVnd(totalVnd),
+                                  style: AppTextStyles.heading(size: 16),
+                                ),
+                                if (totalUsd != 0)
+                                  Text(
+                                    formatUsd(totalUsd),
+                                    style: AppTextStyles.muted(),
+                                  ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      Expanded(
+                        child: ListView.separated(
+                          itemCount: entries.length,
+                          separatorBuilder: (_, _) =>
+                              const SizedBox(height: 10),
+                          itemBuilder: (context, i) =>
+                              WalletEntryRow(entry: entries[i]),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

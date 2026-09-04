@@ -8,6 +8,7 @@ import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_format.dart';
 import '../../social/presentation/conversations_screen.dart';
+import 'calculator_screen.dart';
 import 'debt_screen.dart';
 import 'market_screen.dart';
 import 'recurring_services_screen.dart';
@@ -168,6 +169,16 @@ class WealthHomeScreen extends ConsumerWidget {
                               onTap: () => Navigator.of(context).push(
                                 MaterialPageRoute(
                                   builder: (_) => const MarketScreen(),
+                                ),
+                              ),
+                            ),
+                            _WealthTile(
+                              width: itemWidth,
+                              icon: Icons.calculate_rounded,
+                              label: ref.tr('wealth_calculator_title'),
+                              onTap: () => Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => const CalculatorScreen(),
                                 ),
                               ),
                             ),

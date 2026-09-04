@@ -7,6 +7,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_format.dart';
 import '../data/exchange_rate_repository.dart';
 import '../data/wealth_holding_model.dart';
+import 'confirm_delete.dart';
 
 /// Portfolio Vang/Bac/Dong (Phase C) - moi lan them la 1 "lo" doc lap (giong
 /// cach Vi ghi tung dong bien dong, KHONG gop thanh 1 so du duy nhat) vi
@@ -242,6 +243,7 @@ class _LotTile extends ConsumerWidget {
     return Dismissible(
       key: ValueKey(holding.id),
       direction: DismissDirection.endToStart,
+      confirmDismiss: (_) => confirmDelete(context, ref),
       background: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -378,62 +380,64 @@ class _AddMetalLotSheetState extends ConsumerState<_AddMetalLotSheet> {
           color: Color(0xFF12172E),
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '${ref.tr(widget.existing == null ? 'wealth_add_holding' : 'wealth_edit_holding')} — ${ref.tr(widget.kind.labelKey)}',
-              style: AppTextStyles.heading(size: 16),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _quantityController,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${ref.tr(widget.existing == null ? 'wealth_add_holding' : 'wealth_edit_holding')} — ${ref.tr(widget.kind.labelKey)}',
+                style: AppTextStyles.heading(size: 16),
               ),
-              style: AppTextStyles.body(),
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: AppColors.glassFill,
-                hintText:
-                    '${ref.tr('wealth_quantity_hint')} (${ref.tr(widget.kind.unitKey)})',
-                hintStyle: const TextStyle(color: AppColors.textMuted),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide.none,
+              const SizedBox(height: 16),
+              TextField(
+                controller: _quantityController,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                style: AppTextStyles.body(),
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: AppColors.glassFill,
+                  hintText:
+                      '${ref.tr('wealth_quantity_hint')} (${ref.tr(widget.kind.unitKey)})',
+                  hintStyle: const TextStyle(color: AppColors.textMuted),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: _costController,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              style: AppTextStyles.body(),
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: AppColors.glassFill,
-                hintText: ref.tr('wealth_metal_cost_price'),
-                hintStyle: const TextStyle(color: AppColors.textMuted),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide.none,
+              const SizedBox(height: 10),
+              TextField(
+                controller: _costController,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                style: AppTextStyles.body(),
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: AppColors.glassFill,
+                  hintText: ref.tr('wealth_metal_cost_price'),
+                  hintStyle: const TextStyle(color: AppColors.textMuted),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: PillButton(
-                label: ref.tr('wallet_save'),
-                accentGradient: AppColors.wealthAccentGradient,
-                accentColor: AppColors.wealthAccent,
-                onTap: _saving ? null : _save,
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: PillButton(
+                  label: ref.tr('wallet_save'),
+                  accentGradient: AppColors.wealthAccentGradient,
+                  accentColor: AppColors.wealthAccent,
+                  onTap: _saving ? null : _save,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -7,6 +7,7 @@ import '../data/crypto_currency.dart';
 import '../data/crypto_portfolio_repository.dart';
 import '../data/crypto_repository.dart';
 import '../data/crypto_transaction_repository.dart';
+import '../../wealth/presentation/confirm_delete.dart';
 import 'crypto_providers.dart';
 
 class CryptoPortfolioTab extends ConsumerWidget {
@@ -177,6 +178,7 @@ class _HoldingTile extends ConsumerWidget {
     return Dismissible(
       key: ValueKey(holding.coinId),
       direction: DismissDirection.endToStart,
+      confirmDismiss: (_) => confirmDelete(context, ref),
       background: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.symmetric(horizontal: 20),

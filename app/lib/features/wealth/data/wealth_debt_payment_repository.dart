@@ -51,4 +51,33 @@ class WealthDebtPaymentRepository {
         .single();
     return row['id'] as String;
   }
+
+  /// Lay `debt_id` + `amount` cua 1 lan tra - dung khi XOA truc tiep 1 dong
+  /// wealth_balance_entries co source='debt_payment' tu man Vi (thay vi xoa
+  /// tu man No): can biet tra lai bao nhieu vao remaining_amount cua dung
+  /// khoan no nao (xem wallet_existing_assets_tab.dart).
+  Future<({String debtId, double amount})?> fetchOne(
+    String userId,
+    String id,
+  ) async {
+    final row = await _supabase
+        .from('wealth_debt_payments')
+        .select('debt_id, amount')
+        .eq('id', id)
+        .eq('user_id', userId)
+        .maybeSingle();
+    if (row == null) return null;
+    return (
+      debtId: row['debt_id'] as String,
+      amount: (row['amount'] as num).toDouble(),
+    );
+  }
+
+  Future<void> delete(String userId, String id) async {
+    await _supabase
+        .from('wealth_debt_payments')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', userId);
+  }
 }

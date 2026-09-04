@@ -43,6 +43,10 @@ class WealthBalanceEntry {
       note: row['note'] as String?,
       occurredAt: DateTime.parse(row['occurred_at'] as String),
       source: row['source'] as String? ?? 'manual',
+      sourceTransactionId: row['source_transaction_id'] as String?,
+      sourceDebtPaymentId: row['source_debt_payment_id'] as String?,
+      sourceServiceRenewalPaymentId:
+          row['source_service_renewal_payment_id'] as String?,
     );
   }
 

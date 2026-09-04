@@ -7,6 +7,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_format.dart';
 import '../data/wealth_debt_model.dart';
 import 'add_debt_sheet.dart';
+import 'confirm_delete.dart';
 import 'debt_person_history_screen.dart';
 import 'pay_debt_sheet.dart';
 
@@ -75,6 +76,8 @@ class _DebtScreenState extends State<DebtScreen>
               ),
             ),
             const SizedBox(height: 14),
+            const _DebtSummaryCard(),
+            const SizedBox(height: 14),
             Consumer(
               builder: (context, ref, _) => Container(
                 decoration: BoxDecoration(
@@ -123,6 +126,81 @@ class _DebtScreenState extends State<DebtScreen>
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// The tong "Dang no" (mau do, phai tra) va "Cho muon" (mau xanh, phai thu)
+/// - gop theo tung loai tien te neu nguoi dung co ca khoan VND lan USD.
+class _DebtSummaryCard extends ConsumerWidget {
+  const _DebtSummaryCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final owe = ref.watch(debtsProvider('i_owe')).valueOrNull ?? [];
+    final lend = ref.watch(debtsProvider('owed_to_me')).valueOrNull ?? [];
+    return Row(
+      children: [
+        Expanded(
+          child: _SummaryTile(
+            label: ref.tr('wealth_debt_tab_i_owe'),
+            color: AppColors.pink,
+            totalsByCurrency: _sumByCurrency(owe),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _SummaryTile(
+            label: ref.tr('wealth_debt_tab_owed_to_me'),
+            color: AppColors.teal,
+            totalsByCurrency: _sumByCurrency(lend),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Map<String, double> _sumByCurrency(List<WealthDebt> debts) {
+    final map = <String, double>{};
+    for (final d in debts) {
+      map[d.currency] = (map[d.currency] ?? 0) + d.remainingAmount;
+    }
+    return map;
+  }
+}
+
+class _SummaryTile extends StatelessWidget {
+  const _SummaryTile({
+    required this.label,
+    required this.color,
+    required this.totalsByCurrency,
+  });
+  final String label;
+  final Color color;
+  final Map<String, double> totalsByCurrency;
+
+  @override
+  Widget build(BuildContext context) {
+    return GlowBox(
+      borderRadius: 16,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: AppTextStyles.muted(size: 11)),
+          const SizedBox(height: 4),
+          if (totalsByCurrency.isEmpty)
+            Text(
+              formatVnd(0),
+              style: AppTextStyles.heading(size: 15).copyWith(color: color),
+            )
+          else
+            for (final entry in totalsByCurrency.entries)
+              Text(
+                formatByCurrency(entry.value, entry.key),
+                style: AppTextStyles.heading(size: 15).copyWith(color: color),
+              ),
+        ],
       ),
     );
   }
@@ -192,6 +270,7 @@ class _DebtTile extends ConsumerWidget {
     return Dismissible(
       key: ValueKey(debt.id),
       direction: DismissDirection.endToStart,
+      confirmDismiss: (_) => confirmDelete(context, ref),
       background: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -238,7 +317,12 @@ class _DebtTile extends ConsumerWidget {
                   children: [
                     Text(
                       formatByCurrency(debt.remainingAmount, debt.currency),
-                      style: AppTextStyles.body(weight: FontWeight.w800),
+                      style: AppTextStyles.body(weight: FontWeight.w800)
+                          .copyWith(
+                            color: debt.isIOwe
+                                ? AppColors.pink
+                                : AppColors.teal,
+                          ),
                     ),
                     if (debt.isSettled)
                       Text(
@@ -286,7 +370,7 @@ class _DebtTile extends ConsumerWidget {
                   label: debt.isIOwe
                       ? ref.tr('wealth_debt_pay')
                       : ref.tr('wealth_debt_collect'),
-                  accentColor: AppColors.wealthAccent,
+                  accentColor: debt.isIOwe ? AppColors.pink : AppColors.teal,
                   filled: false,
                   onTap: () => showPayDebtSheet(context, debt),
                 ),

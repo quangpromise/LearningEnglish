@@ -14,6 +14,7 @@ class WealthTransactionTile extends StatelessWidget {
     required this.amount,
     required this.amountColor,
     required this.sign,
+    this.occurredAt,
     this.trailing,
   });
   final IconData icon;
@@ -22,7 +23,15 @@ class WealthTransactionTile extends StatelessWidget {
   final double amount;
   final Color amountColor;
   final String sign;
+  final DateTime? occurredAt;
   final Widget? trailing;
+
+  String _fmtDateTime(DateTime d) =>
+      '${d.day.toString().padLeft(2, '0')}/'
+      '${d.month.toString().padLeft(2, '0')}/'
+      '${d.year} '
+      '${d.hour.toString().padLeft(2, '0')}:'
+      '${d.minute.toString().padLeft(2, '0')}';
 
   @override
   Widget build(BuildContext context) {
@@ -64,6 +73,11 @@ class WealthTransactionTile extends StatelessWidget {
                   ),
                 if (note != null && note!.isNotEmpty)
                   Text(note!, style: AppTextStyles.muted(size: 11)),
+                if (occurredAt != null)
+                  Text(
+                    _fmtDateTime(occurredAt!),
+                    style: AppTextStyles.muted(size: 10.5),
+                  ),
               ],
             ),
           ),

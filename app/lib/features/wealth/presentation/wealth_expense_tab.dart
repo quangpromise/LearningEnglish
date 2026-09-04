@@ -8,6 +8,7 @@ import '../../../core/utils/currency_format.dart';
 import '../data/wealth_category.dart';
 import '../data/wealth_transaction_model.dart';
 import 'add_transaction_sheet.dart';
+import 'confirm_delete.dart';
 import 'wealth_transaction_tile.dart';
 
 class WealthExpenseTab extends ConsumerWidget {
@@ -79,6 +80,7 @@ class WealthExpenseTab extends ConsumerWidget {
                         return Dismissible(
                           key: ValueKey(t.id),
                           direction: DismissDirection.endToStart,
+                          confirmDismiss: (_) => confirmDelete(context, ref),
                           background: Container(
                             alignment: Alignment.centerRight,
                             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -118,6 +120,7 @@ class WealthExpenseTab extends ConsumerWidget {
                               amount: t.amount,
                               amountColor: AppColors.pink,
                               sign: '-',
+                              occurredAt: t.occurredAt,
                             ),
                           ),
                         );

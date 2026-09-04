@@ -118,7 +118,12 @@ class _DebtEntryCard extends ConsumerWidget {
                     Text(
                       '${formatByCurrency(debt.remainingAmount, debt.currency)} / '
                       '${formatByCurrency(debt.originalAmount, debt.currency)}',
-                      style: AppTextStyles.body(weight: FontWeight.w800),
+                      style: AppTextStyles.body(weight: FontWeight.w800)
+                          .copyWith(
+                            color: debt.isIOwe
+                                ? AppColors.pink
+                                : AppColors.teal,
+                          ),
                     ),
                     if (debt.note?.isNotEmpty == true)
                       Text(debt.note!, style: AppTextStyles.muted(size: 11)),
@@ -130,7 +135,7 @@ class _DebtEntryCard extends ConsumerWidget {
                   label: debt.isIOwe
                       ? ref.tr('wealth_debt_pay')
                       : ref.tr('wealth_debt_collect'),
-                  accentColor: AppColors.wealthAccent,
+                  accentColor: debt.isIOwe ? AppColors.pink : AppColors.teal,
                   filled: false,
                   onTap: () => showPayDebtSheet(context, debt),
                 ),

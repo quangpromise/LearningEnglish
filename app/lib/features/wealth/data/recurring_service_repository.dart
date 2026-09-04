@@ -83,6 +83,74 @@ class RecurringServiceRepository {
         .eq('user_id', userId);
   }
 
+  /// Lay `renewal_id` + `service_id` + `previous_expiry_date` cua 1 lan gia
+  /// han - dung khi xoa truc tiep 1 dong wealth_balance_entries co
+  /// source='service_renewal' tu man Vi (xem wallet_existing_assets_tab.dart).
+  Future<({String renewalId, String serviceId, DateTime previousExpiryDate})?>
+  fetchRenewalPaymentInfo(String userId, String renewalPaymentId) async {
+    final payment = await _supabase
+        .from('wealth_service_renewal_payments')
+        .select('renewal_id')
+        .eq('id', renewalPaymentId)
+        .eq('user_id', userId)
+        .maybeSingle();
+    if (payment == null) return null;
+    final renewalId = payment['renewal_id'] as String;
+    final renewal = await _supabase
+        .from('wealth_service_renewals')
+        .select('service_id, previous_expiry_date')
+        .eq('id', renewalId)
+        .eq('user_id', userId)
+        .single();
+    return (
+      renewalId: renewalId,
+      serviceId: renewal['service_id'] as String,
+      previousExpiryDate: DateTime.parse(
+        renewal['previous_expiry_date'] as String,
+      ),
+    );
+  }
+
+  Future<void> deleteRenewalPayment(String userId, String id) async {
+    await _supabase
+        .from('wealth_service_renewal_payments')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', userId);
+  }
+
+  Future<int> countRenewalPayments(String userId, String renewalId) async {
+    final rows = await _supabase
+        .from('wealth_service_renewal_payments')
+        .select('id')
+        .eq('renewal_id', renewalId)
+        .eq('user_id', userId);
+    return (rows as List).length;
+  }
+
+  /// Xoa het 1 lan gia han va khoi phuc lai expiry_date cu cua dich vu - chi
+  /// goi khi da xoa het cac dong thanh toan cua lan gia han do (xem
+  /// wallet_existing_assets_tab.dart).
+  Future<void> deleteRenewalAndRestoreExpiry({
+    required String userId,
+    required String renewalId,
+    required String serviceId,
+    required DateTime previousExpiryDate,
+  }) async {
+    await _supabase
+        .from('wealth_service_renewals')
+        .delete()
+        .eq('id', renewalId)
+        .eq('user_id', userId);
+    await _supabase
+        .from('wealth_recurring_services')
+        .update({
+          'expiry_date': previousExpiryDate.toIso8601String().substring(0, 10),
+        })
+        .eq('id', serviceId)
+        .eq('user_id', userId);
+  }
+
   Future<void> deactivate(String userId, String id) async {
     await _supabase
         .from('wealth_recurring_services')

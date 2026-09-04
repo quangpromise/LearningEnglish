@@ -440,6 +440,7 @@ class AppStrings {
     },
     'common_cancel': {AppLanguage.vi: 'Huỷ', AppLanguage.en: 'Cancel'},
     'common_confirm': {AppLanguage.vi: 'Xác nhận', AppLanguage.en: 'Confirm'},
+    'common_delete': {AppLanguage.vi: 'Xóa', AppLanguage.en: 'Delete'},
     'profile_signout_title': {
       AppLanguage.vi: 'Đăng xuất?',
       AppLanguage.en: 'Sign out?',
@@ -1028,6 +1029,10 @@ class AppStrings {
       AppLanguage.vi: '1 tháng',
       AppLanguage.en: '1 month',
     },
+    'wealth_calculator_title': {
+      AppLanguage.vi: 'Máy tính',
+      AppLanguage.en: 'Calculator',
+    },
     'wealth_debt_title': {AppLanguage.vi: 'Nợ', AppLanguage.en: 'Debt'},
     'wealth_debt_tab_i_owe': {
       AppLanguage.vi: 'Đang nợ',
@@ -1151,6 +1156,10 @@ class AppStrings {
     'wallet_total_assets': {
       AppLanguage.vi: 'Tổng tài sản',
       AppLanguage.en: 'Total assets',
+    },
+    'wallet_view_all_history': {
+      AppLanguage.vi: 'Xem tất cả lịch sử',
+      AppLanguage.en: 'View all history',
     },
     'wallet_hidden_amount': {AppLanguage.vi: 'Đã ẩn', AppLanguage.en: 'Hidden'},
 

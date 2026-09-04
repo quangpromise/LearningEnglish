@@ -8,6 +8,8 @@ import '../../../core/utils/currency_format.dart';
 import '../data/wealth_balance_entry_model.dart';
 import 'add_balance_entry_sheet.dart';
 import 'bank_picker_sheet.dart';
+import 'confirm_delete.dart';
+import 'wallet_account_history_screen.dart';
 
 /// Tab "Tai san hien co" trong man Vi - 2 muc: Tien mat va Tien ngan hang
 /// (tach rieng theo tung ngan hang, dung quyet dinh nguoi dung da chon).
@@ -120,16 +122,28 @@ class _CashCard extends ConsumerWidget {
           Row(
             children: [
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      formatVnd(totalVnd),
-                      style: AppTextStyles.heading(size: 16),
-                    ),
-                    if (totalUsd != 0)
-                      Text(formatUsd(totalUsd), style: AppTextStyles.muted()),
-                  ],
+                child: GestureDetector(
+                  onTap: entries.isEmpty
+                      ? null
+                      : () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => WalletAccountHistoryScreen(
+                              title: ref.tr('wallet_section_cash'),
+                              accountType: 'cash',
+                            ),
+                          ),
+                        ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        formatVnd(totalVnd),
+                        style: AppTextStyles.heading(size: 16),
+                      ),
+                      if (totalUsd != 0)
+                        Text(formatUsd(totalUsd), style: AppTextStyles.muted()),
+                    ],
+                  ),
                 ),
               ),
               GestureDetector(
@@ -151,7 +165,29 @@ class _CashCard extends ConsumerWidget {
             )
           else ...[
             const SizedBox(height: 10),
-            for (final e in entries.take(5)) _EntryRow(entry: e),
+            for (final e in entries.take(5)) WalletEntryRow(entry: e),
+            if (entries.length > 5)
+              Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: GestureDetector(
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => WalletAccountHistoryScreen(
+                        title: ref.tr('wallet_section_cash'),
+                        accountType: 'cash',
+                      ),
+                    ),
+                  ),
+                  child: Text(
+                    ref.tr('wallet_view_all_history'),
+                    style: AppTextStyles.body(
+                      size: 11,
+                      weight: FontWeight.w700,
+                      color: AppColors.wealthAccent,
+                    ),
+                  ),
+                ),
+              ),
           ],
         ],
       ),
@@ -172,22 +208,39 @@ class _BankCard extends ConsumerWidget {
     final totalUsd = entries
         .where((e) => e.currency == 'USD')
         .fold<double>(0, (s, e) => s + e.amount);
+    final bankCode = entries.isEmpty ? null : entries.first.bankCode;
+    void openHistory() => Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => WalletAccountHistoryScreen(
+          title: label,
+          accountType: 'bank',
+          bankCode: bankCode,
+          bankName: label,
+        ),
+      ),
+    );
     return GlowBox(
       padding: const EdgeInsets.all(16),
       borderRadius: 18,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  label,
-                  style: AppTextStyles.body(weight: FontWeight.w800),
+          GestureDetector(
+            onTap: openHistory,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    label,
+                    style: AppTextStyles.body(weight: FontWeight.w800),
+                  ),
                 ),
-              ),
-              Text(formatVnd(totalVnd), style: AppTextStyles.heading(size: 14)),
-            ],
+                Text(
+                  formatVnd(totalVnd),
+                  style: AppTextStyles.heading(size: 14),
+                ),
+              ],
+            ),
           ),
           if (totalUsd != 0)
             Align(
@@ -195,15 +248,30 @@ class _BankCard extends ConsumerWidget {
               child: Text(formatUsd(totalUsd), style: AppTextStyles.muted()),
             ),
           const SizedBox(height: 8),
-          for (final e in entries.take(5)) _EntryRow(entry: e),
+          for (final e in entries.take(5)) WalletEntryRow(entry: e),
+          if (entries.length > 5)
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: GestureDetector(
+                onTap: openHistory,
+                child: Text(
+                  ref.tr('wallet_view_all_history'),
+                  style: AppTextStyles.body(
+                    size: 11,
+                    weight: FontWeight.w700,
+                    color: AppColors.wealthAccent,
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
   }
 }
 
-class _EntryRow extends ConsumerWidget {
-  const _EntryRow({required this.entry});
+class WalletEntryRow extends ConsumerWidget {
+  const WalletEntryRow({super.key, required this.entry});
   final WealthBalanceEntry entry;
 
   @override
@@ -212,6 +280,7 @@ class _EntryRow extends ConsumerWidget {
     return Dismissible(
       key: ValueKey(entry.id),
       direction: DismissDirection.endToStart,
+      confirmDismiss: (_) => confirmDelete(context, ref),
       background: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -224,9 +293,59 @@ class _EntryRow extends ConsumerWidget {
       onDismissed: (_) async {
         final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
         if (userId == null) return;
-        await ref
-            .read(wealthBalanceEntryRepositoryProvider)
-            .deleteEntry(userId, entry.id);
+        switch (entry.source) {
+          case 'expense' when entry.sourceTransactionId != null:
+            // Xoa ca giao dich goc de dong bo voi man Chi tieu - FK cascade
+            // se tu xoa dong wealth_balance_entries nay theo.
+            await ref
+                .read(wealthTransactionRepositoryProvider)
+                .deleteTransaction(userId, entry.sourceTransactionId!);
+            ref.invalidate(wealthTransactionsProvider);
+          case 'debt_payment' when entry.sourceDebtPaymentId != null:
+            final paymentRepo = ref.read(wealthDebtPaymentRepositoryProvider);
+            final info = await paymentRepo.fetchOne(
+              userId,
+              entry.sourceDebtPaymentId!,
+            );
+            await paymentRepo.delete(userId, entry.sourceDebtPaymentId!);
+            if (info != null) {
+              await ref
+                  .read(wealthDebtRepositoryProvider)
+                  .restoreAmount(userId, info.debtId, info.amount);
+            }
+            ref.invalidate(debtsProvider('i_owe'));
+            ref.invalidate(debtsProvider('owed_to_me'));
+          case 'service_renewal'
+              when entry.sourceServiceRenewalPaymentId != null:
+            final serviceRepo = ref.read(recurringServiceRepositoryProvider);
+            final info = await serviceRepo.fetchRenewalPaymentInfo(
+              userId,
+              entry.sourceServiceRenewalPaymentId!,
+            );
+            await serviceRepo.deleteRenewalPayment(
+              userId,
+              entry.sourceServiceRenewalPaymentId!,
+            );
+            if (info != null) {
+              final remaining = await serviceRepo.countRenewalPayments(
+                userId,
+                info.renewalId,
+              );
+              if (remaining == 0) {
+                await serviceRepo.deleteRenewalAndRestoreExpiry(
+                  userId: userId,
+                  renewalId: info.renewalId,
+                  serviceId: info.serviceId,
+                  previousExpiryDate: info.previousExpiryDate,
+                );
+              }
+            }
+            ref.invalidate(recurringServicesProvider);
+          default:
+            await ref
+                .read(wealthBalanceEntryRepositoryProvider)
+                .deleteEntry(userId, entry.id);
+        }
         ref.invalidate(walletBalanceEntriesProvider);
       },
       child: GestureDetector(
