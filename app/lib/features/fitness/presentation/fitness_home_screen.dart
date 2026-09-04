@@ -7,6 +7,7 @@ import '../../../core/navigation/app_top_bar.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../social/presentation/conversations_screen.dart';
+import 'community_screen.dart';
 import 'fitness_dashboard_section.dart';
 import 'muscle_group_categories_screen.dart';
 import 'nutrition_screen.dart';
@@ -105,6 +106,15 @@ class FitnessHomeScreen extends ConsumerWidget {
                                       onTap: () => openAppPopup(
                                         context,
                                         const NutritionScreen(),
+                                      ),
+                                    ),
+                                    _FitnessTile(
+                                      width: itemWidth,
+                                      icon: Icons.groups_rounded,
+                                      label: ref.tr('fitness_community_title'),
+                                      onTap: () => openAppPopup(
+                                        context,
+                                        const CommunityScreen(),
                                       ),
                                     ),
                                   ],

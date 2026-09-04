@@ -4,6 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../features/auth/data/auth_repository.dart';
+import '../../features/fitness/data/community_post_model.dart';
+import '../../features/fitness/data/community_repository.dart';
 import '../../features/fitness/data/exercise_model.dart';
 import '../../features/fitness/data/exercise_repository.dart';
 import '../../features/fitness/data/meal_model.dart';
@@ -430,6 +432,19 @@ final todayMealsProvider = FutureProvider.autoDispose<List<Meal>>((ref) {
       .watch(nutritionRepositoryProvider)
       .getMealsForDate(userId, DateTime.now());
 });
+
+// --- Fitness (Phase 6: Cong dong - port tu FitViet, xem giai thich kien
+// truc trong supabase/migrations/0031_fitness_community.sql) ---
+
+final communityRepositoryProvider = Provider<CommunityRepository>(
+  (ref) => CommunityRepository(ref.watch(supabaseClientProvider)),
+);
+
+final fitnessCommunityFeedProvider =
+    FutureProvider.autoDispose<List<CommunityPost>>((ref) {
+      final userId = ref.watch(supabaseClientProvider).auth.currentUser?.id;
+      return ref.watch(communityRepositoryProvider).getFeed(userId);
+    });
 
 // --- Wealth Management (features/wealth/) - Phase 1: Chi tieu/Thu nhap +
 // Dau tu (crypto giu nguyen o CryptoScreen, co phieu quoc te qua Twelve

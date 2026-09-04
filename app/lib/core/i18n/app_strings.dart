@@ -1496,6 +1496,32 @@ class AppStrings {
       AppLanguage.vi: 'không nghỉ',
       AppLanguage.en: 'no rest',
     },
+    'fitness_workout_share': {
+      AppLanguage.vi: 'Chia sẻ lên Cộng đồng',
+      AppLanguage.en: 'Share to Community',
+    },
+    'fitness_workout_shared': {
+      AppLanguage.vi: 'Đã chia sẻ ✓',
+      AppLanguage.en: 'Shared ✓',
+    },
+
+    // Fitness Phase 6: Cong dong (Community) - port tu FitViet
+    'fitness_community_title': {
+      AppLanguage.vi: 'Cộng đồng',
+      AppLanguage.en: 'Community',
+    },
+    'fitness_community_empty': {
+      AppLanguage.vi: 'Chưa có bài chia sẻ nào. Hãy là người đầu tiên!',
+      AppLanguage.en: 'No shares yet. Be the first!',
+    },
+    'fitness_community_load_error': {
+      AppLanguage.vi: 'Không tải được Cộng đồng.',
+      AppLanguage.en: 'Could not load Community.',
+    },
+    'fitness_community_post_summary': {
+      AppLanguage.vi: 'đã tập {duration} · {kg}kg',
+      AppLanguage.en: 'trained for {duration} · {kg}kg',
+    },
 
     // Fitness Phase 3: Dinh duong - port tu FitViet
     'fitness_nutrition_title': {
