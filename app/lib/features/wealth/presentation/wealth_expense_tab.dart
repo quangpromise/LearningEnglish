@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/currency_format.dart';
 import '../data/wealth_category.dart';
 import '../data/wealth_transaction_model.dart';
 import 'add_transaction_sheet.dart';
@@ -58,7 +59,7 @@ class WealthExpenseTab extends ConsumerWidget {
                         ),
                         const Spacer(),
                         Text(
-                          '${total.toStringAsFixed(0)} đ',
+                          formatVnd(total),
                           style: AppTextStyles.heading(size: 16)
                               .copyWith(color: AppColors.pink),
                         ),
@@ -77,7 +78,7 @@ class WealthExpenseTab extends ConsumerWidget {
                         );
                         return WealthTransactionTile(
                           icon: category.icon,
-                          label: category.labelVi(),
+                          label: ref.tr(category.labelKey),
                           note: t.note,
                           amount: t.amount,
                           amountColor: AppColors.pink,

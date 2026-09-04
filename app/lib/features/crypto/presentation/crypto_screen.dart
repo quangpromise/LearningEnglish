@@ -6,9 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/crypto_currency.dart';
-import 'crypto_coin_picker_sheet.dart';
 import 'crypto_market_tab.dart';
-import 'crypto_portfolio_tab.dart';
 import 'crypto_providers.dart';
 import 'crypto_watchlist_tab.dart';
 
@@ -27,7 +25,10 @@ class _CryptoScreenState extends ConsumerState<CryptoScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    // Chi con 2 tab (Market/Watchlist) - tab Portfolio da chuyen sang Vi >
+    // Tai san dau tu > Crypto (xem WalletInvestmentAssetsTab), vi Crypto gio
+    // dong bo Supabase giong cac loai tai san dau tu khac thay vi tach rieng.
+    _tabController = TabController(length: 2, vsync: this);
     // Gia THUC SU real-time gio lay tu OKX WebSocket (xem liveCoinsProvider),
     // khong con phu thuoc vao polling nay nua. Doan nay chi con lam moi dinh
     // ky phan du lieu CoinGecko (rank/von hoa/luong luu hanh, va gia fallback
@@ -82,28 +83,6 @@ class _CryptoScreenState extends ConsumerState<CryptoScreen>
                   ),
                 ),
                 _CurrencyToggle(currency: currency),
-                const SizedBox(width: 8),
-                GestureDetector(
-                  onTap: () {
-                    if (_tabController.index != 1) {
-                      _tabController.animateTo(1);
-                    }
-                    showCryptoCoinPicker(context, ref);
-                  },
-                  child: Container(
-                    width: 34,
-                    height: 34,
-                    decoration: BoxDecoration(
-                      gradient: AppColors.accentGradient,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.add_rounded,
-                      size: 18,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
               ],
             ),
             const SizedBox(height: 14),
@@ -151,7 +130,6 @@ class _CryptoScreenState extends ConsumerState<CryptoScreen>
                 labelStyle: const TextStyle(fontWeight: FontWeight.w800),
                 tabs: [
                   Tab(text: ref.tr('crypto_tab_market')),
-                  Tab(text: ref.tr('crypto_tab_portfolio')),
                   Tab(text: ref.tr('crypto_tab_watchlist')),
                 ],
               ),
@@ -160,11 +138,7 @@ class _CryptoScreenState extends ConsumerState<CryptoScreen>
             Expanded(
               child: TabBarView(
                 controller: _tabController,
-                children: const [
-                  CryptoMarketTab(),
-                  CryptoPortfolioTab(),
-                  CryptoWatchlistTab(),
-                ],
+                children: const [CryptoMarketTab(), CryptoWatchlistTab()],
               ),
             ),
           ],

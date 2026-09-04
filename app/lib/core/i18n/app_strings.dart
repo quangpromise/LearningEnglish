@@ -439,6 +439,7 @@ class AppStrings {
       AppLanguage.en: 'Sign out',
     },
     'common_cancel': {AppLanguage.vi: 'Huỷ', AppLanguage.en: 'Cancel'},
+    'common_confirm': {AppLanguage.vi: 'Xác nhận', AppLanguage.en: 'Confirm'},
     'profile_signout_title': {
       AppLanguage.vi: 'Đăng xuất?',
       AppLanguage.en: 'Sign out?',
@@ -746,6 +747,46 @@ class AppStrings {
       AppLanguage.vi: 'Cổ phiếu quốc tế',
       AppLanguage.en: 'International stocks',
     },
+    'wealth_investments_total': {
+      AppLanguage.vi: 'Tổng tài sản đầu tư',
+      AppLanguage.en: 'Total investment assets',
+    },
+    'wealth_investments_metal_title': {
+      AppLanguage.vi: 'Vàng / Bạc / Đồng',
+      AppLanguage.en: 'Gold / Silver / Copper',
+    },
+    'wealth_metal_world_price_note': {
+      AppLanguage.vi: 'Giá thế giới quy đổi, không phải giá bán lẻ trong nước.',
+      AppLanguage.en: 'World price converted — not a domestic retail price.',
+    },
+    'wealth_metal_current_price': {
+      AppLanguage.vi: 'Giá hiện tại',
+      AppLanguage.en: 'Current price',
+    },
+    'wealth_metal_cost_price': {
+      AppLanguage.vi: 'Giá vốn',
+      AppLanguage.en: 'Cost price',
+    },
+    'wealth_investments_real_estate_title': {
+      AppLanguage.vi: 'Nhà đất',
+      AppLanguage.en: 'Real estate',
+    },
+    'wealth_real_estate_manual_note': {
+      AppLanguage.vi: 'Không có giá thị trường tự động theo từng căn — bạn tự nhập giá trị ước tính.',
+      AppLanguage.en: 'No automatic per-property market price — enter your own estimated value.',
+    },
+    'wealth_real_estate_add': {
+      AppLanguage.vi: 'Thêm bất động sản',
+      AppLanguage.en: 'Add property',
+    },
+    'wealth_real_estate_name_hint': {
+      AppLanguage.vi: 'Tên bất động sản',
+      AppLanguage.en: 'Property name',
+    },
+    'wealth_real_estate_value_hint': {
+      AppLanguage.vi: 'Giá trị ước tính (VND)',
+      AppLanguage.en: 'Estimated value (VND)',
+    },
     'wealth_add_holding': {
       AppLanguage.vi: 'Thêm mã cổ phiếu',
       AppLanguage.en: 'Add stock holding',
@@ -774,6 +815,328 @@ class AppStrings {
       AppLanguage.vi: 'Xoá mục này?',
       AppLanguage.en: 'Delete this item?',
     },
+    'wealth_market_title': {AppLanguage.vi: 'Market', AppLanguage.en: 'Market'},
+    'wealth_expense_category_food': {
+      AppLanguage.vi: 'Ăn uống',
+      AppLanguage.en: 'Food',
+    },
+    'wealth_expense_category_transport': {
+      AppLanguage.vi: 'Di chuyển',
+      AppLanguage.en: 'Transport',
+    },
+    'wealth_expense_category_housing': {
+      AppLanguage.vi: 'Nhà ở',
+      AppLanguage.en: 'Housing',
+    },
+    'wealth_expense_category_entertainment': {
+      AppLanguage.vi: 'Giải trí',
+      AppLanguage.en: 'Entertainment',
+    },
+    'wealth_expense_category_health': {
+      AppLanguage.vi: 'Sức khoẻ',
+      AppLanguage.en: 'Health',
+    },
+    'wealth_expense_category_shopping': {
+      AppLanguage.vi: 'Mua sắm',
+      AppLanguage.en: 'Shopping',
+    },
+    'wealth_expense_category_bills': {
+      AppLanguage.vi: 'Hoá đơn',
+      AppLanguage.en: 'Bills',
+    },
+    'wealth_expense_category_other': {
+      AppLanguage.vi: 'Khác',
+      AppLanguage.en: 'Other',
+    },
+    'wealth_income_category_salary': {
+      AppLanguage.vi: 'Lương',
+      AppLanguage.en: 'Salary',
+    },
+    'wealth_income_category_bonus': {
+      AppLanguage.vi: 'Thưởng',
+      AppLanguage.en: 'Bonus',
+    },
+    'wealth_income_category_freelance': {
+      AppLanguage.vi: 'Freelance / Làm thêm',
+      AppLanguage.en: 'Freelance',
+    },
+    'wealth_income_category_business': {
+      AppLanguage.vi: 'Kinh doanh',
+      AppLanguage.en: 'Business',
+    },
+    'wealth_income_category_rental': {
+      AppLanguage.vi: 'Cho thuê nhà',
+      AppLanguage.en: 'Rental income',
+    },
+    'wealth_income_category_dividend': {
+      AppLanguage.vi: 'Cổ tức',
+      AppLanguage.en: 'Dividend',
+    },
+    'wealth_income_category_savings_interest': {
+      AppLanguage.vi: 'Lãi tiết kiệm',
+      AppLanguage.en: 'Savings interest',
+    },
+    'wealth_income_category_investment_gain': {
+      AppLanguage.vi: 'Đầu tư sinh lời',
+      AppLanguage.en: 'Investment gain',
+    },
+    'wealth_metal_gold_sjc': {
+      AppLanguage.vi: 'Vàng SJC',
+      AppLanguage.en: 'SJC Gold',
+    },
+    'wealth_metal_gold_pnj': {
+      AppLanguage.vi: 'Vàng PNJ',
+      AppLanguage.en: 'PNJ Gold',
+    },
+    'wealth_metal_silver_world': {
+      AppLanguage.vi: 'Bạc (thế giới quy đổi)',
+      AppLanguage.en: 'Silver (world price)',
+    },
+    'wealth_metal_copper_world': {
+      AppLanguage.vi: 'Đồng (thế giới quy đổi)',
+      AppLanguage.en: 'Copper (world price)',
+    },
+    'wealth_metal_buy_price': {AppLanguage.vi: 'Mua', AppLanguage.en: 'Buy'},
+    'wealth_metal_unit_luong': {
+      AppLanguage.vi: 'lượng',
+      AppLanguage.en: 'tael',
+    },
+    'wealth_metal_unit_kg': {AppLanguage.vi: 'kg', AppLanguage.en: 'kg'},
+    'wealth_metal_name_gold': {AppLanguage.vi: 'Vàng', AppLanguage.en: 'Gold'},
+    'wealth_metal_name_silver': {
+      AppLanguage.vi: 'Bạc',
+      AppLanguage.en: 'Silver',
+    },
+    'wealth_metal_name_copper': {
+      AppLanguage.vi: 'Đồng',
+      AppLanguage.en: 'Copper',
+    },
+    'wealth_stock_unit_share': {AppLanguage.vi: 'cp', AppLanguage.en: 'sh'},
+    'wealth_stock_avg_cost_label': {
+      AppLanguage.vi: 'giá vốn',
+      AppLanguage.en: 'avg cost',
+    },
+    'wealth_add_payment_method': {
+      AppLanguage.vi: 'Thêm hình thức',
+      AppLanguage.en: 'Add payment method',
+    },
+    'wealth_split_remaining': {
+      AppLanguage.vi: 'Còn thiếu',
+      AppLanguage.en: 'Remaining',
+    },
+    'wealth_market_stocks_note': {
+      AppLanguage.vi: 'Danh sách mã tiêu biểu (không phải toàn bộ sàn) — thêm mã khác trong Ví.',
+      AppLanguage.en: 'A curated watchlist, not the full market — add other symbols in Wallet.',
+    },
+    'wealth_market_metals_note': {
+      AppLanguage.vi: 'Giá tham khảo, cập nhật mỗi vài phút. Bạc/Đồng là giá thế giới quy đổi.',
+      AppLanguage.en: 'Reference prices, updated every few minutes. Silver/Copper are world prices converted.',
+    },
+    'wealth_market_real_estate_note': {
+      AppLanguage.vi: 'Không có nguồn giá thị trường real-time cho bất động sản theo từng khu vực — đây là danh sách bạn tự nhập trong Ví.',
+      AppLanguage.en: 'No real-time regional real-estate price source — this is your own list from Wallet.',
+    },
+    'wealth_market_usd_vnd': {
+      AppLanguage.vi: 'Tỷ giá USD/VND',
+      AppLanguage.en: 'USD/VND rate',
+    },
+    'wealth_service_title': {
+      AppLanguage.vi: 'Dịch vụ định kỳ',
+      AppLanguage.en: 'Recurring services',
+    },
+    'wealth_service_add': {
+      AppLanguage.vi: 'Thêm dịch vụ',
+      AppLanguage.en: 'Add service',
+    },
+    'wealth_service_empty': {
+      AppLanguage.vi: 'Chưa có dịch vụ định kỳ nào.',
+      AppLanguage.en: 'No recurring services yet.',
+    },
+    'wealth_service_days_left': {
+      AppLanguage.vi: 'Còn lại',
+      AppLanguage.en: 'Days left',
+    },
+    'wealth_service_overdue': {
+      AppLanguage.vi: 'Đã quá hạn',
+      AppLanguage.en: 'Overdue',
+    },
+    'wealth_service_renew': {
+      AppLanguage.vi: 'Gia hạn',
+      AppLanguage.en: 'Renew',
+    },
+    'wealth_service_name_hint': {
+      AppLanguage.vi: 'Tên dịch vụ (VD: Netflix)',
+      AppLanguage.en: 'Service name (e.g. Netflix)',
+    },
+    'wealth_service_start_date': {
+      AppLanguage.vi: 'Ngày bắt đầu',
+      AppLanguage.en: 'Start date',
+    },
+    'wealth_service_cycle': {
+      AppLanguage.vi: 'Chu kỳ',
+      AppLanguage.en: 'Billing cycle',
+    },
+    'wealth_service_cycle_week': {
+      AppLanguage.vi: 'Hàng tuần',
+      AppLanguage.en: 'Weekly',
+    },
+    'wealth_service_cycle_month': {
+      AppLanguage.vi: 'Hàng tháng',
+      AppLanguage.en: 'Monthly',
+    },
+    'wealth_service_cycle_year': {
+      AppLanguage.vi: 'Hàng năm',
+      AppLanguage.en: 'Yearly',
+    },
+    'wealth_service_cycle_custom_years': {
+      AppLanguage.vi: 'Số năm tuỳ chọn',
+      AppLanguage.en: 'Custom (years)',
+    },
+    'wealth_service_cycle_manual': {
+      AppLanguage.vi: 'Ngày cụ thể',
+      AppLanguage.en: 'Specific date',
+    },
+    'wealth_service_years_hint': {
+      AppLanguage.vi: 'Số năm',
+      AppLanguage.en: 'Number of years',
+    },
+    'wealth_service_pick_expiry': {
+      AppLanguage.vi: 'Chọn ngày hết hạn',
+      AppLanguage.en: 'Pick expiry date',
+    },
+    'wealth_service_expiry_preview': {
+      AppLanguage.vi: 'Ngày hết hạn',
+      AppLanguage.en: 'Expiry date',
+    },
+    'wealth_service_reminder_lead': {
+      AppLanguage.vi: 'Nhắc trước',
+      AppLanguage.en: 'Remind before',
+    },
+    'wealth_service_lead_1_week': {
+      AppLanguage.vi: '1 tuần',
+      AppLanguage.en: '1 week',
+    },
+    'wealth_service_lead_half_month': {
+      AppLanguage.vi: 'Nửa tháng',
+      AppLanguage.en: 'Half a month',
+    },
+    'wealth_service_lead_1_month': {
+      AppLanguage.vi: '1 tháng',
+      AppLanguage.en: '1 month',
+    },
+    'wealth_debt_title': {AppLanguage.vi: 'Nợ', AppLanguage.en: 'Debt'},
+    'wealth_debt_tab_i_owe': {
+      AppLanguage.vi: 'Đang nợ',
+      AppLanguage.en: 'I owe',
+    },
+    'wealth_debt_tab_owed_to_me': {
+      AppLanguage.vi: 'Người khác nợ mình',
+      AppLanguage.en: 'Owed to me',
+    },
+    'wealth_debt_empty': {
+      AppLanguage.vi: 'Chưa có khoản nợ nào.',
+      AppLanguage.en: 'No debts yet.',
+    },
+    'wealth_debt_add': {
+      AppLanguage.vi: 'Thêm khoản nợ',
+      AppLanguage.en: 'Add debt',
+    },
+    'wealth_debt_add_i_owe': {
+      AppLanguage.vi: 'Thêm khoản đang nợ',
+      AppLanguage.en: 'Add a debt you owe',
+    },
+    'wealth_debt_add_owed_to_me': {
+      AppLanguage.vi: 'Thêm khoản người khác nợ',
+      AppLanguage.en: 'Add a debt owed to you',
+    },
+    'wealth_debt_pay': {AppLanguage.vi: 'Trả nợ', AppLanguage.en: 'Pay debt'},
+    'wealth_debt_collect': {
+      AppLanguage.vi: 'Thu nợ',
+      AppLanguage.en: 'Collect debt',
+    },
+    'wealth_debt_settled': {
+      AppLanguage.vi: 'Đã trả xong',
+      AppLanguage.en: 'Settled',
+    },
+    'wealth_debt_person_hint': {
+      AppLanguage.vi: 'Tên chủ nợ / người nợ',
+      AppLanguage.en: 'Creditor / debtor name',
+    },
+    'wealth_pay_by': {
+      AppLanguage.vi: 'Thanh toán bằng',
+      AppLanguage.en: 'Pay by',
+    },
+    'wealth_pay_by_bank': {
+      AppLanguage.vi: 'Chọn ngân hàng',
+      AppLanguage.en: 'Choose bank',
+    },
+
+    // Vi (Wallet) - xem Phase A-C ke hoach build lai Wealth
+    'wallet_title': {AppLanguage.vi: 'Ví', AppLanguage.en: 'Wallet'},
+    'wallet_tab_existing': {
+      AppLanguage.vi: 'Tài sản hiện có',
+      AppLanguage.en: 'Current assets',
+    },
+    'wallet_tab_investments': {
+      AppLanguage.vi: 'Tài sản đầu tư',
+      AppLanguage.en: 'Investment assets',
+    },
+    'wallet_section_cash': {AppLanguage.vi: 'Tiền mặt', AppLanguage.en: 'Cash'},
+    'wallet_section_bank': {
+      AppLanguage.vi: 'Tiền ngân hàng',
+      AppLanguage.en: 'Bank money',
+    },
+    'wallet_add_entry': {
+      AppLanguage.vi: 'Thêm giao dịch',
+      AppLanguage.en: 'Add entry',
+    },
+    'wallet_empty_cash': {
+      AppLanguage.vi: 'Chưa có giao dịch tiền mặt nào.',
+      AppLanguage.en: 'No cash entries yet.',
+    },
+    'wallet_empty_bank': {
+      AppLanguage.vi: 'Chưa có ngân hàng nào được thêm.',
+      AppLanguage.en: 'No bank accounts added yet.',
+    },
+    'wallet_pick_bank_title': {
+      AppLanguage.vi: 'Chọn ngân hàng',
+      AppLanguage.en: 'Choose a bank',
+    },
+    'wallet_pick_bank_search_hint': {
+      AppLanguage.vi: 'Tìm ngân hàng...',
+      AppLanguage.en: 'Search bank...',
+    },
+    'wallet_pick_bank_other_title': {
+      AppLanguage.vi: 'Nhập tên ngân hàng',
+      AppLanguage.en: 'Enter bank name',
+    },
+    'wallet_pick_bank_other_hint': {
+      AppLanguage.vi: 'VD: Ngân hàng ABC',
+      AppLanguage.en: 'e.g. ABC Bank',
+    },
+    'wallet_load_error': {
+      AppLanguage.vi: 'Không tải được danh sách ngân hàng',
+      AppLanguage.en: 'Could not load bank list',
+    },
+    'wallet_amount_direction_add': {
+      AppLanguage.vi: 'Nạp thêm',
+      AppLanguage.en: 'Deposit',
+    },
+    'wallet_amount_direction_subtract': {
+      AppLanguage.vi: 'Rút bớt',
+      AppLanguage.en: 'Withdraw',
+    },
+    'wallet_amount_hint': {AppLanguage.vi: 'Số tiền', AppLanguage.en: 'Amount'},
+    'wallet_note_hint': {
+      AppLanguage.vi: 'Ghi chú (không bắt buộc)',
+      AppLanguage.en: 'Note (optional)',
+    },
+    'wallet_save': {AppLanguage.vi: 'Lưu', AppLanguage.en: 'Save'},
+    'wallet_total_assets': {
+      AppLanguage.vi: 'Tổng tài sản',
+      AppLanguage.en: 'Total assets',
+    },
+    'wallet_hidden_amount': {AppLanguage.vi: 'Đã ẩn', AppLanguage.en: 'Hidden'},
 
     // Home screen
     'home_greeting': {AppLanguage.vi: 'Xin chào', AppLanguage.en: 'Hello'},

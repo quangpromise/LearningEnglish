@@ -6,16 +6,20 @@ import '../../../core/navigation/app_popup.dart';
 import '../../../core/navigation/app_top_bar.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/currency_format.dart';
 import '../../social/presentation/conversations_screen.dart';
+import 'debt_screen.dart';
+import 'market_screen.dart';
+import 'recurring_services_screen.dart';
 import 'wealth_detail_screen.dart';
 import 'wealth_expense_tab.dart';
-import 'wealth_income_tab.dart';
-import 'wealth_investments_tab.dart';
+import 'wallet_screen.dart';
 
-/// Man Home cua khu vuc Quan ly tai san - theo dung mau Home cua Hoc Tieng
-/// Anh/Fitness: 1 khung nhom danh muc voi cac the icon+ten (Chi tieu/Thu
-/// nhap/Dau tu), thay vi 3 tab ngang hang o thanh Menu nhu truoc (da giai
-/// phong Menu de danh cho thanh nhac dai + tab Tin nhan).
+/// Man Home cua khu vuc Quan ly tai san - the "Hello, {ten}" + tong Tien
+/// mat/Ngan hang (quy doi VND, co nut an/hien) ngay duoi dong chao, roi den
+/// cac the icon+ten (Vi/Chi tieu/Market) - "Thu nhap" cu da gop vao luong
+/// "Nap tien" trong Vi (xem quyet dinh trong ke hoach build lai Wealth), tile
+/// "Dau tu" cu chuyen vao trong Vi > tab Tai san dau tu.
 class WealthHomeScreen extends ConsumerWidget {
   const WealthHomeScreen({super.key});
 
@@ -26,6 +30,9 @@ class WealthHomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final unread = ref.watch(unreadMessageCountProvider).valueOrNull ?? 0;
+    final name = ref.watch(myProfileProvider).valueOrNull?.nameLabel ?? '';
+    final hidden = ref.watch(wealthPrivacyModeProvider);
+    final netWorth = ref.watch(netWorthVndProvider);
     return ScreenBackground(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(14, 12, 14, 16),
@@ -38,7 +45,53 @@ class WealthHomeScreen extends ConsumerWidget {
               onMessagesTap: () =>
                   openAppPopup(context, const ConversationsScreen()),
             ),
-            const SizedBox(height: 22),
+            const SizedBox(height: 18),
+            GlowBox(
+              padding: const EdgeInsets.all(18),
+              borderRadius: 22,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${ref.tr('home_greeting')}, $name',
+                    style: AppTextStyles.body(size: 13),
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          hidden
+                              ? '•••••••'
+                              : (netWorth == null
+                                    ? '...'
+                                    : formatVnd(netWorth)),
+                          style: AppTextStyles.heading(size: 24),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () => ref
+                            .read(wealthPrivacyModeProvider.notifier)
+                            .toggle(),
+                        child: Icon(
+                          hidden
+                              ? Icons.visibility_off_rounded
+                              : Icons.visibility_rounded,
+                          color: AppColors.textMuted,
+                          size: 20,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    ref.tr('wallet_total_assets'),
+                    style: AppTextStyles.muted(size: 11),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
               child: GlowBox(
@@ -69,6 +122,16 @@ class WealthHomeScreen extends ConsumerWidget {
                           children: [
                             _WealthTile(
                               width: itemWidth,
+                              icon: Icons.account_balance_wallet_rounded,
+                              label: ref.tr('wallet_title'),
+                              onTap: () => Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => const WalletScreen(),
+                                ),
+                              ),
+                            ),
+                            _WealthTile(
+                              width: itemWidth,
                               icon: Icons.receipt_long_rounded,
                               label: ref.tr('wealth_tab_expense'),
                               onTap: () => _open(
@@ -79,22 +142,33 @@ class WealthHomeScreen extends ConsumerWidget {
                             ),
                             _WealthTile(
                               width: itemWidth,
-                              icon: Icons.savings_rounded,
-                              label: ref.tr('wealth_tab_income'),
-                              onTap: () => _open(
-                                context,
-                                ref.tr('wealth_tab_income'),
-                                const WealthIncomeTab(),
+                              icon: Icons.handshake_rounded,
+                              label: ref.tr('wealth_debt_title'),
+                              onTap: () => Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => const DebtScreen(),
+                                ),
                               ),
                             ),
                             _WealthTile(
                               width: itemWidth,
-                              icon: Icons.trending_up_rounded,
-                              label: ref.tr('wealth_tab_investments'),
-                              onTap: () => _open(
-                                context,
-                                ref.tr('wealth_tab_investments'),
-                                const WealthInvestmentsTab(),
+                              icon: Icons.event_repeat_rounded,
+                              label: ref.tr('wealth_service_title'),
+                              onTap: () => Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      const RecurringServicesScreen(),
+                                ),
+                              ),
+                            ),
+                            _WealthTile(
+                              width: itemWidth,
+                              icon: Icons.show_chart_rounded,
+                              label: ref.tr('wealth_market_title'),
+                              onTap: () => Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => const MarketScreen(),
+                                ),
                               ),
                             ),
                           ],
@@ -143,12 +217,20 @@ class _WealthTile extends StatelessWidget {
               child: Icon(icon, color: AppColors.wealthAccent, size: 24),
             ),
             const SizedBox(height: 6),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.body(size: 10.5, weight: FontWeight.w600),
+            SizedBox(
+              height: 26,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  style: AppTextStyles.body(
+                    size: 10.5,
+                    weight: FontWeight.w600,
+                  ),
+                ),
+              ),
             ),
           ],
         ),

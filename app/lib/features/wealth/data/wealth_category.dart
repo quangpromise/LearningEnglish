@@ -35,15 +35,15 @@ enum WealthExpenseCategory {
     other => 'OTHER',
   };
 
-  String labelVi() => switch (this) {
-    food => 'Ăn uống',
-    transport => 'Di chuyển',
-    housing => 'Nhà ở',
-    entertainment => 'Giải trí',
-    health => 'Sức khoẻ',
-    shopping => 'Mua sắm',
-    bills => 'Hoá đơn',
-    other => 'Khác',
+  String get labelKey => switch (this) {
+    food => 'wealth_expense_category_food',
+    transport => 'wealth_expense_category_transport',
+    housing => 'wealth_expense_category_housing',
+    entertainment => 'wealth_expense_category_entertainment',
+    health => 'wealth_expense_category_health',
+    shopping => 'wealth_expense_category_shopping',
+    bills => 'wealth_expense_category_bills',
+    other => 'wealth_expense_category_other',
   };
 
   IconData get icon => switch (this) {
@@ -100,15 +100,15 @@ enum WealthIncomeCategory {
 
   bool get isActive => !isPassive;
 
-  String labelVi() => switch (this) {
-    salary => 'Lương',
-    bonus => 'Thưởng',
-    freelance => 'Freelance / Làm thêm',
-    business => 'Kinh doanh',
-    rentalIncome => 'Cho thuê nhà',
-    dividend => 'Cổ tức',
-    savingsInterest => 'Lãi tiết kiệm',
-    investmentGain => 'Đầu tư sinh lời',
+  String get labelKey => switch (this) {
+    salary => 'wealth_income_category_salary',
+    bonus => 'wealth_income_category_bonus',
+    freelance => 'wealth_income_category_freelance',
+    business => 'wealth_income_category_business',
+    rentalIncome => 'wealth_income_category_rental',
+    dividend => 'wealth_income_category_dividend',
+    savingsInterest => 'wealth_income_category_savings_interest',
+    investmentGain => 'wealth_income_category_investment_gain',
   };
 
   IconData get icon => switch (this) {

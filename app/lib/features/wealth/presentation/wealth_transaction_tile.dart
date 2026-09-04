@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/currency_format.dart';
 
 /// 1 dong giao dich trong danh sach - dung chung cho ca tab Chi tieu va
 /// Thu nhap (chi khac mau/dau +-).
@@ -67,7 +68,7 @@ class WealthTransactionTile extends StatelessWidget {
             ),
           ),
           Text(
-            '$sign${amount.toStringAsFixed(0)} đ',
+            '$sign${formatVnd(amount)}',
             style: AppTextStyles.body(
               weight: FontWeight.w800,
               color: amountColor,

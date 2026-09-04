@@ -162,12 +162,20 @@ class _FitnessTile extends StatelessWidget {
               child: Icon(icon, color: AppColors.fitnessAccent, size: 24),
             ),
             const SizedBox(height: 6),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.body(size: 10.5, weight: FontWeight.w600),
+            SizedBox(
+              height: 26,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  style: AppTextStyles.body(
+                    size: 10.5,
+                    weight: FontWeight.w600,
+                  ),
+                ),
+              ),
             ),
           ],
         ),

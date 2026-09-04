@@ -4,118 +4,118 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../crypto/presentation/crypto_screen.dart';
 import '../data/stocks_intl_repository.dart';
 import '../data/wealth_holding_model.dart';
 
-class WealthInvestmentsTab extends ConsumerWidget {
-  const WealthInvestmentsTab({super.key});
+const _kAssetType = 'stock_intl';
+
+/// Portfolio Co phieu quoc te (thu cong - nguoi dung tu nhap so luong/gia
+/// von, gia hien tai qua Twelve Data). Tach tu WealthInvestmentsTab cu
+/// (Phase C) - gio la 1 man rieng mo tu Vi > Tai san dau tu > Co phieu.
+class StockPortfolioScreen extends ConsumerWidget {
+  const StockPortfolioScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final holdingsAsync = ref.watch(wealthHoldingsProvider);
-    return ListView(
-      children: [
-        GestureDetector(
-          onTap: () => Navigator.of(context)
-              .push(MaterialPageRoute(builder: (_) => const CryptoScreen())),
-          child: GlowBox(
-            borderRadius: 20,
-            child: Row(
+    final holdingsAsync = ref.watch(wealthHoldingsProvider(_kAssetType));
+    return ScreenBackground(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: AppColors.amber.withValues(alpha: 0.18),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: const Icon(
-                    Icons.currency_bitcoin_rounded,
-                    color: AppColors.amber,
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        ref.tr('wealth_investments_crypto_title'),
-                        style: AppTextStyles.body(weight: FontWeight.w800),
-                      ),
-                      Text(
-                        ref.tr('wealth_investments_crypto_subtitle'),
-                        style: AppTextStyles.muted(size: 11),
-                      ),
-                    ],
-                  ),
-                ),
-                const Icon(
-                  Icons.chevron_right_rounded,
-                  color: AppColors.textMuted,
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          ref.tr('wealth_investments_stocks_title'),
-          style: AppTextStyles.heading(size: 14),
-        ),
-        const SizedBox(height: 10),
-        holdingsAsync.when(
-          loading: () => const Padding(
-            padding: EdgeInsets.symmetric(vertical: 20),
-            child: Center(
-              child: CircularProgressIndicator(color: AppColors.wealthAccent),
-            ),
-          ),
-          error: (_, _) => Text(
-            ref.tr('wealth_empty_holdings'),
-            style: AppTextStyles.muted(),
-          ),
-          data: (holdings) {
-            if (holdings.isEmpty) {
-              return Text(
-                ref.tr('wealth_empty_holdings'),
-                style: AppTextStyles.muted(),
-              );
-            }
-            final symbols = holdings.map((h) => h.symbol).toList();
-            final quotesAsync = ref.watch(stocksIntlQuotesProvider(symbols));
-            return Column(
-              children: [
-                for (final h in holdings) ...[
-                  _HoldingTile(
-                    holding: h,
-                    quote: quotesAsync.valueOrNull?.firstWhereOrNull(
-                      (q) => q.symbol == h.symbol,
+                GestureDetector(
+                  onTap: () => Navigator.of(context).maybePop(),
+                  child: Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color: AppColors.glassFill,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.glassBorder),
                     ),
-                    quoteFailed: quotesAsync.hasError,
+                    child: const Icon(
+                      Icons.chevron_left_rounded,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
-                  const SizedBox(height: 10),
-                ],
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    ref.tr('wealth_investments_stocks_title'),
+                    style: AppTextStyles.heading(size: 18),
+                  ),
+                ),
               ],
-            );
-          },
-        ),
-        const SizedBox(height: 12),
-        SizedBox(
-          width: double.infinity,
-          child: PillButton(
-            label: ref.tr('wealth_add_holding'),
-            filled: false,
-            icon: const Icon(
-              Icons.add_rounded,
-              size: 16,
-              color: AppColors.textPrimary,
             ),
-            onTap: () => _showAddHoldingSheet(context, ref),
-          ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: holdingsAsync.when(
+                loading: () => const Center(
+                  child: CircularProgressIndicator(
+                    color: AppColors.wealthAccent,
+                  ),
+                ),
+                error: (_, _) => Center(
+                  child: Text(
+                    ref.tr('wealth_empty_holdings'),
+                    style: AppTextStyles.muted(),
+                  ),
+                ),
+                data: (holdings) {
+                  if (holdings.isEmpty) {
+                    return Center(
+                      child: Text(
+                        ref.tr('wealth_empty_holdings'),
+                        style: AppTextStyles.muted(),
+                      ),
+                    );
+                  }
+                  final symbols = holdings
+                      .map((h) => h.symbol ?? '')
+                      .where((s) => s.isNotEmpty)
+                      .toList();
+                  final quotesAsync = ref.watch(
+                    stocksIntlQuotesProvider(symbols),
+                  );
+                  return ListView(
+                    children: [
+                      for (final h in holdings) ...[
+                        _HoldingTile(
+                          holding: h,
+                          quote: quotesAsync.valueOrNull?.firstWhereOrNull(
+                            (q) => q.symbol == h.symbol,
+                          ),
+                          quoteFailed: quotesAsync.hasError,
+                        ),
+                        const SizedBox(height: 10),
+                      ],
+                    ],
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: PillButton(
+                label: ref.tr('wealth_add_holding'),
+                accentGradient: AppColors.wealthAccentGradient,
+                accentColor: AppColors.wealthAccent,
+                icon: const Icon(
+                  Icons.add_rounded,
+                  size: 16,
+                  color: Colors.white,
+                ),
+                onTap: () => _showAddHoldingSheet(context, ref),
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
@@ -169,17 +169,18 @@ class _AddHoldingSheetState extends ConsumerState<_AddHoldingSheet> {
     try {
       await ref
           .read(wealthHoldingRepositoryProvider)
-          .addHolding(
+          .upsertBySymbol(
             userId,
             WealthHolding(
               id: '',
+              assetType: _kAssetType,
               symbol: symbol,
               quantity: quantity,
               avgCost: avgCost,
               currency: 'USD',
             ),
           );
-      ref.invalidate(wealthHoldingsProvider);
+      ref.invalidate(wealthHoldingsProvider(_kAssetType));
       if (mounted) Navigator.of(context).pop();
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -276,7 +277,7 @@ class _HoldingField extends StatelessWidget {
   }
 }
 
-class _HoldingTile extends StatelessWidget {
+class _HoldingTile extends ConsumerWidget {
   const _HoldingTile({
     required this.holding,
     required this.quote,
@@ -287,10 +288,12 @@ class _HoldingTile extends StatelessWidget {
   final bool quoteFailed;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final currentPrice = quote?.price;
+    final quantity = holding.quantity ?? 0;
+    final avgCost = holding.avgCost ?? 0;
     final gain = currentPrice != null
-        ? (currentPrice - holding.avgCost) * holding.quantity
+        ? (currentPrice - avgCost) * quantity
         : null;
     return GlowBox(
       borderRadius: 18,
@@ -301,11 +304,13 @@ class _HoldingTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  holding.symbol,
+                  holding.symbol ?? '',
                   style: AppTextStyles.body(weight: FontWeight.w800),
                 ),
                 Text(
-                  '${holding.quantity} cp · giá vốn \$${holding.avgCost.toStringAsFixed(2)}',
+                  '$quantity ${ref.tr('wealth_stock_unit_share')} · '
+                  '${ref.tr('wealth_stock_avg_cost_label')} '
+                  '\$${avgCost.toStringAsFixed(2)}',
                   style: AppTextStyles.muted(size: 11),
                 ),
               ],

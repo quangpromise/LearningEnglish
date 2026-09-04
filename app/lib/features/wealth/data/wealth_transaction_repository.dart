@@ -17,8 +17,15 @@ class WealthTransactionRepository {
         .toList();
   }
 
-  Future<void> addTransaction(String userId, WealthTransaction tx) async {
-    await _supabase.from('wealth_transactions').insert(tx.toInsertRow(userId));
+  /// Tra ve id vua tao - can de lien ket 1 dong wealth_balance_entries khi
+  /// giao dich la chi tieu (xem add_transaction_sheet.dart).
+  Future<String> addTransaction(String userId, WealthTransaction tx) async {
+    final row = await _supabase
+        .from('wealth_transactions')
+        .insert(tx.toInsertRow(userId))
+        .select('id')
+        .single();
+    return row['id'] as String;
   }
 
   Future<void> deleteTransaction(String userId, String id) async {

@@ -22,6 +22,9 @@ class WealthTransaction {
     required this.occurredAt,
     this.note,
     this.incomeKind,
+    this.paymentAccountType,
+    this.paymentBankCode,
+    this.paymentBankName,
   });
 
   final String id;
@@ -32,6 +35,11 @@ class WealthTransaction {
   final DateTime occurredAt;
   final String? note;
   final String? incomeKind;
+  // Chi co gia tri khi type=expense - dung de tu dong sinh 1 dong
+  // wealth_balance_entries tru vao dung Tien mat/Ngan hang da chon (Phase D).
+  final String? paymentAccountType; // 'cash' | 'bank'
+  final String? paymentBankCode;
+  final String? paymentBankName;
 
   bool get isPassiveIncome => incomeKind == 'passive';
 
@@ -45,6 +53,9 @@ class WealthTransaction {
       occurredAt: DateTime.parse(row['occurred_at'] as String),
       note: row['note'] as String?,
       incomeKind: row['income_kind'] as String?,
+      paymentAccountType: row['payment_account_type'] as String?,
+      paymentBankCode: row['payment_bank_code'] as String?,
+      paymentBankName: row['payment_bank_name'] as String?,
     );
   }
 
@@ -57,5 +68,8 @@ class WealthTransaction {
     'occurred_at': occurredAt.toIso8601String(),
     'note': note,
     'income_kind': incomeKind,
+    'payment_account_type': paymentAccountType,
+    'payment_bank_code': paymentBankCode,
+    'payment_bank_name': paymentBankName,
   };
 }

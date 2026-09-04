@@ -4,8 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../data/wealth_balance_entry_model.dart';
 import '../data/wealth_category.dart';
 import '../data/wealth_transaction_model.dart';
+import 'payment_split_editor.dart';
 
 /// Bottom sheet them 1 giao dich chi tieu/thu nhap - [type] co dinh theo tab
 /// dang mo (Chi tieu hoac Thu nhap), khong cho doi loai trong sheet de UI
@@ -37,6 +39,13 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
   final _noteController = TextEditingController();
   String _categoryCode = WealthExpenseCategory.other.code;
   bool _saving = false;
+  // Chi dung khi type=expense - cho phep tach nhieu hinh thuc thanh toan
+  // (vd 1 phan tien mat + 1 phan ngan hang) cho cung 1 giao dich (Phase G).
+  List<PaymentSplit> _splits = const [
+    PaymentSplit(accountType: 'cash', amount: 0),
+  ];
+  double _amount = 0;
+  DateTime _occurredAt = DateTime.now();
 
   @override
   void initState() {
@@ -44,6 +53,15 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
     _categoryCode = widget.type == WealthTransactionType.expense
         ? WealthExpenseCategory.other.code
         : WealthIncomeCategory.salary.code;
+    _amountController.addListener(() {
+      setState(
+        () => _amount =
+            double.tryParse(
+              _amountController.text.trim().replaceAll(',', '.'),
+            ) ??
+            0,
+      );
+    });
   }
 
   @override
@@ -53,9 +71,17 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
     super.dispose();
   }
 
+  bool get _isExpense => widget.type == WealthTransactionType.expense;
+
+  bool get _splitsValid {
+    if (!_isExpense) return true;
+    final sum = _splits.fold<double>(0, (s, p) => s + p.amount);
+    return _amount > 0 && (sum - _amount).abs() < 0.5;
+  }
+
   Future<void> _save() async {
-    final amount = double.tryParse(_amountController.text.trim());
-    if (amount == null || amount <= 0) return;
+    if (_amount <= 0) return;
+    if (_isExpense && !_splitsValid) return;
     setState(() => _saving = true);
     final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
     if (userId == null) {
@@ -67,22 +93,53 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
               ? 'passive'
               : 'active')
         : null;
+    // Ghi lai payment_account_type/bank chi khi thanh toan bang DUNG 1 hinh
+    // thuc (thong tin tham khao tren wealth_transactions) - khi tach nhieu
+    // hinh thuc, thong tin that nam o cac dong wealth_balance_entries rieng.
+    final singleSplit = _isExpense && _splits.length == 1
+        ? _splits.first
+        : null;
     final tx = WealthTransaction(
       id: '',
       type: widget.type,
       categoryCode: _categoryCode,
-      amount: amount,
+      amount: _amount,
       currency: 'VND',
-      occurredAt: DateTime.now(),
+      occurredAt: _occurredAt,
       note: _noteController.text.trim().isEmpty
           ? null
           : _noteController.text.trim(),
       incomeKind: incomeKind,
+      paymentAccountType: singleSplit?.accountType,
+      paymentBankCode: singleSplit?.bankCode,
+      paymentBankName: singleSplit?.bankName,
     );
     try {
-      await ref
+      final txId = await ref
           .read(wealthTransactionRepositoryProvider)
           .addTransaction(userId, tx);
+      if (_isExpense) {
+        final repo = ref.read(wealthBalanceEntryRepositoryProvider);
+        for (final split in _splits) {
+          if (split.amount <= 0) continue;
+          await repo.addEntry(
+            userId,
+            WealthBalanceEntry(
+              id: '',
+              accountType: split.accountType,
+              bankCode: split.bankCode,
+              bankName: split.bankName,
+              currency: 'VND',
+              amount: -split.amount,
+              note: tx.note,
+              occurredAt: tx.occurredAt,
+              source: 'expense',
+              sourceTransactionId: txId,
+            ),
+          );
+        }
+        ref.invalidate(walletBalanceEntriesProvider);
+      }
       ref.invalidate(wealthTransactionsProvider);
       if (mounted) Navigator.of(context).pop();
     } finally {
@@ -120,7 +177,7 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
                       for (final c in WealthExpenseCategory.values)
                         _CategoryChip(
                           icon: c.icon,
-                          label: c.labelVi(),
+                          label: ref.tr(c.labelKey),
                           selected: _categoryCode == c.code,
                           onTap: () => setState(() => _categoryCode = c.code),
                         ),
@@ -129,7 +186,7 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
                       for (final c in WealthIncomeCategory.values)
                         _CategoryChip(
                           icon: c.icon,
-                          label: c.labelVi(),
+                          label: ref.tr(c.labelKey),
                           selected: _categoryCode == c.code,
                           onTap: () => setState(() => _categoryCode = c.code),
                         ),
@@ -170,6 +227,51 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
                 ),
               ),
             ),
+            if (isExpense) ...[
+              const SizedBox(height: 10),
+              Text(
+                ref.tr('wealth_pay_by'),
+                style: AppTextStyles.muted(size: 11),
+              ),
+              const SizedBox(height: 6),
+              PaymentSplitEditor(
+                totalAmount: _amount,
+                onChanged: (splits) => _splits = splits,
+              ),
+            ],
+            const SizedBox(height: 10),
+            GestureDetector(
+              onTap: _pickDateTime,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.glassFill,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.schedule_rounded,
+                      size: 16,
+                      color: AppColors.textMuted,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '${_occurredAt.day.toString().padLeft(2, '0')}/'
+                      '${_occurredAt.month.toString().padLeft(2, '0')}/'
+                      '${_occurredAt.year} '
+                      '${_occurredAt.hour.toString().padLeft(2, '0')}:'
+                      '${_occurredAt.minute.toString().padLeft(2, '0')}',
+                      style: AppTextStyles.body(size: 13),
+                    ),
+                  ],
+                ),
+              ),
+            ),
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
@@ -177,13 +279,37 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
                 label: ref.tr('wealth_save'),
                 accentGradient: AppColors.wealthAccentGradient,
                 accentColor: AppColors.wealthAccent,
-                onTap: _saving ? null : _save,
+                onTap: _saving || !_splitsValid ? null : _save,
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _pickDateTime() async {
+    final date = await showDatePicker(
+      context: context,
+      initialDate: _occurredAt,
+      firstDate: DateTime(2000),
+      lastDate: DateTime.now().add(const Duration(days: 1)),
+    );
+    if (date == null || !mounted) return;
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(_occurredAt),
+    );
+    if (time == null) return;
+    setState(() {
+      _occurredAt = DateTime(
+        date.year,
+        date.month,
+        date.day,
+        time.hour,
+        time.minute,
+      );
+    });
   }
 }
 

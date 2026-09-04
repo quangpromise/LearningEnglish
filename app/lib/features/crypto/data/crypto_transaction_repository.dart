@@ -1,11 +1,10 @@
-import 'dart:convert';
-
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 enum CryptoTransactionType { buy, sell }
 
-/// 1 lan mua/ban trong danh muc crypto ca nhan - luu lai de xem lich su,
-/// khong phai giao dich tren san that.
+/// 1 lan mua/ban trong danh muc crypto ca nhan - dong bo qua Supabase (bang
+/// wealth_investment_transactions, asset_type='crypto') - TRUOC DAY luu
+/// SharedPreferences chi tren may.
 class CryptoTransaction {
   const CryptoTransaction({
     required this.coinId,
@@ -27,66 +26,53 @@ class CryptoTransaction {
   final double priceAtTime;
   final DateTime timestamp;
 
-  Map<String, dynamic> toJson() => {
-    'coinId': coinId,
-    'symbol': symbol,
-    'name': name,
-    'imageUrl': imageUrl,
-    'type': type.name,
-    'quantity': quantity,
-    'priceAtTime': priceAtTime,
-    'timestamp': timestamp.toIso8601String(),
-  };
-
-  factory CryptoTransaction.fromJson(Map<String, dynamic> json) =>
+  factory CryptoTransaction.fromRow(Map<String, dynamic> row) =>
       CryptoTransaction(
-        coinId: json['coinId'] as String? ?? '',
-        symbol: json['symbol'] as String? ?? '',
-        name: json['name'] as String? ?? '',
-        imageUrl: json['imageUrl'] as String? ?? '',
-        type: (json['type'] as String?) == 'sell'
+        coinId: row['symbol'] as String? ?? '',
+        symbol: row['symbol'] as String? ?? '',
+        name: row['name'] as String? ?? '',
+        imageUrl: row['image_url'] as String? ?? '',
+        type: (row['action'] as String?) == 'sell'
             ? CryptoTransactionType.sell
             : CryptoTransactionType.buy,
-        quantity: (json['quantity'] as num?)?.toDouble() ?? 0,
-        priceAtTime: (json['priceAtTime'] as num?)?.toDouble() ?? 0,
-        timestamp:
-            DateTime.tryParse(json['timestamp'] as String? ?? '') ??
-            DateTime.now(),
+        quantity: (row['quantity'] as num?)?.toDouble() ?? 0,
+        priceAtTime: (row['price'] as num?)?.toDouble() ?? 0,
+        timestamp: DateTime.parse(row['occurred_at'] as String),
       );
+
+  Map<String, dynamic> toRow(String userId) => {
+    'user_id': userId,
+    'asset_type': 'crypto',
+    'symbol': coinId,
+    'name': name,
+    'image_url': imageUrl,
+    'action': type.name,
+    'quantity': quantity,
+    'price': priceAtTime,
+    'currency': 'USD',
+    'occurred_at': timestamp.toIso8601String(),
+  };
 }
 
-/// Luu lich su mua/ban tren may (SharedPreferences), moi nhat len dau.
 class CryptoTransactionRepository {
-  CryptoTransactionRepository._();
+  CryptoTransactionRepository(this._supabase);
+  final SupabaseClient _supabase;
 
-  static const _key = 'crypto_transactions_v1';
-
-  static Future<List<CryptoTransaction>> load() async {
-    final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString(_key);
-    if (raw == null || raw.isEmpty) return [];
-    final list = jsonDecode(raw);
-    if (list is! List) return [];
-    return list
-        .cast<Map<String, dynamic>>()
-        .map(CryptoTransaction.fromJson)
+  Future<List<CryptoTransaction>> load(String userId) async {
+    final rows = await _supabase
+        .from('wealth_investment_transactions')
+        .select()
+        .eq('user_id', userId)
+        .eq('asset_type', 'crypto')
+        .order('occurred_at', ascending: false);
+    return (rows as List)
+        .map((r) => CryptoTransaction.fromRow(r as Map<String, dynamic>))
         .toList();
   }
 
-  static Future<void> _save(List<CryptoTransaction> transactions) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
-      _key,
-      jsonEncode(transactions.map((t) => t.toJson()).toList()),
-    );
-  }
-
-  static Future<List<CryptoTransaction>> record(
-    CryptoTransaction transaction,
-  ) async {
-    final list = await load();
-    list.insert(0, transaction);
-    await _save(list);
-    return list;
+  Future<void> record(String userId, CryptoTransaction transaction) async {
+    await _supabase
+        .from('wealth_investment_transactions')
+        .insert(transaction.toRow(userId));
   }
 }

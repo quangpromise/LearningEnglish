@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -11,6 +12,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../features/social/data/device_token_repository.dart';
 import '../../features/social/data/social_repository.dart';
 import '../../features/social/presentation/chat_screen.dart';
+import '../../features/wealth/presentation/recurring_services_screen.dart';
 import '../navigation/nav_keys.dart';
 
 /// Id kenh thong bao rieng cho tin nhan chat, kem am thanh tuy chinh (file
@@ -24,11 +26,17 @@ import '../navigation/nav_keys.dart';
 /// importance lan nua, tang tiep len "_v5"...
 const kChatMessagesChannelId = 'chat_messages_v4';
 
+/// Kenh rieng cho nhac han Dich vu dinh ky (Phase G) - tach khoi kenh tin
+/// nhan de nguoi dung co the tat/chinh am rieng cho tung loai.
+const kServiceExpiryChannelId = 'service_expiry_v1';
+
 final _localNotifications = FlutterLocalNotificationsPlugin();
 
-/// Payload gui kem thong bao local de biet bam vao tin nhan cua AI - chi can
-/// sender_id, dung chung cho ca duong bam tu background lan tu terminated.
-String _payloadFor(String senderId) => senderId;
+/// Payload gui kem thong bao local de biet bam vao lam gi - tien to phan
+/// biet loai thong bao (chat vs nhac han dich vu) vi ca 2 deu dung chung 1
+/// callback _handleNotificationAction.
+String _payloadFor(String senderId) => 'chat:$senderId';
+String _servicePayload() => 'service:';
 
 /// Tai ve 1 anh/sticker (khong bo tron, khong resize vuong) lam anh xem
 /// truoc lon trong thong bao (BigPictureStyle) - voi sticker dong chi lay
@@ -109,13 +117,51 @@ Future<void> _showChatNotification(RemoteMessage message) async {
   );
 }
 
+/// Nhac han 1 dich vu dinh ky - data-only message tu check-service-expiry
+/// (xem supabase/functions/check-service-expiry/index.ts), khac tin nhan
+/// chat o cho KHONG mo khung chat khi bam vao ma mo man Dich vu dinh ky.
+Future<void> _showServiceExpiryNotification(RemoteMessage message) async {
+  final data = message.data;
+  final serviceId = data['service_id'] as String?;
+  final serviceName = data['service_name'] as String? ?? '';
+  final body = data['body'] as String? ?? '';
+  if (serviceId == null || body.isEmpty) return;
+
+  await _localNotifications.show(
+    id: serviceId.hashCode,
+    title: serviceName,
+    body: body,
+    notificationDetails: const NotificationDetails(
+      android: AndroidNotificationDetails(
+        kServiceExpiryChannelId,
+        'Nhắc hạn dịch vụ',
+        channelDescription: 'Thông báo khi dịch vụ định kỳ sắp/đã hết hạn',
+        importance: Importance.high,
+        priority: Priority.high,
+      ),
+    ),
+    payload: _servicePayload(),
+  );
+}
+
+/// Dispatch theo `type` trong data payload - PHAI kiem tra truoc khi doc cac
+/// truong rieng cua tung loai (chat dung sender_id/content, service_expiry
+/// dung service_id/body).
+Future<void> _dispatchRemoteMessage(RemoteMessage message) async {
+  if (message.data['type'] == 'service_expiry') {
+    await _showServiceExpiryNotification(message);
+  } else {
+    await _showChatNotification(message);
+  }
+}
+
 /// PHAI la ham top-level (khong phai method trong class) kem annotation nay
 /// - Firebase Messaging chay ham nay trong 1 isolate rieng khi co tin nhan
 /// den luc app da bi tat han, tach biet hoan toan voi isolate chinh cua app.
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
-  await _showChatNotification(message);
+  await _dispatchRemoteMessage(message);
 }
 
 /// Dung chung cho ca 2 duong xu ly thong bao (foreground va background/da
@@ -128,9 +174,15 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 /// xong truoc khi bi he thong dung, gay mat tin nhan am tham khong on dinh.
 /// KHONG them lai neu chua co giai phap kien truc khac dang tin cay hon.
 void _handleNotificationAction(NotificationResponse response) {
-  final senderId = response.payload;
-  if (senderId == null) return;
-  ChatPush.instance._openChatWith(senderId);
+  final payload = response.payload;
+  if (payload == null) return;
+  if (payload.startsWith('service:')) {
+    ChatPush.instance._openRecurringServices();
+    return;
+  }
+  if (payload.startsWith('chat:')) {
+    ChatPush.instance._openChatWith(payload.substring('chat:'.length));
+  }
 }
 
 /// PHAI la ham top-level - flutter_local_notifications goi ham nay khi
@@ -175,11 +227,18 @@ class ChatPush {
       importance: Importance.high,
       sound: RawResourceAndroidNotificationSound('notification_tone'),
     );
+    const serviceExpiryChannel = AndroidNotificationChannel(
+      kServiceExpiryChannelId,
+      'Nhắc hạn dịch vụ',
+      description: 'Thông báo khi dịch vụ định kỳ sắp/đã hết hạn',
+      importance: Importance.high,
+    );
     final androidImpl = _localNotifications
         .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin
         >();
     await androidImpl?.createNotificationChannel(channel);
+    await androidImpl?.createNotificationChannel(serviceExpiryChannel);
 
     await _localNotifications.initialize(
       settings: const InitializationSettings(
@@ -198,11 +257,15 @@ class ChatPush {
 
     FirebaseMessaging.instance.onTokenRefresh.listen(_saveTokenForCurrentUser);
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-    // Foreground: da co banner + am thanh rieng qua Realtime (xem
-    // incoming_message_banner.dart) hien thi tuc thi hon nhieu so voi cho
-    // FCM - bo qua data message trung lap luc app dang mo de khong hien 2
-    // thong bao cho 1 tin nhan.
-    FirebaseMessaging.onMessage.listen((_) {});
+    // Foreground: tin nhan chat da co banner + am thanh rieng qua Realtime
+    // (xem incoming_message_banner.dart) hien thi tuc thi hon nhieu so voi
+    // cho FCM - bo qua de khong hien 2 thong bao cho 1 tin nhan. Nhac han
+    // dich vu KHONG co co che Realtime tuong duong nen van can hien qua day.
+    FirebaseMessaging.onMessage.listen((message) {
+      if (message.data['type'] == 'service_expiry') {
+        _showServiceExpiryNotification(message);
+      }
+    });
   }
 
   /// Goi ngay sau khi dang nhap thanh cong - xin quyen thong bao (bat buoc
@@ -259,5 +322,17 @@ class ChatPush {
     }
     if (friend == null || !context.mounted) return;
     await openChatPopup(context, friend);
+  }
+
+  /// Bam vao thong bao nhac han dich vu - mo thang man Dich vu dinh ky (khong
+  /// can biet dich vu cu the nao, danh sach da tu sap xep theo ngay het han
+  /// gan nhat).
+  Future<void> _openRecurringServices() async {
+    final context = rootNavigatorKey.currentContext;
+    if (context == null) return;
+    await Navigator.of(
+      context,
+      rootNavigator: true,
+    ).push(MaterialPageRoute(builder: (_) => const RecurringServicesScreen()));
   }
 }

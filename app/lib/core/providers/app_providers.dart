@@ -20,9 +20,23 @@ import '../../features/rewards/data/rewards_repository.dart';
 import '../../features/social/data/social_repository.dart';
 import '../../features/stats/data/stats_repository.dart';
 import '../../features/story/data/lesson_progress_repository.dart';
+import '../../features/wealth/data/exchange_rate_repository.dart';
 import '../../features/wealth/data/stocks_intl_repository.dart';
+import '../../features/wealth/data/vn_bank_model.dart';
+import '../../features/wealth/data/vn_bank_repository.dart';
+import '../../features/wealth/data/wealth_balance_entry_model.dart';
+import '../../features/wealth/data/wealth_balance_entry_repository.dart';
+import '../../features/wealth/data/wealth_debt_model.dart';
+import '../../features/wealth/data/wealth_debt_payment_model.dart';
+import '../../features/wealth/data/wealth_debt_payment_repository.dart';
+import '../../features/wealth/data/wealth_debt_person_model.dart';
+import '../../features/wealth/data/wealth_debt_person_repository.dart';
+import '../../features/wealth/data/wealth_debt_repository.dart';
+import '../../features/wealth/data/recurring_service_model.dart';
+import '../../features/wealth/data/recurring_service_repository.dart';
 import '../../features/wealth/data/wealth_holding_model.dart';
 import '../../features/wealth/data/wealth_holding_repository.dart';
+import '../../features/wealth/data/wealth_investment_transaction_repository.dart';
 import '../../features/wealth/data/wealth_transaction_model.dart';
 import '../../features/wealth/data/wealth_transaction_repository.dart';
 import '../i18n/app_language.dart';
@@ -228,6 +242,7 @@ void invalidateUserScopedProviders(WidgetRef ref) {
   ref.invalidate(todayMealsProvider);
   ref.invalidate(wealthTransactionsProvider);
   ref.invalidate(wealthHoldingsProvider);
+  ref.invalidate(walletBalanceEntriesProvider);
 }
 
 /// Nhip realtime tu bang messages (khong quan tam noi dung, chi de kich
@@ -498,6 +513,13 @@ final wealthHoldingRepositoryProvider = Provider<WealthHoldingRepository>(
   (ref) => WealthHoldingRepository(ref.watch(supabaseClientProvider)),
 );
 
+final wealthInvestmentTransactionRepositoryProvider =
+    Provider<WealthInvestmentTransactionRepository>(
+      (ref) => WealthInvestmentTransactionRepository(
+        ref.watch(supabaseClientProvider),
+      ),
+    );
+
 final stocksIntlRepositoryProvider = Provider<StocksIntlRepository>(
   (ref) => StocksIntlRepository(ref.watch(supabaseClientProvider)),
 );
@@ -513,14 +535,17 @@ final wealthTransactionsProvider =
       return ref.watch(wealthTransactionRepositoryProvider).fetchAll(userId);
     });
 
-/// So nam giu co phieu quoc te (thu cong) cua user hien tai.
-final wealthHoldingsProvider = FutureProvider.autoDispose<List<WealthHolding>>((
-  ref,
-) {
-  final userId = ref.watch(supabaseClientProvider).auth.currentUser?.id;
-  if (userId == null) return Future.value(<WealthHolding>[]);
-  return ref.watch(wealthHoldingRepositoryProvider).fetchAll(userId);
-});
+/// Danh sach holding theo 1 asset_type cu the ('stock_intl'/'gold'/'silver'/
+/// 'copper'/'real_estate') - family de moi loai tai san dau tu trong Vi tu
+/// quan ly danh sach rieng, khong lan sang nhau.
+final wealthHoldingsProvider = FutureProvider.autoDispose
+    .family<List<WealthHolding>, String>((ref, assetType) {
+      final userId = ref.watch(supabaseClientProvider).auth.currentUser?.id;
+      if (userId == null) return Future.value(<WealthHolding>[]);
+      return ref
+          .watch(wealthHoldingRepositoryProvider)
+          .fetchAll(userId, assetType);
+    });
 
 /// Gia hien tai cho danh sach ma da nam giu - family theo danh sach symbol
 /// (join bang dau phay lam key) de tu dong goi lai khi danh sach holdings
@@ -530,3 +555,168 @@ final stocksIntlQuotesProvider = FutureProvider.autoDispose
       (ref, symbols) =>
           ref.watch(stocksIntlRepositoryProvider).fetchQuotes(symbols),
     );
+
+// --- Vi (Wallet) - Phase A/B: so du Tien mat/Ngan hang theo tung ngan hang,
+// tong tai san quy doi VND. Xem ke hoach build lai Wealth trong lich su
+// trao doi voi nguoi dung (khong co file docs rieng cho phan nay).
+
+final vnBankRepositoryProvider = Provider<VnBankRepository>(
+  (ref) => VnBankRepository(),
+);
+
+final vnBanksProvider = FutureProvider<List<VnBank>>(
+  (ref) => ref.watch(vnBankRepositoryProvider).getAll(),
+);
+
+final wealthBalanceEntryRepositoryProvider =
+    Provider<WealthBalanceEntryRepository>(
+      (ref) => WealthBalanceEntryRepository(ref.watch(supabaseClientProvider)),
+    );
+
+final walletBalanceEntriesProvider =
+    FutureProvider.autoDispose<List<WealthBalanceEntry>>((ref) {
+      final userId = ref.watch(supabaseClientProvider).auth.currentUser?.id;
+      if (userId == null) return Future.value(<WealthBalanceEntry>[]);
+      return ref.watch(wealthBalanceEntryRepositoryProvider).fetchAll(userId);
+    });
+
+/// Tong so du gop theo (accountType, bankCode/bankName, currency) - tinh lai
+/// tu [walletBalanceEntriesProvider] moi khi danh sach thay doi.
+final walletTotalsProvider = Provider.autoDispose<List<WealthAccountTotal>>((
+  ref,
+) {
+  final entries = ref.watch(walletBalanceEntriesProvider).valueOrNull ?? [];
+  return ref.watch(wealthBalanceEntryRepositoryProvider).computeTotals(entries);
+});
+
+final exchangeRateRepositoryProvider = Provider<ExchangeRateRepository>(
+  (ref) => ExchangeRateRepository(ref.watch(supabaseClientProvider)),
+);
+
+/// Snapshot gia Vang VN + ty gia USD/VND + gia The gioi Bac/Dong quy doi -
+/// goi qua Edge Function `wealth-vn-assets` (cache 5 phut o tang server).
+final wealthVnAssetsProvider =
+    FutureProvider.autoDispose<WealthVnAssetSnapshot>(
+      (ref) => ref.watch(exchangeRateRepositoryProvider).fetchSnapshot(),
+    );
+
+/// Tong Tien mat + Tien ngan hang quy doi ve 1 so VND duy nhat (khoan USD
+/// nhan ty gia tu [wealthVnAssetsProvider]) - dung cho the tong o Home. Tra
+/// ve null neu chua tai xong ty gia va co khoan USD can quy doi.
+final netWorthVndProvider = Provider.autoDispose<double?>((ref) {
+  final totals = ref.watch(walletTotalsProvider);
+  final rate = ref.watch(wealthVnAssetsProvider).valueOrNull?.usdVnd;
+  double sumVnd = 0;
+  double sumUsd = 0;
+  for (final t in totals) {
+    if (t.currency == 'USD') {
+      sumUsd += t.total;
+    } else {
+      sumVnd += t.total;
+    }
+  }
+  if (sumUsd == 0) return sumVnd;
+  if (rate == null) return null;
+  return sumVnd + sumUsd * rate;
+});
+
+/// Bat/tat che so tien bang mot dau `••••••` - dung chung 1 controller cho
+/// ca 2 nut con mat (tong o Home la [wealthPrivacyModeProvider], tong tab
+/// Tai san dau tu la [investmentPrivacyModeProvider]) vi cung 1 logic, chi
+/// khac key luu SharedPreferences - giong pattern CryptoPrivacyModeController
+/// da co trong crypto_providers.dart.
+class _PrivacyModeController extends StateNotifier<bool> {
+  _PrivacyModeController(this._prefsKey) : super(false) {
+    _load();
+  }
+  final String _prefsKey;
+
+  Future<void> _load() async {
+    final prefs = await SharedPreferences.getInstance();
+    state = prefs.getBool(_prefsKey) ?? false;
+  }
+
+  Future<void> toggle() async {
+    state = !state;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_prefsKey, state);
+  }
+}
+
+final wealthPrivacyModeProvider =
+    StateNotifierProvider<_PrivacyModeController, bool>(
+      (ref) => _PrivacyModeController('wealth_privacy_mode_v1'),
+    );
+
+final investmentPrivacyModeProvider =
+    StateNotifierProvider<_PrivacyModeController, bool>(
+      (ref) => _PrivacyModeController('wealth_investment_privacy_mode_v1'),
+    );
+
+// --- No (Debt) - Phase E: "Dang no" (minh no nguoi khac) / "Nguoi khac no
+// minh", CRUD khoan no theo tung nguoi (autocomplete ten da co), tra no/nhan
+// tra no tu dong tru/cong vao Vi giong Chi tieu.
+
+final wealthDebtPersonRepositoryProvider = Provider<WealthDebtPersonRepository>(
+  (ref) => WealthDebtPersonRepository(ref.watch(supabaseClientProvider)),
+);
+
+final wealthDebtRepositoryProvider = Provider<WealthDebtRepository>(
+  (ref) => WealthDebtRepository(ref.watch(supabaseClientProvider)),
+);
+
+final wealthDebtPaymentRepositoryProvider =
+    Provider<WealthDebtPaymentRepository>(
+      (ref) => WealthDebtPaymentRepository(ref.watch(supabaseClientProvider)),
+    );
+
+final debtPersonsProvider = FutureProvider.autoDispose<List<WealthDebtPerson>>((
+  ref,
+) {
+  final userId = ref.watch(supabaseClientProvider).auth.currentUser?.id;
+  if (userId == null) return Future.value(<WealthDebtPerson>[]);
+  return ref.watch(wealthDebtPersonRepositoryProvider).fetchAll(userId);
+});
+
+/// `direction` la 'i_owe' hoac 'owed_to_me' - xem [WealthDebt].
+final debtsProvider = FutureProvider.autoDispose
+    .family<List<WealthDebt>, String>((ref, direction) {
+      final userId = ref.watch(supabaseClientProvider).auth.currentUser?.id;
+      if (userId == null) return Future.value(<WealthDebt>[]);
+      return ref
+          .watch(wealthDebtRepositoryProvider)
+          .fetchAll(userId, direction);
+    });
+
+final debtsByPersonProvider = FutureProvider.autoDispose
+    .family<List<WealthDebt>, String>((ref, personId) {
+      final userId = ref.watch(supabaseClientProvider).auth.currentUser?.id;
+      if (userId == null) return Future.value(<WealthDebt>[]);
+      return ref
+          .watch(wealthDebtRepositoryProvider)
+          .fetchByPerson(userId, personId);
+    });
+
+// --- Dich vu dinh ky (Recurring Services) - Phase G: theo doi dich vu tra
+// phi (Netflix, hosting...), nhac han qua push (xem check-service-expiry +
+// cron hang ngay), gia han tu tru vao Vi.
+
+final recurringServiceRepositoryProvider = Provider<RecurringServiceRepository>(
+  (ref) => RecurringServiceRepository(ref.watch(supabaseClientProvider)),
+);
+
+final recurringServicesProvider =
+    FutureProvider.autoDispose<List<RecurringService>>((ref) {
+      final userId = ref.watch(supabaseClientProvider).auth.currentUser?.id;
+      if (userId == null) return Future.value(<RecurringService>[]);
+      return ref.watch(recurringServiceRepositoryProvider).fetchAll(userId);
+    });
+
+final debtPaymentsProvider = FutureProvider.autoDispose
+    .family<List<WealthDebtPayment>, String>((ref, debtId) {
+      final userId = ref.watch(supabaseClientProvider).auth.currentUser?.id;
+      if (userId == null) return Future.value(<WealthDebtPayment>[]);
+      return ref
+          .watch(wealthDebtPaymentRepositoryProvider)
+          .fetchAll(userId, debtId);
+    });

@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../core/providers/app_providers.dart';
 import '../data/crypto_currency.dart';
 import '../data/crypto_portfolio_repository.dart';
 import '../data/crypto_repository.dart';
@@ -101,39 +103,53 @@ final liveCoinsProvider = Provider.autoDispose
       }).toList();
     });
 
+/// Quan ly danh muc Crypto - dong bo qua Supabase (wealth_holdings,
+/// asset_type='crypto') thay vi SharedPreferences truoc day, de dong bo da
+/// thiet bi giong phan con lai cua Vi. `_userId` null (chua dang nhap) thi
+/// moi thao tac ghi la no-op, danh sach luon rong.
 class CryptoPortfolioController extends StateNotifier<List<CryptoHolding>> {
-  CryptoPortfolioController() : super([]) {
+  CryptoPortfolioController(this._supabase, this._userId) : super([]) {
     _load();
   }
+  final SupabaseClient _supabase;
+  final String? _userId;
+
+  CryptoPortfolioRepository get _repo => CryptoPortfolioRepository(_supabase);
+  CryptoTransactionRepository get _txRepo =>
+      CryptoTransactionRepository(_supabase);
 
   Future<void> _load() async {
-    state = await CryptoPortfolioRepository.load();
+    final userId = _userId;
+    if (userId == null) return;
+    state = await _repo.load(userId);
   }
 
   Future<void> addOrUpdate(CryptoCoin coin, double quantity) async {
+    final userId = _userId;
+    if (userId == null) return;
     final i = state.indexWhere((h) => h.coinId == coin.id);
+    final holding = CryptoHolding(
+      coinId: coin.id,
+      symbol: coin.symbol,
+      name: coin.name,
+      imageUrl: coin.imageUrl,
+      quantity: quantity,
+    );
     if (i == -1) {
-      state = [
-        ...state,
-        CryptoHolding(
-          coinId: coin.id,
-          symbol: coin.symbol,
-          name: coin.name,
-          imageUrl: coin.imageUrl,
-          quantity: quantity,
-        ),
-      ];
+      state = [...state, holding];
     } else {
       final updated = [...state];
       updated[i] = updated[i].copyWith(quantity: quantity);
       state = updated;
     }
-    await CryptoPortfolioRepository.save(state);
+    await _repo.upsert(userId, holding);
   }
 
   Future<void> remove(String coinId) async {
+    final userId = _userId;
+    if (userId == null) return;
     state = state.where((h) => h.coinId != coinId).toList();
-    await CryptoPortfolioRepository.save(state);
+    await _repo.remove(userId, coinId);
   }
 
   /// Mua them (hoac mua lan dau) 1 coin - cong don vao so luong dang giu,
@@ -146,28 +162,28 @@ class CryptoPortfolioController extends StateNotifier<List<CryptoHolding>> {
     required double quantity,
     required double priceAtTime,
   }) async {
-    if (quantity <= 0) return;
+    final userId = _userId;
+    if (userId == null || quantity <= 0) return;
     final i = state.indexWhere((h) => h.coinId == coinId);
+    late final CryptoHolding holding;
     if (i == -1) {
-      state = [
-        ...state,
-        CryptoHolding(
-          coinId: coinId,
-          symbol: symbol,
-          name: name,
-          imageUrl: imageUrl,
-          quantity: quantity,
-        ),
-      ];
+      holding = CryptoHolding(
+        coinId: coinId,
+        symbol: symbol,
+        name: name,
+        imageUrl: imageUrl,
+        quantity: quantity,
+      );
+      state = [...state, holding];
     } else {
       final updated = [...state];
-      updated[i] = updated[i].copyWith(
-        quantity: updated[i].quantity + quantity,
-      );
+      holding = updated[i].copyWith(quantity: updated[i].quantity + quantity);
+      updated[i] = holding;
       state = updated;
     }
-    await CryptoPortfolioRepository.save(state);
-    await CryptoTransactionRepository.record(
+    await _repo.upsert(userId, holding);
+    await _txRepo.record(
+      userId,
       CryptoTransaction(
         coinId: coinId,
         symbol: symbol,
@@ -189,6 +205,8 @@ class CryptoPortfolioController extends StateNotifier<List<CryptoHolding>> {
     required double quantity,
     required double priceAtTime,
   }) async {
+    final userId = _userId;
+    if (userId == null) return;
     final i = state.indexWhere((h) => h.coinId == coinId);
     if (i == -1 || quantity <= 0) return;
     final holding = state[i];
@@ -198,12 +216,14 @@ class CryptoPortfolioController extends StateNotifier<List<CryptoHolding>> {
     final updated = [...state];
     if (remaining <= 0) {
       updated.removeAt(i);
+      await _repo.remove(userId, holding.coinId);
     } else {
       updated[i] = holding.copyWith(quantity: remaining);
+      await _repo.upsert(userId, updated[i]);
     }
     state = updated;
-    await CryptoPortfolioRepository.save(state);
-    await CryptoTransactionRepository.record(
+    await _txRepo.record(
+      userId,
       CryptoTransaction(
         coinId: holding.coinId,
         symbol: holding.symbol,
@@ -220,7 +240,10 @@ class CryptoPortfolioController extends StateNotifier<List<CryptoHolding>> {
 
 final cryptoPortfolioProvider =
     StateNotifierProvider<CryptoPortfolioController, List<CryptoHolding>>(
-      (ref) => CryptoPortfolioController(),
+      (ref) => CryptoPortfolioController(
+        ref.watch(supabaseClientProvider),
+        ref.watch(supabaseClientProvider).auth.currentUser?.id,
+      ),
     );
 
 /// Lich su mua/ban - tu tai lai khi cryptoPortfolioProvider thay doi (nghia
@@ -228,7 +251,10 @@ final cryptoPortfolioProvider =
 final cryptoTransactionHistoryProvider =
     FutureProvider.autoDispose<List<CryptoTransaction>>((ref) {
       ref.watch(cryptoPortfolioProvider);
-      return CryptoTransactionRepository.load();
+      final userId = ref.watch(supabaseClientProvider).auth.currentUser?.id;
+      if (userId == null) return Future.value(<CryptoTransaction>[]);
+      return CryptoTransactionRepository(ref.watch(supabaseClientProvider))
+          .load(userId);
     });
 
 /// Danh sach coin id dang "theo doi" (watchlist) - chi de xem gia, khong
