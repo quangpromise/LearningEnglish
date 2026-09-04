@@ -1489,6 +1489,60 @@ class AppStrings {
       AppLanguage.en: 'Back home',
     },
 
+    // Fitness Phase 3: Dinh duong - port tu FitViet
+    'fitness_nutrition_title': {
+      AppLanguage.vi: 'Dinh dưỡng',
+      AppLanguage.en: 'Nutrition',
+    },
+    'fitness_nutrition_kcal_of_goal': {
+      AppLanguage.vi: '/{goal} kcal',
+      AppLanguage.en: '/{goal} kcal',
+    },
+    'fitness_nutrition_protein': {
+      AppLanguage.vi: 'Đạm',
+      AppLanguage.en: 'Protein',
+    },
+    'fitness_nutrition_carb': {
+      AppLanguage.vi: 'Tinh bột',
+      AppLanguage.en: 'Carbs',
+    },
+    'fitness_nutrition_fat': {
+      AppLanguage.vi: 'Chất béo',
+      AppLanguage.en: 'Fat',
+    },
+    'fitness_nutrition_today_meals': {
+      AppLanguage.vi: 'Bữa ăn hôm nay',
+      AppLanguage.en: "Today's meals",
+    },
+    'fitness_nutrition_no_meals': {
+      AppLanguage.vi: 'Chưa log bữa ăn nào hôm nay.',
+      AppLanguage.en: "You haven't logged any meals today.",
+    },
+    'fitness_nutrition_add_meal': {
+      AppLanguage.vi: '+ Thêm món',
+      AppLanguage.en: '+ Add food',
+    },
+    'fitness_nutrition_pick_food_title': {
+      AppLanguage.vi: 'Chọn món ăn',
+      AppLanguage.en: 'Pick a food',
+    },
+    'fitness_nutrition_slot_breakfast': {
+      AppLanguage.vi: 'Sáng',
+      AppLanguage.en: 'Breakfast',
+    },
+    'fitness_nutrition_slot_lunch': {
+      AppLanguage.vi: 'Trưa',
+      AppLanguage.en: 'Lunch',
+    },
+    'fitness_nutrition_slot_dinner': {
+      AppLanguage.vi: 'Tối',
+      AppLanguage.en: 'Dinner',
+    },
+    'fitness_nutrition_slot_snack': {
+      AppLanguage.vi: 'Ăn vặt',
+      AppLanguage.en: 'Snack',
+    },
+
     // Attribution/Credits screen (features/attribution/)
     'attribution_menu_title': {
       AppLanguage.vi: 'Ghi công',

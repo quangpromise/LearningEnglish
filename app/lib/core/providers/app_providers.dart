@@ -6,6 +6,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../features/auth/data/auth_repository.dart';
 import '../../features/fitness/data/exercise_model.dart';
 import '../../features/fitness/data/exercise_repository.dart';
+import '../../features/fitness/data/meal_model.dart';
+import '../../features/fitness/data/nutrition_repository.dart';
 import '../../features/fitness/data/program_model.dart';
 import '../../features/fitness/data/program_repository.dart';
 import '../../features/fitness/data/workout_repository.dart';
@@ -221,6 +223,7 @@ void invalidateUserScopedProviders(WidgetRef ref) {
   ref.invalidate(favoriteSongTitlesProvider);
   ref.invalidate(favoriteExerciseIdsProvider);
   ref.invalidate(activeProgramIdProvider);
+  ref.invalidate(todayMealsProvider);
   ref.invalidate(wealthTransactionsProvider);
   ref.invalidate(wealthHoldingsProvider);
 }
@@ -390,6 +393,24 @@ final activeProgramIdProvider = FutureProvider.autoDispose<int?>((ref) {
   final userId = ref.watch(supabaseClientProvider).auth.currentUser?.id;
   if (userId == null) return Future.value(null);
   return ref.watch(workoutRepositoryProvider).getActiveProgramId(userId);
+});
+
+// --- Fitness (Phase 3: Dinh duong - port tu FitViet) ---
+
+final nutritionRepositoryProvider = Provider<NutritionRepository>(
+  (ref) => NutritionRepository(ref.watch(supabaseClientProvider)),
+);
+
+/// Bua an DA LOG cua user hien tai trong ngay hom nay - autoDispose (khong
+/// giu song vinh vien nhu incomingMessagesProvider) vi "hom nay" tu doi khi
+/// qua nua dem, dung invalidate lai moi khi man Dinh duong duoc mo lai la
+/// du (khac truong hop can theo doi lien tuc xuyen suot vong doi app).
+final todayMealsProvider = FutureProvider.autoDispose<List<Meal>>((ref) {
+  final userId = ref.watch(supabaseClientProvider).auth.currentUser?.id;
+  if (userId == null) return Future.value(const []);
+  return ref
+      .watch(nutritionRepositoryProvider)
+      .getMealsForDate(userId, DateTime.now());
 });
 
 // --- Wealth Management (features/wealth/) - Phase 1: Chi tieu/Thu nhap +

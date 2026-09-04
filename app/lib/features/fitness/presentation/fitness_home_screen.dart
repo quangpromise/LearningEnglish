@@ -8,6 +8,7 @@ import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../social/presentation/conversations_screen.dart';
 import 'muscle_group_categories_screen.dart';
+import 'nutrition_screen.dart';
 import 'programs_list_screen.dart';
 
 /// Man Home cua khu vuc Fitness - theo dung mau Home cua Hoc Tieng Anh (xem
@@ -81,6 +82,15 @@ class FitnessHomeScreen extends ConsumerWidget {
                               onTap: () => openAppPopup(
                                 context,
                                 const MuscleGroupCategoriesScreen(),
+                              ),
+                            ),
+                            _FitnessTile(
+                              width: itemWidth,
+                              icon: Icons.restaurant_rounded,
+                              label: ref.tr('fitness_nutrition_title'),
+                              onTap: () => openAppPopup(
+                                context,
+                                const NutritionScreen(),
                               ),
                             ),
                           ],
