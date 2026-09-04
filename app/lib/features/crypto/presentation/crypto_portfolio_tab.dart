@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/crypto_currency.dart';
 import '../data/crypto_portfolio_repository.dart';
@@ -18,7 +19,7 @@ class CryptoPortfolioTab extends ConsumerWidget {
     final currency = ref.watch(cryptoCurrencyProvider);
     final holdings = ref.watch(cryptoPortfolioProvider);
     final coinsAsync = ref.watch(cryptoTop100Provider(currency));
-    final hidden = ref.watch(cryptoPrivacyModeProvider);
+    final hidden = ref.watch(investmentPrivacyModeProvider);
 
     // Uu tien du lieu CU con hieu luc (xem ly do trong crypto_market_tab.dart)
     // thay vi doi thanh man hinh loi moi khi 1 lan tu dong lam moi bi that bai.
@@ -76,7 +77,7 @@ class CryptoPortfolioTab extends ConsumerWidget {
                 ),
                 GestureDetector(
                   onTap: () =>
-                      ref.read(cryptoPrivacyModeProvider.notifier).toggle(),
+                      ref.read(investmentPrivacyModeProvider.notifier).toggle(),
                   child: Container(
                     width: 34,
                     height: 34,
@@ -173,7 +174,7 @@ class _HoldingTile extends ConsumerWidget {
     final change = coin?.change24hPercent ?? 0;
     final isUp = change >= 0;
     final value = price * holding.quantity;
-    final hidden = ref.watch(cryptoPrivacyModeProvider);
+    final hidden = ref.watch(investmentPrivacyModeProvider);
 
     return Dismissible(
       key: ValueKey(holding.coinId),

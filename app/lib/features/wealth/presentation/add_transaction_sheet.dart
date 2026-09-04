@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/thousands_input_formatter.dart';
 import '../data/wealth_balance_entry_model.dart';
 import '../data/wealth_category.dart';
 import '../data/wealth_transaction_model.dart';
@@ -42,7 +43,7 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
   late final _amountController = TextEditingController(
     text: widget.existing == null
         ? ''
-        : widget.existing!.amount.toStringAsFixed(0),
+        : groupThousands(widget.existing!.amount),
   );
   late final _noteController = TextEditingController(
     text: widget.existing?.note ?? '',
@@ -72,11 +73,7 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
     super.initState();
     _amountController.addListener(() {
       setState(
-        () => _amount =
-            double.tryParse(
-              _amountController.text.trim().replaceAll(',', '.'),
-            ) ??
-            0,
+        () => _amount = parseThousandsFormatted(_amountController.text) ?? 0,
       );
     });
   }
@@ -230,6 +227,7 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
+                inputFormatters: [ThousandsInputFormatter()],
                 style: AppTextStyles.body(),
                 cursorColor: AppColors.wealthAccent,
                 decoration: InputDecoration(

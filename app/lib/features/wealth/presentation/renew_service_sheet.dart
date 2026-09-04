@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/thousands_input_formatter.dart';
 import '../data/recurring_service_model.dart';
 import '../data/recurring_service_repository.dart';
 import 'payment_split_editor.dart';
@@ -31,7 +32,7 @@ class _RenewServiceSheet extends ConsumerStatefulWidget {
 
 class _RenewServiceSheetState extends ConsumerState<_RenewServiceSheet> {
   late final _amountController = TextEditingController(
-    text: widget.service.defaultAmount.toStringAsFixed(0),
+    text: groupThousands(widget.service.defaultAmount),
   );
   double _amount = 0;
   List<PaymentSplit> _splits = const [];
@@ -44,11 +45,7 @@ class _RenewServiceSheetState extends ConsumerState<_RenewServiceSheet> {
     _amount = widget.service.defaultAmount;
     _amountController.addListener(() {
       setState(
-        () => _amount =
-            double.tryParse(
-              _amountController.text.trim().replaceAll(',', '.'),
-            ) ??
-            0,
+        () => _amount = parseThousandsFormatted(_amountController.text) ?? 0,
       );
     });
   }
@@ -151,6 +148,7 @@ class _RenewServiceSheetState extends ConsumerState<_RenewServiceSheet> {
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
+                inputFormatters: [ThousandsInputFormatter()],
                 style: AppTextStyles.body(),
                 decoration: InputDecoration(
                   filled: true,

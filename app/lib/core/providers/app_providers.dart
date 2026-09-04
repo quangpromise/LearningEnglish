@@ -4,6 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../features/auth/data/auth_repository.dart';
+import '../../features/crypto/data/crypto_currency.dart';
+import '../../features/crypto/presentation/crypto_providers.dart';
 import '../../features/fitness/data/community_post_model.dart';
 import '../../features/fitness/data/community_repository.dart';
 import '../../features/fitness/data/exercise_model.dart';
@@ -618,6 +620,68 @@ final netWorthVndProvider = Provider.autoDispose<double?>((ref) {
   if (sumUsd == 0) return sumVnd;
   if (rate == null) return null;
   return sumVnd + sumUsd * rate;
+});
+
+/// Tong gia tri Tai san dau tu (Crypto+Co phieu+Kim loai quy+Nha dat) quy
+/// doi VND - logic giong het `WalletInvestmentAssetsTab` (tach ra day de
+/// the tong o Home co the switch sang xem tong nay ma khong phai lap lai).
+final totalInvestmentValueVndProvider = Provider.autoDispose<double>((ref) {
+  final cryptoHoldings = ref.watch(cryptoPortfolioProvider);
+  final liveCoins = ref.watch(liveCoinsProvider(CryptoCurrency.usd));
+  final coinPriceById = {for (final c in liveCoins) c.id: c.price};
+  final usdVnd = ref.watch(wealthVnAssetsProvider).valueOrNull?.usdVnd;
+  double cryptoValueVnd = 0;
+  if (usdVnd != null) {
+    for (final h in cryptoHoldings) {
+      final price = coinPriceById[h.coinId];
+      if (price != null) cryptoValueVnd += price * h.quantity * usdVnd;
+    }
+  }
+
+  final stockHoldings =
+      ref.watch(wealthHoldingsProvider('stock_intl')).valueOrNull ?? [];
+  double stockValueVnd = 0;
+  if (usdVnd != null) {
+    for (final h in stockHoldings) {
+      stockValueVnd += (h.avgCost ?? 0) * (h.quantity ?? 0) * usdVnd;
+    }
+  }
+
+  final snap = ref.watch(wealthVnAssetsProvider).valueOrNull;
+  final goldHoldings =
+      ref.watch(wealthHoldingsProvider('gold')).valueOrNull ?? [];
+  final silverHoldings =
+      ref.watch(wealthHoldingsProvider('silver')).valueOrNull ?? [];
+  final copperHoldings =
+      ref.watch(wealthHoldingsProvider('copper')).valueOrNull ?? [];
+  double metalValueVnd = 0;
+  if (snap != null) {
+    final goldPrice = snap.goldSjcSell ?? snap.goldPnjSell;
+    if (goldPrice != null) {
+      for (final h in goldHoldings) {
+        metalValueVnd += goldPrice * (h.quantity ?? 0);
+      }
+    }
+    if (snap.xagVndPerLuong != null) {
+      for (final h in silverHoldings) {
+        metalValueVnd += snap.xagVndPerLuong! * (h.quantity ?? 0);
+      }
+    }
+    if (snap.xcuVndPerKg != null) {
+      for (final h in copperHoldings) {
+        metalValueVnd += snap.xcuVndPerKg! * (h.quantity ?? 0);
+      }
+    }
+  }
+
+  final realEstateHoldings =
+      ref.watch(wealthHoldingsProvider('real_estate')).valueOrNull ?? [];
+  final realEstateValueVnd = realEstateHoldings.fold<double>(
+    0,
+    (s, h) => s + (h.manualValue ?? 0),
+  );
+
+  return cryptoValueVnd + stockValueVnd + metalValueVnd + realEstateValueVnd;
 });
 
 /// Bat/tat che so tien bang mot dau `••••••` - dung chung 1 controller cho

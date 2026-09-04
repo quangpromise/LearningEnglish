@@ -342,11 +342,15 @@ class _HoldingTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final hidden = ref.watch(investmentPrivacyModeProvider);
     final currentPrice = quote?.price;
     final quantity = holding.quantity ?? 0;
     final avgCost = holding.avgCost ?? 0;
     final gain = currentPrice != null
         ? (currentPrice - avgCost) * quantity
+        : null;
+    final gainPercent = (currentPrice != null && avgCost != 0)
+        ? (currentPrice - avgCost) / avgCost * 100
         : null;
     return GlowBox(
       borderRadius: 18,
@@ -361,9 +365,11 @@ class _HoldingTile extends ConsumerWidget {
                   style: AppTextStyles.body(weight: FontWeight.w800),
                 ),
                 Text(
-                  '$quantity ${ref.tr('wealth_stock_unit_share')} · '
-                  '${ref.tr('wealth_stock_avg_cost_label')} '
-                  '\$${avgCost.toStringAsFixed(2)}',
+                  hidden
+                      ? '•••••••'
+                      : '$quantity ${ref.tr('wealth_stock_unit_share')} · '
+                            '${ref.tr('wealth_stock_avg_cost_label')} '
+                            '\$${avgCost.toStringAsFixed(2)}',
                   style: AppTextStyles.muted(size: 11),
                 ),
               ],
@@ -374,15 +380,17 @@ class _HoldingTile extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  '\$${currentPrice.toStringAsFixed(2)}',
+                  hidden ? '•••••••' : '\$${currentPrice.toStringAsFixed(2)}',
                   style: AppTextStyles.body(weight: FontWeight.w800),
                 ),
-                Text(
-                  '${gain >= 0 ? '+' : ''}${gain.toStringAsFixed(2)}',
-                  style: AppTextStyles.muted(size: 11).copyWith(
-                    color: gain >= 0 ? AppColors.teal : AppColors.pink,
+                if (!hidden)
+                  Text(
+                    '${gain >= 0 ? '+' : ''}${gain.toStringAsFixed(2)}'
+                    '${gainPercent == null ? '' : ' (${gainPercent >= 0 ? '+' : ''}${gainPercent.toStringAsFixed(1)}%)'}',
+                    style: AppTextStyles.muted(size: 11).copyWith(
+                      color: gain >= 0 ? AppColors.teal : AppColors.pink,
+                    ),
                   ),
-                ),
               ],
             )
           else if (quoteFailed)

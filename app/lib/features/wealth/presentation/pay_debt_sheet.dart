@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/thousands_input_formatter.dart';
 import '../data/vn_bank_model.dart';
 import '../data/wealth_balance_entry_model.dart';
 import '../data/wealth_debt_model.dart';
@@ -32,7 +33,7 @@ class _PayDebtSheet extends ConsumerStatefulWidget {
 
 class _PayDebtSheetState extends ConsumerState<_PayDebtSheet> {
   late final _amountController = TextEditingController(
-    text: widget.debt.remainingAmount.toStringAsFixed(0),
+    text: groupThousands(widget.debt.remainingAmount),
   );
   final _noteController = TextEditingController();
   bool _payByCash = true;
@@ -47,9 +48,7 @@ class _PayDebtSheetState extends ConsumerState<_PayDebtSheet> {
   }
 
   Future<void> _save() async {
-    final amount = double.tryParse(
-      _amountController.text.trim().replaceAll(',', '.'),
-    );
+    final amount = parseThousandsFormatted(_amountController.text);
     if (amount == null || amount <= 0) return;
     if (!_payByCash && _payByBank == null) return;
     setState(() => _saving = true);
@@ -146,6 +145,7 @@ class _PayDebtSheetState extends ConsumerState<_PayDebtSheet> {
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
+                inputFormatters: [ThousandsInputFormatter()],
                 style: AppTextStyles.body(),
                 decoration: InputDecoration(
                   filled: true,

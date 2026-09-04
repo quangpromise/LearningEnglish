@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/thousands_input_formatter.dart';
 import 'debt_person_picker_field.dart';
 
 /// Bottom sheet them 1 khoan no moi - [direction] co dinh theo tab dang mo
@@ -81,14 +82,11 @@ class _AddDebtSheetState extends ConsumerState<_AddDebtSheet> {
   }
 
   double get _totalAmount =>
-      double.tryParse(_amountController.text.trim().replaceAll(',', '.')) ?? 0;
+      parseThousandsFormatted(_amountController.text) ?? 0;
 
   double get _splitAllocated => _splitPeople.fold<double>(
     0,
-    (s, p) =>
-        s +
-        (double.tryParse(p.amountController.text.trim().replaceAll(',', '.')) ??
-            0),
+    (s, p) => s + (parseThousandsFormatted(p.amountController.text) ?? 0),
   );
 
   void _splitEqually() {
@@ -96,7 +94,7 @@ class _AddDebtSheetState extends ConsumerState<_AddDebtSheet> {
     final each = _totalAmount / _splitPeople.length;
     setState(() {
       for (final p in _splitPeople) {
-        p.amountController.text = each <= 0 ? '' : each.toStringAsFixed(0);
+        p.amountController.text = each <= 0 ? '' : groupThousands(each);
       }
     });
   }
@@ -106,9 +104,7 @@ class _AddDebtSheetState extends ConsumerState<_AddDebtSheet> {
     if (_splitPeople.length < 2) return false;
     for (final p in _splitPeople) {
       if (p.nameController.text.trim().isEmpty) return false;
-      final amount = double.tryParse(
-        p.amountController.text.trim().replaceAll(',', '.'),
-      );
+      final amount = parseThousandsFormatted(p.amountController.text);
       if (amount == null || amount <= 0) return false;
     }
     return (_splitAllocated - _totalAmount).abs() < 0.5;
@@ -176,11 +172,7 @@ class _AddDebtSheetState extends ConsumerState<_AddDebtSheet> {
       final debtRepo = ref.read(wealthDebtRepositoryProvider);
       for (final p in _splitPeople) {
         final name = p.nameController.text.trim();
-        final amount =
-            double.tryParse(
-              p.amountController.text.trim().replaceAll(',', '.'),
-            ) ??
-            0;
+        final amount = parseThousandsFormatted(p.amountController.text) ?? 0;
         if (name.isEmpty || amount <= 0) continue;
         final person = await personRepo.findOrCreate(userId, name);
         await debtRepo.create(
@@ -270,6 +262,7 @@ class _AddDebtSheetState extends ConsumerState<_AddDebtSheet> {
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
+                      inputFormatters: [ThousandsInputFormatter()],
                       style: AppTextStyles.body(),
                       decoration: InputDecoration(
                         filled: true,
@@ -332,6 +325,7 @@ class _AddDebtSheetState extends ConsumerState<_AddDebtSheet> {
                             keyboardType: const TextInputType.numberWithOptions(
                               decimal: true,
                             ),
+                            inputFormatters: [ThousandsInputFormatter()],
                             style: AppTextStyles.body(size: 13),
                             decoration: InputDecoration(
                               isDense: true,

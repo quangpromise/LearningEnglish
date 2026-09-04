@@ -5,6 +5,7 @@ import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_format.dart';
+import '../../../core/utils/thousands_input_formatter.dart';
 import '../data/wealth_holding_model.dart';
 import 'confirm_delete.dart';
 
@@ -127,6 +128,7 @@ class _PropertyTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final hidden = ref.watch(investmentPrivacyModeProvider);
     return Dismissible(
       key: ValueKey(holding.id),
       direction: DismissDirection.endToStart,
@@ -171,7 +173,12 @@ class _PropertyTile extends ConsumerWidget {
                 ),
               ),
               Text(
-                formatByCurrency(holding.manualValue ?? 0, holding.currency),
+                hidden
+                    ? '•••••••'
+                    : formatByCurrency(
+                        holding.manualValue ?? 0,
+                        holding.currency,
+                      ),
                 style: AppTextStyles.body(weight: FontWeight.w800),
               ),
             ],
@@ -207,7 +214,9 @@ class _PropertySheetState extends ConsumerState<_PropertySheet> {
     text: widget.existing?.symbol ?? '',
   );
   late final _valueController = TextEditingController(
-    text: widget.existing?.manualValue?.toStringAsFixed(0) ?? '',
+    text: widget.existing?.manualValue == null
+        ? ''
+        : groupThousands(widget.existing!.manualValue!),
   );
   bool _saving = false;
 
@@ -221,7 +230,7 @@ class _PropertySheetState extends ConsumerState<_PropertySheet> {
 
   Future<void> _save() async {
     final name = _nameController.text.trim();
-    final value = double.tryParse(_valueController.text.trim());
+    final value = parseThousandsFormatted(_valueController.text);
     if (name.isEmpty || value == null || value < 0) return;
     setState(() => _saving = true);
     final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
@@ -323,6 +332,7 @@ class _PropertySheetState extends ConsumerState<_PropertySheet> {
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
+                inputFormatters: [ThousandsInputFormatter()],
                 style: AppTextStyles.body(),
                 decoration: InputDecoration(
                   filled: true,

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/thousands_input_formatter.dart';
 import 'bank_picker_sheet.dart';
 
 /// 1 phan trong thanh toan tach nhieu hinh thuc (vi du: 200k tien mat +
@@ -58,7 +59,7 @@ class _PaymentSplitEditorState extends ConsumerState<PaymentSplitEditor> {
     if (_splits.length == 1 && oldWidget.totalAmount != widget.totalAmount) {
       _controllers[0].text = widget.totalAmount == 0
           ? ''
-          : widget.totalAmount.toStringAsFixed(0);
+          : groupThousands(widget.totalAmount);
       _splits[0] = _splits[0].copyWith(amount: widget.totalAmount);
       _emit();
     }
@@ -172,7 +173,7 @@ class _PaymentSplitEditorState extends ConsumerState<PaymentSplitEditor> {
             showRemove: _splits.length > 1,
             onPickMethod: () => _pickMethod(i),
             onAmountChanged: (v) {
-              final amount = double.tryParse(v.replaceAll(',', '.')) ?? 0;
+              final amount = parseThousandsFormatted(v) ?? 0;
               _splits[i] = _splits[i].copyWith(amount: amount);
               _emit();
             },
@@ -253,6 +254,7 @@ class _SplitRow extends ConsumerWidget {
           child: TextField(
             controller: controller,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [ThousandsInputFormatter()],
             style: AppTextStyles.body(size: 13),
             decoration: InputDecoration(
               isDense: true,

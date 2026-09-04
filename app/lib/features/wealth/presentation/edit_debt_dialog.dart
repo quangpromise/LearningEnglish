@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/thousands_input_formatter.dart';
 import '../data/wealth_debt_model.dart';
 
 /// Sua note luon duoc, sua SO TIEN GOC chi khi chua co lan tra nao
@@ -18,7 +19,7 @@ Future<void> showEditDebtDialog(
   final noteController = TextEditingController(text: debt.note ?? '');
   final canEditAmount = debt.remainingAmount == debt.originalAmount;
   final amountController = TextEditingController(
-    text: debt.originalAmount.toStringAsFixed(0),
+    text: groupThousands(debt.originalAmount),
   );
   final result = await showDialog<bool>(
     context: context,
@@ -34,6 +35,7 @@ Future<void> showEditDebtDialog(
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
+              inputFormatters: [ThousandsInputFormatter()],
               style: AppTextStyles.body(),
               decoration: InputDecoration(
                 hintText: ref.tr('wallet_amount_hint'),
@@ -63,7 +65,7 @@ Future<void> showEditDebtDialog(
   final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
   if (userId == null) return;
   final newAmount = canEditAmount
-      ? double.tryParse(amountController.text.trim().replaceAll(',', '.'))
+      ? parseThousandsFormatted(amountController.text)
       : null;
   await ref
       .read(wealthDebtRepositoryProvider)

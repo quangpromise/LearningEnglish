@@ -36,29 +36,53 @@ class _WalletInvestmentAssetsTabState
     final hidden = ref.watch(investmentPrivacyModeProvider);
 
     // Crypto: gia tri = gia OKX/CoinGecko (USD) x so luong, quy doi VND.
+    // KHONG co gia von (avgCost) duoc luu cho tung lan mua nen dung % thay
+    // doi 24h (cung nguon voi man Crypto Portfolio) thay vi PNL so voi von.
     final cryptoHoldings = ref.watch(cryptoPortfolioProvider);
     final liveCoins = ref.watch(liveCoinsProvider(CryptoCurrency.usd));
-    final coinPriceById = {for (final c in liveCoins) c.id: c.price};
+    final coinById = {for (final c in liveCoins) c.id: c};
     final usdVnd = ref.watch(wealthVnAssetsProvider).valueOrNull?.usdVnd;
     double cryptoValueVnd = 0;
+    double cryptoValue24hAgoVnd = 0;
     if (usdVnd != null) {
       for (final h in cryptoHoldings) {
-        final price = coinPriceById[h.coinId];
-        if (price != null) cryptoValueVnd += price * h.quantity * usdVnd;
+        final c = coinById[h.coinId];
+        if (c == null) continue;
+        final v = c.price * h.quantity * usdVnd;
+        cryptoValueVnd += v;
+        cryptoValue24hAgoVnd += v / (1 + c.change24hPercent / 100);
       }
     }
+    final cryptoPercent = cryptoValue24hAgoVnd == 0
+        ? null
+        : (cryptoValueVnd - cryptoValue24hAgoVnd) / cryptoValue24hAgoVnd * 100;
 
-    // Co phieu: can gia hien tai qua stocksIntlQuotesProvider - tinh don
-    // gian bang gia von (avgCost) x so luong quy doi VND lam uoc luong khi
-    // chua co gia moi nhat trong bo nho cache cua provider gia.
+    // Co phieu: gia hien tai qua stocksIntlQuotesProvider (gia thuc, khong
+    // con dung tam avgCost lam gia hien tai) de tinh dung PNL so voi von.
     final stockHoldings =
         ref.watch(wealthHoldingsProvider('stock_intl')).valueOrNull ?? [];
+    final stockSymbols = stockHoldings
+        .map((h) => h.symbol ?? '')
+        .where((s) => s.isNotEmpty)
+        .toList();
+    final stockQuotes =
+        ref.watch(stocksIntlQuotesProvider(stockSymbols)).valueOrNull ?? [];
+    final stockPriceBySymbol = {for (final q in stockQuotes) q.symbol: q.price};
     double stockValueVnd = 0;
+    double stockCostVnd = 0;
     if (usdVnd != null) {
       for (final h in stockHoldings) {
-        stockValueVnd += (h.avgCost ?? 0) * (h.quantity ?? 0) * usdVnd;
+        final qty = h.quantity ?? 0;
+        final avgCost = h.avgCost ?? 0;
+        final price = stockPriceBySymbol[h.symbol] ?? avgCost;
+        stockValueVnd += price * qty * usdVnd;
+        stockCostVnd += avgCost * qty * usdVnd;
       }
     }
+    final stockPnlVnd = stockValueVnd - stockCostVnd;
+    final stockPnlPercent = stockCostVnd == 0
+        ? null
+        : stockPnlVnd / stockCostVnd * 100;
 
     final snap = ref.watch(wealthVnAssetsProvider).valueOrNull;
     final goldHoldings =
@@ -68,6 +92,10 @@ class _WalletInvestmentAssetsTabState
     final copperHoldings =
         ref.watch(wealthHoldingsProvider('copper')).valueOrNull ?? [];
     double metalValueVnd = 0;
+    double metalCostVnd = 0;
+    for (final h in [...goldHoldings, ...silverHoldings, ...copperHoldings]) {
+      metalCostVnd += (h.avgCost ?? 0) * (h.quantity ?? 0);
+    }
     if (snap != null) {
       final goldPrice = snap.goldSjcSell ?? snap.goldPnjSell;
       if (goldPrice != null) {
@@ -86,6 +114,10 @@ class _WalletInvestmentAssetsTabState
         }
       }
     }
+    final metalPnlVnd = metalValueVnd - metalCostVnd;
+    final metalPnlPercent = metalCostVnd == 0
+        ? null
+        : metalPnlVnd / metalCostVnd * 100;
 
     final realEstateHoldings =
         ref.watch(wealthHoldingsProvider('real_estate')).valueOrNull ?? [];
@@ -155,6 +187,12 @@ class _WalletInvestmentAssetsTabState
           color: AppColors.amber,
           title: ref.tr('wealth_investments_crypto_title'),
           value: hidden ? null : display(cryptoValueVnd),
+          changeText: hidden || cryptoPercent == null
+              ? null
+              : '${cryptoPercent >= 0 ? '+' : ''}${cryptoPercent.toStringAsFixed(1)}% (24h)',
+          changeColor: cryptoPercent == null
+              ? null
+              : (cryptoPercent >= 0 ? AppColors.teal : AppColors.pink),
           onTap: () => openAppPopup(context, const CryptoPortfolioScreen()),
         ),
         const SizedBox(height: 10),
@@ -163,6 +201,13 @@ class _WalletInvestmentAssetsTabState
           color: AppColors.blue,
           title: ref.tr('wealth_investments_stocks_title'),
           value: hidden ? null : display(stockValueVnd),
+          changeText: hidden || stockCostVnd == 0
+              ? null
+              : '${stockPnlVnd >= 0 ? '+' : ''}${display(stockPnlVnd)}'
+                    '${stockPnlPercent == null ? '' : ' (${stockPnlPercent >= 0 ? '+' : ''}${stockPnlPercent.toStringAsFixed(1)}%)'}',
+          changeColor: stockCostVnd == 0
+              ? null
+              : (stockPnlVnd >= 0 ? AppColors.teal : AppColors.pink),
           onTap: () => openAppPopup(context, const StockPortfolioScreen()),
         ),
         const SizedBox(height: 10),
@@ -171,6 +216,13 @@ class _WalletInvestmentAssetsTabState
           color: AppColors.wealthAccent,
           title: ref.tr('wealth_investments_metal_title'),
           value: hidden ? null : display(metalValueVnd),
+          changeText: hidden || metalCostVnd == 0
+              ? null
+              : '${metalPnlVnd >= 0 ? '+' : ''}${display(metalPnlVnd)}'
+                    '${metalPnlPercent == null ? '' : ' (${metalPnlPercent >= 0 ? '+' : ''}${metalPnlPercent.toStringAsFixed(1)}%)'}',
+          changeColor: metalCostVnd == 0
+              ? null
+              : (metalPnlVnd >= 0 ? AppColors.teal : AppColors.pink),
           onTap: () => openAppPopup(context, const MetalPortfolioScreen()),
         ),
         const SizedBox(height: 10),
@@ -221,11 +273,15 @@ class _InvestmentTile extends StatelessWidget {
     required this.title,
     required this.value,
     required this.onTap,
+    this.changeText,
+    this.changeColor,
   });
   final IconData icon;
   final Color color;
   final String title;
   final String? value;
+  final String? changeText;
+  final Color? changeColor;
   final VoidCallback onTap;
 
   @override
@@ -253,9 +309,23 @@ class _InvestmentTile extends StatelessWidget {
               ),
             ),
             if (value != null)
-              Text(
-                value!,
-                style: AppTextStyles.body(weight: FontWeight.w700, size: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    value!,
+                    style: AppTextStyles.body(
+                      weight: FontWeight.w700,
+                      size: 12,
+                    ),
+                  ),
+                  if (changeText != null)
+                    Text(
+                      changeText!,
+                      style: AppTextStyles.muted(size: 10.5)
+                          .copyWith(color: changeColor),
+                    ),
+                ],
               ),
             const SizedBox(width: 6),
             const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),

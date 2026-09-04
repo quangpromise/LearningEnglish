@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/providers/app_providers.dart';
@@ -13,33 +12,6 @@ import '../data/okx_service.dart';
 final cryptoCurrencyProvider = StateProvider<CryptoCurrency>(
   (ref) => CryptoCurrency.usd,
 );
-
-const _cryptoPrivacyModeKey = 'crypto_privacy_mode_v1';
-
-/// Che tong gia tri/so luong/so tien dang nam giu bang dau * (bam icon con
-/// mat o tab Portfolio) - luu qua SharedPreferences nen van giu nguyen sau
-/// khi tat/mo lai app, khong tu bat lo ra khi mo app o noi cong cong.
-class CryptoPrivacyModeController extends StateNotifier<bool> {
-  CryptoPrivacyModeController() : super(false) {
-    _load();
-  }
-
-  Future<void> _load() async {
-    final prefs = await SharedPreferences.getInstance();
-    state = prefs.getBool(_cryptoPrivacyModeKey) ?? false;
-  }
-
-  Future<void> toggle() async {
-    state = !state;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_cryptoPrivacyModeKey, state);
-  }
-}
-
-final cryptoPrivacyModeProvider =
-    StateNotifierProvider<CryptoPrivacyModeController, bool>(
-      (ref) => CryptoPrivacyModeController(),
-    );
 
 final cryptoTop100Provider = FutureProvider.autoDispose
     .family<List<CryptoCoin>, CryptoCurrency>(

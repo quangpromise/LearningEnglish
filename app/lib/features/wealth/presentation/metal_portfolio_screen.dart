@@ -5,6 +5,7 @@ import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_format.dart';
+import '../../../core/utils/thousands_input_formatter.dart';
 import '../data/exchange_rate_repository.dart';
 import '../data/wealth_holding_model.dart';
 import 'confirm_delete.dart';
@@ -237,9 +238,15 @@ class _LotTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final hidden = ref.watch(investmentPrivacyModeProvider);
     final quantity = holding.quantity ?? 0;
     final avgCost = holding.avgCost ?? 0;
     final currentValue = unitPrice != null ? unitPrice! * quantity : null;
+    final totalCost = avgCost * quantity;
+    final pnl = currentValue == null ? null : currentValue - totalCost;
+    final pnlPercent = (pnl == null || totalCost == 0)
+        ? null
+        : pnl / totalCost * 100;
     return Dismissible(
       key: ValueKey(holding.id),
       direction: DismissDirection.endToStart,
@@ -282,20 +289,35 @@ class _LotTile extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '$quantity $unit',
+                      hidden ? '•••••••' : '$quantity $unit',
                       style: AppTextStyles.body(weight: FontWeight.w800),
                     ),
                     Text(
-                      '${ref.tr('wealth_metal_cost_price')}: ${formatVnd(avgCost)}',
+                      hidden
+                          ? '•••••••'
+                          : '${ref.tr('wealth_metal_cost_price')}: ${formatVnd(avgCost)}',
                       style: AppTextStyles.muted(size: 11),
                     ),
                   ],
                 ),
               ),
               if (currentValue != null)
-                Text(
-                  formatVnd(currentValue),
-                  style: AppTextStyles.body(weight: FontWeight.w800),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      hidden ? '•••••••' : formatVnd(currentValue),
+                      style: AppTextStyles.body(weight: FontWeight.w800),
+                    ),
+                    if (pnl != null && !hidden)
+                      Text(
+                        '${pnl >= 0 ? '+' : ''}${formatVnd(pnl)}'
+                        '${pnlPercent == null ? '' : ' (${pnl >= 0 ? '+' : ''}${pnlPercent.toStringAsFixed(1)}%)'}',
+                        style: AppTextStyles.muted(size: 11).copyWith(
+                          color: pnl >= 0 ? AppColors.teal : AppColors.pink,
+                        ),
+                      ),
+                  ],
                 ),
             ],
           ),
@@ -319,7 +341,9 @@ class _AddMetalLotSheetState extends ConsumerState<_AddMetalLotSheet> {
     text: widget.existing?.quantity?.toString() ?? '',
   );
   late final _costController = TextEditingController(
-    text: widget.existing?.avgCost?.toString() ?? '',
+    text: widget.existing?.avgCost == null
+        ? ''
+        : groupThousands(widget.existing!.avgCost!),
   );
   bool _saving = false;
 
@@ -332,7 +356,7 @@ class _AddMetalLotSheetState extends ConsumerState<_AddMetalLotSheet> {
 
   Future<void> _save() async {
     final quantity = double.tryParse(_quantityController.text.trim());
-    final cost = double.tryParse(_costController.text.trim());
+    final cost = parseThousandsFormatted(_costController.text);
     if (quantity == null || quantity <= 0 || cost == null || cost < 0) return;
     setState(() => _saving = true);
     final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
@@ -414,6 +438,7 @@ class _AddMetalLotSheetState extends ConsumerState<_AddMetalLotSheet> {
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
+                inputFormatters: [ThousandsInputFormatter()],
                 style: AppTextStyles.body(),
                 decoration: InputDecoration(
                   filled: true,

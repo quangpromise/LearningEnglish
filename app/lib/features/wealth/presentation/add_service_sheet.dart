@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/thousands_input_formatter.dart';
 import '../data/recurring_service_model.dart';
 
 /// Bottom sheet them/sua 1 dich vu dinh ky - chon ngay bat dau + chu ky
@@ -37,7 +38,9 @@ class _AddServiceSheetState extends ConsumerState<_AddServiceSheet> {
     text: widget.existing?.name ?? '',
   );
   late final _amountController = TextEditingController(
-    text: widget.existing?.defaultAmount.toStringAsFixed(0) ?? '',
+    text: widget.existing == null
+        ? ''
+        : groupThousands(widget.existing!.defaultAmount),
   );
   late final _noteController = TextEditingController(
     text: widget.existing?.note ?? '',
@@ -92,9 +95,7 @@ class _AddServiceSheetState extends ConsumerState<_AddServiceSheet> {
 
   Future<void> _save() async {
     final name = _nameController.text.trim();
-    final amount = double.tryParse(
-      _amountController.text.trim().replaceAll(',', '.'),
-    );
+    final amount = parseThousandsFormatted(_amountController.text);
     final note = _noteController.text.trim().isEmpty
         ? null
         : _noteController.text.trim();
@@ -205,6 +206,7 @@ class _AddServiceSheetState extends ConsumerState<_AddServiceSheet> {
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
+                      inputFormatters: [ThousandsInputFormatter()],
                       style: AppTextStyles.body(),
                       decoration: InputDecoration(
                         filled: true,

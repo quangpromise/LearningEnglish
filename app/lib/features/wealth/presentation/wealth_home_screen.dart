@@ -21,18 +21,30 @@ import 'wallet_screen.dart';
 /// cac the icon+ten (Vi/Chi tieu/Market) - "Thu nhap" cu da gop vao luong
 /// "Nap tien" trong Vi (xem quyet dinh trong ke hoach build lai Wealth), tile
 /// "Dau tu" cu chuyen vao trong Vi > tab Tai san dau tu.
-class WealthHomeScreen extends ConsumerWidget {
+class WealthHomeScreen extends ConsumerStatefulWidget {
   const WealthHomeScreen({super.key});
+
+  @override
+  ConsumerState<WealthHomeScreen> createState() => _WealthHomeScreenState();
+}
+
+class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
+  // false = tong Tai san hien co (Tien mat+Ngan hang), true = tong Tai san
+  // dau tu (Crypto+Co phieu+Kim loai+Nha dat) - cho phep switch ngay tren
+  // the tong o Home thay vi phai mo Vi > tab Tai san dau tu moi xem duoc.
+  bool _showInvestment = false;
 
   void _open(BuildContext context, String title, Widget tab) {
     openAppPopup(context, WealthDetailScreen(title: title, child: tab));
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final unread = ref.watch(unreadMessageCountProvider).valueOrNull ?? 0;
     final hidden = ref.watch(wealthPrivacyModeProvider);
     final netWorth = ref.watch(netWorthVndProvider);
+    final investmentTotal = ref.watch(totalInvestmentValueVndProvider);
+    final displayValue = _showInvestment ? investmentTotal : netWorth;
     return ScreenBackground(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(14, 12, 14, 16),
@@ -58,10 +70,22 @@ class WealthHomeScreen extends ConsumerWidget {
                         child: Text(
                           hidden
                               ? '•••••••'
-                              : (netWorth == null
+                              : (displayValue == null
                                     ? '...'
-                                    : formatVnd(netWorth)),
+                                    : formatVnd(displayValue)),
                           style: AppTextStyles.heading(size: 24),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () =>
+                            setState(() => _showInvestment = !_showInvestment),
+                        child: const Padding(
+                          padding: EdgeInsets.only(right: 12),
+                          child: Icon(
+                            Icons.sync_alt_rounded,
+                            color: AppColors.textMuted,
+                            size: 20,
+                          ),
                         ),
                       ),
                       GestureDetector(
@@ -80,7 +104,9 @@ class WealthHomeScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    ref.tr('wallet_total_assets'),
+                    _showInvestment
+                        ? ref.tr('wealth_investments_total')
+                        : ref.tr('wallet_total_assets'),
                     style: AppTextStyles.muted(size: 11),
                   ),
                 ],

@@ -1111,8 +1111,8 @@ class AppStrings {
       AppLanguage.en: 'Current assets',
     },
     'wallet_tab_investments': {
-      AppLanguage.vi: 'Tài sản đầu tư',
-      AppLanguage.en: 'Investment assets',
+      AppLanguage.vi: 'Đầu tư',
+      AppLanguage.en: 'Investment',
     },
     'wallet_section_cash': {AppLanguage.vi: 'Tiền mặt', AppLanguage.en: 'Cash'},
     'wallet_section_bank': {

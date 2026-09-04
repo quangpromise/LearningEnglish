@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/thousands_input_formatter.dart';
 import '../data/vn_bank_model.dart';
 import '../data/wealth_balance_entry_model.dart';
 import 'bank_picker_sheet.dart';
@@ -41,7 +42,7 @@ class _AddBalanceEntrySheetState extends ConsumerState<_AddBalanceEntrySheet> {
   late final _amountController = TextEditingController(
     text: widget.existing == null
         ? ''
-        : widget.existing!.amount.abs().toStringAsFixed(0),
+        : groupThousands(widget.existing!.amount.abs()),
   );
   late final _noteController = TextEditingController(
     text: widget.existing?.note ?? '',
@@ -85,9 +86,7 @@ class _AddBalanceEntrySheetState extends ConsumerState<_AddBalanceEntrySheet> {
   }
 
   Future<void> _save() async {
-    final rawAmount = double.tryParse(
-      _amountController.text.trim().replaceAll(',', '.'),
-    );
+    final rawAmount = parseThousandsFormatted(_amountController.text);
     if (rawAmount == null || rawAmount <= 0) return;
     setState(() => _saving = true);
     final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
@@ -176,6 +175,7 @@ class _AddBalanceEntrySheetState extends ConsumerState<_AddBalanceEntrySheet> {
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
+                      inputFormatters: [ThousandsInputFormatter()],
                       style: AppTextStyles.body(),
                       cursorColor: AppColors.wealthAccent,
                       decoration: InputDecoration(
