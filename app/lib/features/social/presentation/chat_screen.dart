@@ -523,13 +523,24 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           GestureDetector(
                             onLongPress: m.isDeleted
                                 ? null
-                                : () => _showMessageActions(
+                                // Tin nhan CUA NGUOI KHAC chi co dung 1 hanh
+                                // dong (tha cam xuc - Sua/Xoa chi danh cho
+                                // tin cua chinh minh) nen mo thang bang
+                                // emoji, bo qua buoc menu trung gian phai
+                                // bam "React" truoc nhu cu. Tin cua CHINH
+                                // MINH van giu menu day du (React/Sua/Xoa).
+                                : isMine
+                                ? () => _showMessageActions(
                                     m,
                                     isMine,
                                     () => showEmojiReactionPicker(
                                       context,
                                       onSelected: onReact,
                                     ),
+                                  )
+                                : () => showEmojiReactionPicker(
+                                    context,
+                                    onSelected: onReact,
                                   ),
                             child: Align(
                               alignment: isMine
