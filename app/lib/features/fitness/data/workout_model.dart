@@ -26,6 +26,7 @@ class WorkoutExerciseBlock {
     required this.targetRepsMin,
     required this.targetRepsMax,
     required this.recommendedWeightKg,
+    this.supersetGroup,
   });
 
   final Exercise exercise;
@@ -33,15 +34,72 @@ class WorkoutExerciseBlock {
   final int targetRepsMin;
   final int targetRepsMax;
   final double recommendedWeightKg;
+
+  /// 2 bai tap CUNG mot buoi, ke lien tiep nhau, cung mang gia tri nay ->
+  /// ghep thanh 1 sieu set (xem [resolveGroupings]). Null nghia la bai
+  /// straight-set binh thuong.
+  final String? supersetGroup;
+}
+
+/// 1 nhom bai tap da duoc "giai quyet" tu danh sach [WorkoutExerciseBlock]
+/// phang - port tinh than `ResolvedGrouping` cua FitViet (Gate 48):
+/// [SoloBlock] (1 bai binh thuong) hoac [PairedBlock] (2 bai sieu set, tap
+/// lien tiep KHONG nghi giua, roi nghi sau khi xong ca 2).
+sealed class WorkoutBlockGroup {
+  const WorkoutBlockGroup();
+}
+
+class SoloBlock extends WorkoutBlockGroup {
+  const SoloBlock(this.exercise);
+  final WorkoutExerciseBlock exercise;
+}
+
+class PairedBlock extends WorkoutBlockGroup {
+  const PairedBlock(this.first, this.second);
+  final WorkoutExerciseBlock first;
+  final WorkoutExerciseBlock second;
+
+  /// So vong ghep cap = gia tri targetSets THAP HON trong 2 bai - port dung
+  /// `toSupersetBlock()` cua FitViet (2 bai co the duoc tac gia dinh nghia
+  /// so set khac nhau, lay gia tri nho hon lam so vong chung).
+  int get totalRounds => first.targetSets < second.targetSets
+      ? first.targetSets
+      : second.targetSets;
+}
+
+/// Ghep 2 bai tap LIEN TIEP nhau (theo thu tu trong danh sach) neu chung
+/// chia se cung 1 [WorkoutExerciseBlock.supersetGroup] khac null - port dung
+/// thuat toan quet trai-sang-phai cua FitViet (Gate 48): CHI ghep dung khi
+/// co dung 2 bai lien tiep cung nhom; 3+ bai cung nhom, nhom khong lien tiep,
+/// hoac 1 bai le deu tu dong roi ve straight-set (SoloBlock) thay vi bao loi.
+List<WorkoutBlockGroup> resolveGroupings(List<WorkoutExerciseBlock> blocks) {
+  final groups = <WorkoutBlockGroup>[];
+  var i = 0;
+  while (i < blocks.length) {
+    final current = blocks[i];
+    final next = i + 1 < blocks.length ? blocks[i + 1] : null;
+    if (current.supersetGroup != null &&
+        next != null &&
+        next.supersetGroup == current.supersetGroup) {
+      groups.add(PairedBlock(current, next));
+      i += 2;
+    } else {
+      groups.add(SoloBlock(current));
+      i += 1;
+    }
+  }
+  return groups;
 }
 
 enum WorkoutPhase { logging, resting, finished }
 
-/// May trang thai 1 buoi tap - port tu WorkoutViewModel cua FitViet (Gate 4):
-/// log 1 set -> nghi (dem nguoc, +15s/bo qua) -> set tiep theo -> het bai
-/// tap cuoi -> finished. CHI la state cuc bo cua 1 man hinh (khong phai
-/// Riverpod provider toan cuc) - dung y cach AiVoiceChatScreen tu quan state
-/// phuc tap cua no.
+/// May trang thai 1 buoi tap - port tu WorkoutViewModel cua FitViet (Gate 4,
+/// mo rong sieu set o Gate 47/48): log 1 set -> nghi (dem nguoc, +15s/bo
+/// qua) -> set tiep theo -> het nhom bai tap cuoi -> finished. Voi
+/// [PairedBlock]: log bai A (KHONG nghi) -> log bai B (nghi) -> lap lai cho
+/// [PairedBlock.totalRounds] vong -> chuyen nhom tiep theo. CHI la state cuc
+/// bo cua 1 man hinh (khong phai Riverpod provider toan cuc), dung y cach
+/// AiVoiceChatScreen tu quan state phuc tap cua no.
 class WorkoutController extends ChangeNotifier {
   // Khong dung initializing formal (this._repository/this._userId) - ten
   // tham so se phai trung ten field RIENG TU, khien noi goi khac file
@@ -50,15 +108,16 @@ class WorkoutController extends ChangeNotifier {
   // khac). Giu ten tham so cong khai (repository/userId) roi tu gan vao
   // field rieng tu trong initializer list ben duoi la cach dung.
   WorkoutController({
-    required this.blocks,
+    required List<WorkoutExerciseBlock> blocks,
     required WorkoutRepository repository,
     required String userId,
     this.programId,
-  }) : _repository = repository,
+  }) : groups = resolveGroupings(blocks),
+       _repository = repository,
        _userId = userId,
        _startedAt = DateTime.now();
 
-  final List<WorkoutExerciseBlock> blocks;
+  final List<WorkoutBlockGroup> groups;
   final int? programId;
   final WorkoutRepository _repository;
   final String _userId;
@@ -67,8 +126,17 @@ class WorkoutController extends ChangeNotifier {
   int? _sessionId;
   Timer? _restTimer;
 
-  int currentExerciseIndex = 0;
-  int currentSetIndex = 0;
+  int groupIndex = 0;
+
+  /// Dung cho [SoloBlock]: chi so set hien tai (0-based). Dung cho
+  /// [PairedBlock]: chi so VONG hien tai (0-based) - xem [subIndex] de biet
+  /// dang o bai A hay bai B trong vong do.
+  int setOrRoundIndex = 0;
+
+  /// CHI co y nghia khi nhom hien tai la [PairedBlock]: 0 = bai dau (A),
+  /// 1 = bai sau (B).
+  int subIndex = 0;
+
   WorkoutPhase phase = WorkoutPhase.logging;
   int restSecondsRemaining = 0;
 
@@ -80,10 +148,29 @@ class WorkoutController extends ChangeNotifier {
   double totalVolumeKg = 0;
   int totalSetsLogged = 0;
 
-  WorkoutExerciseBlock get currentBlock => blocks[currentExerciseIndex];
-  bool get isLastExercise => currentExerciseIndex == blocks.length - 1;
-  bool get isLastSetOfExercise =>
-      currentSetIndex == currentBlock.targetSets - 1;
+  WorkoutBlockGroup get currentGroup => groups[groupIndex];
+  bool get isLastGroup => groupIndex == groups.length - 1;
+
+  /// Bai tap DANG hien thi/log - o [PairedBlock] la bai A hoac B tuy
+  /// [subIndex].
+  WorkoutExerciseBlock get currentBlock {
+    final group = currentGroup;
+    return switch (group) {
+      SoloBlock() => group.exercise,
+      PairedBlock() => subIndex == 0 ? group.first : group.second,
+    };
+  }
+
+  int get currentSetNumber => setOrRoundIndex + 1;
+  int get currentTotalSets => switch (currentGroup) {
+    SoloBlock(:final exercise) => exercise.targetSets,
+    PairedBlock(:final totalRounds) => totalRounds,
+  };
+
+  /// True khi nhom hien tai la sieu set - man hinh dung de hien badge
+  /// "A1"/"A2" thay vi chi so set thuong.
+  bool get isPairedGroup => currentGroup is PairedBlock;
+  int get pairSubIndex => subIndex;
 
   Future<void> start() async {
     _sessionId = await _repository.startSession(
@@ -119,29 +206,57 @@ class WorkoutController extends ChangeNotifier {
       sessionId: sessionId,
       userId: _userId,
       exerciseId: currentBlock.exercise.id,
-      setIndex: currentSetIndex,
+      setIndex: setOrRoundIndex,
       weightKg: currentWeightKg,
       reps: currentReps,
     );
     totalVolumeKg += currentWeightKg * currentReps;
     totalSetsLogged++;
 
-    if (isLastSetOfExercise) {
-      if (isLastExercise) {
-        await _finish();
+    final group = currentGroup;
+    if (group is SoloBlock) {
+      if (setOrRoundIndex == group.exercise.targetSets - 1) {
+        await _advanceGroupOrFinish();
         return;
       }
-      currentExerciseIndex++;
-      currentSetIndex = 0;
+      setOrRoundIndex++;
+      _resetInputsForCurrentSet();
+      _startRest();
+      return;
+    }
+
+    // PairedBlock.
+    group as PairedBlock;
+    if (subIndex == 0) {
+      // Vua xong bai A - sang thang bai B, KHONG nghi.
+      subIndex = 1;
       _resetInputsForCurrentSet();
       phase = WorkoutPhase.logging;
       notifyListeners();
       return;
     }
-
-    currentSetIndex++;
+    // Vua xong bai B - het 1 vong.
+    if (setOrRoundIndex == group.totalRounds - 1) {
+      await _advanceGroupOrFinish();
+      return;
+    }
+    setOrRoundIndex++;
+    subIndex = 0;
     _resetInputsForCurrentSet();
     _startRest();
+  }
+
+  Future<void> _advanceGroupOrFinish() async {
+    if (isLastGroup) {
+      await _finish();
+      return;
+    }
+    groupIndex++;
+    setOrRoundIndex = 0;
+    subIndex = 0;
+    _resetInputsForCurrentSet();
+    phase = WorkoutPhase.logging;
+    notifyListeners();
   }
 
   void _startRest() {

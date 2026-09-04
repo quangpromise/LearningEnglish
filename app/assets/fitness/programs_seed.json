@@ -16,7 +16,9 @@
           {"exerciseId": 2, "targetSets": 3, "targetRepsMin": 8, "targetRepsMax": 12, "orderIndex": 2, "supersetGroup": null},
           {"exerciseId": 7, "targetSets": 3, "targetRepsMin": 10, "targetRepsMax": 12, "orderIndex": 3, "supersetGroup": null},
           {"exerciseId": 9, "targetSets": 3, "targetRepsMin": 10, "targetRepsMax": 12, "orderIndex": 4, "supersetGroup": null},
-          {"exerciseId": 10, "targetSets": 3, "targetRepsMin": 10, "targetRepsMax": 12, "orderIndex": 5, "supersetGroup": null}
+          {"exerciseId": 10, "targetSets": 3, "targetRepsMin": 10, "targetRepsMax": 12, "orderIndex": 5, "supersetGroup": null},
+          {"exerciseId": 3, "targetSets": 3, "targetRepsMin": 12, "targetRepsMax": 15, "orderIndex": 6, "supersetGroup": "A"},
+          {"exerciseId": 4, "targetSets": 3, "targetRepsMin": 12, "targetRepsMax": 15, "orderIndex": 7, "supersetGroup": "A"}
         ]
       },
       {
@@ -107,8 +109,8 @@
       {
         "dayOfWeek": 1,
         "exercises": [
-          {"exerciseId": 14, "targetSets": 3, "targetRepsMin": 12, "targetRepsMax": 15, "orderIndex": 0, "supersetGroup": null},
-          {"exerciseId": 13, "targetSets": 3, "targetRepsMin": 15, "targetRepsMax": 20, "orderIndex": 1, "supersetGroup": null},
+          {"exerciseId": 14, "targetSets": 3, "targetRepsMin": 12, "targetRepsMax": 15, "orderIndex": 0, "supersetGroup": "A"},
+          {"exerciseId": 13, "targetSets": 3, "targetRepsMin": 15, "targetRepsMax": 20, "orderIndex": 1, "supersetGroup": "A"},
           {"exerciseId": 111, "targetSets": 3, "targetRepsMin": 15, "targetRepsMax": 20, "orderIndex": 2, "supersetGroup": null},
           {"exerciseId": 108, "targetSets": 3, "targetRepsMin": 1, "targetRepsMax": 1, "orderIndex": 3, "supersetGroup": null},
           {"exerciseId": 18, "targetSets": 3, "targetRepsMin": 12, "targetRepsMax": 15, "orderIndex": 4, "supersetGroup": null}

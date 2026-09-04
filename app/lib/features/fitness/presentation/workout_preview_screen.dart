@@ -55,6 +55,7 @@ class _WorkoutPreviewScreenState extends ConsumerState<WorkoutPreviewScreen> {
           targetRepsMin: exRef.targetRepsMin,
           targetRepsMax: exRef.targetRepsMax,
           recommendedWeightKg: recommended,
+          supersetGroup: exRef.supersetGroup,
         ),
       );
     }
@@ -96,11 +97,20 @@ class _WorkoutPreviewScreenState extends ConsumerState<WorkoutPreviewScreen> {
                       ),
                     );
                   }
-                  final blocks = snapshot.data!;
+                  final groups = resolveGroupings(snapshot.data!);
                   return ListView.separated(
-                    itemCount: blocks.length,
+                    itemCount: groups.length,
                     separatorBuilder: (_, _) => const SizedBox(height: 10),
-                    itemBuilder: (context, i) => _PreviewTile(block: blocks[i]),
+                    itemBuilder: (context, i) {
+                      final group = groups[i];
+                      return switch (group) {
+                        SoloBlock(:final exercise) => _PreviewTile(
+                          block: exercise,
+                        ),
+                        PairedBlock(:final first, :final second) =>
+                          _PairedPreviewCard(first: first, second: second),
+                      };
+                    },
                   );
                 },
               ),
@@ -199,6 +209,71 @@ class _PreviewTile extends StatelessWidget {
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The 2 bai tap ghep sieu set - port rut gon tu PreviewSupersetCard cua
+/// FitViet (Gate 48): badge "2 BAI LIEN TIEP" + 2 bai voi 1 dong noi "khong
+/// nghi" o giua, thay vi 2 the rieng le nhu straight-set binh thuong.
+class _PairedPreviewCard extends StatelessWidget {
+  const _PairedPreviewCard({required this.first, required this.second});
+  final WorkoutExerciseBlock first;
+  final WorkoutExerciseBlock second;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.glassFill,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: AppColors.fitnessAccent.withValues(alpha: 0.5),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Consumer(
+            builder: (context, ref, _) => Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: AppColors.fitnessAccent.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                ref.tr('fitness_workout_superset_badge'),
+                style: AppTextStyles.body(
+                  size: 10,
+                  weight: FontWeight.w800,
+                ).copyWith(color: AppColors.fitnessAccent),
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          _PreviewTile(block: first),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: Row(
+              children: [
+                const Expanded(child: Divider(color: AppColors.glassBorder)),
+                Consumer(
+                  builder: (context, ref, _) => Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Text(
+                      ref.tr('fitness_workout_superset_no_rest'),
+                      style: AppTextStyles.muted(),
+                    ),
+                  ),
+                ),
+                const Expanded(child: Divider(color: AppColors.glassBorder)),
+              ],
+            ),
+          ),
+          _PreviewTile(block: second),
         ],
       ),
     );

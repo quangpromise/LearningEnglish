@@ -78,18 +78,43 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                     child: const _IconCircle(icon: Icons.close_rounded),
                   ),
                   const Spacer(),
-                  Consumer(
-                    builder: (context, ref, _) => Text(
-                      ref
-                          .tr('fitness_workout_set_label')
-                          .replaceFirst(
-                            '{current}',
-                            '${_controller.currentSetIndex + 1}',
-                          )
-                          .replaceFirst('{total}', '${block.targetSets}'),
-                      style: AppTextStyles.muted(),
+                  if (_controller.isPairedGroup)
+                    Consumer(
+                      builder: (context, ref, _) => Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.fitnessAccent.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text(
+                          'A${_controller.pairSubIndex + 1} · '
+                          '${_controller.currentSetNumber}/${_controller.currentTotalSets}',
+                          style: AppTextStyles.body(
+                            size: 12,
+                            weight: FontWeight.w800,
+                          ).copyWith(color: AppColors.fitnessAccent),
+                        ),
+                      ),
+                    )
+                  else
+                    Consumer(
+                      builder: (context, ref, _) => Text(
+                        ref
+                            .tr('fitness_workout_set_label')
+                            .replaceFirst(
+                              '{current}',
+                              '${_controller.currentSetNumber}',
+                            )
+                            .replaceFirst(
+                              '{total}',
+                              '${_controller.currentTotalSets}',
+                            ),
+                        style: AppTextStyles.muted(),
+                      ),
                     ),
-                  ),
                 ],
               ),
               const Spacer(),

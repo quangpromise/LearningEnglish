@@ -1488,6 +1488,14 @@ class AppStrings {
       AppLanguage.vi: 'Về trang chủ',
       AppLanguage.en: 'Back home',
     },
+    'fitness_workout_superset_badge': {
+      AppLanguage.vi: '2 BÀI LIÊN TIẾP',
+      AppLanguage.en: 'SUPERSET',
+    },
+    'fitness_workout_superset_no_rest': {
+      AppLanguage.vi: 'không nghỉ',
+      AppLanguage.en: 'no rest',
+    },
 
     // Fitness Phase 3: Dinh duong - port tu FitViet
     'fitness_nutrition_title': {
