@@ -106,4 +106,85 @@ class WorkoutRepository {
         .gte('started_at', sinceDate.toIso8601String());
     return (rows as List).length;
   }
+
+  /// So lieu cho Trang chu Fitness (Phase 4) - port tinh than tu
+  /// DashboardStatsCalculator cua FitViet (Gate 3): chuoi ngay lien tiep co
+  /// tap (streak), so buoi + tong kg TUAN NAY (tinh tu Thu Hai, khop dung
+  /// quy uoc dayOfWeek=1 dang dung cho lich chuong trinh), va khoi luong 7
+  /// ngay gan nhat cho bieu do cot. Chi quet 60 ngay gan nhat (du de tinh
+  /// streak thuc te, tranh quet toan bo lich su vo thoi han).
+  Future<FitnessDashboardStats> getDashboardStats(String userId) async {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final since = today.subtract(const Duration(days: 60));
+    final rows = await _supabase
+        .from('workout_sessions')
+        .select('completed_at, total_volume_kg')
+        .eq('user_id', userId)
+        .not('completed_at', 'is', null)
+        .gte('completed_at', since.toIso8601String())
+        .order('completed_at');
+
+    final sessions = (rows as List).map((r) {
+      final map = r as Map<String, dynamic>;
+      final completedAt = DateTime.parse(map['completed_at'] as String)
+          .toLocal();
+      final volume = (map['total_volume_kg'] as num).toDouble();
+      return (
+        date: DateTime(completedAt.year, completedAt.month, completedAt.day),
+        volume: volume,
+      );
+    }).toList();
+
+    final sessionDates = sessions.map((s) => s.date).toSet();
+
+    var streak = 0;
+    var cursor = sessionDates.contains(today)
+        ? today
+        : today.subtract(const Duration(days: 1));
+    while (sessionDates.contains(cursor)) {
+      streak++;
+      cursor = cursor.subtract(const Duration(days: 1));
+    }
+
+    // Tuan bat dau Thu Hai (dayOfWeek=1) - dung y het quy uoc ProgramDay.
+    final weekStart = today.subtract(Duration(days: today.weekday - 1));
+    var sessionsThisWeek = 0;
+    var totalVolumeThisWeek = 0.0;
+    final dailyVolumeLast7 = List<double>.filled(7, 0);
+    for (final s in sessions) {
+      if (!s.date.isBefore(weekStart)) {
+        sessionsThisWeek++;
+        totalVolumeThisWeek += s.volume;
+      }
+      final daysAgo = today.difference(s.date).inDays;
+      if (daysAgo >= 0 && daysAgo < 7) {
+        dailyVolumeLast7[6 - daysAgo] += s.volume;
+      }
+    }
+
+    return FitnessDashboardStats(
+      streakDays: streak,
+      sessionsThisWeek: sessionsThisWeek,
+      totalVolumeThisWeekKg: totalVolumeThisWeek,
+      dailyVolumeLast7: dailyVolumeLast7,
+    );
+  }
+}
+
+/// Xem [WorkoutRepository.getDashboardStats].
+class FitnessDashboardStats {
+  const FitnessDashboardStats({
+    required this.streakDays,
+    required this.sessionsThisWeek,
+    required this.totalVolumeThisWeekKg,
+    required this.dailyVolumeLast7,
+  });
+
+  final int streakDays;
+  final int sessionsThisWeek;
+  final double totalVolumeThisWeekKg;
+
+  /// 7 gia tri, index 0 la 6 ngay truoc, index 6 la HOM NAY.
+  final List<double> dailyVolumeLast7;
 }

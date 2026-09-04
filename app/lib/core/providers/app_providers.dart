@@ -395,6 +395,24 @@ final activeProgramIdProvider = FutureProvider.autoDispose<int?>((ref) {
   return ref.watch(workoutRepositoryProvider).getActiveProgramId(userId);
 });
 
+/// So lieu Trang chu Fitness (Phase 4) - autoDispose, tu lam moi moi lan
+/// man Fitness Home duoc mo lai (khong can giu song vinh vien).
+final fitnessDashboardStatsProvider =
+    FutureProvider.autoDispose<FitnessDashboardStats>((ref) {
+      final userId = ref.watch(supabaseClientProvider).auth.currentUser?.id;
+      if (userId == null) {
+        return Future.value(
+          const FitnessDashboardStats(
+            streakDays: 0,
+            sessionsThisWeek: 0,
+            totalVolumeThisWeekKg: 0,
+            dailyVolumeLast7: [0, 0, 0, 0, 0, 0, 0],
+          ),
+        );
+      }
+      return ref.watch(workoutRepositoryProvider).getDashboardStats(userId);
+    });
+
 // --- Fitness (Phase 3: Dinh duong - port tu FitViet) ---
 
 final nutritionRepositoryProvider = Provider<NutritionRepository>(

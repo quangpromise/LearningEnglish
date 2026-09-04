@@ -7,6 +7,7 @@ import '../../../core/navigation/app_top_bar.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../social/presentation/conversations_screen.dart';
+import 'fitness_dashboard_section.dart';
 import 'muscle_group_categories_screen.dart';
 import 'nutrition_screen.dart';
 import 'programs_list_screen.dart';
@@ -34,68 +35,85 @@ class FitnessHomeScreen extends ConsumerWidget {
                   openAppPopup(context, const ConversationsScreen()),
             ),
             const SizedBox(height: 22),
-            _ActiveProgramCard(
-              onTap: () => openAppPopup(context, const ProgramsListScreen()),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: GlowBox(
-                padding: const EdgeInsets.all(16),
-                borderRadius: 22,
+            // Toan bo phan con lai co the dai hon 1 man hinh (them
+            // FitnessDashboardSection o Phase 4) nen can cuon duoc, khac
+            // truoc day (Column tinh khong cuon) khi noi dung con it.
+            Expanded(
+              child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      ref.tr('fitness_home_category_workout'),
-                      style: AppTextStyles.heading(size: 14),
+                    _ActiveProgramCard(
+                      onTap: () =>
+                          openAppPopup(context, const ProgramsListScreen()),
                     ),
-                    const SizedBox(height: 14),
-                    // LayoutBuilder tinh be rong 1 the theo cong thuc "vua du
-                    // 4 the/hang" - dung CHUNG 1 quy tac voi Home Hoc Tieng
-                    // Anh va Wealth de dong bo tren ca 3 app (kem ca khi
-                    // hien chi co 1 the, san sang khi them tinh nang moi).
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        const spacing = 12.0;
-                        const columns = 4;
-                        final itemWidth =
-                            (constraints.maxWidth - spacing * (columns - 1)) /
-                            columns;
-                        return Wrap(
-                          spacing: spacing,
-                          runSpacing: 14,
+                    const SizedBox(height: 16),
+                    const FitnessDashboardSection(),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: GlowBox(
+                        padding: const EdgeInsets.all(16),
+                        borderRadius: 22,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _FitnessTile(
-                              width: itemWidth,
-                              icon: Icons.calendar_month_rounded,
-                              label: ref.tr('fitness_programs_title'),
-                              onTap: () => openAppPopup(
-                                context,
-                                const ProgramsListScreen(),
-                              ),
+                            Text(
+                              ref.tr('fitness_home_category_workout'),
+                              style: AppTextStyles.heading(size: 14),
                             ),
-                            _FitnessTile(
-                              width: itemWidth,
-                              icon: Icons.fitness_center_rounded,
-                              label: ref.tr('fitness_library_title'),
-                              onTap: () => openAppPopup(
-                                context,
-                                const MuscleGroupCategoriesScreen(),
-                              ),
-                            ),
-                            _FitnessTile(
-                              width: itemWidth,
-                              icon: Icons.restaurant_rounded,
-                              label: ref.tr('fitness_nutrition_title'),
-                              onTap: () => openAppPopup(
-                                context,
-                                const NutritionScreen(),
-                              ),
+                            const SizedBox(height: 14),
+                            // LayoutBuilder tinh be rong 1 the theo cong thuc
+                            // "vua du 4 the/hang" - dung CHUNG 1 quy tac voi
+                            // Home Hoc Tieng Anh va Wealth de dong bo tren ca
+                            // 3 app (kem ca khi hien chi co 1 the, san sang
+                            // khi them tinh nang moi).
+                            LayoutBuilder(
+                              builder: (context, constraints) {
+                                const spacing = 12.0;
+                                const columns = 4;
+                                final itemWidth =
+                                    (constraints.maxWidth -
+                                        spacing * (columns - 1)) /
+                                    columns;
+                                return Wrap(
+                                  spacing: spacing,
+                                  runSpacing: 14,
+                                  children: [
+                                    _FitnessTile(
+                                      width: itemWidth,
+                                      icon: Icons.calendar_month_rounded,
+                                      label: ref.tr('fitness_programs_title'),
+                                      onTap: () => openAppPopup(
+                                        context,
+                                        const ProgramsListScreen(),
+                                      ),
+                                    ),
+                                    _FitnessTile(
+                                      width: itemWidth,
+                                      icon: Icons.fitness_center_rounded,
+                                      label: ref.tr('fitness_library_title'),
+                                      onTap: () => openAppPopup(
+                                        context,
+                                        const MuscleGroupCategoriesScreen(),
+                                      ),
+                                    ),
+                                    _FitnessTile(
+                                      width: itemWidth,
+                                      icon: Icons.restaurant_rounded,
+                                      label: ref.tr('fitness_nutrition_title'),
+                                      onTap: () => openAppPopup(
+                                        context,
+                                        const NutritionScreen(),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
                             ),
                           ],
-                        );
-                      },
+                        ),
+                      ),
                     ),
                   ],
                 ),

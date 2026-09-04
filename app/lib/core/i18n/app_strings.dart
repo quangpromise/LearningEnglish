@@ -1543,6 +1543,44 @@ class AppStrings {
       AppLanguage.en: 'Snack',
     },
 
+    // Fitness Phase 4: Trang chu (Dashboard) - port tu FitViet
+    'fitness_dashboard_streak': {
+      AppLanguage.vi: 'Chuỗi ngày',
+      AppLanguage.en: 'Day streak',
+    },
+    'fitness_dashboard_sessions_week': {
+      AppLanguage.vi: 'Buổi tuần này',
+      AppLanguage.en: 'Sessions this week',
+    },
+    'fitness_dashboard_volume_week': {
+      AppLanguage.vi: 'Tổng kg tuần',
+      AppLanguage.en: 'Total kg this week',
+    },
+    'fitness_dashboard_weekly_volume_title': {
+      AppLanguage.vi: 'Khối lượng 7 ngày',
+      AppLanguage.en: '7-day volume',
+    },
+    'fitness_dashboard_tip_come_back': {
+      AppLanguage.vi: 'Đã lâu bạn chưa tập rồi, quay lại luyện tập nhé!',
+      AppLanguage.en: "It's been a while — let's get back to training!",
+    },
+    'fitness_dashboard_tip_streak_praise': {
+      AppLanguage.vi: 'Tuyệt vời! Bạn đang duy trì chuỗi {n} ngày liên tiếp.',
+      AppLanguage.en: "Great job! You're on a {n}-day streak.",
+    },
+    'fitness_dashboard_tip_generic_1': {
+      AppLanguage.vi: 'Uống đủ nước giúp cơ bắp phục hồi nhanh hơn.',
+      AppLanguage.en: 'Staying hydrated helps your muscles recover faster.',
+    },
+    'fitness_dashboard_tip_generic_2': {
+      AppLanguage.vi: 'Ngủ đủ 7-8 tiếng để cơ thể phục hồi tốt nhất.',
+      AppLanguage.en: 'Get 7-8 hours of sleep for the best recovery.',
+    },
+    'fitness_dashboard_tip_generic_3': {
+      AppLanguage.vi: 'Khởi động kỹ trước khi tập để tránh chấn thương.',
+      AppLanguage.en: 'Warm up properly before training to avoid injury.',
+    },
+
     // Attribution/Credits screen (features/attribution/)
     'attribution_menu_title': {
       AppLanguage.vi: 'Ghi công',
