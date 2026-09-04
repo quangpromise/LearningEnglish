@@ -39,6 +39,22 @@ class WealthHoldingRepository {
     return row['id'] as String;
   }
 
+  /// Sua lai so luong/gia von cua 1 khoan nam giu theo `id` - dung cho Kim
+  /// loai (moi lo la 1 dong doc lap, khong co symbol de upsert lai) va cho
+  /// bat ky loai nao khac can sua ma khong doi symbol.
+  Future<void> updateQuantityAndCost(
+    String userId,
+    String id, {
+    required double quantity,
+    required double avgCost,
+  }) async {
+    await _supabase
+        .from('wealth_holdings')
+        .update({'quantity': quantity, 'avg_cost': avgCost})
+        .eq('id', id)
+        .eq('user_id', userId);
+  }
+
   Future<void> updateManualValue(
     String userId,
     String id,

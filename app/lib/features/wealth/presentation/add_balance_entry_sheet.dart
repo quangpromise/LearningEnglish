@@ -8,26 +8,29 @@ import '../data/vn_bank_model.dart';
 import '../data/wealth_balance_entry_model.dart';
 import 'bank_picker_sheet.dart';
 
-/// Bottom sheet them 1 dong bien dong so du (Nap/Rut) cho Tien mat hoac Tien
-/// ngan hang - neu [initialBank] khac null nghia la dang them cho 1 ngan
-/// hang cu the (da chon truoc do qua [showBankPickerSheet]); null nghia la
-/// Tien mat.
+/// Bottom sheet them/sua 1 dong bien dong so du (Nap/Rut) cho Tien mat hoac
+/// Tien ngan hang - neu [initialBank] khac null nghia la dang them cho 1
+/// ngan hang cu the (da chon truoc do qua [showBankPickerSheet]); null
+/// nghia la Tien mat. Truyen [existing] de mo o CHE DO SUA.
 Future<void> showAddBalanceEntrySheet(
   BuildContext context,
   WidgetRef ref, {
   VnBank? initialBank,
+  WealthBalanceEntry? existing,
 }) {
   return showModalBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (_) => _AddBalanceEntrySheet(bank: initialBank),
+    builder: (_) =>
+        _AddBalanceEntrySheet(bank: initialBank, existing: existing),
   );
 }
 
 class _AddBalanceEntrySheet extends ConsumerStatefulWidget {
-  const _AddBalanceEntrySheet({this.bank});
+  const _AddBalanceEntrySheet({this.bank, this.existing});
   final VnBank? bank;
+  final WealthBalanceEntry? existing;
 
   @override
   ConsumerState<_AddBalanceEntrySheet> createState() =>
@@ -35,12 +38,20 @@ class _AddBalanceEntrySheet extends ConsumerStatefulWidget {
 }
 
 class _AddBalanceEntrySheetState extends ConsumerState<_AddBalanceEntrySheet> {
-  final _amountController = TextEditingController();
-  final _noteController = TextEditingController();
-  bool _isAdd = true;
-  String _currency = 'VND';
-  DateTime _occurredAt = DateTime.now();
+  late final _amountController = TextEditingController(
+    text: widget.existing == null
+        ? ''
+        : widget.existing!.amount.abs().toStringAsFixed(0),
+  );
+  late final _noteController = TextEditingController(
+    text: widget.existing?.note ?? '',
+  );
+  late bool _isAdd = (widget.existing?.amount ?? 0) >= 0;
+  late String _currency = widget.existing?.currency ?? 'VND';
+  late DateTime _occurredAt = widget.existing?.occurredAt ?? DateTime.now();
   bool _saving = false;
+
+  bool get _isEditing => widget.existing != null;
 
   @override
   void dispose() {
@@ -86,10 +97,13 @@ class _AddBalanceEntrySheetState extends ConsumerState<_AddBalanceEntrySheet> {
     }
     final bank = widget.bank;
     final entry = WealthBalanceEntry(
-      id: '',
-      accountType: bank == null ? 'cash' : 'bank',
-      bankCode: bank == null || bank.isOther ? null : bank.code,
-      bankName: bank?.shortName,
+      id: widget.existing?.id ?? '',
+      accountType:
+          widget.existing?.accountType ?? (bank == null ? 'cash' : 'bank'),
+      bankCode:
+          widget.existing?.bankCode ??
+          (bank == null || bank.isOther ? null : bank.code),
+      bankName: widget.existing?.bankName ?? bank?.shortName,
       currency: _currency,
       amount: _isAdd ? rawAmount : -rawAmount,
       note: _noteController.text.trim().isEmpty
@@ -98,9 +112,12 @@ class _AddBalanceEntrySheetState extends ConsumerState<_AddBalanceEntrySheet> {
       occurredAt: _occurredAt,
     );
     try {
-      await ref
-          .read(wealthBalanceEntryRepositoryProvider)
-          .addEntry(userId, entry);
+      final repo = ref.read(wealthBalanceEntryRepositoryProvider);
+      if (_isEditing) {
+        await repo.updateEntry(userId, entry);
+      } else {
+        await repo.addEntry(userId, entry);
+      }
       ref.invalidate(walletBalanceEntriesProvider);
       if (mounted) Navigator.of(context).pop();
     } finally {

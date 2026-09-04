@@ -84,6 +84,27 @@ class WealthDebtRepository {
         .eq('user_id', userId);
   }
 
+  /// Sua lai note va/hoac so tien goc - CHI goi khi remaining_amount con
+  /// bang original_amount (chua co lan tra nao), do UI tu kiem tra truoc
+  /// (xem debt_screen.dart) de tranh lam sai lech remaining_amount da tru
+  /// dan qua cac lan tra.
+  Future<void> updateNoteAndAmount(
+    String userId,
+    String id, {
+    String? note,
+    double? amount,
+  }) async {
+    await _supabase
+        .from('wealth_debts')
+        .update({
+          'note': note,
+          'original_amount': ?amount,
+          'remaining_amount': ?amount,
+        })
+        .eq('id', id)
+        .eq('user_id', userId);
+  }
+
   Future<void> delete(String userId, String id) async {
     await _supabase
         .from('wealth_debts')

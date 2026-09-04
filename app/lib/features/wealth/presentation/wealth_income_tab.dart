@@ -109,14 +109,50 @@ class _WealthIncomeTabState extends ConsumerState<WealthIncomeTab> {
                         final category = WealthIncomeCategory.fromCode(
                           t.categoryCode,
                         );
-                        return WealthTransactionTile(
-                          icon: category.icon,
-                          label: ref.tr(category.labelKey),
-                          note: t.note,
-                          amount: t.amount,
-                          amountColor: AppColors.teal,
-                          sign: '+',
-                          trailing: _KindBadge(passive: category.isPassive),
+                        return Dismissible(
+                          key: ValueKey(t.id),
+                          direction: DismissDirection.endToStart,
+                          background: Container(
+                            alignment: Alignment.centerRight,
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            decoration: BoxDecoration(
+                              color: AppColors.pink.withValues(alpha: 0.18),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: const Icon(
+                              Icons.delete_outline_rounded,
+                              color: AppColors.pink,
+                            ),
+                          ),
+                          onDismissed: (_) async {
+                            final userId = ref
+                                .read(supabaseClientProvider)
+                                .auth
+                                .currentUser
+                                ?.id;
+                            if (userId == null) return;
+                            await ref
+                                .read(wealthTransactionRepositoryProvider)
+                                .deleteTransaction(userId, t.id);
+                            ref.invalidate(wealthTransactionsProvider);
+                          },
+                          child: GestureDetector(
+                            onTap: () => showAddWealthTransactionSheet(
+                              context,
+                              ref,
+                              WealthTransactionType.income,
+                              existing: t,
+                            ),
+                            child: WealthTransactionTile(
+                              icon: category.icon,
+                              label: ref.tr(category.labelKey),
+                              note: t.note,
+                              amount: t.amount,
+                              amountColor: AppColors.teal,
+                              sign: '+',
+                              trailing: _KindBadge(passive: category.isPassive),
+                            ),
+                          ),
                         );
                       },
                     ),

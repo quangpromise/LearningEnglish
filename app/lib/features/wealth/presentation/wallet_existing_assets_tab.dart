@@ -202,37 +202,61 @@ class _BankCard extends ConsumerWidget {
   }
 }
 
-class _EntryRow extends StatelessWidget {
+class _EntryRow extends ConsumerWidget {
   const _EntryRow({required this.entry});
   final WealthBalanceEntry entry;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isPositive = entry.amount >= 0;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              entry.note?.isNotEmpty == true
-                  ? entry.note!
-                  : '${entry.occurredAt.day.toString().padLeft(2, '0')}/'
-                        '${entry.occurredAt.month.toString().padLeft(2, '0')}',
-              style: AppTextStyles.muted(size: 12),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
+    return Dismissible(
+      key: ValueKey(entry.id),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        child: const Icon(
+          Icons.delete_outline_rounded,
+          size: 16,
+          color: AppColors.pink,
+        ),
+      ),
+      onDismissed: (_) async {
+        final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
+        if (userId == null) return;
+        await ref
+            .read(wealthBalanceEntryRepositoryProvider)
+            .deleteEntry(userId, entry.id);
+        ref.invalidate(walletBalanceEntriesProvider);
+      },
+      child: GestureDetector(
+        onTap: () => showAddBalanceEntrySheet(context, ref, existing: entry),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  entry.note?.isNotEmpty == true
+                      ? entry.note!
+                      : '${entry.occurredAt.day.toString().padLeft(2, '0')}/'
+                            '${entry.occurredAt.month.toString().padLeft(2, '0')}',
+                  style: AppTextStyles.muted(size: 12),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Text(
+                formatByCurrency(entry.amount, entry.currency),
+                style: AppTextStyles.body(
+                  size: 12,
+                  weight: FontWeight.w700,
+                  color: isPositive ? AppColors.teal : AppColors.pink,
+                ),
+              ),
+            ],
           ),
-          Text(
-            formatByCurrency(entry.amount, entry.currency),
-            style: AppTextStyles.body(
-              size: 12,
-              weight: FontWeight.w700,
-              color: isPositive ? AppColors.teal : AppColors.pink,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

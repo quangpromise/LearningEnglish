@@ -6,16 +6,18 @@ import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/recurring_service_model.dart';
 
-/// Bottom sheet them 1 dich vu dinh ky moi - chon ngay bat dau + chu ky
+/// Bottom sheet them/sua 1 dich vu dinh ky - chon ngay bat dau + chu ky
 /// (tuan/thang/nam/so nam tuy chon) de TU TINH ngay het han, hoac chon
 /// "Ngay cu the" de tu go thang ngay het han truc tiep (khong tu tinh lai
-/// khi gia han lan sau, phai chon lai moi lan).
-void showAddServiceSheet(BuildContext context) {
+/// khi gia han lan sau, phai chon lai moi lan). Truyen [existing] de mo o
+/// CHE DO SUA - chi cho sua ten/so tien mac dinh/note/so ngay nhac truoc,
+/// KHONG cho doi chu ky/ngay het han (dung "Gia han" de doi ngay het han).
+void showAddServiceSheet(BuildContext context, {RecurringService? existing}) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (_) => const _AddServiceSheet(),
+    builder: (_) => _AddServiceSheet(existing: existing),
   );
 }
 
@@ -23,27 +25,38 @@ const _kCycleTypes = ['week', 'month', 'year', 'custom_years', 'manual'];
 const _kLeadDaysOptions = [7, 15, 30];
 
 class _AddServiceSheet extends ConsumerStatefulWidget {
-  const _AddServiceSheet();
+  const _AddServiceSheet({this.existing});
+  final RecurringService? existing;
 
   @override
   ConsumerState<_AddServiceSheet> createState() => _AddServiceSheetState();
 }
 
 class _AddServiceSheetState extends ConsumerState<_AddServiceSheet> {
-  final _nameController = TextEditingController();
-  final _amountController = TextEditingController();
+  late final _nameController = TextEditingController(
+    text: widget.existing?.name ?? '',
+  );
+  late final _amountController = TextEditingController(
+    text: widget.existing?.defaultAmount.toStringAsFixed(0) ?? '',
+  );
+  late final _noteController = TextEditingController(
+    text: widget.existing?.note ?? '',
+  );
   final _cycleYearsController = TextEditingController(text: '1');
-  String _currency = 'VND';
+  late String _currency = widget.existing?.currency ?? 'VND';
   String _cycleType = 'month';
-  int _reminderLeadDays = 7;
+  late int _reminderLeadDays = widget.existing?.reminderLeadDays ?? 7;
   DateTime _startDate = DateTime.now();
   DateTime? _manualExpiryDate;
   bool _saving = false;
+
+  bool get _isEditing => widget.existing != null;
 
   @override
   void dispose() {
     _nameController.dispose();
     _amountController.dispose();
+    _noteController.dispose();
     _cycleYearsController.dispose();
     super.dispose();
   }
@@ -82,10 +95,11 @@ class _AddServiceSheetState extends ConsumerState<_AddServiceSheet> {
     final amount = double.tryParse(
       _amountController.text.trim().replaceAll(',', '.'),
     );
-    final expiry = _computedExpiry;
-    if (name.isEmpty || amount == null || amount < 0 || expiry == null) {
-      return;
-    }
+    final note = _noteController.text.trim().isEmpty
+        ? null
+        : _noteController.text.trim();
+    if (name.isEmpty || amount == null || amount < 0) return;
+    if (!_isEditing && _computedExpiry == null) return;
     setState(() => _saving = true);
     final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
     if (userId == null) {
@@ -93,21 +107,32 @@ class _AddServiceSheetState extends ConsumerState<_AddServiceSheet> {
       return;
     }
     try {
-      await ref
-          .read(recurringServiceRepositoryProvider)
-          .create(
-            userId: userId,
-            name: name,
-            defaultAmount: amount,
-            currency: _currency,
-            cycleType: _cycleType,
-            cycleYears: _cycleType == 'custom_years'
-                ? double.tryParse(_cycleYearsController.text.trim())
-                : null,
-            startDate: _startDate,
-            expiryDate: expiry,
-            reminderLeadDays: _reminderLeadDays,
-          );
+      final repo = ref.read(recurringServiceRepositoryProvider);
+      if (_isEditing) {
+        await repo.update(
+          userId: userId,
+          id: widget.existing!.id,
+          name: name,
+          defaultAmount: amount,
+          reminderLeadDays: _reminderLeadDays,
+          note: note,
+        );
+      } else {
+        await repo.create(
+          userId: userId,
+          name: name,
+          defaultAmount: amount,
+          currency: _currency,
+          cycleType: _cycleType,
+          cycleYears: _cycleType == 'custom_years'
+              ? double.tryParse(_cycleYearsController.text.trim())
+              : null,
+          startDate: _startDate,
+          expiryDate: _computedExpiry!,
+          reminderLeadDays: _reminderLeadDays,
+          note: note,
+        );
+      }
       ref.invalidate(recurringServicesProvider);
       if (mounted) Navigator.of(context).pop();
     } finally {
@@ -151,7 +176,9 @@ class _AddServiceSheetState extends ConsumerState<_AddServiceSheet> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                ref.tr('wealth_service_add'),
+                _isEditing
+                    ? ref.tr('wealth_service_edit')
+                    : ref.tr('wealth_service_add'),
                 style: AppTextStyles.heading(size: 16),
               ),
               const SizedBox(height: 16),
@@ -216,71 +243,30 @@ class _AddServiceSheetState extends ConsumerState<_AddServiceSheet> {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              Text(
-                ref.tr('wealth_service_start_date'),
-                style: AppTextStyles.muted(size: 11),
-              ),
-              const SizedBox(height: 6),
-              GestureDetector(
-                onTap: _pickStartDate,
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.glassFill,
+              const SizedBox(height: 10),
+              TextField(
+                controller: _noteController,
+                style: AppTextStyles.body(),
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: AppColors.glassFill,
+                  hintText: ref.tr('wallet_note_hint'),
+                  hintStyle: const TextStyle(color: AppColors.textMuted),
+                  border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Text(
-                    _fmtDate(_startDate),
-                    style: AppTextStyles.body(size: 13),
+                    borderSide: BorderSide.none,
                   ),
                 ),
               ),
-              const SizedBox(height: 12),
-              Text(
-                ref.tr('wealth_service_cycle'),
-                style: AppTextStyles.muted(size: 11),
-              ),
-              const SizedBox(height: 6),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  for (final t in _kCycleTypes)
-                    _Chip(
-                      label: _cycleLabel(t),
-                      selected: _cycleType == t,
-                      onTap: () => setState(() => _cycleType = t),
-                    ),
-                ],
-              ),
-              if (_cycleType == 'custom_years') ...[
-                const SizedBox(height: 10),
-                TextField(
-                  controller: _cycleYearsController,
-                  keyboardType: TextInputType.number,
-                  style: AppTextStyles.body(),
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: AppColors.glassFill,
-                    hintText: ref.tr('wealth_service_years_hint'),
-                    hintStyle: const TextStyle(color: AppColors.textMuted),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                  onChanged: (_) => setState(() {}),
+              if (!_isEditing) ...[
+                const SizedBox(height: 12),
+                Text(
+                  ref.tr('wealth_service_start_date'),
+                  style: AppTextStyles.muted(size: 11),
                 ),
-              ],
-              if (_cycleType == 'manual') ...[
-                const SizedBox(height: 10),
+                const SizedBox(height: 6),
                 GestureDetector(
-                  onTap: _pickManualExpiry,
+                  onTap: _pickStartDate,
                   child: Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(
@@ -292,23 +278,81 @@ class _AddServiceSheetState extends ConsumerState<_AddServiceSheet> {
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Text(
-                      _manualExpiryDate == null
-                          ? ref.tr('wealth_service_pick_expiry')
-                          : _fmtDate(_manualExpiryDate!),
+                      _fmtDate(_startDate),
                       style: AppTextStyles.body(size: 13),
                     ),
                   ),
                 ),
-              ] else if (expiry != null) ...[
-                const SizedBox(height: 10),
+                const SizedBox(height: 12),
                 Text(
-                  '${ref.tr('wealth_service_expiry_preview')}: ${_fmtDate(expiry)}',
-                  style: AppTextStyles.body(
-                    size: 12,
-                    weight: FontWeight.w700,
-                    color: AppColors.wealthAccent,
-                  ),
+                  ref.tr('wealth_service_cycle'),
+                  style: AppTextStyles.muted(size: 11),
                 ),
+                const SizedBox(height: 6),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final t in _kCycleTypes)
+                      _Chip(
+                        label: _cycleLabel(t),
+                        selected: _cycleType == t,
+                        onTap: () => setState(() => _cycleType = t),
+                      ),
+                  ],
+                ),
+                if (_cycleType == 'custom_years') ...[
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: _cycleYearsController,
+                    keyboardType: TextInputType.number,
+                    style: AppTextStyles.body(),
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: AppColors.glassFill,
+                      hintText: ref.tr('wealth_service_years_hint'),
+                      hintStyle: const TextStyle(color: AppColors.textMuted),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    onChanged: (_) => setState(() {}),
+                  ),
+                ],
+                if (_cycleType == 'manual') ...[
+                  const SizedBox(height: 10),
+                  GestureDetector(
+                    onTap: _pickManualExpiry,
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.glassFill,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Text(
+                        _manualExpiryDate == null
+                            ? ref.tr('wealth_service_pick_expiry')
+                            : _fmtDate(_manualExpiryDate!),
+                        style: AppTextStyles.body(size: 13),
+                      ),
+                    ),
+                  ),
+                ] else if (expiry != null) ...[
+                  const SizedBox(height: 10),
+                  Text(
+                    '${ref.tr('wealth_service_expiry_preview')}: ${_fmtDate(expiry)}',
+                    style: AppTextStyles.body(
+                      size: 12,
+                      weight: FontWeight.w700,
+                      color: AppColors.wealthAccent,
+                    ),
+                  ),
+                ],
               ],
               const SizedBox(height: 12),
               Text(
@@ -335,7 +379,9 @@ class _AddServiceSheetState extends ConsumerState<_AddServiceSheet> {
                   label: ref.tr('wallet_save'),
                   accentGradient: AppColors.wealthAccentGradient,
                   accentColor: AppColors.wealthAccent,
-                  onTap: _saving || _computedExpiry == null ? null : _save,
+                  onTap: _saving || (!_isEditing && _computedExpiry == null)
+                      ? null
+                      : _save,
                 ),
               ),
             ],

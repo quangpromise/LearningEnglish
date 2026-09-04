@@ -23,12 +23,43 @@ class WealthBalanceEntryRepository {
         .insert(entry.toInsertRow(userId));
   }
 
+  /// Cap nhat lai 1 dong da co (sua so tien/note/ngay) - giu nguyen
+  /// account_type/bank vi khong cho doi "Tien mat" thanh "Ngan hang" hay
+  /// nguoc lai khi sua (xoa di them lai neu can doi loai tai khoan).
+  Future<void> updateEntry(String userId, WealthBalanceEntry entry) async {
+    await _supabase
+        .from('wealth_balance_entries')
+        .update({
+          'amount': entry.amount,
+          'currency': entry.currency,
+          'note': entry.note,
+          'occurred_at': entry.occurredAt.toIso8601String(),
+        })
+        .eq('id', entry.id)
+        .eq('user_id', userId);
+  }
+
   Future<void> deleteEntry(String userId, String id) async {
     await _supabase
         .from('wealth_balance_entries')
         .delete()
         .eq('id', id)
         .eq('user_id', userId);
+  }
+
+  /// Xoa tat ca dong da sinh ra tu 1 giao dich Chi tieu - dung khi SUA lai
+  /// giao dich do (xoa het bo cu roi chen lai bo moi theo split vua sua),
+  /// khac voi xoa han giao dich (luc do DB tu cascade qua FK
+  /// source_transaction_id, khong can goi ham nay).
+  Future<void> deleteBySourceTransaction(
+    String userId,
+    String transactionId,
+  ) async {
+    await _supabase
+        .from('wealth_balance_entries')
+        .delete()
+        .eq('user_id', userId)
+        .eq('source_transaction_id', transactionId);
   }
 
   /// Tong so du gop theo (accountType, bankCode/bankName, currency) - dung

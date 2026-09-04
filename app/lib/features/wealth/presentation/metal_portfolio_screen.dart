@@ -259,31 +259,44 @@ class _LotTile extends ConsumerWidget {
             .deleteHolding(userId, holding.id);
         ref.invalidate(wealthHoldingsProvider(holding.assetType));
       },
-      child: GlowBox(
-        borderRadius: 16,
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '$quantity $unit',
-                    style: AppTextStyles.body(weight: FontWeight.w800),
-                  ),
-                  Text(
-                    '${ref.tr('wealth_metal_cost_price')}: ${formatVnd(avgCost)}',
-                    style: AppTextStyles.muted(size: 11),
-                  ),
-                ],
+      child: GestureDetector(
+        onTap: () {
+          final kind = _kinds.firstWhere(
+            (k) => k.assetType == holding.assetType,
+          );
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (_) => _AddMetalLotSheet(kind: kind, existing: holding),
+          );
+        },
+        child: GlowBox(
+          borderRadius: 16,
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '$quantity $unit',
+                      style: AppTextStyles.body(weight: FontWeight.w800),
+                    ),
+                    Text(
+                      '${ref.tr('wealth_metal_cost_price')}: ${formatVnd(avgCost)}',
+                      style: AppTextStyles.muted(size: 11),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            if (currentValue != null)
-              Text(
-                formatVnd(currentValue),
-                style: AppTextStyles.body(weight: FontWeight.w800),
-              ),
-          ],
+              if (currentValue != null)
+                Text(
+                  formatVnd(currentValue),
+                  style: AppTextStyles.body(weight: FontWeight.w800),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -291,16 +304,21 @@ class _LotTile extends ConsumerWidget {
 }
 
 class _AddMetalLotSheet extends ConsumerStatefulWidget {
-  const _AddMetalLotSheet({required this.kind});
+  const _AddMetalLotSheet({required this.kind, this.existing});
   final _MetalKind kind;
+  final WealthHolding? existing;
 
   @override
   ConsumerState<_AddMetalLotSheet> createState() => _AddMetalLotSheetState();
 }
 
 class _AddMetalLotSheetState extends ConsumerState<_AddMetalLotSheet> {
-  final _quantityController = TextEditingController();
-  final _costController = TextEditingController();
+  late final _quantityController = TextEditingController(
+    text: widget.existing?.quantity?.toString() ?? '',
+  );
+  late final _costController = TextEditingController(
+    text: widget.existing?.avgCost?.toString() ?? '',
+  );
   bool _saving = false;
 
   @override
@@ -321,18 +339,26 @@ class _AddMetalLotSheetState extends ConsumerState<_AddMetalLotSheet> {
       return;
     }
     try {
-      await ref
-          .read(wealthHoldingRepositoryProvider)
-          .insertNew(
-            userId,
-            WealthHolding(
-              id: '',
-              assetType: widget.kind.assetType,
-              quantity: quantity,
-              avgCost: cost,
-              currency: 'VND',
-            ),
-          );
+      final repo = ref.read(wealthHoldingRepositoryProvider);
+      if (widget.existing != null) {
+        await repo.updateQuantityAndCost(
+          userId,
+          widget.existing!.id,
+          quantity: quantity,
+          avgCost: cost,
+        );
+      } else {
+        await repo.insertNew(
+          userId,
+          WealthHolding(
+            id: '',
+            assetType: widget.kind.assetType,
+            quantity: quantity,
+            avgCost: cost,
+            currency: 'VND',
+          ),
+        );
+      }
       ref.invalidate(wealthHoldingsProvider(widget.kind.assetType));
       if (mounted) Navigator.of(context).pop();
     } finally {
@@ -357,7 +383,7 @@ class _AddMetalLotSheetState extends ConsumerState<_AddMetalLotSheet> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '${ref.tr('wealth_add_holding')} — ${ref.tr(widget.kind.labelKey)}',
+              '${ref.tr(widget.existing == null ? 'wealth_add_holding' : 'wealth_edit_holding')} — ${ref.tr(widget.kind.labelKey)}',
               style: AppTextStyles.heading(size: 16),
             ),
             const SizedBox(height: 16),

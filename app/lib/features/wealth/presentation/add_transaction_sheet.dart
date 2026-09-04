@@ -9,25 +9,29 @@ import '../data/wealth_category.dart';
 import '../data/wealth_transaction_model.dart';
 import 'payment_split_editor.dart';
 
-/// Bottom sheet them 1 giao dich chi tieu/thu nhap - [type] co dinh theo tab
-/// dang mo (Chi tieu hoac Thu nhap), khong cho doi loai trong sheet de UI
-/// don gian (giong cach Fitness khong cho doi nhom co khi da vao 1 nhom).
+/// Bottom sheet them/sua 1 giao dich chi tieu/thu nhap - [type] co dinh theo
+/// tab dang mo (Chi tieu hoac Thu nhap), khong cho doi loai trong sheet de
+/// UI don gian (giong cach Fitness khong cho doi nhom co khi da vao 1 nhom).
+/// Truyen [existing] de mo o CHE DO SUA (cap nhat lai giao dich do thay vi
+/// tao moi).
 void showAddWealthTransactionSheet(
   BuildContext context,
   WidgetRef ref,
-  WealthTransactionType type,
-) {
+  WealthTransactionType type, {
+  WealthTransaction? existing,
+}) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (_) => _AddTransactionSheet(type: type),
+    builder: (_) => _AddTransactionSheet(type: type, existing: existing),
   );
 }
 
 class _AddTransactionSheet extends ConsumerStatefulWidget {
-  const _AddTransactionSheet({required this.type});
+  const _AddTransactionSheet({required this.type, this.existing});
   final WealthTransactionType type;
+  final WealthTransaction? existing;
 
   @override
   ConsumerState<_AddTransactionSheet> createState() =>
@@ -35,24 +39,37 @@ class _AddTransactionSheet extends ConsumerStatefulWidget {
 }
 
 class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
-  final _amountController = TextEditingController();
-  final _noteController = TextEditingController();
-  String _categoryCode = WealthExpenseCategory.other.code;
+  late final _amountController = TextEditingController(
+    text: widget.existing == null
+        ? ''
+        : widget.existing!.amount.toStringAsFixed(0),
+  );
+  late final _noteController = TextEditingController(
+    text: widget.existing?.note ?? '',
+  );
+  late String _categoryCode =
+      widget.existing?.categoryCode ??
+      (widget.type == WealthTransactionType.expense
+          ? WealthExpenseCategory.other.code
+          : WealthIncomeCategory.salary.code);
   bool _saving = false;
   // Chi dung khi type=expense - cho phep tach nhieu hinh thuc thanh toan
   // (vd 1 phan tien mat + 1 phan ngan hang) cho cung 1 giao dich (Phase G).
+  // Khi sua 1 giao dich cu, KHONG khoi phuc lai dung cau truc tach nhieu
+  // hinh thuc truoc do (wealth_transactions chi luu 1 hinh thuc dai dien) -
+  // mac dinh ve 1 dong Tien mat bang dung tong tien cu, nguoi dung tu chinh
+  // lai neu can tach.
   List<PaymentSplit> _splits = const [
     PaymentSplit(accountType: 'cash', amount: 0),
   ];
-  double _amount = 0;
-  DateTime _occurredAt = DateTime.now();
+  late double _amount = widget.existing?.amount ?? 0;
+  late DateTime _occurredAt = widget.existing?.occurredAt ?? DateTime.now();
+
+  bool get _isEditing => widget.existing != null;
 
   @override
   void initState() {
     super.initState();
-    _categoryCode = widget.type == WealthTransactionType.expense
-        ? WealthExpenseCategory.other.code
-        : WealthIncomeCategory.salary.code;
     _amountController.addListener(() {
       setState(
         () => _amount =
@@ -100,7 +117,7 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
         ? _splits.first
         : null;
     final tx = WealthTransaction(
-      id: '',
+      id: widget.existing?.id ?? '',
       type: widget.type,
       categoryCode: _categoryCode,
       amount: _amount,
@@ -115,11 +132,23 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
       paymentBankName: singleSplit?.bankName,
     );
     try {
-      final txId = await ref
-          .read(wealthTransactionRepositoryProvider)
-          .addTransaction(userId, tx);
+      final txRepo = ref.read(wealthTransactionRepositoryProvider);
+      final String txId;
+      if (_isEditing) {
+        txId = tx.id;
+        await txRepo.updateTransaction(userId, tx);
+      } else {
+        txId = await txRepo.addTransaction(userId, tx);
+      }
       if (_isExpense) {
         final repo = ref.read(wealthBalanceEntryRepositoryProvider);
+        if (_isEditing) {
+          // Sua lai giao dich cu - xoa het bo dong balance_entries CU sinh
+          // ra tu no roi chen lai bo MOI theo split vua sua (don gian hon
+          // nhieu so voi doi chieu tung dong cu/moi, vi split truoc do
+          // khong khoi phuc duoc dung cau truc - xem ghi chu o _splits).
+          await repo.deleteBySourceTransaction(userId, txId);
+        }
         for (final split in _splits) {
           if (split.amount <= 0) continue;
           await repo.addEntry(
@@ -165,7 +194,9 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              ref.tr('wealth_add_transaction'),
+              _isEditing
+                  ? ref.tr('wealth_edit_transaction')
+                  : ref.tr('wealth_add_transaction'),
               style: AppTextStyles.heading(size: 16),
             ),
             const SizedBox(height: 16),

@@ -944,6 +944,10 @@ class AppStrings {
       AppLanguage.vi: 'Dịch vụ định kỳ',
       AppLanguage.en: 'Recurring services',
     },
+    'wealth_service_edit': {
+      AppLanguage.vi: 'Sửa dịch vụ',
+      AppLanguage.en: 'Edit service',
+    },
     'wealth_service_add': {
       AppLanguage.vi: 'Thêm dịch vụ',
       AppLanguage.en: 'Add service',
@@ -1113,6 +1117,18 @@ class AppStrings {
     'wallet_pick_bank_other_hint': {
       AppLanguage.vi: 'VD: Ngân hàng ABC',
       AppLanguage.en: 'e.g. ABC Bank',
+    },
+    'wealth_load_error': {
+      AppLanguage.vi: 'Không tải được dữ liệu',
+      AppLanguage.en: 'Could not load data',
+    },
+    'wealth_edit_holding': {
+      AppLanguage.vi: 'Sửa mã cổ phiếu',
+      AppLanguage.en: 'Edit stock holding',
+    },
+    'wealth_edit_transaction': {
+      AppLanguage.vi: 'Sửa giao dịch',
+      AppLanguage.en: 'Edit transaction',
     },
     'wallet_load_error': {
       AppLanguage.vi: 'Không tải được danh sách ngân hàng',

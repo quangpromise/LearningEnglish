@@ -152,6 +152,17 @@ class _ServiceCard extends ConsumerWidget {
                   formatByCurrency(service.defaultAmount, service.currency),
                   style: AppTextStyles.body(weight: FontWeight.w700, size: 12),
                 ),
+                GestureDetector(
+                  onTap: () => showAddServiceSheet(context, existing: service),
+                  child: const Padding(
+                    padding: EdgeInsets.only(left: 8),
+                    child: Icon(
+                      Icons.edit_rounded,
+                      size: 16,
+                      color: AppColors.textMuted,
+                    ),
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 4),

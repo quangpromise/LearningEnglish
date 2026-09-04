@@ -28,6 +28,15 @@ class WealthTransactionRepository {
     return row['id'] as String;
   }
 
+  /// Cap nhat lai 1 giao dich da co - dung khi sua (khong tao dong moi).
+  Future<void> updateTransaction(String userId, WealthTransaction tx) async {
+    await _supabase
+        .from('wealth_transactions')
+        .update(tx.toInsertRow(userId))
+        .eq('id', tx.id)
+        .eq('user_id', userId);
+  }
+
   Future<void> deleteTransaction(String userId, String id) async {
     await _supabase
         .from('wealth_transactions')

@@ -84,12 +84,44 @@ class StockPortfolioScreen extends ConsumerWidget {
                   return ListView(
                     children: [
                       for (final h in holdings) ...[
-                        _HoldingTile(
-                          holding: h,
-                          quote: quotesAsync.valueOrNull?.firstWhereOrNull(
-                            (q) => q.symbol == h.symbol,
+                        Dismissible(
+                          key: ValueKey(h.id),
+                          direction: DismissDirection.endToStart,
+                          background: Container(
+                            alignment: Alignment.centerRight,
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            decoration: BoxDecoration(
+                              color: AppColors.pink.withValues(alpha: 0.18),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: const Icon(
+                              Icons.delete_outline_rounded,
+                              color: AppColors.pink,
+                            ),
                           ),
-                          quoteFailed: quotesAsync.hasError,
+                          onDismissed: (_) async {
+                            final userId = ref
+                                .read(supabaseClientProvider)
+                                .auth
+                                .currentUser
+                                ?.id;
+                            if (userId == null) return;
+                            await ref
+                                .read(wealthHoldingRepositoryProvider)
+                                .deleteHolding(userId, h.id);
+                            ref.invalidate(wealthHoldingsProvider(_kAssetType));
+                          },
+                          child: GestureDetector(
+                            onTap: () =>
+                                _showAddHoldingSheet(context, ref, existing: h),
+                            child: _HoldingTile(
+                              holding: h,
+                              quote: quotesAsync.valueOrNull?.firstWhereOrNull(
+                                (q) => q.symbol == h.symbol,
+                              ),
+                              quoteFailed: quotesAsync.hasError,
+                            ),
+                          ),
                         ),
                         const SizedBox(height: 10),
                       ],
@@ -120,26 +152,37 @@ class StockPortfolioScreen extends ConsumerWidget {
   }
 }
 
-void _showAddHoldingSheet(BuildContext context, WidgetRef ref) {
+void _showAddHoldingSheet(
+  BuildContext context,
+  WidgetRef ref, {
+  WealthHolding? existing,
+}) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (_) => const _AddHoldingSheet(),
+    builder: (_) => _AddHoldingSheet(existing: existing),
   );
 }
 
 class _AddHoldingSheet extends ConsumerStatefulWidget {
-  const _AddHoldingSheet();
+  const _AddHoldingSheet({this.existing});
+  final WealthHolding? existing;
 
   @override
   ConsumerState<_AddHoldingSheet> createState() => _AddHoldingSheetState();
 }
 
 class _AddHoldingSheetState extends ConsumerState<_AddHoldingSheet> {
-  final _symbolController = TextEditingController();
-  final _quantityController = TextEditingController();
-  final _avgCostController = TextEditingController();
+  late final _symbolController = TextEditingController(
+    text: widget.existing?.symbol ?? '',
+  );
+  late final _quantityController = TextEditingController(
+    text: widget.existing?.quantity?.toString() ?? '',
+  );
+  late final _avgCostController = TextEditingController(
+    text: widget.existing?.avgCost?.toString() ?? '',
+  );
   bool _saving = false;
 
   @override
@@ -204,7 +247,9 @@ class _AddHoldingSheetState extends ConsumerState<_AddHoldingSheet> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              ref.tr('wealth_add_holding'),
+              widget.existing == null
+                  ? ref.tr('wealth_add_holding')
+                  : ref.tr('wealth_edit_holding'),
               style: AppTextStyles.heading(size: 16),
             ),
             const SizedBox(height: 16),
@@ -212,6 +257,7 @@ class _AddHoldingSheetState extends ConsumerState<_AddHoldingSheet> {
               controller: _symbolController,
               hint: ref.tr('wealth_symbol_hint'),
               keyboardType: TextInputType.text,
+              enabled: widget.existing == null,
             ),
             const SizedBox(height: 10),
             _HoldingField(
@@ -251,15 +297,18 @@ class _HoldingField extends StatelessWidget {
     required this.controller,
     required this.hint,
     required this.keyboardType,
+    this.enabled = true,
   });
   final TextEditingController controller;
   final String hint;
   final TextInputType keyboardType;
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
+      enabled: enabled,
       keyboardType: keyboardType,
       style: AppTextStyles.body(),
       cursorColor: AppColors.wealthAccent,

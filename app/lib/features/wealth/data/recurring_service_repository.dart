@@ -61,6 +61,28 @@ class RecurringServiceRepository {
     });
   }
 
+  /// Sua lai thong tin co ban (ten/so tien mac dinh/note/so ngay nhac
+  /// truoc) - KHONG doi expiry_date (chi "Gia han" moi doi ngay het han).
+  Future<void> update({
+    required String userId,
+    required String id,
+    required String name,
+    required double defaultAmount,
+    required int reminderLeadDays,
+    String? note,
+  }) async {
+    await _supabase
+        .from('wealth_recurring_services')
+        .update({
+          'name': name,
+          'default_amount': defaultAmount,
+          'reminder_lead_days': reminderLeadDays,
+          'note': note,
+        })
+        .eq('id', id)
+        .eq('user_id', userId);
+  }
+
   Future<void> deactivate(String userId, String id) async {
     await _supabase
         .from('wealth_recurring_services')
