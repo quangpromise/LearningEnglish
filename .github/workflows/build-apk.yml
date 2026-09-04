@@ -95,42 +95,15 @@ jobs:
       # symbol tach ra duoc luu lai o buoc "Upload debug symbols" ben duoi
       # (KHONG dong goi vao APK) - chi can den khi thuc su phai doc 1 crash
       # log native (hien app chua tich hop cong cu bao crash rieng).
-      - name: Build release APK (split per ABI, ban nho gon)
-        env:
-          # Dua secret qua bien moi truong (khong chen truc tiep ${{ }} vao
-          # dong lenh) - neu secret bi dinh ky tu xuong dong thua luc paste,
-          # cach nay van an toan vi gia tri chi duoc doc luc runtime, khong
-          # bi GitHub thay the truc tiep vao noi dung script gay vo dong lenh.
-          SB_URL: ${{ secrets.SUPABASE_URL }}
-          SB_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-          GG_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID }}
-          BUILD_SHA: ${{ github.sha }}
-          # TAM THOI - xem ai_voice_chat/data/voice_chat_config.dart. Rong neu
-          # chua tao secret GEMINI_API_KEY_DIRECT (tinh nang chi bao loi ket
-          # noi, khong lam hong build).
-          GEMINI_DIRECT_KEY: ${{ secrets.GEMINI_API_KEY_DIRECT }}
-          # Sticker trong chat (GIPHY) - rong neu chua tao secret GIPHY_API_KEY
-          # (tinh nang sticker se tu bao loi, khong lam hong build).
-          GIPHY_KEY: ${{ secrets.GIPHY_API_KEY }}
-        run: |
-          CLEAN_URL=$(printf '%s' "$SB_URL" | tr -d '\n\r')
-          CLEAN_ANON_KEY=$(printf '%s' "$SB_ANON_KEY" | tr -d '\n\r')
-          CLEAN_CLIENT_ID=$(printf '%s' "$GG_CLIENT_ID" | tr -d '\n\r')
-          CLEAN_GEMINI_KEY=$(printf '%s' "$GEMINI_DIRECT_KEY" | tr -d '\n\r')
-          CLEAN_GIPHY_KEY=$(printf '%s' "$GIPHY_KEY" | tr -d '\n\r')
-          flutter build apk --release --split-per-abi --obfuscate --split-debug-info=build/symbols/split --dart-define=SUPABASE_URL="$CLEAN_URL" --dart-define=SUPABASE_ANON_KEY="$CLEAN_ANON_KEY" --dart-define=GOOGLE_WEB_CLIENT_ID="$CLEAN_CLIENT_ID" --dart-define=BUILD_SHA="$BUILD_SHA" --dart-define=GEMINI_API_KEY_DIRECT="$CLEAN_GEMINI_KEY" --dart-define=GIPHY_API_KEY="$CLEAN_GIPHY_KEY"
-
       - name: Build release APK (universal, chi 2 kien truc ARM)
-        # Cac file --split-per-abi o tren doi hoi nguoi tai phai biet dung
-        # kien truc chip cua may (arm64-v8a/armeabi-v7a/x86_64) - chon nham
-        # file se bi Android tu choi cai voi loi "khong tuong thich". Ban
-        # universal nay gop 2 kien truc ARM (arm64-v8a + armeabi-v7a) vao 1
-        # file APK duy nhat nen may nao cung cai duoc - dung lam link tai
-        # mac dinh cho nguoi dung pho thong (xem update_checker.dart va
-        # docs/ci-apk-distribution.md). CO Y bo x86_64 ra khoi ban nay: kien
-        # truc do gan nhu chi ton tai tren may ao/emulator chu khong co tren
-        # dien thoai that, loai no giam duoc ~1/3 dung luong (con ban
-        # x86_64-release.apk rieng o buoc tren cho ai thuc su can).
+        # CHI build 1 ban duy nhat, khong con --split-per-abi rieng (yeu cau
+        # nguoi dung 2026-09-04: don gian hoa, tranh nguoi tai nham file sai
+        # kien truc khi sideload). Gop 2 kien truc ARM (arm64-v8a +
+        # armeabi-v7a) vao 1 file APK duy nhat nen may nao cung cai duoc -
+        # day la link tai duy nhat cho nguoi dung pho thong (xem
+        # update_checker.dart va docs/ci-apk-distribution.md). CO Y bo
+        # x86_64: kien truc do gan nhu chi ton tai tren may ao/emulator chu
+        # khong co tren dien thoai that, loai no giam duoc ~1/3 dung luong.
         env:
           SB_URL: ${{ secrets.SUPABASE_URL }}
           SB_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
@@ -149,35 +122,16 @@ jobs:
       - name: Kiem tra dung luong APK (chan quy dinh cua library lam phinh app)
         run: |
           cd build/app/outputs/flutter-apk
-          WARN_MB=25
-          MAX_MB=35
-          FAILED=0
-          echo "=== Dung luong APK theo kien truc (split-per-abi) ==="
-          for f in app-arm64-v8a-release.apk app-armeabi-v7a-release.apk app-x86_64-release.apk; do
-            SIZE_MB=$(du -m "$f" | cut -f1)
-            echo "$f: ${SIZE_MB}MB"
-            if [ "$SIZE_MB" -gt "$MAX_MB" ]; then
-              echo "::error::$f nang ${SIZE_MB}MB, vuot qua muc toi da cho phep ${MAX_MB}MB. Kiem tra dependency moi them (chay 'unzip -l' xem file .so nao lon bat thuong truoc khi merge) - vi du thuc te: google_mlkit_translation tung nhung rieng 1 file libtranslate_jni.so ~16MB khien APK nang gap doi."
-              FAILED=1
-            elif [ "$SIZE_MB" -gt "$WARN_MB" ]; then
-              echo "::warning::$f nang ${SIZE_MB}MB, vuot muc canh bao ${WARN_MB}MB - chua chan build nhung nen xem lai dependency vua them co can thiet khong."
-            fi
-          done
-          # Ban universal gop 2 kien truc ARM nen nang hon 1 file split rieng
-          # le nhung nhe hon truoc (da bo x86_64) - dung nguong rieng.
           UNIVERSAL_WARN_MB=46
           UNIVERSAL_MAX_MB=60
           UNIVERSAL_SIZE_MB=$(du -m app-release.apk | cut -f1)
-          echo "=== Dung luong APK universal (gop ca 3 kien truc) ==="
+          echo "=== Dung luong APK (universal, arm64-v8a + armeabi-v7a) ==="
           echo "app-release.apk: ${UNIVERSAL_SIZE_MB}MB"
           if [ "$UNIVERSAL_SIZE_MB" -gt "$UNIVERSAL_MAX_MB" ]; then
-            echo "::error::app-release.apk nang ${UNIVERSAL_SIZE_MB}MB, vuot qua muc toi da cho phep ${UNIVERSAL_MAX_MB}MB cho ban universal."
-            FAILED=1
-          elif [ "$UNIVERSAL_SIZE_MB" -gt "$UNIVERSAL_WARN_MB" ]; then
-            echo "::warning::app-release.apk nang ${UNIVERSAL_SIZE_MB}MB, vuot muc canh bao ${UNIVERSAL_WARN_MB}MB."
-          fi
-          if [ "$FAILED" -eq 1 ]; then
+            echo "::error::app-release.apk nang ${UNIVERSAL_SIZE_MB}MB, vuot qua muc toi da cho phep ${UNIVERSAL_MAX_MB}MB. Kiem tra dependency moi them (chay 'unzip -l' xem file .so nao lon bat thuong truoc khi merge) - vi du thuc te: google_mlkit_translation tung nhung rieng 1 file libtranslate_jni.so ~16MB khien APK nang gap doi."
             exit 1
+          elif [ "$UNIVERSAL_SIZE_MB" -gt "$UNIVERSAL_WARN_MB" ]; then
+            echo "::warning::app-release.apk nang ${UNIVERSAL_SIZE_MB}MB, vuot muc canh bao ${UNIVERSAL_WARN_MB}MB - chua chan build nhung nen xem lai dependency vua them co can thiet khong."
           fi
 
       - name: Upload debug symbols (de doc crash log native sau nay neu can)
@@ -209,8 +163,5 @@ jobs:
           removeArtifacts: true
           artifacts: |
             app/build/app/outputs/flutter-apk/app-release.apk
-            app/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
-            app/build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
-            app/build/app/outputs/flutter-apk/app-x86_64-release.apk
             app/build/app/outputs/flutter-apk/version.txt
           token: ${{ secrets.GITHUB_TOKEN }}
