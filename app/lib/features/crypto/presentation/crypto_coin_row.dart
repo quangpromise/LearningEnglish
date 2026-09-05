@@ -39,24 +39,31 @@ class CryptoCoinRow extends ConsumerWidget {
         borderRadius: 14,
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             GestureDetector(
               behavior: HitTestBehavior.opaque,
               onTap: () =>
                   ref.read(cryptoWatchlistProvider.notifier).toggle(coin.id),
+              // Vung bam rong hon icon that (44x44 toi thieu theo khuyen nghi
+              // touch target) de de bam hon, khong chi gioi han trong 18px
+              // cua icon.
               child: Padding(
-                padding: const EdgeInsets.only(right: 4, top: 1),
+                padding: const EdgeInsets.all(6),
                 child: Icon(
                   watched ? Icons.star_rounded : Icons.star_border_rounded,
-                  size: 18,
+                  size: 20,
                   color: watched ? AppColors.amber : AppColors.textMuted,
                 ),
               ),
             ),
             SizedBox(
               width: 16,
-              child: Text('${coin.rank}', style: AppTextStyles.muted(size: 10)),
+              child: Text(
+                '${coin.rank}',
+                textAlign: TextAlign.center,
+                style: AppTextStyles.muted(size: 10),
+              ),
             ),
             const SizedBox(width: 4),
             ClipOval(

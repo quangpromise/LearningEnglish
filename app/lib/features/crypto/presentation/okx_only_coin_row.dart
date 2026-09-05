@@ -44,10 +44,10 @@ class OkxOnlyCoinRow extends ConsumerWidget {
               onTap: () =>
                   ref.read(cryptoWatchlistProvider.notifier).toggle(watchKey),
               child: Padding(
-                padding: const EdgeInsets.only(right: 8),
+                padding: const EdgeInsets.all(6),
                 child: Icon(
                   watched ? Icons.star_rounded : Icons.star_border_rounded,
-                  size: 18,
+                  size: 20,
                   color: watched ? AppColors.amber : AppColors.textMuted,
                 ),
               ),
