@@ -997,13 +997,13 @@ class AppStrings {
       AppLanguage.vi: 'Vàng PNJ',
       AppLanguage.en: 'PNJ Gold',
     },
-    'wealth_metal_silver_world': {
-      AppLanguage.vi: 'Bạc (thế giới quy đổi)',
-      AppLanguage.en: 'Silver (world price)',
+    'wealth_metal_gold_xaut': {
+      AppLanguage.vi: 'Vàng quốc tế (XAUT)',
+      AppLanguage.en: 'International Gold (XAUT)',
     },
-    'wealth_metal_copper_world': {
-      AppLanguage.vi: 'Đồng (thế giới quy đổi)',
-      AppLanguage.en: 'Copper (world price)',
+    'wealth_metal_xaut_note': {
+      AppLanguage.vi: 'XAUT (Tether Gold) - token 1:1 với vàng vật lý, giá quốc tế qua OKX, không phải giá bán lẻ trong nước.',
+      AppLanguage.en: 'XAUT (Tether Gold) - 1:1 physical gold-backed token, international price via OKX, not a domestic retail price.',
     },
     'wealth_metal_buy_price': {AppLanguage.vi: 'Mua', AppLanguage.en: 'Buy'},
     'wealth_metal_unit_luong': {

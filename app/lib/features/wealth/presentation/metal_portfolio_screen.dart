@@ -31,26 +31,20 @@ class _MetalKind {
   final String unitKey;
 }
 
+// CHI con Vang - da bo Bac/Dong hoan toan (khong tim duoc nguon gia mien
+// phi hop le ve dieu khoan thuong mai cho ca 2 kim loai nay, xem
+// docs/research-wealth-stock-apis.md). Neu nguoi dung da co san khoan nam
+// giu Bac/Dong tu truoc, du lieu van con trong DB nhung KHONG con truy cap
+// duoc qua UI nay nua.
 const _kinds = [
   _MetalKind('gold', 'wealth_metal_name_gold', 'wealth_metal_unit_luong'),
-  _MetalKind('silver', 'wealth_metal_name_silver', 'wealth_metal_unit_luong'),
-  _MetalKind('copper', 'wealth_metal_name_copper', 'wealth_metal_unit_kg'),
 ];
 
 class _MetalPortfolioScreenState extends ConsumerState<MetalPortfolioScreen> {
   _MetalKind _selected = _kinds[0];
 
-  double? _currentUnitPrice(WealthVnAssetSnapshot snap) {
-    switch (_selected.assetType) {
-      case 'gold':
-        return snap.goldSjcSell ?? snap.goldPnjSell;
-      case 'silver':
-        return snap.xagVndPerLuong;
-      case 'copper':
-        return snap.xcuVndPerKg;
-    }
-    return null;
-  }
+  double? _currentUnitPrice(WealthVnAssetSnapshot snap) =>
+      snap.goldSjcSell ?? snap.goldPnjSell;
 
   @override
   Widget build(BuildContext context) {

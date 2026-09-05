@@ -4,6 +4,12 @@
 /// dung, dong bo voi cach go so tien co dau phay o cac o nhap - xem
 /// ThousandsInputFormatter), USD cung dau phay (chuan quoc te) + dau cham
 /// thap phan.
+/// 1 troy ounce (31.1034768g) tinh theo don vi "luong" VN (37.5g/luong) -
+/// dung de quy doi gia vang quoc te (USD/oz, vd tu XAUT) sang VND/luong,
+/// cung cong thuc voi supabase/functions/wealth-vn-assets/index.ts
+/// (TROY_OUNCE_TO_LUONG) de nhat quan giua backend va client.
+const kTroyOunceToLuong = 31.1034768 / 37.5;
+
 String formatVnd(num value) {
   final rounded = value.round();
   final negative = rounded < 0;

@@ -579,14 +579,21 @@ class _MetalWatchRow extends ConsumerWidget {
         labelKey = 'wealth_metal_gold_pnj';
         price = snap?.goldPnjSell;
         unitKey = 'wealth_metal_unit_luong';
-      case 'metal:silver':
-        labelKey = 'wealth_metal_silver_world';
-        price = snap?.xagVndPerLuong;
-        unitKey = 'wealth_metal_unit_luong';
       default:
-        labelKey = 'wealth_metal_copper_world';
-        price = snap?.xcuVndPerKg;
-        unitKey = 'wealth_metal_unit_kg';
+        // 'metal:xaut' - gia Tether Gold (XAUT) tu OKX quy doi VND, xem
+        // market_metals_tab.dart. Khong con Bac/Dong (da bo hoan toan vi
+        // khong tim duoc nguon mien phi hop le ve dieu khoan thuong mai cho
+        // ca 2 kim loai nay - xem docs/research-wealth-stock-apis.md).
+        final xautUsdPerOz = ref
+            .watch(okxXautTickerProvider)
+            .valueOrNull
+            ?.price;
+        final usdVnd = snap?.usdVnd;
+        labelKey = 'wealth_metal_gold_xaut';
+        price = (xautUsdPerOz != null && usdVnd != null)
+            ? xautUsdPerOz / kTroyOunceToLuong * usdVnd
+            : null;
+        unitKey = 'wealth_metal_unit_luong';
     }
     return GlowBox(
       borderRadius: 16,

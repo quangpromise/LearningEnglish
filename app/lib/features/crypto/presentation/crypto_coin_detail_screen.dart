@@ -13,16 +13,24 @@ import 'crypto_providers.dart';
 enum _ChartPeriod { h1, h4, d1, w1, m1, y1 }
 
 extension on _ChartPeriod {
-  /// (bar OKX, limit) - chon do phan giai + so luong diem phu hop tung
-  /// khung thoi gian, tranh goi qua nhieu diem khong can thiet (max cua OKX
-  /// la 300/lan goi).
+  /// (bar OKX, limit) - moi nut BAM la 1 DO PHAN GIAI nen (candle interval)
+  /// giong het OKX that (bam "1H" -> moi nen dai 1 gio, bam "1D" -> moi nen
+  /// dai 1 ngay...), KHONG PHAI "khoang thoi gian xem". Truoc day bi lech 1
+  /// bac (bam "1H" lai goi bar='1m') khien tat ca lua chon deu hien sai do
+  /// phan giai nen. limit=300 (toi da OKX cho phep 1 lan goi) de xem duoc
+  /// cang nhieu lich su cang tot ngay tu dau, con lai da co cuon lui tai
+  /// them (_loadMoreHistory) khi can xa hon nua.
   (String, int) get params => switch (this) {
-    _ChartPeriod.h1 => ('1m', 60),
-    _ChartPeriod.h4 => ('5m', 48),
-    _ChartPeriod.d1 => ('15m', 96),
-    _ChartPeriod.w1 => ('1H', 168),
-    _ChartPeriod.m1 => ('4H', 180),
-    _ChartPeriod.y1 => ('1D', 260),
+    _ChartPeriod.h1 => ('1H', 300),
+    _ChartPeriod.h4 => ('4H', 300),
+    _ChartPeriod.d1 => ('1D', 300),
+    _ChartPeriod.w1 => ('1W', 300),
+    _ChartPeriod.m1 => ('1M', 300),
+    // OKX KHONG co do phan giai nen "1 nam" that (bar='1Y' bi tu choi voi
+    // loi "Parameter bar error", da xac nhan qua test truc tiep API) - dung
+    // '3M' (nen 3 thang, do dai lon nhat OKX ho tro sau '1M') cho nut "1Y"
+    // de van co 1 muc xem dai han khac biet voi nut "1M" ben canh.
+    _ChartPeriod.y1 => ('3M', 300),
   };
 
   String get label => switch (this) {
@@ -99,6 +107,59 @@ class _CryptoCoinDetailScreenState
   // fl_chart vi tooltip mac dinh chi hien trong luc giu tay, khong dung y
   // muon "hien den khi bam lai".
   int? _selectedCandleIndex;
+
+  // Pinch 2 ngon de zoom truc gia (bo sung cho cach keo doc 1 ngon tren cot
+  // truc gia da co) - giong OKX cho phep pinch O BAT KY DAU tren chart, KHONG
+  // chi rieng cot truc gia hep. Theo doi cac ngon tay THU CONG qua Listener
+  // (pointer-event tho, KHONG tham gia gesture arena) thay vi GestureDetector
+  // .onScaleUpdate, vi neu dat GestureDetector lam TO tien cua vung nen dang
+  // cuon ngang (SingleChildScrollView), no se tranh chap voi drag-de-cuon 1
+  // ngon co san cua ScrollView va lam hong ca 2.
+  final _activePointers = <int, Offset>{};
+  double? _pinchStartDistanceY;
+  double _pinchStartZoomFactor = 1.0;
+
+  double? _pinchVerticalDistance() {
+    if (_activePointers.length < 2) return null;
+    final positions = _activePointers.values.toList();
+    return (positions[0].dy - positions[1].dy).abs();
+  }
+
+  void _onPointerDown(PointerDownEvent event) {
+    // Bam vao BAT KY DAU tren man hinh se XOA lua chon nen truoc tien (xem
+    // giai thich chi tiet o Listener ben duoi) - candlestickTouchData se
+    // CHON LAI ngay sau do neu diem bam dung la 1 cay nen.
+    if (_selectedCandleIndex != null) {
+      setState(() => _selectedCandleIndex = null);
+    }
+    _activePointers[event.pointer] = event.position;
+    if (_activePointers.length == 2) {
+      _pinchStartDistanceY = _pinchVerticalDistance();
+      _pinchStartZoomFactor = _yZoomFactor;
+    }
+  }
+
+  void _onPointerMove(PointerMoveEvent event) {
+    if (!_activePointers.containsKey(event.pointer)) return;
+    _activePointers[event.pointer] = event.position;
+    if (_activePointers.length != 2) return;
+    final startDist = _pinchStartDistanceY;
+    final dist = _pinchVerticalDistance();
+    if (startDist == null || dist == null || startDist <= 0) return;
+    // 2 ngon TACH XA nhau theo chieu doc (dist > startDist) = "phong to" ->
+    // thu hep khoang gia (nen dai/cao ra), giong quy uoc pinch-to-zoom
+    // thong thuong. Chia lai tu _pinchStartZoomFactor (khong phai gia tri
+    // hien tai) moi lan de tranh sai so cong don qua nhieu khung hinh.
+    final scale = dist / startDist;
+    setState(() {
+      _yZoomFactor = (_pinchStartZoomFactor / scale).clamp(0.15, 6.0);
+    });
+  }
+
+  void _onPointerUpOrCancel(PointerEvent event) {
+    _activePointers.remove(event.pointer);
+    if (_activePointers.length < 2) _pinchStartDistanceY = null;
+  }
 
   @override
   void initState() {
@@ -219,17 +280,15 @@ class _CryptoCoinDetailScreenState
 
     return ScreenBackground(
       child: Listener(
-        // Bam vao BAT KY DAU tren man hinh se XOA lua chon nen truoc tien
-        // (chay truoc khi cu chi bam duoc phan giai xong, vi day la
-        // pointer-event tho, khong tham gia "gesture arena"). Neu diem bam
-        // do dung la 1 cay nen, candlestickTouchData ben duoi se CHON LAI
-        // ngay sau do (cung 1 lan bam) - ket qua: bam nen khac -> doi thong
-        // tin; bam ra ngoai chart -> tat han, dung y muon cua nguoi dung.
-        onPointerDown: (_) {
-          if (_selectedCandleIndex != null) {
-            setState(() => _selectedCandleIndex = null);
-          }
-        },
+        // Vua xu ly "bam ra ngoai de tat thong tin nen" (xem _onPointerDown)
+        // VUA theo doi pinch 2 ngon de zoom truc gia (xem _onPointerMove) -
+        // dung pointer-event tho (khong tham gia gesture arena) nen khong
+        // tranh chap voi cuon ngang 1 ngon cua SingleChildScrollView ben
+        // trong.
+        onPointerDown: _onPointerDown,
+        onPointerMove: _onPointerMove,
+        onPointerUp: _onPointerUpOrCancel,
+        onPointerCancel: _onPointerUpOrCancel,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
           child: Column(
@@ -369,132 +428,191 @@ class _CryptoCoinDetailScreenState
                                             }
                                           });
                                     }
+                                    // Chieu cao vung ve nen THUC SU (tru
+                                    // phan bottomTitles danh cho truc ngay,
+                                    // reservedSize: 22 ben duoi) - dung de
+                                    // tinh dung vi tri Y cua duong ke ngang
+                                    // (crosshair) theo dung ty le [minY,
+                                    // maxY] cua chinh CandlestickChart.
+                                    const bottomAxisHeight = 22.0;
+                                    final plotHeight =
+                                        constraints.maxHeight -
+                                        bottomAxisHeight;
+                                    final candleSlotWidth =
+                                        totalWidth / candles.length;
                                     return SingleChildScrollView(
                                       controller: _hScroll,
                                       scrollDirection: Axis.horizontal,
                                       child: SizedBox(
                                         width: totalWidth,
                                         height: constraints.maxHeight,
-                                        child: CandlestickChart(
-                                          CandlestickChartData(
-                                            minY: minY,
-                                            maxY: maxY,
-                                            gridData: const FlGridData(
-                                              show: false,
-                                            ),
-                                            borderData: FlBorderData(
-                                              show: false,
-                                            ),
-                                            // Nen xanh khi dong cua >= mo cua, do
-                                            // khi thap hon - dung mau teal/pink
-                                            // chuan cua app thay vi mau mac dinh
-                                            // cua fl_chart, cho dong bo voi cac
-                                            // PNL khac.
-                                            candlestickPainter:
-                                                DefaultCandlestickPainter(
-                                                  candlestickStyleProvider:
-                                                      (spot, _) {
-                                                        final color = spot.isUp
-                                                            ? AppColors.teal
-                                                            : AppColors.pink;
-                                                        return CandlestickStyle(
-                                                          lineColor: color,
-                                                          lineWidth: 1.2,
-                                                          bodyStrokeColor:
-                                                              color,
-                                                          bodyStrokeWidth: 0,
-                                                          bodyFillColor: color,
-                                                          bodyWidth: 4,
-                                                          bodyRadius: 1,
+                                        child: Stack(
+                                          children: [
+                                            CandlestickChart(
+                                              CandlestickChartData(
+                                                minY: minY,
+                                                maxY: maxY,
+                                                gridData: const FlGridData(
+                                                  show: false,
+                                                ),
+                                                borderData: FlBorderData(
+                                                  show: false,
+                                                ),
+                                                // Nen xanh khi dong cua >= mo cua, do
+                                                // khi thap hon - dung mau teal/pink
+                                                // chuan cua app thay vi mau mac dinh
+                                                // cua fl_chart, cho dong bo voi cac
+                                                // PNL khac.
+                                                candlestickPainter:
+                                                    DefaultCandlestickPainter(
+                                                      candlestickStyleProvider:
+                                                          (spot, _) {
+                                                            final color =
+                                                                spot.isUp
+                                                                ? AppColors.teal
+                                                                : AppColors
+                                                                      .pink;
+                                                            return CandlestickStyle(
+                                                              lineColor: color,
+                                                              lineWidth: 1.2,
+                                                              bodyStrokeColor:
+                                                                  color,
+                                                              bodyStrokeWidth:
+                                                                  0,
+                                                              bodyFillColor:
+                                                                  color,
+                                                              bodyWidth: 4,
+                                                              bodyRadius: 1,
+                                                            );
+                                                          },
+                                                    ),
+                                                // Khong hien truc nao ben trong chart
+                                                // nay nua - truc gia ve RIENG, co dinh
+                                                // ben phai (khong cuon theo), xem
+                                                // _PriceAxisLabels duoi. Truc NGAY
+                                                // (bottomTitles) VAN hien trong day
+                                                // (khong tach rieng nhu truc gia) -
+                                                // cuon cung voi nen la dung y muon,
+                                                // giong ngay/thang luon nam ngay
+                                                // duoi cay nen tuong ung o OKX.
+                                                titlesData: FlTitlesData(
+                                                  show: true,
+                                                  topTitles: const AxisTitles(),
+                                                  leftTitles:
+                                                      const AxisTitles(),
+                                                  rightTitles:
+                                                      const AxisTitles(),
+                                                  bottomTitles: AxisTitles(
+                                                    sideTitles: SideTitles(
+                                                      showTitles: true,
+                                                      reservedSize: 22,
+                                                      interval:
+                                                          (candles.length / 6)
+                                                              .clamp(
+                                                                1,
+                                                                double.infinity,
+                                                              )
+                                                              .ceilToDouble(),
+                                                      getTitlesWidget: (value, meta) {
+                                                        final i = value.round();
+                                                        if (i < 0 ||
+                                                            i >=
+                                                                candles
+                                                                    .length) {
+                                                          return const SizedBox.shrink();
+                                                        }
+                                                        final t =
+                                                            candles[i].time;
+                                                        return Padding(
+                                                          padding:
+                                                              const EdgeInsets.only(
+                                                                top: 6,
+                                                              ),
+                                                          child: Text(
+                                                            '${t.day.toString().padLeft(2, '0')}/'
+                                                            '${t.month.toString().padLeft(2, '0')}/'
+                                                            '${t.year}',
+                                                            style:
+                                                                AppTextStyles.muted(
+                                                                  size: 9,
+                                                                ),
+                                                          ),
                                                         );
                                                       },
+                                                    ),
+                                                  ),
                                                 ),
-                                            // Khong hien truc nao ben trong chart
-                                            // nay nua - truc gia ve RIENG, co dinh
-                                            // ben phai (khong cuon theo), xem
-                                            // _PriceAxisLabels duoi. Truc NGAY
-                                            // (bottomTitles) VAN hien trong day
-                                            // (khong tach rieng nhu truc gia) -
-                                            // cuon cung voi nen la dung y muon,
-                                            // giong ngay/thang luon nam ngay
-                                            // duoi cay nen tuong ung o OKX.
-                                            titlesData: FlTitlesData(
-                                              show: true,
-                                              topTitles: const AxisTitles(),
-                                              leftTitles: const AxisTitles(),
-                                              rightTitles: const AxisTitles(),
-                                              bottomTitles: AxisTitles(
-                                                sideTitles: SideTitles(
-                                                  showTitles: true,
-                                                  reservedSize: 22,
-                                                  interval: (candles.length / 6)
-                                                      .clamp(1, double.infinity)
-                                                      .ceilToDouble(),
-                                                  getTitlesWidget: (value, meta) {
-                                                    final i = value.round();
-                                                    if (i < 0 ||
-                                                        i >= candles.length) {
-                                                      return const SizedBox.shrink();
-                                                    }
-                                                    final t = candles[i].time;
-                                                    return Padding(
-                                                      padding:
-                                                          const EdgeInsets.only(
-                                                            top: 6,
-                                                          ),
-                                                      child: Text(
-                                                        '${t.day.toString().padLeft(2, '0')}/'
-                                                        '${t.month.toString().padLeft(2, '0')}/'
-                                                        '${t.year}',
-                                                        style:
-                                                            AppTextStyles.muted(
-                                                              size: 9,
-                                                            ),
-                                                      ),
-                                                    );
-                                                  },
-                                                ),
+                                                candlestickTouchData:
+                                                    CandlestickTouchData(
+                                                      handleBuiltInTouches:
+                                                          false,
+                                                      touchCallback:
+                                                          (
+                                                            FlTouchEvent event,
+                                                            CandlestickTouchResponse?
+                                                            response,
+                                                          ) {
+                                                            if (event
+                                                                is! FlTapUpEvent) {
+                                                              return;
+                                                            }
+                                                            final i = response
+                                                                ?.touchedSpot
+                                                                ?.spotIndex;
+                                                            if (i == null) {
+                                                              return;
+                                                            }
+                                                            setState(
+                                                              () =>
+                                                                  _selectedCandleIndex =
+                                                                      i,
+                                                            );
+                                                          },
+                                                    ),
+                                                candlestickSpots: [
+                                                  for (
+                                                    var i = 0;
+                                                    i < candles.length;
+                                                    i++
+                                                  )
+                                                    CandlestickSpot(
+                                                      x: i.toDouble(),
+                                                      open: candles[i].open,
+                                                      high: candles[i].high,
+                                                      low: candles[i].low,
+                                                      close: candles[i].close,
+                                                    ),
+                                                ],
                                               ),
                                             ),
-                                            candlestickTouchData:
-                                                CandlestickTouchData(
-                                                  handleBuiltInTouches: false,
-                                                  touchCallback:
-                                                      (
-                                                        FlTouchEvent event,
-                                                        CandlestickTouchResponse?
-                                                        response,
-                                                      ) {
-                                                        if (event
-                                                            is! FlTapUpEvent) {
-                                                          return;
-                                                        }
-                                                        final i = response
-                                                            ?.touchedSpot
-                                                            ?.spotIndex;
-                                                        if (i == null) return;
-                                                        setState(
-                                                          () =>
-                                                              _selectedCandleIndex =
-                                                                  i,
-                                                        );
-                                                      },
+                                            // Duong ke doc + ngang (crosshair)
+                                            // qua cay nen dang chon, giong OKX -
+                                            // giup doi chieu chinh xac dang bam
+                                            // vao nen nao va muc gia nao.
+                                            if (selectedCandle != null &&
+                                                selectedIndex != null)
+                                              IgnorePointer(
+                                                child: CustomPaint(
+                                                  size: Size(
+                                                    totalWidth,
+                                                    plotHeight,
+                                                  ),
+                                                  painter: _CrosshairPainter(
+                                                    x:
+                                                        (selectedIndex + 0.5) *
+                                                        candleSlotWidth,
+                                                    y:
+                                                        ((maxY -
+                                                                selectedCandle
+                                                                    .close) /
+                                                            (maxY - minY)) *
+                                                        plotHeight,
+                                                    color:
+                                                        AppColors.wealthAccent,
+                                                  ),
                                                 ),
-                                            candlestickSpots: [
-                                              for (
-                                                var i = 0;
-                                                i < candles.length;
-                                                i++
-                                              )
-                                                CandlestickSpot(
-                                                  x: i.toDouble(),
-                                                  open: candles[i].open,
-                                                  high: candles[i].high,
-                                                  low: candles[i].low,
-                                                  close: candles[i].close,
-                                                ),
-                                            ],
-                                          ),
+                                              ),
+                                          ],
                                         ),
                                       ),
                                     );
@@ -570,6 +688,52 @@ class _CryptoCoinDetailScreenState
 /// Hop thong tin 1 cay nen (ngay/gio + O/H/L/C) giong OKX - hien khi nguoi
 /// dung bam vao 1 cay nen (xem candlestickTouchData trong build()), o goc
 /// tren trai vung chart, KHONG tu tat theo thoi gian/khi tha tay.
+/// Ve duong ke doc (qua toa do X cua nen dang chon) + duong ke ngang (qua
+/// gia dong cua cua nen do) giong crosshair cua OKX khi bam vao 1 cay nen -
+/// dung net dut (dash) de de phan biet voi luoi/bien chart that.
+class _CrosshairPainter extends CustomPainter {
+  const _CrosshairPainter({
+    required this.x,
+    required this.y,
+    required this.color,
+  });
+  final double x;
+  final double y;
+  final Color color;
+
+  static const _dashWidth = 4.0;
+  static const _dashGap = 3.0;
+
+  void _drawDashedLine(Canvas canvas, Offset from, Offset to, Paint paint) {
+    final totalLength = (to - from).distance;
+    if (totalLength == 0) return;
+    final direction = (to - from) / totalLength;
+    var drawn = 0.0;
+    while (drawn < totalLength) {
+      final segmentEnd = (drawn + _dashWidth).clamp(0.0, totalLength);
+      canvas.drawLine(
+        from + direction * drawn,
+        from + direction * segmentEnd,
+        paint,
+      );
+      drawn += _dashWidth + _dashGap;
+    }
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color.withValues(alpha: 0.7)
+      ..strokeWidth = 1;
+    _drawDashedLine(canvas, Offset(x, 0), Offset(x, size.height), paint);
+    _drawDashedLine(canvas, Offset(0, y), Offset(size.width, y), paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _CrosshairPainter oldDelegate) =>
+      oldDelegate.x != x || oldDelegate.y != y || oldDelegate.color != color;
+}
+
 class _CandleInfoBox extends StatelessWidget {
   const _CandleInfoBox({required this.candle, required this.formatPrice});
   final OkxCandle candle;

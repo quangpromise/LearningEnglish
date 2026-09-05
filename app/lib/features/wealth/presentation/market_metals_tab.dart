@@ -5,15 +5,20 @@ import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_format.dart';
+import '../../crypto/presentation/crypto_providers.dart';
 
-/// Gia Vang SJC/PNJ trong nuoc + gia The gioi Bac/Dong quy doi - cung nguon
-/// Edge Function wealth-vn-assets dung o Vi > Tai san dau tu > Kim loai.
+/// Gia Vang SJC/PNJ trong nuoc + gia Vang quoc te (XAUT tu OKX) quy doi VND.
+/// KHONG con Bac/Dong - da bo hoan toan vi khong tim duoc nguon mien phi hop
+/// le ve dieu khoan thuong mai cho ca 2 kim loai nay (Twelve Data free tier
+/// khong ho tro Bac, khong co Dong; cac nguon khac co ca 2 deu cam thuong
+/// mai o goi mien phi) - xem docs/research-wealth-stock-apis.md.
 class MarketMetalsTab extends ConsumerWidget {
   const MarketMetalsTab({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final snapAsync = ref.watch(wealthVnAssetsProvider);
+    final xautAsync = ref.watch(okxXautTickerProvider);
     return snapAsync.when(
       loading: () => const Center(
         child: CircularProgressIndicator(color: AppColors.wealthAccent),
@@ -47,22 +52,22 @@ class MarketMetalsTab extends ConsumerWidget {
                 unit: ref.tr('wealth_metal_unit_luong'),
               ),
             ],
-            if (snap.xagVndPerLuong != null) ...[
+            if (xautAsync.valueOrNull?.price != null &&
+                snap.usdVnd != null) ...[
               const SizedBox(height: 10),
               _MetalCard(
-                watchKey: 'metal:silver',
-                title: ref.tr('wealth_metal_silver_world'),
-                sell: snap.xagVndPerLuong,
+                watchKey: 'metal:xaut',
+                title: ref.tr('wealth_metal_gold_xaut'),
+                sell:
+                    xautAsync.valueOrNull!.price /
+                    kTroyOunceToLuong *
+                    snap.usdVnd!,
                 unit: ref.tr('wealth_metal_unit_luong'),
               ),
-            ],
-            if (snap.xcuVndPerKg != null) ...[
-              const SizedBox(height: 10),
-              _MetalCard(
-                watchKey: 'metal:copper',
-                title: ref.tr('wealth_metal_copper_world'),
-                sell: snap.xcuVndPerKg,
-                unit: ref.tr('wealth_metal_unit_kg'),
+              const SizedBox(height: 4),
+              Text(
+                ref.tr('wealth_metal_xaut_note'),
+                style: AppTextStyles.muted(size: 9.5),
               ),
             ],
             if (snap.usdVnd != null) ...[

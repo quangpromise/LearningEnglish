@@ -682,30 +682,16 @@ final totalInvestmentValueVndProvider = Provider.autoDispose<double>((ref) {
     }
   }
 
+  // CHI con Vang - da bo Bac/Dong hoan toan (khong con nguon gia, xem
+  // metal_portfolio_screen.dart).
   final snap = ref.watch(wealthVnAssetsProvider).valueOrNull;
   final goldHoldings =
       ref.watch(wealthHoldingsProvider('gold')).valueOrNull ?? [];
-  final silverHoldings =
-      ref.watch(wealthHoldingsProvider('silver')).valueOrNull ?? [];
-  final copperHoldings =
-      ref.watch(wealthHoldingsProvider('copper')).valueOrNull ?? [];
   double metalValueVnd = 0;
-  if (snap != null) {
-    final goldPrice = snap.goldSjcSell ?? snap.goldPnjSell;
-    if (goldPrice != null) {
-      for (final h in goldHoldings) {
-        metalValueVnd += goldPrice * (h.quantity ?? 0);
-      }
-    }
-    if (snap.xagVndPerLuong != null) {
-      for (final h in silverHoldings) {
-        metalValueVnd += snap.xagVndPerLuong! * (h.quantity ?? 0);
-      }
-    }
-    if (snap.xcuVndPerKg != null) {
-      for (final h in copperHoldings) {
-        metalValueVnd += snap.xcuVndPerKg! * (h.quantity ?? 0);
-      }
+  final goldPrice = snap?.goldSjcSell ?? snap?.goldPnjSell;
+  if (goldPrice != null) {
+    for (final h in goldHoldings) {
+      metalValueVnd += goldPrice * (h.quantity ?? 0);
     }
   }
 
@@ -763,34 +749,20 @@ final investmentPnlProvider = Provider.autoDispose<(double, double?)>((ref) {
     }
   }
 
+  // CHI con Vang - da bo Bac/Dong hoan toan (khong con nguon gia, xem
+  // metal_portfolio_screen.dart).
   final snap = ref.watch(wealthVnAssetsProvider).valueOrNull;
   final goldHoldings =
       ref.watch(wealthHoldingsProvider('gold')).valueOrNull ?? [];
-  final silverHoldings =
-      ref.watch(wealthHoldingsProvider('silver')).valueOrNull ?? [];
-  final copperHoldings =
-      ref.watch(wealthHoldingsProvider('copper')).valueOrNull ?? [];
   double metalValueVnd = 0;
   double metalCostVnd = 0;
-  for (final h in [...goldHoldings, ...silverHoldings, ...copperHoldings]) {
+  for (final h in goldHoldings) {
     metalCostVnd += (h.avgCost ?? 0) * (h.quantity ?? 0);
   }
-  if (snap != null) {
-    final goldPrice = snap.goldSjcSell ?? snap.goldPnjSell;
-    if (goldPrice != null) {
-      for (final h in goldHoldings) {
-        metalValueVnd += goldPrice * (h.quantity ?? 0);
-      }
-    }
-    if (snap.xagVndPerLuong != null) {
-      for (final h in silverHoldings) {
-        metalValueVnd += snap.xagVndPerLuong! * (h.quantity ?? 0);
-      }
-    }
-    if (snap.xcuVndPerKg != null) {
-      for (final h in copperHoldings) {
-        metalValueVnd += snap.xcuVndPerKg! * (h.quantity ?? 0);
-      }
+  final goldPrice = snap?.goldSjcSell ?? snap?.goldPnjSell;
+  if (goldPrice != null) {
+    for (final h in goldHoldings) {
+      metalValueVnd += goldPrice * (h.quantity ?? 0);
     }
   }
   final metalPnlVnd = metalValueVnd - metalCostVnd;

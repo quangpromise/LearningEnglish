@@ -129,6 +129,39 @@ class OkxService {
     }
   }
 
+  /// Gia hien tai cua 1 cap giao dich CU THE tren OKX (vd "XAUT-USDT" cho
+  /// Tether Gold - token vang, 1 token = 1 troy ounce vang that, do chinh
+  /// Tether phat hanh va giu vang vat ly bao chung) - dung cho Market > Kim
+  /// loai de hien them 1 tham chieu gia vang QUOC TE ben canh SJC/PNJ trong
+  /// nuoc, khac nguon (OKX, khong qua Twelve Data) nen khong bi anh huong
+  /// boi gioi han goi mien phi cua Twelve Data (KHONG co Bac/Dong tren OKX,
+  /// da kiem tra truc tiep danh sach instrument, chi co vang XAUT).
+  static Future<OkxTicker?> fetchSingleTicker(String instId) async {
+    final client = HttpClient();
+    try {
+      final req = await client.getUrl(
+        Uri.parse('https://www.okx.com/api/v5/market/ticker?instId=$instId'),
+      );
+      final res = await req.close();
+      final body = await res.transform(utf8.decoder).join();
+      final data = jsonDecode(body) as Map<String, dynamic>;
+      final list = data['data'] as List?;
+      if (list == null || list.isEmpty) return null;
+      final row = list.first as Map<String, dynamic>;
+      final last = double.tryParse(row['last']?.toString() ?? '');
+      final open24h = double.tryParse(row['open24h']?.toString() ?? '');
+      if (last == null || last <= 0) return null;
+      final changePercent = (open24h == null || open24h == 0)
+          ? 0.0
+          : (last - open24h) / open24h * 100;
+      return OkxTicker(price: last, changePercent24h: changePercent);
+    } catch (_) {
+      return null;
+    } finally {
+      client.close();
+    }
+  }
+
   /// Toan bo gia hien tai cho MOI cap giao dich USDT dang "live" tren OKX -
   /// 1 lan goi REST duy nhat (khong phan trang), dung de tim kiem coin ngoai
   /// pham vi top 100 von hoa cua CoinGecko.

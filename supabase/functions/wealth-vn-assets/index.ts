@@ -1,27 +1,29 @@
-// Edge Function proxy cho gia Vang trong nuoc (SJC/PNJ), ty gia USD/VND, va
-// gia The gioi Bac/Dong (quy doi) - dung cho tinh nang Quan ly tai san, Vi >
-// Tai san dau tu + Market > Kim loai. Khac voi stocks-intl (Twelve Data can
-// giau API key), KHONG nguon nao o day can key that su - van dat sau proxy
-// nay de: (1) tu dong fallback sang nguon du phong khi 1 nguon sap, (2)
-// cache giam tai, (3) doi nguon du lieu bat ky luc nao ma KHONG can build
-// lai APK (quan trong vi app phat hanh qua sideload, nguoi dung cap nhat
-// cham). Deploy: `supabase functions deploy wealth-vn-assets`.
+// Edge Function proxy cho gia Vang trong nuoc (SJC/PNJ) + ty gia USD/VND -
+// dung cho tinh nang Quan ly tai san, Vi > Tai san dau tu + Market > Kim
+// loai. KHONG nguon nao o day can key that su - van dat sau proxy nay de:
+// (1) tu dong fallback sang nguon du phong khi 1 nguon sap, (2) cache giam
+// tai, (3) doi nguon du lieu bat ky luc nao ma KHONG can build lai APK
+// (quan trong vi app phat hanh qua sideload, nguoi dung cap nhat cham).
+// Deploy: `supabase functions deploy wealth-vn-assets --use-api`.
 //
 // LUU Y DO TIN CAY DU LIEU (bat buoc UI hien thi ro):
 // - Gia vang SJC/PNJ: tong hop tu ben thu ba (vang.today/btmc.vn), KHONG
 //   phai gia chinh thuc do SJC/PNJ tu cong bo qua API rieng (khong ton tai).
 // - Ty gia USD/VND: tham khao Vietcombank/thi truong, co the lech ty gia
 //   thuc te tai quay giao dich.
-// - Gia Bac/Dong: la GIA THE GIOI (XAG/USD, XCU/USD qua Twelve Data) quy
-//   doi VND theo ty gia tren - KHONG PHAI gia ban le trong nuoc (khong ton
-//   tai thi truong ban le Bac/Dong theo "luong" o VN nhu Vang).
-
-const TWELVE_DATA_API_KEY = Deno.env.get("TWELVE_DATA_API_KEY");
+//
+// DA BO Bac/Dong hoan toan (truoc day dung Twelve Data XAG/USD, XCU/USD) -
+// xac nhan qua test truc tiep API: XAG/USD tra loi 403 "not available with
+// your plan" (chi co goi tra phi), XCU/USD tra loi 404 "symbol not found"
+// (Twelve Data khong co du lieu dong). Da nghien cuu them cac nguon khac
+// (Metals-API, MetalpriceAPI...) deu CAM RO mục dich thuong mai o goi mien
+// phi - khong con nguon nao mien phi + hop le ve dieu khoan cho ca 2 kim
+// loai nay cung luc, xem docs/research-wealth-stock-apis.md. Gia vang quoc
+// te thay the dung XAUT (Tether Gold) tu OKX truc tiep tren client (xem
+// okxXautTickerProvider), KHONG qua function nay nua.
 
 const CACHE_TTL_MS = 5 * 60 * 1000;
 let cache: { data: unknown; expiresAt: number } | null = null;
-
-const TROY_OUNCE_TO_LUONG = 31.1034768 / 37.5; // 1 luong VN = 37.5g
 
 async function fetchGold(): Promise<{
   sjc: { buy: number; sell: number } | null;
@@ -111,25 +113,6 @@ async function fetchUsdVnd(): Promise<{ rate: number | null; source: string }> {
   }
 }
 
-async function fetchMetalsUsd(): Promise<{ xagUsd: number | null; xcuUsd: number | null }> {
-  if (!TWELVE_DATA_API_KEY) return { xagUsd: null, xcuUsd: null };
-  try {
-    const res = await fetch(
-      `https://api.twelvedata.com/quote?symbol=XAG/USD,XCU/USD&apikey=${TWELVE_DATA_API_KEY}`,
-      { signal: AbortSignal.timeout(5000) },
-    );
-    const raw = await res.json();
-    const xag = Number(raw["XAG/USD"]?.close);
-    const xcu = Number(raw["XCU/USD"]?.close);
-    return {
-      xagUsd: Number.isFinite(xag) ? xag : null,
-      xcuUsd: Number.isFinite(xcu) ? xcu : null,
-    };
-  } catch (_err) {
-    return { xagUsd: null, xcuUsd: null };
-  }
-}
-
 Deno.serve(async (req: Request) => {
   const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
@@ -145,30 +128,14 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  const [gold, fx, metals] = await Promise.all([
-    fetchGold(),
-    fetchUsdVnd(),
-    fetchMetalsUsd(),
-  ]);
-
-  const usdVnd = fx.rate;
-  const xagVndPerLuong = usdVnd && metals.xagUsd
-    ? metals.xagUsd * usdVnd * TROY_OUNCE_TO_LUONG
-    : null;
-  const xcuVndPerKg = usdVnd && metals.xcuUsd
-    ? metals.xcuUsd * usdVnd * 2.20462
-    : null; // Twelve Data XCU/USD la gia theo pound -> quy doi sang kg
+  const [gold, fx] = await Promise.all([fetchGold(), fetchUsdVnd()]);
 
   const result = {
     goldSjc: gold.sjc,
     goldPnj: gold.pnj,
     goldSource: gold.source,
-    usdVnd,
+    usdVnd: fx.rate,
     fxSource: fx.source,
-    xagUsd: metals.xagUsd,
-    xcuUsd: metals.xcuUsd,
-    xagVndPerLuong,
-    xcuVndPerKg,
     updatedAt: new Date().toISOString(),
   };
 

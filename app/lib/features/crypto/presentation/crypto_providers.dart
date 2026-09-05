@@ -41,6 +41,13 @@ final okxTokenizedStocksProvider = FutureProvider<List<OkxTokenizedStock>>(
   (ref) => OkxService.fetchTokenizedStocks(),
 );
 
+/// Gia Tether Gold (XAUT-USDT) tren OKX - dung lam 1 tham chieu gia vang
+/// QUOC TE (khac SJC/PNJ trong nuoc) trong Market > Kim loai, xem
+/// market_metals_tab.dart. autoDispose vi chi can khi man Kim loai dang mo.
+final okxXautTickerProvider = FutureProvider.autoDispose<OkxTicker?>(
+  (ref) => OkxService.fetchSingleTicker('XAUT-USDT'),
+);
+
 /// Lich su nen 1 ky hieu cho man chi tiet coin - family theo (symbol, bar)
 /// noi bang dau gach doc de dung String lam key (gion voi cac family khac
 /// trong file nay).
