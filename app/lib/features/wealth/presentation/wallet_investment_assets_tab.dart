@@ -51,27 +51,46 @@ class WalletInvestmentAssetsTab extends ConsumerWidget {
         ? null
         : (cryptoValueVnd - cryptoValue24hAgoVnd) / cryptoValue24hAgoVnd * 100;
 
-    // Co phieu: gia hien tai qua stocksIntlQuotesProvider (gia thuc, khong
-    // con dung tam avgCost lam gia hien tai) de tinh dung PNL so voi von.
-    final stockHoldings =
+    // Co phieu: gom CA stock_intl (Twelve Data, gia USD can quy doi VND)
+    // LAN stock_vn (HOSE, gia da la VND san, khong quy doi) - truoc day tab
+    // nay CHI cong stock_intl nen tong dau tu bi thieu ca khoan co phieu VN.
+    final intlStockHoldings =
         ref.watch(wealthHoldingsProvider('stock_intl')).valueOrNull ?? [];
-    final stockSymbols = stockHoldings
+    final vnStockHoldings =
+        ref.watch(wealthHoldingsProvider('stock_vn')).valueOrNull ?? [];
+    final intlStockSymbols = intlStockHoldings
         .map((h) => h.symbol ?? '')
         .where((s) => s.isNotEmpty)
         .join(',');
-    final stockQuotes =
-        ref.watch(stocksIntlQuotesProvider(stockSymbols)).valueOrNull ?? [];
-    final stockPriceBySymbol = {for (final q in stockQuotes) q.symbol: q.price};
+    final vnStockSymbols = vnStockHoldings
+        .map((h) => h.symbol ?? '')
+        .where((s) => s.isNotEmpty)
+        .join(',');
+    final intlStockQuotes =
+        ref.watch(stocksIntlQuotesProvider(intlStockSymbols)).valueOrNull ?? [];
+    final vnStockQuotes =
+        ref.watch(stocksVnQuotesProvider(vnStockSymbols)).valueOrNull ?? [];
+    final intlPriceBySymbol = {
+      for (final q in intlStockQuotes) q.symbol: q.price,
+    };
+    final vnPriceBySymbol = {for (final q in vnStockQuotes) q.symbol: q.price};
     double stockValueVnd = 0;
     double stockCostVnd = 0;
     if (usdVnd != null) {
-      for (final h in stockHoldings) {
+      for (final h in intlStockHoldings) {
         final qty = h.quantity ?? 0;
         final avgCost = h.avgCost ?? 0;
-        final price = stockPriceBySymbol[h.symbol] ?? avgCost;
+        final price = intlPriceBySymbol[h.symbol] ?? h.manualValue ?? avgCost;
         stockValueVnd += price * qty * usdVnd;
         stockCostVnd += avgCost * qty * usdVnd;
       }
+    }
+    for (final h in vnStockHoldings) {
+      final qty = h.quantity ?? 0;
+      final avgCost = h.avgCost ?? 0;
+      final price = vnPriceBySymbol[h.symbol] ?? h.manualValue ?? avgCost;
+      stockValueVnd += price * qty;
+      stockCostVnd += avgCost * qty;
     }
     final stockPnlVnd = stockValueVnd - stockCostVnd;
     final stockPnlPercent = stockCostVnd == 0

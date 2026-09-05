@@ -749,8 +749,8 @@ class AppStrings {
       AppLanguage.en: 'Track crypto prices & portfolio',
     },
     'wealth_investments_stocks_title': {
-      AppLanguage.vi: 'Cổ phiếu quốc tế',
-      AppLanguage.en: 'International stocks',
+      AppLanguage.vi: 'Cổ phiếu',
+      AppLanguage.en: 'Stocks',
     },
     'wealth_watchlist_stocks': {
       AppLanguage.vi: 'Cổ phiếu',

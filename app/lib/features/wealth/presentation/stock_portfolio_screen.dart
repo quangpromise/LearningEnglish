@@ -352,7 +352,7 @@ class _AddHoldingSheetState extends ConsumerState<_AddHoldingSheet> {
                       livePrice == null
                           ? ref.tr('wealth_quote_error')
                           : '${ref.tr('wealth_stock_current_price_label')}: '
-                                '${isVn ? '${livePrice.toStringAsFixed(0)}đ' : '\$${livePrice.toStringAsFixed(2)}'}',
+                                '${isVn ? '${groupThousands(livePrice)}đ' : '\$${groupThousandsDecimal(livePrice)}'}',
                       style: AppTextStyles.body(
                         size: 12.5,
                         weight: FontWeight.w700,
@@ -457,8 +457,8 @@ class _HoldingTile extends ConsumerWidget {
         : null;
     final currencySymbol = isVn ? 'đ' : '\$';
     String fmt(double v) => isVn
-        ? '${v.toStringAsFixed(0)}$currencySymbol'
-        : '$currencySymbol${v.toStringAsFixed(2)}';
+        ? '${groupThousands(v)}$currencySymbol'
+        : '$currencySymbol${groupThousandsDecimal(v)}';
     return GlowBox(
       borderRadius: 18,
       child: Row(

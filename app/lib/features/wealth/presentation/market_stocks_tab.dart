@@ -5,6 +5,7 @@ import '../../../core/i18n/app_strings.dart';
 import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/thousands_input_formatter.dart';
 import '../../crypto/data/okx_service.dart';
 import '../../crypto/presentation/crypto_coin_detail_screen.dart';
 import '../../crypto/presentation/crypto_providers.dart';
@@ -157,7 +158,7 @@ class _VnStocksList extends ConsumerWidget {
                   ),
                   if (quote != null) ...[
                     Text(
-                      '${quote.price.toStringAsFixed(0)}đ',
+                      '${groupThousands(quote.price)}đ',
                       style: AppTextStyles.body(
                         weight: FontWeight.w700,
                         size: 12,
@@ -348,7 +349,7 @@ class IntlStockRow extends ConsumerWidget {
               ),
             ),
             Text(
-              '\$${stock.price.toStringAsFixed(stock.price >= 1 ? 2 : 4)}',
+              '\$${groupThousandsDecimal(stock.price, decimals: stock.price >= 1 ? 2 : 4)}',
               style: AppTextStyles.body(weight: FontWeight.w700, size: 12),
             ),
             const SizedBox(width: 8),

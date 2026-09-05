@@ -244,9 +244,14 @@ class _IntlResults extends ConsumerWidget {
           );
         }
         // Chi goi Twelve Data cho nhung ma DANG HIEN (sau loc tim kiem) - 1
-        // lan goi gop (khong phai tung ma rieng) de tiet kiem quota free
-        // tier (800 call/ngay).
-        final symbolsKey = filtered.map((s) => s.symbol).join(',');
+        // lan goi gop (khong phai tung ma rieng). Free tier CHI cho 8
+        // credit/phut (1 credit/ma trong batch quote) - da xac nhan qua
+        // test thuc te goi 40 ma cung luc bi tra ve RONG hoan toan (loi 429
+        // "run out of API credits"). Gioi han toi da 8 ma/lan goi de luon
+        // trong han muc, uu tien 8 ma dau (da sap theo thanh khoan giam dan
+        // tu okxTokenizedStocksProvider) - ma ngoai top 8 khong hien gia,
+        // van chon duoc binh thuong (dung manual price neu can).
+        final symbolsKey = filtered.take(8).map((s) => s.symbol).join(',');
         final quotesAsync = ref.watch(stocksIntlQuotesProvider(symbolsKey));
         final quoteBySymbol = {
           for (final q in quotesAsync.valueOrNull ?? []) q.symbol: q,
@@ -327,8 +332,8 @@ class _ResultTile extends StatelessWidget {
                 children: [
                   Text(
                     isVn
-                        ? '${price!.toStringAsFixed(0)}đ'
-                        : '\$${price!.toStringAsFixed(2)}',
+                        ? '${groupThousands(price!)}đ'
+                        : '\$${groupThousandsDecimal(price!)}',
                     style: AppTextStyles.body(
                       weight: FontWeight.w700,
                       size: 12,

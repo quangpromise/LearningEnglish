@@ -61,3 +61,19 @@ String groupThousands(num value) {
   }
   return '${rounded < 0 ? '-' : ''}$buffer';
 }
+
+/// Nhu [groupThousands] nhung giu lai phan thap phan (vd 1234.5 voi
+/// decimals=2 -> "1,234.50") - dung hien thi gia USD (khac VND luon lam
+/// tron so nguyen).
+String groupThousandsDecimal(num value, {int decimals = 2}) {
+  final isNeg = value < 0;
+  final abs = value.abs();
+  final whole = abs.truncate();
+  if (decimals == 0) return '${isNeg ? '-' : ''}${groupThousands(whole)}';
+  final scale = List.filled(decimals, 10).fold<int>(1, (a, b) => a * b);
+  final fracDigits = ((abs - whole) * scale).round().toString().padLeft(
+    decimals,
+    '0',
+  );
+  return '${isNeg ? '-' : ''}${groupThousands(whole)}.$fracDigits';
+}

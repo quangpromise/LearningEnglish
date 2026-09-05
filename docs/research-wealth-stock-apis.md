@@ -19,6 +19,26 @@ Twelve Data cân bằng tốt nhất giữa hạn mức đủ dùng (refresh the
 người dùng, không polling liên tục) và điều khoản thương mại không cấm rõ
 ràng như Finnhub free.
 
+**Setup bắt buộc (dễ quên — đã từng bị bỏ sót khiến toàn bộ giá cổ phiếu quốc
+tế không load được):**
+1. Đăng ký tài khoản free tại twelvedata.com, lấy API key ở Dashboard.
+2. Set secret trên Supabase: `supabase secrets set TWELVE_DATA_API_KEY=<key>
+   --project-ref pbvxnzsquqycweyjjnis` (Edge Function `stocks-intl` đọc qua
+   `Deno.env.get("TWELVE_DATA_API_KEY")`, KHÔNG hoạt động nếu thiếu bước
+   này — trả lỗi 500 "Thiếu TWELVE_DATA_API_KEY trên server").
+3. Deploy function: `supabase functions deploy stocks-intl --project-ref
+   pbvxnzsquqycweyjjnis --use-api`.
+
+**Giới hạn cứng đã xác nhận qua test thực tế:** free tier chỉ cho **8 API
+credit/phút**, và 1 lần gọi `/quote` theo batch (nhiều mã cách nhau bằng
+dấu phẩy) tốn **1 credit/mã trong batch đó** — gọi 1 lần với 40 mã sẽ bị từ
+chối toàn bộ (lỗi 429 "run out of API credits"), khiến cả batch trả về mảng
+RỖNG chứ không phải lỗi riêng từng mã. Vì vậy mọi nơi gọi
+`stocksIntlQuotesProvider` với danh sách mã KHÔNG do người dùng tự chọn
+(vd toàn bộ danh sách xStocks trong picker khi chưa gõ tìm kiếm) phải giới
+hạn tối đa **8 mã/lần gọi** (xem `stock_picker_sheet.dart`
+`_IntlResults` — `filtered.take(8)`).
+
 ## Việt Nam: đã triển khai — API công khai của chính HOSE (`api.hsx.vn`)
 
 | Nguồn | Chính thức? | Cần đăng ký? | Thương mại (redistribute) | Độ trễ |
