@@ -25,9 +25,9 @@ class StockPortfolioScreen extends ConsumerWidget {
     final intlHoldingsAsync = ref.watch(wealthHoldingsProvider('stock_intl'));
     final vnHoldingsAsync = ref.watch(wealthHoldingsProvider('stock_vn'));
     final isLoading = intlHoldingsAsync.isLoading || vnHoldingsAsync.isLoading;
-    final holdings = [
-      ...intlHoldingsAsync.valueOrNull ?? [],
-      ...vnHoldingsAsync.valueOrNull ?? [],
+    final holdings = <WealthHolding>[
+      ...intlHoldingsAsync.valueOrNull ?? const [],
+      ...vnHoldingsAsync.valueOrNull ?? const [],
     ];
 
     return ScreenBackground(
