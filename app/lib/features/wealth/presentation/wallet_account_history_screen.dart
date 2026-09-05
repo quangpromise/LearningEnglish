@@ -6,6 +6,7 @@ import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_format.dart';
 import '../data/vn_bank_model.dart';
+import '../data/wealth_balance_entry_model.dart';
 import 'add_balance_entry_sheet.dart';
 import 'wallet_existing_assets_tab.dart';
 
@@ -145,15 +146,7 @@ class WalletAccountHistoryScreen extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(height: 14),
-                      Expanded(
-                        child: ListView.separated(
-                          itemCount: entries.length,
-                          separatorBuilder: (_, _) =>
-                              const SizedBox(height: 10),
-                          itemBuilder: (context, i) =>
-                              WalletEntryRow(entry: entries[i]),
-                        ),
-                      ),
+                      Expanded(child: _GroupedHistoryList(entries: entries)),
                     ],
                   );
                 },
@@ -163,5 +156,58 @@ class WalletAccountHistoryScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+}
+
+/// Nhom cac dong lich su theo NGAY (bo qua gio/phut) - moi nhom co 1 header
+/// hien "Hom nay"/"Hom qua" hoac dd/MM/yyyy, dung de nguoi dung de theo doi
+/// bien dong trong 1 ngay thay vi phai doc ngay lap lai o tung dong rieng le.
+/// [entries] da duoc sap xep giam dan theo occurred_at tu repository
+/// (`.order('occurred_at', ascending: false)`) nen chi can nhom giu nguyen
+/// thu tu, khong can sort lai.
+class _GroupedHistoryList extends ConsumerWidget {
+  const _GroupedHistoryList({required this.entries});
+  final List<WealthBalanceEntry> entries;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+
+    String dayKey(DateTime d) =>
+        '${d.year}-${d.month.toString().padLeft(2, '0')}-'
+        '${d.day.toString().padLeft(2, '0')}';
+    String dayLabel(DateTime d) {
+      final day = DateTime(d.year, d.month, d.day);
+      if (day == today) return ref.tr('wallet_history_today');
+      if (day == yesterday) return ref.tr('wallet_history_yesterday');
+      return '${d.day.toString().padLeft(2, '0')}/'
+          '${d.month.toString().padLeft(2, '0')}/${d.year}';
+    }
+
+    final items = <Widget>[];
+    String? lastKey;
+    for (final entry in entries) {
+      final key = dayKey(entry.occurredAt);
+      if (key != lastKey) {
+        if (lastKey != null) items.add(const SizedBox(height: 14));
+        items.add(
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(
+              dayLabel(entry.occurredAt),
+              style: AppTextStyles.body(size: 12.5, weight: FontWeight.w800),
+            ),
+          ),
+        );
+        lastKey = key;
+      } else {
+        items.add(const SizedBox(height: 10));
+      }
+      items.add(WalletEntryRow(entry: entry));
+    }
+
+    return ListView(children: items);
   }
 }

@@ -65,6 +65,19 @@ Deno.serve(async (req: Request) => {
     const res = await fetch(quoteUrl);
     const raw = await res.json();
 
+    // Khi ca batch bi loi CHUNG (vd 429 het credit/phut), Twelve Data tra ve
+    // 1 OBJECT LOI DUY NHAT o cap cao nhat (khong theo dinh dang { [symbol]:
+    // {...} } nhu binh thuong) - PHAI phat hien truong hop nay va nem loi de
+    // KHONG cache nham 1 mang RONG (truoc day Object.values() tren object
+    // loi nay tra ve cac gia tri nguyen thuy khong co .symbol, bi loc het ->
+    // ket qua RONG duoc coi la "thanh cong" va cache lai 3 phut, khien user
+    // thay danh sach trong hoan toan ma khong co dau hieu loi nao).
+    if (raw && typeof raw === "object" && !Array.isArray(raw) &&
+      "status" in raw && raw.status === "error"
+    ) {
+      throw new Error(`Twelve Data: ${raw.message ?? "loi khong xac dinh"}`);
+    }
+
     // Twelve Data tra ve 1 object don khi 1 symbol, hoac { [symbol]: {...} }
     // khi nhieu symbol - chuan hoa ve 1 mang duy nhat.
     const rows: TwelveDataQuote[] = symbols.length === 1

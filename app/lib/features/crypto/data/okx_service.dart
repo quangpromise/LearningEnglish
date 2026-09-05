@@ -95,7 +95,13 @@ class OkxService {
             final match = pattern.firstMatch(instId);
             if (match == null) return null;
             final ticker = match.group(1)!;
-            if (_kOkxRealCryptoXPrefixed.contains(ticker)) return null;
+            // LUU Y: `ticker` la phan SAU chu X (regex da bo X di), nen phai
+            // noi lai 'X$ticker' truoc khi so voi danh sach loai tru - truoc
+            // day so truc tiep voi `ticker` (vd "RP") trong khi danh sach
+            // loai tru luu ca chu X (vd "XRP") nen KHONG BAO GIO khop, khien
+            // XRP/XAUT/XLM/XPL... lot vao danh sach "co phieu" duoi ten gia
+            // "RP"/"AUT"/"LM"/"PL".
+            if (_kOkxRealCryptoXPrefixed.contains('X$ticker')) return null;
             if (ticker.contains('TEST')) return null;
             final last = double.tryParse(r['last']?.toString() ?? '') ?? 0;
             final open24h =

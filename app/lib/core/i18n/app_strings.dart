@@ -1349,6 +1349,14 @@ class AppStrings {
       AppLanguage.vi: 'Tổng tài sản',
       AppLanguage.en: 'Total assets',
     },
+    'wallet_history_today': {
+      AppLanguage.vi: 'Hôm nay',
+      AppLanguage.en: 'Today',
+    },
+    'wallet_history_yesterday': {
+      AppLanguage.vi: 'Hôm qua',
+      AppLanguage.en: 'Yesterday',
+    },
     'wallet_view_all_history': {
       AppLanguage.vi: 'Xem tất cả lịch sử',
       AppLanguage.en: 'View all history',
