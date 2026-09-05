@@ -8,6 +8,7 @@ import '../../../core/utils/currency_format.dart';
 import '../../../core/utils/thousands_input_formatter.dart';
 import '../data/exchange_rate_repository.dart';
 import '../data/wealth_holding_model.dart';
+import 'buy_sell_sheets.dart';
 import 'confirm_delete.dart';
 
 /// Portfolio Vang/Bac/Dong (Phase C) - moi lan them la 1 "lo" doc lap (giong
@@ -273,11 +274,27 @@ class _LotTile extends ConsumerWidget {
           final kind = _kinds.firstWhere(
             (k) => k.assetType == holding.assetType,
           );
-          showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            backgroundColor: Colors.transparent,
-            builder: (_) => _AddMetalLotSheet(kind: kind, existing: holding),
+          showHoldingActionsSheet(
+            context,
+            ref,
+            onEdit: () => showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder: (_) => _AddMetalLotSheet(kind: kind, existing: holding),
+            ),
+            onBuyMore: () => showBuyMoreSheet(
+              context,
+              holding: holding,
+              unitLabel: unit,
+              livePrice: unitPrice,
+            ),
+            onSell: () => showSellSheet(
+              context,
+              holding: holding,
+              unitLabel: unit,
+              livePrice: unitPrice,
+            ),
           );
         },
         child: GlowBox(

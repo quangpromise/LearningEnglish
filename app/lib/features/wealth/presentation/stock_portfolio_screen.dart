@@ -7,6 +7,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/thousands_input_formatter.dart';
 import '../data/stocks_intl_repository.dart';
 import '../data/wealth_holding_model.dart';
+import 'buy_sell_sheets.dart';
 import 'confirm_delete.dart';
 import 'stock_picker_sheet.dart';
 
@@ -164,17 +165,39 @@ class _HoldingsList extends ConsumerWidget {
                   .deleteHolding(userId, h.id);
               ref.invalidate(wealthHoldingsProvider(h.assetType));
             },
-            child: GestureDetector(
-              onTap: () => _showAddHoldingSheet(context, existing: h),
-              child: _HoldingTile(
-                holding: h,
-                quote: h.assetType == 'stock_vn'
+            child: Builder(
+              builder: (context) {
+                final quote = h.assetType == 'stock_vn'
                     ? vnBySymbol[h.symbol]
-                    : intlBySymbol[h.symbol],
-                quoteFailed: h.assetType == 'stock_vn'
-                    ? vnQuotesAsync.hasError
-                    : intlQuotesAsync.hasError,
-              ),
+                    : intlBySymbol[h.symbol];
+                final unitLabel = ref.tr('wealth_stock_unit_share');
+                return GestureDetector(
+                  onTap: () => showHoldingActionsSheet(
+                    context,
+                    ref,
+                    onEdit: () => _showAddHoldingSheet(context, existing: h),
+                    onBuyMore: () => showBuyMoreSheet(
+                      context,
+                      holding: h,
+                      unitLabel: unitLabel,
+                      livePrice: quote?.price ?? h.manualValue,
+                    ),
+                    onSell: () => showSellSheet(
+                      context,
+                      holding: h,
+                      unitLabel: unitLabel,
+                      livePrice: quote?.price ?? h.manualValue,
+                    ),
+                  ),
+                  child: _HoldingTile(
+                    holding: h,
+                    quote: quote,
+                    quoteFailed: h.assetType == 'stock_vn'
+                        ? vnQuotesAsync.hasError
+                        : intlQuotesAsync.hasError,
+                  ),
+                );
+              },
             ),
           ),
           const SizedBox(height: 10),

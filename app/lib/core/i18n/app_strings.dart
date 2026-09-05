@@ -1323,6 +1323,49 @@ class AppStrings {
       AppLanguage.vi: 'Sửa mã cổ phiếu',
       AppLanguage.en: 'Edit stock holding',
     },
+    'wealth_buy_more': {AppLanguage.vi: 'Mua thêm', AppLanguage.en: 'Buy more'},
+    'wealth_sell': {AppLanguage.vi: 'Bán', AppLanguage.en: 'Sell'},
+    'wealth_buy_more_title': {
+      AppLanguage.vi: 'Mua thêm',
+      AppLanguage.en: 'Buy more',
+    },
+    'wealth_sell_title': {AppLanguage.vi: 'Bán', AppLanguage.en: 'Sell'},
+    'wealth_sell_quantity_hint': {
+      AppLanguage.vi: 'Số lượng muốn bán',
+      AppLanguage.en: 'Quantity to sell',
+    },
+    'wealth_sell_price_hint': {
+      AppLanguage.vi: 'Giá bán',
+      AppLanguage.en: 'Sell price',
+    },
+    'wealth_buy_price_hint': {
+      AppLanguage.vi: 'Giá mua',
+      AppLanguage.en: 'Buy price',
+    },
+    'wealth_sell_max_note': {
+      AppLanguage.vi: 'Hiện đang có',
+      AppLanguage.en: 'Currently holding',
+    },
+    'wealth_sell_exceeds_holding': {
+      AppLanguage.vi: 'Số lượng bán vượt quá số đang có',
+      AppLanguage.en: 'Sell quantity exceeds current holding',
+    },
+    'wealth_realized_pnl_label': {
+      AppLanguage.vi: 'Lãi/lỗ thực hiện',
+      AppLanguage.en: 'Realized P&L',
+    },
+    'wealth_real_estate_sell': {
+      AppLanguage.vi: 'Bán bất động sản',
+      AppLanguage.en: 'Sell property',
+    },
+    'wealth_real_estate_sell_price_hint': {
+      AppLanguage.vi: 'Giá bán cuối cùng',
+      AppLanguage.en: 'Final sale price',
+    },
+    'wealth_real_estate_sell_confirm': {
+      AppLanguage.vi: 'Xác nhận bán bất động sản này? Sẽ xóa khỏi danh sách nắm giữ và ghi lại vào lịch sử.',
+      AppLanguage.en: 'Confirm selling this property? It will be removed from holdings and recorded in history.',
+    },
     'wealth_edit_transaction': {
       AppLanguage.vi: 'Sửa giao dịch',
       AppLanguage.en: 'Edit transaction',

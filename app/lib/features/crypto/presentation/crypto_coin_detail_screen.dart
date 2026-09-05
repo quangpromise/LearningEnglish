@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -74,6 +75,18 @@ class _CryptoCoinDetailScreenState
   // hien thi 1 nen dang chay theo gia that trong luc no.
   List<OkxCandle>? _liveCandles;
   Timer? _refetchTimer;
+  // Zoom/pan bang tay giong OKX: [_visibleCount] la so nen dang hien trong
+  // "cua so" xem (null = hien HET nen tai duoc, gia tri mac dinh), pinch de
+  // thay doi so nay (it nen hon = zoom in, xem chi tiet hon; nhieu nen hon =
+  // zoom out, xem gon/nen hon). [_windowStart] la chi so nen dau tien trong
+  // cua so, keo ngang (pan) de dich chuyen. Ca 2 reset ve mac dinh moi khi
+  // doi khung thoi gian vi vi tri zoom cu khong con hop ly voi bo du lieu
+  // moi. Dung cach "cat mot cua so du lieu" thay vi InteractiveViewer/
+  // transform-matrix de truc gia ben phai KHONG bi phong to/meo chu theo.
+  int? _visibleCount;
+  int _windowStart = 0;
+  int _gestureStartVisibleCount = 0;
+  double _gestureFocalCandleIndex = 0;
 
   @override
   void initState() {
@@ -168,8 +181,12 @@ class _CryptoCoinDetailScreenState
                       onTap: () => setState(() {
                         _period = p;
                         // Doi khung thoi gian = nen khac hoan toan - xoa ban
-                        // sao live cu de khong "keo theo" du lieu sai khung.
+                        // sao live cu de khong "keo theo" du lieu sai khung,
+                        // dong thoi reset zoom/pan vi vi tri cu se khong con
+                        // hop ly voi bo du lieu moi.
                         _liveCandles = null;
+                        _visibleCount = null;
+                        _windowStart = 0;
                       }),
                     ),
                     const SizedBox(width: 8),
@@ -204,7 +221,20 @@ class _CryptoCoinDetailScreenState
                   // `fetched` truc tiep, de khong bi ghi de moi lan REST
                   // refetch dinh ky lam mat hieu ung nen dang chay live.
                   _liveCandles ??= List.of(fetched);
-                  final candles = _liveCandles!;
+                  final allCandles = _liveCandles!;
+                  final total = allCandles.length;
+                  // "Cua so" nen dang hien - pinch de thu hep (zoom in, xem
+                  // chi tiet hon) hoac mo rong (zoom out, xem gon hon).
+                  final minVisible = math.min(10, total);
+                  _visibleCount = (_visibleCount ?? total).clamp(
+                    minVisible,
+                    total,
+                  );
+                  _windowStart = _windowStart.clamp(0, total - _visibleCount!);
+                  final candles = allCandles.sublist(
+                    _windowStart,
+                    _windowStart + _visibleCount!,
+                  );
                   final minY = candles
                       .map((c) => c.low)
                       .reduce((a, b) => a < b ? a : b);
@@ -212,63 +242,100 @@ class _CryptoCoinDetailScreenState
                       .map((c) => c.high)
                       .reduce((a, b) => a > b ? a : b);
                   final pad = (maxY - minY) * 0.08;
-                  return CandlestickChart(
-                    CandlestickChartData(
-                      minY: minY - pad,
-                      maxY: maxY + pad,
-                      gridData: const FlGridData(show: false),
-                      borderData: FlBorderData(show: false),
-                      // Nen xanh khi dong cua >= mo cua, do khi thap hon -
-                      // dung mau teal/pink chuan cua app thay vi mau mac
-                      // dinh cua fl_chart, cho dong bo voi cac PNL khac.
-                      candlestickPainter: DefaultCandlestickPainter(
-                        candlestickStyleProvider: (spot, _) {
-                          final color = spot.isUp
-                              ? AppColors.teal
-                              : AppColors.pink;
-                          return CandlestickStyle(
-                            lineColor: color,
-                            lineWidth: 1.2,
-                            bodyStrokeColor: color,
-                            bodyStrokeWidth: 0,
-                            bodyFillColor: color,
-                            bodyWidth: 4,
-                            bodyRadius: 1,
-                          );
+                  const axisWidth = 56.0;
+                  return LayoutBuilder(
+                    builder: (context, constraints) {
+                      final chartAreaWidth = math.max(
+                        1.0,
+                        constraints.maxWidth - axisWidth,
+                      );
+                      return GestureDetector(
+                        onScaleStart: (details) {
+                          _gestureStartVisibleCount = _visibleCount!;
+                          final candleWidthPx = chartAreaWidth / _visibleCount!;
+                          _gestureFocalCandleIndex =
+                              _windowStart +
+                              details.localFocalPoint.dx / candleWidthPx;
                         },
-                      ),
-                      // Truc gia ben PHAI giong OKX (khong hien truc trai/
-                      // tren/duoi de chart gon, chi can 1 truc tham chieu).
-                      titlesData: FlTitlesData(
-                        show: true,
-                        topTitles: const AxisTitles(),
-                        leftTitles: const AxisTitles(),
-                        bottomTitles: const AxisTitles(),
-                        rightTitles: AxisTitles(
-                          sideTitles: SideTitles(
-                            showTitles: true,
-                            reservedSize: 56,
-                            getTitlesWidget: (value, meta) => Padding(
-                              padding: const EdgeInsets.only(left: 4),
-                              child: Text(
-                                _formatPrice(value),
-                                style: AppTextStyles.muted(size: 10),
+                        onScaleUpdate: (details) {
+                          setState(() {
+                            final newVisibleCount =
+                                (_gestureStartVisibleCount / details.scale)
+                                    .round()
+                                    .clamp(minVisible, total);
+                            final newCandleWidthPx =
+                                chartAreaWidth / newVisibleCount;
+                            _visibleCount = newVisibleCount;
+                            _windowStart =
+                                (_gestureFocalCandleIndex -
+                                        details.localFocalPoint.dx /
+                                            newCandleWidthPx)
+                                    .round()
+                                    .clamp(0, total - newVisibleCount);
+                          });
+                        },
+                        child: CandlestickChart(
+                          CandlestickChartData(
+                            minY: minY - pad,
+                            maxY: maxY + pad,
+                            gridData: const FlGridData(show: false),
+                            borderData: FlBorderData(show: false),
+                            // Nen xanh khi dong cua >= mo cua, do khi thap
+                            // hon - dung mau teal/pink chuan cua app thay vi
+                            // mau mac dinh cua fl_chart, cho dong bo voi cac
+                            // PNL khac.
+                            candlestickPainter: DefaultCandlestickPainter(
+                              candlestickStyleProvider: (spot, _) {
+                                final color = spot.isUp
+                                    ? AppColors.teal
+                                    : AppColors.pink;
+                                return CandlestickStyle(
+                                  lineColor: color,
+                                  lineWidth: 1.2,
+                                  bodyStrokeColor: color,
+                                  bodyStrokeWidth: 0,
+                                  bodyFillColor: color,
+                                  bodyWidth: 4,
+                                  bodyRadius: 1,
+                                );
+                              },
+                            ),
+                            // Truc gia ben PHAI giong OKX (khong hien truc
+                            // trai/tren/duoi de chart gon, chi can 1 truc
+                            // tham chieu).
+                            titlesData: FlTitlesData(
+                              show: true,
+                              topTitles: const AxisTitles(),
+                              leftTitles: const AxisTitles(),
+                              bottomTitles: const AxisTitles(),
+                              rightTitles: AxisTitles(
+                                sideTitles: SideTitles(
+                                  showTitles: true,
+                                  reservedSize: axisWidth,
+                                  getTitlesWidget: (value, meta) => Padding(
+                                    padding: const EdgeInsets.only(left: 4),
+                                    child: Text(
+                                      _formatPrice(value),
+                                      style: AppTextStyles.muted(size: 10),
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
+                            candlestickSpots: [
+                              for (var i = 0; i < candles.length; i++)
+                                CandlestickSpot(
+                                  x: i.toDouble(),
+                                  open: candles[i].open,
+                                  high: candles[i].high,
+                                  low: candles[i].low,
+                                  close: candles[i].close,
+                                ),
+                            ],
                           ),
                         ),
-                      ),
-                      candlestickSpots: [
-                        for (var i = 0; i < candles.length; i++)
-                          CandlestickSpot(
-                            x: i.toDouble(),
-                            open: candles[i].open,
-                            high: candles[i].high,
-                            low: candles[i].low,
-                            close: candles[i].close,
-                          ),
-                      ],
-                    ),
+                      );
+                    },
                   );
                 },
               ),

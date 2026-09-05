@@ -7,6 +7,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_format.dart';
 import '../../../core/utils/thousands_input_formatter.dart';
 import '../data/wealth_holding_model.dart';
+import 'buy_sell_sheets.dart';
 import 'confirm_delete.dart';
 
 const _kAssetType = 'real_estate';
@@ -164,7 +165,12 @@ class _PropertyTile extends ConsumerWidget {
         ref.invalidate(wealthHoldingsProvider(_kAssetType));
       },
       child: GestureDetector(
-        onTap: () => _showAddSheet(context, holding: holding),
+        onTap: () => showHoldingActionsSheet(
+          context,
+          ref,
+          onEdit: () => _showAddSheet(context, holding: holding),
+          onSell: () => showRealEstateSellSheet(context, holding: holding),
+        ),
         child: GlowBox(
           borderRadius: 16,
           child: Row(
