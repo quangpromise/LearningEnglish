@@ -552,13 +552,19 @@ final wealthHoldingsProvider = FutureProvider.autoDispose
           .fetchAll(userId, assetType);
     });
 
-/// Gia hien tai cho danh sach ma da nam giu - family theo danh sach symbol
-/// (join bang dau phay lam key) de tu dong goi lai khi danh sach holdings
-/// doi, khong can nguoi dung bam refresh thu cong tru khi muon lam moi gia.
+/// Gia hien tai cho danh sach ma da nam giu - family theo 1 CHUOI symbol noi
+/// dau phay (KHONG PHAI List truc tiep - List mac dinh so sanh theo
+/// identity trong Dart, nen 1 List MOI tao moi lan build (vd tu .toList())
+/// khong bao gio duoc coi la "cung 1 key" voi lan truoc, khien family tao
+/// provider MOI moi lan rebuild va lien tuc huy fetch dang cho de bat dau
+/// lai - man Watchlist tung khong bao gio hien duoc gia vi bi rebuild lien
+/// tuc theo ticker crypto truoc khi fetch kip xong. String thi Dart so sanh
+/// theo NOI DUNG nen an toan lam key family du tao moi lan build.
 final stocksIntlQuotesProvider = FutureProvider.autoDispose
-    .family<List<StockQuote>, List<String>>(
-      (ref, symbols) =>
-          ref.watch(stocksIntlRepositoryProvider).fetchQuotes(symbols),
+    .family<List<StockQuote>, String>(
+      (ref, symbolsKey) => ref
+          .watch(stocksIntlRepositoryProvider)
+          .fetchQuotes(_splitSymbolsKey(symbolsKey)),
     );
 
 final stocksVnRepositoryProvider = Provider<StocksVnRepository>(
@@ -567,12 +573,17 @@ final stocksVnRepositoryProvider = Provider<StocksVnRepository>(
 
 /// Gia co phieu Viet Nam (san HOSE) - xem [StocksVnRepository]. Tach rieng
 /// provider voi [stocksIntlQuotesProvider] vi khac Edge Function + currency
-/// (VND thay vi USD).
+/// (VND thay vi USD). Cung dung String key - xem giai thich o
+/// [stocksIntlQuotesProvider].
 final stocksVnQuotesProvider = FutureProvider.autoDispose
-    .family<List<StockQuote>, List<String>>(
-      (ref, symbols) =>
-          ref.watch(stocksVnRepositoryProvider).fetchQuotes(symbols),
+    .family<List<StockQuote>, String>(
+      (ref, symbolsKey) => ref
+          .watch(stocksVnRepositoryProvider)
+          .fetchQuotes(_splitSymbolsKey(symbolsKey)),
     );
+
+List<String> _splitSymbolsKey(String key) =>
+    key.isEmpty ? const [] : key.split(',');
 
 // --- Vi (Wallet) - Phase A/B: so du Tien mat/Ngan hang theo tung ngan hang,
 // tong tai san quy doi VND. Xem ke hoach build lai Wealth trong lich su
@@ -728,7 +739,7 @@ final investmentPnlProvider = Provider.autoDispose<(double, double?)>((ref) {
   final stockSymbols = stockHoldings
       .map((h) => h.symbol ?? '')
       .where((s) => s.isNotEmpty)
-      .toList();
+      .join(',');
   final stockQuotes =
       ref.watch(stocksIntlQuotesProvider(stockSymbols)).valueOrNull ?? [];
   final stockPriceBySymbol = {for (final q in stockQuotes) q.symbol: q.price};

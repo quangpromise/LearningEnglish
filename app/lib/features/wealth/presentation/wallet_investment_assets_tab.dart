@@ -58,7 +58,7 @@ class WalletInvestmentAssetsTab extends ConsumerWidget {
     final stockSymbols = stockHoldings
         .map((h) => h.symbol ?? '')
         .where((s) => s.isNotEmpty)
-        .toList();
+        .join(',');
     final stockQuotes =
         ref.watch(stocksIntlQuotesProvider(stockSymbols)).valueOrNull ?? [];
     final stockPriceBySymbol = {for (final q in stockQuotes) q.symbol: q.price};

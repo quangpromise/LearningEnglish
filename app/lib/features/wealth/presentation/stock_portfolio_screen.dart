@@ -78,7 +78,7 @@ class StockPortfolioScreen extends ConsumerWidget {
                   final symbols = holdings
                       .map((h) => h.symbol ?? '')
                       .where((s) => s.isNotEmpty)
-                      .toList();
+                      .join(',');
                   final quotesAsync = ref.watch(
                     stocksIntlQuotesProvider(symbols),
                   );

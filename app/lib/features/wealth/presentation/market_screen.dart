@@ -9,6 +9,7 @@ import '../../crypto/data/okx_service.dart';
 import '../../crypto/presentation/crypto_coin_row.dart';
 import '../../crypto/presentation/crypto_market_tab.dart';
 import '../../crypto/presentation/crypto_providers.dart';
+import '../../crypto/presentation/okx_only_coin_row.dart';
 import '../data/exchange_rate_repository.dart';
 import '../data/stocks_intl_repository.dart';
 import 'market_metals_tab.dart';
@@ -142,7 +143,7 @@ class _MarketScreenState extends State<MarketScreen>
                       Expanded(child: _buildCategoryContent()),
                     ],
                   ),
-                  const _UnifiedWatchlistTab(),
+                  const _WatchlistTab(),
                 ],
               ),
             ),
@@ -236,12 +237,123 @@ class _CategoryChipRow extends ConsumerWidget {
   }
 }
 
-/// Gop TAT CA item da "theo doi" tu moi loai tai san (Crypto qua
-/// [cryptoWatchlistProvider] rieng, Co phieu/Kim loai qua
-/// [assetWatchlistProvider] chung) vao 1 danh sach duy nhat, chia theo tung
-/// nhom neu nhom do co it nhat 1 item.
-class _UnifiedWatchlistTab extends ConsumerWidget {
-  const _UnifiedWatchlistTab();
+enum _WatchlistCategory { crypto, metals, stocks }
+
+/// Watchlist chia 3 tab rieng (Crypto/Kim loai hiem/Co phieu) thay vi gop
+/// chung 1 danh sach dai - de tim 1 muc cu the nhanh hon khi theo doi nhieu
+/// loai tai san cung luc.
+class _WatchlistTab extends StatefulWidget {
+  const _WatchlistTab();
+
+  @override
+  State<_WatchlistTab> createState() => _WatchlistTabState();
+}
+
+class _WatchlistTabState extends State<_WatchlistTab> {
+  _WatchlistCategory _category = _WatchlistCategory.crypto;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Consumer(
+          builder: (context, ref, _) {
+            final items = [
+              (_WatchlistCategory.crypto, 'Crypto'),
+              (
+                _WatchlistCategory.metals,
+                ref.tr('wealth_investments_metal_title'),
+              ),
+              (
+                _WatchlistCategory.stocks,
+                ref.tr('wealth_investments_stocks_title'),
+              ),
+            ];
+            return Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppColors.glassFill.withValues(alpha: 0.4),
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: AppColors.glassBorder),
+              ),
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final item in items)
+                    GestureDetector(
+                      onTap: () => setState(() => _category = item.$1),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 9,
+                        ),
+                        decoration: BoxDecoration(
+                          color: _category == item.$1
+                              ? AppColors.wealthAccent.withValues(alpha: 0.22)
+                              : AppColors.glassFill,
+                          borderRadius: BorderRadius.circular(999),
+                          border: Border.all(
+                            color: _category == item.$1
+                                ? AppColors.wealthAccent
+                                : AppColors.glassBorder,
+                          ),
+                        ),
+                        child: Text(
+                          item.$2,
+                          style: AppTextStyles.body(
+                            size: 12,
+                            weight: FontWeight.w700,
+                            color: _category == item.$1
+                                ? AppColors.wealthAccent
+                                : AppColors.textPrimary,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 12),
+        Expanded(
+          child: switch (_category) {
+            _WatchlistCategory.crypto => const _CryptoWatchlistSection(),
+            _WatchlistCategory.metals => const _MetalsWatchlistSection(),
+            _WatchlistCategory.stocks => const _StocksWatchlistSection(),
+          },
+        ),
+      ],
+    );
+  }
+}
+
+Widget _emptyWatchlist(WidgetRef ref) => Center(
+  child: Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 32),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Icon(
+          Icons.star_border_rounded,
+          color: AppColors.textMuted,
+          size: 40,
+        ),
+        const SizedBox(height: 10),
+        Text(
+          ref.tr('crypto_watchlist_empty'),
+          textAlign: TextAlign.center,
+          style: AppTextStyles.muted(),
+        ),
+      ],
+    ),
+  ),
+);
+
+class _CryptoWatchlistSection extends ConsumerWidget {
+  const _CryptoWatchlistSection();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -252,13 +364,65 @@ class _UnifiedWatchlistTab extends ConsumerWidget {
         .where((c) => cryptoWatchlist.contains(c.id))
         .toList();
 
+    final okxWatchedSymbols = cryptoWatchlist
+        .where((k) => k.startsWith('okx:'))
+        .map((k) => k.substring('okx:'.length))
+        .toSet();
+    final okxWatchedRows = okxWatchedSymbols.isEmpty
+        ? const <OkxTickerRow>[]
+        : (ref.watch(okxAllTickersProvider).valueOrNull ?? [])
+              .where((r) => okxWatchedSymbols.contains(r.symbol))
+              .toList();
+
+    if (watchedCoins.isEmpty && okxWatchedRows.isEmpty) {
+      return _emptyWatchlist(ref);
+    }
+    return ListView.separated(
+      itemCount: watchedCoins.length + okxWatchedRows.length,
+      separatorBuilder: (_, _) => const SizedBox(height: 8),
+      itemBuilder: (context, i) {
+        if (i < watchedCoins.length) {
+          return CryptoCoinRow(coin: watchedCoins[i], currency: currency);
+        }
+        return OkxOnlyCoinRow(row: okxWatchedRows[i - watchedCoins.length]);
+      },
+    );
+  }
+}
+
+class _MetalsWatchlistSection extends ConsumerWidget {
+  const _MetalsWatchlistSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final assetWatchlist = ref.watch(assetWatchlistProvider);
+    final watchedMetalKeys = assetWatchlist
+        .where((k) => k.startsWith('metal:'))
+        .toList();
+    final snap = ref.watch(wealthVnAssetsProvider).valueOrNull;
+
+    if (watchedMetalKeys.isEmpty) return _emptyWatchlist(ref);
+    return ListView.separated(
+      itemCount: watchedMetalKeys.length,
+      separatorBuilder: (_, _) => const SizedBox(height: 8),
+      itemBuilder: (context, i) =>
+          _MetalWatchRow(watchKey: watchedMetalKeys[i], snap: snap),
+    );
+  }
+}
+
+class _StocksWatchlistSection extends ConsumerWidget {
+  const _StocksWatchlistSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
     final assetWatchlist = ref.watch(assetWatchlistProvider);
     final watchedStockSymbols = assetWatchlist
         .where((k) => k.startsWith('stock:'))
         .map((k) => k.substring('stock:'.length))
         .toList();
     final stockQuotesAsync = ref.watch(
-      stocksIntlQuotesProvider(watchedStockSymbols),
+      stocksIntlQuotesProvider(watchedStockSymbols.join(',')),
     );
     final stockQuotes = stockQuotesAsync.valueOrNull ?? [];
     final stockPriceBySymbol = {for (final q in stockQuotes) q.symbol: q};
@@ -268,7 +432,7 @@ class _UnifiedWatchlistTab extends ConsumerWidget {
         .map((k) => k.substring('stock_vn:'.length))
         .toList();
     final stockVnQuotesAsync = ref.watch(
-      stocksVnQuotesProvider(watchedStockVnSymbols),
+      stocksVnQuotesProvider(watchedStockVnSymbols.join(',')),
     );
     final stockVnQuotes = stockVnQuotesAsync.valueOrNull ?? [];
     final stockVnPriceBySymbol = {for (final q in stockVnQuotes) q.symbol: q};
@@ -283,87 +447,29 @@ class _UnifiedWatchlistTab extends ConsumerWidget {
               .where((s) => watchedStockOkxSymbols.contains(s.symbol))
               .toList();
 
-    final watchedMetalKeys = assetWatchlist
-        .where((k) => k.startsWith('metal:'))
-        .toList();
-    final snap = ref.watch(wealthVnAssetsProvider).valueOrNull;
-
-    final isEmpty =
-        watchedCoins.isEmpty &&
-        watchedStockSymbols.isEmpty &&
-        watchedStockVnSymbols.isEmpty &&
-        watchedStockOkxSymbols.isEmpty &&
-        watchedMetalKeys.isEmpty;
-
-    if (isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.star_border_rounded,
-                color: AppColors.textMuted,
-                size: 40,
-              ),
-              const SizedBox(height: 10),
-              Text(
-                ref.tr('crypto_watchlist_empty'),
-                textAlign: TextAlign.center,
-                style: AppTextStyles.muted(),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
+    final total =
+        watchedStockSymbols.length +
+        watchedStockVnSymbols.length +
+        okxStockRows.length;
+    if (total == 0) return _emptyWatchlist(ref);
 
     return ListView(
       children: [
-        if (watchedCoins.isNotEmpty) ...[
-          Text('Crypto', style: AppTextStyles.heading(size: 13)),
-          const SizedBox(height: 8),
-          for (final coin in watchedCoins) ...[
-            CryptoCoinRow(coin: coin, currency: currency),
-            const SizedBox(height: 8),
-          ],
+        for (final symbol in watchedStockSymbols) ...[
+          _StockWatchRow(symbol: symbol, quote: stockPriceBySymbol[symbol]),
           const SizedBox(height: 8),
         ],
-        if (watchedStockSymbols.isNotEmpty) ...[
-          Text(
-            ref.tr('wealth_investments_stocks_title'),
-            style: AppTextStyles.heading(size: 13),
+        for (final symbol in watchedStockVnSymbols) ...[
+          _StockWatchRow(
+            symbol: symbol,
+            quote: stockVnPriceBySymbol[symbol],
+            isVn: true,
           ),
-          const SizedBox(height: 8),
-          for (final symbol in watchedStockSymbols) ...[
-            _StockWatchRow(symbol: symbol, quote: stockPriceBySymbol[symbol]),
-            const SizedBox(height: 8),
-          ],
-          for (final symbol in watchedStockVnSymbols) ...[
-            _StockWatchRow(
-              symbol: symbol,
-              quote: stockVnPriceBySymbol[symbol],
-              isVn: true,
-            ),
-            const SizedBox(height: 8),
-          ],
-          for (final stock in okxStockRows) ...[
-            IntlStockRow(stock: stock),
-            const SizedBox(height: 8),
-          ],
           const SizedBox(height: 8),
         ],
-        if (watchedMetalKeys.isNotEmpty) ...[
-          Text(
-            ref.tr('wealth_investments_metal_title'),
-            style: AppTextStyles.heading(size: 13),
-          ),
+        for (final stock in okxStockRows) ...[
+          IntlStockRow(stock: stock),
           const SizedBox(height: 8),
-          for (final key in watchedMetalKeys) ...[
-            _MetalWatchRow(watchKey: key, snap: snap),
-            const SizedBox(height: 8),
-          ],
         ],
       ],
     );

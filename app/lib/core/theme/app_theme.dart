@@ -360,6 +360,19 @@ class TileLabelText extends StatelessWidget {
     while (fontSize > hardFloor && _widestWordWidth(fontSize) > maxWidth) {
       fontSize -= 0.5;
     }
+    // Van bi bao cao vo chu giua tu du da ha hardFloor nhieu lan - vi buoc
+    // nhay 0.5 + moc san CO DINH van la DOAN MO tuy thuoc font/thiet bi that
+    // (khong the doan dung "3.5 co du chua" cho MOI truong hop). Thay vao
+    // do, TINH TRUC TIEP ty le thu nho can thiet dua tren so do that o
+    // hardFloor - dam bao TOAN HOC tu dai nhat luon <= maxWidth bat ke phong
+    // chu/thiet bi nao, thay vi doan mo 1 con so co dinh.
+    final widestAtFloor = _widestWordWidth(fontSize);
+    if (widestAtFloor > maxWidth && widestAtFloor > 0) {
+      fontSize = (fontSize * maxWidth / widestAtFloor * 0.97).clamp(
+        1.0,
+        fontSize,
+      );
+    }
     return Text(
       label,
       textAlign: TextAlign.center,

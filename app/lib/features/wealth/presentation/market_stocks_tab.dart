@@ -86,7 +86,9 @@ class _VnStocksList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final quotesAsync = ref.watch(stocksVnQuotesProvider(_kWatchSymbolsVn));
+    final quotesAsync = ref.watch(
+      stocksVnQuotesProvider(_kWatchSymbolsVn.join(',')),
+    );
     return quotesAsync.when(
       loading: () => const Center(
         child: CircularProgressIndicator(color: AppColors.wealthAccent),
