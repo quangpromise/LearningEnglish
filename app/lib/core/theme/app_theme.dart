@@ -361,17 +361,17 @@ class TileLabelText extends StatelessWidget {
 
   /// Tu chia [label] thanh TOI DA 2 dong tai RANH GIOI TU (khong bao gio be
   /// doi tu) - gop tu vao dong 1 cho toi khi tu TIEP THEO lam vuot maxWidth,
-  /// phan con lai don het vao dong 2 (co the vuot maxWidth va bi ellipsis,
-  /// nhung KHONG BAO GIO tach roi 1-2 ky tu le loi cua 1 tu nhu khi de
-  /// Flutter tu dong wrap). Day la luoi an toan CUOI CUNG, khong phu thuoc
-  /// vao do chinh xac cua phep do co chu o tren nua - du _widestWordWidth
-  /// tinh sai lech so voi thiet bi that (van chua ro nguyen nhan chinh xac
-  /// du da do bang nhieu cach, nguoi dung van bao loi tren thiet bi that du
-  /// phep tinh ty le da "dam bao toan hoc"), viec tat softWrap va tu chen
-  /// '\n' khien Flutter KHONG THE ky thuat be doi tu duoc nua.
-  String _wrapIntoTwoLines(double fontSize) {
+  /// phan con lai don het vao dong 2. Tra ve mot danh sach dong (1 hoac 2
+  /// dong) thay vi 1 chuoi noi '\n' - LUU Y QUAN TRONG: ban dau tung thu ghep '\n'
+  /// vao 1 Text duy nhat voi softWrap:false + maxLines:2, nhung to hop nay
+  /// co hanh vi KHONG ON DINH trong Flutter (da xac nhan tren thiet bi that:
+  /// dong 2 bien mat hoan toan, chi con dong 1 - te hon ca bug goc). Gio moi
+  /// dong la 1 Text DOC LAP, maxLines:1, day la co che overflow don dong cuc
+  /// ky on dinh cua Flutter, khong con phu thuoc vao tuong tac an giua
+  /// nhieu thuoc tinh multi-line nua.
+  List<String> _wrapIntoLines(double fontSize) {
     final words = label.split(' ');
-    if (words.length <= 1) return label;
+    if (words.length <= 1) return [label];
     var splitIndex = words.length;
     var current = words[0];
     for (var i = 1; i < words.length; i++) {
@@ -383,10 +383,10 @@ class TileLabelText extends StatelessWidget {
         break;
       }
     }
-    if (splitIndex == words.length) return label;
+    if (splitIndex == words.length) return [label];
     final line1 = words.sublist(0, splitIndex).join(' ');
     final line2 = words.sublist(splitIndex).join(' ');
-    return '$line1\n$line2';
+    return [line1, line2];
   }
 
   @override
@@ -405,26 +405,29 @@ class TileLabelText extends StatelessWidget {
         fontSize,
       );
     }
-    return Text(
-      // Buoc 2 (luoi an toan chinh, xem giai thich o _wrapIntoTwoLines):
-      // TU chen '\n' tai ranh gioi tu thay vi de Flutter tu dong wrap -
-      // loai bo hoan toan kha nang be doi tu bat ke phep tinh co chu o tren
-      // co chinh xac 100% voi thiet bi that hay khong.
-      _wrapIntoTwoLines(fontSize),
-      textAlign: TextAlign.center,
-      maxLines: 2,
-      softWrap: false,
-      overflow: TextOverflow.ellipsis,
-      // Khong scale theo cai dat "co chu" cua may (Accessibility) - do do
-      // rong tinh o _widestWordWidth() gia dinh scale=1, neu may nguoi dung
-      // bat co chu lon hon thi chu render THAT SU se to hon phep tinh, gay
-      // xuong dong giua tu (vd "Pronunciatio"/"n Lessons") du da tinh vua khit.
-      textScaler: TextScaler.noScaling,
-      style: AppTextStyles.body(
-        size: fontSize,
-        weight: weight,
-        color: color,
-      ).copyWith(height: 1.15),
+    final textStyle = AppTextStyles.body(
+      size: fontSize,
+      weight: weight,
+      color: color,
+    ).copyWith(height: 1.15);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        for (final line in _wrapIntoLines(fontSize))
+          Text(
+            line,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            softWrap: false,
+            overflow: TextOverflow.ellipsis,
+            // Khong scale theo cai dat "co chu" cua may (Accessibility) -
+            // do do rong tinh o _widestWordWidth()/_lineWidth() gia dinh
+            // scale=1, neu khac se lam sai lech phep tinh vua khit.
+            textScaler: TextScaler.noScaling,
+            style: textStyle,
+          ),
+      ],
     );
   }
 }
