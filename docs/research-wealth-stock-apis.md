@@ -30,6 +30,7 @@ ràng như Finnhub free.
 | cafef.vn, VNDirect | Không, reverse-engineer | Không cần | Không có ToS cho phép, rủi ro tương tự vnstock | Gần real-time, không đảm bảo |
 | Yahoo Finance / TradingView / Investing.com | Không (data thật nhưng license lại) | — | **Cấm thương mại tường minh ở cả 3** | Delayed |
 | iTick (blog.itick.org) | Có vẻ là dịch vụ thật nhưng ít uy tín/review | Cần key, free tier vô dụng (5 call/phút, chỉ EOD) | **ToS cấm redistribute mặc định, như SSI** nhưng công ty kém minh bạch hơn | Trả phí mới có realtime ($79+/tháng) |
+| Simplize.vn | Không, chỉ web/app hiển thị (fintech phân tích cổ phiếu tư nhân, không phải nguồn dữ liệu gốc) | Không cần key nhưng phải scrape/reverse-engineer | **ToS cấm rõ bằng văn bản** việc sao chép/phân phối/tạo sản phẩm phái sinh, chủ động dò IP để chặn lấy dữ liệu hàng loạt | Không công bố rõ độ trễ/nguồn gốc | **Không dùng** — rủi ro pháp lý + kỹ thuật đều cao hơn api.hsx.vn |
 | FiinTrade/FiinGroup | Có, B2B | Hợp đồng thương mại, không có free tier | Có, đúng mô hình cho redistribute | Realtime (gói cao cấp) |
 
 **Quyết định cuối (đã triển khai, xem `supabase/functions/stocks-vn`):** dùng
@@ -59,22 +60,32 @@ và dễ vỡ hơn hẳn mọi Edge Function hiện có trong dự án (đều c
 REST đơn giản). Quyết định: triển khai giá cổ phiếu trước (đã xong), để
 VN-Index lại làm sau nếu thực sự cần.
 
-## Vì sao không dùng OKX (hay Bybit/Binance) cho chứng khoán
+## OKX cho "Quốc tế" trong Market > Chứng khoán — dùng CÓ ĐIỀU KIỆN (đã đổi quyết định)
 
-Đã kiểm tra riêng theo yêu cầu: OKX không có API dữ liệu chứng khoán thật.
-Cái OKX (và Bybit, Binance qua đối tác, Bitget, MEXC) có là **Tokenized
-Stocks** (vd XAAPL, XTSLA) — token on-chain do bên thứ ba xStocks/Backed
-Finance phát hành, giao dịch như 1 cặp spot crypto thông thường trên sàn.
-Gọi được qua cùng API ticker crypto (free, không cần key), nhưng:
+OKX không có API dữ liệu chứng khoán thật. Cái OKX (và Bybit, Binance qua
+đối tác, Bitget, MEXC) có là **Tokenized Stocks** (xStocks/Backed Finance,
+mã dạng `X{TICKER}-USDT` vd XAAPL-USDT, XTSLA-USDT — đã xác nhận qua API
+thực tế có ~80+ mã, không chỉ ~40 như ước tính ban đầu) — token on-chain mô
+phỏng giá, giao dịch như 1 cặp spot crypto thông thường, KHÔNG PHẢI giá
+khớp lệnh thật từ NASDAQ/NYSE, có thể lệch giá do cung-cầu/thanh khoản
+riêng của token.
 
-- Chỉ phủ ~40 mã lớn, không có cổ phiếu Việt Nam.
-- Giá là giá token on-chain, có thể lệch so với giá thật trên NASDAQ/NYSE do
-  chênh lệch cung-cầu/thanh khoản riêng của token.
-- Không khả dụng ở Mỹ/EU (giới hạn khu vực).
+**Quyết định ban đầu (khi mới có tính năng Market Chứng khoán)** là không
+dùng, vì rủi ro trình bày token như giá cổ phiếu thật. **Sau đó người dùng
+yêu cầu rõ ràng dùng OKX cho toàn bộ "International Stocks"** (thay cho
+danh sách 8 mã cố định qua Twelve Data, quota quá thấp để lấy "tất cả" như
+crypto) — đã đồng ý VỚI ĐIỀU KIỆN ghi chú rõ ràng trong UI rằng đây là giá
+token mô phỏng, không phải giá cổ phiếu thật (xem
+`wealth_market_stocks_okx_note` trong `app_strings.dart` và
+`market_stocks_tab.dart`). Không có khái niệm vốn hóa thị trường chính thức
+cho token này nên sắp xếp theo **thanh khoản (volume) 24h giảm dần** làm
+proxy, không phải vốn hóa thật — đã ghi rõ trong code
+(`OkxService.fetchTokenizedStocks`).
 
-Trình bày giá token này như "giá cổ phiếu thật" trong 1 app tài chính có
-rủi ro gây hiểu lầm nghiêm trọng cho người dùng. **Không dùng OKX cho phần
-chứng khoán** — chỉ tiếp tục dùng cho crypto như hiện tại (không đổi).
+Portfolio thực (Wallet > Tài sản đầu tư > Cổ phiếu, `stock_portfolio_screen.dart`)
+VẪN dùng Twelve Data (giá thật) — quyết định này CHỈ áp dụng cho màn Market
+(xem giá tham khảo/theo dõi), nơi độ phủ rộng quan trọng hơn độ chính xác
+tuyệt đối, và đã có disclaimer rõ ràng.
 
 ## Kiến trúc: cần backend proxy lần đầu tiên trong dự án
 

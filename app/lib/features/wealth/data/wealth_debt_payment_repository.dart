@@ -73,6 +73,25 @@ class WealthDebtPaymentRepository {
     );
   }
 
+  /// Sua lai note/so tien 1 lan tra da ghi - noi goi (debt_person_history_screen.dart)
+  /// chiu trach nhiem dieu chinh lai remaining_amount cua khoan no
+  /// ([WealthDebtRepository.restoreAmount] + `applyPayment`) va dong
+  /// wealth_balance_entries lien quan ([WealthBalanceEntryRepository.
+  /// updateBySourceDebtPayment]) truoc/sau khi goi ham nay, giong cach
+  /// add_transaction_sheet.dart dieu phoi nhieu bang cho 1 lan sua.
+  Future<void> update(
+    String userId,
+    String id, {
+    String? note,
+    required double amount,
+  }) async {
+    await _supabase
+        .from('wealth_debt_payments')
+        .update({'note': note, 'amount': amount})
+        .eq('id', id)
+        .eq('user_id', userId);
+  }
+
   Future<void> delete(String userId, String id) async {
     await _supabase
         .from('wealth_debt_payments')

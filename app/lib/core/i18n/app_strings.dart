@@ -1009,6 +1009,14 @@ class AppStrings {
       AppLanguage.vi: 'Giá khớp lệnh/đóng cửa gần nhất từ HOSE, chỉ mang tính tham khảo, không phải giá real-time chuẩn giao dịch.',
       AppLanguage.en: 'Last matched/closing price from HOSE, for reference only — not exchange-grade real-time data.',
     },
+    'wealth_market_stocks_okx_note': {
+      AppLanguage.vi: 'Giá token mô phỏng cổ phiếu (tokenized stock) trên OKX, KHÔNG phải giá thật từ NASDAQ/NYSE — có thể lệch giá. Sắp xếp theo thanh khoản 24h, không phải vốn hóa thị trường.',
+      AppLanguage.en: 'Tokenized stock price on OKX, NOT the real NASDAQ/NYSE price — may deviate. Sorted by 24h liquidity, not market cap.',
+    },
+    'wealth_market_stocks_search_hint': {
+      AppLanguage.vi: 'Tìm mã cổ phiếu...',
+      AppLanguage.en: 'Search stock symbol...',
+    },
     'wealth_market_metals_note': {
       AppLanguage.vi: 'Giá tham khảo, cập nhật mỗi vài phút. Bạc/Đồng là giá thế giới quy đổi.',
       AppLanguage.en: 'Reference prices, updated every few minutes. Silver/Copper are world prices converted.',
@@ -1139,6 +1147,10 @@ class AppStrings {
       AppLanguage.en: 'Add a debt owed to you',
     },
     'wealth_debt_pay': {AppLanguage.vi: 'Trả nợ', AppLanguage.en: 'Pay debt'},
+    'wealth_debt_edit_payment': {
+      AppLanguage.vi: 'Sửa lần trả nợ',
+      AppLanguage.en: 'Edit payment',
+    },
     'wealth_debt_collect': {
       AppLanguage.vi: 'Thu nợ',
       AppLanguage.en: 'Collect debt',

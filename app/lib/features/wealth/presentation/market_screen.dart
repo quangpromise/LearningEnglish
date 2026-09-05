@@ -5,6 +5,7 @@ import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_format.dart';
+import '../../crypto/data/okx_service.dart';
 import '../../crypto/presentation/crypto_coin_row.dart';
 import '../../crypto/presentation/crypto_market_tab.dart';
 import '../../crypto/presentation/crypto_providers.dart';
@@ -183,39 +184,54 @@ class _CategoryChipRow extends ConsumerWidget {
         ref.tr('wealth_investments_real_estate_title'),
       ),
     ];
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: [
-        for (final item in items)
-          GestureDetector(
-            onTap: () => onChanged(item.$1),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-              decoration: BoxDecoration(
-                color: selected == item.$1
-                    ? AppColors.wealthAccent.withValues(alpha: 0.22)
-                    : AppColors.glassFill,
-                borderRadius: BorderRadius.circular(999),
-                border: Border.all(
-                  color: selected == item.$1
-                      ? AppColors.wealthAccent
-                      : AppColors.glassBorder,
+    // Vien chung boc quanh CA 4 chip - phan biet ro day la nhom "chon loai
+    // thi truong" (cap tren), khac voi cac chip con rieng cua tung loai (vd
+    // "Quoc te/Viet Nam" trong Chung khoan, "Vang/Bac/Dong" trong Kim loai)
+    // hien o ngay ben duoi, tranh nhin gay nham la cung 1 nhom.
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: AppColors.glassFill.withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.glassBorder),
+      ),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          for (final item in items)
+            GestureDetector(
+              onTap: () => onChanged(item.$1),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 9,
                 ),
-              ),
-              child: Text(
-                item.$2,
-                style: AppTextStyles.body(
-                  size: 12,
-                  weight: FontWeight.w700,
+                decoration: BoxDecoration(
                   color: selected == item.$1
-                      ? AppColors.wealthAccent
-                      : AppColors.textPrimary,
+                      ? AppColors.wealthAccent.withValues(alpha: 0.22)
+                      : AppColors.glassFill,
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
+                    color: selected == item.$1
+                        ? AppColors.wealthAccent
+                        : AppColors.glassBorder,
+                  ),
+                ),
+                child: Text(
+                  item.$2,
+                  style: AppTextStyles.body(
+                    size: 12,
+                    weight: FontWeight.w700,
+                    color: selected == item.$1
+                        ? AppColors.wealthAccent
+                        : AppColors.textPrimary,
+                  ),
                 ),
               ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -257,6 +273,16 @@ class _UnifiedWatchlistTab extends ConsumerWidget {
     final stockVnQuotes = stockVnQuotesAsync.valueOrNull ?? [];
     final stockVnPriceBySymbol = {for (final q in stockVnQuotes) q.symbol: q};
 
+    final watchedStockOkxSymbols = assetWatchlist
+        .where((k) => k.startsWith('stock_okx:'))
+        .map((k) => k.substring('stock_okx:'.length))
+        .toSet();
+    final okxStockRows = watchedStockOkxSymbols.isEmpty
+        ? const <OkxTokenizedStock>[]
+        : (ref.watch(okxTokenizedStocksProvider).valueOrNull ?? [])
+              .where((s) => watchedStockOkxSymbols.contains(s.symbol))
+              .toList();
+
     final watchedMetalKeys = assetWatchlist
         .where((k) => k.startsWith('metal:'))
         .toList();
@@ -266,6 +292,7 @@ class _UnifiedWatchlistTab extends ConsumerWidget {
         watchedCoins.isEmpty &&
         watchedStockSymbols.isEmpty &&
         watchedStockVnSymbols.isEmpty &&
+        watchedStockOkxSymbols.isEmpty &&
         watchedMetalKeys.isEmpty;
 
     if (isEmpty) {
@@ -319,6 +346,10 @@ class _UnifiedWatchlistTab extends ConsumerWidget {
               quote: stockVnPriceBySymbol[symbol],
               isVn: true,
             ),
+            const SizedBox(height: 8),
+          ],
+          for (final stock in okxStockRows) ...[
+            IntlStockRow(stock: stock),
             const SizedBox(height: 8),
           ],
           const SizedBox(height: 8),

@@ -25,13 +25,31 @@
 // Deno khong ho tro dat header nay), phuc tap hon nhieu so voi REST don
 // gian ben duoi. Se lam sau neu can.
 //
-// Deploy: `supabase functions deploy stocks-vn`. Khong can secret/API key.
+// DO TIN CAY MANG: da xac nhan qua test thuc te api.hsx.vn kha "chap chon"
+// (~1/4-3/4 lan bi timeout du retry 3 lan/15s trong 1 request) - VA cache
+// trong bo nho (bien global) truoc day KHONG du vi Edge Function co the
+// chay tren isolate MOI (cold start) moi request, khien cache khong bao gio
+// duoc tai su dung giua cac lan goi that trong thuc te. Da chuyen sang cache
+// BEN VUNG trong bang wealth_edge_cache (xem migration 0038): (1) dung lai
+// ket qua thanh cong gan nhat trong TTL cho MOI isolate, (2) neu lan fetch
+// moi that bai het 3 lan, fallback ve du lieu CU trong cache (du da qua
+// TTL) thay vi tra loi 502 - uu tien "co gia hoi cu" hon "khong co gia".
+//
+// Deploy: `supabase functions deploy stocks-vn`. Can SUPABASE_URL +
+// SUPABASE_SERVICE_ROLE_KEY (Edge Function tu dong co san, khong can set
+// them secret).
+
+import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const HOSE_BOARD_URL =
   "https://api.hsx.vn/l/api/v1/securities/load-securities-matching/0";
-
+const CACHE_KEY = "stocks_vn_hose_board";
 const CACHE_TTL_MS = 3 * 60 * 1000;
-let cache: { data: unknown; expiresAt: number } | null = null;
+
+const supabase = createClient(
+  Deno.env.get("SUPABASE_URL")!,
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+);
 
 interface HoseRow {
   securitySymbol?: string;
@@ -54,11 +72,7 @@ async function fetchBoardOnce(): Promise<HoseRow[]> {
   return rows as HoseRow[];
 }
 
-// api.hsx.vn thuc te kha "chap chon" - da do thu: ~1/4 lan bi timeout du cho
-// toi 15s, khong lien quan gi den do lon payload (408 dong, ~300KB). Thu lai
-// toi da 3 lan (timeout 10s/lan) truoc khi bao loi - tang ty le thanh cong
-// trong 1 lan goi function ma khong can nguoi dung tu bam refresh lai.
-async function fetchBoard(): Promise<HoseRow[]> {
+async function fetchBoardWithRetry(): Promise<HoseRow[]> {
   let lastErr: unknown;
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
@@ -68,6 +82,46 @@ async function fetchBoard(): Promise<HoseRow[]> {
     }
   }
   throw lastErr;
+}
+
+async function readCache(): Promise<{ data: HoseRow[]; updatedAt: number } | null> {
+  const { data } = await supabase
+    .from("wealth_edge_cache")
+    .select("data, updated_at")
+    .eq("cache_key", CACHE_KEY)
+    .maybeSingle();
+  if (!data) return null;
+  return {
+    data: data.data as HoseRow[],
+    updatedAt: new Date(data.updated_at as string).getTime(),
+  };
+}
+
+async function writeCache(board: HoseRow[]): Promise<void> {
+  await supabase.from("wealth_edge_cache").upsert({
+    cache_key: CACHE_KEY,
+    data: board,
+    updated_at: new Date().toISOString(),
+  });
+}
+
+/// Uu tien cache con "tuoi" (trong TTL) de tra loi nhanh, khong goi HOSE.
+/// Het TTL thi thu fetch moi; neu fetch moi that bai HET (3 lan), fallback
+/// ve cache CU (du qua TTL) thay vi bao loi - chi bao loi that su khi CHUA
+/// TUNG co cache nao (lan dau tien tuyet doi khong ai goi thanh cong).
+async function getBoard(): Promise<HoseRow[]> {
+  const cached = await readCache();
+  if (cached && Date.now() - cached.updatedAt < CACHE_TTL_MS) {
+    return cached.data;
+  }
+  try {
+    const fresh = await fetchBoardWithRetry();
+    await writeCache(fresh);
+    return fresh;
+  } catch (err) {
+    if (cached) return cached.data;
+    throw err;
+  }
 }
 
 Deno.serve(async (req: Request) => {
@@ -94,13 +148,7 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    let board: HoseRow[];
-    if (cache && cache.expiresAt > Date.now()) {
-      board = cache.data as HoseRow[];
-    } else {
-      board = await fetchBoard();
-      cache = { data: board, expiresAt: Date.now() + CACHE_TTL_MS };
-    }
+    const board = await getBoard();
 
     const bySymbol = new Map(
       board

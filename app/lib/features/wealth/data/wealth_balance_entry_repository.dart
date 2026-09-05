@@ -39,6 +39,23 @@ class WealthBalanceEntryRepository {
         .eq('user_id', userId);
   }
 
+  /// Sua lai dong da sinh ra tu 1 lan tra no (source_debt_payment_id) -
+  /// dung khi nguoi dung sua so tien/note cua lan tra do trong lich su No,
+  /// giu nguyen account_type/bank da chon luc tra (khong doi hinh thuc khi
+  /// chi sua so tien/note).
+  Future<void> updateBySourceDebtPayment(
+    String userId,
+    String debtPaymentId, {
+    required double amount,
+    String? note,
+  }) async {
+    await _supabase
+        .from('wealth_balance_entries')
+        .update({'amount': amount, 'note': note})
+        .eq('user_id', userId)
+        .eq('source_debt_payment_id', debtPaymentId);
+  }
+
   Future<void> deleteEntry(String userId, String id) async {
     await _supabase
         .from('wealth_balance_entries')

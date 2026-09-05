@@ -45,7 +45,84 @@ class OkxTickerRow {
   final double changePercent24h;
 }
 
+/// Ma chinh cua vai coin THAT (khong phai co phieu tokenized) tren OKX vo
+/// tinh cung bat dau bang "X" - phai loai truoc khi loc theo pattern
+/// "X{TICKER}-USDT" cua xStocks/Backed Finance, neu khong se hien Stellar/
+/// XRP/Tezos... nham lan thanh "co phieu".
+const _kOkxRealCryptoXPrefixed = {'XLM', 'XRP', 'XTZ', 'XCH', 'XPL', 'XAUT'};
+
+/// 1 "co phieu tokenized" tren OKX (xStocks/Backed Finance, ma dang
+/// "X{TICKER}-USDT" vd XAAPL-USDT) - LA TOKEN ON-CHAIN mo phong gia, KHONG
+/// PHAI gia co phieu that tu NASDAQ/NYSE, co the lech gia thuc te do cung-
+/// cau rieng cua token. `symbol` la ma da bo tien to "X" (vd "AAPL") de
+/// hien thi giong ma co phieu that; `okxSymbol` giu nguyen "X{TICKER}" de
+/// goi candles/ticker WebSocket dung dinh dang OKX.
+class OkxTokenizedStock {
+  const OkxTokenizedStock({
+    required this.symbol,
+    required this.okxSymbol,
+    required this.price,
+    required this.changePercent24h,
+    required this.volume24hUsd,
+  });
+  final String symbol;
+  final String okxSymbol;
+  final double price;
+  final double changePercent24h;
+  final double volume24hUsd;
+}
+
 class OkxService {
+  /// Toan bo "co phieu tokenized" (xStocks) dang giao dich tren OKX - sap
+  /// theo volume24hUsd GIAM DAN lam proxy cho "quy mo" (KHONG PHAI von hoa
+  /// thi truong that - token nay khong co khai niem von hoa chinh thuc, chi
+  /// dung thanh khoan 24h de uoc luong tuong doi ma nao "lon" hon).
+  static Future<List<OkxTokenizedStock>> fetchTokenizedStocks() async {
+    final client = HttpClient();
+    try {
+      final req = await client.getUrl(
+        Uri.parse('https://www.okx.com/api/v5/market/tickers?instType=SPOT'),
+      );
+      final res = await req.close();
+      final body = await res.transform(utf8.decoder).join();
+      final data = jsonDecode(body) as Map<String, dynamic>;
+      final list = data['data'] as List;
+      final pattern = RegExp(r'^X([A-Z0-9]+)-USDT$');
+      final result = list
+          .cast<Map<String, dynamic>>()
+          .map((r) {
+            final instId = r['instId'] as String? ?? '';
+            final match = pattern.firstMatch(instId);
+            if (match == null) return null;
+            final ticker = match.group(1)!;
+            if (_kOkxRealCryptoXPrefixed.contains(ticker)) return null;
+            if (ticker.contains('TEST')) return null;
+            final last = double.tryParse(r['last']?.toString() ?? '') ?? 0;
+            final open24h =
+                double.tryParse(r['open24h']?.toString() ?? '') ?? 0;
+            final volCcy24h =
+                double.tryParse(r['volCcy24h']?.toString() ?? '') ?? 0;
+            if (last <= 0) return null;
+            final changePercent = open24h == 0
+                ? 0.0
+                : (last - open24h) / open24h * 100;
+            return OkxTokenizedStock(
+              symbol: ticker,
+              okxSymbol: 'X$ticker',
+              price: last,
+              changePercent24h: changePercent,
+              volume24hUsd: volCcy24h,
+            );
+          })
+          .whereType<OkxTokenizedStock>()
+          .toList();
+      result.sort((a, b) => b.volume24hUsd.compareTo(a.volume24hUsd));
+      return result;
+    } finally {
+      client.close();
+    }
+  }
+
   /// Toan bo gia hien tai cho MOI cap giao dich USDT dang "live" tren OKX -
   /// 1 lan goi REST duy nhat (khong phan trang), dung de tim kiem coin ngoai
   /// pham vi top 100 von hoa cua CoinGecko.

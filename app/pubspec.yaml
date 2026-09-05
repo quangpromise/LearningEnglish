@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+93
+version: 1.0.0+94
 
 environment:
   sdk: ^3.13.1
@@ -110,7 +110,9 @@ dependencies:
   firebase_messaging: ^16.6.0
   # Ve bieu do gia (crypto/chung khoan) - MIT, mien phi, chi ve UI thuan tuy
   # (khong tu goi API nao) nen khong anh huong den nguon du lieu da chon.
-  fl_chart: ^0.69.0
+  # ^1.0.0 (khong phai 0.69 truoc day) vi CandlestickChart (nen xanh/do kieu
+  # OKX) chi co tu fl_chart 1.0.0 tro len.
+  fl_chart: ^1.2.0
 
 dev_dependencies:
   flutter_test:

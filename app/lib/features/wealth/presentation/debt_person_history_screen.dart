@@ -8,6 +8,7 @@ import '../../../core/utils/currency_format.dart';
 import '../data/wealth_debt_model.dart';
 import 'confirm_delete.dart';
 import 'edit_debt_dialog.dart';
+import 'edit_debt_payment_dialog.dart';
 import 'pay_debt_sheet.dart';
 
 /// Toan bo lich su no cua 1 nguoi (co the co nhieu khoan no rieng biet theo
@@ -369,34 +370,45 @@ class _DebtEntryCard extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       for (final p in payments)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 2),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      '${p.occurredAt.day.toString().padLeft(2, '0')}/'
-                                      '${p.occurredAt.month.toString().padLeft(2, '0')} · '
-                                      '${p.paymentBankName ?? ref.tr('wallet_section_cash')}',
-                                      style: AppTextStyles.muted(size: 12),
-                                    ),
-                                    if (p.note?.isNotEmpty == true)
+                        GestureDetector(
+                          onTap: () =>
+                              showEditDebtPaymentDialog(context, ref, debt, p),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 2),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
                                       Text(
-                                        p.note!,
-                                        style: AppTextStyles.body(size: 12),
+                                        '${p.occurredAt.day.toString().padLeft(2, '0')}/'
+                                        '${p.occurredAt.month.toString().padLeft(2, '0')} · '
+                                        '${p.paymentBankName ?? ref.tr('wallet_section_cash')}',
+                                        style: AppTextStyles.muted(size: 12),
                                       ),
-                                  ],
+                                      if (p.note?.isNotEmpty == true)
+                                        Text(
+                                          p.note!,
+                                          style: AppTextStyles.body(size: 12),
+                                        ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              Text(
-                                formatByCurrency(p.amount, p.currency),
-                                style: AppTextStyles.muted(size: 12),
-                              ),
-                            ],
+                                Text(
+                                  formatByCurrency(p.amount, p.currency),
+                                  style: AppTextStyles.muted(size: 12),
+                                ),
+                                const SizedBox(width: 6),
+                                const Icon(
+                                  Icons.edit_rounded,
+                                  size: 13,
+                                  color: AppColors.textMuted,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                     ],

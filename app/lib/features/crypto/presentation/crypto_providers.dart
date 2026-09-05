@@ -33,6 +33,14 @@ final okxAllTickersProvider = FutureProvider<List<OkxTickerRow>>(
   (ref) => OkxService.fetchAllUsdtTickers(),
 );
 
+/// Toan bo "co phieu tokenized" (xStocks) tren OKX, da sap theo thanh khoan
+/// 24h giam dan - dung cho Market > Chung khoan > Quoc te. Khong autoDispose
+/// giong okxAllTickersProvider (danh sach hang tram dong, giu lai giua cac
+/// lan mo/dong tab).
+final okxTokenizedStocksProvider = FutureProvider<List<OkxTokenizedStock>>(
+  (ref) => OkxService.fetchTokenizedStocks(),
+);
+
 /// Lich su nen 1 ky hieu cho man chi tiet coin - family theo (symbol, bar)
 /// noi bang dau gach doc de dung String lam key (gion voi cac family khac
 /// trong file nay).
