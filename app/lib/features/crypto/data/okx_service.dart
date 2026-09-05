@@ -210,6 +210,52 @@ class OkxService {
     }
   }
 
+  /// Nen CU HON 1 moc thoi gian cho truoc - dung endpoint rieng
+  /// `history-candles` (khac `candles` o tren, endpoint nay danh rieng cho
+  /// du lieu lich su cu, cho phep phan trang lui xa hon), dung khi nguoi
+  /// dung keo bieu do ve ben trai het du lieu dang co de xem nen cac nam
+  /// truoc (toi da 3 nam - gioi han o phia goi, xem
+  /// crypto_coin_detail_screen.dart._loadMoreHistory).
+  static Future<List<OkxCandle>> fetchHistoryCandles({
+    required String symbol,
+    required String bar,
+    required DateTime before,
+    int limit = 100,
+  }) async {
+    final client = HttpClient();
+    try {
+      final beforeMs = before.millisecondsSinceEpoch;
+      final req = await client.getUrl(
+        Uri.parse(
+          'https://www.okx.com/api/v5/market/history-candles'
+          '?instId=$symbol-USDT&bar=$bar&limit=$limit&after=$beforeMs',
+        ),
+      );
+      final res = await req.close();
+      final body = await res.transform(utf8.decoder).join();
+      final data = jsonDecode(body) as Map<String, dynamic>;
+      final rows = (data['data'] as List?) ?? [];
+      return rows
+          .cast<List<dynamic>>()
+          .map(
+            (r) => OkxCandle(
+              time: DateTime.fromMillisecondsSinceEpoch(
+                int.parse(r[0] as String),
+              ),
+              open: double.parse(r[1] as String),
+              high: double.parse(r[2] as String),
+              low: double.parse(r[3] as String),
+              close: double.parse(r[4] as String),
+            ),
+          )
+          .toList()
+          .reversed
+          .toList();
+    } finally {
+      client.close();
+    }
+  }
+
   WebSocket? _socket;
   Timer? _pingTimer;
   StreamController<Map<String, OkxTicker>>? _controller;

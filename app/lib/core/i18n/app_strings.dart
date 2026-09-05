@@ -1412,6 +1412,32 @@ class AppStrings {
       AppLanguage.vi: 'Từ điển',
       AppLanguage.en: 'Dictionary',
     },
+    'home_video_link_title': {
+      AppLanguage.vi: 'Dán link video',
+      AppLanguage.en: 'Paste video link',
+    },
+    'video_link_screen_title': {
+      AppLanguage.vi: 'Mở video từ link',
+      AppLanguage.en: 'Open video from link',
+    },
+    'video_link_hint': {
+      AppLanguage.vi: 'Dán link video vào đây (YouTube, v.v.)',
+      AppLanguage.en: 'Paste a video link here (YouTube, etc.)',
+    },
+    'video_link_open_button': {AppLanguage.vi: 'Mở', AppLanguage.en: 'Open'},
+    'video_link_invalid': {
+      AppLanguage.vi:
+          'Link không hợp lệ - phải bắt đầu bằng http:// hoặc https://',
+      AppLanguage.en: 'Invalid link - must start with http:// or https://',
+    },
+    'video_link_load_error': {
+      AppLanguage.vi: 'Không tải được trang này',
+      AppLanguage.en: 'Could not load this page',
+    },
+    'video_link_open_external': {
+      AppLanguage.vi: 'Mở bằng trình duyệt ngoài',
+      AppLanguage.en: 'Open in external browser',
+    },
     'home_stat_streak': {
       AppLanguage.vi: 'Ngày liên tục',
       AppLanguage.en: 'Day streak',

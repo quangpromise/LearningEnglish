@@ -13,15 +13,16 @@ import '../../crypto/presentation/okx_only_coin_row.dart';
 import '../data/exchange_rate_repository.dart';
 import '../data/stocks_intl_repository.dart';
 import 'market_metals_tab.dart';
-import 'market_real_estate_tab.dart';
 import 'market_stocks_tab.dart';
 
 /// Man Market (Phase F, redesign theo yeu cau gop chung) - 2 tab o TREN
 /// CUNG: "Market" (chon loai tai san bang chip ben trong: Crypto/Co phieu/
-/// Kim loai hiem/Nha dat, giong cach 1 san giao dich that gop chung cac thi
-/// truong) va "Watchlist" (gop TAT CA item da "theo doi" tu moi loai tai
-/// san vao 1 danh sach duy nhat) - thay the cau truc cu la 4 tab rieng biet
-/// (bi tran chu khi isScrollable + 4 tab dai).
+/// Kim loai hiem, giong cach 1 san giao dich that gop chung cac thi truong -
+/// KHONG co Nha dat vi khong co "gia thi truong" nao de theo doi, chi nam
+/// trong Vi > Tai san dau tu voi gia tu nhap) va "Watchlist" (gop TAT CA
+/// item da "theo doi" tu moi loai tai san vao 1 danh sach duy nhat) - thay
+/// the cau truc cu la 4 tab rieng biet (bi tran chu khi isScrollable + 4 tab
+/// dai).
 class MarketScreen extends StatefulWidget {
   const MarketScreen({super.key});
 
@@ -29,7 +30,7 @@ class MarketScreen extends StatefulWidget {
   State<MarketScreen> createState() => _MarketScreenState();
 }
 
-enum _MarketCategory { crypto, stocks, metals, realEstate }
+enum _MarketCategory { crypto, stocks, metals }
 
 class _MarketScreenState extends State<MarketScreen>
     with SingleTickerProviderStateMixin {
@@ -161,8 +162,6 @@ class _MarketScreenState extends State<MarketScreen>
         return const MarketStocksTab();
       case _MarketCategory.metals:
         return const MarketMetalsTab();
-      case _MarketCategory.realEstate:
-        return const MarketRealEstateTab();
     }
   }
 }
@@ -180,10 +179,6 @@ class _CategoryChipRow extends ConsumerWidget {
       (_MarketCategory.crypto, 'Crypto'),
       (_MarketCategory.stocks, ref.tr('wealth_investments_stocks_title')),
       (_MarketCategory.metals, ref.tr('wealth_investments_metal_title')),
-      (
-        _MarketCategory.realEstate,
-        ref.tr('wealth_investments_real_estate_title'),
-      ),
     ];
     // Vien chung boc quanh CA 4 chip - phan biet ro day la nhom "chon loai
     // thi truong" (cap tren), khac voi cac chip con rieng cua tung loai (vd

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -75,22 +74,28 @@ class _CryptoCoinDetailScreenState
   // hien thi 1 nen dang chay theo gia that trong luc no.
   List<OkxCandle>? _liveCandles;
   Timer? _refetchTimer;
-  // Zoom/pan bang tay giong OKX: [_visibleCount] la so nen dang hien trong
-  // "cua so" xem (null = hien HET nen tai duoc, gia tri mac dinh), pinch de
-  // thay doi so nay (it nen hon = zoom in, xem chi tiet hon; nhieu nen hon =
-  // zoom out, xem gon/nen hon). [_windowStart] la chi so nen dau tien trong
-  // cua so, keo ngang (pan) de dich chuyen. Ca 2 reset ve mac dinh moi khi
-  // doi khung thoi gian vi vi tri zoom cu khong con hop ly voi bo du lieu
-  // moi. Dung cach "cat mot cua so du lieu" thay vi InteractiveViewer/
-  // transform-matrix de truc gia ben phai KHONG bi phong to/meo chu theo.
-  int? _visibleCount;
-  int _windowStart = 0;
-  int _gestureStartVisibleCount = 0;
-  double _gestureFocalCandleIndex = 0;
+  // Zoom truc GIA (truc doc, cot ben phai) giong OKX - keo len/xuong ngay
+  // tren cot gia de "keo dai"/"thu gon" chieu cao nen: keo LEN thu hep
+  // khoang gia hien thi (nen cao/dai ra), keo XUONG mo rong khoang gia
+  // (nen ngan/gon lai). KHONG phai zoom truc ngang (so luong nen hien) -
+  // da bo huong do theo yeu cau, chi con zoom doc nay.
+  double _yZoomFactor = 1.0;
+
+  // Keo lui xem nen cac nam truoc (toi da 3 nam - xem _kMaxHistory) giong
+  // OKX: cuon ngang thu cong (khong dung transform), cham toi gan mep TRAI
+  // (nen CU nhat dang co) thi tu dong tai them 1 lo nen cu hon, noi vao dau
+  // danh sach hien co.
+  final _hScroll = ScrollController();
+  static const _candleWidthPx = 6.0;
+  static const _kMaxHistory = Duration(days: 365 * 3);
+  bool _loadingMoreHistory = false;
+  bool _noMoreHistory = false;
+  bool _pendingScrollToEnd = true;
 
   @override
   void initState() {
     super.initState();
+    _hScroll.addListener(_onHScroll);
     _sub = _okx.watch([widget.symbol]).listen((ticks) {
       final t = ticks[widget.symbol];
       if (t == null || !mounted) return;
@@ -123,8 +128,59 @@ class _CryptoCoinDetailScreenState
   void dispose() {
     _sub?.cancel();
     _refetchTimer?.cancel();
+    _hScroll.removeListener(_onHScroll);
+    _hScroll.dispose();
     _okx.dispose();
     super.dispose();
+  }
+
+  void _onHScroll() {
+    if (_loadingMoreHistory || _noMoreHistory) return;
+    // Gan mep TRAI (nen cu nhat dang co, ScrollController do tu 0 - KHONG
+    // dung reverse) - con cach duoi 300px thi bat dau tai truoc, tranh cho
+    // nguoi dung keo toi tan mep roi moi tai (giat/khoang trong tam thoi).
+    if (_hScroll.position.pixels <= 300) _loadMoreHistory();
+  }
+
+  Future<void> _loadMoreHistory() async {
+    final candles = _liveCandles;
+    if (candles == null || candles.isEmpty) return;
+    final oldest = candles.first.time;
+    if (DateTime.now().difference(oldest) >= _kMaxHistory) {
+      _noMoreHistory = true;
+      return;
+    }
+    _loadingMoreHistory = true;
+    final (bar, _) = _period.params;
+    try {
+      final older = await OkxService.fetchHistoryCandles(
+        symbol: widget.symbol,
+        bar: bar,
+        before: oldest,
+        limit: 100,
+      );
+      if (!mounted) return;
+      if (older.isEmpty) {
+        _noMoreHistory = true;
+        return;
+      }
+      final addedWidth = older.length * _candleWidthPx;
+      setState(() => _liveCandles = [...older, ...candles]);
+      // Vua noi them nen CU vao DAU danh sach - toa do cua moi nen HIEN
+      // TAI nguoi dung dang xem bi doi (dich sang phai them addedWidth px)
+      // du gia tri khong doi. Bu lai offset cuon NGAY LAP TUC (cung 1
+      // frame, truoc khi ve) de man hinh KHONG bi giat/nhay vi tri.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !_hScroll.hasClients) return;
+        _hScroll.jumpTo(_hScroll.position.pixels + addedWidth);
+      });
+    } catch (_) {
+      // Loi mang tam thoi - khong sao, lan cuon toi gan mep tiep theo se
+      // thu lai, khong can bao loi rieng cho 1 lan tai them khong thanh
+      // cong.
+    } finally {
+      _loadingMoreHistory = false;
+    }
   }
 
   @override
@@ -182,11 +238,12 @@ class _CryptoCoinDetailScreenState
                         _period = p;
                         // Doi khung thoi gian = nen khac hoan toan - xoa ban
                         // sao live cu de khong "keo theo" du lieu sai khung,
-                        // dong thoi reset zoom/pan vi vi tri cu se khong con
-                        // hop ly voi bo du lieu moi.
+                        // dong thoi reset zoom truc gia vi khoang gia cu se
+                        // khong con hop ly voi bo du lieu moi.
                         _liveCandles = null;
-                        _visibleCount = null;
-                        _windowStart = 0;
+                        _yZoomFactor = 1.0;
+                        _noMoreHistory = false;
+                        _pendingScrollToEnd = true;
                       }),
                     ),
                     const SizedBox(width: 8),
@@ -221,121 +278,149 @@ class _CryptoCoinDetailScreenState
                   // `fetched` truc tiep, de khong bi ghi de moi lan REST
                   // refetch dinh ky lam mat hieu ung nen dang chay live.
                   _liveCandles ??= List.of(fetched);
-                  final allCandles = _liveCandles!;
-                  final total = allCandles.length;
-                  // "Cua so" nen dang hien - pinch de thu hep (zoom in, xem
-                  // chi tiet hon) hoac mo rong (zoom out, xem gon hon).
-                  final minVisible = math.min(10, total);
-                  _visibleCount = (_visibleCount ?? total).clamp(
-                    minVisible,
-                    total,
-                  );
-                  _windowStart = _windowStart.clamp(0, total - _visibleCount!);
-                  final candles = allCandles.sublist(
-                    _windowStart,
-                    _windowStart + _visibleCount!,
-                  );
-                  final minY = candles
+                  final candles = _liveCandles!;
+                  final rawMinY = candles
                       .map((c) => c.low)
                       .reduce((a, b) => a < b ? a : b);
-                  final maxY = candles
+                  final rawMaxY = candles
                       .map((c) => c.high)
                       .reduce((a, b) => a > b ? a : b);
-                  final pad = (maxY - minY) * 0.08;
+                  final pad = (rawMaxY - rawMinY) * 0.08;
+                  // Zoom truc gia: co gian khoang [minY, maxY] quanh DIEM
+                  // GIUA cua khoang gia goc, theo _yZoomFactor (< 1 = thu
+                  // hep khoang gia -> nen cao/dai ra; > 1 = mo rong khoang
+                  // gia -> nen ngan/gon lai) - xem GestureDetector keo doc
+                  // tren cot truc gia ben duoi.
+                  final mid = (rawMinY + rawMaxY) / 2;
+                  final halfRange = ((rawMaxY - rawMinY) / 2 + pad).clamp(
+                    1e-9,
+                    double.infinity,
+                  );
+                  final zoomedHalf = halfRange * _yZoomFactor;
+                  final minY = mid - zoomedHalf;
+                  final maxY = mid + zoomedHalf;
                   const axisWidth = 56.0;
-                  return LayoutBuilder(
-                    builder: (context, constraints) {
-                      final chartAreaWidth = math.max(
-                        1.0,
-                        constraints.maxWidth - axisWidth,
-                      );
-                      return GestureDetector(
-                        onScaleStart: (details) {
-                          _gestureStartVisibleCount = _visibleCount!;
-                          final candleWidthPx = chartAreaWidth / _visibleCount!;
-                          _gestureFocalCandleIndex =
-                              _windowStart +
-                              details.localFocalPoint.dx / candleWidthPx;
-                        },
-                        onScaleUpdate: (details) {
-                          setState(() {
-                            final newVisibleCount =
-                                (_gestureStartVisibleCount / details.scale)
-                                    .round()
-                                    .clamp(minVisible, total);
-                            final newCandleWidthPx =
-                                chartAreaWidth / newVisibleCount;
-                            _visibleCount = newVisibleCount;
-                            _windowStart =
-                                (_gestureFocalCandleIndex -
-                                        details.localFocalPoint.dx /
-                                            newCandleWidthPx)
-                                    .round()
-                                    .clamp(0, total - newVisibleCount);
-                          });
-                        },
-                        child: CandlestickChart(
-                          CandlestickChartData(
-                            minY: minY - pad,
-                            maxY: maxY + pad,
-                            gridData: const FlGridData(show: false),
-                            borderData: FlBorderData(show: false),
-                            // Nen xanh khi dong cua >= mo cua, do khi thap
-                            // hon - dung mau teal/pink chuan cua app thay vi
-                            // mau mac dinh cua fl_chart, cho dong bo voi cac
-                            // PNL khac.
-                            candlestickPainter: DefaultCandlestickPainter(
-                              candlestickStyleProvider: (spot, _) {
-                                final color = spot.isUp
-                                    ? AppColors.teal
-                                    : AppColors.pink;
-                                return CandlestickStyle(
-                                  lineColor: color,
-                                  lineWidth: 1.2,
-                                  bodyStrokeColor: color,
-                                  bodyStrokeWidth: 0,
-                                  bodyFillColor: color,
-                                  bodyWidth: 4,
-                                  bodyRadius: 1,
-                                );
-                              },
-                            ),
-                            // Truc gia ben PHAI giong OKX (khong hien truc
-                            // trai/tren/duoi de chart gon, chi can 1 truc
-                            // tham chieu).
-                            titlesData: FlTitlesData(
-                              show: true,
-                              topTitles: const AxisTitles(),
-                              leftTitles: const AxisTitles(),
-                              bottomTitles: const AxisTitles(),
-                              rightTitles: AxisTitles(
-                                sideTitles: SideTitles(
-                                  showTitles: true,
-                                  reservedSize: axisWidth,
-                                  getTitlesWidget: (value, meta) => Padding(
-                                    padding: const EdgeInsets.only(left: 4),
-                                    child: Text(
-                                      _formatPrice(value),
-                                      style: AppTextStyles.muted(size: 10),
+                  return Row(
+                    children: [
+                      // Vung nen: CUON NGANG duoc (keo lui xem nam truoc,
+                      // toi 3 nam - xem _loadMoreHistory), do rong toi
+                      // thieu theo so nen * be rong 1 nen de nen luon "gon"
+                      // (khong bi keo gian ra het man hinh khi it nen).
+                      // Truc gia KHONG nam trong day - dat rieng, CO DINH,
+                      // ben phai (xem duoi) de khong bi cuon mat theo.
+                      Expanded(
+                        child: ClipRect(
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              final totalWidth =
+                                  (candles.length * _candleWidthPx).clamp(
+                                    constraints.maxWidth,
+                                    double.infinity,
+                                  );
+                              if (_pendingScrollToEnd) {
+                                _pendingScrollToEnd = false;
+                                WidgetsBinding.instance.addPostFrameCallback((
+                                  _,
+                                ) {
+                                  if (mounted && _hScroll.hasClients) {
+                                    _hScroll.jumpTo(
+                                      _hScroll.position.maxScrollExtent,
+                                    );
+                                  }
+                                });
+                              }
+                              return SingleChildScrollView(
+                                controller: _hScroll,
+                                scrollDirection: Axis.horizontal,
+                                child: SizedBox(
+                                  width: totalWidth,
+                                  height: constraints.maxHeight,
+                                  child: CandlestickChart(
+                                    CandlestickChartData(
+                                      minY: minY,
+                                      maxY: maxY,
+                                      gridData: const FlGridData(show: false),
+                                      borderData: FlBorderData(show: false),
+                                      // Nen xanh khi dong cua >= mo cua, do
+                                      // khi thap hon - dung mau teal/pink
+                                      // chuan cua app thay vi mau mac dinh
+                                      // cua fl_chart, cho dong bo voi cac
+                                      // PNL khac.
+                                      candlestickPainter:
+                                          DefaultCandlestickPainter(
+                                            candlestickStyleProvider:
+                                                (spot, _) {
+                                                  final color = spot.isUp
+                                                      ? AppColors.teal
+                                                      : AppColors.pink;
+                                                  return CandlestickStyle(
+                                                    lineColor: color,
+                                                    lineWidth: 1.2,
+                                                    bodyStrokeColor: color,
+                                                    bodyStrokeWidth: 0,
+                                                    bodyFillColor: color,
+                                                    bodyWidth: 4,
+                                                    bodyRadius: 1,
+                                                  );
+                                                },
+                                          ),
+                                      // Khong hien truc nao ben trong chart
+                                      // nay nua - truc gia ve RIENG, co dinh
+                                      // ben phai (khong cuon theo), xem
+                                      // _PriceAxisLabels duoi.
+                                      titlesData: const FlTitlesData(
+                                        show: false,
+                                      ),
+                                      candlestickSpots: [
+                                        for (var i = 0; i < candles.length; i++)
+                                          CandlestickSpot(
+                                            x: i.toDouble(),
+                                            open: candles[i].open,
+                                            high: candles[i].high,
+                                            low: candles[i].low,
+                                            close: candles[i].close,
+                                          ),
+                                      ],
                                     ),
                                   ),
                                 ),
-                              ),
-                            ),
-                            candlestickSpots: [
-                              for (var i = 0; i < candles.length; i++)
-                                CandlestickSpot(
-                                  x: i.toDouble(),
-                                  open: candles[i].open,
-                                  high: candles[i].high,
-                                  low: candles[i].low,
-                                  close: candles[i].close,
-                                ),
-                            ],
+                              );
+                            },
                           ),
                         ),
-                      );
-                    },
+                      ),
+                      // Truc gia CO DINH ben phai (khong cuon theo vung nen)
+                      // - dong thoi la vung keo doc de zoom gia (giong OKX:
+                      // keo LEN thu hep khoang gia/nen dai ra, keo XUONG mo
+                      // rong khoang gia/nen gon lai).
+                      SizedBox(
+                        width: axisWidth,
+                        child: Stack(
+                          children: [
+                            Positioned.fill(
+                              child: _PriceAxisLabels(
+                                minY: minY,
+                                maxY: maxY,
+                                formatPrice: _formatPrice,
+                              ),
+                            ),
+                            Positioned.fill(
+                              child: GestureDetector(
+                                behavior: HitTestBehavior.translucent,
+                                onVerticalDragUpdate: (details) {
+                                  setState(() {
+                                    _yZoomFactor =
+                                        (_yZoomFactor -
+                                                details.delta.dy * 0.006)
+                                            .clamp(0.15, 6.0);
+                                  });
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   );
                 },
               ),
@@ -350,6 +435,50 @@ class _CryptoCoinDetailScreenState
     if (price >= 1) return price.toStringAsFixed(2);
     if (price >= 0.01) return price.toStringAsFixed(4);
     return price.toStringAsFixed(8);
+  }
+}
+
+/// Truc gia ve THU CONG (thay vi dung `rightTitles` cua fl_chart) - can
+/// tach rieng khoi CandlestickChart de dat CO DINH ben ngoai vung cuon
+/// ngang, khong bi "troi" mat theo khi nguoi dung keo lui xem lich su (xem
+/// crypto_coin_detail_screen build()). Chia deu [_tickCount] moc tu
+/// [maxY] (tren cung) xuong [minY] (duoi cung).
+class _PriceAxisLabels extends StatelessWidget {
+  const _PriceAxisLabels({
+    required this.minY,
+    required this.maxY,
+    required this.formatPrice,
+  });
+  final double minY;
+  final double maxY;
+  final String Function(double) formatPrice;
+
+  static const _tickCount = 5;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final height = constraints.maxHeight;
+        return Stack(
+          children: [
+            for (var i = 0; i < _tickCount; i++)
+              Positioned(
+                // i=0 o TREN CUNG (gia cao nhat maxY), i cuoi o DUOI CUNG
+                // (gia thap nhat minY) - tru 7px de can giua chu theo chieu
+                // doc quanh moc do (uoc luong nua chieu cao 1 dong text).
+                top: (height / (_tickCount - 1)) * i - 7,
+                left: 4,
+                right: 0,
+                child: Text(
+                  formatPrice(maxY - (maxY - minY) * i / (_tickCount - 1)),
+                  style: AppTextStyles.muted(size: 10),
+                ),
+              ),
+          ],
+        );
+      },
+    );
   }
 }
 
