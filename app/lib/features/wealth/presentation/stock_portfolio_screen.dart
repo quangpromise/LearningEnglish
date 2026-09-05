@@ -231,10 +231,17 @@ class _AddHoldingSheetState extends ConsumerState<_AddHoldingSheet> {
     super.dispose();
   }
 
+  bool _avgCostAutoFilled = false;
+
   Future<void> _save() async {
     final symbol = _symbol.trim().toUpperCase();
-    final quantity = double.tryParse(_quantityController.text.trim());
-    final avgCost = double.tryParse(_avgCostController.text.trim());
+    // BUG DA SUA: 2 o nay dung ThousandsInputFormatter (tu chen dau phay khi
+    // go, vd "61,900") nhung truoc day dung double.tryParse THANG - luon tra
+    // ve null vi dau phay khong phai so hop le, khien Save khong bao gio
+    // chay duoc (im lang return, khong bao loi) - day chinh la nguyen nhan
+    // "nut Save khong hoat dong" nguoi dung bao cao.
+    final quantity = parseThousandsFormatted(_quantityController.text.trim());
+    final avgCost = parseThousandsFormatted(_avgCostController.text.trim());
     if (symbol.isEmpty ||
         quantity == null ||
         quantity <= 0 ||
@@ -273,6 +280,29 @@ class _AddHoldingSheetState extends ConsumerState<_AddHoldingSheet> {
   @override
   Widget build(BuildContext context) {
     final isVn = _assetType == 'stock_vn';
+    final isManual = _manualPrice != null;
+    // Lay gia REAL-TIME cho ma da chon (VN qua HOSE, Quoc te qua Twelve
+    // Data) - tu dien vao o "gia von" NEU nguoi dung chua tu go gi, de
+    // "chon so luong la xong" nhu yeu cau, khong bat buoc phai tu nhap gia.
+    // Ma nhap thu cong (isManual) khong co nguon gia song, dung thang gia
+    // da nhap luc chon.
+    double? livePrice = isManual ? _manualPrice : null;
+    if (!isManual) {
+      final quotesAsync = isVn
+          ? ref.watch(stocksVnQuotesProvider(_symbol))
+          : ref.watch(stocksIntlQuotesProvider(_symbol));
+      final quotes = quotesAsync.valueOrNull ?? const [];
+      if (quotes.isNotEmpty) livePrice = quotes.first.price;
+    }
+    if (livePrice != null &&
+        !_avgCostAutoFilled &&
+        _avgCostController.text.isEmpty) {
+      _avgCostAutoFilled = true;
+      final priceToFill = livePrice;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _avgCostController.text = groupThousands(priceToFill);
+      });
+    }
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -317,6 +347,18 @@ class _AddHoldingSheetState extends ConsumerState<_AddHoldingSheet> {
                     ),
                     if (_name != null)
                       Text(_name!, style: AppTextStyles.muted(size: 11.5)),
+                    const SizedBox(height: 4),
+                    Text(
+                      livePrice == null
+                          ? ref.tr('wealth_quote_error')
+                          : '${ref.tr('wealth_stock_current_price_label')}: '
+                                '${isVn ? '${livePrice.toStringAsFixed(0)}đ' : '\$${livePrice.toStringAsFixed(2)}'}',
+                      style: AppTextStyles.body(
+                        size: 12.5,
+                        weight: FontWeight.w700,
+                        color: AppColors.wealthAccent,
+                      ),
+                    ),
                   ],
                 ),
               ),

@@ -1025,6 +1025,10 @@ class AppStrings {
       AppLanguage.vi: 'giá vốn',
       AppLanguage.en: 'avg cost',
     },
+    'wealth_stock_current_price_label': {
+      AppLanguage.vi: 'Giá hiện tại',
+      AppLanguage.en: 'Current price',
+    },
     'wealth_add_payment_method': {
       AppLanguage.vi: 'Thêm hình thức',
       AppLanguage.en: 'Add payment method',
@@ -1046,12 +1050,16 @@ class AppStrings {
       AppLanguage.en: 'Vietnam',
     },
     'wealth_market_stocks_vn_note': {
-      AppLanguage.vi: 'Giá khớp lệnh/đóng cửa gần nhất từ HOSE, chỉ mang tính tham khảo, không phải giá real-time chuẩn giao dịch.',
-      AppLanguage.en: 'Last matched/closing price from HOSE, for reference only — not exchange-grade real-time data.',
+      AppLanguage.vi: 'Giá khớp lệnh/đóng cửa gần nhất từ HOSE, chỉ mang tính tham khảo, không phải giá real-time chuẩn giao dịch. Sắp xếp theo giá trị giao dịch trong phiên (KHÔNG phải vốn hóa thị trường thật — HOSE không công bố số cổ phiếu lưu hành qua nguồn này).',
+      AppLanguage.en: 'Last matched/closing price from HOSE, for reference only — not exchange-grade real-time data. Sorted by trading value (NOT real market cap — HOSE does not publish outstanding shares via this source).',
     },
     'wealth_market_stocks_okx_note': {
-      AppLanguage.vi: 'Giá token mô phỏng cổ phiếu (tokenized stock) trên OKX, KHÔNG phải giá thật từ NASDAQ/NYSE — có thể lệch giá. Sắp xếp theo thanh khoản 24h, không phải vốn hóa thị trường.',
-      AppLanguage.en: 'Tokenized stock price on OKX, NOT the real NASDAQ/NYSE price — may deviate. Sorted by 24h liquidity, not market cap.',
+      AppLanguage.vi: 'Giá token mô phỏng cổ phiếu (tokenized stock) trên OKX, KHÔNG phải giá thật từ NASDAQ/NYSE — có thể lệch giá. Sắp xếp theo thanh khoản 24h (KHÔNG phải vốn hóa thị trường thật — không có nguồn miễn phí nào cung cấp số này).',
+      AppLanguage.en: 'Tokenized stock price on OKX, NOT the real NASDAQ/NYSE price — may deviate. Sorted by 24h liquidity (NOT real market cap — no free data source provides that figure).',
+    },
+    'wealth_market_trading_value': {
+      AppLanguage.vi: 'GT giao dịch',
+      AppLanguage.en: 'Trading value',
     },
     'wealth_market_stocks_search_hint': {
       AppLanguage.vi: 'Tìm mã cổ phiếu...',

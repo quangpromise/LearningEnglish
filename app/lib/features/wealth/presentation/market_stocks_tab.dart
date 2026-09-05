@@ -98,11 +98,20 @@ class _VnStocksList extends ConsumerWidget {
       ),
       data: (quotes) {
         final bySymbol = {for (final q in quotes) q.symbol: q};
+        // Sap theo tradingValue (tong gia tri khop lenh trong phien) GIAM
+        // DAN - PROXY cho quy mo giao dich, KHONG PHAI von hoa thi truong
+        // that (HOSE khong cong bo so co phieu luu hanh qua API nay).
+        final orderedSymbols = List<String>.from(_kWatchSymbolsVn)
+          ..sort((a, b) {
+            final va = bySymbol[a]?.tradingValue ?? -1;
+            final vb = bySymbol[b]?.tradingValue ?? -1;
+            return vb.compareTo(va);
+          });
         return ListView.separated(
-          itemCount: _kWatchSymbolsVn.length,
+          itemCount: orderedSymbols.length,
           separatorBuilder: (_, _) => const SizedBox(height: 10),
           itemBuilder: (context, i) {
-            final symbol = _kWatchSymbolsVn[i];
+            final symbol = orderedSymbols[i];
             final quote = bySymbol[symbol];
             final isUp = (quote?.changePercent ?? 0) >= 0;
             final watchlist = ref.watch(assetWatchlistProvider);
@@ -130,9 +139,20 @@ class _VnStocksList extends ConsumerWidget {
                     ),
                   ),
                   Expanded(
-                    child: Text(
-                      symbol,
-                      style: AppTextStyles.body(weight: FontWeight.w800),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          symbol,
+                          style: AppTextStyles.body(weight: FontWeight.w800),
+                        ),
+                        if (quote?.tradingValue != null)
+                          Text(
+                            '${ref.tr('wealth_market_trading_value')}: '
+                            '${_formatVndCompact(quote!.tradingValue!)}',
+                            style: AppTextStyles.muted(size: 10),
+                          ),
+                      ],
                     ),
                   ),
                   if (quote != null) ...[
@@ -312,9 +332,19 @@ class IntlStockRow extends ConsumerWidget {
               ),
             ),
             Expanded(
-              child: Text(
-                stock.symbol,
-                style: AppTextStyles.body(weight: FontWeight.w800),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    stock.symbol,
+                    style: AppTextStyles.body(weight: FontWeight.w800),
+                  ),
+                  Text(
+                    '${ref.tr('wealth_market_trading_value')}: '
+                    '${_formatUsdCompact(stock.volume24hUsd)}',
+                    style: AppTextStyles.muted(size: 10),
+                  ),
+                ],
               ),
             ),
             Text(
@@ -370,4 +400,22 @@ class _MarketChip extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Rut gon so VND lon (vd 1234567890 -> "1.2 ty") - dung de hien thi
+/// tradingValue (PROXY thanh khoan, khong phai von hoa).
+String _formatVndCompact(double v) {
+  if (v >= 1e12) return '${(v / 1e12).toStringAsFixed(1)} nghìn tỷ';
+  if (v >= 1e9) return '${(v / 1e9).toStringAsFixed(1)} tỷ';
+  if (v >= 1e6) return '${(v / 1e6).toStringAsFixed(0)} triệu';
+  return v.toStringAsFixed(0);
+}
+
+/// Rut gon so USD lon - dung de hien thi volume24hUsd (PROXY thanh khoan
+/// tren OKX, khong phai von hoa thi truong that).
+String _formatUsdCompact(double v) {
+  if (v >= 1e9) return '\$${(v / 1e9).toStringAsFixed(2)}B';
+  if (v >= 1e6) return '\$${(v / 1e6).toStringAsFixed(2)}M';
+  if (v >= 1e3) return '\$${(v / 1e3).toStringAsFixed(1)}K';
+  return '\$${v.toStringAsFixed(0)}';
 }

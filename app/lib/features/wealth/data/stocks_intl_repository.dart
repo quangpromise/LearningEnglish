@@ -7,6 +7,7 @@ class StockQuote {
     required this.changePercent,
     required this.currency,
     this.name,
+    this.tradingValue,
   });
 
   final String symbol;
@@ -17,6 +18,11 @@ class StockQuote {
   // (Twelve Data) khong tra ve truong nay. Dung de hien thi trong picker
   // tim kiem co phieu VN, khong dung cho cac man hien co (van chi hien ma).
   final String? name;
+  // Tong gia tri khop lenh trong phien (VND) - CHI co tu stocks-vn, dung lam
+  // PROXY cho "quy mo giao dich" de sap xep Market > Chung khoan VN, KHONG
+  // PHAI von hoa thi truong that (HOSE khong cong bo so co phieu luu hanh
+  // qua API nay nen khong tinh duoc von hoa that).
+  final double? tradingValue;
 
   factory StockQuote.fromJson(Map<String, dynamic> json) => StockQuote(
     symbol: json['symbol'] as String,
@@ -24,6 +30,7 @@ class StockQuote {
     changePercent: (json['changePercent'] as num?)?.toDouble() ?? 0,
     currency: json['currency'] as String? ?? 'USD',
     name: json['name'] as String?,
+    tradingValue: (json['tradingValue'] as num?)?.toDouble(),
   );
 }
 

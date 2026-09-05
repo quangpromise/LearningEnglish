@@ -58,6 +58,7 @@ interface HoseRow {
   changePrice?: string;
   changePriceRatio?: string;
   name?: string;
+  totalValue?: string;
 }
 
 async function fetchBoardOnce(): Promise<HoseRow[]> {
@@ -161,6 +162,11 @@ Deno.serve(async (req: Request) => {
         price,
         changePercent: Number(row.changePriceRatio) || 0,
         currency: "VND",
+        // HOSE KHONG cong bo so co phieu dang luu hanh qua API nay nen
+        // KHONG the tinh von hoa thi truong THAT (gia x so luong). Dung
+        // tong gia tri khop lenh trong phien (totalValue) lam PROXY do quy
+        // mo giao dich - KHONG PHAI von hoa, chi la uoc luong tuong doi.
+        tradingValue: Number(row.totalValue) || 0,
       };
     };
 

@@ -195,6 +195,9 @@ class _VnResults extends ConsumerWidget {
             return _ResultTile(
               symbol: q.symbol,
               name: q.name,
+              price: q.price,
+              changePercent: q.changePercent,
+              isVn: true,
               onTap: () => Navigator.of(context).pop(
                 StockPickResult(
                   assetType: 'stock_vn',
@@ -210,10 +213,10 @@ class _VnResults extends ConsumerWidget {
   }
 }
 
-/// Danh sach ma quoc te tieu bieu de tim kiem - MUON tu OkxTokenizedStock
-/// (danh sach ~80 ma xStocks) chi de lay MA (khong dung gia token cua no) -
-/// gia thuc su van luon lay qua Twelve Data (stocksIntlQuotesProvider) sau
-/// khi luu, dam bao Portfolio (tien that) khong bao gio hien gia token.
+/// Danh sach ma quoc te tieu bieu de tim kiem - MA muon tu OkxTokenizedStock
+/// (danh sach ~80 ma xStocks, chi de lay MA), nhung GIA hien thi luon lay
+/// qua Twelve Data (stocksIntlQuotesProvider, gia THAT) trong 1 lan goi gop
+/// - dam bao nguoi dung thay dung gia thuc khi chon, khong phai gia token.
 class _IntlResults extends ConsumerWidget {
   const _IntlResults({required this.query});
   final String query;
@@ -240,14 +243,26 @@ class _IntlResults extends ConsumerWidget {
             ),
           );
         }
+        // Chi goi Twelve Data cho nhung ma DANG HIEN (sau loc tim kiem) - 1
+        // lan goi gop (khong phai tung ma rieng) de tiet kiem quota free
+        // tier (800 call/ngay).
+        final symbolsKey = filtered.map((s) => s.symbol).join(',');
+        final quotesAsync = ref.watch(stocksIntlQuotesProvider(symbolsKey));
+        final quoteBySymbol = {
+          for (final q in quotesAsync.valueOrNull ?? []) q.symbol: q,
+        };
         return ListView.separated(
           itemCount: filtered.length,
           separatorBuilder: (_, _) => const SizedBox(height: 8),
           itemBuilder: (context, i) {
             final s = filtered[i];
+            final quote = quoteBySymbol[s.symbol];
             return _ResultTile(
               symbol: s.symbol,
               name: null,
+              price: quote?.price,
+              changePercent: quote?.changePercent,
+              isVn: false,
               onTap: () => Navigator.of(
                 context,
               ).pop(StockPickResult(assetType: 'stock_intl', symbol: s.symbol)),
@@ -260,13 +275,24 @@ class _IntlResults extends ConsumerWidget {
 }
 
 class _ResultTile extends StatelessWidget {
-  const _ResultTile({required this.symbol, this.name, required this.onTap});
+  const _ResultTile({
+    required this.symbol,
+    this.name,
+    this.price,
+    this.changePercent,
+    required this.isVn,
+    required this.onTap,
+  });
   final String symbol;
   final String? name;
+  final double? price;
+  final double? changePercent;
+  final bool isVn;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
+    final isUp = (changePercent ?? 0) >= 0;
     return GestureDetector(
       onTap: onTap,
       child: GlowBox(
@@ -295,6 +321,32 @@ class _ResultTile extends StatelessWidget {
                 ],
               ),
             ),
+            if (price != null) ...[
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    isVn
+                        ? '${price!.toStringAsFixed(0)}đ'
+                        : '\$${price!.toStringAsFixed(2)}',
+                    style: AppTextStyles.body(
+                      weight: FontWeight.w700,
+                      size: 12,
+                    ),
+                  ),
+                  if (changePercent != null)
+                    Text(
+                      '${isUp ? '+' : ''}${changePercent!.toStringAsFixed(2)}%',
+                      style: TextStyle(
+                        color: isUp ? AppColors.teal : AppColors.pink,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 10.5,
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(width: 6),
+            ],
             const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
           ],
         ),
