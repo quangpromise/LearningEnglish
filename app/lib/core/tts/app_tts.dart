@@ -66,6 +66,19 @@ class AppTts {
 
   bool _awaitCompletionConfigured = false;
 
+  /// Toc do doc mac dinh cua flutter_tts tren da so may Android/iOS (thang
+  /// 0.0-1.0). Dung de KHOI PHUC lai sau khi mot man hinh tam doi sang toc
+  /// do cham hon (vd che do "nghe khi ngu" trong story_screen.dart), tranh
+  /// lam anh huong toi cac man hinh khac dung chung 1 AppTts singleton.
+  static const double defaultRate = 0.5;
+
+  /// Doi toc do doc cho CAC LAN speak/speakAndWait TIEP THEO - chi ap dung
+  /// cho giong may (flutter_tts), giong cloud (VoiceRSS) khong ho tro chinh
+  /// toc do qua API nay nen giu nguyen.
+  Future<void> setNarrationRate(double rate) async {
+    await _deviceTts.setSpeechRate(rate);
+  }
+
   /// Ep lai audio session ve che do "music" (loa ngoai) truoc moi lan doc -
   /// sau khi dung mic (luyen phat am/speech_to_text), Android co the giu
   /// nguyen audio mode cho ghi am, khien TTS phat ra qua loa THOAI (earpiece)

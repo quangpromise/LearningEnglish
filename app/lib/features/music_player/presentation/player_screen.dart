@@ -418,6 +418,8 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
                                   ),
                                 ),
                               ),
+                              const SizedBox(width: 10),
+                              _SpeedButton(player: _player),
                             ],
                           );
                         },
@@ -429,6 +431,103 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+const _kSpeedPresets = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
+
+/// Nut chinh toc do phat giong YouTube - hien "1.0x" hien tai, bam mo bottom
+/// sheet chon 1 trong cac muc co san. `just_audio` giu nguyen toc do da chon
+/// khi chuyen bai/roi man hinh (cung 1 AudioPlayer singleton, xem
+/// NowPlayingService) nen khong can luu rieng state nao them.
+class _SpeedButton extends StatelessWidget {
+  const _SpeedButton({required this.player});
+  final AudioPlayer player;
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<double>(
+      stream: player.speedStream,
+      initialData: player.speed,
+      builder: (context, snapshot) {
+        final speed = snapshot.data ?? 1.0;
+        return GestureDetector(
+          onTap: () => _showSpeedSheet(context, player, speed),
+          child: Container(
+            height: 38,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: AppColors.glassFill,
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(color: AppColors.glassBorder),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              '${speed.toStringAsFixed(speed == speed.roundToDouble() ? 0 : 2)}x',
+              style: AppTextStyles.body(size: 12.5, weight: FontWeight.w800),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showSpeedSheet(
+    BuildContext context,
+    AudioPlayer player,
+    double current,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => Consumer(
+        builder: (sheetContext, ref, _) => Container(
+          decoration: const BoxDecoration(
+            color: Color(0xFF12172E),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 12),
+                Text(
+                  ref.tr('player_speed_title'),
+                  style: AppTextStyles.heading(size: 15),
+                ),
+                const SizedBox(height: 4),
+                for (final s in _kSpeedPresets)
+                  ListTile(
+                    title: Text(
+                      s == 1.0 ? ref.tr('player_speed_normal') : '${s}x',
+                      style: AppTextStyles.body(
+                        weight: s == current
+                            ? FontWeight.w800
+                            : FontWeight.w500,
+                        color: s == current
+                            ? AppColors.purple
+                            : AppColors.textPrimary,
+                      ),
+                    ),
+                    trailing: s == current
+                        ? const Icon(
+                            Icons.check_rounded,
+                            color: AppColors.purple,
+                          )
+                        : null,
+                    onTap: () {
+                      player.setSpeed(s);
+                      Navigator.of(sheetContext).pop();
+                    },
+                  ),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
         ),
       ),
     );

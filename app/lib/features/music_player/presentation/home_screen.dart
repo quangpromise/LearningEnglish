@@ -12,8 +12,7 @@ import '../../pronunciation/presentation/phonics_lessons_screen.dart';
 import '../../pronunciation/presentation/pronunciation_screen.dart';
 import '../../quiz/presentation/quiz_category_screen.dart';
 import '../../reading/presentation/reading_library_screen.dart';
-import '../../story/data/story_data.dart';
-import '../../story/presentation/story_screen.dart';
+import '../../story/presentation/story_list_screen.dart';
 import '../../translation/presentation/dictionary_popup.dart';
 import '../../vocabulary/presentation/vocabulary_topics_screen.dart';
 
@@ -82,10 +81,7 @@ class HomeScreen extends ConsumerWidget {
                   _CategoryItemData(
                     icon: Icons.auto_stories_rounded,
                     label: ref.tr('home_story_quick_title'),
-                    onTap: () => openAppPopup(
-                      context,
-                      StoryScreen(story: kStories.first),
-                    ),
+                    onTap: () => openAppPopup(context, const StoryListScreen()),
                   ),
                 ],
               ),

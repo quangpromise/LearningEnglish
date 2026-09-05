@@ -1525,6 +1525,14 @@ class AppStrings {
       AppLanguage.vi: 'Song ngữ Anh – Việt',
       AppLanguage.en: 'Bilingual English – Vietnamese',
     },
+    'player_speed_title': {
+      AppLanguage.vi: 'Tốc độ phát',
+      AppLanguage.en: 'Playback speed',
+    },
+    'player_speed_normal': {
+      AppLanguage.vi: 'Bình thường',
+      AppLanguage.en: 'Normal',
+    },
     'player_tab_now_playing': {
       AppLanguage.vi: 'Đang phát',
       AppLanguage.en: 'Now playing',
@@ -2305,6 +2313,64 @@ class AppStrings {
     'story_original_label': {
       AppLanguage.vi: 'Nội dung gốc',
       AppLanguage.en: 'Original content',
+    },
+    'story_category_short_stories': {
+      AppLanguage.vi: 'Truyện ngắn',
+      AppLanguage.en: 'Short Stories',
+    },
+    'story_category_conversations': {
+      AppLanguage.vi: 'Hội thoại',
+      AppLanguage.en: 'Conversations',
+    },
+    'story_category_kids_stories': {
+      AppLanguage.vi: 'Truyện thiếu nhi',
+      AppLanguage.en: 'Stories for Kids',
+    },
+    'story_category_toeic': {
+      AppLanguage.vi: 'Luyện TOEIC',
+      AppLanguage.en: 'TOEIC Listening',
+    },
+    'story_category_ielts': {
+      AppLanguage.vi: 'Luyện IELTS',
+      AppLanguage.en: 'IELTS Listening',
+    },
+    'story_category_random_videos': {
+      AppLanguage.vi: 'Video thực tế',
+      AppLanguage.en: 'Random Videos',
+    },
+    'story_category_news': {AppLanguage.vi: 'Tin tức', AppLanguage.en: 'News'},
+    'story_category_ted': {AppLanguage.vi: 'TED', AppLanguage.en: 'TED'},
+    'story_category_toefl': {
+      AppLanguage.vi: 'Luyện TOEFL',
+      AppLanguage.en: 'TOEFL Listening',
+    },
+    'story_category_medical': {
+      AppLanguage.vi: 'Tiếng Anh y tế',
+      AppLanguage.en: 'Medical English',
+    },
+    'story_category_ipa': {
+      AppLanguage.vi: 'Phát âm (IPA)',
+      AppLanguage.en: 'IPA',
+    },
+    'story_category_numbers': {
+      AppLanguage.vi: 'Luyện nghe số',
+      AppLanguage.en: 'Numbers',
+    },
+    'story_category_spelling_names': {
+      AppLanguage.vi: 'Đánh vần tên',
+      AppLanguage.en: 'Spelling Names',
+    },
+    'story_list_title': {
+      AppLanguage.vi: 'Luyện nghe',
+      AppLanguage.en: 'Listening Practice',
+    },
+    'story_sleep_mode': {
+      AppLanguage.vi: 'Chế độ nghe khi ngủ',
+      AppLanguage.en: 'Sleep listening mode',
+    },
+    'story_sleep_mode_note': {
+      AppLanguage.vi: 'Đọc chậm hơn và tự lặp lại liên tục - phù hợp nghe khi thư giãn hoặc trước khi ngủ.',
+      AppLanguage.en: 'Slower narration that repeats continuously - good for relaxing or listening before sleep.',
     },
     'story_completed_badge': {
       AppLanguage.vi: 'Hoàn thành',

@@ -37,6 +37,10 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
   bool _bilingual = true;
   bool _completedLocally = false;
   int _speechToken = 0;
+  // Che do "nghe khi ngu" - doc cham hon + tu lap lai tu dau khi het bai,
+  // dung cho nghe thu gian/truoc khi ngu (xem AppTts.setNarrationRate).
+  bool _sleepMode = false;
+  static const _sleepModeRate = 0.3;
 
   /// true trong luc PronunciationPractice dang ghi am/cham diem doan hien
   /// tai. PronunciationPractice duoc gan key: ValueKey(current.id) nen doi
@@ -60,6 +64,10 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
   void dispose() {
     _speechToken++;
     AppTts.instance.stopSpeaking();
+    // Khoi phuc toc do doc mac dinh - AppTts la singleton dung chung toan
+    // app, KHONG duoc de lai toc do cham cua che do ngu anh huong toi cac
+    // man hinh khac (Reading, Pronunciation...) sau khi roi man nay.
+    if (_sleepMode) AppTts.instance.setNarrationRate(AppTts.defaultRate);
     final elapsed = DateTime.now().difference(_openedAt).inSeconds;
     // MOT phien hoc ghi MOT khoang thoi gian (nghe narration + shadowing
     // long trong bai deu tinh chung vao day) - xem §F.4 cua tai lieu kien
@@ -100,8 +108,16 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
       WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToCurrent());
     }
     if (!mounted || token != _speechToken) return;
+    if (index >= _segments.length) {
+      _onFinishedNarration();
+      // Che do ngu: tu dong lap lai tu dau thay vi dung han - nguoi dung
+      // thuong da thiu thiu ngu, khong con bam "phat lai" duoc nua.
+      if (_sleepMode && mounted && token == _speechToken) {
+        _playFrom(0);
+        return;
+      }
+    }
     setState(() => _playing = false);
-    if (index >= _segments.length) _onFinishedNarration();
   }
 
   void _onFinishedNarration() {
@@ -126,6 +142,13 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
     } else if (!_shadowingBusy) {
       _playFrom(_currentIndex);
     }
+  }
+
+  void _toggleSleepMode(bool value) {
+    setState(() => _sleepMode = value);
+    AppTts.instance.setNarrationRate(
+      value ? _sleepModeRate : AppTts.defaultRate,
+    );
   }
 
   void _selectSegment(int i) {
@@ -248,6 +271,12 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
                       onTogglePlay: _togglePlay,
                       bilingual: _bilingual,
                       onToggleBilingual: (v) => setState(() => _bilingual = v),
+                    ),
+                    const SizedBox(height: 10),
+                    _SleepModeBar(
+                      color: story.color,
+                      enabled: _sleepMode,
+                      onChanged: _toggleSleepMode,
                     ),
                     const SizedBox(height: 14),
                     for (var i = 0; i < _segments.length; i++)
@@ -383,6 +412,60 @@ class _NarrationBar extends StatelessWidget {
               onChanged: onToggleBilingual,
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Toggle "nghe khi ngu" - bat: doc cham hon + tu lap lai vo han khi het bai
+/// (xem _StoryScreenState._playFrom/_toggleSleepMode).
+class _SleepModeBar extends StatelessWidget {
+  const _SleepModeBar({
+    required this.color,
+    required this.enabled,
+    required this.onChanged,
+  });
+  final Color color;
+  final bool enabled;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      type: MaterialType.transparency,
+      child: Consumer(
+        builder: (context, ref, _) => GlowBox(
+          borderRadius: 16,
+          child: Row(
+            children: [
+              Icon(Icons.nightlight_round, size: 18, color: color),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      ref.tr('story_sleep_mode'),
+                      style: AppTextStyles.body(
+                        size: 12.5,
+                        weight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      ref.tr('story_sleep_mode_note'),
+                      style: AppTextStyles.muted(size: 10),
+                    ),
+                  ],
+                ),
+              ),
+              Switch(
+                value: enabled,
+                activeTrackColor: color,
+                onChanged: onChanged,
+              ),
+            ],
+          ),
         ),
       ),
     );
