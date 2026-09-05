@@ -752,6 +752,18 @@ class AppStrings {
       AppLanguage.vi: 'Cổ phiếu quốc tế',
       AppLanguage.en: 'International stocks',
     },
+    'wealth_watchlist_stocks': {
+      AppLanguage.vi: 'Cổ phiếu',
+      AppLanguage.en: 'Stocks',
+    },
+    'wealth_watchlist_stocks_vn': {
+      AppLanguage.vi: 'Việt Nam',
+      AppLanguage.en: 'Vietnam',
+    },
+    'wealth_watchlist_stocks_intl': {
+      AppLanguage.vi: 'Quốc tế',
+      AppLanguage.en: 'International',
+    },
     'wealth_investments_total': {
       AppLanguage.vi: 'Tổng tài sản đầu tư',
       AppLanguage.en: 'Total investment assets',
@@ -811,6 +823,34 @@ class AppStrings {
     'wealth_symbol_hint': {
       AppLanguage.vi: 'Mã cổ phiếu (vd AAPL)',
       AppLanguage.en: 'Symbol (e.g. AAPL)',
+    },
+    'wealth_stock_pick_title': {
+      AppLanguage.vi: 'Chọn cổ phiếu',
+      AppLanguage.en: 'Choose a stock',
+    },
+    'wealth_stock_pick_search_hint': {
+      AppLanguage.vi: 'Tìm mã hoặc tên công ty...',
+      AppLanguage.en: 'Search symbol or company name...',
+    },
+    'wealth_stock_pick_manual_add': {
+      AppLanguage.vi: 'Không tìm thấy? Thêm thủ công',
+      AppLanguage.en: "Can't find it? Add manually",
+    },
+    'wealth_stock_pick_manual_note': {
+      AppLanguage.vi: 'Nhập mã, tên và giá hiện tại - vì đây là mã không có nguồn giá tự động, giá sẽ không tự cập nhật, bạn cần tự sửa lại khi cần.',
+      AppLanguage.en: "Enter symbol, name and current price - since there's no live price source for this one, it won't auto-update; edit it manually when needed.",
+    },
+    'wealth_stock_pick_name_hint': {
+      AppLanguage.vi: 'Tên công ty (không bắt buộc)',
+      AppLanguage.en: 'Company name (optional)',
+    },
+    'wealth_stock_pick_price_hint_vn': {
+      AppLanguage.vi: 'Giá hiện tại (VND)',
+      AppLanguage.en: 'Current price (VND)',
+    },
+    'wealth_stock_pick_price_hint_intl': {
+      AppLanguage.vi: 'Giá hiện tại (USD)',
+      AppLanguage.en: 'Current price (USD)',
     },
     'wealth_quantity_hint': {
       AppLanguage.vi: 'Số lượng',

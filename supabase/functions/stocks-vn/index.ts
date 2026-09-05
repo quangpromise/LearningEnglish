@@ -135,13 +135,14 @@ Deno.serve(async (req: Request) => {
   }
 
   const url = new URL(req.url);
+  const wantAll = url.searchParams.get("all") === "true";
   const symbolsParam = url.searchParams.get("symbols") ?? "";
   const symbols = symbolsParam
     .split(",")
     .map((s) => s.trim().toUpperCase())
     .filter((s) => s.length > 0);
 
-  if (symbols.length === 0) {
+  if (!wantAll && symbols.length === 0) {
     return new Response(JSON.stringify([]), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
@@ -150,28 +151,34 @@ Deno.serve(async (req: Request) => {
   try {
     const board = await getBoard();
 
-    const bySymbol = new Map(
-      board
-        .filter((r) => r.securitySymbol)
-        .map((r) => [r.securitySymbol!.toUpperCase(), r]),
-    );
+    const toQuote = (row: HoseRow) => {
+      const price = Number(row.accumulatedPrice) ||
+        Number(row.priorClosePrice) || 0;
+      if (price <= 0) return null;
+      return {
+        symbol: row.securitySymbol!.toUpperCase(),
+        name: row.name ?? null,
+        price,
+        changePercent: Number(row.changePriceRatio) || 0,
+        currency: "VND",
+      };
+    };
 
-    const result = symbols
-      .map((sym) => {
-        const row = bySymbol.get(sym);
-        if (!row) return null;
-        const price = Number(row.accumulatedPrice) ||
-          Number(row.priorClosePrice) || 0;
-        if (price <= 0) return null;
-        return {
-          symbol: sym,
-          name: row.name ?? null,
-          price,
-          changePercent: Number(row.changePriceRatio) || 0,
-          currency: "VND",
-        };
-      })
-      .filter((r) => r !== null);
+    // ?all=true tra ve TOAN BO san HOSE (dung de tim kiem/chon ma khi them
+    // co phieu VN vao Portfolio - khac ?symbols=... chi tra dung nhung ma
+    // da yeu cau, dung cho man hien thi gia 1 danh sach co dinh).
+    const result = wantAll
+      ? board.filter((r) => r.securitySymbol).map(toQuote).filter((r) =>
+        r !== null
+      )
+      : symbols
+        .map((sym) => {
+          const row = board.find((r) =>
+            r.securitySymbol?.toUpperCase() === sym
+          );
+          return row ? toQuote(row) : null;
+        })
+        .filter((r) => r !== null);
 
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

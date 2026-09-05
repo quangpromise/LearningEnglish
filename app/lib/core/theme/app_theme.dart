@@ -344,28 +344,60 @@ class TileLabelText extends StatelessWidget {
     return widest;
   }
 
+  /// Do be rong 1 DONG (co the nhieu tu) tai 1 co chu cu the - dung de tu
+  /// chia dong thu cong, khac [_widestWordWidth] chi do TUNG TU rieng le.
+  double _lineWidth(String text, double fontSize) {
+    final painter = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: AppTextStyles.body(size: fontSize, weight: weight),
+      ),
+      textDirection: TextDirection.ltr,
+      textScaler: TextScaler.noScaling,
+      maxLines: 1,
+    )..layout();
+    return painter.width;
+  }
+
+  /// Tu chia [label] thanh TOI DA 2 dong tai RANH GIOI TU (khong bao gio be
+  /// doi tu) - gop tu vao dong 1 cho toi khi tu TIEP THEO lam vuot maxWidth,
+  /// phan con lai don het vao dong 2 (co the vuot maxWidth va bi ellipsis,
+  /// nhung KHONG BAO GIO tach roi 1-2 ky tu le loi cua 1 tu nhu khi de
+  /// Flutter tu dong wrap). Day la luoi an toan CUOI CUNG, khong phu thuoc
+  /// vao do chinh xac cua phep do co chu o tren nua - du _widestWordWidth
+  /// tinh sai lech so voi thiet bi that (van chua ro nguyen nhan chinh xac
+  /// du da do bang nhieu cach, nguoi dung van bao loi tren thiet bi that du
+  /// phep tinh ty le da "dam bao toan hoc"), viec tat softWrap va tu chen
+  /// '\n' khien Flutter KHONG THE ky thuat be doi tu duoc nua.
+  String _wrapIntoTwoLines(double fontSize) {
+    final words = label.split(' ');
+    if (words.length <= 1) return label;
+    var splitIndex = words.length;
+    var current = words[0];
+    for (var i = 1; i < words.length; i++) {
+      final candidate = '$current ${words[i]}';
+      if (_lineWidth(candidate, fontSize) <= maxWidth) {
+        current = candidate;
+      } else {
+        splitIndex = i;
+        break;
+      }
+    }
+    if (splitIndex == words.length) return label;
+    final line1 = words.sublist(0, splitIndex).join(' ');
+    final line2 = words.sublist(splitIndex).join(' ');
+    return '$line1\n$line2';
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Truoc day dung lai o [minSize] (moc co dinh 6.5) - da do thuc te thay
-    // voi o vuong hep (4 o/hang), ngay ca o 6.5 tu "Pronunciation" van rong
-    // hon maxWidth, khien vong lap "bo cuoc" som va Flutter buoc phai be doi
-    // tu do khong con cach nao khac de xep vua dong (bug "Pronunciatio"/"n
-    // Lessons" tai xuat hien du da ha minSize nhieu lan). Gio cho phep giam
-    // tiep xuong toi 1 san TUYET DOI rat thap (3.5) de dam bao tu dai nhat
-    // gan nhu luon vua; FittedBox ben duoi la luoi an toan cuoi cung - neu
-    // van con truong hop cuc doan khong vua ngay ca o 3.5, no chi THU NHO
-    // CA KHOI chu (da xuong dong dung cho tu) thay vi be doi tu.
+    // Buoc 1: giam co chu (nhu truoc) de TU DAI NHAT co co hoi vua tren 1
+    // dong truoc khi phai tinh den chia dong thu cong.
     const hardFloor = 3.5;
     var fontSize = baseSize;
     while (fontSize > hardFloor && _widestWordWidth(fontSize) > maxWidth) {
       fontSize -= 0.5;
     }
-    // Van bi bao cao vo chu giua tu du da ha hardFloor nhieu lan - vi buoc
-    // nhay 0.5 + moc san CO DINH van la DOAN MO tuy thuoc font/thiet bi that
-    // (khong the doan dung "3.5 co du chua" cho MOI truong hop). Thay vao
-    // do, TINH TRUC TIEP ty le thu nho can thiet dua tren so do that o
-    // hardFloor - dam bao TOAN HOC tu dai nhat luon <= maxWidth bat ke phong
-    // chu/thiet bi nao, thay vi doan mo 1 con so co dinh.
     final widestAtFloor = _widestWordWidth(fontSize);
     if (widestAtFloor > maxWidth && widestAtFloor > 0) {
       fontSize = (fontSize * maxWidth / widestAtFloor * 0.97).clamp(
@@ -374,10 +406,14 @@ class TileLabelText extends StatelessWidget {
       );
     }
     return Text(
-      label,
+      // Buoc 2 (luoi an toan chinh, xem giai thich o _wrapIntoTwoLines):
+      // TU chen '\n' tai ranh gioi tu thay vi de Flutter tu dong wrap -
+      // loai bo hoan toan kha nang be doi tu bat ke phep tinh co chu o tren
+      // co chinh xac 100% voi thiet bi that hay khong.
+      _wrapIntoTwoLines(fontSize),
       textAlign: TextAlign.center,
       maxLines: 2,
-      softWrap: true,
+      softWrap: false,
       overflow: TextOverflow.ellipsis,
       // Khong scale theo cai dat "co chu" cua may (Accessibility) - do do
       // rong tinh o _widestWordWidth() gia dinh scale=1, neu may nguoi dung

@@ -6,18 +6,24 @@ class StockQuote {
     required this.price,
     required this.changePercent,
     required this.currency,
+    this.name,
   });
 
   final String symbol;
   final double price;
   final double changePercent;
   final String currency;
+  // Ten cong ty day du - CHI co tu stocks-vn (HOSE tra ve san), stocks-intl
+  // (Twelve Data) khong tra ve truong nay. Dung de hien thi trong picker
+  // tim kiem co phieu VN, khong dung cho cac man hien co (van chi hien ma).
+  final String? name;
 
   factory StockQuote.fromJson(Map<String, dynamic> json) => StockQuote(
     symbol: json['symbol'] as String,
     price: (json['price'] as num).toDouble(),
     changePercent: (json['changePercent'] as num?)?.toDouble() ?? 0,
     currency: json['currency'] as String? ?? 'USD',
+    name: json['name'] as String?,
   );
 }
 

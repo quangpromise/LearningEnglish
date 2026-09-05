@@ -585,6 +585,14 @@ final stocksVnQuotesProvider = FutureProvider.autoDispose
 List<String> _splitSymbolsKey(String key) =>
     key.isEmpty ? const [] : key.split(',');
 
+/// Toan bo ma dang giao dich tren HOSE (kem ten) - dung cho picker tim
+/// kiem/chon khi them co phieu Viet Nam vao Portfolio. Khong autoDispose -
+/// danh sach ~400 dong, giu lai giua cac lan mo/dong man them co phieu de
+/// khong phai tai lai moi lan.
+final stocksVnAllProvider = FutureProvider<List<StockQuote>>(
+  (ref) => ref.watch(stocksVnRepositoryProvider).fetchAll(),
+);
+
 // --- Vi (Wallet) - Phase A/B: so du Tien mat/Ngan hang theo tung ngan hang,
 // tong tai san quy doi VND. Xem ke hoach build lai Wealth trong lich su
 // trao doi voi nguoi dung (khong co file docs rieng cho phan nay).

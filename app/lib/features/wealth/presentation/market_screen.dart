@@ -265,53 +265,60 @@ class _WatchlistTabState extends State<_WatchlistTab> {
                 _WatchlistCategory.metals,
                 ref.tr('wealth_investments_metal_title'),
               ),
-              (
-                _WatchlistCategory.stocks,
-                ref.tr('wealth_investments_stocks_title'),
-              ),
+              (_WatchlistCategory.stocks, ref.tr('wealth_watchlist_stocks')),
             ];
+            // Row + Expanded (khong phai Wrap) - luon vua DUNG 1 hang du
+            // nhan dai ("Rare metals"), tu dong chia deu be rong thay vi
+            // xuong dong; giam padding/co chu + cho phep tu giam co chu
+            // (FittedBox) khi khong gian qua hep tren man nho.
             return Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: AppColors.glassFill.withValues(alpha: 0.4),
                 borderRadius: BorderRadius.circular(18),
                 border: Border.all(color: AppColors.glassBorder),
               ),
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 8,
+              child: Row(
                 children: [
-                  for (final item in items)
-                    GestureDetector(
-                      onTap: () => setState(() => _category = item.$1),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 9,
-                        ),
-                        decoration: BoxDecoration(
-                          color: _category == item.$1
-                              ? AppColors.wealthAccent.withValues(alpha: 0.22)
-                              : AppColors.glassFill,
-                          borderRadius: BorderRadius.circular(999),
-                          border: Border.all(
-                            color: _category == item.$1
-                                ? AppColors.wealthAccent
-                                : AppColors.glassBorder,
+                  for (final item in items) ...[
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => setState(() => _category = item.$1),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 8,
                           ),
-                        ),
-                        child: Text(
-                          item.$2,
-                          style: AppTextStyles.body(
-                            size: 12,
-                            weight: FontWeight.w700,
+                          decoration: BoxDecoration(
                             color: _category == item.$1
-                                ? AppColors.wealthAccent
-                                : AppColors.textPrimary,
+                                ? AppColors.wealthAccent.withValues(alpha: 0.22)
+                                : AppColors.glassFill,
+                            borderRadius: BorderRadius.circular(999),
+                            border: Border.all(
+                              color: _category == item.$1
+                                  ? AppColors.wealthAccent
+                                  : AppColors.glassBorder,
+                            ),
+                          ),
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              item.$2,
+                              maxLines: 1,
+                              style: AppTextStyles.body(
+                                size: 12,
+                                weight: FontWeight.w700,
+                                color: _category == item.$1
+                                    ? AppColors.wealthAccent
+                                    : AppColors.textPrimary,
+                              ),
+                            ),
                           ),
                         ),
                       ),
                     ),
+                    if (item != items.last) const SizedBox(width: 6),
+                  ],
                 ],
               ),
             );
@@ -453,23 +460,41 @@ class _StocksWatchlistSection extends ConsumerWidget {
         okxStockRows.length;
     if (total == 0) return _emptyWatchlist(ref);
 
+    // Phan tach ro Viet Nam / Quoc te bang 2 nhom co tieu de rieng (KHONG
+    // phai 2 tab con - theo yeu cau "phan tach rieng, khong theo tab") -
+    // Quoc te gom ca Twelve Data (stock:) lan OKX tokenized (stock_okx:).
     return ListView(
       children: [
-        for (final symbol in watchedStockSymbols) ...[
-          _StockWatchRow(symbol: symbol, quote: stockPriceBySymbol[symbol]),
-          const SizedBox(height: 8),
-        ],
-        for (final symbol in watchedStockVnSymbols) ...[
-          _StockWatchRow(
-            symbol: symbol,
-            quote: stockVnPriceBySymbol[symbol],
-            isVn: true,
+        if (watchedStockVnSymbols.isNotEmpty) ...[
+          Text(
+            ref.tr('wealth_watchlist_stocks_vn'),
+            style: AppTextStyles.heading(size: 13),
           ),
           const SizedBox(height: 8),
-        ],
-        for (final stock in okxStockRows) ...[
-          IntlStockRow(stock: stock),
+          for (final symbol in watchedStockVnSymbols) ...[
+            _StockWatchRow(
+              symbol: symbol,
+              quote: stockVnPriceBySymbol[symbol],
+              isVn: true,
+            ),
+            const SizedBox(height: 8),
+          ],
           const SizedBox(height: 8),
+        ],
+        if (watchedStockSymbols.isNotEmpty || okxStockRows.isNotEmpty) ...[
+          Text(
+            ref.tr('wealth_watchlist_stocks_intl'),
+            style: AppTextStyles.heading(size: 13),
+          ),
+          const SizedBox(height: 8),
+          for (final symbol in watchedStockSymbols) ...[
+            _StockWatchRow(symbol: symbol, quote: stockPriceBySymbol[symbol]),
+            const SizedBox(height: 8),
+          ],
+          for (final stock in okxStockRows) ...[
+            IntlStockRow(stock: stock),
+            const SizedBox(height: 8),
+          ],
         ],
       ],
     );

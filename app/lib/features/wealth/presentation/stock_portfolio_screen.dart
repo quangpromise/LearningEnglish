@@ -4,21 +4,32 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/thousands_input_formatter.dart';
 import '../data/stocks_intl_repository.dart';
 import '../data/wealth_holding_model.dart';
 import 'confirm_delete.dart';
+import 'stock_picker_sheet.dart';
 
-const _kAssetType = 'stock_intl';
-
-/// Portfolio Co phieu quoc te (thu cong - nguoi dung tu nhap so luong/gia
-/// von, gia hien tai qua Twelve Data). Tach tu WealthInvestmentsTab cu
-/// (Phase C) - gio la 1 man rieng mo tu Vi > Tai san dau tu > Co phieu.
+/// Portfolio Co phieu (Viet Nam + Quoc te chung 1 danh sach) - them moi qua
+/// [showStockPickerSheet] (tim theo ten/ma tu HOSE cho VN, danh sach ma
+/// tieu bieu cho Quoc te, hoac tu nhap thu cong + gia neu khong tim thay).
+/// Gia hien tai: VN qua stocks-vn (HOSE), Quoc te qua stocks-intl (Twelve
+/// Data, gia THAT - khac Market > Quoc te dung gia token OKX chi de tham
+/// khao) - ma nao khong co nguon gia song (tu nhap thu cong) dung lai
+/// manualValue da luu luc them.
 class StockPortfolioScreen extends ConsumerWidget {
   const StockPortfolioScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final holdingsAsync = ref.watch(wealthHoldingsProvider(_kAssetType));
+    final intlHoldingsAsync = ref.watch(wealthHoldingsProvider('stock_intl'));
+    final vnHoldingsAsync = ref.watch(wealthHoldingsProvider('stock_vn'));
+    final isLoading = intlHoldingsAsync.isLoading || vnHoldingsAsync.isLoading;
+    final holdings = [
+      ...intlHoldingsAsync.valueOrNull ?? [],
+      ...vnHoldingsAsync.valueOrNull ?? [],
+    ];
+
     return ScreenBackground(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
@@ -54,83 +65,20 @@ class StockPortfolioScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
             Expanded(
-              child: holdingsAsync.when(
-                loading: () => const Center(
-                  child: CircularProgressIndicator(
-                    color: AppColors.wealthAccent,
-                  ),
-                ),
-                error: (_, _) => Center(
-                  child: Text(
-                    ref.tr('wealth_empty_holdings'),
-                    style: AppTextStyles.muted(),
-                  ),
-                ),
-                data: (holdings) {
-                  if (holdings.isEmpty) {
-                    return Center(
+              child: isLoading && holdings.isEmpty
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                        color: AppColors.wealthAccent,
+                      ),
+                    )
+                  : holdings.isEmpty
+                  ? Center(
                       child: Text(
                         ref.tr('wealth_empty_holdings'),
                         style: AppTextStyles.muted(),
                       ),
-                    );
-                  }
-                  final symbols = holdings
-                      .map((h) => h.symbol ?? '')
-                      .where((s) => s.isNotEmpty)
-                      .join(',');
-                  final quotesAsync = ref.watch(
-                    stocksIntlQuotesProvider(symbols),
-                  );
-                  return ListView(
-                    children: [
-                      for (final h in holdings) ...[
-                        Dismissible(
-                          key: ValueKey(h.id),
-                          direction: DismissDirection.endToStart,
-                          confirmDismiss: (_) => confirmDelete(context, ref),
-                          background: Container(
-                            alignment: Alignment.centerRight,
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            decoration: BoxDecoration(
-                              color: AppColors.pink.withValues(alpha: 0.18),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: const Icon(
-                              Icons.delete_outline_rounded,
-                              color: AppColors.pink,
-                            ),
-                          ),
-                          onDismissed: (_) async {
-                            final userId = ref
-                                .read(supabaseClientProvider)
-                                .auth
-                                .currentUser
-                                ?.id;
-                            if (userId == null) return;
-                            await ref
-                                .read(wealthHoldingRepositoryProvider)
-                                .deleteHolding(userId, h.id);
-                            ref.invalidate(wealthHoldingsProvider(_kAssetType));
-                          },
-                          child: GestureDetector(
-                            onTap: () =>
-                                _showAddHoldingSheet(context, ref, existing: h),
-                            child: _HoldingTile(
-                              holding: h,
-                              quote: quotesAsync.valueOrNull?.firstWhereOrNull(
-                                (q) => q.symbol == h.symbol,
-                              ),
-                              quoteFailed: quotesAsync.hasError,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                      ],
-                    ],
-                  );
-                },
-              ),
+                    )
+                  : _HoldingsList(holdings: holdings),
             ),
             const SizedBox(height: 12),
             SizedBox(
@@ -144,7 +92,7 @@ class StockPortfolioScreen extends ConsumerWidget {
                   size: 16,
                   color: Colors.white,
                 ),
-                onTap: () => _showAddHoldingSheet(context, ref),
+                onTap: () => _pickAndAdd(context, ref),
               ),
             ),
           ],
@@ -152,33 +100,113 @@ class StockPortfolioScreen extends ConsumerWidget {
       ),
     );
   }
+
+  Future<void> _pickAndAdd(BuildContext context, WidgetRef ref) async {
+    final picked = await showStockPickerSheet(context);
+    if (picked == null || !context.mounted) return;
+    _showAddHoldingSheet(context, picked: picked);
+  }
+}
+
+class _HoldingsList extends ConsumerWidget {
+  const _HoldingsList({required this.holdings});
+  final List<WealthHolding> holdings;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final intlSymbols = holdings
+        .where((h) => h.assetType == 'stock_intl')
+        .map((h) => h.symbol ?? '')
+        .where((s) => s.isNotEmpty)
+        .join(',');
+    final vnSymbols = holdings
+        .where((h) => h.assetType == 'stock_vn')
+        .map((h) => h.symbol ?? '')
+        .where((s) => s.isNotEmpty)
+        .join(',');
+    final intlQuotesAsync = ref.watch(stocksIntlQuotesProvider(intlSymbols));
+    final vnQuotesAsync = ref.watch(stocksVnQuotesProvider(vnSymbols));
+    final intlBySymbol = {
+      for (final q in intlQuotesAsync.valueOrNull ?? []) q.symbol: q,
+    };
+    final vnBySymbol = {
+      for (final q in vnQuotesAsync.valueOrNull ?? []) q.symbol: q,
+    };
+
+    return ListView(
+      children: [
+        for (final h in holdings) ...[
+          Dismissible(
+            key: ValueKey(h.id),
+            direction: DismissDirection.endToStart,
+            confirmDismiss: (_) => confirmDelete(context, ref),
+            background: Container(
+              alignment: Alignment.centerRight,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              decoration: BoxDecoration(
+                color: AppColors.pink.withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Icon(
+                Icons.delete_outline_rounded,
+                color: AppColors.pink,
+              ),
+            ),
+            onDismissed: (_) async {
+              final userId = ref
+                  .read(supabaseClientProvider)
+                  .auth
+                  .currentUser
+                  ?.id;
+              if (userId == null) return;
+              await ref
+                  .read(wealthHoldingRepositoryProvider)
+                  .deleteHolding(userId, h.id);
+              ref.invalidate(wealthHoldingsProvider(h.assetType));
+            },
+            child: GestureDetector(
+              onTap: () => _showAddHoldingSheet(context, existing: h),
+              child: _HoldingTile(
+                holding: h,
+                quote: h.assetType == 'stock_vn'
+                    ? vnBySymbol[h.symbol]
+                    : intlBySymbol[h.symbol],
+                quoteFailed: h.assetType == 'stock_vn'
+                    ? vnQuotesAsync.hasError
+                    : intlQuotesAsync.hasError,
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+        ],
+      ],
+    );
+  }
 }
 
 void _showAddHoldingSheet(
-  BuildContext context,
-  WidgetRef ref, {
+  BuildContext context, {
   WealthHolding? existing,
+  StockPickResult? picked,
 }) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (_) => _AddHoldingSheet(existing: existing),
+    builder: (_) => _AddHoldingSheet(existing: existing, picked: picked),
   );
 }
 
 class _AddHoldingSheet extends ConsumerStatefulWidget {
-  const _AddHoldingSheet({this.existing});
+  const _AddHoldingSheet({this.existing, this.picked});
   final WealthHolding? existing;
+  final StockPickResult? picked;
 
   @override
   ConsumerState<_AddHoldingSheet> createState() => _AddHoldingSheetState();
 }
 
 class _AddHoldingSheetState extends ConsumerState<_AddHoldingSheet> {
-  late final _symbolController = TextEditingController(
-    text: widget.existing?.symbol ?? '',
-  );
   late final _quantityController = TextEditingController(
     text: widget.existing?.quantity?.toString() ?? '',
   );
@@ -187,16 +215,24 @@ class _AddHoldingSheetState extends ConsumerState<_AddHoldingSheet> {
   );
   bool _saving = false;
 
+  String get _assetType =>
+      widget.existing?.assetType ?? widget.picked?.assetType ?? 'stock_intl';
+  String get _symbol => widget.existing?.symbol ?? widget.picked?.symbol ?? '';
+  String? get _name => widget.existing?.name ?? widget.picked?.name;
+  // Sua holding cu (khong co widget.picked) - giu nguyen manualValue da luu
+  // truoc do (neu co) thay vi xoa mat khi luu lai.
+  double? get _manualPrice =>
+      widget.picked?.manualPrice ?? widget.existing?.manualValue;
+
   @override
   void dispose() {
-    _symbolController.dispose();
     _quantityController.dispose();
     _avgCostController.dispose();
     super.dispose();
   }
 
   Future<void> _save() async {
-    final symbol = _symbolController.text.trim().toUpperCase();
+    final symbol = _symbol.trim().toUpperCase();
     final quantity = double.tryParse(_quantityController.text.trim());
     final avgCost = double.tryParse(_avgCostController.text.trim());
     if (symbol.isEmpty ||
@@ -218,14 +254,16 @@ class _AddHoldingSheetState extends ConsumerState<_AddHoldingSheet> {
             userId,
             WealthHolding(
               id: '',
-              assetType: _kAssetType,
+              assetType: _assetType,
               symbol: symbol,
+              name: _name,
               quantity: quantity,
               avgCost: avgCost,
-              currency: 'USD',
+              manualValue: _manualPrice,
+              currency: _assetType == 'stock_vn' ? 'VND' : 'USD',
             ),
           );
-      ref.invalidate(wealthHoldingsProvider(_kAssetType));
+      ref.invalidate(wealthHoldingsProvider(_assetType));
       if (mounted) Navigator.of(context).pop();
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -234,6 +272,7 @@ class _AddHoldingSheetState extends ConsumerState<_AddHoldingSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final isVn = _assetType == 'stock_vn';
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -256,11 +295,30 @@ class _AddHoldingSheetState extends ConsumerState<_AddHoldingSheet> {
                 style: AppTextStyles.heading(size: 16),
               ),
               const SizedBox(height: 16),
-              _HoldingField(
-                controller: _symbolController,
-                hint: ref.tr('wealth_symbol_hint'),
-                keyboardType: TextInputType.text,
-                enabled: widget.existing == null,
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 14,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.glassFill,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _symbol,
+                      style: AppTextStyles.body(
+                        weight: FontWeight.w800,
+                        size: 15,
+                      ),
+                    ),
+                    if (_name != null)
+                      Text(_name!, style: AppTextStyles.muted(size: 11.5)),
+                  ],
+                ),
               ),
               const SizedBox(height: 10),
               _HoldingField(
@@ -273,7 +331,9 @@ class _AddHoldingSheetState extends ConsumerState<_AddHoldingSheet> {
               const SizedBox(height: 10),
               _HoldingField(
                 controller: _avgCostController,
-                hint: ref.tr('wealth_avg_cost_hint'),
+                hint: isVn
+                    ? ref.tr('wealth_stock_pick_price_hint_vn')
+                    : ref.tr('wealth_avg_cost_hint'),
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
@@ -301,19 +361,17 @@ class _HoldingField extends StatelessWidget {
     required this.controller,
     required this.hint,
     required this.keyboardType,
-    this.enabled = true,
   });
   final TextEditingController controller;
   final String hint;
   final TextInputType keyboardType;
-  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
-      enabled: enabled,
       keyboardType: keyboardType,
+      inputFormatters: [ThousandsInputFormatter()],
       style: AppTextStyles.body(),
       cursorColor: AppColors.wealthAccent,
       decoration: InputDecoration(
@@ -343,7 +401,10 @@ class _HoldingTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final hidden = ref.watch(investmentPrivacyModeProvider);
-    final currentPrice = quote?.price;
+    final isVn = holding.assetType == 'stock_vn';
+    // Uu tien gia song (quote); khong co (vd ma tu nhap thu cong, khong ton
+    // tai tren HOSE/Twelve Data) thi fallback ve manualValue da luu luc them.
+    final currentPrice = quote?.price ?? holding.manualValue;
     final quantity = holding.quantity ?? 0;
     final avgCost = holding.avgCost ?? 0;
     final gain = currentPrice != null
@@ -352,6 +413,10 @@ class _HoldingTile extends ConsumerWidget {
     final gainPercent = (currentPrice != null && avgCost != 0)
         ? (currentPrice - avgCost) / avgCost * 100
         : null;
+    final currencySymbol = isVn ? 'đ' : '\$';
+    String fmt(double v) => isVn
+        ? '${v.toStringAsFixed(0)}$currencySymbol'
+        : '$currencySymbol${v.toStringAsFixed(2)}';
     return GlowBox(
       borderRadius: 18,
       child: Row(
@@ -369,7 +434,7 @@ class _HoldingTile extends ConsumerWidget {
                       ? '•••••••'
                       : '$quantity ${ref.tr('wealth_stock_unit_share')} · '
                             '${ref.tr('wealth_stock_avg_cost_label')} '
-                            '\$${avgCost.toStringAsFixed(2)}',
+                            '${fmt(avgCost)}',
                   style: AppTextStyles.muted(size: 11),
                 ),
               ],
@@ -380,12 +445,12 @@ class _HoldingTile extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  hidden ? '•••••••' : '\$${currentPrice.toStringAsFixed(2)}',
+                  hidden ? '•••••••' : fmt(currentPrice),
                   style: AppTextStyles.body(weight: FontWeight.w800),
                 ),
                 if (!hidden)
                   Text(
-                    '${gain >= 0 ? '+' : ''}${gain.toStringAsFixed(2)}'
+                    '${gain >= 0 ? '+' : ''}${fmt(gain)}'
                     '${gainPercent == null ? '' : ' (${gainPercent >= 0 ? '+' : ''}${gainPercent.toStringAsFixed(1)}%)'}',
                     style: AppTextStyles.muted(size: 11).copyWith(
                       color: gain >= 0 ? AppColors.teal : AppColors.pink,
@@ -412,14 +477,5 @@ class _HoldingTile extends ConsumerWidget {
         ],
       ),
     );
-  }
-}
-
-extension _FirstWhereOrNull<T> on List<T> {
-  T? firstWhereOrNull(bool Function(T) test) {
-    for (final e in this) {
-      if (test(e)) return e;
-    }
-    return null;
   }
 }
