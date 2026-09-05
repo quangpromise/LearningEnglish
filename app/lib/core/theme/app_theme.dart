@@ -333,6 +333,7 @@ class TileLabelText extends StatelessWidget {
           style: AppTextStyles.body(size: fontSize, weight: weight),
         ),
         textDirection: TextDirection.ltr,
+        textScaler: TextScaler.noScaling,
         maxLines: 1,
       )..layout();
       if (painter.width > widest) widest = painter.width;
@@ -352,6 +353,11 @@ class TileLabelText extends StatelessWidget {
       maxLines: 2,
       softWrap: true,
       overflow: TextOverflow.ellipsis,
+      // Khong scale theo cai dat "co chu" cua may (Accessibility) - do do
+      // rong tinh o _widestWordWidth() gia dinh scale=1, neu may nguoi dung
+      // bat co chu lon hon thi chu render THAT SU se to hon phep tinh, gay
+      // xuong dong giua tu (vd "Pronunciatio"/"n Lessons") du da tinh vua khit.
+      textScaler: TextScaler.noScaling,
       style: AppTextStyles.body(
         size: fontSize,
         weight: weight,
