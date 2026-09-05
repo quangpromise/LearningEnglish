@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+104
+version: 1.0.0+105
 
 environment:
   sdk: ^3.13.1
@@ -94,10 +94,6 @@ dependencies:
   # Ket noi WebSocket toi backend/gemini-proxy cho tinh nang AI Voice Chat -
   # goi chinh thuc cua dart.dev, khong phai thu vien ben thu 3 khong ro nguon.
   web_socket_channel: ^3.0.1
-  # Nhung trinh duyet con (WebView) trong app cho tinh nang "dan link mo
-  # video" - goi CHINH THUC cua Flutter team (flutter.dev/go/packages),
-  # BSD-3, mien phi, khong gioi han thuong mai.
-  webview_flutter: ^4.10.0
   # Thong bao nhac hoc tu vung theo lich (hoat dong ca khi app da dong/khoa
   # may) - MIT/BSD-style, mien phi, chay hoan toan on-device (khong goi API
   # nao) - xem docs/research-notifications.md.

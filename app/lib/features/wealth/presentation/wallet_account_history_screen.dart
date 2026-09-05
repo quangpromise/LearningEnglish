@@ -8,13 +8,14 @@ import '../../../core/utils/currency_format.dart';
 import '../data/vn_bank_model.dart';
 import '../data/wealth_balance_entry_model.dart';
 import 'add_balance_entry_sheet.dart';
+import 'date_range_filter_bar.dart';
 import 'wallet_existing_assets_tab.dart';
 
 /// Toan bo lich su bien dong cua 1 tai khoan (Tien mat hoac 1 ngan hang cu
 /// the) - man Vi chinh chi xem truoc toi da 5 dong gan nhat, bam vao the
 /// tong mo man nay de xem HET, tai dung [WalletEntryRow] (da co san sua/xoa)
 /// cho tung dong.
-class WalletAccountHistoryScreen extends ConsumerWidget {
+class WalletAccountHistoryScreen extends ConsumerStatefulWidget {
   const WalletAccountHistoryScreen({
     super.key,
     required this.title,
@@ -28,7 +29,20 @@ class WalletAccountHistoryScreen extends ConsumerWidget {
   final String? bankName;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<WalletAccountHistoryScreen> createState() =>
+      _WalletAccountHistoryScreenState();
+}
+
+class _WalletAccountHistoryScreenState
+    extends ConsumerState<WalletAccountHistoryScreen> {
+  DateTimeRange? _dateFilter;
+
+  @override
+  Widget build(BuildContext context) {
+    final title = widget.title;
+    final accountType = widget.accountType;
+    final bankCode = widget.bankCode;
+    final bankName = widget.bankName;
     final entriesAsync = ref.watch(walletBalanceEntriesProvider);
     return ScreenBackground(
       child: Padding(
@@ -78,7 +92,12 @@ class WalletAccountHistoryScreen extends ConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
+            DateRangeFilterBar(
+              range: _dateFilter,
+              onChanged: (r) => setState(() => _dateFilter = r),
+            ),
+            const SizedBox(height: 12),
             Expanded(
               child: entriesAsync.when(
                 loading: () => const Center(
@@ -95,6 +114,9 @@ class WalletAccountHistoryScreen extends ConsumerWidget {
                 data: (all) {
                   final entries = all.where((e) {
                     if (e.accountType != accountType) return false;
+                    if (!isWithinDateRange(e.occurredAt, _dateFilter)) {
+                      return false;
+                    }
                     if (accountType != 'bank') return true;
                     return (bankCode != null && e.bankCode == bankCode) ||
                         (bankCode == null && e.bankName == bankName);

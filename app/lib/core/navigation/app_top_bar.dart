@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../features/profile/presentation/profile_screen.dart';
-import '../../features/video_link/presentation/video_link_screen.dart';
 import '../i18n/app_strings.dart';
 import '../providers/app_providers.dart';
 import '../theme/app_theme.dart';
-import 'app_popup.dart';
 import 'app_switcher_sheet.dart';
 
 /// Thanh dau man hinh dung chung cho CA 3 "app" (Hoc Tieng Anh/Fitness/
@@ -168,23 +166,6 @@ class AppTopBar extends ConsumerWidget {
             ],
           ),
         ),
-        // Nut "dan link video" - CHI hien tren 3 man Home chinh (cung dieu
-        // kien voi onMessagesTap != null, xem giai thich o field do), dat
-        // NGAY DAY (khong qua `trailing` - moi khu vuc da dung slot do rieng)
-        // de tu dong hien dien o CA 3 app ma khong can sua tung Home rieng
-        // le.
-        if (onMessagesTap != null) ...[
-          const SizedBox(width: 8),
-          Consumer(
-            builder: (context, ref, _) => GestureDetector(
-              onTap: () => openAppPopup(context, const VideoLinkScreen()),
-              child: Tooltip(
-                message: ref.tr('home_video_link_title'),
-                child: const _IconCircle(icon: Icons.ondemand_video_rounded),
-              ),
-            ),
-          ),
-        ],
         ?trailing,
       ],
     );

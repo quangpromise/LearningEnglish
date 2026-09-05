@@ -9,17 +9,30 @@ import '../data/wealth_category.dart';
 import '../data/wealth_transaction_model.dart';
 import 'add_transaction_sheet.dart';
 import 'confirm_delete.dart';
+import 'date_range_filter_bar.dart';
 import 'wealth_transaction_tile.dart';
 
-class WealthExpenseTab extends ConsumerWidget {
+class WealthExpenseTab extends ConsumerStatefulWidget {
   const WealthExpenseTab({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<WealthExpenseTab> createState() => _WealthExpenseTabState();
+}
+
+class _WealthExpenseTabState extends ConsumerState<WealthExpenseTab> {
+  DateTimeRange? _dateFilter;
+
+  @override
+  Widget build(BuildContext context) {
     final txAsync = ref.watch(wealthTransactionsProvider);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        DateRangeFilterBar(
+          range: _dateFilter,
+          onChanged: (r) => setState(() => _dateFilter = r),
+        ),
+        const SizedBox(height: 12),
         Expanded(
           child: txAsync.when(
             loading: () => const Center(
@@ -33,7 +46,11 @@ class WealthExpenseTab extends ConsumerWidget {
             ),
             data: (all) {
               final expenses = all
-                  .where((t) => t.type == WealthTransactionType.expense)
+                  .where(
+                    (t) =>
+                        t.type == WealthTransactionType.expense &&
+                        isWithinDateRange(t.occurredAt, _dateFilter),
+                  )
                   .toList();
               if (expenses.isEmpty) {
                 return Center(
