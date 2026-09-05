@@ -76,47 +76,7 @@ class _DebtScreenState extends State<DebtScreen>
               ),
             ),
             const SizedBox(height: 14),
-            const _DebtSummaryCard(),
-            const SizedBox(height: 14),
-            Consumer(
-              builder: (context, ref, _) => Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Colors.white.withValues(alpha: 0.06),
-                      Colors.white.withValues(alpha: 0.02),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(999),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.14),
-                    width: 1.2,
-                  ),
-                ),
-                padding: const EdgeInsets.all(4),
-                child: TabBar(
-                  controller: _tabController,
-                  indicator: BoxDecoration(
-                    gradient: AppColors.wealthAccentGradient,
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  indicatorSize: TabBarIndicatorSize.tab,
-                  labelColor: Colors.white,
-                  unselectedLabelColor: AppColors.textMuted,
-                  dividerColor: Colors.transparent,
-                  labelStyle: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                  ),
-                  tabs: [
-                    Tab(text: ref.tr('wealth_debt_tab_i_owe')),
-                    Tab(text: ref.tr('wealth_debt_tab_owed_to_me')),
-                  ],
-                ),
-              ),
-            ),
+            _DebtSummaryCard(tabController: _tabController),
             const SizedBox(height: 14),
             Expanded(
               child: TabBarView(
@@ -135,32 +95,43 @@ class _DebtScreenState extends State<DebtScreen>
 }
 
 /// The tong "Dang no" (mau do, phai tra) va "Cho muon" (mau xanh, phai thu)
-/// - gop theo tung loai tien te neu nguoi dung co ca khoan VND lan USD.
+/// - gop theo tung loai tien te neu nguoi dung co ca khoan VND lan USD. Bam
+/// vao 1 the se chuyen TabBarView sang danh sach tuong ung - thay the cho
+/// hang nut "I owe"/"Owed to me" rieng biet truoc day (2 bo dieu khien lam
+/// cung 1 viec la thua, theo yeu cau nguoi dung gop lai).
 class _DebtSummaryCard extends ConsumerWidget {
-  const _DebtSummaryCard();
+  const _DebtSummaryCard({required this.tabController});
+  final TabController tabController;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final owe = ref.watch(debtsProvider('i_owe')).valueOrNull ?? [];
     final lend = ref.watch(debtsProvider('owed_to_me')).valueOrNull ?? [];
-    return Row(
-      children: [
-        Expanded(
-          child: _SummaryTile(
-            label: ref.tr('wealth_debt_tab_i_owe'),
-            color: AppColors.pink,
-            totalsByCurrency: _sumByCurrency(owe),
+    return AnimatedBuilder(
+      animation: tabController,
+      builder: (context, _) => Row(
+        children: [
+          Expanded(
+            child: _SummaryTile(
+              label: ref.tr('wealth_debt_tab_i_owe'),
+              color: AppColors.pink,
+              totalsByCurrency: _sumByCurrency(owe),
+              selected: tabController.index == 0,
+              onTap: () => tabController.animateTo(0),
+            ),
           ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: _SummaryTile(
-            label: ref.tr('wealth_debt_tab_owed_to_me'),
-            color: AppColors.teal,
-            totalsByCurrency: _sumByCurrency(lend),
+          const SizedBox(width: 10),
+          Expanded(
+            child: _SummaryTile(
+              label: ref.tr('wealth_debt_tab_owed_to_me'),
+              color: AppColors.teal,
+              totalsByCurrency: _sumByCurrency(lend),
+              selected: tabController.index == 1,
+              onTap: () => tabController.animateTo(1),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -178,32 +149,42 @@ class _SummaryTile extends StatelessWidget {
     required this.label,
     required this.color,
     required this.totalsByCurrency,
+    required this.selected,
+    required this.onTap,
   });
   final String label;
   final Color color;
   final Map<String, double> totalsByCurrency;
+  final bool selected;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return GlowBox(
-      borderRadius: 16,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: AppTextStyles.muted(size: 12.5)),
-          const SizedBox(height: 4),
-          if (totalsByCurrency.isEmpty)
-            Text(
-              formatVnd(0),
-              style: AppTextStyles.heading(size: 18).copyWith(color: color),
-            )
-          else
-            for (final entry in totalsByCurrency.entries)
+    return GestureDetector(
+      onTap: onTap,
+      child: GlowBox(
+        borderRadius: 16,
+        border: selected
+            ? Border.all(color: color.withValues(alpha: 0.6), width: 1.4)
+            : null,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: AppTextStyles.muted(size: 12.5)),
+            const SizedBox(height: 4),
+            if (totalsByCurrency.isEmpty)
               Text(
-                formatByCurrency(entry.value, entry.key),
+                formatVnd(0),
                 style: AppTextStyles.heading(size: 18).copyWith(color: color),
-              ),
-        ],
+              )
+            else
+              for (final entry in totalsByCurrency.entries)
+                Text(
+                  formatByCurrency(entry.value, entry.key),
+                  style: AppTextStyles.heading(size: 18).copyWith(color: color),
+                ),
+          ],
+        ),
       ),
     );
   }

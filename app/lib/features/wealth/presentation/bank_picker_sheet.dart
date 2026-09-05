@@ -39,6 +39,7 @@ class _BankPickerSheetState extends ConsumerState<_BankPickerSheet> {
   @override
   Widget build(BuildContext context) {
     final banksAsync = ref.watch(vnBanksProvider);
+    final usedCodes = ref.watch(usedBankCodesProvider);
 
     return FractionallySizedBox(
       heightFactor: 0.85,
@@ -83,9 +84,20 @@ class _BankPickerSheetState extends ConsumerState<_BankPickerSheet> {
                     error: (_, _) =>
                         Center(child: Text(ref.tr('wallet_load_error'))),
                     data: (banks) {
-                      final filtered = _query.isEmpty
+                      // Tap RONG = nguoi dung chua vao Cai dat loc ngan hang
+                      // lan nao - hien TAT CA nhu truoc day thay vi danh
+                      // sach rong (tranh gay nham lan "mat het ngan hang").
+                      final scoped = usedCodes.isEmpty
                           ? banks
                           : banks
+                                .where(
+                                  (b) =>
+                                      b.isOther || usedCodes.contains(b.code),
+                                )
+                                .toList();
+                      final filtered = _query.isEmpty
+                          ? scoped
+                          : scoped
                                 .where(
                                   (b) =>
                                       b.isOther ||

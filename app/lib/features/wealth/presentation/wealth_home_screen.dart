@@ -13,6 +13,7 @@ import 'debt_screen.dart';
 import 'market_screen.dart';
 import 'recurring_services_screen.dart';
 import 'wealth_detail_screen.dart';
+import 'wealth_settings_screen.dart';
 import 'wealth_expense_tab.dart';
 import 'wallet_screen.dart';
 
@@ -59,6 +60,26 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
               unreadCount: unread,
               onMessagesTap: () =>
                   openAppPopup(context, const ConversationsScreen()),
+              trailing: GestureDetector(
+                onTap: () =>
+                    openAppPopup(context, const WealthSettingsScreen()),
+                child: Container(
+                  width: 42,
+                  height: 42,
+                  decoration: const BoxDecoration(
+                    color: AppColors.glassFill,
+                    shape: BoxShape.circle,
+                    border: Border.fromBorderSide(
+                      BorderSide(color: AppColors.glassBorder),
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.settings_rounded,
+                    size: 18,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ),
             ),
             const SizedBox(height: 18),
             GlowBox(

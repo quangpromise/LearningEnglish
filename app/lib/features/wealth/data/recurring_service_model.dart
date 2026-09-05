@@ -29,7 +29,21 @@ class RecurringService {
   final String? note;
   final bool isActive;
 
-  int get daysLeft => expiryDate.difference(DateTime.now()).inDays;
+  // So sanh theo NGAY LICH (bo gio/phut) - truoc day dung thang
+  // expiryDate.difference(DateTime.now()) nen vd het han 06/09 nhung dang
+  // la 11:44 ngay 05/09 chi lech ~12 tieng se bi lam tron xuong "0 ngay"
+  // (inDays cat cut phan le), du thuc te van con nguyen 1 ngay.
+  int get daysLeft {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final expiryDay = DateTime(
+      expiryDate.year,
+      expiryDate.month,
+      expiryDate.day,
+    );
+    return expiryDay.difference(today).inDays;
+  }
+
   bool get isExpiringSoon => daysLeft <= reminderLeadDays;
 
   factory RecurringService.fromRow(Map<String, dynamic> row) {

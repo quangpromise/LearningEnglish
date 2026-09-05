@@ -1219,6 +1219,18 @@ class AppStrings {
       AppLanguage.vi: 'Không tải được dữ liệu',
       AppLanguage.en: 'Could not load data',
     },
+    'wealth_settings_title': {
+      AppLanguage.vi: 'Cài đặt',
+      AppLanguage.en: 'Settings',
+    },
+    'wealth_settings_banks_title': {
+      AppLanguage.vi: 'Ngân hàng đang sử dụng',
+      AppLanguage.en: 'Banks you use',
+    },
+    'wealth_settings_banks_desc': {
+      AppLanguage.vi: 'Chỉ những ngân hàng được chọn ở đây mới xuất hiện khi thêm chi tiêu, thêm số dư vào Ví hoặc thanh toán nợ. Chưa chọn ngân hàng nào thì hiện tất cả.',
+      AppLanguage.en: 'Only banks selected here will show up when adding an expense, a wallet balance, or a debt payment. If none is selected, all banks are shown.',
+    },
     'wealth_edit_holding': {
       AppLanguage.vi: 'Sửa mã cổ phiếu',
       AppLanguage.en: 'Edit stock holding',

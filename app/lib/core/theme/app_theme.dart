@@ -113,12 +113,14 @@ class GlowBox extends StatelessWidget {
     this.padding,
     this.borderRadius = 22,
     this.light = false,
+    this.border,
   });
 
   final Widget child;
   final EdgeInsetsGeometry? padding;
   final double borderRadius;
   final bool light;
+  final BoxBorder? border;
 
   @override
   Widget build(BuildContext context) {
@@ -129,7 +131,8 @@ class GlowBox extends StatelessWidget {
             ? Colors.white.withValues(alpha: 0.95)
             : AppColors.glassFill,
         borderRadius: BorderRadius.circular(borderRadius),
-        border: light ? null : Border.all(color: AppColors.glassBorder),
+        border:
+            border ?? (light ? null : Border.all(color: AppColors.glassBorder)),
         boxShadow: light
             ? [
                 BoxShadow(
@@ -343,8 +346,18 @@ class TileLabelText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Truoc day dung lai o [minSize] (moc co dinh 6.5) - da do thuc te thay
+    // voi o vuong hep (4 o/hang), ngay ca o 6.5 tu "Pronunciation" van rong
+    // hon maxWidth, khien vong lap "bo cuoc" som va Flutter buoc phai be doi
+    // tu do khong con cach nao khac de xep vua dong (bug "Pronunciatio"/"n
+    // Lessons" tai xuat hien du da ha minSize nhieu lan). Gio cho phep giam
+    // tiep xuong toi 1 san TUYET DOI rat thap (3.5) de dam bao tu dai nhat
+    // gan nhu luon vua; FittedBox ben duoi la luoi an toan cuoi cung - neu
+    // van con truong hop cuc doan khong vua ngay ca o 3.5, no chi THU NHO
+    // CA KHOI chu (da xuong dong dung cho tu) thay vi be doi tu.
+    const hardFloor = 3.5;
     var fontSize = baseSize;
-    while (fontSize > minSize && _widestWordWidth(fontSize) > maxWidth) {
+    while (fontSize > hardFloor && _widestWordWidth(fontSize) > maxWidth) {
       fontSize -= 0.5;
     }
     return Text(

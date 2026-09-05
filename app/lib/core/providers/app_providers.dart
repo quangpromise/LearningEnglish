@@ -7,6 +7,7 @@ import '../../features/auth/data/auth_repository.dart';
 import '../../features/crypto/data/crypto_currency.dart';
 import '../../features/crypto/presentation/crypto_providers.dart';
 import '../../features/wealth/data/asset_watchlist_repository.dart';
+import '../../features/wealth/data/used_bank_repository.dart';
 import '../../features/fitness/data/community_post_model.dart';
 import '../../features/fitness/data/community_repository.dart';
 import '../../features/fitness/data/exercise_model.dart';
@@ -852,6 +853,34 @@ class AssetWatchlistController extends StateNotifier<Set<String>> {
 final assetWatchlistProvider =
     StateNotifierProvider<AssetWatchlistController, Set<String>>(
       (ref) => AssetWatchlistController(),
+    );
+
+/// Ma cac ngan hang nguoi dung chon "dang su dung" trong man Cai dat Quan ly
+/// tai san - CHI cac ma nay moi hien trong bank_picker_sheet.dart khi chon
+/// hinh thuc thanh toan/them so du Vi/tra no. Tap RONG = chua loc (hien tat
+/// ca), xem giai thich trong [UsedBankRepository].
+class UsedBankController extends StateNotifier<Set<String>> {
+  UsedBankController() : super({}) {
+    _load();
+  }
+
+  Future<void> _load() async {
+    state = await UsedBankRepository.load();
+  }
+
+  bool contains(String code) => state.contains(code);
+
+  Future<void> toggle(String code) async {
+    final next = {...state};
+    if (!next.remove(code)) next.add(code);
+    state = next;
+    await UsedBankRepository.save(next);
+  }
+}
+
+final usedBankCodesProvider =
+    StateNotifierProvider<UsedBankController, Set<String>>(
+      (ref) => UsedBankController(),
     );
 
 // --- No (Debt) - Phase E: "Dang no" (minh no nguoi khac) / "Nguoi khac no
