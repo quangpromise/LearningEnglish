@@ -129,6 +129,19 @@ class _PropertyTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final hidden = ref.watch(investmentPrivacyModeProvider);
+    // avgCost dung lai lam "gia mua ban dau" cho Nha dat (khong dung
+    // quantity/avgCost theo nghia so luong x gia von nhu Co phieu/Kim loai -
+    // chi muon vay 1 cot san co de so sanh voi manualValue "gia hien tai" ma
+    // nguoi dung tu cap nhat, tinh lai/lo, khong can them migration moi).
+    final purchaseValue = holding.avgCost;
+    final currentValue = holding.manualValue;
+    final pnl = (purchaseValue == null || currentValue == null)
+        ? null
+        : currentValue - purchaseValue;
+    final pnlPercent =
+        (pnl == null || purchaseValue == null || purchaseValue == 0)
+        ? null
+        : pnl / purchaseValue * 100;
     return Dismissible(
       key: ValueKey(holding.id),
       direction: DismissDirection.endToStart,
@@ -172,14 +185,27 @@ class _PropertyTile extends ConsumerWidget {
                   ],
                 ),
               ),
-              Text(
-                hidden
-                    ? '•••••••'
-                    : formatByCurrency(
-                        holding.manualValue ?? 0,
-                        holding.currency,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    hidden
+                        ? '•••••••'
+                        : formatByCurrency(
+                            holding.manualValue ?? 0,
+                            holding.currency,
+                          ),
+                    style: AppTextStyles.body(weight: FontWeight.w800),
+                  ),
+                  if (!hidden && pnl != null)
+                    Text(
+                      '${pnl >= 0 ? '+' : ''}${formatByCurrency(pnl, holding.currency)}'
+                      '${pnlPercent == null ? '' : ' (${pnl >= 0 ? '+' : ''}${pnlPercent.toStringAsFixed(1)}%)'}',
+                      style: AppTextStyles.muted(size: 11).copyWith(
+                        color: pnl >= 0 ? AppColors.teal : AppColors.pink,
                       ),
-                style: AppTextStyles.body(weight: FontWeight.w800),
+                    ),
+                ],
               ),
             ],
           ),
@@ -218,6 +244,14 @@ class _PropertySheetState extends ConsumerState<_PropertySheet> {
         ? ''
         : groupThousands(widget.existing!.manualValue!),
   );
+  // "Gia mua ban dau" - dung lai cot avgCost co san (xem giai thich trong
+  // _PropertyTile). CHI nhap duoc luc THEM MOI, khoa lai khi sua (giong
+  // ten/ghi chu) vi day la moc co dinh de tinh lai/lo, khong nen doi sau.
+  late final _purchaseController = TextEditingController(
+    text: widget.existing?.avgCost == null
+        ? ''
+        : groupThousands(widget.existing!.avgCost!),
+  );
   bool _saving = false;
 
   @override
@@ -225,6 +259,7 @@ class _PropertySheetState extends ConsumerState<_PropertySheet> {
     _nameController.dispose();
     _noteController.dispose();
     _valueController.dispose();
+    _purchaseController.dispose();
     super.dispose();
   }
 
@@ -232,6 +267,13 @@ class _PropertySheetState extends ConsumerState<_PropertySheet> {
     final name = _nameController.text.trim();
     final value = parseThousandsFormatted(_valueController.text);
     if (name.isEmpty || value == null || value < 0) return;
+    final purchaseValue = widget.existing == null
+        ? parseThousandsFormatted(_purchaseController.text)
+        : widget.existing!.avgCost;
+    if (widget.existing == null &&
+        (purchaseValue == null || purchaseValue < 0)) {
+      return;
+    }
     setState(() => _saving = true);
     final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
     if (userId == null) {
@@ -251,6 +293,7 @@ class _PropertySheetState extends ConsumerState<_PropertySheet> {
                 ? null
                 : _noteController.text.trim(),
             manualValue: value,
+            avgCost: purchaseValue,
             currency: 'VND',
           ),
         );
@@ -327,6 +370,45 @@ class _PropertySheetState extends ConsumerState<_PropertySheet> {
                 ),
               ),
               const SizedBox(height: 10),
+              if (widget.existing == null)
+                TextField(
+                  controller: _purchaseController,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  inputFormatters: [ThousandsInputFormatter()],
+                  style: AppTextStyles.body(),
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: AppColors.glassFill,
+                    hintText: ref.tr('wealth_real_estate_purchase_hint'),
+                    hintStyle: const TextStyle(color: AppColors.textMuted),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                )
+              else if (widget.existing!.avgCost != null) ...[
+                Text(
+                  ref.tr('wealth_real_estate_purchase_label'),
+                  style: AppTextStyles.muted(size: 11),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  formatByCurrency(
+                    widget.existing!.avgCost!,
+                    widget.existing!.currency,
+                  ),
+                  style: AppTextStyles.body(weight: FontWeight.w800),
+                ),
+              ],
+              const SizedBox(height: 10),
+              Text(
+                ref.tr('wealth_real_estate_current_label'),
+                style: AppTextStyles.muted(size: 11),
+              ),
+              const SizedBox(height: 4),
               TextField(
                 controller: _valueController,
                 keyboardType: const TextInputType.numberWithOptions(

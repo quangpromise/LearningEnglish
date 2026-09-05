@@ -19,19 +19,45 @@ Twelve Data cân bằng tốt nhất giữa hạn mức đủ dùng (refresh the
 người dùng, không polling liên tục) và điều khoản thương mại không cấm rõ
 ràng như Finnhub free.
 
-## Việt Nam: SSI FastConnect Data (chính thức, Phase 2) + fallback không chính thức
+## Việt Nam: đã triển khai — API công khai của chính HOSE (`api.hsx.vn`)
 
-| Nguồn | Chính thức? | Cần đăng ký? | Độ trễ |
-|---|---|---|---|
-| **SSI FastConnect Data** (khuyến nghị) | Có, tài liệu API đầy đủ | Cần đăng ký offline (CCCD) — người dùng tự làm, không tự động hoá được | Realtime nếu được cấp quyền |
-| VNDirect (`finfo-api.vndirect.com.vn`) | Không, reverse-engineer | Không cần | Gần real-time, không đảm bảo |
-| TCBS/VCI (qua thư viện `vnstock`) | Không, reverse-engineer | Không cần | Tương tự VNDirect |
-| Vietstock, cafef.vn | Không, reverse-engineer | Không cần | Delay 15-20 phút |
-| FiinTrade/FiinGroup | Có, B2B | Hợp đồng thương mại, không có free tier | Realtime (gói cao cấp) |
+| Nguồn | Chính thức? | Cần đăng ký? | Thương mại (redistribute) | Độ trễ |
+|---|---|---|---|---|
+| **API công khai của HOSE** (`api.hsx.vn`, đã dùng) | Là API nội bộ của chính Sở GDCK, không có tài liệu công khai (reverse-engineer từ bundle JS của `rtboard.hsx.vn`) nhưng do HOSE tự vận hành và phơi bày công khai cho bất kỳ ai xem bảng giá của họ | Không cần | Không tìm thấy ToS nào cấm — đây là dữ liệu công bố của cơ quan quản lý thị trường, khác hẳn sản phẩm dữ liệu thương mại tư nhân | Giá khớp lệnh/đóng cửa gần nhất (không phải real-time chuẩn giao dịch qua WebSocket riêng — xem bên dưới) |
+| SSI FastConnect Data | Có, tài liệu API đầy đủ | Cần đăng ký offline (CCCD) | **ToS mặc định cấm cung cấp lại cho bên thứ ba** — cần xin phép riêng bằng văn bản | Realtime nếu được cấp quyền |
+| vnstock (Python, wrap TCBS/VCI/MSN) | Không, reverse-engineer nhiều lớp | Không cần | **License chính thư viện cấm thương mại rõ ràng** | Không đảm bảo |
+| Vietstock | Không | Không cần | **Quy định cấm thương mại tường minh** | Delay 15-20 phút |
+| cafef.vn, VNDirect | Không, reverse-engineer | Không cần | Không có ToS cho phép, rủi ro tương tự vnstock | Gần real-time, không đảm bảo |
+| Yahoo Finance / TradingView / Investing.com | Không (data thật nhưng license lại) | — | **Cấm thương mại tường minh ở cả 3** | Delayed |
+| iTick (blog.itick.org) | Có vẻ là dịch vụ thật nhưng ít uy tín/review | Cần key, free tier vô dụng (5 call/phút, chỉ EOD) | **ToS cấm redistribute mặc định, như SSI** nhưng công ty kém minh bạch hơn | Trả phí mới có realtime ($79+/tháng) |
+| FiinTrade/FiinGroup | Có, B2B | Hợp đồng thương mại, không có free tier | Có, đúng mô hình cho redistribute | Realtime (gói cao cấp) |
 
-Chưa có nguồn "an toàn tuyệt đối" như CoinGecko cho thị trường VN. Quyết
-định: **Phase 1 chưa làm chứng khoán VN**, chờ người dùng tự đăng ký xong
-SSI FastConnect rồi mới thêm ở Phase 2.
+**Quyết định cuối (đã triển khai, xem `supabase/functions/stocks-vn`):** dùng
+thẳng API công khai của HOSE (`https://api.hsx.vn/l/api/v1/securities/load-securities-matching/0`)
+qua Edge Function proxy — tìm được bằng cách phân tích bundle JS của chính
+trang bảng giá chính thức `rtboard.hsx.vn` (trang này gọi thẳng API đó từ
+trình duyệt người dùng, không cần đăng nhập/key). Đây là lựa chọn rủi ro
+pháp lý thấp nhất trong tất cả nguồn đã khảo sát vì là dữ liệu công bố trực
+tiếp của cơ quan quản lý thị trường, không phải sản phẩm thương mại tư nhân
+có ToS cấm redistribute. Nhược điểm: không có tài liệu API chính thức (có
+thể đổi/ngừng bất kỳ lúc nào), và giá trả về là "giá khớp lệnh gần nhất"
+(field `accumulatedPrice`), không phải real-time chuẩn giao dịch — đã ghi
+rõ trong comment code + UI (`wealth_market_stocks_vn_note`).
+
+### VN-Index (điểm số tổng) — CHƯA làm, để sau
+
+HOSE chỉ phát điểm VN-Index/VN30 qua kênh WebSocket/SignalR riêng
+(`wss://api.hsx.vn/hub/mddsnotificationhub`, target `ChartIndexVNINDEX`),
+KHÔNG có REST đơn giản. Đã xác nhận bằng test thực tế: kết nối bắt buộc
+phải có header `Origin: https://rtboard.hsx.vn` thì HOSE mới chấp nhận
+handshake — nhưng `WebSocket` chuẩn (dùng trong Deno/Supabase Edge Function)
+không cho phép code tự đặt header này (giới hạn bảo mật chuẩn WHATWG, giống
+trình duyệt). Muốn lấy được số này cần tự viết tay toàn bộ handshake
+WebSocket trên raw TCP/TLS trong Edge Function (mở kết nối thô, tự soạn
+HTTP Upgrade request kèm header Origin, tự giải khung dữ liệu) — phức tạp
+và dễ vỡ hơn hẳn mọi Edge Function hiện có trong dự án (đều chỉ dùng `fetch`
+REST đơn giản). Quyết định: triển khai giá cổ phiếu trước (đã xong), để
+VN-Index lại làm sau nếu thực sự cần.
 
 ## Vì sao không dùng OKX (hay Bybit/Binance) cho chứng khoán
 

@@ -14,7 +14,119 @@ class OkxTicker {
   final double changePercent24h;
 }
 
+/// 1 diem nen (candlestick) - dung ve chart gia theo thoi gian.
+class OkxCandle {
+  const OkxCandle({
+    required this.time,
+    required this.open,
+    required this.high,
+    required this.low,
+    required this.close,
+  });
+  final DateTime time;
+  final double open;
+  final double high;
+  final double low;
+  final double close;
+}
+
+/// 1 dong gia trong bang xep hang TOAN BO cap USDT tren OKX - dung cho tim
+/// kiem coin NGOAI top 100 von hoa (CoinGecko chi tra top 100), khong co
+/// ten day du/logo (OKX chi tra ma) nen chi dung lam ket qua tim kiem phu,
+/// khong thay the danh sach chinh sap theo von hoa.
+class OkxTickerRow {
+  const OkxTickerRow({
+    required this.symbol,
+    required this.price,
+    required this.changePercent24h,
+  });
+  final String symbol;
+  final double price;
+  final double changePercent24h;
+}
+
 class OkxService {
+  /// Toan bo gia hien tai cho MOI cap giao dich USDT dang "live" tren OKX -
+  /// 1 lan goi REST duy nhat (khong phan trang), dung de tim kiem coin ngoai
+  /// pham vi top 100 von hoa cua CoinGecko.
+  static Future<List<OkxTickerRow>> fetchAllUsdtTickers() async {
+    final client = HttpClient();
+    try {
+      final req = await client.getUrl(
+        Uri.parse('https://www.okx.com/api/v5/market/tickers?instType=SPOT'),
+      );
+      final res = await req.close();
+      final body = await res.transform(utf8.decoder).join();
+      final data = jsonDecode(body) as Map<String, dynamic>;
+      final list = data['data'] as List;
+      return list
+          .cast<Map<String, dynamic>>()
+          .where((r) => (r['instId'] as String? ?? '').endsWith('-USDT'))
+          .map((r) {
+            final instId = r['instId'] as String;
+            final symbol = instId.substring(0, instId.length - 5);
+            final last = double.tryParse(r['last']?.toString() ?? '') ?? 0;
+            final open24h =
+                double.tryParse(r['open24h']?.toString() ?? '') ?? 0;
+            final changePercent = open24h == 0
+                ? 0.0
+                : (last - open24h) / open24h * 100;
+            return OkxTickerRow(
+              symbol: symbol,
+              price: last,
+              changePercent24h: changePercent,
+            );
+          })
+          .where((r) => r.price > 0)
+          .toList();
+    } finally {
+      client.close();
+    }
+  }
+
+  /// Lich su nen (candlestick) cho 1 ky hieu - dung ve chart. `bar` la don vi
+  /// nen OKX ho tro (vd '1m','15m','1H','4H','1D','1W'), `limit` toi da 300
+  /// theo gioi han cua endpoint nay.
+  static Future<List<OkxCandle>> fetchCandles({
+    required String symbol,
+    required String bar,
+    int limit = 100,
+  }) async {
+    final client = HttpClient();
+    try {
+      final req = await client.getUrl(
+        Uri.parse(
+          'https://www.okx.com/api/v5/market/candles'
+          '?instId=$symbol-USDT&bar=$bar&limit=$limit',
+        ),
+      );
+      final res = await req.close();
+      final body = await res.transform(utf8.decoder).join();
+      final data = jsonDecode(body) as Map<String, dynamic>;
+      final rows = (data['data'] as List?) ?? [];
+      // OKX tra ve moi nen [ts, o, h, l, c, ...] theo thu tu MOI NHAT truoc -
+      // dao lai de ve chart theo thoi gian tang dan (trai -> phai).
+      return rows
+          .cast<List<dynamic>>()
+          .map(
+            (r) => OkxCandle(
+              time: DateTime.fromMillisecondsSinceEpoch(
+                int.parse(r[0] as String),
+              ),
+              open: double.parse(r[1] as String),
+              high: double.parse(r[2] as String),
+              low: double.parse(r[3] as String),
+              close: double.parse(r[4] as String),
+            ),
+          )
+          .toList()
+          .reversed
+          .toList();
+    } finally {
+      client.close();
+    }
+  }
+
   WebSocket? _socket;
   Timer? _pingTimer;
   StreamController<Map<String, OkxTicker>>? _controller;

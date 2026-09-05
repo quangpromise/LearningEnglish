@@ -175,273 +175,284 @@ class _AddServiceSheetState extends ConsumerState<_AddServiceSheet> {
   @override
   Widget build(BuildContext context) {
     final expiry = _computedExpiry;
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      resizeToAvoidBottomInset: true,
-      body: Align(
-        alignment: Alignment.bottomCenter,
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
-          decoration: const BoxDecoration(
-            color: Color(0xFF12172E),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _isEditing
-                      ? ref.tr('wealth_service_edit')
-                      : ref.tr('wealth_service_add'),
-                  style: AppTextStyles.heading(size: 16),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: _nameController,
-                  style: AppTextStyles.body(),
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: AppColors.glassFill,
-                    hintText: ref.tr('wealth_service_name_hint'),
-                    hintStyle: const TextStyle(color: AppColors.textMuted),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Row(
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => Navigator.of(context).pop(),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        resizeToAvoidBottomInset: true,
+        body: Align(
+          alignment: Alignment.bottomCenter,
+          child: GestureDetector(
+            onTap: () {},
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
+              decoration: const BoxDecoration(
+                color: Color(0xFF12172E),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _amountController,
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        inputFormatters: [ThousandsInputFormatter()],
-                        style: AppTextStyles.body(),
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: AppColors.glassFill,
-                          hintText: ref.tr('wallet_amount_hint'),
-                          hintStyle: const TextStyle(
-                            color: AppColors.textMuted,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
-                      ),
+                    Text(
+                      _isEditing
+                          ? ref.tr('wealth_service_edit')
+                          : ref.tr('wealth_service_add'),
+                      style: AppTextStyles.heading(size: 16),
                     ),
-                    const SizedBox(width: 8),
-                    GestureDetector(
-                      onTap: () => setState(
-                        () => _currency = _currency == 'VND' ? 'USD' : 'VND',
-                      ),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 14,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.glassFill,
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Text(
-                          _currency,
-                          style: AppTextStyles.body(
-                            weight: FontWeight.w800,
-                            size: 13,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: _noteController,
-                  style: AppTextStyles.body(),
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: AppColors.glassFill,
-                    hintText: ref.tr('wallet_note_hint'),
-                    hintStyle: const TextStyle(color: AppColors.textMuted),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-                if (_isEditing) ...[
-                  const SizedBox(height: 12),
-                  Text(
-                    ref.tr('wealth_service_expiry_preview'),
-                    style: AppTextStyles.muted(size: 11),
-                  ),
-                  const SizedBox(height: 6),
-                  GestureDetector(
-                    onTap: _pickEditExpiry,
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.glassFill,
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.schedule_rounded,
-                            size: 16,
-                            color: AppColors.textMuted,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            _editExpiryDate == null
-                                ? ref.tr('wealth_service_pick_expiry')
-                                : _fmtDate(_editExpiryDate!),
-                            style: AppTextStyles.body(size: 13),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-                if (!_isEditing) ...[
-                  const SizedBox(height: 12),
-                  Text(
-                    ref.tr('wealth_service_start_date'),
-                    style: AppTextStyles.muted(size: 11),
-                  ),
-                  const SizedBox(height: 6),
-                  GestureDetector(
-                    onTap: _pickStartDate,
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.glassFill,
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Text(
-                        _fmtDate(_startDate),
-                        style: AppTextStyles.body(size: 13),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    ref.tr('wealth_service_cycle'),
-                    style: AppTextStyles.muted(size: 11),
-                  ),
-                  const SizedBox(height: 6),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      for (final t in _kCycleTypes)
-                        _Chip(
-                          label: _cycleLabel(t),
-                          selected: _cycleType == t,
-                          onTap: () => setState(() => _cycleType = t),
-                        ),
-                    ],
-                  ),
-                  if (_cycleType == 'custom_years') ...[
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 16),
                     TextField(
-                      controller: _cycleYearsController,
-                      keyboardType: TextInputType.number,
+                      controller: _nameController,
                       style: AppTextStyles.body(),
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: AppColors.glassFill,
-                        hintText: ref.tr('wealth_service_years_hint'),
+                        hintText: ref.tr('wealth_service_name_hint'),
                         hintStyle: const TextStyle(color: AppColors.textMuted),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(14),
                           borderSide: BorderSide.none,
                         ),
                       ),
-                      onChanged: (_) => setState(() {}),
                     ),
-                  ],
-                  if (_cycleType == 'manual') ...[
                     const SizedBox(height: 10),
-                    GestureDetector(
-                      onTap: _pickManualExpiry,
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 12,
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _amountController,
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            inputFormatters: [ThousandsInputFormatter()],
+                            style: AppTextStyles.body(),
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: AppColors.glassFill,
+                              hintText: ref.tr('wallet_amount_hint'),
+                              hintStyle: const TextStyle(
+                                color: AppColors.textMuted,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                          ),
                         ),
-                        decoration: BoxDecoration(
-                          color: AppColors.glassFill,
+                        const SizedBox(width: 8),
+                        GestureDetector(
+                          onTap: () => setState(
+                            () =>
+                                _currency = _currency == 'VND' ? 'USD' : 'VND',
+                          ),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 14,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.glassFill,
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: Text(
+                              _currency,
+                              style: AppTextStyles.body(
+                                weight: FontWeight.w800,
+                                size: 13,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: _noteController,
+                      style: AppTextStyles.body(),
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: AppColors.glassFill,
+                        hintText: ref.tr('wallet_note_hint'),
+                        hintStyle: const TextStyle(color: AppColors.textMuted),
+                        border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Text(
-                          _manualExpiryDate == null
-                              ? ref.tr('wealth_service_pick_expiry')
-                              : _fmtDate(_manualExpiryDate!),
-                          style: AppTextStyles.body(size: 13),
+                          borderSide: BorderSide.none,
                         ),
                       ),
                     ),
-                  ] else if (expiry != null) ...[
-                    const SizedBox(height: 10),
+                    if (_isEditing) ...[
+                      const SizedBox(height: 12),
+                      Text(
+                        ref.tr('wealth_service_expiry_preview'),
+                        style: AppTextStyles.muted(size: 11),
+                      ),
+                      const SizedBox(height: 6),
+                      GestureDetector(
+                        onTap: _pickEditExpiry,
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 12,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.glassFill,
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.schedule_rounded,
+                                size: 16,
+                                color: AppColors.textMuted,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                _editExpiryDate == null
+                                    ? ref.tr('wealth_service_pick_expiry')
+                                    : _fmtDate(_editExpiryDate!),
+                                style: AppTextStyles.body(size: 13),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                    if (!_isEditing) ...[
+                      const SizedBox(height: 12),
+                      Text(
+                        ref.tr('wealth_service_start_date'),
+                        style: AppTextStyles.muted(size: 11),
+                      ),
+                      const SizedBox(height: 6),
+                      GestureDetector(
+                        onTap: _pickStartDate,
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 12,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.glassFill,
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Text(
+                            _fmtDate(_startDate),
+                            style: AppTextStyles.body(size: 13),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        ref.tr('wealth_service_cycle'),
+                        style: AppTextStyles.muted(size: 11),
+                      ),
+                      const SizedBox(height: 6),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          for (final t in _kCycleTypes)
+                            _Chip(
+                              label: _cycleLabel(t),
+                              selected: _cycleType == t,
+                              onTap: () => setState(() => _cycleType = t),
+                            ),
+                        ],
+                      ),
+                      if (_cycleType == 'custom_years') ...[
+                        const SizedBox(height: 10),
+                        TextField(
+                          controller: _cycleYearsController,
+                          keyboardType: TextInputType.number,
+                          style: AppTextStyles.body(),
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: AppColors.glassFill,
+                            hintText: ref.tr('wealth_service_years_hint'),
+                            hintStyle: const TextStyle(
+                              color: AppColors.textMuted,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                          onChanged: (_) => setState(() {}),
+                        ),
+                      ],
+                      if (_cycleType == 'manual') ...[
+                        const SizedBox(height: 10),
+                        GestureDetector(
+                          onTap: _pickManualExpiry,
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.glassFill,
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: Text(
+                              _manualExpiryDate == null
+                                  ? ref.tr('wealth_service_pick_expiry')
+                                  : _fmtDate(_manualExpiryDate!),
+                              style: AppTextStyles.body(size: 13),
+                            ),
+                          ),
+                        ),
+                      ] else if (expiry != null) ...[
+                        const SizedBox(height: 10),
+                        Text(
+                          '${ref.tr('wealth_service_expiry_preview')}: ${_fmtDate(expiry)}',
+                          style: AppTextStyles.body(
+                            size: 12,
+                            weight: FontWeight.w700,
+                            color: AppColors.wealthAccent,
+                          ),
+                        ),
+                      ],
+                    ],
+                    const SizedBox(height: 12),
                     Text(
-                      '${ref.tr('wealth_service_expiry_preview')}: ${_fmtDate(expiry)}',
-                      style: AppTextStyles.body(
-                        size: 12,
-                        weight: FontWeight.w700,
-                        color: AppColors.wealthAccent,
+                      ref.tr('wealth_service_reminder_lead'),
+                      style: AppTextStyles.muted(size: 11),
+                    ),
+                    const SizedBox(height: 6),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (final d in _kLeadDaysOptions)
+                          _Chip(
+                            label: _leadLabel(d),
+                            selected: _reminderLeadDays == d,
+                            onTap: () => setState(() => _reminderLeadDays = d),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: PillButton(
+                        label: ref.tr('wallet_save'),
+                        accentGradient: AppColors.wealthAccentGradient,
+                        accentColor: AppColors.wealthAccent,
+                        onTap:
+                            _saving || (!_isEditing && _computedExpiry == null)
+                            ? null
+                            : _save,
                       ),
                     ),
                   ],
-                ],
-                const SizedBox(height: 12),
-                Text(
-                  ref.tr('wealth_service_reminder_lead'),
-                  style: AppTextStyles.muted(size: 11),
                 ),
-                const SizedBox(height: 6),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    for (final d in _kLeadDaysOptions)
-                      _Chip(
-                        label: _leadLabel(d),
-                        selected: _reminderLeadDays == d,
-                        onTap: () => setState(() => _reminderLeadDays = d),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: PillButton(
-                    label: ref.tr('wallet_save'),
-                    accentGradient: AppColors.wealthAccentGradient,
-                    accentColor: AppColors.wealthAccent,
-                    onTap: _saving || (!_isEditing && _computedExpiry == null)
-                        ? null
-                        : _save,
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ),

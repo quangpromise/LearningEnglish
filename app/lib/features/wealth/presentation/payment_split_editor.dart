@@ -39,19 +39,41 @@ class PaymentSplitEditor extends ConsumerStatefulWidget {
     super.key,
     required this.totalAmount,
     required this.onChanged,
+    this.initialSplits,
   });
   final double totalAmount;
   final ValueChanged<List<PaymentSplit>> onChanged;
+  // Dung khi SUA 1 giao dich cu - khoi phuc dung hinh thuc thanh toan
+  // (cash/bank + ngan hang cu the) da luu truoc do thay vi luon mac dinh ve
+  // Tien mat (bug: mo sua giao dich tra bang ngan hang lai hien "Cash", va
+  // bam Save khong an gi vi so tien khoi tao van la 0 # tong tien that).
+  final List<PaymentSplit>? initialSplits;
 
   @override
   ConsumerState<PaymentSplitEditor> createState() => _PaymentSplitEditorState();
 }
 
 class _PaymentSplitEditorState extends ConsumerState<PaymentSplitEditor> {
-  final List<PaymentSplit> _splits = [
-    const PaymentSplit(accountType: 'cash', amount: 0),
+  late final List<PaymentSplit> _splits =
+      widget.initialSplits != null && widget.initialSplits!.isNotEmpty
+      ? List.of(widget.initialSplits!)
+      : [PaymentSplit(accountType: 'cash', amount: widget.totalAmount)];
+  late final List<TextEditingController> _controllers = [
+    for (final s in _splits)
+      TextEditingController(
+        text: s.amount == 0 ? '' : groupThousands(s.amount),
+      ),
   ];
-  final List<TextEditingController> _controllers = [TextEditingController()];
+
+  @override
+  void initState() {
+    super.initState();
+    // Bao lai cho parent biet trang thai KHOI TAO ngay (truoc day parent
+    // giu nguyen gia tri placeholder rieng cua no cho toi khi nguoi dung
+    // tuong tac lan dau) - dam bao _splitsValid tinh dung ngay tu dau, nhat
+    // la khi sua giao dich cu (totalAmount da > 0 tu truoc).
+    WidgetsBinding.instance.addPostFrameCallback((_) => _emit());
+  }
 
   @override
   void didUpdateWidget(covariant PaymentSplitEditor oldWidget) {

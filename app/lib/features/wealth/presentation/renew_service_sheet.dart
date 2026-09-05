@@ -123,106 +123,113 @@ class _RenewServiceSheetState extends ConsumerState<_RenewServiceSheet> {
   @override
   Widget build(BuildContext context) {
     final isManual = widget.service.cycleType == 'manual';
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      resizeToAvoidBottomInset: true,
-      body: Align(
-        alignment: Alignment.bottomCenter,
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
-          decoration: const BoxDecoration(
-            color: Color(0xFF12172E),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${ref.tr('wealth_service_renew')} — ${widget.service.name}',
-                  style: AppTextStyles.heading(size: 16),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: _amountController,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  inputFormatters: [ThousandsInputFormatter()],
-                  style: AppTextStyles.body(),
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: AppColors.glassFill,
-                    hintText: ref.tr('wallet_amount_hint'),
-                    hintStyle: const TextStyle(color: AppColors.textMuted),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide.none,
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => Navigator.of(context).pop(),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        resizeToAvoidBottomInset: true,
+        body: Align(
+          alignment: Alignment.bottomCenter,
+          child: GestureDetector(
+            onTap: () {},
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
+              decoration: const BoxDecoration(
+                color: Color(0xFF12172E),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${ref.tr('wealth_service_renew')} — ${widget.service.name}',
+                      style: AppTextStyles.heading(size: 16),
                     ),
-                  ),
-                ),
-                if (isManual) ...[
-                  const SizedBox(height: 10),
-                  Text(
-                    ref.tr('wealth_service_pick_expiry'),
-                    style: AppTextStyles.muted(size: 11),
-                  ),
-                  const SizedBox(height: 6),
-                  GestureDetector(
-                    onTap: _pickManualExpiry,
-                    child: Container(
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: _amountController,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      inputFormatters: [ThousandsInputFormatter()],
+                      style: AppTextStyles.body(),
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: AppColors.glassFill,
+                        hintText: ref.tr('wallet_amount_hint'),
+                        hintStyle: const TextStyle(color: AppColors.textMuted),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                    if (isManual) ...[
+                      const SizedBox(height: 10),
+                      Text(
+                        ref.tr('wealth_service_pick_expiry'),
+                        style: AppTextStyles.muted(size: 11),
+                      ),
+                      const SizedBox(height: 6),
+                      GestureDetector(
+                        onTap: _pickManualExpiry,
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 12,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.glassFill,
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Text(
+                            _manualNewExpiry == null
+                                ? ref.tr('wealth_service_pick_expiry')
+                                : _fmtDate(_manualNewExpiry!),
+                            style: AppTextStyles.body(size: 13),
+                          ),
+                        ),
+                      ),
+                    ] else if (_newExpiry != null) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        '${ref.tr('wealth_service_expiry_preview')}: ${_fmtDate(_newExpiry!)}',
+                        style: AppTextStyles.body(
+                          size: 12,
+                          weight: FontWeight.w700,
+                          color: AppColors.wealthAccent,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 12),
+                    Text(
+                      ref.tr('wealth_pay_by'),
+                      style: AppTextStyles.muted(size: 11),
+                    ),
+                    const SizedBox(height: 6),
+                    PaymentSplitEditor(
+                      totalAmount: _amount,
+                      onChanged: (splits) => _splits = splits,
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.glassFill,
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Text(
-                        _manualNewExpiry == null
-                            ? ref.tr('wealth_service_pick_expiry')
-                            : _fmtDate(_manualNewExpiry!),
-                        style: AppTextStyles.body(size: 13),
+                      child: PillButton(
+                        label: ref.tr('wealth_service_renew'),
+                        accentGradient: AppColors.wealthAccentGradient,
+                        accentColor: AppColors.wealthAccent,
+                        onTap: _saving || !_splitsValid || _newExpiry == null
+                            ? null
+                            : _save,
                       ),
                     ),
-                  ),
-                ] else if (_newExpiry != null) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    '${ref.tr('wealth_service_expiry_preview')}: ${_fmtDate(_newExpiry!)}',
-                    style: AppTextStyles.body(
-                      size: 12,
-                      weight: FontWeight.w700,
-                      color: AppColors.wealthAccent,
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 12),
-                Text(
-                  ref.tr('wealth_pay_by'),
-                  style: AppTextStyles.muted(size: 11),
+                  ],
                 ),
-                const SizedBox(height: 6),
-                PaymentSplitEditor(
-                  totalAmount: _amount,
-                  onChanged: (splits) => _splits = splits,
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: PillButton(
-                    label: ref.tr('wealth_service_renew'),
-                    accentGradient: AppColors.wealthAccentGradient,
-                    accentColor: AppColors.wealthAccent,
-                    onTap: _saving || !_splitsValid || _newExpiry == null
-                        ? null
-                        : _save,
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ),

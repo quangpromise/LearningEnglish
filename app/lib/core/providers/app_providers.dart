@@ -26,6 +26,7 @@ import '../../features/stats/data/stats_repository.dart';
 import '../../features/story/data/lesson_progress_repository.dart';
 import '../../features/wealth/data/exchange_rate_repository.dart';
 import '../../features/wealth/data/stocks_intl_repository.dart';
+import '../../features/wealth/data/stocks_vn_repository.dart';
 import '../../features/wealth/data/vn_bank_model.dart';
 import '../../features/wealth/data/vn_bank_repository.dart';
 import '../../features/wealth/data/wealth_balance_entry_model.dart';
@@ -558,6 +559,19 @@ final stocksIntlQuotesProvider = FutureProvider.autoDispose
     .family<List<StockQuote>, List<String>>(
       (ref, symbols) =>
           ref.watch(stocksIntlRepositoryProvider).fetchQuotes(symbols),
+    );
+
+final stocksVnRepositoryProvider = Provider<StocksVnRepository>(
+  (ref) => StocksVnRepository(ref.watch(supabaseClientProvider)),
+);
+
+/// Gia co phieu Viet Nam (san HOSE) - xem [StocksVnRepository]. Tach rieng
+/// provider voi [stocksIntlQuotesProvider] vi khac Edge Function + currency
+/// (VND thay vi USD).
+final stocksVnQuotesProvider = FutureProvider.autoDispose
+    .family<List<StockQuote>, List<String>>(
+      (ref, symbols) =>
+          ref.watch(stocksVnRepositoryProvider).fetchQuotes(symbols),
     );
 
 // --- Vi (Wallet) - Phase A/B: so du Tien mat/Ngan hang theo tung ngan hang,

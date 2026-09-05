@@ -9,7 +9,7 @@ import '../../../core/theme/app_theme.dart';
 /// tro screener toan san) - thi truong tham khao, khong phai toan bo san
 /// chung khoan. Nguoi dung muon theo doi ma khac tu them qua Vi > Tai san
 /// dau tu > Co phieu.
-const _kWatchSymbols = [
+const _kWatchSymbolsIntl = [
   'AAPL',
   'MSFT',
   'GOOGL',
@@ -20,17 +20,71 @@ const _kWatchSymbols = [
   'SPY',
 ];
 
-class MarketStocksTab extends ConsumerWidget {
+/// Danh sach blue-chip VN (san HOSE) TIEU BIEU co dinh - gia lay tu chinh
+/// API cong khai cua HOSE (xem supabase/functions/stocks-vn), la gia khop
+/// lenh gan nhat/dong cua phien gan nhat, KHONG phai real-time chuan giao
+/// dich - chi mang tinh tham khao.
+const _kWatchSymbolsVn = [
+  'VNM',
+  'VIC',
+  'VHM',
+  'VCB',
+  'BID',
+  'CTG',
+  'HPG',
+  'FPT',
+  'MSN',
+  'MWG',
+  'GAS',
+  'VJC',
+  'VRE',
+  'TCB',
+  'MBB',
+  'SSI',
+];
+
+enum _StockMarket { intl, vn }
+
+class MarketStocksTab extends ConsumerStatefulWidget {
   const MarketStocksTab({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final quotesAsync = ref.watch(stocksIntlQuotesProvider(_kWatchSymbols));
+  ConsumerState<MarketStocksTab> createState() => _MarketStocksTabState();
+}
+
+class _MarketStocksTabState extends ConsumerState<MarketStocksTab> {
+  _StockMarket _market = _StockMarket.intl;
+
+  @override
+  Widget build(BuildContext context) {
+    final isVn = _market == _StockMarket.vn;
+    final symbols = isVn ? _kWatchSymbolsVn : _kWatchSymbolsIntl;
+    final quotesAsync = isVn
+        ? ref.watch(stocksVnQuotesProvider(symbols))
+        : ref.watch(stocksIntlQuotesProvider(symbols));
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Row(
+          children: [
+            _MarketChip(
+              label: ref.tr('wealth_market_stocks_intl'),
+              selected: !isVn,
+              onTap: () => setState(() => _market = _StockMarket.intl),
+            ),
+            const SizedBox(width: 8),
+            _MarketChip(
+              label: ref.tr('wealth_market_stocks_vn'),
+              selected: isVn,
+              onTap: () => setState(() => _market = _StockMarket.vn),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
         Text(
-          ref.tr('wealth_market_stocks_note'),
+          isVn
+              ? ref.tr('wealth_market_stocks_vn_note')
+              : ref.tr('wealth_market_stocks_note'),
           style: AppTextStyles.muted(size: 10.5),
         ),
         const SizedBox(height: 10),
@@ -48,14 +102,14 @@ class MarketStocksTab extends ConsumerWidget {
             data: (quotes) {
               final bySymbol = {for (final q in quotes) q.symbol: q};
               return ListView.separated(
-                itemCount: _kWatchSymbols.length,
+                itemCount: symbols.length,
                 separatorBuilder: (_, _) => const SizedBox(height: 10),
                 itemBuilder: (context, i) {
-                  final symbol = _kWatchSymbols[i];
+                  final symbol = symbols[i];
                   final quote = bySymbol[symbol];
                   final isUp = (quote?.changePercent ?? 0) >= 0;
                   final watchlist = ref.watch(assetWatchlistProvider);
-                  final watchKey = 'stock:$symbol';
+                  final watchKey = isVn ? 'stock_vn:$symbol' : 'stock:$symbol';
                   final isFavorite = watchlist.contains(watchKey);
                   return GlowBox(
                     borderRadius: 16,
@@ -86,7 +140,9 @@ class MarketStocksTab extends ConsumerWidget {
                         ),
                         if (quote != null) ...[
                           Text(
-                            '\$${quote.price.toStringAsFixed(2)}',
+                            isVn
+                                ? '${quote.price.toStringAsFixed(0)}đ'
+                                : '\$${quote.price.toStringAsFixed(2)}',
                             style: AppTextStyles.body(
                               weight: FontWeight.w700,
                               size: 12,
@@ -116,6 +172,41 @@ class MarketStocksTab extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _MarketChip extends StatelessWidget {
+  const _MarketChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          gradient: selected ? AppColors.wealthAccentGradient : null,
+          color: selected ? null : AppColors.glassFill,
+          borderRadius: BorderRadius.circular(999),
+          border: selected ? null : Border.all(color: AppColors.glassBorder),
+        ),
+        child: Text(
+          label,
+          style: AppTextStyles.body(
+            size: 12.5,
+            weight: FontWeight.w800,
+            color: selected ? Colors.white : AppColors.textMuted,
+          ),
+        ),
+      ),
     );
   }
 }

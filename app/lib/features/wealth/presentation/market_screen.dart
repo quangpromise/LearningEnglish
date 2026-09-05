@@ -247,6 +247,16 @@ class _UnifiedWatchlistTab extends ConsumerWidget {
     final stockQuotes = stockQuotesAsync.valueOrNull ?? [];
     final stockPriceBySymbol = {for (final q in stockQuotes) q.symbol: q};
 
+    final watchedStockVnSymbols = assetWatchlist
+        .where((k) => k.startsWith('stock_vn:'))
+        .map((k) => k.substring('stock_vn:'.length))
+        .toList();
+    final stockVnQuotesAsync = ref.watch(
+      stocksVnQuotesProvider(watchedStockVnSymbols),
+    );
+    final stockVnQuotes = stockVnQuotesAsync.valueOrNull ?? [];
+    final stockVnPriceBySymbol = {for (final q in stockVnQuotes) q.symbol: q};
+
     final watchedMetalKeys = assetWatchlist
         .where((k) => k.startsWith('metal:'))
         .toList();
@@ -255,6 +265,7 @@ class _UnifiedWatchlistTab extends ConsumerWidget {
     final isEmpty =
         watchedCoins.isEmpty &&
         watchedStockSymbols.isEmpty &&
+        watchedStockVnSymbols.isEmpty &&
         watchedMetalKeys.isEmpty;
 
     if (isEmpty) {
@@ -302,6 +313,14 @@ class _UnifiedWatchlistTab extends ConsumerWidget {
             _StockWatchRow(symbol: symbol, quote: stockPriceBySymbol[symbol]),
             const SizedBox(height: 8),
           ],
+          for (final symbol in watchedStockVnSymbols) ...[
+            _StockWatchRow(
+              symbol: symbol,
+              quote: stockVnPriceBySymbol[symbol],
+              isVn: true,
+            ),
+            const SizedBox(height: 8),
+          ],
           const SizedBox(height: 8),
         ],
         if (watchedMetalKeys.isNotEmpty) ...[
@@ -321,9 +340,14 @@ class _UnifiedWatchlistTab extends ConsumerWidget {
 }
 
 class _StockWatchRow extends ConsumerWidget {
-  const _StockWatchRow({required this.symbol, required this.quote});
+  const _StockWatchRow({
+    required this.symbol,
+    required this.quote,
+    this.isVn = false,
+  });
   final String symbol;
   final StockQuote? quote;
+  final bool isVn;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -335,7 +359,7 @@ class _StockWatchRow extends ConsumerWidget {
           GestureDetector(
             onTap: () => ref
                 .read(assetWatchlistProvider.notifier)
-                .toggle('stock:$symbol'),
+                .toggle(isVn ? 'stock_vn:$symbol' : 'stock:$symbol'),
             child: const Padding(
               padding: EdgeInsets.only(right: 10),
               child: Icon(
@@ -353,7 +377,9 @@ class _StockWatchRow extends ConsumerWidget {
           ),
           if (quote != null) ...[
             Text(
-              '\$${quote!.price.toStringAsFixed(2)}',
+              isVn
+                  ? '${quote!.price.toStringAsFixed(0)}đ'
+                  : '\$${quote!.price.toStringAsFixed(2)}',
               style: AppTextStyles.body(weight: FontWeight.w700, size: 12),
             ),
             const SizedBox(width: 8),

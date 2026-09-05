@@ -169,9 +169,10 @@ class _ServiceCard extends ConsumerWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              daysLeft < 0
-                  ? ref.tr('wealth_service_overdue')
-                  : '${ref.tr('wealth_service_days_left')}: $daysLeft',
+              '${daysLeft < 0 ? ref.tr('wealth_service_overdue') : '${ref.tr('wealth_service_days_left')}: $daysLeft'} '
+              '(${service.expiryDate.day.toString().padLeft(2, '0')}/'
+              '${service.expiryDate.month.toString().padLeft(2, '0')}/'
+              '${service.expiryDate.year})',
               style: AppTextStyles.muted(size: 11)
                   .copyWith(color: isUrgent ? AppColors.pink : null),
             ),

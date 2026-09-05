@@ -204,242 +204,250 @@ class _AddDebtSheetState extends ConsumerState<_AddDebtSheet> {
     // nut Save khi ban phim con mo; Scaffold tu dieu chinh body va lan
     // truyen MediaQuery on dinh hon, tranh lech hit-test giua vi tri ve va
     // vi tri thuc nhan tap sau khi ban phim vua doi kich thuoc.
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      resizeToAvoidBottomInset: true,
-      body: Align(
-        alignment: Alignment.bottomCenter,
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
-          decoration: const BoxDecoration(
-            color: Color(0xFF12172E),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => Navigator.of(context).pop(),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        resizeToAvoidBottomInset: true,
+        body: Align(
+          alignment: Alignment.bottomCenter,
+          child: GestureDetector(
+            onTap: () {},
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
+              decoration: const BoxDecoration(
+                color: Color(0xFF12172E),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Text(
-                        widget.direction == 'i_owe'
-                            ? ref.tr('wealth_debt_add_i_owe')
-                            : ref.tr('wealth_debt_add_owed_to_me'),
-                        style: AppTextStyles.heading(size: 16),
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: _toggleSplitMode,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            _splitMode
-                                ? Icons.check_box_rounded
-                                : Icons.check_box_outline_blank_rounded,
-                            size: 18,
-                            color: _splitMode
-                                ? AppColors.wealthAccent
-                                : AppColors.textMuted,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            ref.tr('wealth_debt_split_mode'),
-                            style: AppTextStyles.muted(size: 11.5),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                if (!_splitMode) ...[
-                  DebtPersonPickerField(controller: _personController),
-                  const SizedBox(height: 10),
-                ] else if (_splitMode)
-                  Text(
-                    ref.tr('wealth_debt_split_total_hint'),
-                    style: AppTextStyles.muted(size: 11),
-                  ),
-                if (_splitMode) const SizedBox(height: 6),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _amountController,
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        inputFormatters: [ThousandsInputFormatter()],
-                        style: AppTextStyles.body(),
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: AppColors.glassFill,
-                          hintText: ref.tr('wallet_amount_hint'),
-                          hintStyle: const TextStyle(
-                            color: AppColors.textMuted,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: BorderSide.none,
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            widget.direction == 'i_owe'
+                                ? ref.tr('wealth_debt_add_i_owe')
+                                : ref.tr('wealth_debt_add_owed_to_me'),
+                            style: AppTextStyles.heading(size: 16),
                           ),
                         ),
-                        onChanged: (_) {
-                          if (_splitMode) {
-                            _splitEqually();
-                          } else {
-                            setState(() {});
-                          }
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    GestureDetector(
-                      onTap: () => setState(
-                        () => _currency = _currency == 'VND' ? 'USD' : 'VND',
-                      ),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 14,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.glassFill,
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: AppColors.glassBorder),
-                        ),
-                        child: Text(
-                          _currency,
-                          style: AppTextStyles.body(
-                            weight: FontWeight.w800,
-                            size: 13,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                if (_splitMode) ...[
-                  const SizedBox(height: 12),
-                  for (var i = 0; i < _splitPeople.length; i++)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            flex: 5,
-                            child: DebtPersonPickerField(
-                              controller: _splitPeople[i].nameController,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            flex: 4,
-                            child: TextField(
-                              controller: _splitPeople[i].amountController,
-                              keyboardType:
-                                  const TextInputType.numberWithOptions(
-                                    decimal: true,
-                                  ),
-                              inputFormatters: [ThousandsInputFormatter()],
-                              style: AppTextStyles.body(size: 13),
-                              decoration: InputDecoration(
-                                isDense: true,
-                                filled: true,
-                                fillColor: AppColors.glassFill,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 14,
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide.none,
-                                ),
-                              ),
-                              onChanged: (_) => setState(() {}),
-                            ),
-                          ),
-                          if (_splitPeople.length > 2)
-                            IconButton(
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
-                              icon: const Icon(
-                                Icons.close_rounded,
+                        GestureDetector(
+                          onTap: _toggleSplitMode,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                _splitMode
+                                    ? Icons.check_box_rounded
+                                    : Icons.check_box_outline_blank_rounded,
                                 size: 18,
+                                color: _splitMode
+                                    ? AppColors.wealthAccent
+                                    : AppColors.textMuted,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                ref.tr('wealth_debt_split_mode'),
+                                style: AppTextStyles.muted(size: 11.5),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    if (!_splitMode) ...[
+                      DebtPersonPickerField(controller: _personController),
+                      const SizedBox(height: 10),
+                    ] else if (_splitMode)
+                      Text(
+                        ref.tr('wealth_debt_split_total_hint'),
+                        style: AppTextStyles.muted(size: 11),
+                      ),
+                    if (_splitMode) const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _amountController,
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            inputFormatters: [ThousandsInputFormatter()],
+                            style: AppTextStyles.body(),
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: AppColors.glassFill,
+                              hintText: ref.tr('wallet_amount_hint'),
+                              hintStyle: const TextStyle(
                                 color: AppColors.textMuted,
                               ),
-                              onPressed: () => _removeSplitPerson(i),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                            onChanged: (_) {
+                              if (_splitMode) {
+                                _splitEqually();
+                              } else {
+                                setState(() {});
+                              }
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        GestureDetector(
+                          onTap: () => setState(
+                            () =>
+                                _currency = _currency == 'VND' ? 'USD' : 'VND',
+                          ),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 14,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.glassFill,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: AppColors.glassBorder),
+                            ),
+                            child: Text(
+                              _currency,
+                              style: AppTextStyles.body(
+                                weight: FontWeight.w800,
+                                size: 13,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (_splitMode) ...[
+                      const SizedBox(height: 12),
+                      for (var i = 0; i < _splitPeople.length; i++)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                flex: 5,
+                                child: DebtPersonPickerField(
+                                  controller: _splitPeople[i].nameController,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                flex: 4,
+                                child: TextField(
+                                  controller: _splitPeople[i].amountController,
+                                  keyboardType:
+                                      const TextInputType.numberWithOptions(
+                                        decimal: true,
+                                      ),
+                                  inputFormatters: [ThousandsInputFormatter()],
+                                  style: AppTextStyles.body(size: 13),
+                                  decoration: InputDecoration(
+                                    isDense: true,
+                                    filled: true,
+                                    fillColor: AppColors.glassFill,
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 14,
+                                    ),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                  ),
+                                  onChanged: (_) => setState(() {}),
+                                ),
+                              ),
+                              if (_splitPeople.length > 2)
+                                IconButton(
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                  icon: const Icon(
+                                    Icons.close_rounded,
+                                    size: 18,
+                                    color: AppColors.textMuted,
+                                  ),
+                                  onPressed: () => _removeSplitPerson(i),
+                                ),
+                            ],
+                          ),
+                        ),
+                      Row(
+                        children: [
+                          GestureDetector(
+                            onTap: _addSplitPerson,
+                            child: Text(
+                              '+ ${ref.tr('wealth_debt_split_add_person')}',
+                              style: AppTextStyles.body(
+                                size: 12,
+                                weight: FontWeight.w700,
+                                color: AppColors.wealthAccent,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          GestureDetector(
+                            onTap: _splitEqually,
+                            child: Text(
+                              ref.tr('wealth_debt_split_equal'),
+                              style: AppTextStyles.body(
+                                size: 12,
+                                weight: FontWeight.w700,
+                                color: AppColors.textMuted,
+                              ),
+                            ),
+                          ),
+                          const Spacer(),
+                          if ((_splitAllocated - _totalAmount).abs() > 0.5)
+                            Text(
+                              '${ref.tr('wealth_split_remaining')}: '
+                              '${(_totalAmount - _splitAllocated).toStringAsFixed(0)}',
+                              style: AppTextStyles.muted(size: 11)
+                                  .copyWith(color: AppColors.pink),
                             ),
                         ],
                       ),
-                    ),
-                  Row(
-                    children: [
-                      GestureDetector(
-                        onTap: _addSplitPerson,
-                        child: Text(
-                          '+ ${ref.tr('wealth_debt_split_add_person')}',
-                          style: AppTextStyles.body(
-                            size: 12,
-                            weight: FontWeight.w700,
-                            color: AppColors.wealthAccent,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 14),
-                      GestureDetector(
-                        onTap: _splitEqually,
-                        child: Text(
-                          ref.tr('wealth_debt_split_equal'),
-                          style: AppTextStyles.body(
-                            size: 12,
-                            weight: FontWeight.w700,
-                            color: AppColors.textMuted,
-                          ),
-                        ),
-                      ),
-                      const Spacer(),
-                      if ((_splitAllocated - _totalAmount).abs() > 0.5)
-                        Text(
-                          '${ref.tr('wealth_split_remaining')}: '
-                          '${(_totalAmount - _splitAllocated).toStringAsFixed(0)}',
-                          style: AppTextStyles.muted(size: 11)
-                              .copyWith(color: AppColors.pink),
-                        ),
                     ],
-                  ),
-                ],
-                const SizedBox(height: 10),
-                TextField(
-                  controller: _noteController,
-                  style: AppTextStyles.body(),
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: AppColors.glassFill,
-                    hintText: ref.tr('wallet_note_hint'),
-                    hintStyle: const TextStyle(color: AppColors.textMuted),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide.none,
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: _noteController,
+                      style: AppTextStyles.body(),
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: AppColors.glassFill,
+                        hintText: ref.tr('wallet_note_hint'),
+                        hintStyle: const TextStyle(color: AppColors.textMuted),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: PillButton(
+                        label: ref.tr('wallet_save'),
+                        accentGradient: AppColors.wealthAccentGradient,
+                        accentColor: AppColors.wealthAccent,
+                        onTap: _saving || (_splitMode && !_splitValid)
+                            ? null
+                            : _save,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: PillButton(
-                    label: ref.tr('wallet_save'),
-                    accentGradient: AppColors.wealthAccentGradient,
-                    accentColor: AppColors.wealthAccent,
-                    onTap: _saving || (_splitMode && !_splitValid)
-                        ? null
-                        : _save,
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ),

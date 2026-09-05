@@ -178,6 +178,10 @@ class AppStrings {
       AppLanguage.vi: 'Tìm theo tên hoặc ký hiệu...',
       AppLanguage.en: 'Search by name or symbol...',
     },
+    'crypto_other_results': {
+      AppLanguage.vi: 'Kết quả khác trên OKX (ngoài top 100)',
+      AppLanguage.en: 'Other results on OKX (outside top 100)',
+    },
     'crypto_no_results': {
       AppLanguage.vi: 'Không tìm thấy coin nào',
       AppLanguage.en: 'No coins found',
@@ -788,6 +792,18 @@ class AppStrings {
       AppLanguage.vi: 'Giá trị ước tính (VND)',
       AppLanguage.en: 'Estimated value (VND)',
     },
+    'wealth_real_estate_purchase_hint': {
+      AppLanguage.vi: 'Giá mua ban đầu (VND)',
+      AppLanguage.en: 'Original purchase price (VND)',
+    },
+    'wealth_real_estate_purchase_label': {
+      AppLanguage.vi: 'Giá mua ban đầu',
+      AppLanguage.en: 'Original purchase price',
+    },
+    'wealth_real_estate_current_label': {
+      AppLanguage.vi: 'Giá hiện tại',
+      AppLanguage.en: 'Current value',
+    },
     'wealth_add_holding': {
       AppLanguage.vi: 'Thêm mã cổ phiếu',
       AppLanguage.en: 'Add stock holding',
@@ -980,6 +996,18 @@ class AppStrings {
     'wealth_market_stocks_note': {
       AppLanguage.vi: 'Danh sách mã tiêu biểu (không phải toàn bộ sàn) — thêm mã khác trong Ví.',
       AppLanguage.en: 'A curated watchlist, not the full market — add other symbols in Wallet.',
+    },
+    'wealth_market_stocks_intl': {
+      AppLanguage.vi: 'Quốc tế',
+      AppLanguage.en: 'International',
+    },
+    'wealth_market_stocks_vn': {
+      AppLanguage.vi: 'Việt Nam',
+      AppLanguage.en: 'Vietnam',
+    },
+    'wealth_market_stocks_vn_note': {
+      AppLanguage.vi: 'Giá khớp lệnh/đóng cửa gần nhất từ HOSE, chỉ mang tính tham khảo, không phải giá real-time chuẩn giao dịch.',
+      AppLanguage.en: 'Last matched/closing price from HOSE, for reference only — not exchange-grade real-time data.',
     },
     'wealth_market_metals_note': {
       AppLanguage.vi: 'Giá tham khảo, cập nhật mỗi vài phút. Bạc/Đồng là giá thế giới quy đổi.',

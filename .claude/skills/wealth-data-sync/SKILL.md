@@ -1,6 +1,6 @@
 ---
 name: wealth-data-sync
-description: Quy trình gọi Edge Function proxy lấy giá cổ phiếu (quốc tế qua Twelve Data, Việt Nam qua SSI FastConnect ở Phase 2) cho tính năng Quản lý tài sản, và checklist xác minh trước khi thêm 1 nguồn dữ liệu tài chính mới.
+description: Quy trình gọi Edge Function proxy lấy giá cổ phiếu (quốc tế qua Twelve Data, Việt Nam qua API công khai của HOSE) cho tính năng Quản lý tài sản, và checklist xác minh trước khi thêm 1 nguồn dữ liệu tài chính mới.
 ---
 
 # Quy trình đồng bộ dữ liệu tài chính (Wealth Management)
@@ -40,11 +40,34 @@ Function cache kết quả trong bộ nhớ vài phút (tránh tốn quota free 
 800 call/ngày của Twelve Data) — không polling liên tục từ UI, chỉ fetch khi
 người dùng mở tab Đầu tư hoặc bấm refresh thủ công.
 
-## Edge Function `stocks-vn` (Phase 2, chưa làm — cần token SSI FastConnect)
+## Edge Function `stocks-vn` (đã triển khai — API công khai của HOSE)
 
-Sẽ theo đúng cấu trúc `stocks-intl` nhưng gọi SSI FastConnect Data — CHỈ
-triển khai sau khi người dùng tự đăng ký xong tài khoản SSI FastConnect
-(quy trình offline, cần CCCD, xem `docs/research-wealth-stock-apis.md`).
+Không dùng SSI FastConnect (ToS mặc định cấm redistribute cho bên thứ ba) —
+dùng thẳng API công khai `api.hsx.vn` mà chính trang bảng giá chính thức
+`rtboard.hsx.vn` của HOSE gọi từ trình duyệt, không cần key. Xem lý do chọn
+đầy đủ trong `docs/research-wealth-stock-apis.md`.
+
+```dart
+final res = await supabase.functions.invoke(
+  'stocks-vn',
+  queryParameters: {'symbols': 'VNM,VIC,FPT'},
+);
+// res.data: List các { symbol, price, changePercent, currency: 'VND' } -
+// price la gia khop lenh/dong cua GAN NHAT, KHONG phai real-time chuan
+// giao dich.
+```
+
+Test local:
+
+```bash
+supabase functions serve stocks-vn
+curl "http://localhost:54321/functions/v1/stocks-vn?symbols=VNM,VIC,FPT"
+```
+
+**VN-Index (điểm số) chưa làm** — HOSE chỉ phát số này qua WebSocket/SignalR
+riêng (`wss://api.hsx.vn/hub/mddsnotificationhub`, cần header `Origin` mà
+`WebSocket` chuẩn của Deno không cho đặt được) — phức tạp hơn nhiều so với
+REST, xem chi tiết trong `docs/research-wealth-stock-apis.md`.
 
 ## Checklist xác minh trước khi thêm 1 nguồn/mã dữ liệu mới
 

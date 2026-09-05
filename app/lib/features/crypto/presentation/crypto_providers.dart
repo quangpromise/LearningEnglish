@@ -25,6 +25,23 @@ final okxSymbolsProvider = FutureProvider.autoDispose<Set<String>>(
   (ref) => OkxService.fetchUsdtSymbols(),
 );
 
+/// Toan bo gia hien tai tren OKX (khong chi top 100 von hoa) - dung de mo
+/// rong tim kiem sang coin ngoai bang xep hang chinh. Khong autoDispose vi
+/// danh sach nay lon (~vai nghin cap), giu lai giua cac lan mo/dong tab
+/// Market de khong phai tai lai moi lan go tim kiem.
+final okxAllTickersProvider = FutureProvider<List<OkxTickerRow>>(
+  (ref) => OkxService.fetchAllUsdtTickers(),
+);
+
+/// Lich su nen 1 ky hieu cho man chi tiet coin - family theo (symbol, bar)
+/// noi bang dau gach doc de dung String lam key (gion voi cac family khac
+/// trong file nay).
+final okxCandlesProvider = FutureProvider.autoDispose
+    .family<List<OkxCandle>, String>((ref, key) {
+      final parts = key.split('|');
+      return OkxService.fetchCandles(symbol: parts[0], bar: parts[1]);
+    });
+
 /// `symbolsKey` la danh sach ky hieu da sap xep, noi bang dau phay - dung
 /// String thay vi List lam key family vi List khong co gia tri == theo noi
 /// dung (Dart so sanh List theo identity), se khien family tao provider moi

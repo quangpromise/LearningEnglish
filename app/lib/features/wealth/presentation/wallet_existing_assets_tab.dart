@@ -327,29 +327,43 @@ class WalletEntryRow extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isPositive = entry.amount >= 0;
+    final hasNote = entry.note?.isNotEmpty == true;
+    final dateText =
+        '${entry.occurredAt.day.toString().padLeft(2, '0')}/'
+        '${entry.occurredAt.month.toString().padLeft(2, '0')}/'
+        '${entry.occurredAt.year}';
+    // Truoc day: co note thi CHI hien note, KHONG hien ngay thang nam nao ca
+    // - nguoi dung khong biet giao dich do xay ra luc nao khi xem lich su.
+    // Gio luon hien ngay/thang/nam o dong phu ben duoi, du co note hay khong.
     final content = Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Text(
-              entry.note?.isNotEmpty == true
-                  ? entry.note!
-                  : '${entry.occurredAt.day.toString().padLeft(2, '0')}/'
-                        '${entry.occurredAt.month.toString().padLeft(2, '0')}',
-              style: AppTextStyles.muted(size: 12),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  hasNote ? entry.note! : dateText,
+                  style: AppTextStyles.muted(size: 12),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Text(
+                formatByCurrency(entry.amount, entry.currency),
+                style: AppTextStyles.body(
+                  size: 12,
+                  weight: FontWeight.w700,
+                  color: isPositive ? AppColors.teal : AppColors.pink,
+                ),
+              ),
+            ],
           ),
-          Text(
-            formatByCurrency(entry.amount, entry.currency),
-            style: AppTextStyles.body(
-              size: 12,
-              weight: FontWeight.w700,
-              color: isPositive ? AppColors.teal : AppColors.pink,
-            ),
-          ),
+          if (hasNote) ...[
+            const SizedBox(height: 1),
+            Text(dateText, style: AppTextStyles.muted(size: 10)),
+          ],
         ],
       ),
     );
