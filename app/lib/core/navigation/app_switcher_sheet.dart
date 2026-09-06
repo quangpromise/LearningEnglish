@@ -6,6 +6,7 @@ import '../../features/wealth/presentation/wealth_shell.dart';
 import '../i18n/app_strings.dart';
 import '../providers/app_providers.dart';
 import '../theme/app_theme.dart';
+import 'nav_keys.dart';
 
 /// Logo that nguoi dung cung cap dung lam icon dai dien cho Fitness/Hoc
 /// Tieng Anh o pill + dropdown chuyen doi app (Wealth van dung Material
@@ -59,9 +60,19 @@ class _AppSwitcherPillState extends ConsumerState<AppSwitcherPill> {
     rootNav.popUntil((r) => r.isFirst);
     switch (section) {
       case AppSection.fitness:
-        rootNav.push(MaterialPageRoute(builder: (_) => const FitnessShell()));
+        rootNav.push(
+          MaterialPageRoute(
+            settings: const RouteSettings(name: kFitnessHomeRouteName),
+            builder: (_) => const FitnessShell(),
+          ),
+        );
       case AppSection.wealth:
-        rootNav.push(MaterialPageRoute(builder: (_) => const WealthShell()));
+        rootNav.push(
+          MaterialPageRoute(
+            settings: const RouteSettings(name: kWealthHomeRouteName),
+            builder: (_) => const WealthShell(),
+          ),
+        );
       case AppSection.learnEnglish:
         break;
     }

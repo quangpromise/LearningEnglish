@@ -2651,6 +2651,157 @@ class AppStrings {
       AppLanguage.vi: 'Nghe bài giảng học thuật và trả lời câu hỏi',
       AppLanguage.en: 'Listen to an academic lecture and answer the questions',
     },
+
+    // Planner feature (features/planner/) - man "Lap ke hoach" dung chung 3
+    // mini-app + menu noi AssistiveTouch, xem docs/research-planner-app-ux.md
+    'planner_title': {
+      AppLanguage.vi: 'Lập kế hoạch',
+      AppLanguage.en: 'Planner',
+    },
+    'planner_add_task': {
+      AppLanguage.vi: 'Thêm việc',
+      AppLanguage.en: 'Add task',
+    },
+    'planner_today': {AppLanguage.vi: 'Hôm nay', AppLanguage.en: 'Today'},
+    'planner_view_week': {
+      AppLanguage.vi: 'Xem tuần',
+      AppLanguage.en: 'View week',
+    },
+    'planner_filter_apps': {
+      AppLanguage.vi: 'Lọc mini-app',
+      AppLanguage.en: 'Filter mini-apps',
+    },
+    'planner_status_completed': {
+      AppLanguage.vi: 'Hoàn thành',
+      AppLanguage.en: 'Completed',
+    },
+    'planner_status_running': {
+      AppLanguage.vi: 'Đang chạy',
+      AppLanguage.en: 'Running',
+    },
+    'planner_status_rejected': {
+      AppLanguage.vi: 'Từ chối',
+      AppLanguage.en: 'Rejected',
+    },
+    'planner_status_upcoming': {
+      AppLanguage.vi: 'Sắp tới',
+      AppLanguage.en: 'Upcoming',
+    },
+    'planner_more_tasks': {AppLanguage.vi: 'việc khác', AppLanguage.en: 'more'},
+    'planner_empty_day': {
+      AppLanguage.vi: 'Chưa có việc nào trong ngày này',
+      AppLanguage.en: 'No tasks for this day yet',
+    },
+    'planner_task_title_hint': {
+      AppLanguage.vi: 'Tên việc cần làm',
+      AppLanguage.en: 'Task name',
+    },
+    'planner_start_time': {
+      AppLanguage.vi: 'Giờ bắt đầu',
+      AppLanguage.en: 'Start time',
+    },
+    'planner_end_time': {
+      AppLanguage.vi: 'Giờ kết thúc',
+      AppLanguage.en: 'End time',
+    },
+    'planner_reminder_toggle': {
+      AppLanguage.vi: 'Nhắc nhở khi đến giờ',
+      AppLanguage.en: 'Remind me at start time',
+    },
+    'planner_save': {AppLanguage.vi: 'Lưu', AppLanguage.en: 'Save'},
+    'planner_delete': {
+      AppLanguage.vi: 'Xoá việc',
+      AppLanguage.en: 'Delete task',
+    },
+    'planner_edit_title': {
+      AppLanguage.vi: 'Sửa việc',
+      AppLanguage.en: 'Edit task',
+    },
+    'planner_add_title': {
+      AppLanguage.vi: 'Việc mới',
+      AppLanguage.en: 'New task',
+    },
+    'planner_settings_title': {
+      AppLanguage.vi: 'Cài đặt nhắc nhở',
+      AppLanguage.en: 'Reminder settings',
+    },
+    'planner_settings_subtitle': {
+      AppLanguage.vi: 'Áp dụng cho mọi việc có bật nhắc nhở',
+      AppLanguage.en: 'Applies to every task with reminders on',
+    },
+    'planner_ringtone_label': {
+      AppLanguage.vi: 'Loại chuông',
+      AppLanguage.en: 'Ringtone',
+    },
+    'planner_ringtone_default': {
+      AppLanguage.vi: 'Mặc định (Chuông dịu)',
+      AppLanguage.en: 'Default (Soft chime)',
+    },
+    'planner_ringtone_cheerful': {
+      AppLanguage.vi: 'Giai điệu vui',
+      AppLanguage.en: 'Cheerful tone',
+    },
+    'planner_lead_time_label': {
+      AppLanguage.vi: 'Nhắc trước',
+      AppLanguage.en: 'Remind before',
+    },
+    'planner_lead_on_time': {
+      AppLanguage.vi: 'Đúng giờ',
+      AppLanguage.en: 'On time',
+    },
+    'planner_lead_5': {
+      AppLanguage.vi: 'Trước 5 phút',
+      AppLanguage.en: '5 min before',
+    },
+    'planner_lead_15': {
+      AppLanguage.vi: 'Trước 15 phút',
+      AppLanguage.en: '15 min before',
+    },
+    'planner_lead_30': {
+      AppLanguage.vi: 'Trước 30 phút',
+      AppLanguage.en: '30 min before',
+    },
+    'planner_lead_60': {
+      AppLanguage.vi: 'Trước 1 giờ',
+      AppLanguage.en: '1 hour before',
+    },
+    'planner_mode_label': {
+      AppLanguage.vi: 'Kiểu nhắc',
+      AppLanguage.en: 'Alert style',
+    },
+    'planner_mode_both': {
+      AppLanguage.vi: 'Rung + Chuông',
+      AppLanguage.en: 'Vibrate + Sound',
+    },
+    'planner_mode_vibrate': {
+      AppLanguage.vi: 'Chỉ rung',
+      AppLanguage.en: 'Vibrate only',
+    },
+    'planner_mode_sound': {
+      AppLanguage.vi: 'Chỉ chuông',
+      AppLanguage.en: 'Sound only',
+    },
+    'planner_mode_off': {
+      AppLanguage.vi: 'Tắt cả hai',
+      AppLanguage.en: 'Both off',
+    },
+    'planner_filter_sheet_title': {
+      AppLanguage.vi: 'Lọc theo mini-app',
+      AppLanguage.en: 'Filter by mini-app',
+    },
+    'planner_filter_all': {AppLanguage.vi: 'Tất cả', AppLanguage.en: 'All'},
+    'planner_app_english': {
+      AppLanguage.vi: 'Học tiếng Anh',
+      AppLanguage.en: 'Learn English',
+    },
+    'planner_app_fitness': {
+      AppLanguage.vi: 'Fitness',
+      AppLanguage.en: 'Fitness',
+    },
+    'planner_app_wealth': {
+      AppLanguage.vi: 'Quản lý tài sản',
+      AppLanguage.en: 'Wealth',
+    },
   };
 
   static String t(String key, AppLanguage lang) =>

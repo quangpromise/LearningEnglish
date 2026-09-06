@@ -4,19 +4,34 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/ai_voice_chat/presentation/ai_voice_chat_screen.dart';
 import '../theme/app_theme.dart';
 import '../providers/app_providers.dart';
+import 'fab_positions.dart';
 import 'nav_keys.dart';
 
 const _kFabSize = 58.0;
 
-/// Nut noi "AI Voice Chat" - hien tren MOI man hinh cua app (chong len qua
-/// MaterialApp.builder trong main.dart) thay vi chi la 1 tab co dinh o
-/// thanh dieu huong duoi, de nguoi dung mo tro chuyen AI bat ky luc nao.
-/// An rieng o tab Luyen phat am (pronunciationTabActiveProvider) vi man do
-/// da dung mic + can toan bo man hinh cho luyen tap, nut noi de chong/vuong;
-/// va an luon o chinh man AiVoiceChatScreen - xac dinh qua [topRouteObserver]
-/// (KHONG dung Riverpod state tu doi trong initState/dispose cua chinh man
-/// hinh do nua vi de bi lech dong bo, khien nut bien mat luon sau khi quay
-/// lai neu dispose khong chay dung thoi diem mong doi).
+/// Ten route cua dung "man Home that su" cua ca 3 khu vuc (xem
+/// nav_keys.dart) - nut noi CHI hien khi dang dung mot trong 3 route nay,
+/// tu dong an o moi man hinh khac (popup tinh nang, man con...) vi nhung
+/// man do khong duoc dat ten (settings.name == null) nen khong khop tap nay.
+const _kHomeRouteNames = {
+  kEnglishHomeRouteName,
+  kFitnessHomeRouteName,
+  kWealthHomeRouteName,
+};
+
+/// Nut noi "AI Voice Chat" - CHI hien o dung 3 man Home chinh (Hoc Tieng
+/// Anh/Fitness/Wealth, xem [_kHomeRouteNames]), an o MOI man hinh khac (popup
+/// tinh nang, man con...) - chong len qua MaterialApp.builder trong main.dart
+/// thay vi chi la 1 tab co dinh o thanh dieu huong duoi, de nguoi dung mo tro
+/// chuyen AI ngay tu man Home bat ky luc nao ma khong vuong tay khi dang thao
+/// tac trong 1 tinh nang khac. Xac dinh dang o man nao qua [topRouteObserver]
+/// (KHONG dung Riverpod state tu doi trong initState/dispose cua tung man
+/// hinh nua vi de bi lech dong bo, khien nut bien mat/hien sai luc neu
+/// dispose khong chay dung thoi diem mong doi). An rieng them o tab Luyen
+/// phat am (pronunciationTabActiveProvider, man do da dung mic + can toan bo
+/// man hinh) - thuc ra da duoc an tu dong boi luat "chi hien o Home" o tren
+/// (man Luyen phat am cung la 1 popup khong ten), giu lai check nay chi de
+/// an toan kep, khong anh huong logic chinh.
 ///
 /// Cham nhanh (tha ra ma khong di chuyen nhieu) se MO man AI Voice Chat;
 /// nhan giu roi keo se DI CHUYEN nut den vi tri bat ky tren man hinh - vi
@@ -123,6 +138,29 @@ class _AiFabOverlayState extends ConsumerState<AiFabOverlay>
       _position = Offset(next.dx.clamp(0, maxX), next.dy.clamp(0, maxY));
       if (_totalMoveDistance > _dragThreshold) _dragging = true;
     });
+    ref.read(aiFabPositionProvider.notifier).state = _position;
+    _resolveNudge(screenSize, _position!);
+  }
+
+  /// Neu nut nay vua duoc keo den qua gan Y hien tai cua Planner FAB (dinh
+  /// canh phai, xem planner_fab_overlay.dart), day Planner FAB ra xa theo
+  /// truc doc dung du khoang cach toi thieu - "tu day nhau" hai chieu (chieu
+  /// con lai duoc xu ly tuong tu ben planner_fab_overlay.dart).
+  void _resolveNudge(Size screenSize, Offset myPos) {
+    final plannerY = ref.read(plannerFabYProvider);
+    if (plannerY == null) return;
+    const plannerFabSize = 56.0;
+    final myCenter = myPos.dy + _kFabSize / 2;
+    final plannerCenter = plannerY + plannerFabSize / 2;
+    final gap = (myCenter - plannerCenter).abs();
+    if (gap >= kFabMinGapY) return;
+    final push = kFabMinGapY - gap;
+    final direction = plannerCenter >= myCenter ? 1 : -1;
+    final newPlannerY = (plannerY + direction * push).clamp(
+      0.0,
+      screenSize.height - plannerFabSize,
+    );
+    ref.read(plannerFabYProvider.notifier).state = newPlannerY;
   }
 
   void _onPanEnd(DragEndDetails details) {
@@ -136,9 +174,17 @@ class _AiFabOverlayState extends ConsumerState<AiFabOverlay>
   @override
   Widget build(BuildContext context) {
     final pronunciationActive = ref.watch(pronunciationTabActiveProvider);
-    // Fitness/Wealth: nut noi AI Voice Chat van hien tren MOI man hinh cua
-    // 2 khu vuc nay (theo yeu cau) - CHI an o tab Luyen phat am (co mic
-    // rieng, tranh chong nhau) va o chinh man AI Voice Chat.
+
+    // Neu Planner FAB (planner_fab_overlay.dart) vua "day" nut nay ra xa
+    // (ghi truc tiep vao aiFabPositionProvider), dong bo lai vao _position
+    // cuc bo de nut THAT SU di chuyen tren man hinh - khong chi doi khi
+    // chinh nut nay tu keo (truong hop do da tu ghi cung 1 gia tri nen
+    // dieu kien `!=` duoi day tu bo qua, khong lap vo han).
+    ref.listen<Offset?>(aiFabPositionProvider, (prev, next) {
+      if (next != null && next != _position) {
+        setState(() => _position = next);
+      }
+    });
 
     // Mau nut doi theo "app" dang mo (Hoc Tieng Anh/Fitness/Wealth) - dong
     // bo voi mau chu dao cua tung khu vuc thay vi luon co dinh 1 mau.
@@ -159,11 +205,19 @@ class _AiFabOverlayState extends ConsumerState<AiFabOverlay>
       valueListenable: topRouteObserver.currentRouteName,
       builder: (context, routeName, _) {
         final hidden =
-            pronunciationActive || routeName == kAiVoiceChatRouteName;
+            pronunciationActive || !_kHomeRouteNames.contains(routeName);
         if (hidden) return const SizedBox.shrink();
 
         final mq = MediaQuery.of(context);
         final position = _position ?? _defaultPosition(mq.size, mq.padding);
+        // Dang ky vi tri hien tai (ke ca khi chua tung keo) de
+        // PlannerFabOverlay biet ma tu day khi bi keo lai gan.
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          if (ref.read(aiFabPositionProvider) != position) {
+            ref.read(aiFabPositionProvider.notifier).state = position;
+          }
+        });
 
         return Positioned(
           left: position.dx,

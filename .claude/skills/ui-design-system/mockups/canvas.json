@@ -1,7 +1,8 @@
 {
   "pages": [
     { "id": "page-1", "name": "Màn hình chính" },
-    { "id": "page-2", "name": "Đố vui & Xếp hạng" }
+    { "id": "page-2", "name": "Đố vui & Xếp hạng" },
+    { "id": "page-3", "name": "Lập kế hoạch" }
   ],
   "artboards": [
     { "file": "Main.dc.html", "x": 0, "y": 0, "w": 1200, "h": 380 },
@@ -15,7 +16,11 @@
     { "file": "QuizCategory.dc.html", "x": 0, "y": 0, "w": 390, "h": 844, "page": "page-2" },
     { "file": "QuizQuestion.dc.html", "x": 470, "y": 0, "w": 390, "h": 844, "page": "page-2" },
     { "file": "QuizResult.dc.html", "x": 940, "y": 0, "w": 390, "h": 844, "page": "page-2" },
-    { "file": "Leaderboard.dc.html", "x": 1410, "y": 0, "w": 390, "h": 844, "page": "page-2" }
+    { "file": "Leaderboard.dc.html", "x": 1410, "y": 0, "w": 390, "h": 844, "page": "page-2" },
+
+    { "file": "Planner.dc.html", "x": 0, "y": 0, "w": 390, "h": 844, "page": "page-3" },
+    { "file": "PlannerFab.dc.html", "x": 470, "y": 0, "w": 760, "h": 844, "page": "page-3" },
+    { "file": "PlannerSettings.dc.html", "x": 1310, "y": 0, "w": 390, "h": 844, "page": "page-3" }
   ],
   "annotations": [
     { "id": "cap-home", "x": 0, "y": 1360, "w": 390, "text": "1. Trang chủ — chọn bài hát theo thể loại/trình độ, xem tiến độ bài đang nghe dở." },
@@ -28,7 +33,11 @@
     { "id": "cap-quizcat", "x": 0, "y": 860, "w": 390, "page": "page-2", "text": "1. Chọn chủ đề đố vui — 6 danh mục lấy từ kho câu đố tiếng Anh (chơi chữ, suy luận, động vật, cuộc sống, bảng chữ cái, trái cây & xe cộ)." },
     { "id": "cap-quizq", "x": 470, "y": 860, "w": 390, "page": "page-2", "text": "2. Câu hỏi trắc nghiệm — riddle song ngữ, đếm giờ, thanh tiến trình theo số câu, thưởng XP khi trả lời đúng." },
     { "id": "cap-quizresult", "x": 940, "y": 860, "w": 390, "page": "page-2", "text": "3. Kết quả thử thách — điểm số, XP nhận được, thay đổi thứ hạng và chi tiết đúng/sai từng câu." },
-    { "id": "cap-leaderboard", "x": 1410, "y": 860, "w": 390, "page": "page-2", "text": "4. Bảng xếp hạng — podium top 3, danh sách người chơi theo tuần/tháng/mọi lúc, làm nổi bật hạng của bạn." }
+    { "id": "cap-leaderboard", "x": 1410, "y": 860, "w": 390, "page": "page-2", "text": "4. Bảng xếp hạng — podium top 3, danh sách người chơi theo tuần/tháng/mọi lúc, làm nổi bật hạng của bạn." },
+
+    { "id": "cap-planner", "x": 0, "y": 860, "w": 390, "page": "page-3", "text": "1. Lập kế hoạch — mở dạng popup (chạm ngoài tự đóng). Date-strip carousel vuốt xem thêm ngày, ngày chọn zoom to. Timeline theo giờ, kéo-thả card đổi giờ trực tiếp, chồng giờ >3 việc xổ list rút gọn tại chỗ. 4 màu trạng thái cố định (accent-bar trái card). Chuông 🔔 = việc có đặt nhắc nhở ngoài màn hình. Nút gradient (Thêm việc, ngày chọn...) đổi màu theo app đang mở (Anh/Fitness/Wealth)." },
+    { "id": "cap-plannerfab", "x": 470, "y": 860, "w": 760, "page": "page-3", "text": "2. Menu nổi AssistiveTouch — đính chết cạnh phải, chỉ hiện nửa hình tròn, chỉ kéo dọc theo cạnh; tự đẩy khi AI Voice Chat FAB (tự do 2 chiều) lại gần. Bung ra 5 lối tắt CỐ ĐỊNH theo vòng cung mở về bên trái." },
+    { "id": "cap-plannersettings", "x": 1310, "y": 860, "w": 390, "page": "page-3", "text": "3. Cài đặt nhắc nhở — mở từ icon chuông ở header màn Lập kế hoạch. Chọn loại chuông, chọn nhắc trước bao lâu (đúng giờ/5-15-30 phút/1 giờ), chọn kiểu nhắc (Rung+Chuông/Chỉ rung/Chỉ chuông/Tắt cả hai). Dùng local notification (flutter_local_notifications, package đã có sẵn trong app) — hoạt động cả khi app đóng." }
   ],
   "launch": { "view": "canvas", "page": "page-2" }
 }

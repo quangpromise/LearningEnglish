@@ -1,0 +1,192 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+  * { box-sizing: border-box; }
+  body { margin:0; }
+  .screen{
+    width:100%; height:100%; border-radius:28px; overflow:hidden; position:relative;
+    background:
+      radial-gradient(120% 60% at 15% -10%, rgba(91,140,255,.35), transparent 60%),
+      radial-gradient(90% 50% at 110% 10%, rgba(155,107,255,.28), transparent 55%),
+      linear-gradient(160deg,#0a0e1c 0%, #0d1330 55%, #090c18 100%);
+    color:#eef1fb; font-family:'Manrope',system-ui,sans-serif;
+    display:flex; gap:36px; align-items:stretch; justify-content:center; padding:36px;
+  }
+  h1,h2,h3{ font-family:'Space Grotesk',system-ui,sans-serif; margin:0; letter-spacing:-.01em; }
+
+  .panel{
+    width:340px; border-radius:40px; position:relative; overflow:hidden; flex-shrink:0;
+    background:
+      radial-gradient(100% 60% at 20% 0%, rgba(91,140,255,.22), transparent 60%),
+      linear-gradient(170deg,#0d1226 0%,#0a1020 100%);
+    border:1px solid rgba(255,255,255,.08);
+    display:flex; flex-direction:column;
+  }
+  .panel-label{
+    position:absolute; top:16px; left:0; right:0; text-align:center; font-size:12px; font-weight:800;
+    letter-spacing:.06em; text-transform:uppercase; color:rgba(238,241,251,.4); z-index:5;
+  }
+
+  /* dimmed generic app content behind the FAB, just to suggest context */
+  .fake-content{ position:absolute; inset:0; padding:64px 22px 22px; display:flex; flex-direction:column; gap:12px; opacity:.35; filter:blur(.3px); }
+  .fake-row{ height:58px; border-radius:18px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.07); }
+  .fake-row.short{ height:34px; width:60%; background:rgba(255,255,255,.07); }
+
+  /* Reference: existing AI Voice Chat FAB (freely draggable, mac dinh goc
+     duoi-phai, KHONG dinh canh) - de so sanh khoang cach voi Planner FAB moi. */
+  .ai-fab-ref{
+    position:absolute; right:24px; bottom:78px; width:54px; height:54px; border-radius:999px;
+    background:linear-gradient(135deg,#5b8cff,#9b6bff); opacity:.35;
+    border:1.4px dashed rgba(255,255,255,.5);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .ai-fab-note{ position:absolute; right:6px; bottom:36px; font-size:8.5px; font-weight:700; color:rgba(238,241,251,.35); width:110px; text-align:right; }
+
+  /* Planner FAB - DINH CHET vao canh phai man hinh (khac AI FAB tu do 2 chieu):
+     tam tron dat right:-28px (dung 1 nua duong kinh 56px) de CHI HIEN 1 NUA
+     HINH TRON nhu 1 "tab" nhoi ra tu canh - chi keo doc theo truc Y, khong
+     bao gio roi khoi canh phai. */
+  .planner-fab{
+    position:absolute; right:-28px; width:56px; height:56px; border-radius:999px;
+    background:linear-gradient(135deg,#5b8cff,#9b6bff);
+    box-shadow:-10px 14px 30px rgba(91,140,255,.5), 0 0 30px rgba(155,107,255,.35);
+    border:1.4px solid rgba(255,255,255,.28);
+    display:flex; align-items:center; justify-content:center; z-index:10;
+  }
+  .planner-fab svg{ margin-right:24px; }
+  .edge-rail{
+    position:absolute; right:0; top:80px; bottom:80px; width:3px; border-radius:3px;
+    background:linear-gradient(180deg, transparent, rgba(255,255,255,.12), transparent);
+  }
+  .nudge-note{
+    position:absolute; left:14px; right:80px; display:flex; align-items:center; gap:6px;
+  }
+  .nudge-note .arr{ color:rgba(163,230,53,.9); flex-shrink:0; }
+  .nudge-note .txt{ font-size:8.5px; font-weight:700; color:rgba(238,241,251,.4); line-height:1.4; }
+
+  /* Radial menu items */
+  .radial-item{
+    position:absolute; width:52px; display:flex; flex-direction:column; align-items:center; gap:5px; z-index:9;
+  }
+  .radial-item .bubble{
+    width:44px; height:44px; border-radius:999px; background:rgba(20,24,44,.92);
+    border:1px solid rgba(255,255,255,.16); box-shadow:0 12px 26px rgba(0,0,0,.45);
+    display:flex; align-items:center; justify-content:center; color:#eef1fb;
+  }
+  .radial-item.primary .bubble{
+    background:linear-gradient(135deg,#5b8cff,#9b6bff); border:none;
+    box-shadow:0 14px 30px rgba(91,140,255,.55);
+  }
+  .radial-item .lbl{ font-size:8.5px; font-weight:700; color:rgba(238,241,251,.7); text-align:center; white-space:nowrap; }
+
+  .link-line{ position:absolute; background:rgba(255,255,255,.14); height:1.4px; transform-origin:0 0; z-index:3; }
+
+  .caption{ padding:14px 22px 20px; font-size:11.5px; line-height:1.5; color:rgba(238,241,251,.5); font-weight:600; text-align:center; }
+</style>
+</helmet>
+
+<div class="screen">
+
+  <!-- Panel 1: Collapsed state, docked to right edge -->
+  <div class="panel">
+    <div class="panel-label">Thu gọn — đính cạnh phải</div>
+    <div class="fake-content">
+      <div class="fake-row short"></div>
+      <div class="fake-row"></div>
+      <div class="fake-row"></div>
+      <div class="fake-row"></div>
+    </div>
+    <div class="edge-rail"></div>
+    <div class="ai-fab-ref">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2 2M16.4 16.4l2 2M5.6 18.4l2-2M16.4 7.6l2-2"/></svg>
+    </div>
+    <div class="ai-fab-note">AI Voice Chat (đã có) — tự do 2 chiều, mặc định góc dưới-phải</div>
+
+    <div class="planner-fab" style="top:340px;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l-6 6 6 6"/></svg>
+    </div>
+    <div class="nudge-note" style="top:322px;">
+      <svg class="arr" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+      <div class="txt">Chỉ hiện đúng 1 nửa hình tròn, dính chết vào cạnh phải — kéo lên/xuống dọc theo cạnh, không rời ra được. Nếu AI FAB bị kéo lại gần, 2 nút TỰ ĐẨY NHAU ra để không đè lên nhau.</div>
+    </div>
+
+    <div class="caption">Chạm nhanh → bung menu. Giữ &amp; kéo → chỉ trượt theo trục dọc (Y) dọc cạnh phải, không bao giờ tách khỏi cạnh.</div>
+  </div>
+
+  <!-- Panel 2: Expanded state -->
+  <div class="panel">
+    <div class="panel-label">Bung ra</div>
+    <div class="fake-content" style="opacity:.18;">
+      <div class="fake-row short"></div>
+      <div class="fake-row"></div>
+      <div class="fake-row"></div>
+      <div class="fake-row"></div>
+    </div>
+
+    <!-- link lines from edge center (328,340) to each of 5 arc points opening LEFT -->
+    <div class="link-line" style="left:328px; top:340px; width:100px; transform:rotate(100deg);"></div>
+    <div class="link-line" style="left:328px; top:340px; width:100px; transform:rotate(141deg);"></div>
+    <div class="link-line" style="left:328px; top:340px; width:100px; transform:rotate(180deg);"></div>
+    <div class="link-line" style="left:328px; top:340px; width:100px; transform:rotate(219deg);"></div>
+    <div class="link-line" style="left:328px; top:340px; width:100px; transform:rotate(260deg);"></div>
+
+    <!-- P1 top -->
+    <div class="radial-item primary" style="left:283px; top:220px;">
+      <div class="bubble">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
+      </div>
+      <div class="lbl">Lập kế hoạch</div>
+    </div>
+
+    <!-- P2 -->
+    <div class="radial-item" style="left:219px; top:257px;">
+      <div class="bubble">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#eef1fb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+      </div>
+      <div class="lbl">Thêm việc</div>
+    </div>
+
+    <!-- P3 left -->
+    <div class="radial-item" style="left:194px; top:314px;">
+      <div class="bubble">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#eef1fb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+      </div>
+      <div class="lbl">Hôm nay</div>
+    </div>
+
+    <!-- P4 -->
+    <div class="radial-item" style="left:219px; top:383px;">
+      <div class="bubble">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#eef1fb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+      </div>
+      <div class="lbl">Xem tuần</div>
+    </div>
+
+    <!-- P5 bottom -->
+    <div class="radial-item" style="left:283px; top:420px;">
+      <div class="bubble">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#eef1fb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 3H2l8 9.5V19l4 2v-8.5z"/></svg>
+      </div>
+      <div class="lbl">Lọc mini-app</div>
+    </div>
+
+    <!-- center node, docked to edge, now active -->
+    <div class="planner-fab" style="top:314px;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </div>
+
+    <div class="caption">Vòng cung 5 lối tắt CỐ ĐỊNH (giống nhau trên cả 3 mini-app) mở về phía TRÁI vì nút gốc dính cạnh phải. Icon trung tâm đổi thành dấu X khi đang mở. Bấm "Lập kế hoạch" → mở dạng popup (bottom sheet 94%, giống mọi popup khác trong app) — chạm ra ngoài tự đóng.</div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

@@ -56,6 +56,8 @@ D:\Projects\Learn Engligh\
 - **pronunciation-researcher** — tra cứu IPA chuẩn (Anh-Anh/Anh-Mỹ), trọng âm, quy tắc nối âm, ví dụ minh họa cho từ/câu trong bài hát.
 - **library-researcher** — khi cần thêm tính năng mới (nguồn nhạc, ngôn ngữ mới...), tìm & so sánh thư viện phù hợp, ưu tiên miễn phí/mã nguồn mở, **luôn kiểm tra kỹ điều khoản license cho mục đích thương mại** trước khi đề xuất.
 - **finance-api-researcher** — dùng cho tính năng Quản lý tài sản: nghiên cứu/so sánh API chứng khoán VN-quốc tế + crypto, luôn kiểm tra có cần API key (phải giấu sau backend proxy), điều khoản thương mại, và dữ liệu thật hay phái sinh/tokenized trước khi đề xuất.
+- **planner-app-researcher** — nghiên cứu UX của các app lập kế hoạch/quản lý công việc đã có (Todoist, TickTick, Google Calendar...) để rút mẫu bố cục tốt cho tính năng "Lập kế hoạch" (timeline theo giờ/ngày/tháng), lưu vào `docs/research-planner-app-ux.md`.
+- **planner-ui-designer** — thiết kế mockup cho tính năng "Lập kế hoạch" và menu nổi kiểu AssistiveTouch mở tính năng này (hiện xuyên suốt cả 3 mini-app), luôn giữ đúng design system ở skill `ui-design-system`.
 
 ## Skills (`.claude/skills/`)
 - **grammar-check** — quy trình gọi LanguageTool chấm lỗi ngữ pháp câu trong lyric/luyện tập.

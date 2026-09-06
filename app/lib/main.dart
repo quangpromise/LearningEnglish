@@ -24,6 +24,8 @@ import 'features/auth/presentation/sign_in_screen.dart';
 import 'features/fitness/presentation/fitness_shell.dart';
 import 'features/onboarding/data/onboarding_repository.dart';
 import 'features/onboarding/presentation/onboarding_screen.dart';
+import 'features/planner/data/planner_notification_service.dart';
+import 'features/planner/presentation/planner_fab_overlay.dart';
 import 'features/social/data/social_repository.dart';
 import 'features/social/presentation/incoming_message_banner.dart';
 import 'features/wealth/presentation/wealth_shell.dart';
@@ -67,6 +69,7 @@ Future<void> main() async {
   // khong load duoc) - xem docs/research-ios-distribution.md.
   if (!kIsWeb) {
     await _runStartupStep(() => DailyQuizNotifications.instance.init());
+    await _runStartupStep(() => PlannerNotificationService.instance.init());
     // KHONG await/timeout ngan o day: ChatPush.init() (Firebase.initializeApp
     // + tao notification channel + dang ky FCM background handler) co the
     // mat vai chuc giay tren mang cham, va viec gan 1 timeout ngan (vd 8s) se
@@ -131,8 +134,9 @@ class LearnEnglishMusicApp extends StatelessWidget {
       // KHONG con o day - da chuyen vao giua thanh menu duoi cua tung khu
       // vuc (root_shell.dart / mini_app_bottom_nav.dart) thay vi noi rieng
       // tren toan man hinh.
-      builder: (context, child) =>
-          Stack(children: [?child, const AiFabOverlay()]),
+      builder: (context, child) => Stack(
+        children: [?child, const AiFabOverlay(), const PlannerFabOverlay()],
+      ),
       theme: ThemeData(
         useMaterial3: true,
         brightness: Brightness.dark,
@@ -197,11 +201,17 @@ class _AuthGate extends ConsumerWidget {
             switch (pending) {
               case AppSection.fitness:
                 nav.push(
-                  MaterialPageRoute(builder: (_) => const FitnessShell()),
+                  MaterialPageRoute(
+                    settings: const RouteSettings(name: kFitnessHomeRouteName),
+                    builder: (_) => const FitnessShell(),
+                  ),
                 );
               case AppSection.wealth:
                 nav.push(
-                  MaterialPageRoute(builder: (_) => const WealthShell()),
+                  MaterialPageRoute(
+                    settings: const RouteSettings(name: kWealthHomeRouteName),
+                    builder: (_) => const WealthShell(),
+                  ),
                 );
               case AppSection.learnEnglish:
                 break;

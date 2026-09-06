@@ -13,6 +13,18 @@ final rootNavigatorKey = GlobalKey<NavigatorState>();
 /// mong doi).
 const kAiVoiceChatRouteName = '/ai-voice-chat';
 
+/// Ten route cho dung "man Home that su" cua tung khu vuc (xem
+/// ai_fab_overlay.dart) - Hoc Tieng Anh dung dung route mac dinh cua
+/// MaterialApp.home ('/'), Fitness/Wealth phai duoc gan ten nay THU CONG
+/// tai moi noi push FitnessShell/WealthShell (app_switcher_sheet.dart,
+/// main.dart) vi MaterialPageRoute khong tu dat ten. Moi man hinh KHAC (mo
+/// qua openAppPopup hoac Navigator.push sau do) deu KHONG co ten -> tu dong
+/// khac 3 gia tri nay -> nut noi AI Voice Chat tu an dung theo yeu cau
+/// "chi hien o man hinh chinh cua 3 app".
+const kEnglishHomeRouteName = '/';
+const kFitnessHomeRouteName = '/fitness-home';
+const kWealthHomeRouteName = '/wealth-home';
+
 /// Theo doi route dang hien tren cung cua Navigator goc - dung de an nut
 /// noi AI Voice Chat CHINH XAC khi dang o man hinh do, khong phu thuoc vao
 /// timing cua initState/dispose ben trong man hinh duoc push.
