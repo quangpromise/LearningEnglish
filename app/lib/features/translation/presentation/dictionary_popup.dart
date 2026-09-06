@@ -6,6 +6,7 @@ import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/translation/app_translator.dart';
 import '../../../core/tts/app_tts.dart';
+import '../../../core/widgets/speaker_button.dart';
 
 enum _DictDirection { enToVi, viToEn }
 
@@ -253,15 +254,11 @@ class _DictionaryPopupState extends ConsumerState<DictionaryPopup> {
                             ),
                           ),
                         ),
-                        GestureDetector(
+                        SpeakerButton(
                           onTap: () => AppTts.instance.speak(
                             isEnToVi ? _controller.text.trim() : _translated!,
                           ),
-                          child: const Icon(
-                            Icons.volume_up_rounded,
-                            color: AppColors.blue,
-                            size: 20,
-                          ),
+                          color: AppColors.blue,
                         ),
                       ],
                     ),

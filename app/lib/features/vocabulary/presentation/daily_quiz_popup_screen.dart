@@ -7,6 +7,7 @@ import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/tts/app_tts.dart';
+import '../../../core/widgets/speaker_button.dart';
 import '../data/daily_words_repository.dart';
 import '../data/vocabulary_data.dart';
 import 'daily_words_controller.dart';
@@ -265,16 +266,9 @@ class _DailyQuizPopupScreenState extends ConsumerState<DailyQuizPopupScreen> {
                           // rieng nen bam vao day CHI phat am, khong chon
                           // luon dap an (khong bi lo dap an dung vi tat ca
                           // dap an deu co loa nhu nhau).
-                          GestureDetector(
+                          SpeakerButton(
                             onTap: () => AppTts.instance.speak(opt),
-                            child: const Padding(
-                              padding: EdgeInsets.only(left: 8),
-                              child: Icon(
-                                Icons.volume_up_rounded,
-                                size: 18,
-                                color: AppColors.textMuted,
-                              ),
-                            ),
+                            color: AppColors.textMuted,
                           ),
                         ],
                       ),

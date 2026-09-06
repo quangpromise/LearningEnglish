@@ -6,6 +6,7 @@ import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/tts/app_tts.dart';
+import '../../../core/widgets/speaker_button.dart';
 import '../../pronunciation/presentation/pronunciation_practice.dart';
 import '../../reading/data/gutenberg_text.dart'
     show isWordToken, tokenizeSentence;
@@ -568,12 +569,9 @@ class _VocabRow extends StatelessWidget {
               ],
             ),
           ),
-          GestureDetector(
+          SpeakerButton(
             onTap: () => AppTts.instance.speak(word.en),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6),
-              child: Icon(Icons.volume_up_rounded, size: 20, color: color),
-            ),
+            color: color,
           ),
         ],
       ),

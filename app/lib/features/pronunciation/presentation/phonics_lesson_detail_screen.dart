@@ -162,19 +162,20 @@ class _PhonicsItemCard extends StatelessWidget {
                 padding: const EdgeInsets.only(top: 6),
                 child: Row(
                   children: [
-                    GestureDetector(
-                      onTap: () => AppTts.instance.speak(ex.en),
-                      child: Container(
-                        width: 30,
-                        height: 30,
-                        decoration: BoxDecoration(
-                          color: color.withValues(alpha: 0.15),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.volume_up_rounded,
-                          size: 15,
-                          color: color,
+                    Material(
+                      color: color.withValues(alpha: 0.15),
+                      shape: const CircleBorder(),
+                      child: InkWell(
+                        onTap: () => AppTts.instance.speak(ex.en),
+                        customBorder: const CircleBorder(),
+                        child: SizedBox(
+                          width: 40,
+                          height: 40,
+                          child: Icon(
+                            Icons.volume_up_rounded,
+                            size: 17,
+                            color: color,
+                          ),
                         ),
                       ),
                     ),

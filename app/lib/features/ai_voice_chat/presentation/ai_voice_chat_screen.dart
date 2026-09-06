@@ -14,6 +14,7 @@ import '../../../core/config/env.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/tts/app_tts.dart';
+import '../../../core/widgets/speaker_button.dart';
 import '../data/gemini_live_direct_client.dart';
 import '../data/gemini_voices.dart';
 import '../data/voice_chat_client.dart';
@@ -571,17 +572,9 @@ class _MessageBubble extends ConsumerWidget {
                 ),
                 if (canReplay) ...[
                   const SizedBox(width: 8),
-                  GestureDetector(
-                    behavior: HitTestBehavior.opaque,
+                  SpeakerButton(
                     onTap: () => onReplay!(message.audioPath!),
-                    child: const Padding(
-                      padding: EdgeInsets.all(2),
-                      child: Icon(
-                        Icons.volume_up_rounded,
-                        size: 18,
-                        color: AppColors.blue,
-                      ),
-                    ),
+                    color: AppColors.blue,
                   ),
                 ],
               ],
