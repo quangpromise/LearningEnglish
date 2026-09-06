@@ -44,6 +44,7 @@ final _part1Questions = <ToeicQuestion>[
     part: ToeicPartNumber.p1,
     illustration: ToeicIllustrationSpec(
       backgroundColor: const Color(0xFF2C5F8A),
+      imageAssetPath: 'assets/toeic/p1-q1.jpg',
       icons: const [
         ToeicSceneIcon(
           icon: Icons.laptop_mac_rounded,
@@ -80,6 +81,7 @@ final _part1Questions = <ToeicQuestion>[
     part: ToeicPartNumber.p1,
     illustration: ToeicIllustrationSpec(
       backgroundColor: const Color(0xFF3E7C59),
+      imageAssetPath: 'assets/toeic/p1-q2.jpg',
       icons: const [
         ToeicSceneIcon(icon: Icons.person_rounded, dx: 0.35, dy: 0.5, size: 56),
         ToeicSceneIcon(icon: Icons.person_rounded, dx: 0.62, dy: 0.5, size: 56),
@@ -110,6 +112,7 @@ final _part1Questions = <ToeicQuestion>[
     part: ToeicPartNumber.p1,
     illustration: ToeicIllustrationSpec(
       backgroundColor: const Color(0xFF6B5B95),
+      imageAssetPath: 'assets/toeic/p1-q3.jpg',
       icons: const [
         ToeicSceneIcon(
           icon: Icons.directions_car_filled_rounded,
@@ -150,6 +153,7 @@ final _part1Questions = <ToeicQuestion>[
     part: ToeicPartNumber.p1,
     illustration: ToeicIllustrationSpec(
       backgroundColor: const Color(0xFF8A5A2C),
+      imageAssetPath: 'assets/toeic/p1-q4.jpg',
       icons: const [
         ToeicSceneIcon(
           icon: Icons.inventory_2_rounded,
@@ -190,6 +194,7 @@ final _part1Questions = <ToeicQuestion>[
     part: ToeicPartNumber.p1,
     illustration: ToeicIllustrationSpec(
       backgroundColor: const Color(0xFF2E8B7A),
+      imageAssetPath: 'assets/toeic/p1-q5.jpg',
       icons: const [
         ToeicSceneIcon(
           icon: Icons.directions_bike_rounded,
@@ -219,6 +224,7 @@ final _part1Questions = <ToeicQuestion>[
     part: ToeicPartNumber.p1,
     illustration: ToeicIllustrationSpec(
       backgroundColor: const Color(0xFF4A4A6A),
+      imageAssetPath: 'assets/toeic/p1-q6.jpg',
       icons: const [
         ToeicSceneIcon(
           icon: Icons.event_seat_rounded,

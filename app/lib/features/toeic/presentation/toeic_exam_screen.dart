@@ -309,6 +309,12 @@ class _ToeicExamScreenState extends ConsumerState<ToeicExamScreen> {
                         style: AppTextStyles.heading(size: 15),
                       ),
                       Text(
+                        ref.tr(q.part.descriptionKey),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.muted(size: 10.5),
+                      ),
+                      Text(
                         '${ref.tr('toeic_question_label')} ${_index + 1}/${widget.test.questions.length}',
                         style: AppTextStyles.muted(size: 10.5),
                       ),

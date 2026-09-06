@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+108
+version: 1.0.0+109
 
 environment:
   sdk: ^3.13.1
@@ -149,6 +149,11 @@ flutter:
   # thu muc nay) tai truc tiep tu Project Gutenberg cho tinh nang Doc sach.
   # KHONG duoc them file sach nao khac vao day neu chua xac minh public
   # domain - xem quy tac ban quyen trong CLAUDE.md.
+  #
+  # Anh minh hoa Part 1 TOEIC (assets/toeic/) do NGUOI DUNG TU TAO bang
+  # Gemini AI (image generation) tu cac mo ta canh do Claude Code soan -
+  # anh goc hoan toan, khong phai stock photo ben thu 3, nen khong dinh
+  # van de ban quyen (xem toeic_test_data.dart Part 1).
   assets:
     - assets/audio/
     - assets/books/
@@ -158,6 +163,7 @@ flutter:
     - assets/fitness/exercise_photos/
     - assets/home/
     - assets/wealth/
+    - assets/toeic/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

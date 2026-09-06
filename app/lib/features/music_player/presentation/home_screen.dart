@@ -63,32 +63,6 @@ class HomeScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 22),
               _CategorySection(
-                title: ref.tr('home_category_listening'),
-                items: [
-                  _CategoryItemData(
-                    icon: Icons.graphic_eq_rounded,
-                    label: ref.tr('phonics_title'),
-                    onTap: () =>
-                        openAppPopup(context, const PhonicsLessonsScreen()),
-                  ),
-                  _CategoryItemData(
-                    // "Luyen phat am" - truoc day 1 tab rieng o thanh Menu,
-                    // gio la 1 the trong nhom Nghe noi (giai phong cho thanh
-                    // nhac dai chiem giua thanh Menu, xem root_shell.dart).
-                    icon: Icons.mic_rounded,
-                    label: ref.tr('pron_title'),
-                    onTap: () =>
-                        openAppPopup(context, const PronunciationScreen()),
-                  ),
-                  _CategoryItemData(
-                    icon: Icons.auto_stories_rounded,
-                    label: ref.tr('home_story_quick_title'),
-                    onTap: () => openAppPopup(context, const StoryListScreen()),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              _CategorySection(
                 title: ref.tr('home_category_reading'),
                 items: [
                   _CategoryItemData(
@@ -115,6 +89,38 @@ class HomeScreen extends ConsumerWidget {
                     onTap: () =>
                         openAppPopup(context, const QuizCategoryScreen()),
                   ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              _CategorySection(
+                title: ref.tr('home_category_listening'),
+                items: [
+                  _CategoryItemData(
+                    icon: Icons.graphic_eq_rounded,
+                    label: ref.tr('phonics_title'),
+                    onTap: () =>
+                        openAppPopup(context, const PhonicsLessonsScreen()),
+                  ),
+                  _CategoryItemData(
+                    // "Luyen phat am" - truoc day 1 tab rieng o thanh Menu,
+                    // gio la 1 the trong nhom Nghe noi (giai phong cho thanh
+                    // nhac dai chiem giua thanh Menu, xem root_shell.dart).
+                    icon: Icons.mic_rounded,
+                    label: ref.tr('pron_title'),
+                    onTap: () =>
+                        openAppPopup(context, const PronunciationScreen()),
+                  ),
+                  _CategoryItemData(
+                    icon: Icons.auto_stories_rounded,
+                    label: ref.tr('home_story_quick_title'),
+                    onTap: () => openAppPopup(context, const StoryListScreen()),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              _CategorySection(
+                title: ref.tr('home_category_test_prep'),
+                items: [
                   _CategoryItemData(
                     icon: Icons.assignment_rounded,
                     label: ref.tr('toeic_title'),

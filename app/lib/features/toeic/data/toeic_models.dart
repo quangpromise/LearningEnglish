@@ -10,6 +10,13 @@ extension ToeicPartNumberX on ToeicPartNumber {
 
   /// So thu tu hien thi ("Part 1", "Part 2"...) - trung voi index+1.
   int get displayNumber => index + 1;
+
+  /// Key i18n cho mo ta ngan gon dang lam cua tung Part (xem cac key
+  /// `toeic_part_N_desc` trong app_strings.dart) - hien ngay duoi tieu de
+  /// Part trong man thi (toeic_exam_screen.dart), tu doi theo ngon ngu app
+  /// dang chon (KHONG hardcode 1 ngon ngu) de nguoi lam de biet minh dang
+  /// lam dang bai nao ma khong can nho thu tu 7 Part.
+  String get descriptionKey => 'toeic_part_${index + 1}_desc';
 }
 
 enum ToeicSkill { listening, reading }
@@ -37,10 +44,17 @@ class ToeicIllustrationSpec {
   const ToeicIllustrationSpec({
     required this.backgroundColor,
     required this.icons,
+    this.imageAssetPath,
   });
 
   final Color backgroundColor;
   final List<ToeicSceneIcon> icons;
+
+  /// Neu co (vd 'assets/toeic/p1-q1.jpg') - anh THAT do nguoi dung tu tao
+  /// bang Gemini AI (goc hoan toan, khong phai stock photo) se duoc uu
+  /// tien hien thi thay cho phan ve bang Icon (xem
+  /// toeic_part_scene_illustration.dart).
+  final String? imageAssetPath;
 }
 
 /// 1 cau/luot noi trong doan hoi thoai/bai noi Part 1-4 - `speakerIndex`

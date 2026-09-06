@@ -13,6 +13,14 @@ extension IeltsSectionNumberX on IeltsSectionNumber {
   /// "Bài đọc 1"/"Phần 1" - so thu tu hien thi trong pham vi ky nang cua no
   /// (Reading: 1-3, Listening: 1-4), KHONG phai index toan cuc.
   int get displayNumber => skill == IeltsSkill.reading ? index + 1 : index - 2;
+
+  /// Key i18n cho mo ta ngan gon dang lam cua tung bai doc/phan nghe (xem
+  /// cac key `ielts_reading_desc`/`ielts_listening_N_desc` trong
+  /// app_strings.dart) - Reading dung chung 1 mo ta (ca 3 bai deu doc hieu),
+  /// Listening co mo ta rieng cho tung phan vi do kho/dang bai tang dan.
+  String get descriptionKey => skill == IeltsSkill.reading
+      ? 'ielts_reading_desc'
+      : 'ielts_listening_${index - 2}_desc';
 }
 
 /// Cach 1 IeltsQuestion duoc tra loi/cham diem - khac TOEIC (luon la trac

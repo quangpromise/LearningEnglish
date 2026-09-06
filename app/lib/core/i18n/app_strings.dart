@@ -1440,6 +1440,10 @@ class AppStrings {
       AppLanguage.vi: 'Đọc viết',
       AppLanguage.en: 'Reading & Writing',
     },
+    'home_category_test_prep': {
+      AppLanguage.vi: 'Luyện thi',
+      AppLanguage.en: 'Test Prep',
+    },
     'home_category_other': {AppLanguage.vi: 'Khác', AppLanguage.en: 'Other'},
     'dictionary_title': {
       AppLanguage.vi: 'Từ điển Anh - Việt',
@@ -2589,6 +2593,64 @@ class AppStrings {
       AppLanguage.en: 'Approximate band score (a self-built step table), not the official IELTS/British Council/IDP/Cambridge conversion. This averages only 2 of 4 skills (no Writing/Speaking yet), not a real overall band.',
     },
     'ielts_check_answer': {AppLanguage.vi: 'Kiểm tra', AppLanguage.en: 'Check'},
+
+    // Mo ta ngan gon dang lam cua tung Part TOEIC - hien duoi tieu de Part
+    // trong toeic_exam_screen.dart (xem ToeicPartNumberX.descriptionKey).
+    'toeic_part_1_desc': {
+      AppLanguage.vi: 'Nhìn ảnh và chọn câu mô tả đúng nhất',
+      AppLanguage.en: 'Look at the photo and choose the best description',
+    },
+    'toeic_part_2_desc': {
+      AppLanguage.vi: 'Nghe câu hỏi và chọn câu trả lời phù hợp nhất',
+      AppLanguage.en: 'Listen to the question and choose the best response',
+    },
+    'toeic_part_3_desc': {
+      AppLanguage.vi: 'Nghe đoạn hội thoại và trả lời câu hỏi',
+      AppLanguage.en: 'Listen to the conversation and answer the questions',
+    },
+    'toeic_part_4_desc': {
+      AppLanguage.vi: 'Nghe bài nói ngắn và trả lời câu hỏi',
+      AppLanguage.en: 'Listen to the short talk and answer the questions',
+    },
+    'toeic_part_5_desc': {
+      AppLanguage.vi: 'Chọn từ/cụm từ đúng để hoàn thành câu',
+      AppLanguage.en: 'Choose the correct word/phrase to complete the sentence',
+    },
+    'toeic_part_6_desc': {
+      AppLanguage.vi: 'Chọn từ/câu đúng để hoàn thành đoạn văn',
+      AppLanguage.en: 'Choose the correct word/sentence to complete the text',
+    },
+    'toeic_part_7_desc': {
+      AppLanguage.vi: 'Đọc đoạn văn và trả lời câu hỏi',
+      AppLanguage.en: 'Read the passage and answer the questions',
+    },
+
+    // Mo ta ngan gon cho Reading/Listening cua IELTS - hien duoi tieu de
+    // trong ielts_exam_screen.dart.
+    'ielts_reading_desc': {
+      AppLanguage.vi:
+          'Đọc đoạn văn và trả lời câu hỏi (trắc nghiệm hoặc điền từ)',
+      AppLanguage.en: 'Read the passage and answer the questions (multiple choice or fill-in)',
+    },
+    'ielts_listening_1_desc': {
+      AppLanguage.vi: 'Nghe hội thoại đời thường và trả lời câu hỏi',
+      AppLanguage.en:
+          'Listen to an everyday conversation and answer the questions',
+    },
+    'ielts_listening_2_desc': {
+      AppLanguage.vi: 'Nghe bài độc thoại đời thường và trả lời câu hỏi',
+      AppLanguage.en:
+          'Listen to an everyday monologue and answer the questions',
+    },
+    'ielts_listening_3_desc': {
+      AppLanguage.vi: 'Nghe thảo luận học thuật và trả lời câu hỏi',
+      AppLanguage.en:
+          'Listen to an academic discussion and answer the questions',
+    },
+    'ielts_listening_4_desc': {
+      AppLanguage.vi: 'Nghe bài giảng học thuật và trả lời câu hỏi',
+      AppLanguage.en: 'Listen to an academic lecture and answer the questions',
+    },
   };
 
   static String t(String key, AppLanguage lang) =>
