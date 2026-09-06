@@ -7,6 +7,7 @@ import '../../../core/navigation/app_top_bar.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../social/presentation/conversations_screen.dart';
+import '../../wealth/presentation/service_expiry_banner.dart';
 import 'community_screen.dart';
 import 'fitness_dashboard_section.dart';
 import 'muscle_group_categories_screen.dart';
@@ -44,6 +45,7 @@ class FitnessHomeScreen extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    const ServiceExpiryBanner(section: AppSection.fitness),
                     const FitnessDashboardSection(),
                     const SizedBox(height: 16),
                     SizedBox(

@@ -10,7 +10,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/audio/audio_service_diagnostics.dart';
 import 'core/config/env.dart';
-import 'core/navigation/ai_fab_overlay.dart';
+import 'core/navigation/assistive_fab_overlay.dart';
 import 'core/navigation/nav_keys.dart';
 import 'core/navigation/root_shell.dart';
 import 'core/notifications/chat_push.dart';
@@ -25,7 +25,6 @@ import 'features/fitness/presentation/fitness_shell.dart';
 import 'features/onboarding/data/onboarding_repository.dart';
 import 'features/onboarding/presentation/onboarding_screen.dart';
 import 'features/planner/data/planner_notification_service.dart';
-import 'features/planner/presentation/planner_fab_overlay.dart';
 import 'features/social/data/social_repository.dart';
 import 'features/social/presentation/incoming_message_banner.dart';
 import 'features/wealth/presentation/wealth_shell.dart';
@@ -134,9 +133,8 @@ class LearnEnglishMusicApp extends StatelessWidget {
       // KHONG con o day - da chuyen vao giua thanh menu duoi cua tung khu
       // vuc (root_shell.dart / mini_app_bottom_nav.dart) thay vi noi rieng
       // tren toan man hinh.
-      builder: (context, child) => Stack(
-        children: [?child, const AiFabOverlay(), const PlannerFabOverlay()],
-      ),
+      builder: (context, child) =>
+          Stack(children: [?child, const AssistiveFabOverlay()]),
       theme: ThemeData(
         useMaterial3: true,
         brightness: Brightness.dark,

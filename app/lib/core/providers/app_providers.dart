@@ -507,6 +507,17 @@ final currentAppSectionProvider = StateProvider<AppSection>(
   (ref) => AppSection.learnEnglish,
 );
 
+/// Ma app_section tuong ung luu trong wealth_recurring_services (xem
+/// recurring_service_model.dart) - null cho Wealth vi dich vu "chung" khong
+/// gan app nao von da mac dinh o do, khong can 1 ma rieng.
+extension AppSectionServiceCodeX on AppSection {
+  String? get recurringServiceCode => switch (this) {
+    AppSection.fitness => kServiceAppSectionFitness,
+    AppSection.learnEnglish => kServiceAppSectionLearnEnglish,
+    AppSection.wealth => null,
+  };
+}
+
 /// Ghi nho "dang o Fitness/Wealth luc bam Sign out" de KHOI PHUC dung app do
 /// ngay sau khi dang nhap lai - thay vi luon quay ve Hoc Tieng Anh. Sign out
 /// (profile_screen.dart) doc currentAppSectionProvider ngay TRUOC khi goi
@@ -965,6 +976,25 @@ final recurringServicesProvider =
       final userId = ref.watch(supabaseClientProvider).auth.currentUser?.id;
       if (userId == null) return Future.value(<RecurringService>[]);
       return ref.watch(recurringServiceRepositoryProvider).fetchAll(userId);
+    });
+
+/// Cac dich vu DA DUOC GAN cho 1 mini-app cu the (Fitness/Hoc Tieng Anh) -
+/// dung o man Ho so cua 2 app do (them dich vu moi + xem danh sach da gan)
+/// va o thanh hien thi han dich vu tren man Home (xem
+/// features/wealth/presentation/service_expiry_banner.dart). Tra ve rong
+/// cho AppSection.wealth (dich vu chung khong gan app nao da hien day du o
+/// man Dich vu dinh ky rieng, khong can loc lai o day).
+final recurringServicesForSectionProvider =
+    Provider.family<AsyncValue<List<RecurringService>>, AppSection>((
+      ref,
+      section,
+    ) {
+      final code = section.recurringServiceCode;
+      final all = ref.watch(recurringServicesProvider);
+      if (code == null) return const AsyncValue.data(<RecurringService>[]);
+      return all.whenData(
+        (list) => list.where((s) => s.appSection == code).toList(),
+      );
     });
 
 final debtPaymentsProvider = FutureProvider.autoDispose

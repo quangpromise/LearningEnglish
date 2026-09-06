@@ -1105,6 +1105,26 @@ class AppStrings {
       AppLanguage.vi: 'Gia hạn',
       AppLanguage.en: 'Renew',
     },
+    'wealth_service_will_assign_to': {
+      AppLanguage.vi: 'Sẽ gán cho:',
+      AppLanguage.en: 'Will be assigned to:',
+    },
+    'wealth_service_assign_title': {
+      AppLanguage.vi: 'Gán dịch vụ cho app',
+      AppLanguage.en: 'Assign service to app',
+    },
+    'wealth_service_assign_none': {
+      AppLanguage.vi: 'Không gán (dịch vụ chung)',
+      AppLanguage.en: 'Unassigned (general service)',
+    },
+    'profile_fee_services_title': {
+      AppLanguage.vi: 'Dịch vụ phí',
+      AppLanguage.en: 'Fee services',
+    },
+    'profile_fee_services_empty': {
+      AppLanguage.vi: 'Chưa có dịch vụ nào gán cho app này.',
+      AppLanguage.en: 'No services assigned to this app yet.',
+    },
     'wealth_service_name_hint': {
       AppLanguage.vi: 'Tên dịch vụ (VD: Netflix)',
       AppLanguage.en: 'Service name (e.g. Netflix)',

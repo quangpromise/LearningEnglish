@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/date_format.dart';
 
 /// Chip loc theo khoang ngay - dung chung cho cac man lich su (Chi tieu,
 /// Tien mat, Ngan hang) de nguoi dung tim lai giao dich trong 1 khoang thoi
@@ -16,9 +17,7 @@ class DateRangeFilterBar extends ConsumerWidget {
   final DateTimeRange? range;
   final ValueChanged<DateTimeRange?> onChanged;
 
-  String _fmt(DateTime d) =>
-      '${d.day.toString().padLeft(2, '0')}/'
-      '${d.month.toString().padLeft(2, '0')}/${d.year}';
+  String _fmt(DateTime d) => formatDateMdy(d);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

@@ -1,3 +1,12 @@
+/// Ma app_section luu trong Supabase khi 1 dich vu duoc GAN cho 1 trong 2
+/// mini-app khac (Fitness/Hoc Tieng Anh) - vd goi tap gym, khoa hoc tieng
+/// Anh tra phi. null (khong dung hang so nao) = dich vu chung, chi hien o
+/// Quan ly tai san. Dung String (khong dung thang enum AppSection cua
+/// core/providers/app_providers.dart) de tranh vong import - model nay giu
+/// nguyen tac cu: currency/cycleType cung la String tho, khong phai enum.
+const kServiceAppSectionFitness = 'fitness';
+const kServiceAppSectionLearnEnglish = 'learn_english';
+
 /// 1 dich vu tra phi dinh ky (Netflix, hosting, domain...) - tu tinh ngay
 /// het han theo chu ky ('week'/'month'/'year'/'custom_years') hoac nguoi
 /// dung tu chon thang ngay het han ('manual', khong tu tinh).
@@ -14,6 +23,7 @@ class RecurringService {
     this.cycleYears,
     this.note,
     this.isActive = true,
+    this.appSection,
   });
 
   final String id;
@@ -28,6 +38,9 @@ class RecurringService {
   final int reminderLeadDays; // 7 | 15 | 30
   final String? note;
   final bool isActive;
+
+  /// null | 'fitness' | 'learn_english' - xem [kServiceAppSectionFitness].
+  final String? appSection;
 
   // So sanh theo NGAY LICH (bo gio/phut) - truoc day dung thang
   // expiryDate.difference(DateTime.now()) nen vd het han 06/09 nhung dang
@@ -59,6 +72,7 @@ class RecurringService {
       reminderLeadDays: row['reminder_lead_days'] as int? ?? 7,
       note: row['note'] as String?,
       isActive: row['is_active'] as bool? ?? true,
+      appSection: row['app_section'] as String?,
     );
   }
 

@@ -17,6 +17,7 @@ import '../../story/presentation/story_list_screen.dart';
 import '../../toeic/presentation/toeic_home_screen.dart';
 import '../../translation/presentation/dictionary_popup.dart';
 import '../../vocabulary/presentation/vocabulary_topics_screen.dart';
+import '../../wealth/presentation/service_expiry_banner.dart';
 
 /// Man Home - da bo han tab Menu rieng (xem root_shell.dart): moi tinh nang
 /// (ke ca nhung thu truoc gom trong Menu: Doc sach, Do vui, Fitness, Crypto,
@@ -62,6 +63,7 @@ class HomeScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 22),
+              const ServiceExpiryBanner(section: AppSection.learnEnglish),
               _CategorySection(
                 title: ref.tr('home_category_reading'),
                 items: [

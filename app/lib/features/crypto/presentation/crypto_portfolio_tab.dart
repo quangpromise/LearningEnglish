@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/date_format.dart';
 import '../data/crypto_currency.dart';
 import '../data/crypto_portfolio_repository.dart';
 import '../data/crypto_repository.dart';
@@ -442,8 +443,7 @@ class _HistoryRow extends StatelessWidget {
     final isBuy = transaction.type == CryptoTransactionType.buy;
     final color = isBuy ? AppColors.teal : AppColors.pink;
     final t = transaction.timestamp;
-    final dateLabel =
-        '${t.day.toString().padLeft(2, '0')}/${t.month.toString().padLeft(2, '0')}/${t.year}';
+    final dateLabel = formatDateMdy(t);
     return GlowBox(
       borderRadius: 14,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),

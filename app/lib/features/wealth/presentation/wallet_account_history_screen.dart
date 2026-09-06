@@ -5,6 +5,7 @@ import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_format.dart';
+import '../../../core/utils/date_format.dart';
 import '../data/vn_bank_model.dart';
 import '../data/wealth_balance_entry_model.dart';
 import 'add_balance_entry_sheet.dart';
@@ -204,8 +205,7 @@ class _GroupedHistoryList extends ConsumerWidget {
       final day = DateTime(d.year, d.month, d.day);
       if (day == today) return ref.tr('wallet_history_today');
       if (day == yesterday) return ref.tr('wallet_history_yesterday');
-      return '${d.day.toString().padLeft(2, '0')}/'
-          '${d.month.toString().padLeft(2, '0')}/${d.year}';
+      return formatDateMdy(d);
     }
 
     final items = <Widget>[];

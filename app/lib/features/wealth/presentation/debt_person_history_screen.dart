@@ -5,6 +5,7 @@ import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_format.dart';
+import '../../../core/utils/date_format.dart';
 import '../data/wealth_debt_model.dart';
 import 'confirm_delete.dart';
 import 'edit_debt_dialog.dart';
@@ -304,9 +305,7 @@ class _DebtEntryCard extends ConsumerWidget {
                             style: AppTextStyles.muted(size: 12),
                           ),
                           Text(
-                            ' · ${debt.occurredAt.day.toString().padLeft(2, '0')}/'
-                            '${debt.occurredAt.month.toString().padLeft(2, '0')}/'
-                            '${debt.occurredAt.year}',
+                            ' · ${formatDateMdy(debt.occurredAt)}',
                             style: AppTextStyles.muted(size: 12),
                           ),
                         ],
@@ -384,8 +383,7 @@ class _DebtEntryCard extends ConsumerWidget {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        '${p.occurredAt.day.toString().padLeft(2, '0')}/'
-                                        '${p.occurredAt.month.toString().padLeft(2, '0')} · '
+                                        '${formatDateMd(p.occurredAt)} · '
                                         '${p.paymentBankName ?? ref.tr('wallet_section_cash')}',
                                         style: AppTextStyles.muted(size: 12),
                                       ),

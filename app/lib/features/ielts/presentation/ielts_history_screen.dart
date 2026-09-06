@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/date_format.dart';
 import '../data/ielts_attempt_repository.dart';
 
 /// Danh sach cac lan lam bai IELTS truoc do - mirror toeic_history_screen.dart.
@@ -89,8 +90,7 @@ class _AttemptRow extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isExam = record.mode == 'exam';
     final d = record.createdAt;
-    final dateLabel =
-        '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+    final dateLabel = formatDateMdy(d);
     return GlowBox(
       borderRadius: 16,
       child: Row(

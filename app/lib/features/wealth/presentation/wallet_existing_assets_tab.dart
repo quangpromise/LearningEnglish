@@ -6,6 +6,7 @@ import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_format.dart';
+import '../../../core/utils/date_format.dart';
 import '../data/wealth_balance_entry_model.dart';
 import 'add_balance_entry_sheet.dart';
 import 'bank_picker_sheet.dart';
@@ -328,10 +329,7 @@ class WalletEntryRow extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isPositive = entry.amount >= 0;
     final hasNote = entry.note?.isNotEmpty == true;
-    final dateText =
-        '${entry.occurredAt.day.toString().padLeft(2, '0')}/'
-        '${entry.occurredAt.month.toString().padLeft(2, '0')}/'
-        '${entry.occurredAt.year}';
+    final dateText = formatDateMdy(entry.occurredAt);
     // Truoc day: co note thi CHI hien note, KHONG hien ngay thang nam nao ca
     // - nguoi dung khong biet giao dich do xay ra luc nao khi xem lich su.
     // Gio luon hien ngay/thang/nam o dong phu ben duoi, du co note hay khong.

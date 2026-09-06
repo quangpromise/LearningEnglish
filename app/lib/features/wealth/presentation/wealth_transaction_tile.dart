@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_format.dart';
+import '../../../core/utils/date_format.dart';
 
 /// 1 dong giao dich trong danh sach - dung chung cho ca tab Chi tieu va
 /// Thu nhap (chi khac mau/dau +-).
@@ -27,9 +28,7 @@ class WealthTransactionTile extends StatelessWidget {
   final Widget? trailing;
 
   String _fmtDateTime(DateTime d) =>
-      '${d.day.toString().padLeft(2, '0')}/'
-      '${d.month.toString().padLeft(2, '0')}/'
-      '${d.year} '
+      '${formatDateMdy(d)} '
       '${d.hour.toString().padLeft(2, '0')}:'
       '${d.minute.toString().padLeft(2, '0')}';
 

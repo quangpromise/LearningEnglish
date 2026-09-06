@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/date_format.dart';
 import '../../../core/utils/thousands_input_formatter.dart';
 import '../data/recurring_service_model.dart';
 import '../data/recurring_service_repository.dart';
@@ -117,8 +118,7 @@ class _RenewServiceSheetState extends ConsumerState<_RenewServiceSheet> {
     }
   }
 
-  String _fmtDate(DateTime d) =>
-      '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+  String _fmtDate(DateTime d) => formatDateMdy(d);
 
   @override
   Widget build(BuildContext context) {

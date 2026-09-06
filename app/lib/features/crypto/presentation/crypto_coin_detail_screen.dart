@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/navigation/app_popup.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/date_format.dart';
 import '../data/okx_service.dart';
 import 'crypto_providers.dart';
 
@@ -571,9 +572,25 @@ class _CryptoCoinDetailScreenState
                                                                         top: 6,
                                                                       ),
                                                                   child: Text(
-                                                                    '${t.day.toString().padLeft(2, '0')}/'
-                                                                    '${t.month.toString().padLeft(2, '0')}/'
-                                                                    '${t.year}',
+                                                                    // Xem theo NAM ("1Y"): chi hien nam;
+                                                                    // xem theo THANG ("1M"): chi hien
+                                                                    // MM/yy (khong can den ngay); cac do
+                                                                    // phan giai con lai (gio/ngay/tuan)
+                                                                    // van hien ngay day du MM/dd/yyyy.
+                                                                    switch (_period) {
+                                                                      _ChartPeriod
+                                                                          .y1 =>
+                                                                        '${t.year}',
+                                                                      _ChartPeriod
+                                                                          .m1 =>
+                                                                        formatMonthYy(
+                                                                          t,
+                                                                        ),
+                                                                      _ =>
+                                                                        formatDateMdy(
+                                                                          t,
+                                                                        ),
+                                                                    },
                                                                     style:
                                                                         AppTextStyles.muted(
                                                                           size:

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/date_format.dart';
 import '../../../core/utils/thousands_input_formatter.dart';
 import '../data/recurring_service_model.dart';
 
@@ -13,12 +14,24 @@ import '../data/recurring_service_model.dart';
 /// khi gia han lan sau, phai chon lai moi lan). Truyen [existing] de mo o
 /// CHE DO SUA - chi cho sua ten/so tien mac dinh/note/so ngay nhac truoc,
 /// KHONG cho doi chu ky/ngay het han (dung "Gia han" de doi ngay het han).
-void showAddServiceSheet(BuildContext context, {RecurringService? existing}) {
+///
+/// Truyen [presetAppSection] khi mo tu man Ho so cua Fitness/Hoc Tieng Anh
+/// (xem profile_screen.dart) - dich vu MOI tao se tu dong duoc GAN cho dung
+/// app do ngay tu dau, khong can qua buoc gan rieng ben man Dich vu dinh ky.
+/// Khong anh huong CHE DO SUA (khong doi lai app_section da co).
+void showAddServiceSheet(
+  BuildContext context, {
+  RecurringService? existing,
+  AppSection? presetAppSection,
+}) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (_) => _AddServiceSheet(existing: existing),
+    builder: (_) => _AddServiceSheet(
+      existing: existing,
+      presetAppSection: presetAppSection,
+    ),
   );
 }
 
@@ -26,8 +39,9 @@ const _kCycleTypes = ['week', 'month', 'year', 'custom_years', 'manual'];
 const _kLeadDaysOptions = [7, 15, 30];
 
 class _AddServiceSheet extends ConsumerStatefulWidget {
-  const _AddServiceSheet({this.existing});
+  const _AddServiceSheet({this.existing, this.presetAppSection});
   final RecurringService? existing;
+  final AppSection? presetAppSection;
 
   @override
   ConsumerState<_AddServiceSheet> createState() => _AddServiceSheetState();
@@ -146,6 +160,7 @@ class _AddServiceSheetState extends ConsumerState<_AddServiceSheet> {
           expiryDate: _computedExpiry!,
           reminderLeadDays: _reminderLeadDays,
           note: note,
+          appSection: widget.presetAppSection?.recurringServiceCode,
         );
       }
       ref.invalidate(recurringServicesProvider);
@@ -169,8 +184,7 @@ class _AddServiceSheetState extends ConsumerState<_AddServiceSheet> {
     _ => ref.tr('wealth_service_lead_1_week'),
   };
 
-  String _fmtDate(DateTime d) =>
-      '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+  String _fmtDate(DateTime d) => formatDateMdy(d);
 
   @override
   Widget build(BuildContext context) {
@@ -202,6 +216,14 @@ class _AddServiceSheetState extends ConsumerState<_AddServiceSheet> {
                           : ref.tr('wealth_service_add'),
                       style: AppTextStyles.heading(size: 16),
                     ),
+                    if (!_isEditing && widget.presetAppSection != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        '${ref.tr('wealth_service_will_assign_to')} '
+                        '${ref.tr(widget.presetAppSection == AppSection.fitness ? 'planner_app_fitness' : 'planner_app_english')}',
+                        style: AppTextStyles.muted(size: 11),
+                      ),
+                    ],
                     const SizedBox(height: 16),
                     TextField(
                       controller: _nameController,

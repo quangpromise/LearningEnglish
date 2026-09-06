@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/date_format.dart';
 import '../../../core/utils/thousands_input_formatter.dart';
 import '../data/wealth_balance_entry_model.dart';
 import '../data/wealth_category.dart';
@@ -318,9 +319,7 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              '${_occurredAt.day.toString().padLeft(2, '0')}/'
-                              '${_occurredAt.month.toString().padLeft(2, '0')}/'
-                              '${_occurredAt.year} '
+                              '${formatDateMdy(_occurredAt)} '
                               '${_occurredAt.hour.toString().padLeft(2, '0')}:'
                               '${_occurredAt.minute.toString().padLeft(2, '0')}',
                               style: AppTextStyles.body(size: 13),

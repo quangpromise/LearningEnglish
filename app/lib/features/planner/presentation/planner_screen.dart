@@ -239,31 +239,35 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
               ],
             ),
           ),
+          if (tasks.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Text(
+                ref.tr('planner_empty_day'),
+                style: AppTextStyles.muted(size: 10.5),
+              ),
+            ),
           const SizedBox(height: 4),
+          // LUON hien timeline 24 gio (ke ca ngay chua co viec nao) - moi
+          // hang gio trong deu bam duoc de tao viec ngay (xem
+          // planner_timeline.dart) thay vi thay the ca timeline bang 1 dong
+          // chu "chua co viec" khien nguoi dung phai doi ngay khac moi tao
+          // duoc ke hoach.
           Expanded(
-            child: tasks.isEmpty
-                ? Center(
-                    child: Text(
-                      ref.tr('planner_empty_day'),
-                      style: AppTextStyles.muted(),
-                    ),
-                  )
-                : Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 18),
-                    child: PlannerTimeline(
-                      date: selectedDate,
-                      tasks: tasks,
-                      onAddAt: (hourStart) => showPlannerTaskSheet(
-                        context,
-                        initialStart: hourStart,
-                      ),
-                      onEditTask: (task) => showPlannerTaskSheet(
-                        context,
-                        initialStart: task.start,
-                        editing: task,
-                      ),
-                    ),
-                  ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18),
+              child: PlannerTimeline(
+                date: selectedDate,
+                tasks: tasks,
+                onAddAt: (hourStart) =>
+                    showPlannerTaskSheet(context, initialStart: hourStart),
+                onEditTask: (task) => showPlannerTaskSheet(
+                  context,
+                  initialStart: task.start,
+                  editing: task,
+                ),
+              ),
+            ),
           ),
         ],
       ),

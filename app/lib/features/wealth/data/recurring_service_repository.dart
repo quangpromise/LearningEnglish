@@ -46,6 +46,7 @@ class RecurringServiceRepository {
     required DateTime expiryDate,
     required int reminderLeadDays,
     String? note,
+    String? appSection,
   }) async {
     await _supabase.from('wealth_recurring_services').insert({
       'user_id': userId,
@@ -58,7 +59,23 @@ class RecurringServiceRepository {
       'expiry_date': expiryDate.toIso8601String().substring(0, 10),
       'reminder_lead_days': reminderLeadDays,
       'note': note,
+      'app_section': appSection,
     });
+  }
+
+  /// Gan (hoac go gan, [appSection] = null) 1 dich vu da co san cho 1 mini-
+  /// app khac - dung tu man Dich vu dinh ky ben Quan ly tai san
+  /// (recurring_services_screen.dart), noi QUAN LY DUY NHAT viec gan nay.
+  Future<void> assignToSection({
+    required String userId,
+    required String id,
+    required String? appSection,
+  }) async {
+    await _supabase
+        .from('wealth_recurring_services')
+        .update({'app_section': appSection})
+        .eq('id', id)
+        .eq('user_id', userId);
   }
 
   /// Sua lai thong tin co ban (ten/so tien mac dinh/note/so ngay nhac

@@ -15,6 +15,9 @@ import '../../stats/data/stats_repository.dart';
 import '../../update/data/update_checker.dart';
 import '../../vocabulary/presentation/daily_quiz_popup_screen.dart';
 import '../../vocabulary/presentation/daily_words_controller.dart';
+import '../../wealth/data/recurring_service_model.dart';
+import '../../wealth/presentation/add_service_sheet.dart';
+import '../../wealth/presentation/renew_service_sheet.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -409,9 +412,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ],
             Expanded(
               child: !showTabs
-                  ? _buildSettingsTab(isEnglishContext: false)
+                  ? _buildSettingsTab(isEnglishContext: false, feeSection: null)
                   : (_tab == 0
-                        ? _buildSettingsTab(isEnglishContext: isEnglishContext)
+                        ? _buildSettingsTab(
+                            isEnglishContext: isEnglishContext,
+                            feeSection: section,
+                          )
                         : _buildActivityTab(
                             isEnglishContext: isEnglishContext,
                             isFitness: isFitness,
@@ -547,9 +553,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  Widget _buildSettingsTab({required bool isEnglishContext}) {
+  Widget _buildSettingsTab({
+    required bool isEnglishContext,
+    required AppSection? feeSection,
+  }) {
     return ListView(
       children: [
+        if (feeSection != null) ...[
+          _FeeServicesSection(section: feeSection),
+          const SizedBox(height: 14),
+        ],
         if (isEnglishContext) ...[
           GestureDetector(
             onTap: () => showVoiceSettingsSheet(context),
@@ -1058,6 +1071,154 @@ class _Bar extends StatelessWidget {
         const SizedBox(height: 6),
         Text(d, style: AppTextStyles.muted(size: 10)),
       ],
+    );
+  }
+}
+
+/// "Dich vu phi" - danh sach dich vu tra phi da GAN cho dung app nay
+/// (Fitness/Hoc Tieng Anh, xem recurring_service_model.dart), cho tao moi
+/// truc tiep tu day (tu dong gan cho app nay - showAddServiceSheet). Quan
+/// ly ĐẦY ĐỦ (sua/gia han/xoa/gan lai app khac) van chi lam duoc o man Dich
+/// vu dinh ky rieng ben Quan ly tai san - o day chi la loi tat xem nhanh +
+/// them moi.
+class _FeeServicesSection extends ConsumerWidget {
+  const _FeeServicesSection({required this.section});
+  final AppSection section;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final servicesAsync = ref.watch(
+      recurringServicesForSectionProvider(section),
+    );
+    return GlowBox(
+      borderRadius: 20,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: AppColors.wealthAccent.withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.workspace_premium_rounded,
+                  size: 16,
+                  color: AppColors.wealthAccent,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  ref.tr('profile_fee_services_title'),
+                  style: AppTextStyles.body(weight: FontWeight.w800),
+                ),
+              ),
+              GestureDetector(
+                onTap: () =>
+                    showAddServiceSheet(context, presetAppSection: section),
+                child: Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    gradient: AppColors.wealthAccentGradient,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.add_rounded,
+                    size: 16,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          servicesAsync.when(
+            loading: () => const Padding(
+              padding: EdgeInsets.only(top: 14),
+              child: Center(
+                child: SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppColors.wealthAccent,
+                  ),
+                ),
+              ),
+            ),
+            error: (_, _) => const SizedBox.shrink(),
+            data: (services) {
+              if (services.isEmpty) {
+                return Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: Text(
+                    ref.tr('profile_fee_services_empty'),
+                    style: AppTextStyles.muted(size: 11.5),
+                  ),
+                );
+              }
+              return Column(
+                children: [
+                  const SizedBox(height: 10),
+                  for (final s in services) ...[
+                    _FeeServiceRow(service: s),
+                    const SizedBox(height: 8),
+                  ],
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FeeServiceRow extends ConsumerWidget {
+  const _FeeServiceRow({required this.service});
+  final RecurringService service;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final daysLeft = service.daysLeft;
+    final isUrgent = daysLeft <= service.reminderLeadDays;
+    return GestureDetector(
+      onTap: () => showRenewServiceSheet(context, service),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.04),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.glassBorder),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                service.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.body(size: 12.5, weight: FontWeight.w700),
+              ),
+            ),
+            Text(
+              daysLeft < 0
+                  ? ref.tr('wealth_service_overdue')
+                  : '${ref.tr('wealth_service_days_left')}: $daysLeft',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                color: isUrgent ? AppColors.pink : AppColors.wealthAccent,
+                decoration: TextDecoration.none,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
