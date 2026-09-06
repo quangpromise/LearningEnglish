@@ -157,25 +157,17 @@ class _AssistiveFabOverlayState extends ConsumerState<AssistiveFabOverlay> {
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: () => setState(() => _expanded = false),
-                  // Lam mo + toi nen phia sau khi bung menu - giup 2 nut
-                  // radial va nhan chu cua chung noi bat, khong con bi lan
-                  // vao chu/icon cua man hinh dang mo phia sau (bug da thay
-                  // ro tren may that: nhan "Planner"/"AI Voice Chat" chong
-                  // len chu "Stories" cua man Home).
+                  // Chi lam MO NHE nen phia sau (khong toi den nhu lan dau,
+                  // theo dung phong cach tham khao cua nguoi dung - vd wheel
+                  // picker cua Pinterest: nen mo nhe + phu 1 lop sang mau
+                  // nhat cua accent, khong phai lop den mo mit) - du de tach
+                  // 2 nut radial khoi noi dung phia sau ma khong lam toi ca
+                  // man hinh.
                   child: BackdropFilter(
-                    filter: ui.ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                    child: Container(
-                      color: Colors.black.withValues(alpha: 0.5),
-                    ),
+                    filter: ui.ImageFilter.blur(sigmaX: 3, sigmaY: 3),
+                    child: Container(color: glowColor.withValues(alpha: 0.1)),
                   ),
                 ),
-              ),
-            if (_expanded)
-              _ArcGlow(
-                centerY: y + _kFabSize / 2,
-                screenWidth: mq.size.width,
-                glowColor: glowColor,
-                itemCount: _kRadialItems.length,
               ),
             if (_expanded)
               ..._buildRadialItems(
@@ -313,88 +305,4 @@ class _AssistiveFabOverlayState extends ConsumerState<AssistiveFabOverlay> {
     }
     return items;
   }
-}
-
-/// "Duong vong cung sang" noi tam FAB toi cac nut radial - giup nguoi dung
-/// nhan ra ngay day la 1 menu dang bung theo hinh cung (khong chi la 2 nut
-/// tron roi rac), dung CustomPaint ve 1 net cung THAT (Canvas.drawArc) thay
-/// vi cac doan thang rieng le noi tung nut, cho cam giac "1 duong ray" lien
-/// mach dung nhu ten goi.
-class _ArcGlow extends StatelessWidget {
-  const _ArcGlow({
-    required this.centerY,
-    required this.screenWidth,
-    required this.glowColor,
-    required this.itemCount,
-  });
-
-  final double centerY;
-  final double screenWidth;
-  final Color glowColor;
-  final int itemCount;
-
-  @override
-  Widget build(BuildContext context) {
-    if (itemCount <= 1) return const SizedBox.shrink();
-    return IgnorePointer(
-      child: CustomPaint(
-        size: Size.infinite,
-        painter: _ArcPainter(
-          center: Offset(screenWidth - _kFabSize / 2, centerY),
-          radius: _kRadialRadius,
-          // Trung voi khoang goc 150-210 do dung de xep nut o _buildRadialItems.
-          startAngleDeg: 150,
-          sweepAngleDeg: 60,
-          color: glowColor,
-        ),
-      ),
-    );
-  }
-}
-
-class _ArcPainter extends CustomPainter {
-  _ArcPainter({
-    required this.center,
-    required this.radius,
-    required this.startAngleDeg,
-    required this.sweepAngleDeg,
-    required this.color,
-  });
-
-  final Offset center;
-  final double radius;
-  final double startAngleDeg;
-  final double sweepAngleDeg;
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final rect = Rect.fromCircle(center: center, radius: radius);
-    final startRad = startAngleDeg * math.pi / 180;
-    final sweepRad = sweepAngleDeg * math.pi / 180;
-
-    // Lop glow mo phia sau (net day + blur) tao cam giac "sang" thay vi 1
-    // net ke thong thuong.
-    final glowPaint = Paint()
-      ..color = color.withValues(alpha: 0.55)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 8
-      ..strokeCap = StrokeCap.round
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
-    canvas.drawArc(rect, startRad, sweepRad, false, glowPaint);
-
-    // Net chinh sac net nam giua lop glow.
-    final linePaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.85)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2
-      ..strokeCap = StrokeCap.round;
-    canvas.drawArc(rect, startRad, sweepRad, false, linePaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant _ArcPainter oldDelegate) =>
-      oldDelegate.center != center ||
-      oldDelegate.radius != radius ||
-      oldDelegate.color != color;
 }
