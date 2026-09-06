@@ -2761,6 +2761,10 @@ class AppStrings {
       AppLanguage.vi: 'Giai điệu vui',
       AppLanguage.en: 'Cheerful tone',
     },
+    'planner_preview_mode_off': {
+      AppLanguage.vi: 'Kiểu nhắc đang "Tắt cả hai" - đổi kiểu nhắc để nghe thử',
+      AppLanguage.en: 'Alert style is "Both off" - change it to preview',
+    },
     'planner_lead_time_label': {
       AppLanguage.vi: 'Nhắc trước',
       AppLanguage.en: 'Remind before',

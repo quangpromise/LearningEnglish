@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/planner_models.dart';
+import '../data/planner_notification_service.dart';
 import 'planner_providers.dart';
 
 Future<void> showPlannerSettingsSheet(BuildContext context) {
@@ -68,6 +69,7 @@ class _PlannerSettingsSheet extends ConsumerWidget {
                   _RingtoneRow(
                     choice: r,
                     selected: settings.ringtone == r,
+                    previewMode: settings.mode,
                     onTap: () =>
                         notifier.update(settings.copyWith(ringtone: r)),
                   ),
@@ -127,11 +129,17 @@ class _RingtoneRow extends ConsumerWidget {
     required this.choice,
     required this.selected,
     required this.onTap,
+    required this.previewMode,
   });
 
   final RingtoneChoice choice;
   final bool selected;
   final VoidCallback onTap;
+
+  /// Kieu nhac (rung/chuong/ca hai/tat) DANG chon trong cai dat - truyen
+  /// vao de nut "Nghe thu" phat DUNG nhu se nghe that (vd dang chon "Chi
+  /// rung" thi bam nghe thu se khong phat am thanh, chi rung).
+  final ReminderMode previewMode;
 
   String get _key => switch (choice) {
     RingtoneChoice.defaultSound => 'planner_ringtone_default',
@@ -158,6 +166,34 @@ class _RingtoneRow extends ConsumerWidget {
               child: Text(
                 ref.tr(_key),
                 style: AppTextStyles.body(size: 13.5, weight: FontWeight.w700),
+              ),
+            ),
+            GestureDetector(
+              onTap: () {
+                if (previewMode == ReminderMode.off) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(ref.tr('planner_preview_mode_off'))),
+                  );
+                  return;
+                }
+                PlannerNotificationService.instance.preview(
+                  ringtone: choice,
+                  mode: previewMode,
+                );
+              },
+              child: Container(
+                width: 30,
+                height: 30,
+                margin: const EdgeInsets.only(right: 10),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.06),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.play_arrow_rounded,
+                  size: 17,
+                  color: AppColors.textMuted,
+                ),
               ),
             ),
             Container(
