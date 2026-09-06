@@ -72,6 +72,15 @@ class AppTts {
   /// lam anh huong toi cac man hinh khac dung chung 1 AppTts singleton.
   static const double defaultRate = 0.5;
 
+  /// 3 muc cao do giong (pitch) dung MO PHONG nhieu nguoi noi trong 1 doan
+  /// hoi thoai (TOEIC Part 3/4) - CHI hoat dong voi giong may (flutter_tts
+  /// ho tro setPitch native), giong cloud (VoiceRSS qua Edge Function) KHONG
+  /// nhan tham so pitch nen bi bo qua khi dang chon giong cloud (xem
+  /// speakAndWait ben duoi) - day la gioi han da biet, khong phai bug.
+  static const double pitchSpeakerA = 1.15;
+  static const double pitchSpeakerB = 0.85;
+  static const double pitchNarrator = 1.0;
+
   /// Doi toc do doc cho CAC LAN speak/speakAndWait TIEP THEO - chi ap dung
   /// cho giong may (flutter_tts), giong cloud (VoiceRSS) khong ho tro chinh
   /// toc do qua API nay nen giu nguyen.
@@ -132,7 +141,12 @@ class AppTts {
   /// dung cho tinh nang doc sach thanh tieng theo tung cau (Reading), de
   /// biet chinh xac luc nao chuyen sang cau tiep theo thay vi doan mo dai
   /// (moi cau dai ngan khac nhau).
-  Future<void> speakAndWait(String text) async {
+  ///
+  /// [pitch] (tuy chon) doi cao do giong TRUOC khi doc cau nay, roi tra ve
+  /// mac dinh (1.0) ngay sau - dung de mo phong nhieu nguoi noi khac nhau
+  /// trong 1 doan hoi thoai (xem pitchSpeakerA/B o tren). CHI ap dung khi
+  /// dang dung giong may - bi bo qua neu dang chon giong cloud.
+  Future<void> speakAndWait(String text, {double? pitch}) async {
     await _ensureMusicSession();
     if (_selectedCloud != null) {
       try {
@@ -147,8 +161,10 @@ class AppTts {
       await _deviceTts.awaitSpeakCompletion(true);
       _awaitCompletionConfigured = true;
     }
+    if (pitch != null) await _deviceTts.setPitch(pitch);
     await _deviceTts.stop();
     await _deviceTts.speak(text);
+    if (pitch != null) await _deviceTts.setPitch(1.0);
   }
 
   /// Dung ngay lap tuc ca 2 nguon phat (may/cloud) - lam pending

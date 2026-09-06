@@ -2393,6 +2393,202 @@ class AppStrings {
       AppLanguage.vi: 'Luyện nói theo đoạn này',
       AppLanguage.en: 'Practice this line',
     },
+
+    // TOEIC feature (toeic_*_screen.dart) - chi chua text chrome UI (nut
+    // bam, nhan, tieu de) - noi dung cau hoi/giai thich la text tieng
+    // Anh/Viet viet thang trong toeic_test_data.dart, KHONG qua day.
+    'toeic_title': {
+      AppLanguage.vi: 'Luyện Thi TOEIC',
+      AppLanguage.en: 'TOEIC Practice',
+    },
+    'toeic_home_subtitle': {
+      AppLanguage.vi: 'Đề thi thử đầy đủ 7 phần, mô phỏng thi thật',
+      AppLanguage.en: 'Full 7-part mock tests, exam-realistic',
+    },
+    'toeic_choose_test': {
+      AppLanguage.vi: 'Chọn đề thi',
+      AppLanguage.en: 'Choose a test',
+    },
+    'toeic_question_count': {
+      AppLanguage.vi: '200 câu · 7 phần',
+      AppLanguage.en: '200 questions · 7 parts',
+    },
+    'toeic_mode_practice': {
+      AppLanguage.vi: 'Luyện tập',
+      AppLanguage.en: 'Practice',
+    },
+    'toeic_mode_practice_desc': {
+      AppLanguage.vi:
+          'Xem đáp án và giải thích ngay sau mỗi câu, không giới hạn giờ',
+      AppLanguage.en: 'See the answer and explanation right after each question, no time limit',
+    },
+    'toeic_mode_exam': {AppLanguage.vi: 'Thi thử', AppLanguage.en: 'Mock exam'},
+    'toeic_mode_exam_desc': {
+      AppLanguage.vi: 'Đếm giờ Reading 75 phút, chỉ xem điểm sau khi nộp bài',
+      AppLanguage.en: 'Timed 75-minute Reading section, see your score only after submitting',
+    },
+    'toeic_start_button': {AppLanguage.vi: 'Bắt đầu', AppLanguage.en: 'Start'},
+    'toeic_history_title': {
+      AppLanguage.vi: 'Lịch sử làm bài',
+      AppLanguage.en: 'Attempt history',
+    },
+    'toeic_history_empty': {
+      AppLanguage.vi: 'Bạn chưa làm bài thi nào',
+      AppLanguage.en: 'You haven\'t taken any tests yet',
+    },
+    'toeic_part_label': {AppLanguage.vi: 'Phần', AppLanguage.en: 'Part'},
+    'toeic_question_label': {AppLanguage.vi: 'Câu', AppLanguage.en: 'Question'},
+    'toeic_listening_section_title': {
+      AppLanguage.vi: 'Nghe hiểu',
+      AppLanguage.en: 'Listening',
+    },
+    'toeic_reading_section_title': {
+      AppLanguage.vi: 'Đọc hiểu',
+      AppLanguage.en: 'Reading',
+    },
+    'toeic_time_remaining': {
+      AppLanguage.vi: 'Thời gian còn lại',
+      AppLanguage.en: 'Time remaining',
+    },
+    'toeic_time_elapsed': {
+      AppLanguage.vi: 'Thời gian đã trôi qua',
+      AppLanguage.en: 'Time elapsed',
+    },
+    'toeic_exit_confirm_title': {
+      AppLanguage.vi: 'Thoát bài thi?',
+      AppLanguage.en: 'Exit the test?',
+    },
+    'toeic_exit_confirm_body': {
+      AppLanguage.vi: 'Tiến trình làm bài hiện tại sẽ không được lưu.',
+      AppLanguage.en: 'Your current progress will not be saved.',
+    },
+    'toeic_exit_confirm_stay': {
+      AppLanguage.vi: 'Tiếp tục làm bài',
+      AppLanguage.en: 'Keep going',
+    },
+    'toeic_exit_confirm_leave': {
+      AppLanguage.vi: 'Thoát',
+      AppLanguage.en: 'Exit',
+    },
+    'toeic_submit_test': {
+      AppLanguage.vi: 'Nộp bài',
+      AppLanguage.en: 'Submit test',
+    },
+    'toeic_submit_confirm_title': {
+      AppLanguage.vi: 'Nộp bài thi?',
+      AppLanguage.en: 'Submit the test?',
+    },
+    'toeic_submit_confirm_body': {
+      AppLanguage.vi: 'Bạn sẽ không thể sửa đáp án sau khi nộp bài.',
+      AppLanguage.en:
+          'You won\'t be able to change your answers after submitting.',
+    },
+    'toeic_next_question': {
+      AppLanguage.vi: 'Câu tiếp theo',
+      AppLanguage.en: 'Next question',
+    },
+    'toeic_prev_question': {
+      AppLanguage.vi: 'Câu trước',
+      AppLanguage.en: 'Previous question',
+    },
+    'toeic_now_playing': {
+      AppLanguage.vi: 'Đang phát âm thanh...',
+      AppLanguage.en: 'Now playing audio...',
+    },
+    'toeic_replay_audio': {
+      AppLanguage.vi: 'Nghe lại',
+      AppLanguage.en: 'Replay',
+    },
+    'toeic_replay_disabled_note': {
+      AppLanguage.vi: 'Chế độ Thi thử: chỉ nghe được 1 lần, giống thi thật',
+      AppLanguage.en:
+          'Exam mode: audio plays only once, just like the real test',
+    },
+    'toeic_correct_label': {
+      AppLanguage.vi: 'Chính xác!',
+      AppLanguage.en: 'Correct!',
+    },
+    'toeic_incorrect_label': {
+      AppLanguage.vi: 'Chưa đúng',
+      AppLanguage.en: 'Not quite',
+    },
+    'toeic_continue_button': {
+      AppLanguage.vi: 'Tiếp tục',
+      AppLanguage.en: 'Continue',
+    },
+    'toeic_result_title': {
+      AppLanguage.vi: 'Kết quả bài thi',
+      AppLanguage.en: 'Test Results',
+    },
+    'toeic_score_listening': {
+      AppLanguage.vi: 'Điểm Nghe',
+      AppLanguage.en: 'Listening score',
+    },
+    'toeic_score_reading': {
+      AppLanguage.vi: 'Điểm Đọc',
+      AppLanguage.en: 'Reading score',
+    },
+    'toeic_score_total': {
+      AppLanguage.vi: 'Tổng điểm',
+      AppLanguage.en: 'Total score',
+    },
+    'toeic_score_disclaimer': {
+      AppLanguage.vi:
+          'Điểm quy đổi gần đúng, không phải thang điểm chính thức của ETS.',
+      AppLanguage.en:
+          'Approximate scaled score, not the official ETS scoring scale.',
+    },
+    'toeic_review_answers': {
+      AppLanguage.vi: 'Xem lại đáp án',
+      AppLanguage.en: 'Review answers',
+    },
+    'toeic_retry_test': {AppLanguage.vi: 'Làm lại', AppLanguage.en: 'Retry'},
+    'toeic_view_history': {
+      AppLanguage.vi: 'Xem lịch sử',
+      AppLanguage.en: 'View history',
+    },
+    'toeic_your_answer': {
+      AppLanguage.vi: 'Bạn chọn',
+      AppLanguage.en: 'Your answer',
+    },
+    'toeic_correct_answer': {
+      AppLanguage.vi: 'Đáp án đúng',
+      AppLanguage.en: 'Correct answer',
+    },
+    'toeic_unanswered': {
+      AppLanguage.vi: 'Bỏ trống',
+      AppLanguage.en: 'Left blank',
+    },
+
+    // IELTS feature (ielts_*_screen.dart) - Phase 1 chi Reading + Listening
+    // (Writing/Speaking se dung Gemini AI cham diem, lam o phase sau). Chi
+    // chua text chrome UI, noi dung cau hoi/bai doc/giai thich la text
+    // tieng Anh/Viet viet thang trong ielts_test_data.dart, KHONG qua day.
+    'ielts_title': {
+      AppLanguage.vi: 'Luyện Thi IELTS',
+      AppLanguage.en: 'IELTS Practice',
+    },
+    'ielts_home_subtitle': {
+      AppLanguage.vi: 'Đề thi thử Reading + Listening, mô phỏng thi thật (Writing/Speaking sắp ra mắt)',
+      AppLanguage.en: 'Reading + Listening mock tests, exam-realistic (Writing/Speaking coming soon)',
+    },
+    'ielts_question_count': {
+      AppLanguage.vi: '80 câu · Reading + Listening',
+      AppLanguage.en: '80 questions · Reading + Listening',
+    },
+    'ielts_mode_exam_desc': {
+      AppLanguage.vi: 'Đếm giờ Reading 60 phút, chỉ xem điểm sau khi nộp bài',
+      AppLanguage.en: 'Timed 60-minute Reading section, see your score only after submitting',
+    },
+    'ielts_score_overall': {
+      AppLanguage.vi: 'Band tổng',
+      AppLanguage.en: 'Overall band',
+    },
+    'ielts_score_disclaimer': {
+      AppLanguage.vi: 'Band điểm quy đổi gần đúng (thang bậc tự xây dựng), không phải bảng quy đổi chính thức của IELTS/British Council/IDP/Cambridge. Đây là điểm trung bình 2/4 kỹ năng (chưa có Writing/Speaking), không phải overall band thật.',
+      AppLanguage.en: 'Approximate band score (a self-built step table), not the official IELTS/British Council/IDP/Cambridge conversion. This averages only 2 of 4 skills (no Writing/Speaking yet), not a real overall band.',
+    },
+    'ielts_check_answer': {AppLanguage.vi: 'Kiểm tra', AppLanguage.en: 'Check'},
   };
 
   static String t(String key, AppLanguage lang) =>

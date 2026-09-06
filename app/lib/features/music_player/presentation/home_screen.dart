@@ -12,7 +12,9 @@ import '../../pronunciation/presentation/phonics_lessons_screen.dart';
 import '../../pronunciation/presentation/pronunciation_screen.dart';
 import '../../quiz/presentation/quiz_category_screen.dart';
 import '../../reading/presentation/reading_library_screen.dart';
+import '../../ielts/presentation/ielts_home_screen.dart';
 import '../../story/presentation/story_list_screen.dart';
+import '../../toeic/presentation/toeic_home_screen.dart';
 import '../../translation/presentation/dictionary_popup.dart';
 import '../../vocabulary/presentation/vocabulary_topics_screen.dart';
 
@@ -112,6 +114,16 @@ class HomeScreen extends ConsumerWidget {
                     label: ref.tr('quiz_title'),
                     onTap: () =>
                         openAppPopup(context, const QuizCategoryScreen()),
+                  ),
+                  _CategoryItemData(
+                    icon: Icons.assignment_rounded,
+                    label: ref.tr('toeic_title'),
+                    onTap: () => openAppPopup(context, const ToeicHomeScreen()),
+                  ),
+                  _CategoryItemData(
+                    icon: Icons.public_rounded,
+                    label: ref.tr('ielts_title'),
+                    onTap: () => openAppPopup(context, const IeltsHomeScreen()),
                   ),
                 ],
               ),

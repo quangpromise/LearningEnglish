@@ -23,7 +23,9 @@ import '../../features/quiz/data/leaderboard_repository.dart';
 import '../../features/rewards/data/rewards_repository.dart';
 import '../../features/social/data/social_repository.dart';
 import '../../features/stats/data/stats_repository.dart';
+import '../../features/ielts/data/ielts_attempt_repository.dart';
 import '../../features/story/data/lesson_progress_repository.dart';
+import '../../features/toeic/data/toeic_attempt_repository.dart';
 import '../../features/wealth/data/exchange_rate_repository.dart';
 import '../../features/wealth/data/stocks_intl_repository.dart';
 import '../../features/wealth/data/stocks_vn_repository.dart';
@@ -122,6 +124,24 @@ final lessonCompletedProvider = FutureProvider.autoDispose.family<bool, String>(
 final leaderboardRepositoryProvider = Provider<LeaderboardRepository>(
   (ref) => LeaderboardRepository(ref.watch(supabaseClientProvider)),
 );
+
+final toeicAttemptRepositoryProvider = Provider<ToeicAttemptRepository>(
+  (ref) => ToeicAttemptRepository(ref.watch(supabaseClientProvider)),
+);
+
+final toeicAttemptHistoryProvider =
+    FutureProvider.autoDispose<List<ToeicAttemptRecord>>(
+      (ref) => ref.watch(toeicAttemptRepositoryProvider).fetchMyHistory(),
+    );
+
+final ieltsAttemptRepositoryProvider = Provider<IeltsAttemptRepository>(
+  (ref) => IeltsAttemptRepository(ref.watch(supabaseClientProvider)),
+);
+
+final ieltsAttemptHistoryProvider =
+    FutureProvider.autoDispose<List<IeltsAttemptRecord>>(
+      (ref) => ref.watch(ieltsAttemptRepositoryProvider).fetchMyHistory(),
+    );
 
 final favoritesRepositoryProvider = Provider<FavoritesRepository>(
   (ref) => FavoritesRepository(ref.watch(supabaseClientProvider)),
