@@ -402,9 +402,8 @@ class _ServiceHistorySection extends ConsumerWidget {
         style: AppTextStyles.muted(size: 11),
       ),
       data: (all) {
-        final history =
-            all.where((r) => r.serviceId == serviceId).toList()
-              ..sort((a, b) => b.occurredAt.compareTo(a.occurredAt));
+        final history = all.where((r) => r.serviceId == serviceId).toList()
+          ..sort((a, b) => b.occurredAt.compareTo(a.occurredAt));
         if (history.isEmpty) {
           return Text(
             ref.tr('wealth_report_no_data'),
