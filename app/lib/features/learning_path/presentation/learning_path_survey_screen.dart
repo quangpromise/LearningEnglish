@@ -35,6 +35,16 @@ class _LearningPathSurveyScreenState
     Navigator.of(context).maybePop();
   }
 
+  /// Nguoi dung chon "Tu hoc" - tat het highlight/goi y tren Home (khac voi
+  /// chi dong popup ma khong chon gi: neu TRUOC DO da co persona duoc luu,
+  /// dong popup khong lam mat highlight cu - phai goi turnOff() de xoa han).
+  Future<void> _turnOff() async {
+    await ref.read(learningPathRepositoryProvider).turnOff();
+    if (!mounted) return;
+    ref.invalidate(learningPathChoiceProvider);
+    Navigator.of(context).maybePop();
+  }
+
   void _onFirstAnswer(int index) {
     switch (index) {
       case 0:
@@ -134,6 +144,19 @@ class _LearningPathSurveyScreenState
               onTap: () => _choose(LearningPersona.ieltsPrep),
             ),
           ],
+          const SizedBox(height: 16),
+          // Luon hien o CA 2 buoc (khong chi Cau 1) - nguoi dung co the doi
+          // y sang Cau 2 roi van muon tat gui y thay vi chon tiep 1 muc tieu.
+          Center(
+            child: GestureDetector(
+              onTap: _turnOff,
+              child: Text(
+                ref.tr('learning_path_turn_off'),
+                style: AppTextStyles.muted(size: 12.5)
+                    .copyWith(decoration: TextDecoration.underline),
+              ),
+            ),
+          ),
         ],
       ),
     );

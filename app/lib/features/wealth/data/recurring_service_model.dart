@@ -106,3 +106,38 @@ class RecurringService {
     }
   }
 }
+
+/// 1 lan gia han da xay ra - doc lai tu bang `wealth_service_renewals`
+/// (da co san tu migration 0034, chi thieu method doc) kem TEN dich vu
+/// (join qua `wealth_recurring_services`) de hien trong bao cao/lich su ma
+/// khong can goi rieng 1 lan nua de tra ten.
+class ServiceRenewalRecord {
+  const ServiceRenewalRecord({
+    required this.id,
+    required this.serviceId,
+    required this.serviceName,
+    required this.amount,
+    required this.currency,
+    required this.occurredAt,
+  });
+
+  final String id;
+  final String serviceId;
+  final String serviceName;
+  final double amount;
+  final String currency;
+  final DateTime occurredAt;
+
+  factory ServiceRenewalRecord.fromRow(Map<String, dynamic> row) {
+    final serviceMap =
+        row['wealth_recurring_services'] as Map<String, dynamic>?;
+    return ServiceRenewalRecord(
+      id: row['id'] as String,
+      serviceId: row['service_id'] as String,
+      serviceName: serviceMap?['name'] as String? ?? '',
+      amount: (row['amount'] as num).toDouble(),
+      currency: row['currency'] as String,
+      occurredAt: DateTime.parse(row['occurred_at'] as String),
+    );
+  }
+}

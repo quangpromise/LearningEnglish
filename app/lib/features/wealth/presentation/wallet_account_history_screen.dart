@@ -213,7 +213,20 @@ class _GroupedHistoryList extends ConsumerWidget {
     for (final entry in entries) {
       final key = dayKey(entry.occurredAt);
       if (key != lastKey) {
-        if (lastKey != null) items.add(const SizedBox(height: 14));
+        if (lastKey != null) {
+          items.add(const SizedBox(height: 14));
+          // Gach ngang phan cach GIUA CAC NGAY (khong phai giua tung dong)
+          // de de nhan biet ranh gioi ngay khi cuon nhanh - theo yeu cau
+          // nguoi dung, ap dung cho man lich su nay (dung chung cho moi tai
+          // khoan Tien mat/Ngan hang qua WalletAccountHistoryScreen).
+          items.add(
+            Container(
+              height: 1,
+              margin: const EdgeInsets.only(bottom: 14),
+              color: AppColors.glassBorder,
+            ),
+          );
+        }
         items.add(
           Padding(
             padding: const EdgeInsets.only(bottom: 8),

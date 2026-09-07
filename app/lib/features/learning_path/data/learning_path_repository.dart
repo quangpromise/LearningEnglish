@@ -46,4 +46,22 @@ class LearningPathRepository {
       // luu that bai).
     }
   }
+
+  /// Nguoi dung chon "Tu hoc" - tat het highlight/goi y tren Home. Luu
+  /// chuoi 'none' (khong khop ten enum nao) thay vi xoa dong - tai dung
+  /// DUOC policy insert/update da co san (khong can them policy delete +
+  /// migration moi); fetchChoice() da san sang tra ve null cho bat ky
+  /// chuoi nao khong khop ten LearningPersona (xem catch (_) o tren).
+  Future<void> turnOff() async {
+    final userId = _supabase.auth.currentUser?.id;
+    if (userId == null) return;
+    try {
+      await _supabase.from('user_learning_path_choice').upsert({
+        'user_id': userId,
+        'persona': 'none',
+      }, onConflict: 'user_id');
+    } catch (_) {
+      // Xem ly do bo qua loi o choosePersona() ben tren.
+    }
+  }
 }

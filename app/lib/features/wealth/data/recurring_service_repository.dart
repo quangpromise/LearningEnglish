@@ -35,6 +35,24 @@ class RecurringServiceRepository {
         .toList();
   }
 
+  /// Toan bo lich su gia han cua user (moi dich vu, ke ca dich vu da
+  /// deactivate) - moi->cu, kem ten dich vu (embedded select qua FK
+  /// service_id, khong can vong lap goi rieng) - dung cho man Bao cao
+  /// (wealth_report_screen.dart). RLS ap dung binh thuong vi ca 2 bang deu
+  /// loc theo user_id cua chinh nguoi goi.
+  Future<List<ServiceRenewalRecord>> fetchAllRenewals(String userId) async {
+    final rows = await _supabase
+        .from('wealth_service_renewals')
+        .select(
+          'id, service_id, amount, currency, occurred_at, wealth_recurring_services(name)',
+        )
+        .eq('user_id', userId)
+        .order('occurred_at', ascending: false);
+    return (rows as List)
+        .map((r) => ServiceRenewalRecord.fromRow(r as Map<String, dynamic>))
+        .toList();
+  }
+
   Future<void> create({
     required String userId,
     required String name,

@@ -992,6 +992,17 @@ final recurringServicesProvider =
       return ref.watch(recurringServiceRepositoryProvider).fetchAll(userId);
     });
 
+/// Toan bo lich su gia han dich vu dinh ky cua user - dung cho man Bao cao
+/// (wealth_report_screen.dart).
+final serviceRenewalsProvider =
+    FutureProvider.autoDispose<List<ServiceRenewalRecord>>((ref) {
+      final userId = ref.watch(supabaseClientProvider).auth.currentUser?.id;
+      if (userId == null) return Future.value(<ServiceRenewalRecord>[]);
+      return ref
+          .watch(recurringServiceRepositoryProvider)
+          .fetchAllRenewals(userId);
+    });
+
 /// Cac dich vu DA DUOC GAN cho 1 mini-app cu the (Fitness/Hoc Tieng Anh) -
 /// dung o man Ho so cua 2 app do (them dich vu moi + xem danh sach da gan)
 /// va o thanh hien thi han dich vu tren man Home (xem

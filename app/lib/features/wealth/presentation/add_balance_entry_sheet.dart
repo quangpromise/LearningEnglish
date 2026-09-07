@@ -52,8 +52,21 @@ class _AddBalanceEntrySheetState extends ConsumerState<_AddBalanceEntrySheet> {
   late String _currency = widget.existing?.currency ?? 'VND';
   late DateTime _occurredAt = widget.existing?.occurredAt ?? DateTime.now();
   bool _saving = false;
+  // Rut tien tu ngan hang (Tru + co bank) mac dinh coi la "rut ra tien
+  // mat" - tu dong tao THEM 1 dong (+) cung so tien ben Tien mat, giong
+  // hanh vi rut tien that (tien roi khoi tai khoan ngan hang, xuat hien
+  // trong vi tien mat). Nguoi dung van tat duoc neu chi muon tru rieng
+  // ben ngan hang (vd rut de chuyen khoan tiep, khong cam tien mat).
+  bool _pushToCash = true;
 
   bool get _isEditing => widget.existing != null;
+
+  /// Chi ap dung cho GIAO DICH MOI (khong phai sua) tren 1 tai khoan NGAN
+  /// HANG cu the va dang o chieu "Tru" (rut tien) - Tien mat khong co khai
+  /// niem "rut sang chinh no", va sua 1 dong da luu KHONG duoc tu dong tao
+  /// them dong moi moi lan bam Luu (se nhan dup dong tien mat).
+  bool get _showPushToCashOption =>
+      !_isEditing && widget.bank != null && !_isAdd;
 
   @override
   void dispose() {
@@ -117,6 +130,23 @@ class _AddBalanceEntrySheetState extends ConsumerState<_AddBalanceEntrySheet> {
         await repo.updateEntry(userId, entry);
       } else {
         await repo.addEntry(userId, entry);
+        if (_showPushToCashOption && _pushToCash) {
+          // Rut tu ngan hang -> tu dong day CUNG so tien do vao Tien mat
+          // (mac dinh BAT, xem _showPushToCashOption).
+          await repo.addEntry(
+            userId,
+            WealthBalanceEntry(
+              id: '',
+              accountType: 'cash',
+              bankCode: null,
+              bankName: null,
+              currency: _currency,
+              amount: rawAmount,
+              note: entry.note,
+              occurredAt: _occurredAt,
+            ),
+          );
+        }
       }
       ref.invalidate(walletBalanceEntriesProvider);
       if (mounted) Navigator.of(context).pop();
@@ -175,6 +205,45 @@ class _AddBalanceEntrySheetState extends ConsumerState<_AddBalanceEntrySheet> {
                         ),
                       ],
                     ),
+                    if (_showPushToCashOption) ...[
+                      const SizedBox(height: 10),
+                      GestureDetector(
+                        onTap: () => setState(() => _pushToCash = !_pushToCash),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 12,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.glassFill,
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                _pushToCash
+                                    ? Icons.check_box_rounded
+                                    : Icons.check_box_outline_blank_rounded,
+                                size: 20,
+                                color: _pushToCash
+                                    ? AppColors.wealthAccent
+                                    : AppColors.textMuted,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  ref.tr('wallet_withdraw_push_to_cash'),
+                                  style: AppTextStyles.body(
+                                    size: 12.5,
+                                    weight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 12),
                     Row(
                       children: [

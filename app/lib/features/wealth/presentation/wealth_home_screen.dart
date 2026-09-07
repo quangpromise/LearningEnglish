@@ -13,6 +13,7 @@ import 'debt_screen.dart';
 import 'market_screen.dart';
 import 'recurring_services_screen.dart';
 import 'wealth_detail_screen.dart';
+import 'wealth_report_screen.dart';
 import 'wealth_settings_screen.dart';
 import 'wealth_expense_tab.dart';
 import 'wallet_screen.dart';
@@ -242,6 +243,15 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
                               onTap: () => openAppPopup(
                                 context,
                                 const CalculatorScreen(),
+                              ),
+                            ),
+                            _WealthTile(
+                              width: itemWidth,
+                              icon: Icons.bar_chart_rounded,
+                              label: ref.tr('wealth_report_title'),
+                              onTap: () => openAppPopup(
+                                context,
+                                const WealthReportScreen(),
                               ),
                             ),
                           ],

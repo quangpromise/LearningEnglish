@@ -404,6 +404,10 @@ class AppStrings {
       AppLanguage.vi: 'Luyện thi IELTS',
       AppLanguage.en: 'Prepare for IELTS',
     },
+    'learning_path_turn_off': {
+      AppLanguage.vi: 'Tôi muốn tự học, tắt gợi ý',
+      AppLanguage.en: "I'll study on my own, turn off suggestions",
+    },
     'vocab_add_to_daily': {
       AppLanguage.vi: 'Học hôm nay',
       AppLanguage.en: 'Learn today',
@@ -1338,6 +1342,38 @@ class AppStrings {
       AppLanguage.vi: 'Máy tính',
       AppLanguage.en: 'Calculator',
     },
+    'wealth_report_title': {
+      AppLanguage.vi: 'Báo cáo',
+      AppLanguage.en: 'Reports',
+    },
+    'wealth_report_income_expense_title': {
+      AppLanguage.vi: 'Thu chi trong tháng',
+      AppLanguage.en: 'Income & expense this month',
+    },
+    'wealth_report_category_title': {
+      AppLanguage.vi: 'Chi tiêu theo danh mục',
+      AppLanguage.en: 'Expense by category',
+    },
+    'wealth_report_service_title': {
+      AppLanguage.vi: 'Dịch vụ định kỳ',
+      AppLanguage.en: 'Recurring services',
+    },
+    'wealth_report_renewal_history_title': {
+      AppLanguage.vi: 'Lịch sử gia hạn',
+      AppLanguage.en: 'Renewal history',
+    },
+    'wealth_report_vs_last_month': {
+      AppLanguage.vi: 'so với tháng trước',
+      AppLanguage.en: 'vs last month',
+    },
+    'wealth_report_no_previous_data': {
+      AppLanguage.vi: 'Chưa có dữ liệu tháng trước để so sánh',
+      AppLanguage.en: 'No previous month data to compare',
+    },
+    'wealth_report_no_data': {
+      AppLanguage.vi: 'Chưa có dữ liệu',
+      AppLanguage.en: 'No data yet',
+    },
     'wealth_debt_title': {AppLanguage.vi: 'Nợ', AppLanguage.en: 'Debt'},
     'wealth_debt_tab_i_owe': {
       AppLanguage.vi: 'Đang nợ',
@@ -1550,6 +1586,10 @@ class AppStrings {
     'wallet_amount_direction_subtract': {
       AppLanguage.vi: 'Rút bớt',
       AppLanguage.en: 'Withdraw',
+    },
+    'wallet_withdraw_push_to_cash': {
+      AppLanguage.vi: 'Chuyển số tiền rút vào Tiền mặt',
+      AppLanguage.en: 'Move the withdrawn amount into Cash',
     },
     'wallet_amount_hint': {AppLanguage.vi: 'Số tiền', AppLanguage.en: 'Amount'},
     'wallet_note_hint': {
