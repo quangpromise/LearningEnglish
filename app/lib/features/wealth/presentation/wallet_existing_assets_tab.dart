@@ -427,9 +427,18 @@ class WalletEntryRow extends ConsumerWidget {
                   serviceId: info.serviceId,
                   previousExpiryDate: info.previousExpiryDate,
                 );
+                // Xoa luon dong chi tieu lien ket de dong bo voi man Bao cao
+                // (xem recurring_service_repository.dart.renew()).
+                if (info.transactionId != null) {
+                  await ref
+                      .read(wealthTransactionRepositoryProvider)
+                      .deleteTransaction(userId, info.transactionId!);
+                  ref.invalidate(wealthTransactionsProvider);
+                }
               }
             }
             ref.invalidate(recurringServicesProvider);
+            ref.invalidate(serviceRenewalsProvider);
           default:
             await ref
                 .read(wealthBalanceEntryRepositoryProvider)

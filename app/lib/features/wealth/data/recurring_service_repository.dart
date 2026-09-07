@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'recurring_service_model.dart';
 import 'wealth_balance_entry_model.dart';
 import 'wealth_balance_entry_repository.dart';
+import 'wealth_transaction_model.dart';
 
 /// 1 hinh thuc thanh toan khi gia han (Tien mat hoac 1 ngan hang cu the) -
 /// cho phep tach nhieu hinh thuc trong cung 1 lan gia han.
@@ -127,7 +128,14 @@ class RecurringServiceRepository {
   /// Lay `renewal_id` + `service_id` + `previous_expiry_date` cua 1 lan gia
   /// han - dung khi xoa truc tiep 1 dong wealth_balance_entries co
   /// source='service_renewal' tu man Vi (xem wallet_existing_assets_tab.dart).
-  Future<({String renewalId, String serviceId, DateTime previousExpiryDate})?>
+  Future<
+    ({
+      String renewalId,
+      String serviceId,
+      DateTime previousExpiryDate,
+      String? transactionId,
+    })?
+  >
   fetchRenewalPaymentInfo(String userId, String renewalPaymentId) async {
     final payment = await _supabase
         .from('wealth_service_renewal_payments')
@@ -139,7 +147,7 @@ class RecurringServiceRepository {
     final renewalId = payment['renewal_id'] as String;
     final renewal = await _supabase
         .from('wealth_service_renewals')
-        .select('service_id, previous_expiry_date')
+        .select('service_id, previous_expiry_date, transaction_id')
         .eq('id', renewalId)
         .eq('user_id', userId)
         .single();
@@ -149,6 +157,7 @@ class RecurringServiceRepository {
       previousExpiryDate: DateTime.parse(
         renewal['previous_expiry_date'] as String,
       ),
+      transactionId: renewal['transaction_id'] as String?,
     );
   }
 
@@ -202,8 +211,12 @@ class RecurringServiceRepository {
 
   /// Gia han 1 dich vu: ghi lich su gia han + tung dong thanh toan (co the
   /// tach nhieu hinh thuc) + tu dong tao dong wealth_balance_entries tuong
-  /// ung tru vao Vi, roi cap nhat expiry_date/default_amount moi cua dich
-  /// vu va reset last_notified_on de bat dau lai chu ky nhac han.
+  /// ung tru vao Vi, THEM 1 dong wealth_transactions (loai chi tieu, danh
+  /// muc Hoa don) de khoan gia han duoc tinh vao Thu chi trong man Bao cao -
+  /// truoc day chi tru Vi ma khong cong vao Chi tieu, gay lech tong Thu/Chi
+  /// so voi tong tai san Bank/Cash da giam thuc te (xem migration 0043) -
+  /// roi cap nhat expiry_date/default_amount moi cua dich vu va reset
+  /// last_notified_on de bat dau lai chu ky nhac han.
   Future<void> renew({
     required String userId,
     required RecurringService service,
@@ -228,6 +241,29 @@ class RecurringServiceRepository {
         .select('id')
         .single();
     final renewalId = renewalRow['id'] as String;
+
+    final singlePayment = payments.length == 1 ? payments.first : null;
+    final tx = WealthTransaction(
+      id: '',
+      type: WealthTransactionType.expense,
+      categoryCode: 'BILLS',
+      amount: totalAmount,
+      currency: service.currency,
+      occurredAt: occurredAt,
+      note: '${service.name} - gia hạn',
+      paymentAccountType: singlePayment?.accountType,
+      paymentBankCode: singlePayment?.bankCode,
+      paymentBankName: singlePayment?.bankName,
+    );
+    final txRow = await _supabase
+        .from('wealth_transactions')
+        .insert(tx.toInsertRow(userId))
+        .select('id')
+        .single();
+    await _supabase
+        .from('wealth_service_renewals')
+        .update({'transaction_id': txRow['id']})
+        .eq('id', renewalId);
 
     final balanceRepo = WealthBalanceEntryRepository(_supabase);
     for (final payment in payments) {

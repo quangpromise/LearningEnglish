@@ -112,6 +112,8 @@ class _RenewServiceSheetState extends ConsumerState<_RenewServiceSheet> {
           );
       ref.invalidate(recurringServicesProvider);
       ref.invalidate(walletBalanceEntriesProvider);
+      ref.invalidate(wealthTransactionsProvider);
+      ref.invalidate(serviceRenewalsProvider);
       if (mounted) Navigator.of(context).pop();
     } finally {
       if (mounted) setState(() => _saving = false);
