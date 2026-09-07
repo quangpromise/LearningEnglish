@@ -352,6 +352,58 @@ class AppStrings {
       AppLanguage.vi: 'Thì ngữ pháp',
       AppLanguage.en: 'Tense',
     },
+    'media_bar_not_playing': {
+      AppLanguage.vi: 'Chưa phát nhạc',
+      AppLanguage.en: 'No music playing',
+    },
+    'learning_path_tooltip': {
+      AppLanguage.vi: 'Gợi ý lộ trình học',
+      AppLanguage.en: 'Suggest a learning path',
+    },
+    'learning_path_survey_title': {
+      AppLanguage.vi: 'Gợi ý lộ trình học',
+      AppLanguage.en: 'Suggest a learning path',
+    },
+    'learning_path_survey_subtitle': {
+      AppLanguage.vi: 'Trả lời nhanh để app gợi ý tính năng phù hợp với bạn',
+      AppLanguage.en: 'Answer quickly so the app can suggest what fits you',
+    },
+    'learning_path_q1_title': {
+      AppLanguage.vi: 'Trình độ hiện tại của bạn?',
+      AppLanguage.en: 'What is your current level?',
+    },
+    'learning_path_q1_a1': {
+      AppLanguage.vi: 'Tôi gần như mất gốc / mới bắt đầu',
+      AppLanguage.en: "I'm almost a complete beginner",
+    },
+    'learning_path_q1_a2': {
+      AppLanguage.vi: 'Tôi biết cơ bản nhưng ngữ pháp còn yếu',
+      AppLanguage.en: 'I know basics but my grammar is weak',
+    },
+    'learning_path_q1_a3': {
+      AppLanguage.vi: 'Tôi khá ổn, muốn học theo mục tiêu cụ thể',
+      AppLanguage.en: "I'm decent, I want a goal-specific path",
+    },
+    'learning_path_q2_title': {
+      AppLanguage.vi: 'Mục tiêu chính của bạn là gì?',
+      AppLanguage.en: 'What is your main goal?',
+    },
+    'learning_path_q2_a1': {
+      AppLanguage.vi: 'Giao tiếp hằng ngày, tự tin nói chuyện',
+      AppLanguage.en: 'Everyday conversation, speak confidently',
+    },
+    'learning_path_q2_a2': {
+      AppLanguage.vi: 'Dùng trong công việc (email, họp, thuyết trình)',
+      AppLanguage.en: 'Use at work (email, meetings, presentations)',
+    },
+    'learning_path_q2_a3': {
+      AppLanguage.vi: 'Luyện thi TOEIC',
+      AppLanguage.en: 'Prepare for TOEIC',
+    },
+    'learning_path_q2_a4': {
+      AppLanguage.vi: 'Luyện thi IELTS',
+      AppLanguage.en: 'Prepare for IELTS',
+    },
     'vocab_add_to_daily': {
       AppLanguage.vi: 'Học hôm nay',
       AppLanguage.en: 'Learn today',

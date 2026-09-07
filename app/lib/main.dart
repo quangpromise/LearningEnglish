@@ -133,13 +133,20 @@ class LearnEnglishMusicApp extends StatelessWidget {
       // KHONG con o day - da chuyen vao giua thanh menu duoi cua tung khu
       // vuc (root_shell.dart / mini_app_bottom_nav.dart) thay vi noi rieng
       // tren toan man hinh.
-      // GestureDetector ngoai cung: cham ra ngoai o nhap (bat ky dau tren
-      // man hinh, khong rieng man nao) se dong ban phim - HitTestBehavior.
-      // translucent de KHONG chan cac nut/GestureDetector khac ben duoi
-      // (ca 2 deu nhan duoc tap, chi cai nay lam them 1 viec la unfocus).
-      builder: (context, child) => GestureDetector(
+      // Listener ngoai cung: cham ra ngoai o nhap (bat ky dau tren man hinh)
+      // se dong ban phim. BAT BUOC dung Listener.onPointerDown (KHONG dung
+      // GestureDetector.onTap) - da tung dung GestureDetector.onTap va gay
+      // bug that: no la 1 TapGestureRecognizer, CHU DONG "accept" ngay khi
+      // nha tay (thang gesture arena), trong khi AssistiveFabOverlay (xem
+      // assistive_fab_overlay.dart) phan biet tap/keo bang onPanStart/
+      // onPanUpdate/onPanEnd (PanGestureRecognizer chi thang arena qua
+      // "sweep" thu dong) - nut do LUON THUA/mat tap ngay khi co 1
+      // GestureDetector.onTap khac o ngoai. Listener khong tham gia gesture
+      // arena (chi lang nghe pointer tho) nen khong gianh giat voi bat ky
+      // GestureDetector/Draggable nao khac trong app.
+      builder: (context, child) => Listener(
         behavior: HitTestBehavior.translucent,
-        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        onPointerDown: (_) => FocusManager.instance.primaryFocus?.unfocus(),
         child: Stack(children: [?child, const AssistiveFabOverlay()]),
       ),
       theme: ThemeData(

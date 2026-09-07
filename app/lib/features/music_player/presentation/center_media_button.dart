@@ -1,9 +1,11 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
 
 import '../../../core/audio/now_playing_service.dart';
+import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/songs_data.dart';
 import 'player_screen.dart';
@@ -98,12 +100,12 @@ class CenterMediaButton extends StatelessWidget {
 /// Trang thai chua co bai nao dang phat - van chiem dung vi tri (khong bien
 /// mat) de thanh Menu khong bi "nhay" khi bat dau phat nhac; cham vao tu
 /// phat luon bai dau tien roi mo popup Dang phat.
-class _IdleBar extends StatelessWidget {
+class _IdleBar extends ConsumerWidget {
   const _IdleBar({required this.accentColor});
   final Color accentColor;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () async {
@@ -117,7 +119,7 @@ class _IdleBar extends StatelessWidget {
             Icon(Icons.music_note_rounded, size: 16, color: accentColor),
             const SizedBox(width: 8),
             Text(
-              'Chưa phát nhạc',
+              ref.tr('media_bar_not_playing'),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: AppTextStyles.muted(size: 11.5),

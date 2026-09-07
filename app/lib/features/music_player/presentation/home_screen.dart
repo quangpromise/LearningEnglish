@@ -8,6 +8,8 @@ import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../social/presentation/conversations_screen.dart';
 import '../../grammar/presentation/grammar_topics_screen.dart';
+import '../../learning_path/data/learning_path_models.dart';
+import '../../learning_path/presentation/learning_path_survey_screen.dart';
 import '../../pronunciation/presentation/phonics_lessons_screen.dart';
 import '../../pronunciation/presentation/pronunciation_screen.dart';
 import '../../quiz/presentation/quiz_category_screen.dart';
@@ -33,6 +35,14 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final unread = ref.watch(unreadMessageCountProvider).valueOrNull ?? 0;
+    // Persona nguoi dung da chon o khao sat "Goi y lo trinh hoc" (null = chua
+    // chon/chua dang nhap) - dung de highlight tile lien quan ben duoi, VAN
+    // HIEN DU MOI TILE NHU CU (khong an/khoa tile nao) theo dung yeu cau.
+    final persona = ref.watch(learningPathChoiceProvider).valueOrNull;
+    final recommended = persona != null
+        ? kPersonaRecommendations[persona]!
+        : const <HomeFeature>[];
+    final topPick = recommended.isNotEmpty ? recommended.first : null;
     return ScreenBackground(
       child: Padding(
         // Le ngang giam tu 24 -> 14 de khung the loai sat 2 canh man hinh
@@ -47,20 +57,38 @@ class HomeScreen extends ConsumerWidget {
                 unreadCount: unread,
                 onMessagesTap: () =>
                     openAppPopup(context, const ConversationsScreen()),
-                trailing: GestureDetector(
-                  onTap: () => showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    backgroundColor: Colors.transparent,
-                    builder: (_) => const DictionaryPopup(),
-                  ),
-                  child: Tooltip(
-                    message: ref.tr('home_dictionary_tooltip'),
-                    // Doi tu menu_book_rounded (trung voi icon Ngu phap
-                    // trong nhom "Doc viet" ben duoi, de nham lan) sang
-                    // translate_rounded - dac trung hon cho "tra tu dien".
-                    child: const _IconCircle(icon: Icons.translate_rounded),
-                  ),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    GestureDetector(
+                      onTap: () => showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (_) => const LearningPathSurveyScreen(),
+                      ),
+                      child: Tooltip(
+                        message: ref.tr('learning_path_tooltip'),
+                        child: const _IconCircle(icon: Icons.explore_rounded),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: () => showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (_) => const DictionaryPopup(),
+                      ),
+                      child: Tooltip(
+                        message: ref.tr('home_dictionary_tooltip'),
+                        // Doi tu menu_book_rounded (trung voi icon Ngu phap
+                        // trong nhom "Doc viet" ben duoi, de nham lan) sang
+                        // translate_rounded - dac trung hon cho "tra tu dien".
+                        child: const _IconCircle(icon: Icons.translate_rounded),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 22),
@@ -73,24 +101,32 @@ class HomeScreen extends ConsumerWidget {
                     label: ref.tr('home_vocabulary_quick_title'),
                     onTap: () =>
                         openAppPopup(context, const VocabularyTopicsScreen()),
+                    isRecommended: recommended.contains(HomeFeature.vocabulary),
+                    isTopPick: topPick == HomeFeature.vocabulary,
                   ),
                   _CategoryItemData(
                     icon: Icons.menu_book_rounded,
                     label: ref.tr('grammar_topics_title'),
                     onTap: () =>
                         openAppPopup(context, const GrammarTopicsScreen()),
+                    isRecommended: recommended.contains(HomeFeature.grammar),
+                    isTopPick: topPick == HomeFeature.grammar,
                   ),
                   _CategoryItemData(
                     icon: Icons.local_library_rounded,
                     label: ref.tr('reading_title'),
                     onTap: () =>
                         openAppPopup(context, const ReadingLibraryScreen()),
+                    isRecommended: recommended.contains(HomeFeature.reading),
+                    isTopPick: topPick == HomeFeature.reading,
                   ),
                   _CategoryItemData(
                     icon: Icons.edit_note_rounded,
                     label: ref.tr('writing_title'),
                     onTap: () =>
                         openAppPopup(context, const WritingHomeScreen()),
+                    isRecommended: recommended.contains(HomeFeature.writing),
+                    isTopPick: topPick == HomeFeature.writing,
                   ),
                 ],
               ),
@@ -103,6 +139,8 @@ class HomeScreen extends ConsumerWidget {
                     label: ref.tr('phonics_title'),
                     onTap: () =>
                         openAppPopup(context, const PhonicsLessonsScreen()),
+                    isRecommended: recommended.contains(HomeFeature.phonics),
+                    isTopPick: topPick == HomeFeature.phonics,
                   ),
                   _CategoryItemData(
                     // "Luyen phat am" - truoc day 1 tab rieng o thanh Menu,
@@ -112,11 +150,17 @@ class HomeScreen extends ConsumerWidget {
                     label: ref.tr('pron_title'),
                     onTap: () =>
                         openAppPopup(context, const PronunciationScreen()),
+                    isRecommended: recommended.contains(
+                      HomeFeature.pronunciation,
+                    ),
+                    isTopPick: topPick == HomeFeature.pronunciation,
                   ),
                   _CategoryItemData(
                     icon: Icons.auto_stories_rounded,
                     label: ref.tr('home_story_quick_title'),
                     onTap: () => openAppPopup(context, const StoryListScreen()),
+                    isRecommended: recommended.contains(HomeFeature.story),
+                    isTopPick: topPick == HomeFeature.story,
                   ),
                 ],
               ),
@@ -128,11 +172,15 @@ class HomeScreen extends ConsumerWidget {
                     icon: Icons.assignment_rounded,
                     label: ref.tr('toeic_title'),
                     onTap: () => openAppPopup(context, const ToeicHomeScreen()),
+                    isRecommended: recommended.contains(HomeFeature.toeic),
+                    isTopPick: topPick == HomeFeature.toeic,
                   ),
                   _CategoryItemData(
                     icon: Icons.public_rounded,
                     label: ref.tr('ielts_title'),
                     onTap: () => openAppPopup(context, const IeltsHomeScreen()),
+                    isRecommended: recommended.contains(HomeFeature.ielts),
+                    isTopPick: topPick == HomeFeature.ielts,
                   ),
                   _CategoryItemData(
                     // "Do vui" chuyen tu nhom "Doc viet" sang chung box voi
@@ -143,6 +191,8 @@ class HomeScreen extends ConsumerWidget {
                     label: ref.tr('quiz_title'),
                     onTap: () =>
                         openAppPopup(context, const QuizCategoryScreen()),
+                    isRecommended: recommended.contains(HomeFeature.quiz),
+                    isTopPick: topPick == HomeFeature.quiz,
                   ),
                 ],
               ),
@@ -214,10 +264,21 @@ class _CategoryItemData {
     required this.icon,
     required this.label,
     required this.onTap,
+    this.isRecommended = false,
+    this.isTopPick = false,
   });
   final IconData icon;
   final String label;
   final VoidCallback onTap;
+
+  /// Tile nam trong danh sach goi y cua persona dang chon - vien/glow doi
+  /// mau accent, KHONG an/khoa tile (van bam duoc binh thuong nhu moi tile
+  /// khac) - xem docs/research-learning-path.md.
+  final bool isRecommended;
+
+  /// Tile GOI Y CHINH (phan tu dau tien trong danh sach goi y cua persona)
+  /// - duoc gan them 1 hinh ban tay dong o goc de de nhan biet ngay.
+  final bool isTopPick;
 }
 
 class _CategoryItem extends StatelessWidget {
@@ -233,15 +294,46 @@ class _CategoryItem extends StatelessWidget {
         width: width,
         child: Column(
           children: [
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: AppColors.glassFill,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.glassBorder),
-              ),
-              child: Icon(data.icon, color: AppColors.blue, size: 24),
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: data.isRecommended
+                        ? AppColors.teal.withValues(alpha: 0.16)
+                        : AppColors.glassFill,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: data.isRecommended
+                          ? AppColors.teal
+                          : AppColors.glassBorder,
+                      width: data.isRecommended ? 1.6 : 1,
+                    ),
+                    boxShadow: data.isRecommended
+                        ? [
+                            BoxShadow(
+                              color: AppColors.teal.withValues(alpha: 0.4),
+                              blurRadius: 14,
+                              spreadRadius: 1,
+                            ),
+                          ]
+                        : null,
+                  ),
+                  child: Icon(
+                    data.icon,
+                    color: data.isRecommended ? AppColors.teal : AppColors.blue,
+                    size: 24,
+                  ),
+                ),
+                if (data.isTopPick)
+                  const Positioned(
+                    right: -10,
+                    bottom: -8,
+                    child: _PointingHandBadge(),
+                  ),
+              ],
             ),
             const SizedBox(height: 6),
             SizedBox(
@@ -249,6 +341,65 @@ class _CategoryItem extends StatelessWidget {
               child: TileLabelText(label: data.label, maxWidth: width),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Hinh ban tay CHAM VAO man hinh, tu chay animation nay len-xuong lien tuc
+/// de gay chu y vao tile goi y chinh - StatefulWidget rieng (khong bien
+/// _CategoryItem thanh Stateful) vi chi widget nho nay can AnimationController.
+class _PointingHandBadge extends StatefulWidget {
+  const _PointingHandBadge();
+
+  @override
+  State<_PointingHandBadge> createState() => _PointingHandBadgeState();
+}
+
+class _PointingHandBadgeState extends State<_PointingHandBadge>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _bounce;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    )..repeat(reverse: true);
+    _bounce = Tween<double>(
+      begin: 0,
+      end: -6,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _bounce,
+      builder: (context, child) =>
+          Transform.translate(offset: Offset(0, _bounce.value), child: child),
+      child: Container(
+        width: 24,
+        height: 24,
+        decoration: BoxDecoration(
+          color: AppColors.amber,
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white.withValues(alpha: 0.6)),
+          boxShadow: const [BoxShadow(color: Colors.black38, blurRadius: 6)],
+        ),
+        child: const Icon(
+          Icons.touch_app_rounded,
+          size: 14,
+          color: Colors.white,
         ),
       ),
     );

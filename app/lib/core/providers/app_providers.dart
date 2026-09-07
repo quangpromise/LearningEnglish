@@ -24,6 +24,8 @@ import '../../features/rewards/data/rewards_repository.dart';
 import '../../features/social/data/social_repository.dart';
 import '../../features/stats/data/stats_repository.dart';
 import '../../features/ielts/data/ielts_attempt_repository.dart';
+import '../../features/learning_path/data/learning_path_models.dart';
+import '../../features/learning_path/data/learning_path_repository.dart';
 import '../../features/story/data/lesson_progress_repository.dart';
 import '../../features/toeic/data/toeic_attempt_repository.dart';
 import '../../features/wealth/data/exchange_rate_repository.dart';
@@ -119,6 +121,18 @@ final lessonProgressRepositoryProvider = Provider<LessonProgressRepository>(
 final lessonCompletedProvider = FutureProvider.autoDispose.family<bool, String>(
   (ref, lessonId) =>
       ref.watch(lessonProgressRepositoryProvider).isCompleted(lessonId),
+);
+
+final learningPathRepositoryProvider = Provider<LearningPathRepository>(
+  (ref) => LearningPathRepository(ref.watch(supabaseClientProvider)),
+);
+
+/// Persona nguoi dung da chon o khao sat "Goi y lo trinh hoc" (null = chua
+/// chon) - Home doc gia tri nay de highlight tile lien quan. Goi
+/// `ref.invalidate(learningPathChoiceProvider)` sau khi luu lua chon moi de
+/// Home highlight lai ngay (xem learning_path_survey_screen.dart).
+final learningPathChoiceProvider = FutureProvider<LearningPersona?>(
+  (ref) => ref.watch(learningPathRepositoryProvider).fetchChoice(),
 );
 
 final leaderboardRepositoryProvider = Provider<LeaderboardRepository>(
