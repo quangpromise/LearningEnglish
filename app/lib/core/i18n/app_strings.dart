@@ -255,6 +255,91 @@ class AppStrings {
       AppLanguage.en: 'correct',
     },
     'vocab_done': {AppLanguage.vi: 'Xong', AppLanguage.en: 'Done'},
+    'writing_title': {AppLanguage.vi: 'Luyện viết', AppLanguage.en: 'Writing'},
+    'writing_subtitle': {
+      AppLanguage.vi: 'Gõ tiếng Anh, chấm điểm tự động',
+      AppLanguage.en: 'Type in English, get graded automatically',
+    },
+    'writing_mode_vocab_title': {
+      AppLanguage.vi: 'Từ vựng',
+      AppLanguage.en: 'Vocabulary',
+    },
+    'writing_mode_vocab_desc': {
+      AppLanguage.vi: 'Xem nghĩa tiếng Việt, gõ lại từ tiếng Anh',
+      AppLanguage.en: 'See the Vietnamese meaning, type the English word',
+    },
+    'writing_mode_paragraph_title': {
+      AppLanguage.vi: 'Đoạn văn',
+      AppLanguage.en: 'Paragraph',
+    },
+    'writing_mode_paragraph_desc': {
+      AppLanguage.vi: 'Dịch đoạn văn ngắn sang tiếng Anh, đủ các thì',
+      AppLanguage.en: 'Translate a short paragraph, covering every tense',
+    },
+    'writing_vocab_pick_topic': {
+      AppLanguage.vi: 'Chọn 1 chủ đề để bắt đầu',
+      AppLanguage.en: 'Pick a topic to start',
+    },
+    'writing_vocab_type_for': {
+      AppLanguage.vi: 'GÕ TỪ TIẾNG ANH CHO',
+      AppLanguage.en: 'TYPE THE ENGLISH WORD FOR',
+    },
+    'writing_vocab_hint': {
+      AppLanguage.vi: 'Gõ từ tiếng Anh...',
+      AppLanguage.en: 'Type the English word...',
+    },
+    'writing_check_button': {
+      AppLanguage.vi: 'Kiểm tra',
+      AppLanguage.en: 'Check',
+    },
+    'writing_result_correct': {
+      AppLanguage.vi: 'Chính xác!',
+      AppLanguage.en: 'Correct!',
+    },
+    'writing_result_close': {
+      AppLanguage.vi: 'Gần đúng, sai chính tả',
+      AppLanguage.en: 'Close, spelling mistake',
+    },
+    'writing_result_wrong': {
+      AppLanguage.vi: 'Sai rồi, đáp án đúng là',
+      AppLanguage.en: 'Wrong, the correct answer is',
+    },
+    'writing_paragraph_pick_hint': {
+      AppLanguage.vi: 'Chọn 1 đoạn văn để dịch',
+      AppLanguage.en: 'Pick a paragraph to translate',
+    },
+    'writing_sentence_count': {
+      AppLanguage.vi: 'câu',
+      AppLanguage.en: 'sentences',
+    },
+    'writing_paragraph_hint': {
+      AppLanguage.vi: 'Dịch từng câu sang tiếng Anh rồi bấm Chấm điểm',
+      AppLanguage.en: 'Translate each sentence, then tap Grade',
+    },
+    'writing_paragraph_type_hint': {
+      AppLanguage.vi: 'Gõ bản dịch tiếng Anh...',
+      AppLanguage.en: 'Type the English translation...',
+    },
+    'writing_overall_score': {
+      AppLanguage.vi: 'Điểm tổng',
+      AppLanguage.en: 'Overall score',
+    },
+    'writing_grade_button': {
+      AppLanguage.vi: 'Chấm điểm',
+      AppLanguage.en: 'Grade',
+    },
+    'writing_regrade_button': {
+      AppLanguage.vi: 'Chấm lại',
+      AppLanguage.en: 'Grade again',
+    },
+    'writing_correct_answer_label': {
+      AppLanguage.vi: 'Đáp án đúng',
+      AppLanguage.en: 'Correct answer',
+    },
+    'writing_tense_label': {
+      AppLanguage.vi: 'Thì ngữ pháp',
+      AppLanguage.en: 'Tense',
+    },
     'vocab_add_to_daily': {
       AppLanguage.vi: 'Học hôm nay',
       AppLanguage.en: 'Learn today',

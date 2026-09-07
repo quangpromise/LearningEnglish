@@ -18,6 +18,7 @@ import '../../toeic/presentation/toeic_home_screen.dart';
 import '../../translation/presentation/dictionary_popup.dart';
 import '../../vocabulary/presentation/vocabulary_topics_screen.dart';
 import '../../wealth/presentation/service_expiry_banner.dart';
+import '../../writing/presentation/writing_home_screen.dart';
 
 /// Man Home - da bo han tab Menu rieng (xem root_shell.dart): moi tinh nang
 /// (ke ca nhung thu truoc gom trong Menu: Doc sach, Do vui, Fitness, Crypto,
@@ -86,10 +87,10 @@ class HomeScreen extends ConsumerWidget {
                         openAppPopup(context, const ReadingLibraryScreen()),
                   ),
                   _CategoryItemData(
-                    icon: Icons.extension_rounded,
-                    label: ref.tr('quiz_title'),
+                    icon: Icons.edit_note_rounded,
+                    label: ref.tr('writing_title'),
                     onTap: () =>
-                        openAppPopup(context, const QuizCategoryScreen()),
+                        openAppPopup(context, const WritingHomeScreen()),
                   ),
                 ],
               ),
@@ -132,6 +133,16 @@ class HomeScreen extends ConsumerWidget {
                     icon: Icons.public_rounded,
                     label: ref.tr('ielts_title'),
                     onTap: () => openAppPopup(context, const IeltsHomeScreen()),
+                  ),
+                  _CategoryItemData(
+                    // "Do vui" chuyen tu nhom "Doc viet" sang chung box voi
+                    // Luyen thi TOEIC/IELTS theo yeu cau - cung la dang bai
+                    // tap trac nghiem tu cham diem, hop nhom hon la o nhom
+                    // tu vung/ngu phap/doc sach thuan tuy.
+                    icon: Icons.extension_rounded,
+                    label: ref.tr('quiz_title'),
+                    onTap: () =>
+                        openAppPopup(context, const QuizCategoryScreen()),
                   ),
                 ],
               ),
