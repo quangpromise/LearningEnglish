@@ -1258,6 +1258,18 @@ class AppStrings {
       AppLanguage.vi: 'Gia hạn',
       AppLanguage.en: 'Renew',
     },
+    'wealth_service_history_toggle': {
+      AppLanguage.vi: 'Lịch sử gia hạn',
+      AppLanguage.en: 'Renewal history',
+    },
+    'wealth_service_vs_previous_renewal': {
+      AppLanguage.vi: 'so với lần gia hạn trước',
+      AppLanguage.en: 'vs previous renewal',
+    },
+    'wealth_service_no_previous_renewal': {
+      AppLanguage.vi: 'Chưa có lần gia hạn trước để so sánh',
+      AppLanguage.en: 'No previous renewal to compare',
+    },
     'wealth_service_will_assign_to': {
       AppLanguage.vi: 'Sẽ gán cho:',
       AppLanguage.en: 'Will be assigned to:',

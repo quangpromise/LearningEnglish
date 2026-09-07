@@ -216,12 +216,20 @@ class _AssignOption extends StatelessWidget {
   }
 }
 
-class _ServiceCard extends ConsumerWidget {
+class _ServiceCard extends ConsumerStatefulWidget {
   const _ServiceCard({required this.service});
   final RecurringService service;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_ServiceCard> createState() => _ServiceCardState();
+}
+
+class _ServiceCardState extends ConsumerState<_ServiceCard> {
+  bool _historyExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final service = widget.service;
     final daysLeft = service.daysLeft;
     final isUrgent = daysLeft <= service.reminderLeadDays;
     return Dismissible(
@@ -286,6 +294,20 @@ class _ServiceCard extends ConsumerWidget {
                     ),
                   ),
                 ),
+                GestureDetector(
+                  onTap: () =>
+                      setState(() => _historyExpanded = !_historyExpanded),
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: Icon(
+                      Icons.history_rounded,
+                      size: 16,
+                      color: _historyExpanded
+                          ? AppColors.wealthAccent
+                          : AppColors.textMuted,
+                    ),
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 4),
@@ -329,6 +351,10 @@ class _ServiceCard extends ConsumerWidget {
                 ),
               ),
             ],
+            if (_historyExpanded) ...[
+              const SizedBox(height: 10),
+              _ServiceHistorySection(serviceId: service.id),
+            ],
             const SizedBox(height: 10),
             SizedBox(
               width: double.infinity,
@@ -342,6 +368,139 @@ class _ServiceCard extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Lich su gia han cua 1 dich vu + so sanh so tien lan gia han gan nhat voi
+/// lan truoc do - dung "lan gia han truoc" thay vi "thang truoc" theo lich
+/// vi nhieu dich vu (Gym Elite goi nam, 4G Viettel goi thang...) khong renew
+/// dung moi thang, so sanh theo thang se ra 0 sai lech gay hieu lam.
+class _ServiceHistorySection extends ConsumerWidget {
+  const _ServiceHistorySection({required this.serviceId});
+  final String serviceId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final renewalsAsync = ref.watch(serviceRenewalsProvider);
+    return renewalsAsync.when(
+      loading: () => const Padding(
+        padding: EdgeInsets.symmetric(vertical: 10),
+        child: Center(
+          child: SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: AppColors.wealthAccent,
+            ),
+          ),
+        ),
+      ),
+      error: (_, _) => Text(
+        ref.tr('wealth_load_error'),
+        style: AppTextStyles.muted(size: 11),
+      ),
+      data: (all) {
+        final history =
+            all.where((r) => r.serviceId == serviceId).toList()
+              ..sort((a, b) => b.occurredAt.compareTo(a.occurredAt));
+        if (history.isEmpty) {
+          return Text(
+            ref.tr('wealth_report_no_data'),
+            style: AppTextStyles.muted(size: 11),
+          );
+        }
+        return Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: AppColors.glassFill,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.glassBorder),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                ref.tr('wealth_service_history_toggle'),
+                style: AppTextStyles.body(size: 11.5, weight: FontWeight.w800),
+              ),
+              const SizedBox(height: 6),
+              if (history.length >= 2)
+                _RenewalDeltaLabel(
+                  current: history[0].amount,
+                  previous: history[1].amount,
+                )
+              else
+                Text(
+                  ref.tr('wealth_service_no_previous_renewal'),
+                  style: AppTextStyles.muted(size: 10.5),
+                ),
+              const SizedBox(height: 8),
+              for (final r in history)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          formatDateMdy(r.occurredAt),
+                          style: AppTextStyles.muted(size: 11),
+                        ),
+                      ),
+                      Text(
+                        formatByCurrency(r.amount, r.currency),
+                        style: AppTextStyles.body(
+                          size: 11.5,
+                          weight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _RenewalDeltaLabel extends ConsumerWidget {
+  const _RenewalDeltaLabel({required this.current, required this.previous});
+  final double current;
+  final double previous;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (previous == 0) {
+      return Text(
+        ref.tr('wealth_service_no_previous_renewal'),
+        style: AppTextStyles.muted(size: 10.5),
+      );
+    }
+    final percent = (current - previous) / previous * 100;
+    final increased = percent >= 0;
+    final color = increased ? AppColors.pink : AppColors.teal;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          increased ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
+          size: 12,
+          color: color,
+        ),
+        const SizedBox(width: 2),
+        Text(
+          '${percent.abs().toStringAsFixed(1)}% ${ref.tr('wealth_service_vs_previous_renewal')}',
+          style: TextStyle(
+            fontSize: 10.5,
+            fontWeight: FontWeight.w700,
+            color: color,
+            decoration: TextDecoration.none,
+          ),
+        ),
+      ],
     );
   }
 }
