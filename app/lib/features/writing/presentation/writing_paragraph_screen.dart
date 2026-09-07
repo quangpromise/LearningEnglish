@@ -47,21 +47,25 @@ class _WritingParagraphScreenState
       targetEn: _current.en,
       userInput: _controller.text,
     );
-    setState(() => _result = result);
-    Future.delayed(const Duration(milliseconds: 1400), () {
-      if (!mounted) return;
+    setState(() {
+      _result = result;
       _results.add(result);
-      if (_index < widget.paragraph.sentences.length - 1) {
-        setState(() {
-          _index++;
-          _result = null;
-          _controller.clear();
-        });
-        _focusNode.requestFocus();
-      } else {
-        setState(() => _finished = true);
-      }
     });
+  }
+
+  /// Nguoi dung tu bam de chuyen cau (khong con tu dong chuyen sau khi
+  /// cham) - theo yeu cau: xem xong ket qua/giai thich roi moi qua cau moi.
+  void _next() {
+    if (_index < widget.paragraph.sentences.length - 1) {
+      setState(() {
+        _index++;
+        _result = null;
+        _controller.clear();
+      });
+      _focusNode.requestFocus();
+    } else {
+      setState(() => _finished = true);
+    }
   }
 
   @override
@@ -192,7 +196,13 @@ class _WritingParagraphScreenState
             SizedBox(
               width: double.infinity,
               child: PillButton(
-                label: ref.tr('writing_check_button'),
+                label: ref.tr(
+                  _result == null
+                      ? 'writing_check_button'
+                      : (_index < sentences.length - 1
+                            ? 'writing_next_button'
+                            : 'writing_see_result_button'),
+                ),
                 accentGradient: LinearGradient(
                   colors: [
                     AppColors.teal,
@@ -200,7 +210,7 @@ class _WritingParagraphScreenState
                   ],
                 ),
                 accentColor: AppColors.teal,
-                onTap: _result == null ? _submit : null,
+                onTap: _result == null ? _submit : _next,
               ),
             ),
           ],

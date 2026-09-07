@@ -292,6 +292,14 @@ class AppStrings {
       AppLanguage.vi: 'Kiểm tra',
       AppLanguage.en: 'Check',
     },
+    'writing_next_button': {
+      AppLanguage.vi: 'Câu tiếp theo',
+      AppLanguage.en: 'Next',
+    },
+    'writing_see_result_button': {
+      AppLanguage.vi: 'Xem kết quả',
+      AppLanguage.en: 'See result',
+    },
     'writing_result_correct': {
       AppLanguage.vi: 'Chính xác!',
       AppLanguage.en: 'Correct!',

@@ -52,21 +52,25 @@ class _WritingVocabQuizScreenState
   void _submit() {
     if (_result != null) return;
     final result = scoreVocabAnswer(_controller.text, _current.en);
-    setState(() => _result = result);
-    Future.delayed(const Duration(milliseconds: 900), () {
-      if (!mounted) return;
+    setState(() {
+      _result = result;
       _results.add(result);
-      if (_index < _order.length - 1) {
-        setState(() {
-          _index++;
-          _result = null;
-          _controller.clear();
-        });
-        _focusNode.requestFocus();
-      } else {
-        setState(() => _finished = true);
-      }
     });
+  }
+
+  /// Nguoi dung tu bam de chuyen cau (khong con tu dong chuyen sau khi
+  /// cham) - theo yeu cau: xem xong ket qua/giai thich roi moi qua cau moi.
+  void _next() {
+    if (_index < _order.length - 1) {
+      setState(() {
+        _index++;
+        _result = null;
+        _controller.clear();
+      });
+      _focusNode.requestFocus();
+    } else {
+      setState(() => _finished = true);
+    }
   }
 
   @override
@@ -208,8 +212,14 @@ class _WritingVocabQuizScreenState
             SizedBox(
               width: double.infinity,
               child: PillButton(
-                label: ref.tr('writing_check_button'),
-                onTap: _result == null ? _submit : null,
+                label: ref.tr(
+                  _result == null
+                      ? 'writing_check_button'
+                      : (_index < _order.length - 1
+                            ? 'writing_next_button'
+                            : 'writing_see_result_button'),
+                ),
+                onTap: _result == null ? _submit : _next,
               ),
             ),
           ],
