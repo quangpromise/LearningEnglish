@@ -9,6 +9,7 @@ import '../../../core/utils/currency_format.dart';
 import '../../crypto/data/crypto_currency.dart';
 import '../../crypto/presentation/crypto_portfolio_screen.dart';
 import '../../crypto/presentation/crypto_providers.dart';
+import 'foreign_currency_portfolio_screen.dart';
 import 'metal_portfolio_screen.dart';
 import 'real_estate_portfolio_screen.dart';
 import 'stock_portfolio_screen.dart';
@@ -127,8 +128,32 @@ class WalletInvestmentAssetsTab extends ConsumerWidget {
       (s, h) => s + (h.manualValue ?? 0),
     );
 
+    // Ngoai te: dinh gia theo ty gia "Mua chuyen khoan" Vietcombank thoi gian
+    // thuc (ngan hang mua lai ngoai te ban dang giu -> VND ban thuc nhan
+    // duoc) - xem foreign_currency_portfolio_screen.dart.
+    final currencyHoldings =
+        ref.watch(wealthHoldingsProvider('foreign_currency')).valueOrNull ?? [];
+    double currencyValueVnd = 0;
+    double currencyCostVnd = 0;
+    for (final h in currencyHoldings) {
+      final qty = h.quantity ?? 0;
+      final avgCost = h.avgCost ?? 0;
+      currencyCostVnd += avgCost * qty;
+      final rate = snap?.rateFor(h.symbol ?? '');
+      final price = rate?.buyTransfer ?? rate?.buyCash ?? rate?.sell;
+      if (price != null) currencyValueVnd += price * qty;
+    }
+    final currencyPnlVnd = currencyValueVnd - currencyCostVnd;
+    final currencyPnlPercent = currencyCostVnd == 0
+        ? null
+        : currencyPnlVnd / currencyCostVnd * 100;
+
     final total =
-        cryptoValueVnd + stockValueVnd + metalValueVnd + realEstateValueVnd;
+        cryptoValueVnd +
+        stockValueVnd +
+        metalValueVnd +
+        realEstateValueVnd +
+        currencyValueVnd;
 
     // Moi gia tri duoc luu ben trong bang VND - khi nguoi dung chon xem
     // theo USD thi chia lai cho ty gia (usdVnd), bo qua neu ty gia chua
@@ -234,6 +259,22 @@ class WalletInvestmentAssetsTab extends ConsumerWidget {
           title: ref.tr('wealth_investments_real_estate_title'),
           value: hidden ? null : display(realEstateValueVnd),
           onTap: () => openAppPopup(context, const RealEstatePortfolioScreen()),
+        ),
+        const SizedBox(height: 10),
+        _InvestmentTile(
+          icon: Icons.currency_exchange_rounded,
+          color: AppColors.blue,
+          title: ref.tr('wealth_investments_currency_title'),
+          value: hidden ? null : display(currencyValueVnd),
+          changeText: hidden || currencyCostVnd == 0
+              ? null
+              : '${currencyPnlVnd >= 0 ? '+' : ''}${display(currencyPnlVnd)}'
+                    '${currencyPnlPercent == null ? '' : ' (${currencyPnlPercent >= 0 ? '+' : ''}${currencyPnlPercent.toStringAsFixed(1)}%)'}',
+          changeColor: currencyCostVnd == 0
+              ? null
+              : (currencyPnlVnd >= 0 ? AppColors.teal : AppColors.pink),
+          onTap: () =>
+              openAppPopup(context, const ForeignCurrencyPortfolioScreen()),
         ),
       ],
     );

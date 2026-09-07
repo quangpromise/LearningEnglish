@@ -83,33 +83,72 @@ async function fetchGold(): Promise<{
   }
 }
 
-async function fetchUsdVnd(): Promise<{ rate: number | null; source: string }> {
+interface VcbRate {
+  code: string;
+  name: string;
+  buyCash: number | null;
+  buyTransfer: number | null;
+  sell: number | null;
+}
+
+/// Parse TOAN BO cac dong <Exrate> trong XML Vietcombank (khong chi USD) -
+/// dung cho tinh nang Ngoai te o Vi > Tai san dau tu, hien du ca 3 muc gia
+/// nhu ngan hang niem yet: Mua tien mat/Mua chuyen khoan/Ban ra. Xac nhan
+/// cau truc thuc te bang curl truc tiep vao endpoint nay (khong doc tu tai
+/// lieu cu): moi dong dang
+/// `<Exrate CurrencyCode="USD" CurrencyName="..." Buy="25,800.00"
+/// Transfer="25,830.00" Sell="26,210.00" />` - mot so dong hiem giao dich
+/// tien mat co Buy="-" (khong co gia mua tien mat, chi co Transfer/Sell).
+async function fetchVcbRates(): Promise<{
+  rates: VcbRate[];
+  usdVnd: number | null;
+}> {
+  const res = await fetch(
+    "https://portal.vietcombank.com.vn/Usercontrols/TVPortal.TyGia/pXML.aspx?b=10",
+    { signal: AbortSignal.timeout(5000) },
+  );
+  if (!res.ok) throw new Error(`Vietcombank status ${res.status}`);
+  const xml = await res.text();
+  const toNum = (s: string | undefined) => {
+    if (!s || s.trim() === "-") return null;
+    const n = Number(s.replace(/,/g, ""));
+    return n > 0 ? n : null;
+  };
+  const rates: VcbRate[] = [];
+  const rowRe = /<Exrate\s+([^>]+)\/>/g;
+  let m: RegExpExecArray | null;
+  while ((m = rowRe.exec(xml)) !== null) {
+    const attrs = m[1];
+    const attr = (name: string) => {
+      const am = attrs.match(new RegExp(`${name}="([^"]*)"`));
+      return am ? am[1] : undefined;
+    };
+    const code = attr("CurrencyCode");
+    if (!code) continue;
+    rates.push({
+      code,
+      name: (attr("CurrencyName") ?? "").trim(),
+      buyCash: toNum(attr("Buy")),
+      buyTransfer: toNum(attr("Transfer")),
+      sell: toNum(attr("Sell")),
+    });
+  }
+  const usd = rates.find((r) => r.code === "USD");
+  return { rates, usdVnd: usd?.buyTransfer ?? null };
+}
+
+async function fetchUsdVndFallback(): Promise<
+  { rate: number | null; source: string }
+> {
   try {
-    const res = await fetch(
-      "https://portal.vietcombank.com.vn/Usercontrols/TVPortal.TyGia/pXML.aspx?b=10",
-      { signal: AbortSignal.timeout(5000) },
-    );
-    if (!res.ok) throw new Error(`Vietcombank status ${res.status}`);
-    const xml = await res.text();
-    const match = xml.match(
-      /CurrencyCode="USD"[^>]*Transfer="([\d,.]+)"/,
-    );
-    if (match) {
-      const rate = Number(match[1].replace(/,/g, ""));
-      if (rate > 0) return { rate, source: "vietcombank" };
-    }
-    throw new Error("Khong parse duoc ty gia USD tu XML Vietcombank");
-  } catch (_err) {
-    try {
-      const res = await fetch("https://open.er-api.com/v6/latest/USD", {
-        signal: AbortSignal.timeout(5000),
-      });
-      const json = await res.json();
-      const rate = Number(json.rates?.VND);
-      return { rate: rate > 0 ? rate : null, source: "open.er-api.com" };
-    } catch (fallbackErr) {
-      return { rate: null, source: `error: ${fallbackErr}` };
-    }
+    const res = await fetch("https://open.er-api.com/v6/latest/USD", {
+      signal: AbortSignal.timeout(5000),
+    });
+    const json = await res.json();
+    const rate = Number(json.rates?.VND);
+    return { rate: rate > 0 ? rate : null, source: "open.er-api.com" };
+  } catch (fallbackErr) {
+    return { rate: null, source: `error: ${fallbackErr}` };
   }
 }
 
@@ -128,14 +167,26 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  const [gold, fx] = await Promise.all([fetchGold(), fetchUsdVnd()]);
+  const [gold, vcb] = await Promise.all([
+    fetchGold(),
+    fetchVcbRates().catch(() => null),
+  ]);
+  // VCB khong len duoc -> chi fallback lai USD/VND don le (mid rate, KHONG
+  // phai gia ngan hang) cho cac tinh nang cu (Bao cao/Crypto/Co phieu quoc
+  // te) van chay duoc; danh sach ngoai te (rates) danh cho man Ngoai te dau
+  // tu se rong trong truong hop hiem nay - UI tu hien "chua co du lieu".
+  const usdVnd = vcb?.usdVnd ??
+    (await fetchUsdVndFallback().then((f) => f.rate));
+  const fxSource = vcb ? "vietcombank" : "open.er-api.com";
 
   const result = {
     goldSjc: gold.sjc,
     goldPnj: gold.pnj,
     goldSource: gold.source,
-    usdVnd: fx.rate,
-    fxSource: fx.source,
+    usdVnd,
+    fxSource,
+    rates: vcb?.rates ?? [],
+    ratesSource: vcb ? "vietcombank" : null,
     updatedAt: new Date().toISOString(),
   };
 

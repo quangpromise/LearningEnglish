@@ -937,6 +937,39 @@ class AppStrings {
       AppLanguage.vi: 'Giá vốn',
       AppLanguage.en: 'Cost price',
     },
+    'wealth_investments_currency_title': {
+      AppLanguage.vi: 'Ngoại tệ',
+      AppLanguage.en: 'Foreign currency',
+    },
+    'wealth_currency_bank_note': {
+      AppLanguage.vi: 'Tỷ giá Vietcombank thời gian thực, định giá theo giá ngân hàng mua chuyển khoản.',
+      AppLanguage.en:
+          'Real-time Vietcombank rate, valued at the bank buy-transfer price.',
+    },
+    'wealth_currency_rate_buy_cash': {
+      AppLanguage.vi: 'Mua tiền mặt',
+      AppLanguage.en: 'Buy cash',
+    },
+    'wealth_currency_rate_buy_transfer': {
+      AppLanguage.vi: 'Mua chuyển khoản',
+      AppLanguage.en: 'Buy transfer',
+    },
+    'wealth_currency_rate_sell': {
+      AppLanguage.vi: 'Bán ra',
+      AppLanguage.en: 'Sell',
+    },
+    'wealth_currency_add_new': {
+      AppLanguage.vi: '+ Thêm ngoại tệ khác',
+      AppLanguage.en: '+ Add another currency',
+    },
+    'wealth_currency_pick_title': {
+      AppLanguage.vi: 'Chọn loại ngoại tệ',
+      AppLanguage.en: 'Choose currency',
+    },
+    'wealth_currency_rates_loading': {
+      AppLanguage.vi: 'Chưa tải được tỷ giá ngân hàng, thử lại sau.',
+      AppLanguage.en: 'Bank rates not loaded yet, try again later.',
+    },
     'wealth_investments_real_estate_title': {
       AppLanguage.vi: 'Nhà đất',
       AppLanguage.en: 'Real estate',

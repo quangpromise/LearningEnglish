@@ -12,6 +12,7 @@ import '../../crypto/presentation/crypto_providers.dart';
 import '../../crypto/presentation/okx_only_coin_row.dart';
 import '../data/exchange_rate_repository.dart';
 import '../data/stocks_intl_repository.dart';
+import 'market_currency_tab.dart';
 import 'market_metals_tab.dart';
 import 'market_stocks_tab.dart';
 
@@ -30,7 +31,7 @@ class MarketScreen extends StatefulWidget {
   State<MarketScreen> createState() => _MarketScreenState();
 }
 
-enum _MarketCategory { crypto, stocks, metals }
+enum _MarketCategory { crypto, stocks, metals, currency }
 
 class _MarketScreenState extends State<MarketScreen>
     with SingleTickerProviderStateMixin {
@@ -162,6 +163,8 @@ class _MarketScreenState extends State<MarketScreen>
         return const MarketStocksTab();
       case _MarketCategory.metals:
         return const MarketMetalsTab();
+      case _MarketCategory.currency:
+        return const MarketCurrencyTab();
     }
   }
 }
@@ -179,6 +182,7 @@ class _CategoryChipRow extends ConsumerWidget {
       (_MarketCategory.crypto, 'Crypto'),
       (_MarketCategory.stocks, ref.tr('wealth_investments_stocks_title')),
       (_MarketCategory.metals, ref.tr('wealth_investments_metal_title')),
+      (_MarketCategory.currency, ref.tr('wealth_investments_currency_title')),
     ];
     // Vien chung boc quanh CA 4 chip - phan biet ro day la nhom "chon loai
     // thi truong" (cap tren), khac voi cac chip con rieng cua tung loai (vd
@@ -232,7 +236,7 @@ class _CategoryChipRow extends ConsumerWidget {
   }
 }
 
-enum _WatchlistCategory { crypto, metals, stocks }
+enum _WatchlistCategory { crypto, metals, currency, stocks }
 
 /// Watchlist chia 3 tab rieng (Crypto/Kim loai hiem/Co phieu) thay vi gop
 /// chung 1 danh sach dai - de tim 1 muc cu the nhanh hon khi theo doi nhieu
@@ -259,6 +263,10 @@ class _WatchlistTabState extends State<_WatchlistTab> {
               (
                 _WatchlistCategory.metals,
                 ref.tr('wealth_investments_metal_title'),
+              ),
+              (
+                _WatchlistCategory.currency,
+                ref.tr('wealth_investments_currency_title'),
               ),
               (_WatchlistCategory.stocks, ref.tr('wealth_watchlist_stocks')),
             ];
@@ -324,6 +332,7 @@ class _WatchlistTabState extends State<_WatchlistTab> {
           child: switch (_category) {
             _WatchlistCategory.crypto => const _CryptoWatchlistSection(),
             _WatchlistCategory.metals => const _MetalsWatchlistSection(),
+            _WatchlistCategory.currency => const _CurrencyWatchlistSection(),
             _WatchlistCategory.stocks => const _StocksWatchlistSection(),
           },
         ),
@@ -409,6 +418,77 @@ class _MetalsWatchlistSection extends ConsumerWidget {
       separatorBuilder: (_, _) => const SizedBox(height: 8),
       itemBuilder: (context, i) =>
           _MetalWatchRow(watchKey: watchedMetalKeys[i], snap: snap),
+    );
+  }
+}
+
+class _CurrencyWatchlistSection extends ConsumerWidget {
+  const _CurrencyWatchlistSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final assetWatchlist = ref.watch(assetWatchlistProvider);
+    final watchedCodes = assetWatchlist
+        .where((k) => k.startsWith('currency:'))
+        .map((k) => k.substring('currency:'.length))
+        .toList();
+    final snap = ref.watch(wealthVnAssetsProvider).valueOrNull;
+
+    if (watchedCodes.isEmpty) return _emptyWatchlist(ref);
+    return ListView.separated(
+      itemCount: watchedCodes.length,
+      separatorBuilder: (_, _) => const SizedBox(height: 8),
+      itemBuilder: (context, i) =>
+          _CurrencyWatchRow(code: watchedCodes[i], snap: snap),
+    );
+  }
+}
+
+class _CurrencyWatchRow extends ConsumerWidget {
+  const _CurrencyWatchRow({required this.code, required this.snap});
+  final String code;
+  final WealthVnAssetSnapshot? snap;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final rate = snap?.rateFor(code);
+    final price = rate?.buyTransfer ?? rate?.buyCash ?? rate?.sell;
+    return GlowBox(
+      borderRadius: 16,
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => ref
+                .read(assetWatchlistProvider.notifier)
+                .toggle('currency:$code'),
+            child: const Padding(
+              padding: EdgeInsets.only(right: 10),
+              child: Icon(
+                Icons.star_rounded,
+                size: 20,
+                color: AppColors.wealthAccent,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              code,
+              style: AppTextStyles.body(weight: FontWeight.w800),
+            ),
+          ),
+          if (price != null)
+            Text(
+              formatVnd(price),
+              style: AppTextStyles.body(weight: FontWeight.w700, size: 12),
+            )
+          else
+            const SizedBox(
+              width: 14,
+              height: 14,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+        ],
+      ),
     );
   }
 }
