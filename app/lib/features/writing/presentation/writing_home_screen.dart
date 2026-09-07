@@ -57,37 +57,31 @@ class WritingHomeScreen extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 22),
-            Expanded(
-              child: Column(
-                children: [
-                  Expanded(
-                    child: _WritingModeCard(
-                      icon: Icons.style_rounded,
-                      color: AppColors.purple,
-                      title: ref.tr('writing_mode_vocab_title'),
-                      desc: ref.tr('writing_mode_vocab_desc'),
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const WritingVocabTopicScreen(),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Expanded(
-                    child: _WritingModeCard(
-                      icon: Icons.short_text_rounded,
-                      color: AppColors.teal,
-                      title: ref.tr('writing_mode_paragraph_title'),
-                      desc: ref.tr('writing_mode_paragraph_desc'),
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const WritingParagraphListScreen(),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+            // Truoc day boc Expanded(Column(Expanded, Expanded)) khien 2 the
+            // bi keo gian chiem het chieu cao con lai cua man hinh (rong
+            // rất nhieu khoang trong ben duoi text) - gio de the tu co kich
+            // thuoc theo noi dung, gon gang o dau trang.
+            _WritingModeCard(
+              icon: Icons.style_rounded,
+              color: AppColors.purple,
+              title: ref.tr('writing_mode_vocab_title'),
+              desc: ref.tr('writing_mode_vocab_desc'),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const WritingVocabTopicScreen(),
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
+            _WritingModeCard(
+              icon: Icons.short_text_rounded,
+              color: AppColors.teal,
+              title: ref.tr('writing_mode_paragraph_title'),
+              desc: ref.tr('writing_mode_paragraph_desc'),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const WritingParagraphListScreen(),
+                ),
               ),
             ),
           ],

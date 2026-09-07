@@ -133,8 +133,15 @@ class LearnEnglishMusicApp extends StatelessWidget {
       // KHONG con o day - da chuyen vao giua thanh menu duoi cua tung khu
       // vuc (root_shell.dart / mini_app_bottom_nav.dart) thay vi noi rieng
       // tren toan man hinh.
-      builder: (context, child) =>
-          Stack(children: [?child, const AssistiveFabOverlay()]),
+      // GestureDetector ngoai cung: cham ra ngoai o nhap (bat ky dau tren
+      // man hinh, khong rieng man nao) se dong ban phim - HitTestBehavior.
+      // translucent de KHONG chan cac nut/GestureDetector khac ben duoi
+      // (ca 2 deu nhan duoc tap, chi cai nay lam them 1 viec la unfocus).
+      builder: (context, child) => GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        child: Stack(children: [?child, const AssistiveFabOverlay()]),
+      ),
       theme: ThemeData(
         useMaterial3: true,
         brightness: Brightness.dark,

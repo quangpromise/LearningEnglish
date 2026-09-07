@@ -316,6 +316,10 @@ class AppStrings {
       AppLanguage.vi: 'Dịch từng câu sang tiếng Anh rồi bấm Chấm điểm',
       AppLanguage.en: 'Translate each sentence, then tap Grade',
     },
+    'writing_paragraph_translate_for': {
+      AppLanguage.vi: 'DỊCH SANG TIẾNG ANH',
+      AppLanguage.en: 'TRANSLATE TO ENGLISH',
+    },
     'writing_paragraph_type_hint': {
       AppLanguage.vi: 'Gõ bản dịch tiếng Anh...',
       AppLanguage.en: 'Type the English translation...',
