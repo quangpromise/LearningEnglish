@@ -301,7 +301,13 @@ class _TaskCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final tint = plannerSectionTint(task.appSection);
+    final hasCustomIcon = task.icon != PlannerTaskIcon.none;
+    final tint = hasCustomIcon
+        ? task.icon.color
+        : plannerSectionTint(task.appSection);
+    final iconData = hasCustomIcon
+        ? task.icon.iconData
+        : plannerSectionIcon(task.appSection);
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -329,11 +335,7 @@ class _TaskCard extends ConsumerWidget {
                 color: tint.withValues(alpha: 0.18),
                 borderRadius: BorderRadius.circular(9),
               ),
-              child: Icon(
-                plannerSectionIcon(task.appSection),
-                size: 15,
-                color: tint,
-              ),
+              child: Icon(iconData, size: 15, color: tint),
             ),
             const SizedBox(width: 8),
             Expanded(

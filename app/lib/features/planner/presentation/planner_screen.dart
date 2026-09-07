@@ -55,6 +55,16 @@ String _monthLabel(DateTime d, AppLanguage lang) {
 String _weekdayShort(DateTime d, AppLanguage lang) =>
     (lang == AppLanguage.vi ? _weekdaysVi : _weekdaysEn)[d.weekday - 1];
 
+/// Icon nut chuong o thanh tren cung - phai khop CHINH XAC voi 4 icon dung
+/// trong _ModeCard cua planner_settings_sheet.dart de nguoi dung nhan ra
+/// ngay dang o kieu nhac nao ma khong can mo cai dat.
+IconData _reminderModeIcon(ReminderMode mode) => switch (mode) {
+  ReminderMode.both => Icons.notifications_active_rounded,
+  ReminderMode.vibrateOnly => Icons.vibration_rounded,
+  ReminderMode.soundOnly => Icons.volume_up_rounded,
+  ReminderMode.off => Icons.notifications_off_rounded,
+};
+
 /// Man "Lap ke hoach" chinh - mo dang POPUP (bottom sheet 94%, giong moi
 /// tinh nang khac trong app qua openAppPopup, xem app_popup.dart), CHAM RA
 /// NGOAI se tu dong dong vi showModalBottomSheet mac dinh la dismissible.
@@ -75,6 +85,16 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
   @override
   void initState() {
     super.initState();
+    // Moi lan mo lai man Lap ke hoach LUON quay ve hom nay, khong giu ngay
+    // da xem lan truoc (yeu cau: thoat man hinh quay lai luon hien ngay
+    // hien tai) - dat lai state truoc khi doc de _openAddSheet dung dung
+    // ngay hom nay.
+    final now = DateTime.now();
+    ref.read(plannerSelectedDateProvider.notifier).state = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    );
     if (widget.autoOpenAddSheet) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _openAddSheet());
     }
@@ -87,13 +107,35 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     super.dispose();
   }
 
-  List<DateTime> _dateWindow(DateTime center) =>
-      List.generate(21, (i) => center.add(Duration(days: i - 10)));
+  /// Tra ve TAT CA cac ngay trong thang cua [center] - cho phep vuot ngang
+  /// het thang thay vi chi 1 cua so +-10 ngay nhu truoc (yeu cau: "nen slide
+  /// ngang duoc het cac ngay trong thang").
+  List<DateTime> _dateWindow(DateTime center) {
+    final daysInMonth = DateTime(center.year, center.month + 1, 0).day;
+    return List.generate(
+      daysInMonth,
+      (i) => DateTime(center.year, center.month, i + 1),
+    );
+  }
+
+  /// Cong/tru [delta] thang, giu nguyen ngay trong thang neu thang moi van
+  /// co ngay do, khong thi ghim ve ngay cuoi thang moi (tranh DateTime tu
+  /// "tran" sang thang ke tiep khi vd ngay 31 + thang khong co ngay 31).
+  DateTime _addMonths(DateTime date, int delta) {
+    final total = date.year * 12 + (date.month - 1) + delta;
+    final year = total ~/ 12;
+    final month = total % 12 + 1;
+    final daysInMonth = DateTime(year, month + 1, 0).day;
+    final day = date.day > daysInMonth ? daysInMonth : date.day;
+    return DateTime(year, month, day);
+  }
 
   void _centerDateStrip() {
     if (!_dateScroll.hasClients) return;
-    // Uoc luong: 10 the "xa" ben trai (~40px+gap moi cai) truoc pill dang chon.
-    final estOffset = 10 * 46.0 - 90;
+    final selected = ref.read(plannerSelectedDateProvider);
+    // Uoc luong be rong trung binh 1 pill (~46px) nhan chi so ngay dang
+    // chon trong thang, tru di do lech de pill khong dinh sat mep trai.
+    final estOffset = (selected.day - 1) * 46.0 - 90;
     _dateScroll.jumpTo(
       estOffset.clamp(0, _dateScroll.position.maxScrollExtent),
     );
@@ -117,8 +159,17 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     final section = ref.watch(currentAppSectionProvider);
     final (gradient, glow) = plannerAccentFor(section);
     final selectedDate = ref.watch(plannerSelectedDateProvider);
+    final reminderMode = ref.watch(plannerReminderSettingsProvider).mode;
     final tasks = ref.watch(plannerTasksForSelectedDateProvider);
     final dates = _dateWindow(selectedDate);
+    // Doi thang (qua mui ten hoac reset ve hom nay) lam thay doi toan bo
+    // danh sach ngay trong _dateWindow - phai cuon lai ve dung vi tri ngay
+    // dang chon, khong the dua vao vi tri cuon cu.
+    ref.listen<DateTime>(plannerSelectedDateProvider, (prev, next) {
+      if (prev == null || prev.year != next.year || prev.month != next.month) {
+        WidgetsBinding.instance.addPostFrameCallback((_) => _centerDateStrip());
+      }
+    });
 
     return Container(
       decoration: const BoxDecoration(
@@ -152,7 +203,10 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                   ),
                 ),
                 _CircleIconButton(
-                  icon: Icons.notifications_rounded,
+                  // Icon doi theo dung 1 trong 4 kieu nhac dang chon trong
+                  // cai dat (Ca hai/Chi rung/Chi chuong/Tat) - xem
+                  // _ModeCard trong planner_settings_sheet.dart.
+                  icon: _reminderModeIcon(reminderMode),
                   onTap: () => showPlannerSettingsSheet(context),
                 ),
                 const SizedBox(width: 8),
@@ -172,13 +226,8 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                 _MonthChevron(
                   icon: Icons.chevron_left_rounded,
                   onTap: () =>
-                      ref
-                          .read(plannerSelectedDateProvider.notifier)
-                          .state = DateTime(
-                        selectedDate.year,
-                        selectedDate.month - 1,
-                        selectedDate.day,
-                      ),
+                      ref.read(plannerSelectedDateProvider.notifier).state =
+                          _addMonths(selectedDate, -1),
                 ),
                 const SizedBox(width: 8),
                 Text(
@@ -190,13 +239,8 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                   icon: Icons.chevron_right_rounded,
                   color: glow,
                   onTap: () =>
-                      ref
-                          .read(plannerSelectedDateProvider.notifier)
-                          .state = DateTime(
-                        selectedDate.year,
-                        selectedDate.month + 1,
-                        selectedDate.day,
-                      ),
+                      ref.read(plannerSelectedDateProvider.notifier).state =
+                          _addMonths(selectedDate, 1),
                 ),
               ],
             ),
@@ -214,7 +258,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                     d.year == selectedDate.year &&
                     d.month == selectedDate.month &&
                     d.day == selectedDate.day;
-                final dist = (i - 10).abs();
+                final dist = (d.day - selectedDate.day).abs();
                 return _DatePill(
                   date: d,
                   selected: isSelected,

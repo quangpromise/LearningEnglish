@@ -14,6 +14,7 @@ class PlannerTask {
     required this.end,
     this.status = PlannerTaskStatus.upcoming,
     this.reminderEnabled = false,
+    this.icon = PlannerTaskIcon.none,
   });
 
   final String id;
@@ -24,6 +25,12 @@ class PlannerTask {
   final PlannerTaskStatus status;
   final bool reminderEnabled;
 
+  /// Icon phan loai rieng (cong viec/game/thu gian/...), TACH BIET voi
+  /// [appSection] (van dung de loc theo mini-app + mau chrome). `none` =
+  /// hien icon mac dinh cua appSection nhu truoc day (tuong thich nguoc voi
+  /// du lieu da luu chua co truong nay).
+  final PlannerTaskIcon icon;
+
   PlannerTask copyWith({
     String? title,
     AppSection? appSection,
@@ -31,6 +38,7 @@ class PlannerTask {
     DateTime? end,
     PlannerTaskStatus? status,
     bool? reminderEnabled,
+    PlannerTaskIcon? icon,
   }) => PlannerTask(
     id: id,
     title: title ?? this.title,
@@ -39,6 +47,7 @@ class PlannerTask {
     end: end ?? this.end,
     status: status ?? this.status,
     reminderEnabled: reminderEnabled ?? this.reminderEnabled,
+    icon: icon ?? this.icon,
   );
 
   Map<String, dynamic> toJson() => {
@@ -49,6 +58,7 @@ class PlannerTask {
     'end': end.toIso8601String(),
     'status': status.name,
     'reminderEnabled': reminderEnabled,
+    'icon': icon.name,
   };
 
   factory PlannerTask.fromJson(Map<String, dynamic> json) => PlannerTask(
@@ -59,7 +69,36 @@ class PlannerTask {
     end: DateTime.parse(json['end'] as String),
     status: PlannerTaskStatus.values.byName(json['status'] as String),
     reminderEnabled: json['reminderEnabled'] as bool? ?? false,
+    icon: PlannerTaskIcon.values.byName(
+      json['icon'] as String? ?? PlannerTaskIcon.none.name,
+    ),
   );
+}
+
+/// Icon phan loai viec ngoai 3 app (English/Fitness/Wealth) - yeu cau them
+/// nhieu icon hon cho cac loai viec chung nhu game/cong viec/thu gian/khac.
+enum PlannerTaskIcon { none, work, game, relax, study, sleep, other }
+
+extension PlannerTaskIconX on PlannerTaskIcon {
+  IconData get iconData => switch (this) {
+    PlannerTaskIcon.none => Icons.circle,
+    PlannerTaskIcon.work => Icons.work_rounded,
+    PlannerTaskIcon.game => Icons.sports_esports_rounded,
+    PlannerTaskIcon.relax => Icons.spa_rounded,
+    PlannerTaskIcon.study => Icons.school_rounded,
+    PlannerTaskIcon.sleep => Icons.bedtime_rounded,
+    PlannerTaskIcon.other => Icons.label_rounded,
+  };
+
+  Color get color => switch (this) {
+    PlannerTaskIcon.none => Colors.transparent,
+    PlannerTaskIcon.work => const Color(0xFFFFA65C),
+    PlannerTaskIcon.game => const Color(0xFF8C6BFF),
+    PlannerTaskIcon.relax => const Color(0xFF5BE0D0),
+    PlannerTaskIcon.study => const Color(0xFF5B8CFF),
+    PlannerTaskIcon.sleep => const Color(0xFF9DA7C7),
+    PlannerTaskIcon.other => const Color(0xFFFF6B9D),
+  };
 }
 
 /// 4 trang thai CO DINH (khong cho tuy bien mau) - xem SKILL.md muc 11: mau

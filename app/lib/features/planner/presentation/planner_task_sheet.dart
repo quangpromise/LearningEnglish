@@ -41,6 +41,7 @@ class _PlannerTaskSheetState extends ConsumerState<_PlannerTaskSheet> {
   late TimeOfDay _end;
   late PlannerTaskStatus _status;
   late bool _reminder;
+  late PlannerTaskIcon _icon;
 
   @override
   void initState() {
@@ -54,6 +55,7 @@ class _PlannerTaskSheetState extends ConsumerState<_PlannerTaskSheet> {
     );
     _status = editing?.status ?? PlannerTaskStatus.upcoming;
     _reminder = editing?.reminderEnabled ?? false;
+    _icon = editing?.icon ?? PlannerTaskIcon.none;
   }
 
   @override
@@ -98,6 +100,7 @@ class _PlannerTaskSheetState extends ConsumerState<_PlannerTaskSheet> {
           end: end,
           status: _status,
           reminderEnabled: _reminder,
+          icon: _icon,
         ),
       );
     } else {
@@ -110,6 +113,7 @@ class _PlannerTaskSheetState extends ConsumerState<_PlannerTaskSheet> {
           end: end,
           status: _status,
           reminderEnabled: _reminder,
+          icon: _icon,
         ),
       );
     }
@@ -185,6 +189,24 @@ class _PlannerTaskSheetState extends ConsumerState<_PlannerTaskSheet> {
                     ),
                   ),
                 ],
+              ],
+            ),
+            const SizedBox(height: 14),
+            Text(
+              ref.tr('planner_task_icon_label'),
+              style: AppTextStyles.muted(size: 11, weight: FontWeight.w800),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final ic in PlannerTaskIcon.values)
+                  _TaskIconChip(
+                    taskIcon: ic,
+                    selected: _icon == ic,
+                    onTap: () => setState(() => _icon = ic),
+                  ),
               ],
             ),
             const SizedBox(height: 14),
@@ -300,6 +322,70 @@ class _SectionChip extends StatelessWidget {
           plannerSectionIcon(section),
           size: 18,
           color: selected ? tint : AppColors.textMuted,
+        ),
+      ),
+    );
+  }
+}
+
+class _TaskIconChip extends ConsumerWidget {
+  const _TaskIconChip({
+    required this.taskIcon,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final PlannerTaskIcon taskIcon;
+  final bool selected;
+  final VoidCallback onTap;
+
+  String get _key => switch (taskIcon) {
+    PlannerTaskIcon.none => 'planner_task_icon_none',
+    PlannerTaskIcon.work => 'planner_task_icon_work',
+    PlannerTaskIcon.game => 'planner_task_icon_game',
+    PlannerTaskIcon.relax => 'planner_task_icon_relax',
+    PlannerTaskIcon.study => 'planner_task_icon_study',
+    PlannerTaskIcon.sleep => 'planner_task_icon_sleep',
+    PlannerTaskIcon.other => 'planner_task_icon_other',
+  };
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // "Khong" (none) dung mau xam trung tinh - cac icon con lai dung dung
+    // mau rieng cua PlannerTaskIcon de nguoi dung nhan dien nhanh.
+    final tint = taskIcon == PlannerTaskIcon.none
+        ? AppColors.textMuted
+        : taskIcon.color;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected ? tint.withValues(alpha: 0.18) : AppColors.glassFill,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: selected ? tint : AppColors.glassBorder),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (taskIcon != PlannerTaskIcon.none) ...[
+              Icon(
+                taskIcon.iconData,
+                size: 14,
+                color: selected ? tint : AppColors.textMuted,
+              ),
+              const SizedBox(width: 5),
+            ],
+            Text(
+              ref.tr(_key),
+              style: TextStyle(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w800,
+                color: selected ? tint : AppColors.textMuted,
+                decoration: TextDecoration.none,
+              ),
+            ),
+          ],
         ),
       ),
     );

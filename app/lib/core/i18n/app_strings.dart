@@ -2707,6 +2707,32 @@ class AppStrings {
       AppLanguage.vi: 'Sắp tới',
       AppLanguage.en: 'Upcoming',
     },
+    'planner_task_icon_label': {
+      AppLanguage.vi: 'Loại việc',
+      AppLanguage.en: 'Task type',
+    },
+    'planner_task_icon_none': {
+      AppLanguage.vi: 'Mặc định',
+      AppLanguage.en: 'Default',
+    },
+    'planner_task_icon_work': {
+      AppLanguage.vi: 'Công việc',
+      AppLanguage.en: 'Work',
+    },
+    'planner_task_icon_game': {AppLanguage.vi: 'Game', AppLanguage.en: 'Game'},
+    'planner_task_icon_relax': {
+      AppLanguage.vi: 'Thư giãn',
+      AppLanguage.en: 'Relax',
+    },
+    'planner_task_icon_study': {
+      AppLanguage.vi: 'Học tập',
+      AppLanguage.en: 'Study',
+    },
+    'planner_task_icon_sleep': {AppLanguage.vi: 'Ngủ', AppLanguage.en: 'Sleep'},
+    'planner_task_icon_other': {
+      AppLanguage.vi: 'Khác',
+      AppLanguage.en: 'Other',
+    },
     'planner_more_tasks': {AppLanguage.vi: 'việc khác', AppLanguage.en: 'more'},
     'planner_empty_day': {
       AppLanguage.vi: 'Chưa có việc nào trong ngày này',
