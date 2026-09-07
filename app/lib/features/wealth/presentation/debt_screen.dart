@@ -8,6 +8,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_format.dart';
 import '../data/wealth_debt_model.dart';
 import 'add_debt_sheet.dart';
+import 'batch_pay_debt_sheet.dart';
 import 'confirm_delete.dart';
 import 'debt_person_history_screen.dart';
 
@@ -190,16 +191,60 @@ class _SummaryTile extends StatelessWidget {
   }
 }
 
-class _DebtList extends ConsumerWidget {
+class _DebtList extends ConsumerStatefulWidget {
   const _DebtList({required this.direction});
   final String direction;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final debtsAsync = ref.watch(debtsProvider(direction));
+  ConsumerState<_DebtList> createState() => _DebtListState();
+}
+
+class _DebtListState extends ConsumerState<_DebtList> {
+  bool _selecting = false;
+  final Set<String> _selectedPersonIds = {};
+
+  void _toggleSelectMode() {
+    setState(() {
+      _selecting = !_selecting;
+      _selectedPersonIds.clear();
+    });
+  }
+
+  void _toggleSelected(String personId) {
+    setState(() {
+      if (_selectedPersonIds.contains(personId)) {
+        _selectedPersonIds.remove(personId);
+      } else {
+        _selectedPersonIds.add(personId);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final debtsAsync = ref.watch(debtsProvider(widget.direction));
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Align(
+          alignment: Alignment.centerRight,
+          child: GestureDetector(
+            onTap: _toggleSelectMode,
+            child: Text(
+              ref.tr(
+                _selecting
+                    ? 'wealth_debt_select_cancel'
+                    : 'wealth_debt_select_mode',
+              ),
+              style: AppTextStyles.body(
+                size: 12,
+                weight: FontWeight.w700,
+                color: AppColors.wealthAccent,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
         Expanded(
           child: debtsAsync.when(
             loading: () => const Center(
@@ -233,23 +278,77 @@ class _DebtList extends ConsumerWidget {
               return ListView.separated(
                 itemCount: groupList.length,
                 separatorBuilder: (_, _) => const SizedBox(height: 10),
-                itemBuilder: (context, i) =>
-                    _PersonGroupTile(debts: groupList[i]),
+                itemBuilder: (context, i) => _PersonGroupTile(
+                  debts: groupList[i],
+                  selecting: _selecting,
+                  selected: _selectedPersonIds.contains(
+                    groupList[i].first.personId,
+                  ),
+                  onToggleSelect: () =>
+                      _toggleSelected(groupList[i].first.personId),
+                ),
               );
             },
           ),
         ),
         const SizedBox(height: 12),
-        SizedBox(
-          width: double.infinity,
-          child: PillButton(
-            label: ref.tr('wealth_debt_add'),
-            accentGradient: AppColors.wealthAccentGradient,
-            accentColor: AppColors.wealthAccent,
-            icon: const Icon(Icons.add_rounded, size: 16, color: Colors.white),
-            onTap: () => showAddDebtSheet(context, direction),
+        if (_selecting)
+          SizedBox(
+            width: double.infinity,
+            child: PillButton(
+              label: ref
+                  .tr(
+                    widget.direction == 'i_owe'
+                        ? 'wealth_debt_batch_pay'
+                        : 'wealth_debt_batch_collect',
+                  )
+                  .replaceFirst('{n}', '${_selectedPersonIds.length}'),
+              accentColor: widget.direction == 'i_owe'
+                  ? AppColors.pink
+                  : AppColors.teal,
+              onTap: _selectedPersonIds.isEmpty
+                  ? null
+                  : () async {
+                      final debtsAsync = ref.read(
+                        debtsProvider(widget.direction),
+                      );
+                      final debts = debtsAsync.valueOrNull ?? [];
+                      final selected = debts
+                          .where(
+                            (d) =>
+                                _selectedPersonIds.contains(d.personId) &&
+                                !d.isSettled,
+                          )
+                          .toList();
+                      await showBatchPayDebtSheet(
+                        context,
+                        widget.direction,
+                        selected,
+                      );
+                      if (mounted) {
+                        setState(() {
+                          _selecting = false;
+                          _selectedPersonIds.clear();
+                        });
+                      }
+                    },
+            ),
+          )
+        else
+          SizedBox(
+            width: double.infinity,
+            child: PillButton(
+              label: ref.tr('wealth_debt_add'),
+              accentGradient: AppColors.wealthAccentGradient,
+              accentColor: AppColors.wealthAccent,
+              icon: const Icon(
+                Icons.add_rounded,
+                size: 16,
+                color: Colors.white,
+              ),
+              onTap: () => showAddDebtSheet(context, widget.direction),
+            ),
           ),
-        ),
       ],
     );
   }
@@ -260,8 +359,16 @@ class _DebtList extends ConsumerWidget {
 /// + note + tra/thu tung phan) trong DebtPersonHistoryScreen. Sua/xoa tung
 /// khoan cu the cung chuyen het vao man lich su do.
 class _PersonGroupTile extends ConsumerWidget {
-  const _PersonGroupTile({required this.debts});
+  const _PersonGroupTile({
+    required this.debts,
+    required this.selecting,
+    required this.selected,
+    required this.onToggleSelect,
+  });
   final List<WealthDebt> debts;
+  final bool selecting;
+  final bool selected;
+  final VoidCallback onToggleSelect;
 
   Map<String, double> _totalsByCurrency() {
     final map = <String, double>{};
@@ -278,7 +385,9 @@ class _PersonGroupTile extends ConsumerWidget {
     final totals = _totalsByCurrency();
     return Dismissible(
       key: ValueKey('${first.personId}_${first.direction}'),
-      direction: DismissDirection.endToStart,
+      direction: selecting
+          ? DismissDirection.none
+          : DismissDirection.endToStart,
       confirmDismiss: (_) => confirmDelete(context, ref),
       background: Container(
         alignment: Alignment.centerRight,
@@ -303,17 +412,34 @@ class _PersonGroupTile extends ConsumerWidget {
         ref.invalidate(debtsByPersonProvider(first.personId));
       },
       child: GestureDetector(
-        onTap: () => openAppPopup(
-          context,
-          DebtPersonHistoryScreen(
-            personId: first.personId,
-            personName: first.personName,
-          ),
-        ),
+        onTap: selecting
+            ? onToggleSelect
+            : () => openAppPopup(
+                context,
+                DebtPersonHistoryScreen(
+                  personId: first.personId,
+                  personName: first.personName,
+                ),
+              ),
         child: GlowBox(
           borderRadius: 16,
+          border: selecting && selected
+              ? Border.all(color: AppColors.wealthAccent, width: 1.4)
+              : null,
           child: Row(
             children: [
+              if (selecting) ...[
+                Icon(
+                  selected
+                      ? Icons.check_circle_rounded
+                      : Icons.radio_button_unchecked_rounded,
+                  size: 20,
+                  color: selected
+                      ? AppColors.wealthAccent
+                      : AppColors.textMuted,
+                ),
+                const SizedBox(width: 10),
+              ],
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

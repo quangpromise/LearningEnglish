@@ -8,6 +8,7 @@ import '../../../core/utils/date_format.dart';
 import '../../../core/utils/thousands_input_formatter.dart';
 import '../data/recurring_service_model.dart';
 import '../data/recurring_service_repository.dart';
+import 'debt_person_picker_field.dart';
 import 'payment_split_editor.dart';
 
 /// Bottom sheet gia han 1 dich vu - so tien mac dinh lay tu lan truoc
@@ -39,6 +40,10 @@ class _RenewServiceSheetState extends ConsumerState<_RenewServiceSheet> {
   List<PaymentSplit> _splits = const [];
   DateTime? _manualNewExpiry;
   bool _saving = false;
+  // Gia han bang cach GHI NO nguoi khac (vd muon tien ban be tra truoc) thay
+  // vi tru thang vao Vi - xem RecurringServiceRepository.renew(viaDebt:).
+  bool _viaDebt = false;
+  final _debtPersonController = TextEditingController();
 
   @override
   void initState() {
@@ -54,6 +59,7 @@ class _RenewServiceSheetState extends ConsumerState<_RenewServiceSheet> {
   @override
   void dispose() {
     _amountController.dispose();
+    _debtPersonController.dispose();
     super.dispose();
   }
 
@@ -67,8 +73,10 @@ class _RenewServiceSheetState extends ConsumerState<_RenewServiceSheet> {
   }
 
   bool get _splitsValid {
+    if (_amount <= 0) return false;
+    if (_viaDebt) return _debtPersonController.text.trim().isNotEmpty;
     final sum = _splits.fold<double>(0, (s, p) => s + p.amount);
-    return _amount > 0 && (sum - _amount).abs() < 0.5;
+    return (sum - _amount).abs() < 0.5;
   }
 
   Future<void> _pickManualExpiry() async {
@@ -98,22 +106,47 @@ class _RenewServiceSheetState extends ConsumerState<_RenewServiceSheet> {
             service: widget.service,
             totalAmount: _amount,
             newExpiryDate: expiry,
-            payments: _splits
-                .where((s) => s.amount > 0)
-                .map(
-                  (s) => RenewalPaymentInput(
-                    accountType: s.accountType,
-                    bankCode: s.bankCode,
-                    bankName: s.bankName,
-                    amount: s.amount,
-                  ),
-                )
-                .toList(),
+            viaDebt: _viaDebt,
+            payments: _viaDebt
+                ? const []
+                : _splits
+                      .where((s) => s.amount > 0)
+                      .map(
+                        (s) => RenewalPaymentInput(
+                          accountType: s.accountType,
+                          bankCode: s.bankCode,
+                          bankName: s.bankName,
+                          amount: s.amount,
+                        ),
+                      )
+                      .toList(),
           );
       ref.invalidate(recurringServicesProvider);
-      ref.invalidate(walletBalanceEntriesProvider);
-      ref.invalidate(wealthTransactionsProvider);
       ref.invalidate(serviceRenewalsProvider);
+      if (_viaDebt) {
+        // Chua tru Vi/ghi chi tieu gi luc nay (xem RecurringServiceRepository
+        // .renew(viaDebt:)) - chi tao 1 khoan "Dang no", chi tieu thuc su chi
+        // duoc tinh khi nguoi dung tra khoan no nay sau nay.
+        final person = await ref
+            .read(wealthDebtPersonRepositoryProvider)
+            .findOrCreate(userId, _debtPersonController.text.trim());
+        await ref
+            .read(wealthDebtRepositoryProvider)
+            .create(
+              userId: userId,
+              personId: person.id,
+              direction: 'i_owe',
+              amount: _amount,
+              currency: widget.service.currency,
+              note: '${widget.service.name} - gia hạn',
+              occurredAt: DateTime.now(),
+            );
+        ref.invalidate(debtPersonsProvider);
+        ref.invalidate(debtsProvider('i_owe'));
+      } else {
+        ref.invalidate(walletBalanceEntriesProvider);
+        ref.invalidate(wealthTransactionsProvider);
+      }
       if (mounted) Navigator.of(context).pop();
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -208,15 +241,47 @@ class _RenewServiceSheetState extends ConsumerState<_RenewServiceSheet> {
                       ),
                     ],
                     const SizedBox(height: 12),
-                    Text(
-                      ref.tr('wealth_pay_by'),
-                      style: AppTextStyles.muted(size: 11),
+                    GestureDetector(
+                      onTap: () => setState(() => _viaDebt = !_viaDebt),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            _viaDebt
+                                ? Icons.check_box_rounded
+                                : Icons.check_box_outline_blank_rounded,
+                            size: 18,
+                            color: _viaDebt
+                                ? AppColors.wealthAccent
+                                : AppColors.textMuted,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            ref.tr('wealth_service_renew_via_debt'),
+                            style: AppTextStyles.muted(size: 11.5),
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 6),
-                    PaymentSplitEditor(
-                      totalAmount: _amount,
-                      onChanged: (splits) => _splits = splits,
-                    ),
+                    const SizedBox(height: 10),
+                    if (_viaDebt) ...[
+                      Text(
+                        ref.tr('wealth_debt_person_hint'),
+                        style: AppTextStyles.muted(size: 11),
+                      ),
+                      const SizedBox(height: 6),
+                      DebtPersonPickerField(controller: _debtPersonController),
+                    ] else ...[
+                      Text(
+                        ref.tr('wealth_pay_by'),
+                        style: AppTextStyles.muted(size: 11),
+                      ),
+                      const SizedBox(height: 6),
+                      PaymentSplitEditor(
+                        totalAmount: _amount,
+                        onChanged: (splits) => setState(() => _splits = splits),
+                      ),
+                    ],
                     const SizedBox(height: 16),
                     SizedBox(
                       width: double.infinity,

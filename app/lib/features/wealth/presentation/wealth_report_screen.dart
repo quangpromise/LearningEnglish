@@ -8,6 +8,7 @@ import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_format.dart';
 import '../data/recurring_service_model.dart';
+import '../data/wealth_balance_entry_model.dart';
 import '../data/wealth_category.dart';
 import '../data/wealth_report_data.dart';
 import '../data/wealth_transaction_model.dart';
@@ -95,6 +96,7 @@ class _WealthReportScreenState extends ConsumerState<WealthReportScreen> {
   Widget build(BuildContext context) {
     final transactionsAsync = ref.watch(wealthTransactionsProvider);
     final renewalsAsync = ref.watch(serviceRenewalsProvider);
+    final balanceEntriesAsync = ref.watch(walletBalanceEntriesProvider);
 
     return ScreenBackground(
       child: Padding(
@@ -186,10 +188,24 @@ class _WealthReportScreenState extends ConsumerState<WealthReportScreen> {
                       style: AppTextStyles.muted(),
                     ),
                   ),
-                  data: (renewals) => _ReportBody(
-                    month: _month,
-                    transactions: transactions,
-                    renewals: renewals,
+                  data: (renewals) => balanceEntriesAsync.when(
+                    loading: () => const Center(
+                      child: CircularProgressIndicator(
+                        color: AppColors.wealthAccent,
+                      ),
+                    ),
+                    error: (_, _) => Center(
+                      child: Text(
+                        ref.tr('wealth_load_error'),
+                        style: AppTextStyles.muted(),
+                      ),
+                    ),
+                    data: (balanceEntries) => _ReportBody(
+                      month: _month,
+                      transactions: transactions,
+                      renewals: renewals,
+                      balanceEntries: balanceEntries,
+                    ),
                   ),
                 ),
               ),
@@ -206,17 +222,20 @@ class _ReportBody extends ConsumerWidget {
     required this.month,
     required this.transactions,
     required this.renewals,
+    required this.balanceEntries,
   });
 
   final DateTime month;
   final List<WealthTransaction> transactions;
   final List<ServiceRenewalRecord> renewals;
+  final List<WealthBalanceEntry> balanceEntries;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final hasUsd =
         transactions.any((t) => t.currency == 'USD') ||
-        renewals.any((r) => r.currency == 'USD');
+        renewals.any((r) => r.currency == 'USD') ||
+        balanceEntries.any((e) => e.currency == 'USD');
     double? usdVnd;
     if (hasUsd) {
       final vnAssets = ref.watch(wealthVnAssetsProvider);
@@ -231,13 +250,27 @@ class _ReportBody extends ConsumerWidget {
     final months = lastNMonths(month, _kTrendMonths);
     final prevMonth = DateTime(month.year, month.month - 1, 1);
 
-    final thisTotals = computeMonthlyTotals(
+    final thisExpense = computeMonthlyTotals(
       transactions,
       month,
       usdVnd: usdVnd,
-    );
-    final prevTotals = computeMonthlyTotals(
+    ).expense;
+    final prevExpense = computeMonthlyTotals(
       transactions,
+      prevMonth,
+      usdVnd: usdVnd,
+    ).expense;
+    // "Thu nhap" lay tu tien THAT vao Cash/Ngan hang (moi dong balance_entries
+    // duong), KHONG lay tu wealth_transactions.type=income (tab Thu nhap) -
+    // nguoi dung phai tu khai bao rieng va de quen cap nhat, khien so lech
+    // voi tien thuc te nhan duoc (xem wealth_report_data.dart).
+    final thisIncome = computeMonthlyWalletInflow(
+      balanceEntries,
+      month,
+      usdVnd: usdVnd,
+    );
+    final prevIncome = computeMonthlyWalletInflow(
+      balanceEntries,
       prevMonth,
       usdVnd: usdVnd,
     );
@@ -259,7 +292,7 @@ class _ReportBody extends ConsumerWidget {
 
     final incomeByMonth = [
       for (final m in months)
-        computeMonthlyTotals(transactions, m, usdVnd: usdVnd).income,
+        computeMonthlyWalletInflow(balanceEntries, m, usdVnd: usdVnd),
     ];
     final expenseByMonth = [
       for (final m in months)
@@ -278,10 +311,10 @@ class _ReportBody extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _IncomeExpenseCard(
-            income: thisTotals.income,
-            expense: thisTotals.expense,
-            prevIncome: prevTotals.income,
-            prevExpense: prevTotals.expense,
+            income: thisIncome,
+            expense: thisExpense,
+            prevIncome: prevIncome,
+            prevExpense: prevExpense,
             months: months,
             incomeByMonth: incomeByMonth,
             expenseByMonth: expenseByMonth,

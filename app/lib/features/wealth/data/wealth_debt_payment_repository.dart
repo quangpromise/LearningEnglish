@@ -9,7 +9,9 @@ class WealthDebtPaymentRepository {
   Future<List<WealthDebtPayment>> fetchAll(String userId, String debtId) async {
     final rows = await _supabase
         .from('wealth_debt_payments')
-        .select()
+        .select(
+          'id, debt_id, amount, payment_account_type, payment_bank_code, payment_bank_name, currency, note, occurred_at, transaction_id',
+        )
         .eq('user_id', userId)
         .eq('debt_id', debtId)
         .order('occurred_at', ascending: false);
@@ -52,17 +54,19 @@ class WealthDebtPaymentRepository {
     return row['id'] as String;
   }
 
-  /// Lay `debt_id` + `amount` cua 1 lan tra - dung khi XOA truc tiep 1 dong
-  /// wealth_balance_entries co source='debt_payment' tu man Vi (thay vi xoa
-  /// tu man No): can biet tra lai bao nhieu vao remaining_amount cua dung
-  /// khoan no nao (xem wallet_existing_assets_tab.dart).
-  Future<({String debtId, double amount})?> fetchOne(
+  /// Lay `debt_id` + `amount` + `transaction_id` cua 1 lan tra - dung khi
+  /// XOA truc tiep 1 dong wealth_balance_entries co source='debt_payment' tu
+  /// man Vi (thay vi xoa tu man No): can biet tra lai bao nhieu vao
+  /// remaining_amount cua dung khoan no nao, va xoa dong wealth_transactions
+  /// lien ket (neu co) de dong bo voi man Bao cao (xem
+  /// wallet_existing_assets_tab.dart).
+  Future<({String debtId, double amount, String? transactionId})?> fetchOne(
     String userId,
     String id,
   ) async {
     final row = await _supabase
         .from('wealth_debt_payments')
-        .select('debt_id, amount')
+        .select('debt_id, amount, transaction_id')
         .eq('id', id)
         .eq('user_id', userId)
         .maybeSingle();
@@ -70,7 +74,23 @@ class WealthDebtPaymentRepository {
     return (
       debtId: row['debt_id'] as String,
       amount: (row['amount'] as num).toDouble(),
+      transactionId: row['transaction_id'] as String?,
     );
+  }
+
+  /// Gan `transaction_id` sau khi da tao dong wealth_transactions tuong ung
+  /// (xem pay_debt_sheet.dart) - tach rieng vi phai co `id` cua lan tra
+  /// (tra ve tu [record]) truoc khi tao duoc dong giao dich lien ket.
+  Future<void> linkTransaction(
+    String userId,
+    String id,
+    String transactionId,
+  ) async {
+    await _supabase
+        .from('wealth_debt_payments')
+        .update({'transaction_id': transactionId})
+        .eq('id', id)
+        .eq('user_id', userId);
   }
 
   /// Sua lai note/so tien 1 lan tra da ghi - noi goi (debt_person_history_screen.dart)

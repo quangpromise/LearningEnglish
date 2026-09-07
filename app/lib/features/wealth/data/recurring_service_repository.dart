@@ -217,12 +217,20 @@ class RecurringServiceRepository {
   /// so voi tong tai san Bank/Cash da giam thuc te (xem migration 0043) -
   /// roi cap nhat expiry_date/default_amount moi cua dich vu va reset
   /// last_notified_on de bat dau lai chu ky nhac han.
+  ///
+  /// Neu [viaDebt] = true (gia han bang cach GHI NO thay vi tra ngay - xem
+  /// renew_service_sheet.dart): [payments] PHAI rong, KHONG tru Vi va KHONG
+  /// ghi wealth_transactions ngay luc nay - tien chua thuc su roi khoi Vi,
+  /// khoan chi CHI duoc tinh khi nguoi dung tra khoan no do sau nay (luc do
+  /// pay_debt_sheet.dart moi ghi wealth_transactions, tranh tinh trung 2 lan
+  /// cho cung 1 khoan tien).
   Future<void> renew({
     required String userId,
     required RecurringService service,
     required double totalAmount,
     required DateTime newExpiryDate,
     required List<RenewalPaymentInput> payments,
+    bool viaDebt = false,
   }) async {
     final occurredAt = DateTime.now();
     final renewalRow = await _supabase
@@ -242,28 +250,30 @@ class RecurringServiceRepository {
         .single();
     final renewalId = renewalRow['id'] as String;
 
-    final singlePayment = payments.length == 1 ? payments.first : null;
-    final tx = WealthTransaction(
-      id: '',
-      type: WealthTransactionType.expense,
-      categoryCode: 'BILLS',
-      amount: totalAmount,
-      currency: service.currency,
-      occurredAt: occurredAt,
-      note: '${service.name} - gia hạn',
-      paymentAccountType: singlePayment?.accountType,
-      paymentBankCode: singlePayment?.bankCode,
-      paymentBankName: singlePayment?.bankName,
-    );
-    final txRow = await _supabase
-        .from('wealth_transactions')
-        .insert(tx.toInsertRow(userId))
-        .select('id')
-        .single();
-    await _supabase
-        .from('wealth_service_renewals')
-        .update({'transaction_id': txRow['id']})
-        .eq('id', renewalId);
+    if (!viaDebt) {
+      final singlePayment = payments.length == 1 ? payments.first : null;
+      final tx = WealthTransaction(
+        id: '',
+        type: WealthTransactionType.expense,
+        categoryCode: 'BILLS',
+        amount: totalAmount,
+        currency: service.currency,
+        occurredAt: occurredAt,
+        note: '${service.name} - gia hạn',
+        paymentAccountType: singlePayment?.accountType,
+        paymentBankCode: singlePayment?.bankCode,
+        paymentBankName: singlePayment?.bankName,
+      );
+      final txRow = await _supabase
+          .from('wealth_transactions')
+          .insert(tx.toInsertRow(userId))
+          .select('id')
+          .single();
+      await _supabase
+          .from('wealth_service_renewals')
+          .update({'transaction_id': txRow['id']})
+          .eq('id', renewalId);
+    }
 
     final balanceRepo = WealthBalanceEntryRepository(_supabase);
     for (final payment in payments) {

@@ -37,6 +37,23 @@ class WealthTransactionRepository {
         .eq('user_id', userId);
   }
 
+  /// Cap nhat mot phan (amount/note) - dung khi 1 tinh nang KHAC (sua lai 1
+  /// lan tra no, xem edit_debt_payment_dialog.dart) chi biet 2 truong nay,
+  /// khong co du du lieu de dung [updateTransaction] (se ghi de mat cac
+  /// truong con lai bang null).
+  Future<void> updateAmountAndNote(
+    String userId,
+    String id, {
+    required double amount,
+    String? note,
+  }) async {
+    await _supabase
+        .from('wealth_transactions')
+        .update({'amount': amount, 'note': note})
+        .eq('id', id)
+        .eq('user_id', userId);
+  }
+
   Future<void> deleteTransaction(String userId, String id) async {
     await _supabase
         .from('wealth_transactions')

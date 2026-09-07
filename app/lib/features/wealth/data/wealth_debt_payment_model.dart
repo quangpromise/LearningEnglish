@@ -12,6 +12,7 @@ class WealthDebtPayment {
     this.paymentBankCode,
     this.paymentBankName,
     this.note,
+    this.transactionId,
   });
 
   final String id;
@@ -23,6 +24,9 @@ class WealthDebtPayment {
   final String currency;
   final String? note;
   final DateTime occurredAt;
+  // Dong wealth_transactions (loai expense, chi khi tra no i_owe) tuong ung
+  // voi lan tra nay - null neu chua co (du lieu cu truoc migration 0044).
+  final String? transactionId;
 
   factory WealthDebtPayment.fromRow(Map<String, dynamic> row) {
     return WealthDebtPayment(
@@ -35,6 +39,7 @@ class WealthDebtPayment {
       currency: row['currency'] as String,
       note: row['note'] as String?,
       occurredAt: DateTime.parse(row['occurred_at'] as String),
+      transactionId: row['transaction_id'] as String?,
     );
   }
 }

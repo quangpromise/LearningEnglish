@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:learn_english_music/features/wealth/data/recurring_service_model.dart';
+import 'package:learn_english_music/features/wealth/data/wealth_balance_entry_model.dart';
 import 'package:learn_english_music/features/wealth/data/wealth_category.dart';
 import 'package:learn_english_music/features/wealth/data/wealth_report_data.dart';
 import 'package:learn_english_music/features/wealth/data/wealth_transaction_model.dart';
@@ -29,6 +30,18 @@ ServiceRenewalRecord _renewal({
   serviceName: 'Netflix',
   amount: amount,
   currency: currency,
+  occurredAt: occurredAt,
+);
+
+WealthBalanceEntry _entry({
+  required double amount,
+  required DateTime occurredAt,
+  String currency = 'VND',
+}) => WealthBalanceEntry(
+  id: 'e',
+  accountType: 'cash',
+  currency: currency,
+  amount: amount,
   occurredAt: occurredAt,
 );
 
@@ -146,6 +159,31 @@ void main() {
 
     test('khong co renew nao -> 0', () {
       expect(computeMonthlyServiceRenewalTotal([], DateTime(2026, 3)), 0);
+    });
+  });
+
+  group('computeMonthlyWalletInflow', () {
+    test('chi cong dong duong (tien vao), loai dong am (tien ra)', () {
+      final entries = [
+        _entry(amount: 500000, occurredAt: DateTime(2026, 3, 5)),
+        _entry(amount: -200000, occurredAt: DateTime(2026, 3, 6)),
+        _entry(amount: 100000, occurredAt: DateTime(2026, 3, 7)),
+      ];
+      final total = computeMonthlyWalletInflow(entries, DateTime(2026, 3));
+      expect(total, 600000);
+    });
+
+    test('loai dong khac thang', () {
+      final entries = [
+        _entry(amount: 500000, occurredAt: DateTime(2026, 2, 28)),
+        _entry(amount: 100000, occurredAt: DateTime(2026, 3, 1)),
+      ];
+      final total = computeMonthlyWalletInflow(entries, DateTime(2026, 3));
+      expect(total, 100000);
+    });
+
+    test('khong co dong nao -> 0', () {
+      expect(computeMonthlyWalletInflow([], DateTime(2026, 3)), 0);
     });
   });
 

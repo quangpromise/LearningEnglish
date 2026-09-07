@@ -8,6 +8,7 @@ import '../../../core/utils/thousands_input_formatter.dart';
 import '../data/vn_bank_model.dart';
 import '../data/wealth_balance_entry_model.dart';
 import '../data/wealth_debt_model.dart';
+import '../data/wealth_transaction_model.dart';
 import 'bank_picker_sheet.dart';
 
 /// Bottom sheet tra 1 phan/toan bo khoan no ([debt.isIOwe]: minh tra - tru
@@ -68,19 +69,42 @@ class _PayDebtSheetState extends ConsumerState<_PayDebtSheet> {
         : _noteController.text.trim();
     final now = DateTime.now();
     try {
-      final paymentId = await ref
-          .read(wealthDebtPaymentRepositoryProvider)
-          .record(
-            userId: userId,
-            debtId: debt.id,
-            amount: amount,
-            paymentAccountType: accountType,
-            paymentBankCode: bankCode,
-            paymentBankName: bankName,
-            currency: debt.currency,
-            note: note,
-            occurredAt: now,
-          );
+      final debtPaymentRepo = ref.read(wealthDebtPaymentRepositoryProvider);
+      final paymentId = await debtPaymentRepo.record(
+        userId: userId,
+        debtId: debt.id,
+        amount: amount,
+        paymentAccountType: accountType,
+        paymentBankCode: bankCode,
+        paymentBankName: bankName,
+        currency: debt.currency,
+        note: note,
+        occurredAt: now,
+      );
+      // Minh tra no (i_owe) la 1 khoan CHI - ghi them 1 dong wealth_transactions
+      // (danh muc "Tra no") de duoc tinh vao Chi tieu trong man Bao cao, khong
+      // chi tru rieng vao Vi (xem migration 0044 + ly do o migration 0043 cho
+      // gia han dich vu - cung 1 van de). Thu no (owed_to_me) la tien VE, chua
+      // yeu cau tinh vao Thu nhap nen khong tao dong giao dich cho chieu nay.
+      if (debt.isIOwe) {
+        final tx = WealthTransaction(
+          id: '',
+          type: WealthTransactionType.expense,
+          categoryCode: 'DEBT',
+          amount: amount,
+          currency: debt.currency,
+          occurredAt: now,
+          note: note ?? '${debt.personName} - trả nợ',
+          paymentAccountType: accountType,
+          paymentBankCode: bankCode,
+          paymentBankName: bankName,
+        );
+        final txId = await ref
+            .read(wealthTransactionRepositoryProvider)
+            .addTransaction(userId, tx);
+        await debtPaymentRepo.linkTransaction(userId, paymentId, txId);
+        ref.invalidate(wealthTransactionsProvider);
+      }
       await ref
           .read(wealthDebtRepositoryProvider)
           .applyPayment(userId, debt.id, amount);

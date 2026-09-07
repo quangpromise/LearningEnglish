@@ -3,6 +3,7 @@
 // (wealth_report_aggregation_test.dart) khong can mock Supabase.
 
 import 'recurring_service_model.dart';
+import 'wealth_balance_entry_model.dart';
 import 'wealth_category.dart';
 import 'wealth_transaction_model.dart';
 
@@ -40,6 +41,25 @@ MonthlyTotals computeMonthlyTotals(
     }
   }
   return MonthlyTotals(income: income, expense: expense);
+}
+
+/// Tong tien THUC SU di vao Cash/Ngan hang trong thang (moi dong
+/// wealth_balance_entries co amount duong) - dung cho "Thu nhap" o man Bao
+/// cao THAY VI wealth_transactions.type=income, vi Thu nhap tu khai bao rieng
+/// (tab Thu nhap) de nguoi dung quen cap nhat/nhap thu, con so tien THAT vao
+/// Vi (luong that nhan, thu no, nap tien...) moi la con so ho muon doi chieu.
+double computeMonthlyWalletInflow(
+  List<WealthBalanceEntry> entries,
+  DateTime month, {
+  double? usdVnd,
+}) {
+  var total = 0.0;
+  for (final e in entries) {
+    if (!_sameMonth(e.occurredAt, month)) continue;
+    if (e.amount <= 0) continue;
+    total += _toVnd(e.amount, e.currency, usdVnd);
+  }
+  return total;
 }
 
 Map<WealthExpenseCategory, double> computeExpenseByCategory(

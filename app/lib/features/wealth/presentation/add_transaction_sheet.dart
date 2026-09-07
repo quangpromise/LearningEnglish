@@ -107,14 +107,13 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
   bool get _isExpense => widget.type == WealthTransactionType.expense;
 
   bool get _splitsValid {
-    if (!_isExpense) return true;
     final sum = _splits.fold<double>(0, (s, p) => s + p.amount);
     return _amount > 0 && (sum - _amount).abs() < 0.5;
   }
 
   Future<void> _save() async {
     if (_amount <= 0) return;
-    if (_isExpense && !_splitsValid) return;
+    if (!_splitsValid) return;
     setState(() => _saving = true);
     final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
     if (userId == null) {
@@ -129,9 +128,7 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
     // Ghi lai payment_account_type/bank chi khi thanh toan bang DUNG 1 hinh
     // thuc (thong tin tham khao tren wealth_transactions) - khi tach nhieu
     // hinh thuc, thong tin that nam o cac dong wealth_balance_entries rieng.
-    final singleSplit = _isExpense && _splits.length == 1
-        ? _splits.first
-        : null;
+    final singleSplit = _splits.length == 1 ? _splits.first : null;
     final tx = WealthTransaction(
       id: widget.existing?.id ?? '',
       type: widget.type,
@@ -156,35 +153,37 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
       } else {
         txId = await txRepo.addTransaction(userId, tx);
       }
-      if (_isExpense) {
-        final repo = ref.read(wealthBalanceEntryRepositoryProvider);
-        if (_isEditing) {
-          // Sua lai giao dich cu - xoa het bo dong balance_entries CU sinh
-          // ra tu no roi chen lai bo MOI theo split vua sua (don gian hon
-          // nhieu so voi doi chieu tung dong cu/moi, vi split truoc do
-          // khong khoi phuc duoc dung cau truc - xem ghi chu o _splits).
-          await repo.deleteBySourceTransaction(userId, txId);
-        }
-        for (final split in _splits) {
-          if (split.amount <= 0) continue;
-          await repo.addEntry(
-            userId,
-            WealthBalanceEntry(
-              id: '',
-              accountType: split.accountType,
-              bankCode: split.bankCode,
-              bankName: split.bankName,
-              currency: 'VND',
-              amount: -split.amount,
-              note: tx.note,
-              occurredAt: tx.occurredAt,
-              source: 'expense',
-              sourceTransactionId: txId,
-            ),
-          );
-        }
-        ref.invalidate(walletBalanceEntriesProvider);
+      // Thu nhap cung phai cong vao Vi giong het Chi tieu tru vao Vi - truoc
+      // day CHI Chi tieu moi tao dong wealth_balance_entries, khien tong Thu
+      // nhap tren man Bao cao khong khop voi tien thuc te tang trong Vi (xem
+      // migration 0045).
+      final repo = ref.read(wealthBalanceEntryRepositoryProvider);
+      if (_isEditing) {
+        // Sua lai giao dich cu - xoa het bo dong balance_entries CU sinh
+        // ra tu no roi chen lai bo MOI theo split vua sua (don gian hon
+        // nhieu so voi doi chieu tung dong cu/moi, vi split truoc do
+        // khong khoi phuc duoc dung cau truc - xem ghi chu o _splits).
+        await repo.deleteBySourceTransaction(userId, txId);
       }
+      for (final split in _splits) {
+        if (split.amount <= 0) continue;
+        await repo.addEntry(
+          userId,
+          WealthBalanceEntry(
+            id: '',
+            accountType: split.accountType,
+            bankCode: split.bankCode,
+            bankName: split.bankName,
+            currency: 'VND',
+            amount: _isExpense ? -split.amount : split.amount,
+            note: tx.note,
+            occurredAt: tx.occurredAt,
+            source: _isExpense ? 'expense' : 'income',
+            sourceTransactionId: txId,
+          ),
+        );
+      }
+      ref.invalidate(walletBalanceEntriesProvider);
       ref.invalidate(wealthTransactionsProvider);
       if (mounted) Navigator.of(context).pop();
     } finally {
@@ -284,19 +283,17 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
                         ),
                       ),
                     ),
-                    if (isExpense) ...[
-                      const SizedBox(height: 10),
-                      Text(
-                        ref.tr('wealth_pay_by'),
-                        style: AppTextStyles.muted(size: 11),
-                      ),
-                      const SizedBox(height: 6),
-                      PaymentSplitEditor(
-                        totalAmount: _amount,
-                        initialSplits: _initialSplits,
-                        onChanged: (splits) => _splits = splits,
-                      ),
-                    ],
+                    const SizedBox(height: 10),
+                    Text(
+                      ref.tr(isExpense ? 'wealth_pay_by' : 'wealth_receive_by'),
+                      style: AppTextStyles.muted(size: 11),
+                    ),
+                    const SizedBox(height: 6),
+                    PaymentSplitEditor(
+                      totalAmount: _amount,
+                      initialSplits: _initialSplits,
+                      onChanged: (splits) => setState(() => _splits = splits),
+                    ),
                     const SizedBox(height: 10),
                     GestureDetector(
                       onTap: _pickDateTime,

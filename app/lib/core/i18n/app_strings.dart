@@ -1106,6 +1106,10 @@ class AppStrings {
       AppLanguage.vi: 'Hoá đơn',
       AppLanguage.en: 'Bills',
     },
+    'wealth_expense_category_debt': {
+      AppLanguage.vi: 'Trả nợ',
+      AppLanguage.en: 'Debt payment',
+    },
     'wealth_expense_category_other': {
       AppLanguage.vi: 'Khác',
       AppLanguage.en: 'Other',
@@ -1330,6 +1334,10 @@ class AppStrings {
       AppLanguage.vi: 'Chọn ngày hết hạn',
       AppLanguage.en: 'Pick expiry date',
     },
+    'wealth_service_renew_via_debt': {
+      AppLanguage.vi: 'Ghi nợ (mượn tiền để gia hạn)',
+      AppLanguage.en: 'Pay via debt (borrow to renew)',
+    },
     'wealth_service_expiry_preview': {
       AppLanguage.vi: 'Ngày hết hạn',
       AppLanguage.en: 'Expiry date',
@@ -1468,9 +1476,37 @@ class AppStrings {
       AppLanguage.vi: 'Xem lịch sử',
       AppLanguage.en: 'View history',
     },
+    'wealth_debt_select_mode': {
+      AppLanguage.vi: 'Chọn nhiều',
+      AppLanguage.en: 'Select multiple',
+    },
+    'wealth_debt_select_cancel': {
+      AppLanguage.vi: 'Hủy chọn',
+      AppLanguage.en: 'Cancel',
+    },
+    'wealth_debt_batch_pay': {
+      AppLanguage.vi: 'Trả nợ ({n})',
+      AppLanguage.en: 'Pay debts ({n})',
+    },
+    'wealth_debt_batch_collect': {
+      AppLanguage.vi: 'Thu nợ ({n})',
+      AppLanguage.en: 'Collect debts ({n})',
+    },
+    'wealth_debt_batch_pay_title': {
+      AppLanguage.vi: 'Trả nợ nhiều người',
+      AppLanguage.en: 'Pay multiple people',
+    },
+    'wealth_debt_batch_collect_title': {
+      AppLanguage.vi: 'Thu nợ nhiều người',
+      AppLanguage.en: 'Collect from multiple people',
+    },
     'wealth_pay_by': {
       AppLanguage.vi: 'Thanh toán bằng',
       AppLanguage.en: 'Pay by',
+    },
+    'wealth_receive_by': {
+      AppLanguage.vi: 'Nhận vào',
+      AppLanguage.en: 'Receive into',
     },
     'wealth_pay_by_bank': {
       AppLanguage.vi: 'Chọn ngân hàng',

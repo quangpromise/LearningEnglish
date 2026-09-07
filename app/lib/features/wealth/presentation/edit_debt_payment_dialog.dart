@@ -81,16 +81,29 @@ Future<void> showEditDebtPaymentDialog(
       .read(wealthDebtPaymentRepositoryProvider)
       .update(userId, payment.id, note: newNote, amount: newAmount);
   final signedAmount = debt.isIOwe ? -newAmount : newAmount;
+  final displayNote =
+      newNote ?? '${debt.personName} - ${debt.isIOwe ? 'trả nợ' : 'thu nợ'}';
   await ref
       .read(wealthBalanceEntryRepositoryProvider)
       .updateBySourceDebtPayment(
         userId,
         payment.id,
         amount: signedAmount,
-        note:
-            newNote ??
-            '${debt.personName} - ${debt.isIOwe ? 'trả nợ' : 'thu nợ'}',
+        note: displayNote,
       );
+  // Dong bo lai dong wealth_transactions lien ket (chi ton tai voi tra no
+  // i_owe - xem pay_debt_sheet.dart) de man Bao cao khop voi so tien vua sua.
+  if (payment.transactionId != null) {
+    await ref
+        .read(wealthTransactionRepositoryProvider)
+        .updateAmountAndNote(
+          userId,
+          payment.transactionId!,
+          amount: newAmount,
+          note: displayNote,
+        );
+    ref.invalidate(wealthTransactionsProvider);
+  }
   ref.invalidate(walletBalanceEntriesProvider);
   ref.invalidate(debtsProvider(debt.direction));
   ref.invalidate(debtsByPersonProvider(debt.personId));

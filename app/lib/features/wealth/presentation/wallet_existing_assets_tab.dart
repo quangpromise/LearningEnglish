@@ -383,9 +383,9 @@ class WalletEntryRow extends ConsumerWidget {
         final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
         if (userId == null) return;
         switch (entry.source) {
-          case 'expense' when entry.sourceTransactionId != null:
-            // Xoa ca giao dich goc de dong bo voi man Chi tieu - FK cascade
-            // se tu xoa dong wealth_balance_entries nay theo.
+          case 'expense' || 'income' when entry.sourceTransactionId != null:
+            // Xoa ca giao dich goc de dong bo voi man Chi tieu/Thu nhap - FK
+            // cascade se tu xoa dong wealth_balance_entries nay theo.
             await ref
                 .read(wealthTransactionRepositoryProvider)
                 .deleteTransaction(userId, entry.sourceTransactionId!);
@@ -401,6 +401,12 @@ class WalletEntryRow extends ConsumerWidget {
               await ref
                   .read(wealthDebtRepositoryProvider)
                   .restoreAmount(userId, info.debtId, info.amount);
+              if (info.transactionId != null) {
+                await ref
+                    .read(wealthTransactionRepositoryProvider)
+                    .deleteTransaction(userId, info.transactionId!);
+                ref.invalidate(wealthTransactionsProvider);
+              }
             }
             ref.invalidate(debtsProvider('i_owe'));
             ref.invalidate(debtsProvider('owed_to_me'));
