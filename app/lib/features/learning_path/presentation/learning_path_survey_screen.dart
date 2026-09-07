@@ -5,6 +5,7 @@ import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/learning_path_models.dart';
+import 'learning_path_accent.dart';
 
 /// Popup khao sat 2 cau hoi de xac dinh persona nguoi hoc - xem
 /// docs/research-learning-path.md muc 3. Cau 1 co 2/3 nhanh CHOT NGAY persona
@@ -23,9 +24,15 @@ class _LearningPathSurveyScreenState
   bool _showSecondQuestion = false;
 
   Future<void> _choose(LearningPersona persona) async {
+    // choosePersona() KHONG con nem loi ra ngoai (da bat loi trong
+    // repository) - truoc day neu luu that bai (vd bang chua duoc migrate
+    // len server) thi await nay khong bao gio ket thuc thanh cong, khien
+    // Navigator.pop() ben duoi khong bao gio chay -> nguoi dung tuong nhu
+    // "bam khong duoc" du GestureDetector van nhan tap binh thuong.
     await ref.read(learningPathRepositoryProvider).choosePersona(persona);
+    if (!mounted) return;
     ref.invalidate(learningPathChoiceProvider);
-    if (mounted) Navigator.of(context).maybePop();
+    Navigator.of(context).maybePop();
   }
 
   void _onFirstAnswer(int index) {
@@ -80,16 +87,21 @@ class _LearningPathSurveyScreenState
             const SizedBox(height: 10),
             _AnswerChip(
               label: ref.tr('learning_path_q1_a1'),
+              color: personaColor(LearningPersona.beginner),
               onTap: () => _onFirstAnswer(0),
             ),
             const SizedBox(height: 8),
             _AnswerChip(
               label: ref.tr('learning_path_q1_a2'),
+              color: personaColor(LearningPersona.grammarOverhaul),
               onTap: () => _onFirstAnswer(1),
             ),
             const SizedBox(height: 8),
             _AnswerChip(
+              // Dap an "de sau moi chon" - chua chot persona nao nen dung
+              // mau trung tinh (khong phai mau cua 1 persona cu the).
               label: ref.tr('learning_path_q1_a3'),
+              color: AppColors.textMuted,
               onTap: () => _onFirstAnswer(2),
             ),
           ] else ...[
@@ -100,21 +112,25 @@ class _LearningPathSurveyScreenState
             const SizedBox(height: 10),
             _AnswerChip(
               label: ref.tr('learning_path_q2_a1'),
+              color: personaColor(LearningPersona.dailyConversation),
               onTap: () => _choose(LearningPersona.dailyConversation),
             ),
             const SizedBox(height: 8),
             _AnswerChip(
               label: ref.tr('learning_path_q2_a2'),
+              color: personaColor(LearningPersona.officeEnglish),
               onTap: () => _choose(LearningPersona.officeEnglish),
             ),
             const SizedBox(height: 8),
             _AnswerChip(
               label: ref.tr('learning_path_q2_a3'),
+              color: personaColor(LearningPersona.toeicPrep),
               onTap: () => _choose(LearningPersona.toeicPrep),
             ),
             const SizedBox(height: 8),
             _AnswerChip(
               label: ref.tr('learning_path_q2_a4'),
+              color: personaColor(LearningPersona.ieltsPrep),
               onTap: () => _choose(LearningPersona.ieltsPrep),
             ),
           ],
@@ -125,9 +141,18 @@ class _LearningPathSurveyScreenState
 }
 
 class _AnswerChip extends StatelessWidget {
-  const _AnswerChip({required this.label, required this.onTap});
+  const _AnswerChip({
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
 
   final String label;
+
+  /// Mau rieng cua persona ma dap an nay dan toi - dung to mau CHU (khong
+  /// chi vien) de nguoi dung phan biet ro cac lua chon ngay ca khi luot
+  /// nhanh, thay vi moi dong deu mau trang giong het nhau nhu truoc.
+  final Color color;
   final VoidCallback onTap;
 
   @override
@@ -138,23 +163,30 @@ class _AnswerChip extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: AppColors.glassFill,
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.glassBorder),
+          border: Border.all(color: color.withValues(alpha: 0.55)),
         ),
         child: Row(
           children: [
+            Container(
+              width: 8,
+              height: 8,
+              margin: const EdgeInsets.only(right: 12),
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+            ),
             Expanded(
               child: Text(
                 label,
-                style: AppTextStyles.body(size: 13.5, weight: FontWeight.w700),
+                style: TextStyle(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w800,
+                  color: color,
+                  decoration: TextDecoration.none,
+                ),
               ),
             ),
-            const Icon(
-              Icons.chevron_right_rounded,
-              size: 18,
-              color: AppColors.textMuted,
-            ),
+            Icon(Icons.chevron_right_rounded, size: 18, color: color),
           ],
         ),
       ),

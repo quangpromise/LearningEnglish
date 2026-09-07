@@ -13,16 +13,19 @@ class LearningPathRepository {
   Future<LearningPersona?> fetchChoice() async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) return null;
-    final row = await _supabase
-        .from('user_learning_path_choice')
-        .select('persona')
-        .eq('user_id', userId)
-        .maybeSingle();
-    final persona = row?['persona'] as String?;
-    if (persona == null) return null;
     try {
+      final row = await _supabase
+          .from('user_learning_path_choice')
+          .select('persona')
+          .eq('user_id', userId)
+          .maybeSingle();
+      final persona = row?['persona'] as String?;
+      if (persona == null) return null;
       return LearningPersona.values.byName(persona);
-    } on ArgumentError {
+    } catch (_) {
+      // Bang co the chua duoc migrate len server (vd moi them, chua chay
+      // migration) - coi nhu chua chon persona nao thay vi de loi lam vo
+      // FutureProvider (Home van hoat dong binh thuong, chi khong highlight).
       return null;
     }
   }
@@ -30,9 +33,17 @@ class LearningPathRepository {
   Future<void> choosePersona(LearningPersona persona) async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) return;
-    await _supabase.from('user_learning_path_choice').upsert({
-      'user_id': userId,
-      'persona': persona.name,
-    }, onConflict: 'user_id');
+    try {
+      await _supabase.from('user_learning_path_choice').upsert({
+        'user_id': userId,
+        'persona': persona.name,
+      }, onConflict: 'user_id');
+    } catch (_) {
+      // KHONG duoc de loi luu (vd bang chua migrate) chan nguoi dung -
+      // man khao sat van phai dong lai binh thuong (xem
+      // learning_path_survey_screen.dart._choose, bug that da gap: cho
+      // await nay xong moi Navigator.pop() khien nut "khong bam duoc" neu
+      // luu that bai).
+    }
   }
 }

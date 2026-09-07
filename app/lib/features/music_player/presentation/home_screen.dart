@@ -9,6 +9,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../social/presentation/conversations_screen.dart';
 import '../../grammar/presentation/grammar_topics_screen.dart';
 import '../../learning_path/data/learning_path_models.dart';
+import '../../learning_path/presentation/learning_path_accent.dart';
 import '../../learning_path/presentation/learning_path_survey_screen.dart';
 import '../../pronunciation/presentation/phonics_lessons_screen.dart';
 import '../../pronunciation/presentation/pronunciation_screen.dart';
@@ -43,6 +44,10 @@ class HomeScreen extends ConsumerWidget {
         ? kPersonaRecommendations[persona]!
         : const <HomeFeature>[];
     final topPick = recommended.isNotEmpty ? recommended.first : null;
+    // Mau highlight doi theo TUNG persona (thay vi 1 mau teal co dinh cho
+    // moi nguoi) - dung chung 1 mau voi chip da chon o man khao sat de 2
+    // man "noi" duoc voi nhau (xem learning_path_accent.dart).
+    final accent = persona != null ? personaColor(persona) : AppColors.teal;
     return ScreenBackground(
       child: Padding(
         // Le ngang giam tu 24 -> 14 de khung the loai sat 2 canh man hinh
@@ -95,6 +100,7 @@ class HomeScreen extends ConsumerWidget {
               const ServiceExpiryBanner(section: AppSection.learnEnglish),
               _CategorySection(
                 title: ref.tr('home_category_reading'),
+                accentColor: accent,
                 items: [
                   _CategoryItemData(
                     icon: Icons.style_rounded,
@@ -133,6 +139,7 @@ class HomeScreen extends ConsumerWidget {
               const SizedBox(height: 16),
               _CategorySection(
                 title: ref.tr('home_category_listening'),
+                accentColor: accent,
                 items: [
                   _CategoryItemData(
                     icon: Icons.graphic_eq_rounded,
@@ -167,6 +174,7 @@ class HomeScreen extends ConsumerWidget {
               const SizedBox(height: 16),
               _CategorySection(
                 title: ref.tr('home_category_test_prep'),
+                accentColor: accent,
                 items: [
                   _CategoryItemData(
                     icon: Icons.assignment_rounded,
@@ -208,9 +216,17 @@ class HomeScreen extends ConsumerWidget {
 /// moi icon kem ten nho ben duoi, dung theo yeu cau thiet ke ("nghe noi 1
 /// border chung, doc viet 1 border chung, moi tinh nang 1 icon + ten nho").
 class _CategorySection extends StatelessWidget {
-  const _CategorySection({required this.title, required this.items});
+  const _CategorySection({
+    required this.title,
+    required this.items,
+    required this.accentColor,
+  });
   final String title;
   final List<_CategoryItemData> items;
+
+  /// Mau highlight cho tile duoc goi y trong nhom nay - theo persona dang
+  /// chon (xem HomeScreen.build).
+  final Color accentColor;
 
   @override
   Widget build(BuildContext context) {
@@ -246,7 +262,11 @@ class _CategorySection extends StatelessWidget {
                   runSpacing: 14,
                   children: items
                       .map(
-                        (item) => _CategoryItem(data: item, width: itemWidth),
+                        (item) => _CategoryItem(
+                          data: item,
+                          width: itemWidth,
+                          accentColor: accentColor,
+                        ),
                       )
                       .toList(),
                 );
@@ -282,9 +302,14 @@ class _CategoryItemData {
 }
 
 class _CategoryItem extends StatelessWidget {
-  const _CategoryItem({required this.data, required this.width});
+  const _CategoryItem({
+    required this.data,
+    required this.width,
+    required this.accentColor,
+  });
   final _CategoryItemData data;
   final double width;
+  final Color accentColor;
 
   @override
   Widget build(BuildContext context) {
@@ -302,36 +327,57 @@ class _CategoryItem extends StatelessWidget {
                   height: 56,
                   decoration: BoxDecoration(
                     color: data.isRecommended
-                        ? AppColors.teal.withValues(alpha: 0.16)
+                        ? accentColor.withValues(alpha: 0.18)
                         : AppColors.glassFill,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
                       color: data.isRecommended
-                          ? AppColors.teal
+                          ? accentColor
                           : AppColors.glassBorder,
-                      width: data.isRecommended ? 1.6 : 1,
+                      width: data.isRecommended ? 2 : 1,
                     ),
                     boxShadow: data.isRecommended
                         ? [
                             BoxShadow(
-                              color: AppColors.teal.withValues(alpha: 0.4),
-                              blurRadius: 14,
-                              spreadRadius: 1,
+                              color: accentColor.withValues(alpha: 0.45),
+                              blurRadius: 16,
+                              spreadRadius: 1.5,
                             ),
                           ]
                         : null,
                   ),
                   child: Icon(
                     data.icon,
-                    color: data.isRecommended ? AppColors.teal : AppColors.blue,
+                    color: data.isRecommended ? accentColor : AppColors.blue,
                     size: 24,
                   ),
                 ),
                 if (data.isTopPick)
-                  const Positioned(
+                  Positioned(
                     right: -10,
                     bottom: -8,
-                    child: _PointingHandBadge(),
+                    child: _PointingHandBadge(color: accentColor),
+                  )
+                else if (data.isRecommended)
+                  Positioned(
+                    right: -4,
+                    top: -4,
+                    child: Container(
+                      width: 18,
+                      height: 18,
+                      decoration: BoxDecoration(
+                        color: accentColor,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.6),
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.star_rounded,
+                        size: 11,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
               ],
             ),
@@ -351,7 +397,8 @@ class _CategoryItem extends StatelessWidget {
 /// de gay chu y vao tile goi y chinh - StatefulWidget rieng (khong bien
 /// _CategoryItem thanh Stateful) vi chi widget nho nay can AnimationController.
 class _PointingHandBadge extends StatefulWidget {
-  const _PointingHandBadge();
+  const _PointingHandBadge({required this.color});
+  final Color color;
 
   @override
   State<_PointingHandBadge> createState() => _PointingHandBadgeState();
@@ -388,17 +435,17 @@ class _PointingHandBadgeState extends State<_PointingHandBadge>
       builder: (context, child) =>
           Transform.translate(offset: Offset(0, _bounce.value), child: child),
       child: Container(
-        width: 24,
-        height: 24,
+        width: 26,
+        height: 26,
         decoration: BoxDecoration(
-          color: AppColors.amber,
+          color: widget.color,
           shape: BoxShape.circle,
           border: Border.all(color: Colors.white.withValues(alpha: 0.6)),
           boxShadow: const [BoxShadow(color: Colors.black38, blurRadius: 6)],
         ),
         child: const Icon(
           Icons.touch_app_rounded,
-          size: 14,
+          size: 15,
           color: Colors.white,
         ),
       ),
