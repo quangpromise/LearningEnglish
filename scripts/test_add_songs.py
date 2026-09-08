@@ -348,14 +348,14 @@ class TestEmitEndToEnd(unittest.TestCase):
         self._write_pending(record)
         code = self._emit(self.tmp, ["zz-emit-block"])
         self.assertEqual(code, 1)
-        self.assertNotIn("A Song", (self.tmp / "songs.dart").read_text())
+        self.assertNotIn("A Song", (self.tmp / "songs.dart").read_text(encoding="utf-8"))
 
     def test_emit_ghi_ca_dart_lan_attribution(self):
         self._write_pending(valid_record(slug="zz-emit-ok"))
         code = self._emit(self.tmp, ["zz-emit-ok"])
         self.assertEqual(code, 0)
-        self.assertIn("title: 'A Song',", (self.tmp / "songs.dart").read_text())
-        self.assertIn("Bản thu", (self.tmp / "attr.md").read_text())
+        self.assertIn("title: 'A Song',", (self.tmp / "songs.dart").read_text(encoding="utf-8"))
+        self.assertIn("Bản thu", (self.tmp / "attr.md").read_text(encoding="utf-8"))
 
     def _write_pending(self, record):
         add_songs.pending_path(record["slug"]).write_text(

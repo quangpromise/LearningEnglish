@@ -122,7 +122,8 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
   }
 
   RecurringService? _findService(String id) {
-    for (final s in ref.read(recurringServicesProvider).valueOrNull ?? const []) {
+    for (final s
+        in ref.read(recurringServicesProvider).valueOrNull ?? const []) {
       if (s.id == id) return s;
     }
     return null;
@@ -143,7 +144,10 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
   /// Da chon 1 Dich vu dinh ky o Wrap chip - ghi khoan chi nay y het nut
   /// "Gia han" (lich su renew + tu cap nhat expiry_date), KHONG di theo
   /// duong Chi tieu thong thuong ben duoi (xem [_save]).
-  Future<void> _saveAsServiceRenewal(String userId, RecurringService service) async {
+  Future<void> _saveAsServiceRenewal(
+    String userId,
+    RecurringService service,
+  ) async {
     final newExpiry = RecurringService.computeNextExpiry(
       cycleType: service.cycleType,
       from: service.expiryDate,
