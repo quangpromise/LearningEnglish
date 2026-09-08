@@ -6,6 +6,8 @@ import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/date_format.dart';
 import '../../../core/utils/thousands_input_formatter.dart';
+import '../data/recurring_service_model.dart';
+import '../data/recurring_service_repository.dart';
 import '../data/wealth_balance_entry_model.dart';
 import '../data/wealth_category.dart';
 import '../data/wealth_transaction_model.dart';
@@ -85,6 +87,14 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
 
   late DateTime _occurredAt = widget.existing?.occurredAt ?? DateTime.now();
 
+  // Chi ap dung khi THEM MOI 1 khoan Chi tieu (khong ap dung luc Sua, va
+  // khong ap dung cho Thu nhap) - chon 1 Dich vu dinh ky de khoan chi nay
+  // duoc ghi nhan y het nhu bam "Gia han" o man Dich vu dinh ky (co lich su
+  // renew + tu cap nhat ngay het han), thay vi tao 1 khoan Chi tieu roi rac
+  // khong lien quan gi den dich vu do (nguyen nhan gay lech du lieu da gap
+  // truoc day voi Cloud Code/4G Viettel - xem migration 0043 backfill).
+  String? _selectedServiceId;
+
   bool get _isEditing => widget.existing != null;
 
   @override
@@ -111,6 +121,61 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
     return _amount > 0 && (sum - _amount).abs() < 0.5;
   }
 
+  RecurringService? _findService(String id) {
+    for (final s in ref.read(recurringServicesProvider).valueOrNull ?? const []) {
+      if (s.id == id) return s;
+    }
+    return null;
+  }
+
+  List<RenewalPaymentInput> get _renewalPayments => _splits
+      .where((s) => s.amount > 0)
+      .map(
+        (s) => RenewalPaymentInput(
+          accountType: s.accountType,
+          bankCode: s.bankCode,
+          bankName: s.bankName,
+          amount: s.amount,
+        ),
+      )
+      .toList();
+
+  /// Da chon 1 Dich vu dinh ky o Wrap chip - ghi khoan chi nay y het nut
+  /// "Gia han" (lich su renew + tu cap nhat expiry_date), KHONG di theo
+  /// duong Chi tieu thong thuong ben duoi (xem [_save]).
+  Future<void> _saveAsServiceRenewal(String userId, RecurringService service) async {
+    final newExpiry = RecurringService.computeNextExpiry(
+      cycleType: service.cycleType,
+      from: service.expiryDate,
+      cycleYears: service.cycleYears,
+    );
+    if (newExpiry == null) {
+      // 'manual' - khong tu tinh duoc ngay het han moi, khong xay ra tren
+      // thuc te vi Wrap chip da loc bo cac dich vu 'manual' (xem build()).
+      setState(() => _saving = false);
+      return;
+    }
+    try {
+      await ref
+          .read(recurringServiceRepositoryProvider)
+          .renew(
+            userId: userId,
+            service: service,
+            totalAmount: _amount,
+            newExpiryDate: newExpiry,
+            occurredAt: _occurredAt,
+            payments: _renewalPayments,
+          );
+      ref.invalidate(recurringServicesProvider);
+      ref.invalidate(serviceRenewalsProvider);
+      ref.invalidate(walletBalanceEntriesProvider);
+      ref.invalidate(wealthTransactionsProvider);
+      if (mounted) Navigator.of(context).pop();
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
   Future<void> _save() async {
     if (_amount <= 0) return;
     if (!_splitsValid) return;
@@ -119,6 +184,13 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
     if (userId == null) {
       setState(() => _saving = false);
       return;
+    }
+    if (_isExpense && !_isEditing && _selectedServiceId != null) {
+      final service = _findService(_selectedServiceId!);
+      if (service != null) {
+        await _saveAsServiceRenewal(userId, service);
+        return;
+      }
     }
     final incomeKind = widget.type == WealthTransactionType.income
         ? (WealthIncomeCategory.fromCode(_categoryCode).isPassive

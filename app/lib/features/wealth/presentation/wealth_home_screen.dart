@@ -245,18 +245,47 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
                                 const CalculatorScreen(),
                               ),
                             ),
-                            _WealthTile(
-                              width: itemWidth,
-                              icon: Icons.bar_chart_rounded,
-                              label: ref.tr('wealth_report_title'),
-                              onTap: () => openAppPopup(
-                                context,
-                                const WealthReportScreen(),
-                              ),
-                            ),
                           ],
                         );
                       },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Bao cao tach rieng khoi luoi "Quan ly" (khac ban chat - day la
+            // man TONG HOP/phan tich, khong phai 1 hanh dong quan ly nhu Vi/
+            // Chi tieu/No...) - theo yeu cau nguoi dung, cung giup tile noi
+            // bat hon thay vi lan trong luoi icon nho.
+            GestureDetector(
+              onTap: () => openAppPopup(context, const WealthReportScreen()),
+              child: GlowBox(
+                borderRadius: 22,
+                child: Row(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: AppColors.wealthAccent.withValues(alpha: 0.18),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: const Icon(
+                        Icons.bar_chart_rounded,
+                        color: AppColors.wealthAccent,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Text(
+                        ref.tr('wealth_report_title'),
+                        style: AppTextStyles.body(weight: FontWeight.w800),
+                      ),
+                    ),
+                    const Icon(
+                      Icons.chevron_right_rounded,
+                      color: AppColors.textMuted,
                     ),
                   ],
                 ),

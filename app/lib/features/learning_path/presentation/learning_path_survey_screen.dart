@@ -32,6 +32,7 @@ class _LearningPathSurveyScreenState
     await ref.read(learningPathRepositoryProvider).choosePersona(persona);
     if (!mounted) return;
     ref.invalidate(learningPathChoiceProvider);
+    ref.invalidate(learningPathInteractedProvider);
     Navigator.of(context).maybePop();
   }
 
@@ -42,6 +43,7 @@ class _LearningPathSurveyScreenState
     await ref.read(learningPathRepositoryProvider).turnOff();
     if (!mounted) return;
     ref.invalidate(learningPathChoiceProvider);
+    ref.invalidate(learningPathInteractedProvider);
     Navigator.of(context).maybePop();
   }
 

@@ -11,6 +11,39 @@ import '../../../core/theme/app_theme.dart';
 /// nhạc; danh sách chủ đề chỉ tham khảo các chủ đề tiếng Anh giao tiếp phổ
 /// biến (gia đình, thời tiết, mua sắm...) - đây là kiến thức chung, không
 /// thuộc về bất kỳ nguồn cụ thể nào.
+/// Muc do thong dung - dung de loc/sap xep tu de hoc truoc, tu hiem hoc sau.
+/// [frequency] cua 1 tu la NHAN DINH chu quan (khong tra tu 1 kho ngu lieu
+/// tan suat that) - xep theo muc do 1 nguoi hoc tieng Anh giao tiep thong
+/// thuong co kha nang gap tu do trong doi song hang ngay.
+enum VocabFrequency {
+  common, // gap hang ngay (vd "mother", "water")
+  medium, // gap thuong xuyen nhung khong co ban (vd "colleague", "umbrella")
+  rare; // it gap, tu chuyen sau/trang trong (vd "sibling", "itinerary")
+
+  String get labelKeyVi => switch (this) {
+    common => 'vocab_frequency_common',
+    medium => 'vocab_frequency_medium',
+    rare => 'vocab_frequency_rare',
+  };
+}
+
+/// Tu loai co ban - dung de loc theo phan loai (danh tu/dong tu/tinh tu...).
+enum VocabPartOfSpeech {
+  noun,
+  verb,
+  adjective,
+  adverb,
+  phrase;
+
+  String get labelKey => switch (this) {
+    noun => 'vocab_pos_noun',
+    verb => 'vocab_pos_verb',
+    adjective => 'vocab_pos_adjective',
+    adverb => 'vocab_pos_adverb',
+    phrase => 'vocab_pos_phrase',
+  };
+}
+
 class VocabWord {
   const VocabWord({
     required this.en,
@@ -18,6 +51,8 @@ class VocabWord {
     required this.vi,
     required this.exampleEn,
     required this.exampleVi,
+    this.frequency,
+    this.partOfSpeech,
   });
 
   final String en;
@@ -25,6 +60,13 @@ class VocabWord {
   final String vi;
   final String exampleEn;
   final String exampleVi;
+
+  // Nullable vi phan lon tu cu (bien soan truoc khi co tinh nang phan loai
+  // nay) CHUA duoc gan nhan - se bo sung dan, KHONG chan hien thi tu chua
+  // phan loai (UI coi nhu "chua ro muc do/tu loai", van hien binh thuong o
+  // che do xem "Tat ca").
+  final VocabFrequency? frequency;
+  final VocabPartOfSpeech? partOfSpeech;
 }
 
 class VocabTopic {

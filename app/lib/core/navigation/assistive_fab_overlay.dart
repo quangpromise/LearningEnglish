@@ -7,32 +7,32 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/ai_voice_chat/presentation/ai_voice_chat_screen.dart';
 import '../../features/planner/presentation/planner_accent.dart';
 import '../../features/planner/presentation/planner_screen.dart';
+import '../../features/wealth/presentation/calculator_screen.dart';
 import '../i18n/app_strings.dart';
 import '../providers/app_providers.dart';
 import 'app_popup.dart';
 import 'nav_keys.dart';
 
 const _kFabSize = 56.0;
-const _kRadialRadius = 92.0;
-const _kHomeRouteNames = {
-  kEnglishHomeRouteName,
-  kFitnessHomeRouteName,
-  kWealthHomeRouteName,
-};
+const _kRadialRadius = 100.0;
 
-enum _RadialAction { openPlanner, openAiVoiceChat }
+enum _RadialAction { goHome, openPlanner, openAiVoiceChat, openCalculator }
 
-/// 2 loi tat hien co - CHI 2, khong nhoi them cho du so nhu ban dau (5 loi
-/// tat cu bi trung chuc nang: "Them viec"/"Hom nay"/"Xem tuan" deu chi mo
-/// lai dung 1 man Planner, "Loc mini-app" la tinh nang phu) - se BO SUNG
-/// them loi tat MOI (that su khac nhau) vao day khi co tinh nang can, theo
-/// dung gop y cua nguoi dung thay vi nhoi cho du 5 o.
+/// 4 loi tat hien co (truoc day chi co 2 - Planner/AI Voice Chat - vi 5 loi
+/// tat ban dau bi trung chuc nang; gio bo sung "Ve trang chu" va "May tinh"
+/// theo yeu cau nguoi dung, van la nhung chuc nang THAT SU khac nhau).
 const _kRadialItems = [
+  (_RadialAction.goHome, Icons.home_rounded, 'assistive_menu_home'),
   (_RadialAction.openPlanner, Icons.calendar_month_rounded, 'planner_title'),
   (
     _RadialAction.openAiVoiceChat,
     Icons.auto_awesome_rounded,
     'voice_chat_title',
+  ),
+  (
+    _RadialAction.openCalculator,
+    Icons.calculate_rounded,
+    'wealth_calculator_title',
   ),
 ];
 
@@ -44,11 +44,14 @@ const _kRadialItems = [
 ///
 /// Cham nhanh (khong keo) bung/thu radial menu - xem [_kRadialItems]. BUG DA
 /// SUA: ban dau 5 loi tat xep qua sat nhau (chi 25 do/25px ban kinh giua 2
-/// tam) nen chong len nhau ro tren may that - gio chi con 2 loi tat, xep
-/// cach xa nhau (60 do, ban kinh 92) nen khong con cham nhau.
+/// tam) nen chong len nhau ro tren may that - gio 4 loi tat, xep cach xa
+/// nhau (100 do tong cung, ban kinh 100) nen khong con cham nhau.
 ///
-/// Chi hien o 3 man Home chinh (dung ten route dat trong nav_keys.dart) - an
-/// o moi man hinh khac (popup tinh nang...).
+/// Hien o TAT CA man hinh (truoc day chi hien o 3 man Home chinh, an o moi
+/// man hinh khac - doi theo yeu cau nguoi dung de dung duoc loi tat "Ve
+/// trang chu" tu bat ky dau) - CHI an khi dang ghi am luyen phat am
+/// ([pronunciationTabActiveProvider]) hoac dang o man AI Voice Chat (tranh
+/// noi tren giao dien cuoc goi).
 class AssistiveFabOverlay extends ConsumerStatefulWidget {
   const AssistiveFabOverlay({super.key});
 
@@ -125,12 +128,39 @@ class _AssistiveFabOverlayState extends ConsumerState<AssistiveFabOverlay> {
     );
   }
 
+  /// Ve dung man Home cua khu vuc (app) dang mo - dua theo ten route da dat
+  /// san cho 3 man Home (xem nav_keys.dart) + [currentAppSectionProvider]
+  /// de biet dang o khu vuc nao, popUntil se tu dong dong het moi popup/man
+  /// hinh con da mo phia tren (openAppPopup deu KHONG dat ten route).
+  void _goHome() {
+    setState(() => _expanded = false);
+    final nav = rootNavigatorKey.currentState;
+    if (nav == null) return;
+    final homeRouteName = switch (ref.read(currentAppSectionProvider)) {
+      AppSection.learnEnglish => kEnglishHomeRouteName,
+      AppSection.fitness => kFitnessHomeRouteName,
+      AppSection.wealth => kWealthHomeRouteName,
+    };
+    nav.popUntil((route) => route.settings.name == homeRouteName);
+  }
+
+  void _openCalculator() {
+    setState(() => _expanded = false);
+    final navContext = rootNavigatorKey.currentContext;
+    if (navContext == null) return;
+    openAppPopup(navContext, const CalculatorScreen());
+  }
+
   void _handleAction(_RadialAction action) {
     switch (action) {
+      case _RadialAction.goHome:
+        _goHome();
       case _RadialAction.openPlanner:
         _openPlanner();
       case _RadialAction.openAiVoiceChat:
         _openAiVoiceChat();
+      case _RadialAction.openCalculator:
+        _openCalculator();
     }
   }
 
@@ -144,7 +174,7 @@ class _AssistiveFabOverlayState extends ConsumerState<AssistiveFabOverlay> {
       valueListenable: topRouteObserver.currentRouteName,
       builder: (context, routeName, _) {
         final hidden =
-            pronunciationActive || !_kHomeRouteNames.contains(routeName);
+            pronunciationActive || routeName == kAiVoiceChatRouteName;
         if (hidden) return const SizedBox.shrink();
 
         final mq = MediaQuery.of(context);
@@ -226,11 +256,11 @@ class _AssistiveFabOverlayState extends ConsumerState<AssistiveFabOverlay> {
     );
   }
 
-  /// Xep [_kRadialItems] deu nhau tren 1 vong cung 60 do (150-210 do, 0 do =
-  /// huong sang phai) mo VE TRAI vi nut goc dinh canh phai man hinh. Ban
-  /// kinh 92px + khoang cach goc 60 do giua 2 muc dam bao khong chong len
-  /// nhau voi kich thuoc bubble 44px (khac voi phien ban 5 muc truoc day
-  /// dung khoang cach goc qua hep gay chong lan tren man hinh that).
+  /// Xep [_kRadialItems] deu nhau tren 1 vong cung 100 do (130-230 do, 0 do =
+  /// huong sang phai) mo VE TRAI vi nut goc dinh canh phai man hinh - cung
+  /// vong cung "boc" quanh nut Menu dinh canh phai (khong bay ra xa khoi
+  /// canh phai). Ban kinh 100px + khoang cach goc ~33 do giua 4 muc dam bao
+  /// khong chong len nhau voi kich thuoc bubble 48px.
   List<Widget> _buildRadialItems({
     required double centerY,
     required MediaQueryData mq,
@@ -240,8 +270,8 @@ class _AssistiveFabOverlayState extends ConsumerState<AssistiveFabOverlay> {
     final items = <Widget>[];
     final n = _kRadialItems.length;
     for (var i = 0; i < n; i++) {
-      // Trai deu quanh 180 do (thang trai) trong khoang tong 60 do.
-      final angleDeg = n == 1 ? 180.0 : 150.0 + i * (60.0 / (n - 1));
+      // Trai deu quanh 180 do (thang trai) trong khoang tong 100 do.
+      final angleDeg = n == 1 ? 180.0 : 130.0 + i * (100.0 / (n - 1));
       final rad = angleDeg * math.pi / 180;
       final dx = centerX + _kRadialRadius * math.cos(rad);
       final dy = centerY + _kRadialRadius * math.sin(rad);
@@ -259,11 +289,11 @@ class _AssistiveFabOverlayState extends ConsumerState<AssistiveFabOverlay> {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    // Bo goc vuong (kieu icon app tren man Home, khac 2 FAB
-                    // tron o giua) thay vi hinh tron - de nhin la 1 "app"
-                    // dang duoc ban ra tu menu, khac han nut nguon vong cung.
-                    borderRadius: BorderRadius.circular(16),
-                    // Ca 2 nut deu dung CUNG 1 gradient theo app dang mo
+                    // Hinh tron, giong het nut Menu chinh dinh canh phai
+                    // (truoc day bo goc vuong kieu icon app - doi theo yeu
+                    // cau nguoi dung de dong bo hinh dang voi nut Menu).
+                    shape: BoxShape.circle,
+                    // Ca 4 nut deu dung CUNG 1 gradient theo app dang mo
                     // (bug da thay tren may that: nut phu bi hardcode mau
                     // xanh-tim cua English du dang mo tu Fitness) - khong
                     // con phan biet rieng mau cho nut "primary".

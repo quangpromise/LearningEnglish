@@ -224,6 +224,10 @@ class RecurringServiceRepository {
   /// khoan chi CHI duoc tinh khi nguoi dung tra khoan no do sau nay (luc do
   /// pay_debt_sheet.dart moi ghi wealth_transactions, tranh tinh trung 2 lan
   /// cho cung 1 khoan tien).
+  /// [occurredAt]/[note]: mac dinh la thoi diem hien tai/"<ten> - gia han"
+  /// (nut "Gia han" o man Dich vu dinh ky) - cho phep ghi de khi goi tu noi
+  /// khac (vd chon "Dich vu dinh ky" ngay trong man Them Chi tieu, dung
+  /// ngay gio/ghi chu nguoi dung da nhap thay vi luon la hien tai).
   Future<void> renew({
     required String userId,
     required RecurringService service,
@@ -231,8 +235,10 @@ class RecurringServiceRepository {
     required DateTime newExpiryDate,
     required List<RenewalPaymentInput> payments,
     bool viaDebt = false,
+    DateTime? occurredAt,
+    String? note,
   }) async {
-    final occurredAt = DateTime.now();
+    final effectiveOccurredAt = occurredAt ?? DateTime.now();
     final renewalRow = await _supabase
         .from('wealth_service_renewals')
         .insert({
@@ -244,11 +250,12 @@ class RecurringServiceRepository {
               .toIso8601String()
               .substring(0, 10),
           'new_expiry_date': newExpiryDate.toIso8601String().substring(0, 10),
-          'occurred_at': occurredAt.toIso8601String(),
+          'occurred_at': effectiveOccurredAt.toIso8601String(),
         })
         .select('id')
         .single();
     final renewalId = renewalRow['id'] as String;
+    final effectiveNote = note ?? '${service.name} - gia hạn';
 
     if (!viaDebt) {
       final singlePayment = payments.length == 1 ? payments.first : null;
@@ -258,8 +265,8 @@ class RecurringServiceRepository {
         categoryCode: 'BILLS',
         amount: totalAmount,
         currency: service.currency,
-        occurredAt: occurredAt,
-        note: '${service.name} - gia hạn',
+        occurredAt: effectiveOccurredAt,
+        note: effectiveNote,
         paymentAccountType: singlePayment?.accountType,
         paymentBankCode: singlePayment?.bankCode,
         paymentBankName: singlePayment?.bankName,
@@ -301,8 +308,8 @@ class RecurringServiceRepository {
           bankName: payment.bankName,
           currency: service.currency,
           amount: -payment.amount,
-          note: '${service.name} - gia hạn',
-          occurredAt: occurredAt,
+          note: effectiveNote,
+          occurredAt: effectiveOccurredAt,
           source: 'service_renewal',
           sourceServiceRenewalPaymentId: paymentId,
         ),

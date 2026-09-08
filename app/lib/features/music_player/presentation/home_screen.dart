@@ -40,6 +40,12 @@ class HomeScreen extends ConsumerWidget {
     // chon/chua dang nhap) - dung de highlight tile lien quan ben duoi, VAN
     // HIEN DU MOI TILE NHU CU (khong an/khoa tile nao) theo dung yeu cau.
     final persona = ref.watch(learningPathChoiceProvider).valueOrNull;
+    // Chua tung tuong tac voi khao sat (chua chon persona nao LAN chua bam
+    // "Tu hoc") - hien goi y ban tay + chu tro vao nut khao sat de nguoi
+    // dung moi biet no ton tai; mac dinh true (an) trong luc dang tai de
+    // tranh loe hien ra roi tat ngay sau 1 frame.
+    final surveyInteracted =
+        ref.watch(learningPathInteractedProvider).valueOrNull ?? true;
     final recommended = persona != null
         ? kPersonaRecommendations[persona]!
         : const <HomeFeature>[];
@@ -72,9 +78,24 @@ class HomeScreen extends ConsumerWidget {
                         backgroundColor: Colors.transparent,
                         builder: (_) => const LearningPathSurveyScreen(),
                       ),
-                      child: Tooltip(
-                        message: ref.tr('learning_path_tooltip'),
-                        child: const _IconCircle(icon: Icons.explore_rounded),
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Tooltip(
+                            message: ref.tr('learning_path_tooltip'),
+                            child: const _IconCircle(
+                              icon: Icons.explore_rounded,
+                            ),
+                          ),
+                          if (!surveyInteracted)
+                            Positioned(
+                              top: 46,
+                              right: -74,
+                              child: IgnorePointer(
+                                child: _SuggestHint(color: AppColors.teal),
+                              ),
+                            ),
+                        ],
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -449,6 +470,46 @@ class _PointingHandBadgeState extends State<_PointingHandBadge>
           color: Colors.white,
         ),
       ),
+    );
+  }
+}
+
+/// Ban tay tro + dong chu goi y nguoi dung CHUA TUNG mo khao sat "Goi y lo
+/// trinh hoc" bam vao nut do (xem [_PointingHandBadge], tai su dung nguyen
+/// con vat nay - cung 1 ngon ngu hinh anh voi tile goi y o luoi Home) - tu
+/// an ngay sau khi ho chon 1 gia tri BAT KY trong khao sat, ke ca "Tu hoc"
+/// (xem learningPathInteractedProvider).
+class _SuggestHint extends ConsumerWidget {
+  const _SuggestHint({required this.color});
+  final Color color;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        _PointingHandBadge(color: color),
+        const SizedBox(height: 4),
+        Container(
+          constraints: const BoxConstraints(maxWidth: 128),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: const [BoxShadow(color: Colors.black38, blurRadius: 8)],
+          ),
+          child: Text(
+            ref.tr('learning_path_hint_text'),
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 10.5,
+              fontWeight: FontWeight.w700,
+              decoration: TextDecoration.none,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -35,13 +35,36 @@ class _CalculatorScreenState extends ConsumerState<CalculatorScreen> {
   };
 
   String _formatNumber(double n) {
+    String s;
     if (n == n.roundToDouble() && n.abs() < 1e15) {
-      return n.toStringAsFixed(0);
+      s = n.toStringAsFixed(0);
+    } else {
+      s = n.toStringAsFixed(8);
+      s = s.replaceFirst(RegExp(r'0+$'), '');
+      s = s.replaceFirst(RegExp(r'\.$'), '');
     }
-    var s = n.toStringAsFixed(8);
-    s = s.replaceFirst(RegExp(r'0+$'), '');
-    s = s.replaceFirst(RegExp(r'\.$'), '');
-    return s;
+    return _groupDigits(s);
+  }
+
+  /// Chen dau `,` phan cach hang nghin vao phan nguyen cua 1 chuoi so - dung
+  /// CHUNG cho ca so da tinh xong ([_formatNumber]) LAN so dang go do trong
+  /// [_display] (xem noi dung [build]), giu nguyen dau `-`/phan thap phan.
+  /// Cung quy uoc dau `,` nhu [ThousandsInputFormatter] o cac sheet nhap
+  /// tien khac trong Quan ly tai san.
+  String _groupDigits(String raw) {
+    if (raw == 'Error') return raw;
+    final isNeg = raw.startsWith('-');
+    final unsigned = isNeg ? raw.substring(1) : raw;
+    final dotIndex = unsigned.indexOf('.');
+    final intPart = dotIndex == -1 ? unsigned : unsigned.substring(0, dotIndex);
+    final decPart = dotIndex == -1 ? '' : unsigned.substring(dotIndex);
+    if (intPart.isEmpty) return '${isNeg ? '-' : ''}$decPart';
+    final buffer = StringBuffer();
+    for (var i = 0; i < intPart.length; i++) {
+      if (i > 0 && (intPart.length - i) % 3 == 0) buffer.write(',');
+      buffer.write(intPart[i]);
+    }
+    return '${isNeg ? '-' : ''}$buffer$decPart';
   }
 
   void _inputDigit(String digit) {
@@ -79,7 +102,7 @@ class _CalculatorScreenState extends ConsumerState<CalculatorScreen> {
     if (_first != null && _pendingOp != null) {
       _historyText =
           '${_formatNumber(_first!)} ${_opSymbol(_pendingOp!)} '
-          '$_display';
+          '${_groupDigits(_display)}';
     }
   }
 
@@ -216,7 +239,10 @@ class _CalculatorScreenState extends ConsumerState<CalculatorScreen> {
               alignment: Alignment.centerRight,
               child: FittedBox(
                 fit: BoxFit.scaleDown,
-                child: Text(_display, style: AppTextStyles.heading(size: 56)),
+                child: Text(
+                  _groupDigits(_display),
+                  style: AppTextStyles.heading(size: 56),
+                ),
               ),
             ),
             const SizedBox(height: 20),

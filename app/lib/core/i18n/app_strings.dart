@@ -37,6 +37,22 @@ class AppStrings {
       AppLanguage.vi: '31 chủ điểm ngữ pháp cơ bản, kèm bài tập luyện tập',
       AppLanguage.en: '31 core grammar topics, with practice exercises',
     },
+    'grammar_irregular_verbs_title': {
+      AppLanguage.vi: 'Bảng động từ bất quy tắc',
+      AppLanguage.en: 'Irregular verbs table',
+    },
+    'grammar_irregular_verbs_subtitle': {
+      AppLanguage.vi: '{n} động từ bất quy tắc thường gặp (V1 - V2 - V3)',
+      AppLanguage.en: '{n} common irregular verbs (V1 - V2 - V3)',
+    },
+    'grammar_irregular_verbs_search_hint': {
+      AppLanguage.vi: 'Tìm động từ hoặc nghĩa tiếng Việt...',
+      AppLanguage.en: 'Search verb or Vietnamese meaning...',
+    },
+    'grammar_irregular_verbs_meaning': {
+      AppLanguage.vi: 'Nghĩa',
+      AppLanguage.en: 'Meaning',
+    },
     'grammar_topics_quick_subtitle': {
       AppLanguage.vi: '31 chủ điểm cơ bản kèm bài tập',
       AppLanguage.en: '31 core topics with exercises',
@@ -80,6 +96,10 @@ class AppStrings {
     'voice_chat_title': {
       AppLanguage.vi: 'AI Voice Chat',
       AppLanguage.en: 'AI Voice Chat',
+    },
+    'assistive_menu_home': {
+      AppLanguage.vi: 'Trang chủ',
+      AppLanguage.en: 'Home',
     },
     'voice_chat_quick_subtitle': {
       AppLanguage.vi: 'Trò chuyện tự do bằng giọng nói với AI',
@@ -225,6 +245,24 @@ class AppStrings {
       AppLanguage.en: 'Pick a topic to start learning',
     },
     'vocab_word_count': {AppLanguage.vi: 'từ', AppLanguage.en: 'words'},
+    'vocab_frequency_common': {
+      AppLanguage.vi: 'Thông dụng',
+      AppLanguage.en: 'Common',
+    },
+    'vocab_frequency_medium': {
+      AppLanguage.vi: 'Thường gặp',
+      AppLanguage.en: 'Medium',
+    },
+    'vocab_frequency_rare': {AppLanguage.vi: 'Ít gặp', AppLanguage.en: 'Rare'},
+    'vocab_pos_noun': {AppLanguage.vi: 'Danh từ', AppLanguage.en: 'Noun'},
+    'vocab_pos_verb': {AppLanguage.vi: 'Động từ', AppLanguage.en: 'Verb'},
+    'vocab_pos_adjective': {
+      AppLanguage.vi: 'Tính từ',
+      AppLanguage.en: 'Adjective',
+    },
+    'vocab_pos_adverb': {AppLanguage.vi: 'Trạng từ', AppLanguage.en: 'Adverb'},
+    'vocab_pos_phrase': {AppLanguage.vi: 'Cụm từ', AppLanguage.en: 'Phrase'},
+    'vocab_filter_all': {AppLanguage.vi: 'Tất cả', AppLanguage.en: 'All'},
     'vocab_search_hint': {
       AppLanguage.vi: 'Tìm chủ đề từ vựng...',
       AppLanguage.en: 'Search vocabulary topics...',
@@ -359,6 +397,10 @@ class AppStrings {
     'learning_path_tooltip': {
       AppLanguage.vi: 'Gợi ý lộ trình học',
       AppLanguage.en: 'Suggest a learning path',
+    },
+    'learning_path_hint_text': {
+      AppLanguage.vi: 'Bấm vào đây để chọn gợi ý học phù hợp với bạn!',
+      AppLanguage.en: 'Tap here to get a learning path suggestion for you!',
     },
     'learning_path_survey_title': {
       AppLanguage.vi: 'Gợi ý lộ trình học',

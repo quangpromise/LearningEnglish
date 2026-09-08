@@ -135,6 +135,15 @@ final learningPathChoiceProvider = FutureProvider<LearningPersona?>(
   (ref) => ref.watch(learningPathRepositoryProvider).fetchChoice(),
 );
 
+/// Da tung tuong tac voi khao sat chua (chon persona HOAC bam "Tu hoc") -
+/// dung de an/hien goi y ban tay tro vao nut khao sat o Home (chi hien khi
+/// false - nguoi dung CHUA TUNG mo/chon gi). Invalidate cung luc voi
+/// [learningPathChoiceProvider] sau khi luu lua chon (xem
+/// learning_path_survey_screen.dart).
+final learningPathInteractedProvider = FutureProvider<bool>(
+  (ref) => ref.watch(learningPathRepositoryProvider).hasInteracted(),
+);
+
 final leaderboardRepositoryProvider = Provider<LeaderboardRepository>(
   (ref) => LeaderboardRepository(ref.watch(supabaseClientProvider)),
 );

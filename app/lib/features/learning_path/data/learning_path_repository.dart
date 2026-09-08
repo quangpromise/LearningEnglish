@@ -30,6 +30,26 @@ class LearningPathRepository {
     }
   }
 
+  /// Da tung tuong tac voi khao sat chua (chon 1 persona HOAC bam "Tu hoc")
+  /// - khac [fetchChoice] (tra ve null cho CA HAI truong hop "chua tung mo
+  /// khao sat" LAN "da bam Tu hoc"), dung rieng de biet KHI NAO an goi y
+  /// ban tay tro vao nut khao sat o Home (chi hien cho nguoi CHUA TUNG tuong
+  /// tac, an ngay sau khi ho chon 1 gia tri BAT KY, ke ca Tu hoc).
+  Future<bool> hasInteracted() async {
+    final userId = _supabase.auth.currentUser?.id;
+    if (userId == null) return false;
+    try {
+      final row = await _supabase
+          .from('user_learning_path_choice')
+          .select('user_id')
+          .eq('user_id', userId)
+          .maybeSingle();
+      return row != null;
+    } catch (_) {
+      return false;
+    }
+  }
+
   Future<void> choosePersona(LearningPersona persona) async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) return;

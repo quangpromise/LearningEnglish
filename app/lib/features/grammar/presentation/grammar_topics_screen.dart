@@ -5,6 +5,7 @@ import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/grammar_data.dart';
 import 'grammar_topic_detail_screen.dart';
+import 'irregular_verbs_screen.dart';
 
 /// Danh sach 31 chu diem ngu phap co ban - vao tu 1 the rieng trong man
 /// Vocabulary (khong phai tu tab rieng), moi chu diem co giai thich +
@@ -118,6 +119,47 @@ class _GrammarTopicsScreenState extends ConsumerState<GrammarTopicsScreen> {
                       ),
                     ),
                 ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            GestureDetector(
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const IrregularVerbsScreen()),
+              ),
+              child: GlowBox(
+                borderRadius: 16,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: AppColors.purple.withValues(alpha: 0.18),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.table_chart_rounded,
+                        color: AppColors.purple,
+                        size: 18,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        ref.tr('grammar_irregular_verbs_title'),
+                        style: AppTextStyles.body(weight: FontWeight.w800),
+                      ),
+                    ),
+                    const Icon(
+                      Icons.chevron_right_rounded,
+                      color: AppColors.textMuted,
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 14),
