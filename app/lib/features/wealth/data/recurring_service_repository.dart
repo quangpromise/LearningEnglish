@@ -224,7 +224,7 @@ class RecurringServiceRepository {
   /// khoan chi CHI duoc tinh khi nguoi dung tra khoan no do sau nay (luc do
   /// pay_debt_sheet.dart moi ghi wealth_transactions, tranh tinh trung 2 lan
   /// cho cung 1 khoan tien).
-  /// [occurredAt]/[note]: mac dinh la thoi diem hien tai/"<ten> - gia han"
+  /// [occurredAt]/[note]: mac dinh la thoi diem hien tai/"`ten` - gia han"
   /// (nut "Gia han" o man Dich vu dinh ky) - cho phep ghi de khi goi tu noi
   /// khac (vd chon "Dich vu dinh ky" ngay trong man Them Chi tieu, dung
   /// ngay gio/ghi chu nguoi dung da nhap thay vi luon la hien tai).
