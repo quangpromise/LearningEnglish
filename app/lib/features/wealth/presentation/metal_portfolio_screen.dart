@@ -10,6 +10,7 @@ import '../data/exchange_rate_repository.dart';
 import '../data/wealth_holding_model.dart';
 import 'buy_sell_sheets.dart';
 import 'confirm_delete.dart';
+import 'wealth_holding_history_sheet.dart';
 
 /// Portfolio Vang/Bac/Dong (Phase C) - moi lan them la 1 "lo" doc lap (giong
 /// cach Vi ghi tung dong bien dong, KHONG gop thanh 1 so du duy nhat) vi
@@ -263,75 +264,103 @@ class _LotTile extends ConsumerWidget {
             .deleteHolding(userId, holding.id);
         ref.invalidate(wealthHoldingsProvider(holding.assetType));
       },
-      child: GestureDetector(
-        onTap: () {
-          final kind = _kinds.firstWhere(
-            (k) => k.assetType == holding.assetType,
-          );
-          showHoldingActionsSheet(
-            context,
-            ref,
-            onEdit: () => showModalBottomSheet(
-              context: context,
-              isScrollControlled: true,
-              backgroundColor: Colors.transparent,
-              builder: (_) => _AddMetalLotSheet(kind: kind, existing: holding),
-            ),
-            onBuyMore: () => showBuyMoreSheet(
-              context,
-              holding: holding,
-              unitLabel: unit,
-              livePrice: unitPrice,
-            ),
-            onSell: () => showSellSheet(
-              context,
-              holding: holding,
-              unitLabel: unit,
-              livePrice: unitPrice,
-            ),
-          );
-        },
-        child: GlowBox(
-          borderRadius: 16,
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      hidden ? '•••••••' : '$quantity $unit',
-                      style: AppTextStyles.body(weight: FontWeight.w800),
-                    ),
-                    Text(
-                      hidden
-                          ? '•••••••'
-                          : '${ref.tr('wealth_metal_cost_price')}: ${formatVnd(avgCost)}',
-                      style: AppTextStyles.muted(size: 11),
-                    ),
-                  ],
+      child: GlowBox(
+        borderRadius: 16,
+        child: Row(
+          children: [
+            Expanded(
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => showWealthHoldingHistorySheet(
+                  context,
+                  holding: holding,
+                  livePrice: unitPrice,
                 ),
-              ),
-              if (currentValue != null)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
+                child: Row(
                   children: [
-                    Text(
-                      hidden ? '•••••••' : formatVnd(currentValue),
-                      style: AppTextStyles.body(weight: FontWeight.w800),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            hidden ? '•••••••' : '$quantity $unit',
+                            style: AppTextStyles.body(weight: FontWeight.w800),
+                          ),
+                          Text(
+                            hidden
+                                ? '•••••••'
+                                : '${ref.tr('wealth_metal_cost_price')}: ${formatVnd(avgCost)}',
+                            style: AppTextStyles.muted(size: 11),
+                          ),
+                        ],
+                      ),
                     ),
-                    if (pnl != null && !hidden)
-                      Text(
-                        '${pnl >= 0 ? '+' : ''}${formatVnd(pnl)}'
-                        '${pnlPercent == null ? '' : ' (${pnl >= 0 ? '+' : ''}${pnlPercent.toStringAsFixed(1)}%)'}',
-                        style: AppTextStyles.muted(size: 11).copyWith(
-                          color: pnl >= 0 ? AppColors.teal : AppColors.pink,
-                        ),
+                    if (currentValue != null)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            hidden ? '•••••••' : formatVnd(currentValue),
+                            style: AppTextStyles.body(weight: FontWeight.w800),
+                          ),
+                          if (pnl != null && !hidden)
+                            Text(
+                              '${pnl >= 0 ? '+' : ''}${formatVnd(pnl)}'
+                              '${pnlPercent == null ? '' : ' (${pnl >= 0 ? '+' : ''}${pnlPercent.toStringAsFixed(1)}%)'}',
+                              style: AppTextStyles.muted(size: 11).copyWith(
+                                color: pnl >= 0
+                                    ? AppColors.teal
+                                    : AppColors.pink,
+                              ),
+                            ),
+                        ],
                       ),
                   ],
                 ),
-            ],
-          ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            WealthHoldingRowIconButton(
+              icon: Icons.history_rounded,
+              onTap: () => showWealthHoldingHistorySheet(
+                context,
+                holding: holding,
+                livePrice: unitPrice,
+              ),
+            ),
+            const SizedBox(width: 6),
+            WealthHoldingRowIconButton(
+              icon: Icons.add_rounded,
+              onTap: () {
+                final kind = _kinds.firstWhere(
+                  (k) => k.assetType == holding.assetType,
+                );
+                showHoldingActionsSheet(
+                  context,
+                  ref,
+                  onEdit: () => showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (_) =>
+                        _AddMetalLotSheet(kind: kind, existing: holding),
+                  ),
+                  onBuyMore: () => showBuyMoreSheet(
+                    context,
+                    holding: holding,
+                    unitLabel: unit,
+                    livePrice: unitPrice,
+                  ),
+                  onSell: () => showSellSheet(
+                    context,
+                    holding: holding,
+                    unitLabel: unit,
+                    livePrice: unitPrice,
+                  ),
+                );
+              },
+            ),
+          ],
         ),
       ),
     );

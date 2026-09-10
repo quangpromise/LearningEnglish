@@ -19,20 +19,29 @@ Future<void> showAddBalanceEntrySheet(
   WidgetRef ref, {
   VnBank? initialBank,
   WealthBalanceEntry? existing,
+  bool initialIsAdd = true,
 }) {
   return showModalBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (_) =>
-        _AddBalanceEntrySheet(bank: initialBank, existing: existing),
+    builder: (_) => _AddBalanceEntrySheet(
+      bank: initialBank,
+      existing: existing,
+      initialIsAdd: initialIsAdd,
+    ),
   );
 }
 
 class _AddBalanceEntrySheet extends ConsumerStatefulWidget {
-  const _AddBalanceEntrySheet({this.bank, this.existing});
+  const _AddBalanceEntrySheet({
+    this.bank,
+    this.existing,
+    this.initialIsAdd = true,
+  });
   final VnBank? bank;
   final WealthBalanceEntry? existing;
+  final bool initialIsAdd;
 
   @override
   ConsumerState<_AddBalanceEntrySheet> createState() =>
@@ -48,7 +57,9 @@ class _AddBalanceEntrySheetState extends ConsumerState<_AddBalanceEntrySheet> {
   late final _noteController = TextEditingController(
     text: widget.existing?.note ?? '',
   );
-  late bool _isAdd = (widget.existing?.amount ?? 0) >= 0;
+  late bool _isAdd = widget.existing != null
+      ? widget.existing!.amount >= 0
+      : widget.initialIsAdd;
   late String _currency = widget.existing?.currency ?? 'VND';
   late DateTime _occurredAt = widget.existing?.occurredAt ?? DateTime.now();
   bool _saving = false;

@@ -10,6 +10,7 @@ import '../data/exchange_rate_repository.dart';
 import '../data/wealth_holding_model.dart';
 import 'buy_sell_sheets.dart';
 import 'confirm_delete.dart';
+import 'wealth_holding_history_sheet.dart';
 
 const _kAssetType = 'foreign_currency';
 
@@ -325,73 +326,100 @@ class _LotTile extends ConsumerWidget {
             .deleteHolding(userId, holding.id);
         ref.invalidate(wealthHoldingsProvider(_kAssetType));
       },
-      child: GestureDetector(
-        onTap: () => showHoldingActionsSheet(
-          context,
-          ref,
-          onEdit: () => showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            backgroundColor: Colors.transparent,
-            builder: (_) => _AddCurrencyLotSheet(
-              initialCode: holding.symbol,
-              existing: holding,
-            ),
-          ),
-          onBuyMore: () => showBuyMoreSheet(
-            context,
-            holding: holding,
-            unitLabel: holding.symbol ?? '',
-            livePrice: unitPrice,
-          ),
-          onSell: () => showSellSheet(
-            context,
-            holding: holding,
-            unitLabel: holding.symbol ?? '',
-            livePrice: unitPrice,
-          ),
-        ),
-        child: GlowBox(
-          borderRadius: 16,
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      hidden ? '•••••••' : '$quantity ${holding.symbol}',
-                      style: AppTextStyles.body(weight: FontWeight.w800),
-                    ),
-                    Text(
-                      hidden
-                          ? '•••••••'
-                          : '${ref.tr('wealth_metal_cost_price')}: ${formatVnd(avgCost)}',
-                      style: AppTextStyles.muted(size: 11),
-                    ),
-                  ],
+      child: GlowBox(
+        borderRadius: 16,
+        child: Row(
+          children: [
+            Expanded(
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => showWealthHoldingHistorySheet(
+                  context,
+                  holding: holding,
+                  livePrice: unitPrice,
                 ),
-              ),
-              if (currentValue != null)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
+                child: Row(
                   children: [
-                    Text(
-                      hidden ? '•••••••' : formatVnd(currentValue),
-                      style: AppTextStyles.body(weight: FontWeight.w800),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            hidden ? '•••••••' : '$quantity ${holding.symbol}',
+                            style: AppTextStyles.body(weight: FontWeight.w800),
+                          ),
+                          Text(
+                            hidden
+                                ? '•••••••'
+                                : '${ref.tr('wealth_metal_cost_price')}: ${formatVnd(avgCost)}',
+                            style: AppTextStyles.muted(size: 11),
+                          ),
+                        ],
+                      ),
                     ),
-                    if (pnl != null && !hidden)
-                      Text(
-                        '${pnl >= 0 ? '+' : ''}${formatVnd(pnl)}'
-                        '${pnlPercent == null ? '' : ' (${pnl >= 0 ? '+' : ''}${pnlPercent.toStringAsFixed(1)}%)'}',
-                        style: AppTextStyles.muted(size: 11).copyWith(
-                          color: pnl >= 0 ? AppColors.teal : AppColors.pink,
-                        ),
+                    if (currentValue != null)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            hidden ? '•••••••' : formatVnd(currentValue),
+                            style: AppTextStyles.body(weight: FontWeight.w800),
+                          ),
+                          if (pnl != null && !hidden)
+                            Text(
+                              '${pnl >= 0 ? '+' : ''}${formatVnd(pnl)}'
+                              '${pnlPercent == null ? '' : ' (${pnl >= 0 ? '+' : ''}${pnlPercent.toStringAsFixed(1)}%)'}',
+                              style: AppTextStyles.muted(size: 11).copyWith(
+                                color: pnl >= 0
+                                    ? AppColors.teal
+                                    : AppColors.pink,
+                              ),
+                            ),
+                        ],
                       ),
                   ],
                 ),
-            ],
-          ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            WealthHoldingRowIconButton(
+              icon: Icons.history_rounded,
+              onTap: () => showWealthHoldingHistorySheet(
+                context,
+                holding: holding,
+                livePrice: unitPrice,
+              ),
+            ),
+            const SizedBox(width: 6),
+            WealthHoldingRowIconButton(
+              icon: Icons.add_rounded,
+              onTap: () => showHoldingActionsSheet(
+                context,
+                ref,
+                onEdit: () => showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (_) => _AddCurrencyLotSheet(
+                    initialCode: holding.symbol,
+                    existing: holding,
+                  ),
+                ),
+                onBuyMore: () => showBuyMoreSheet(
+                  context,
+                  holding: holding,
+                  unitLabel: holding.symbol ?? '',
+                  livePrice: unitPrice,
+                ),
+                onSell: () => showSellSheet(
+                  context,
+                  holding: holding,
+                  unitLabel: holding.symbol ?? '',
+                  livePrice: unitPrice,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -417,13 +445,13 @@ class _AddCurrencyLotSheetState extends ConsumerState<_AddCurrencyLotSheet> {
         ? ''
         : groupThousands(widget.existing!.avgCost!),
   );
-  String? _code;
+  String? _expandedCode;
   bool _saving = false;
 
   @override
   void initState() {
     super.initState();
-    _code = widget.existing?.symbol ?? widget.initialCode;
+    _expandedCode = widget.existing?.symbol ?? widget.initialCode;
   }
 
   @override
@@ -433,8 +461,11 @@ class _AddCurrencyLotSheetState extends ConsumerState<_AddCurrencyLotSheet> {
     super.dispose();
   }
 
-  Future<void> _save() async {
-    final code = _code;
+  /// Sua 1 lo da co - giu nguyen 2 o quantity/cost tach rieng (nguoi dung co
+  /// the muon sua lai gia von lich su, khac voi luc THEM MOI luon dung dung
+  /// gia thi truong hien tai).
+  Future<void> _saveEdit() async {
+    final code = widget.existing!.symbol;
     final quantity = double.tryParse(_quantityController.text.trim());
     final cost = parseThousandsFormatted(_costController.text);
     if (code == null ||
@@ -451,27 +482,49 @@ class _AddCurrencyLotSheetState extends ConsumerState<_AddCurrencyLotSheet> {
       return;
     }
     try {
-      final repo = ref.read(wealthHoldingRepositoryProvider);
-      if (widget.existing != null) {
-        await repo.updateQuantityAndCost(
-          userId,
-          widget.existing!.id,
-          quantity: quantity,
-          avgCost: cost,
-        );
-      } else {
-        await repo.insertNew(
-          userId,
-          WealthHolding(
-            id: '',
-            assetType: _kAssetType,
-            symbol: code,
+      await ref
+          .read(wealthHoldingRepositoryProvider)
+          .updateQuantityAndCost(
+            userId,
+            widget.existing!.id,
             quantity: quantity,
             avgCost: cost,
-            currency: 'VND',
-          ),
-        );
-      }
+          );
+      ref.invalidate(wealthHoldingsProvider(_kAssetType));
+      if (mounted) Navigator.of(context).pop(code);
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  /// Them 1 lo MOI - gia von = dung gia mua chuyen khoan REALTIME dang hien
+  /// o hang da mo rong (khong con o nhap tay rieng) - theo yeu cau nguoi
+  /// dung gon lai luong them: bam 1 dong tien te -> hien o nhap so luong +
+  /// nut xac nhan ngay duoi dong do.
+  Future<void> _confirmAdd(String code, double? price) async {
+    if (price == null || price <= 0) return;
+    final quantity = double.tryParse(_quantityController.text.trim());
+    if (quantity == null || quantity <= 0) return;
+    setState(() => _saving = true);
+    final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
+    if (userId == null) {
+      setState(() => _saving = false);
+      return;
+    }
+    try {
+      await ref
+          .read(wealthHoldingRepositoryProvider)
+          .insertNew(
+            userId,
+            WealthHolding(
+              id: '',
+              assetType: _kAssetType,
+              symbol: code,
+              quantity: quantity,
+              avgCost: price,
+              currency: 'VND',
+            ),
+          );
       ref.invalidate(wealthHoldingsProvider(_kAssetType));
       if (mounted) Navigator.of(context).pop(code);
     } finally {
@@ -504,7 +557,7 @@ class _AddCurrencyLotSheetState extends ConsumerState<_AddCurrencyLotSheet> {
               Text(
                 ref.tr(
                   widget.existing == null
-                      ? 'wealth_add_holding'
+                      ? 'wealth_add_currency_holding'
                       : 'wealth_edit_holding',
                 ),
                 style: AppTextStyles.heading(size: 16),
@@ -515,7 +568,7 @@ class _AddCurrencyLotSheetState extends ConsumerState<_AddCurrencyLotSheet> {
                   ref.tr('wealth_currency_pick_title'),
                   style: AppTextStyles.muted(size: 11),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 10),
                 if (rates.isEmpty)
                   Text(
                     ref.tr('wealth_currency_rates_loading'),
@@ -523,75 +576,205 @@ class _AddCurrencyLotSheetState extends ConsumerState<_AddCurrencyLotSheet> {
                         .copyWith(color: AppColors.pink),
                   )
                 else
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
-                    children: [
-                      for (final r in rates)
-                        _KindChip(
-                          label: r.code,
-                          selected: r.code == _code,
-                          onTap: () => setState(() => _code = r.code),
-                        ),
-                    ],
-                  ),
-                const SizedBox(height: 12),
-              ] else
+                  for (final r in rates)
+                    _CurrencyRow(
+                      rate: r,
+                      expanded: _expandedCode == r.code,
+                      saving: _saving,
+                      quantityController: _quantityController,
+                      onTap: () => setState(() {
+                        if (_expandedCode == r.code) {
+                          _expandedCode = null;
+                        } else {
+                          _expandedCode = r.code;
+                          _quantityController.clear();
+                        }
+                      }),
+                      onConfirm: () => _confirmAdd(
+                        r.code,
+                        r.buyTransfer ?? r.buyCash ?? r.sell,
+                      ),
+                    ),
+              ] else ...[
                 Text(
                   widget.existing!.symbol ?? '',
                   style: AppTextStyles.body(size: 14, weight: FontWeight.w800),
                 ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: _quantityController,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                style: AppTextStyles.body(),
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: AppColors.glassFill,
-                  hintText:
-                      '${ref.tr('wealth_quantity_hint')} (${_code ?? ''})',
-                  hintStyle: const TextStyle(color: AppColors.textMuted),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
+                const SizedBox(height: 10),
+                TextField(
+                  controller: _quantityController,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  style: AppTextStyles.body(),
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: AppColors.glassFill,
+                    hintText:
+                        '${ref.tr('wealth_quantity_hint')} (${widget.existing!.symbol ?? ''})',
+                    hintStyle: const TextStyle(color: AppColors.textMuted),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide.none,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: _costController,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                inputFormatters: [ThousandsInputFormatter()],
-                style: AppTextStyles.body(),
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: AppColors.glassFill,
-                  hintText: ref.tr('wealth_metal_cost_price'),
-                  hintStyle: const TextStyle(color: AppColors.textMuted),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
+                const SizedBox(height: 10),
+                TextField(
+                  controller: _costController,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  inputFormatters: [ThousandsInputFormatter()],
+                  style: AppTextStyles.body(),
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: AppColors.glassFill,
+                    hintText: ref.tr('wealth_metal_cost_price'),
+                    hintStyle: const TextStyle(color: AppColors.textMuted),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide.none,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: PillButton(
-                  label: ref.tr('wallet_save'),
-                  accentGradient: AppColors.wealthAccentGradient,
-                  accentColor: AppColors.wealthAccent,
-                  onTap: _saving || _code == null ? null : _save,
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: PillButton(
+                    label: ref.tr('wallet_save'),
+                    accentGradient: AppColors.wealthAccentGradient,
+                    accentColor: AppColors.wealthAccent,
+                    onTap: _saving ? null : _saveEdit,
+                  ),
                 ),
-              ),
+              ],
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// 1 dong "accordion" cho 1 loai ngoai te trong danh sach THEM MOI - luon
+/// hien ma tien te + gia mua chuyen khoan realtime; bam vao de mo/thu gon o
+/// nhap so luong + nut xac nhan ngay ben duoi CUNG dong do (thay vi phai
+/// chon roi cuon xuong o nhap rieng o cuoi nhu truoc).
+class _CurrencyRow extends ConsumerWidget {
+  const _CurrencyRow({
+    required this.rate,
+    required this.expanded,
+    required this.saving,
+    required this.quantityController,
+    required this.onTap,
+    required this.onConfirm,
+  });
+  final ForeignCurrencyRate rate;
+  final bool expanded;
+  final bool saving;
+  final TextEditingController quantityController;
+  final VoidCallback onTap;
+  final VoidCallback onConfirm;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final price = rate.buyTransfer ?? rate.buyCash ?? rate.sell;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: expanded
+            ? AppColors.wealthAccent.withValues(alpha: 0.12)
+            : AppColors.glassFill,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: expanded ? AppColors.wealthAccent : AppColors.glassBorder,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          GestureDetector(
+            onTap: onTap,
+            behavior: HitTestBehavior.opaque,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    rate.code,
+                    style: AppTextStyles.body(weight: FontWeight.w800),
+                  ),
+                ),
+                Text(
+                  price == null ? '—' : formatVnd(price),
+                  style: AppTextStyles.body(
+                    size: 12.5,
+                    weight: FontWeight.w700,
+                    color: AppColors.wealthAccent,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Icon(
+                  expanded
+                      ? Icons.expand_less_rounded
+                      : Icons.expand_more_rounded,
+                  size: 18,
+                  color: AppColors.textMuted,
+                ),
+              ],
+            ),
+          ),
+          if (expanded) ...[
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: quantityController,
+                    autofocus: true,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    style: AppTextStyles.body(),
+                    decoration: InputDecoration(
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
+                      filled: true,
+                      fillColor: AppColors.glassFill,
+                      hintText:
+                          '${ref.tr('wealth_quantity_hint')} (${rate.code})',
+                      hintStyle: const TextStyle(color: AppColors.textMuted),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: saving ? null : onConfirm,
+                  child: Container(
+                    padding: const EdgeInsets.all(13),
+                    decoration: BoxDecoration(
+                      gradient: AppColors.wealthAccentGradient,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.check_rounded,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
       ),
     );
   }

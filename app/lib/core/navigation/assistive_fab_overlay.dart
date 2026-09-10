@@ -14,7 +14,11 @@ import 'app_popup.dart';
 import 'nav_keys.dart';
 
 const _kFabSize = 56.0;
-const _kRadialRadius = 100.0;
+const _kRadialRadius = 150.0;
+// Khoang cach doc GIUA TAM 2 bubble lien tiep - phai > chieu cao 1 muc
+// (bubble 48px + SizedBox 4px + 1 dong nhan ~11px = ~63px) de khong chong
+// len nhau; du de thoang mot chut.
+const _kItemSpacing = 78.0;
 
 enum _RadialAction { goHome, openPlanner, openAiVoiceChat, openCalculator }
 
@@ -148,7 +152,7 @@ class _AssistiveFabOverlayState extends ConsumerState<AssistiveFabOverlay> {
     setState(() => _expanded = false);
     final navContext = rootNavigatorKey.currentContext;
     if (navContext == null) return;
-    openAppPopup(navContext, const CalculatorScreen());
+    openCalculatorPopup(navContext);
   }
 
   void _handleAction(_RadialAction action) {
@@ -256,11 +260,14 @@ class _AssistiveFabOverlayState extends ConsumerState<AssistiveFabOverlay> {
     );
   }
 
-  /// Xep [_kRadialItems] deu nhau tren 1 vong cung 100 do (130-230 do, 0 do =
-  /// huong sang phai) mo VE TRAI vi nut goc dinh canh phai man hinh - cung
-  /// vong cung "boc" quanh nut Menu dinh canh phai (khong bay ra xa khoi
-  /// canh phai). Ban kinh 100px + khoang cach goc ~33 do giua 4 muc dam bao
-  /// khong chong len nhau voi kich thuoc bubble 48px.
+  /// Xep [_kRadialItems] tren 1 CUNG TRON deu theo KHOANG CACH DOC CO DINH
+  /// ([_kItemSpacing]) giua tam cac bubble, roi suy nguoc ra do lech ngang
+  /// tu phuong trinh duong tron ban kinh [_kRadialRadius] (x = R*cos, voi
+  /// cos suy tu sin = dy/R) - dam bao KHOANG CACH DOC luon du lon hon chieu
+  /// cao 1 muc (bubble 48px + nhan chu ~18px = ~66px) bat ke co bao nhieu
+  /// muc, thay vi chia deu theo GOC nhu truoc (bug da gap tren may that: 4
+  /// muc chia deu trong cung 100 do voi ban kinh 100px chi cho ~51px giua 2
+  /// tam, nho hon 66px nen luon chong len nhau).
   List<Widget> _buildRadialItems({
     required double centerY,
     required MediaQueryData mq,
@@ -269,17 +276,17 @@ class _AssistiveFabOverlayState extends ConsumerState<AssistiveFabOverlay> {
     final centerX = mq.size.width - _kFabSize / 2;
     final items = <Widget>[];
     final n = _kRadialItems.length;
+    final totalSpan = _kItemSpacing * (n - 1);
     for (var i = 0; i < n; i++) {
-      // Trai deu quanh 180 do (thang trai) trong khoang tong 100 do.
-      final angleDeg = n == 1 ? 180.0 : 130.0 + i * (100.0 / (n - 1));
-      final rad = angleDeg * math.pi / 180;
-      final dx = centerX + _kRadialRadius * math.cos(rad);
-      final dy = centerY + _kRadialRadius * math.sin(rad);
+      final dy = n == 1 ? 0.0 : -totalSpan / 2 + i * _kItemSpacing;
+      final dx = -math.sqrt(
+        math.max(0.0, _kRadialRadius * _kRadialRadius - dy * dy),
+      );
       final (action, icon, labelKey) = _kRadialItems[i];
       items.add(
         Positioned(
-          left: dx - 26,
-          top: dy - 30,
+          left: centerX + dx - 26,
+          top: centerY + dy - 30,
           child: GestureDetector(
             onTap: () => _handleAction(action),
             child: Column(

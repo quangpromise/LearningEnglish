@@ -9,7 +9,6 @@ import '../../../core/utils/currency_format.dart';
 import '../../../core/utils/date_format.dart';
 import '../data/wealth_balance_entry_model.dart';
 import 'add_balance_entry_sheet.dart';
-import 'bank_picker_sheet.dart';
 import 'confirm_delete.dart';
 import 'wallet_account_history_screen.dart';
 
@@ -86,30 +85,9 @@ class WalletExistingAssetsTab extends ConsumerWidget {
             const SizedBox(height: 10),
             _CashCard(entries: cashEntries),
             const SizedBox(height: 20),
-            Row(
-              children: [
-                Text(
-                  ref.tr('wallet_section_bank'),
-                  style: AppTextStyles.heading(size: 14),
-                ),
-                const Spacer(),
-                GestureDetector(
-                  onTap: () async {
-                    final bank = await showBankPickerSheet(context);
-                    if (bank != null && context.mounted) {
-                      await showAddBalanceEntrySheet(
-                        context,
-                        ref,
-                        initialBank: bank,
-                      );
-                    }
-                  },
-                  child: const Icon(
-                    Icons.add_circle_rounded,
-                    color: AppColors.wealthAccent,
-                  ),
-                ),
-              ],
+            Text(
+              ref.tr('wallet_section_bank'),
+              style: AppTextStyles.heading(size: 14),
             ),
             const SizedBox(height: 10),
             if (bankEntries.isEmpty)
@@ -170,32 +148,19 @@ class _CashCard extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: GestureDetector(
-                  onTap: entries.isEmpty ? null : openHistory,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        formatVnd(totalVnd),
-                        style: AppTextStyles.heading(size: 16),
-                      ),
-                      if (totalUsd != 0)
-                        Text(formatUsd(totalUsd), style: AppTextStyles.muted()),
-                    ],
-                  ),
+          GestureDetector(
+            onTap: entries.isEmpty ? null : openHistory,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  formatVnd(totalVnd),
+                  style: AppTextStyles.heading(size: 16),
                 ),
-              ),
-              GestureDetector(
-                onTap: () => showAddBalanceEntrySheet(context, ref),
-                child: const Icon(
-                  Icons.add_circle_rounded,
-                  color: AppColors.wealthAccent,
-                ),
-              ),
-            ],
+                if (totalUsd != 0)
+                  Text(formatUsd(totalUsd), style: AppTextStyles.muted()),
+              ],
+            ),
           ),
           if (entries.isEmpty)
             Padding(

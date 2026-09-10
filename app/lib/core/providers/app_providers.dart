@@ -43,8 +43,15 @@ import '../../features/wealth/data/wealth_debt_person_repository.dart';
 import '../../features/wealth/data/wealth_debt_repository.dart';
 import '../../features/wealth/data/recurring_service_model.dart';
 import '../../features/wealth/data/recurring_service_repository.dart';
+import '../../features/wealth/data/wealth_custom_category_model.dart';
+import '../../features/wealth/data/wealth_custom_category_repository.dart';
+import '../../features/wealth/data/wealth_payment_qr_model.dart';
+import '../../features/wealth/data/wealth_payment_qr_repository.dart';
+import '../../features/wealth/data/wealth_split_bill_model.dart';
+import '../../features/wealth/data/wealth_split_bill_repository.dart';
 import '../../features/wealth/data/wealth_holding_model.dart';
 import '../../features/wealth/data/wealth_holding_repository.dart';
+import '../../features/wealth/data/wealth_investment_transaction_model.dart';
 import '../../features/wealth/data/wealth_investment_transaction_repository.dart';
 import '../../features/wealth/data/wealth_transaction_model.dart';
 import '../../features/wealth/data/wealth_transaction_repository.dart';
@@ -606,6 +613,20 @@ final wealthHoldingsProvider = FutureProvider.autoDispose
           .fetchAll(userId, assetType);
     });
 
+/// Lich su mua/ban/danh gia lai theo 1 asset_type - dung cho nut "History"
+/// rieng cua tung khoan nam giu trong cac man Portfolio (loc tiep theo
+/// symbol o phia client vi 1 asset_type co the co nhieu ma khac nhau).
+final wealthInvestmentTransactionsProvider = FutureProvider.autoDispose
+    .family<List<WealthInvestmentTransaction>, String>((ref, assetType) {
+      final userId = ref.watch(supabaseClientProvider).auth.currentUser?.id;
+      if (userId == null) {
+        return Future.value(<WealthInvestmentTransaction>[]);
+      }
+      return ref
+          .watch(wealthInvestmentTransactionRepositoryProvider)
+          .fetchAll(userId, assetType);
+    });
+
 /// Gia hien tai cho danh sach ma da nam giu - family theo 1 CHUOI symbol noi
 /// dau phay (KHONG PHAI List truc tiep - List mac dinh so sanh theo
 /// identity trong Dart, nen 1 List MOI tao moi lan build (vd tu .toList())
@@ -1010,6 +1031,62 @@ final serviceRenewalsProvider =
       return ref
           .watch(recurringServiceRepositoryProvider)
           .fetchAllRenewals(userId);
+    });
+
+final wealthCustomCategoryRepositoryProvider =
+    Provider<WealthCustomCategoryRepository>(
+      (ref) =>
+          WealthCustomCategoryRepository(ref.watch(supabaseClientProvider)),
+    );
+
+/// Danh muc chi tieu TUY CHINH cua user (them/sua/xoa o wealth_settings_screen.dart,
+/// chon luc them Chi tieu o add_transaction_sheet.dart) - invalidate provider
+/// nay sau moi lan create/update/delete de UI cap nhat lai danh sach.
+final wealthCustomCategoriesProvider =
+    FutureProvider.autoDispose<List<WealthCustomCategory>>((ref) {
+      final userId = ref.watch(supabaseClientProvider).auth.currentUser?.id;
+      if (userId == null) return Future.value(<WealthCustomCategory>[]);
+      return ref.watch(wealthCustomCategoryRepositoryProvider).fetchAll(userId);
+    });
+
+final wealthPaymentQrRepositoryProvider = Provider<WealthPaymentQrRepository>(
+  (ref) => WealthPaymentQrRepository(ref.watch(supabaseClientProvider)),
+);
+
+/// Ma QR nhan tien "cua toi" (1 duy nhat/user) - hien khi bam nut "QR Code"
+/// o the Tong Vi man Home Quan ly tai san (xem wealth_home_screen.dart,
+/// wealth_qr_screen.dart). Invalidate sau moi lan luu de UI cap nhat lai.
+final wealthPaymentQrProvider = FutureProvider.autoDispose<WealthPaymentQr?>((
+  ref,
+) {
+  final userId = ref.watch(supabaseClientProvider).auth.currentUser?.id;
+  if (userId == null) return Future.value(null);
+  return ref.watch(wealthPaymentQrRepositoryProvider).fetch(userId);
+});
+
+final wealthSplitBillRepositoryProvider = Provider<WealthSplitBillRepository>(
+  (ref) => WealthSplitBillRepository(ref.watch(supabaseClientProvider)),
+);
+
+/// Lich su cac lan chia bill (moi/cu) - dung cho man Lich su chia bill
+/// (xem wealth_split_bill_history_screen.dart).
+final wealthSplitBillsProvider =
+    FutureProvider.autoDispose<List<WealthSplitBill>>((ref) {
+      final userId = ref.watch(supabaseClientProvider).auth.currentUser?.id;
+      if (userId == null) return Future.value(<WealthSplitBill>[]);
+      return ref.watch(wealthSplitBillRepositoryProvider).fetchAll(userId);
+    });
+
+/// Danh sach nguoi + trang thai (pending/debt/paid) cua 1 lan chia bill cu
+/// the - family theo billId, dung khi xem lai 1 bill trong lich su (van cho
+/// bam Ghi no/Da tra tiep neu con nguoi 'pending').
+final wealthSplitBillSharesProvider = FutureProvider.autoDispose
+    .family<List<WealthSplitBillShare>, String>((ref, billId) {
+      final userId = ref.watch(supabaseClientProvider).auth.currentUser?.id;
+      if (userId == null) return Future.value(<WealthSplitBillShare>[]);
+      return ref
+          .watch(wealthSplitBillRepositoryProvider)
+          .fetchShares(userId, billId);
     });
 
 /// Cac dich vu DA DUOC GAN cho 1 mini-app cu the (Fitness/Hoc Tieng Anh) -

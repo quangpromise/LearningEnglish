@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/date_format.dart';
@@ -10,6 +11,8 @@ import '../data/crypto_portfolio_repository.dart';
 import '../data/crypto_repository.dart';
 import '../data/crypto_transaction_repository.dart';
 import '../../wealth/presentation/confirm_delete.dart';
+import '../../wealth/presentation/wealth_holding_history_sheet.dart';
+import 'crypto_coin_detail_screen.dart';
 import 'crypto_providers.dart';
 
 class CryptoPortfolioTab extends ConsumerWidget {
@@ -98,7 +101,7 @@ class CryptoPortfolioTab extends ConsumerWidget {
                   ),
                 ),
                 GestureDetector(
-                  onTap: () => _openHistory(context),
+                  onTap: () => _openCryptoHistory(context),
                   child: Container(
                     width: 34,
                     height: 34,
@@ -147,15 +150,15 @@ class CryptoPortfolioTab extends ConsumerWidget {
       child: Text(ref.tr('crypto_error'), style: AppTextStyles.muted()),
     );
   }
+}
 
-  void _openHistory(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => const _HistorySheet(),
-    );
-  }
+void _openCryptoHistory(BuildContext context, {String? coinId}) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (_) => _HistorySheet(coinId: coinId),
+  );
 }
 
 class _HoldingTile extends ConsumerWidget {
@@ -192,69 +195,97 @@ class _HoldingTile extends ConsumerWidget {
       ),
       onDismissed: (_) =>
           ref.read(cryptoPortfolioProvider.notifier).remove(holding.coinId),
-      child: GestureDetector(
-        onTap: () => _openBuySell(context, ref),
-        child: GlowBox(
-          borderRadius: 16,
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          child: Row(
-            children: [
-              ClipOval(
-                child: Image.network(
-                  holding.imageUrl,
-                  width: 30,
-                  height: 30,
-                  errorBuilder: (_, _, _) => Container(
-                    width: 30,
-                    height: 30,
-                    color: AppColors.glassFill,
+      child: GlowBox(
+        borderRadius: 16,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        child: Row(
+          children: [
+            Expanded(
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => openAppPopup(
+                  context,
+                  CryptoCoinDetailScreen(
+                    symbol: holding.symbol,
+                    name: holding.name,
+                    imageUrl: holding.imageUrl,
+                    fallbackPrice: coin?.price,
+                    fallbackChangePercent: coin?.change24hPercent,
                   ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
                   children: [
-                    Text(
-                      holding.name,
-                      style: AppTextStyles.body(weight: FontWeight.w800),
+                    ClipOval(
+                      child: Image.network(
+                        holding.imageUrl,
+                        width: 30,
+                        height: 30,
+                        errorBuilder: (_, _, _) => Container(
+                          width: 30,
+                          height: 30,
+                          color: AppColors.glassFill,
+                        ),
+                      ),
                     ),
-                    Text(
-                      hidden
-                          ? '**** ${holding.symbol}'
-                          : '${holding.quantity} ${holding.symbol}',
-                      style: AppTextStyles.muted(size: 12),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            holding.name,
+                            style: AppTextStyles.body(weight: FontWeight.w800),
+                          ),
+                          Text(
+                            hidden
+                                ? '**** ${holding.symbol}'
+                                : '${holding.quantity} ${holding.symbol}',
+                            style: AppTextStyles.muted(size: 12),
+                          ),
+                          Text(
+                            '@ ${formatCryptoPrice(price, currency)}',
+                            style: AppTextStyles.muted(size: 11),
+                          ),
+                        ],
+                      ),
                     ),
-                    Text(
-                      '@ ${formatCryptoPrice(price, currency)}',
-                      style: AppTextStyles.muted(size: 11),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          hidden
+                              ? '******'
+                              : formatCryptoPrice(value, currency),
+                          style: AppTextStyles.body(
+                            weight: FontWeight.w800,
+                            size: 13,
+                          ),
+                        ),
+                        Text(
+                          '${isUp ? '+' : ''}${change.toStringAsFixed(2)}%',
+                          style: TextStyle(
+                            color: isUp ? AppColors.teal : AppColors.pink,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    hidden ? '******' : formatCryptoPrice(value, currency),
-                    style: AppTextStyles.body(
-                      weight: FontWeight.w800,
-                      size: 13,
-                    ),
-                  ),
-                  Text(
-                    '${isUp ? '+' : ''}${change.toStringAsFixed(2)}%',
-                    style: TextStyle(
-                      color: isUp ? AppColors.teal : AppColors.pink,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 11,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+            ),
+            const SizedBox(width: 6),
+            WealthHoldingRowIconButton(
+              icon: Icons.history_rounded,
+              onTap: () => _openCryptoHistory(context, coinId: holding.coinId),
+            ),
+            const SizedBox(width: 6),
+            WealthHoldingRowIconButton(
+              icon: Icons.add_rounded,
+              onTap: () => _openBuySell(context, ref),
+            ),
+          ],
         ),
       ),
     );
@@ -366,11 +397,17 @@ class _BuySellResult {
 }
 
 class _HistorySheet extends ConsumerWidget {
-  const _HistorySheet();
+  const _HistorySheet({this.coinId});
+  final String? coinId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final historyAsync = ref.watch(cryptoTransactionHistoryProvider);
+    final filteredAsync = coinId == null
+        ? historyAsync
+        : historyAsync.whenData(
+            (list) => list.where((t) => t.coinId == coinId).toList(),
+          );
     return FractionallySizedBox(
       heightFactor: 0.75,
       child: ClipRRect(
@@ -409,7 +446,7 @@ class _HistorySheet extends ConsumerWidget {
                 ),
                 const SizedBox(height: 16),
                 Expanded(
-                  child: switch (historyAsync) {
+                  child: switch (filteredAsync) {
                     AsyncData(:final value) when value.isEmpty => Center(
                       child: Text(
                         ref.tr('crypto_history_empty'),

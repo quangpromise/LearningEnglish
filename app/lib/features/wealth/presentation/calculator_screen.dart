@@ -2,7 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/navigation/app_popup.dart';
+import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../planner/presentation/planner_accent.dart';
+
+/// Mo May tinh dang bottom sheet VUA VOI NOI DUNG (khong dung openAppPopup
+/// voi FractionallySizedBox 0.94 nhu cac man khac - May tinh chi can 1 phan
+/// nho man hinh, de heightFactor gan full se de lai 1 khoang trong lon phia
+/// tren rat "to"/lech mat, dung bug nguoi dung bao). Khong useRootNavigator
+/// vi ham nay luon duoc goi voi context da nam duoi root Navigator (tu
+/// AssistiveFabOverlay dung rootNavigatorKey.currentContext, hoac tu ngay
+/// trong 1 popup Quan ly tai san da mo qua root Navigator).
+void openCalculatorPopup(BuildContext context) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (_) => const CalculatorScreen(),
+  );
+}
 
 /// May tinh chuan (4 phep tinh + %, +/-) - tinh ngay tung buoc khi bam toan
 /// tu lien tiep (giong may tinh dien thoai thong thuong), khong phai parser
@@ -187,42 +206,21 @@ class _CalculatorScreenState extends ConsumerState<CalculatorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ScreenBackground(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+    final accent = plannerSectionTint(ref.watch(currentAppSectionProvider));
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+      decoration: const BoxDecoration(
+        color: Color(0xFF12172E),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      child: SafeArea(
+        top: false,
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Consumer(
-              builder: (context, ref, _) => Row(
-                children: [
-                  GestureDetector(
-                    onTap: () => Navigator.of(context).maybePop(),
-                    child: Container(
-                      width: 34,
-                      height: 34,
-                      decoration: BoxDecoration(
-                        color: AppColors.glassFill,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: AppColors.glassBorder),
-                      ),
-                      child: const Icon(
-                        Icons.chevron_left_rounded,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      ref.tr('wealth_calculator_title'),
-                      style: AppTextStyles.heading(size: 20),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Spacer(),
+            PopupHeader(title: ref.tr('wealth_calculator_title')),
+            const SizedBox(height: 18),
             if (_historyText.isNotEmpty)
               Align(
                 alignment: Alignment.centerRight,
@@ -251,21 +249,25 @@ class _CalculatorScreenState extends ConsumerState<CalculatorScreen> {
                 _CalcButton(
                   label: 'C',
                   style: _CalcButtonStyle.secondary,
+                  accentColor: accent,
                   onTap: _clear,
                 ),
                 _CalcButton(
                   label: '±',
                   style: _CalcButtonStyle.secondary,
+                  accentColor: accent,
                   onTap: _toggleSign,
                 ),
                 _CalcButton(
                   label: '%',
                   style: _CalcButtonStyle.secondary,
+                  accentColor: accent,
                   onTap: _percent,
                 ),
                 _CalcButton(
                   label: '÷',
                   style: _CalcButtonStyle.accent,
+                  accentColor: accent,
                   selected: _pendingOp == _Op.divide && _startFresh,
                   onTap: () => _pressOp(_Op.divide),
                 ),
@@ -273,12 +275,25 @@ class _CalculatorScreenState extends ConsumerState<CalculatorScreen> {
             ),
             _CalcRow(
               children: [
-                _CalcButton(label: '7', onTap: () => _inputDigit('7')),
-                _CalcButton(label: '8', onTap: () => _inputDigit('8')),
-                _CalcButton(label: '9', onTap: () => _inputDigit('9')),
+                _CalcButton(
+                  label: '7',
+                  accentColor: accent,
+                  onTap: () => _inputDigit('7'),
+                ),
+                _CalcButton(
+                  label: '8',
+                  accentColor: accent,
+                  onTap: () => _inputDigit('8'),
+                ),
+                _CalcButton(
+                  label: '9',
+                  accentColor: accent,
+                  onTap: () => _inputDigit('9'),
+                ),
                 _CalcButton(
                   label: '×',
                   style: _CalcButtonStyle.accent,
+                  accentColor: accent,
                   selected: _pendingOp == _Op.multiply && _startFresh,
                   onTap: () => _pressOp(_Op.multiply),
                 ),
@@ -286,12 +301,25 @@ class _CalculatorScreenState extends ConsumerState<CalculatorScreen> {
             ),
             _CalcRow(
               children: [
-                _CalcButton(label: '4', onTap: () => _inputDigit('4')),
-                _CalcButton(label: '5', onTap: () => _inputDigit('5')),
-                _CalcButton(label: '6', onTap: () => _inputDigit('6')),
+                _CalcButton(
+                  label: '4',
+                  accentColor: accent,
+                  onTap: () => _inputDigit('4'),
+                ),
+                _CalcButton(
+                  label: '5',
+                  accentColor: accent,
+                  onTap: () => _inputDigit('5'),
+                ),
+                _CalcButton(
+                  label: '6',
+                  accentColor: accent,
+                  onTap: () => _inputDigit('6'),
+                ),
                 _CalcButton(
                   label: '−',
                   style: _CalcButtonStyle.accent,
+                  accentColor: accent,
                   selected: _pendingOp == _Op.subtract && _startFresh,
                   onTap: () => _pressOp(_Op.subtract),
                 ),
@@ -299,12 +327,25 @@ class _CalculatorScreenState extends ConsumerState<CalculatorScreen> {
             ),
             _CalcRow(
               children: [
-                _CalcButton(label: '1', onTap: () => _inputDigit('1')),
-                _CalcButton(label: '2', onTap: () => _inputDigit('2')),
-                _CalcButton(label: '3', onTap: () => _inputDigit('3')),
+                _CalcButton(
+                  label: '1',
+                  accentColor: accent,
+                  onTap: () => _inputDigit('1'),
+                ),
+                _CalcButton(
+                  label: '2',
+                  accentColor: accent,
+                  onTap: () => _inputDigit('2'),
+                ),
+                _CalcButton(
+                  label: '3',
+                  accentColor: accent,
+                  onTap: () => _inputDigit('3'),
+                ),
                 _CalcButton(
                   label: '+',
                   style: _CalcButtonStyle.accent,
+                  accentColor: accent,
                   selected: _pendingOp == _Op.add && _startFresh,
                   onTap: () => _pressOp(_Op.add),
                 ),
@@ -315,13 +356,19 @@ class _CalculatorScreenState extends ConsumerState<CalculatorScreen> {
                 _CalcButton(
                   label: '⌫',
                   style: _CalcButtonStyle.secondary,
+                  accentColor: accent,
                   onTap: _backspace,
                 ),
-                _CalcButton(label: '0', onTap: () => _inputDigit('0')),
-                _CalcButton(label: '.', onTap: _inputDot),
+                _CalcButton(
+                  label: '0',
+                  accentColor: accent,
+                  onTap: () => _inputDigit('0'),
+                ),
+                _CalcButton(label: '.', accentColor: accent, onTap: _inputDot),
                 _CalcButton(
                   label: '=',
                   style: _CalcButtonStyle.accent,
+                  accentColor: accent,
                   filled: true,
                   onTap: _equals,
                 ),
@@ -360,19 +407,20 @@ class _CalcButton extends StatelessWidget {
   const _CalcButton({
     required this.label,
     required this.onTap,
+    required this.accentColor,
     this.style = _CalcButtonStyle.normal,
     this.selected = false,
     this.filled = false,
   });
   final String label;
   final VoidCallback onTap;
+  final Color accentColor;
   final _CalcButtonStyle style;
   final bool selected;
   final bool filled;
 
   @override
   Widget build(BuildContext context) {
-    final accentColor = AppColors.wealthAccent;
     Color bg;
     Color fg;
     switch (style) {

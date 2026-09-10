@@ -30,7 +30,10 @@ class WealthDebtRepository {
         .toList();
   }
 
-  Future<void> create({
+  /// Tra ve id khoan no vua tao - dung khi can lien ket nguoc (vd
+  /// wealth_split_bill_shares.debt_id trong tinh nang Chia tien bill), cac
+  /// noi goi cu chi `await` fire-and-forget van chay binh thuong.
+  Future<String> create({
     required String userId,
     required String personId,
     required String direction,
@@ -39,16 +42,21 @@ class WealthDebtRepository {
     String? note,
     required DateTime occurredAt,
   }) async {
-    await _supabase.from('wealth_debts').insert({
-      'user_id': userId,
-      'person_id': personId,
-      'direction': direction,
-      'original_amount': amount,
-      'remaining_amount': amount,
-      'currency': currency,
-      'note': note,
-      'occurred_at': occurredAt.toIso8601String(),
-    });
+    final row = await _supabase
+        .from('wealth_debts')
+        .insert({
+          'user_id': userId,
+          'person_id': personId,
+          'direction': direction,
+          'original_amount': amount,
+          'remaining_amount': amount,
+          'currency': currency,
+          'note': note,
+          'occurred_at': occurredAt.toIso8601String(),
+        })
+        .select('id')
+        .single();
+    return row['id'] as String;
   }
 
   /// Goi sau khi ghi 1 [WealthDebtPayment] - giam remaining_amount va tu

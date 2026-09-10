@@ -9,6 +9,7 @@ import '../../../core/utils/thousands_input_formatter.dart';
 import '../data/wealth_holding_model.dart';
 import 'buy_sell_sheets.dart';
 import 'confirm_delete.dart';
+import 'wealth_holding_history_sheet.dart';
 
 const _kAssetType = 'real_estate';
 
@@ -164,57 +165,77 @@ class _PropertyTile extends ConsumerWidget {
             .deleteHolding(userId, holding.id);
         ref.invalidate(wealthHoldingsProvider(_kAssetType));
       },
-      child: GestureDetector(
-        onTap: () => showHoldingActionsSheet(
-          context,
-          ref,
-          onEdit: () => _showAddSheet(context, holding: holding),
-          onSell: () => showRealEstateSellSheet(context, holding: holding),
-        ),
-        child: GlowBox(
-          borderRadius: 16,
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+      child: GlowBox(
+        borderRadius: 16,
+        child: Row(
+          children: [
+            Expanded(
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () =>
+                    showWealthHoldingHistorySheet(context, holding: holding),
+                child: Row(
                   children: [
-                    Text(
-                      holding.name ?? '',
-                      style: AppTextStyles.body(weight: FontWeight.w800),
-                    ),
-                    if (holding.symbol?.isNotEmpty == true)
-                      Text(
-                        holding.symbol!,
-                        style: AppTextStyles.muted(size: 11),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            holding.name ?? '',
+                            style: AppTextStyles.body(weight: FontWeight.w800),
+                          ),
+                          if (holding.symbol?.isNotEmpty == true)
+                            Text(
+                              holding.symbol!,
+                              style: AppTextStyles.muted(size: 11),
+                            ),
+                        ],
                       ),
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          hidden
+                              ? '•••••••'
+                              : formatByCurrency(
+                                  holding.manualValue ?? 0,
+                                  holding.currency,
+                                ),
+                          style: AppTextStyles.body(weight: FontWeight.w800),
+                        ),
+                        if (!hidden && pnl != null)
+                          Text(
+                            '${pnl >= 0 ? '+' : ''}${formatByCurrency(pnl, holding.currency)}'
+                            '${pnlPercent == null ? '' : ' (${pnl >= 0 ? '+' : ''}${pnlPercent.toStringAsFixed(1)}%)'}',
+                            style: AppTextStyles.muted(size: 11).copyWith(
+                              color: pnl >= 0 ? AppColors.teal : AppColors.pink,
+                            ),
+                          ),
+                      ],
+                    ),
                   ],
                 ),
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    hidden
-                        ? '•••••••'
-                        : formatByCurrency(
-                            holding.manualValue ?? 0,
-                            holding.currency,
-                          ),
-                    style: AppTextStyles.body(weight: FontWeight.w800),
-                  ),
-                  if (!hidden && pnl != null)
-                    Text(
-                      '${pnl >= 0 ? '+' : ''}${formatByCurrency(pnl, holding.currency)}'
-                      '${pnlPercent == null ? '' : ' (${pnl >= 0 ? '+' : ''}${pnlPercent.toStringAsFixed(1)}%)'}',
-                      style: AppTextStyles.muted(size: 11).copyWith(
-                        color: pnl >= 0 ? AppColors.teal : AppColors.pink,
-                      ),
-                    ),
-                ],
+            ),
+            const SizedBox(width: 8),
+            WealthHoldingRowIconButton(
+              icon: Icons.history_rounded,
+              onTap: () =>
+                  showWealthHoldingHistorySheet(context, holding: holding),
+            ),
+            const SizedBox(width: 6),
+            WealthHoldingRowIconButton(
+              icon: Icons.add_rounded,
+              onTap: () => showHoldingActionsSheet(
+                context,
+                ref,
+                onEdit: () => _showAddSheet(context, holding: holding),
+                onSell: () =>
+                    showRealEstateSellSheet(context, holding: holding),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

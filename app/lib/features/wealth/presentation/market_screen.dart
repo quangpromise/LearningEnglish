@@ -25,7 +25,12 @@ import 'market_stocks_tab.dart';
 /// the cau truc cu la 4 tab rieng biet (bi tran chu khi isScrollable + 4 tab
 /// dai).
 class MarketScreen extends StatefulWidget {
-  const MarketScreen({super.key});
+  const MarketScreen({super.key, this.initialTabIndex = 0});
+
+  /// 0 = tab "Market", 1 = tab "Watchlist" - cho phep mo thang vao Watchlist
+  /// tu nut rieng o man Home (xem wealth_home_screen.dart) thay vi luon mo
+  /// vao Market roi nguoi dung tu bam qua Watchlist.
+  final int initialTabIndex;
 
   @override
   State<MarketScreen> createState() => _MarketScreenState();
@@ -41,7 +46,11 @@ class _MarketScreenState extends State<MarketScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(
+      length: 2,
+      vsync: this,
+      initialIndex: widget.initialTabIndex,
+    );
   }
 
   @override

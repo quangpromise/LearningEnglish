@@ -5,7 +5,7 @@ import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_format.dart';
-import '../data/wealth_category.dart';
+import '../data/wealth_custom_category_model.dart';
 import '../data/wealth_transaction_model.dart';
 import 'add_transaction_sheet.dart';
 import 'confirm_delete.dart';
@@ -25,6 +25,9 @@ class _WealthExpenseTabState extends ConsumerState<WealthExpenseTab> {
   @override
   Widget build(BuildContext context) {
     final txAsync = ref.watch(wealthTransactionsProvider);
+    final customCategories =
+        ref.watch(wealthCustomCategoriesProvider).valueOrNull ??
+        const <WealthCustomCategory>[];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -91,8 +94,13 @@ class _WealthExpenseTabState extends ConsumerState<WealthExpenseTab> {
                       separatorBuilder: (_, _) => const SizedBox(height: 10),
                       itemBuilder: (context, i) {
                         final t = expenses[i];
-                        final category = WealthExpenseCategory.fromCode(
+                        final (
+                          categoryIcon,
+                          categoryLabel,
+                        ) = resolveExpenseCategoryDisplay(
+                          ref,
                           t.categoryCode,
+                          customCategories,
                         );
                         return Dismissible(
                           key: ValueKey(t.id),
@@ -131,8 +139,8 @@ class _WealthExpenseTabState extends ConsumerState<WealthExpenseTab> {
                               existing: t,
                             ),
                             child: WealthTransactionTile(
-                              icon: category.icon,
-                              label: ref.tr(category.labelKey),
+                              icon: categoryIcon,
+                              label: categoryLabel,
                               note: t.note,
                               amount: t.amount,
                               amountColor: AppColors.pink,
@@ -147,21 +155,6 @@ class _WealthExpenseTabState extends ConsumerState<WealthExpenseTab> {
                 ],
               );
             },
-          ),
-        ),
-        const SizedBox(height: 12),
-        SizedBox(
-          width: double.infinity,
-          child: PillButton(
-            label: ref.tr('wealth_add_transaction'),
-            accentGradient: AppColors.wealthAccentGradient,
-            accentColor: AppColors.wealthAccent,
-            icon: const Icon(Icons.add_rounded, size: 16, color: Colors.white),
-            onTap: () => showAddWealthTransactionSheet(
-              context,
-              ref,
-              WealthTransactionType.expense,
-            ),
           ),
         ),
       ],

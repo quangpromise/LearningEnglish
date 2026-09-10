@@ -10,6 +10,7 @@ import '../data/wealth_holding_model.dart';
 import 'buy_sell_sheets.dart';
 import 'confirm_delete.dart';
 import 'stock_picker_sheet.dart';
+import 'wealth_holding_history_sheet.dart';
 
 /// Portfolio Co phieu (Viet Nam + Quoc te chung 1 danh sach) - them moi qua
 /// [showStockPickerSheet] (tim theo ten/ma tu HOSE cho VN, danh sach ma
@@ -170,32 +171,12 @@ class _HoldingsList extends ConsumerWidget {
                 final quote = h.assetType == 'stock_vn'
                     ? vnBySymbol[h.symbol]
                     : intlBySymbol[h.symbol];
-                final unitLabel = ref.tr('wealth_stock_unit_share');
-                return GestureDetector(
-                  onTap: () => showHoldingActionsSheet(
-                    context,
-                    ref,
-                    onEdit: () => _showAddHoldingSheet(context, existing: h),
-                    onBuyMore: () => showBuyMoreSheet(
-                      context,
-                      holding: h,
-                      unitLabel: unitLabel,
-                      livePrice: quote?.price ?? h.manualValue,
-                    ),
-                    onSell: () => showSellSheet(
-                      context,
-                      holding: h,
-                      unitLabel: unitLabel,
-                      livePrice: quote?.price ?? h.manualValue,
-                    ),
-                  ),
-                  child: _HoldingTile(
-                    holding: h,
-                    quote: quote,
-                    quoteFailed: h.assetType == 'stock_vn'
-                        ? vnQuotesAsync.hasError
-                        : intlQuotesAsync.hasError,
-                  ),
+                return _HoldingTile(
+                  holding: h,
+                  quote: quote,
+                  quoteFailed: h.assetType == 'stock_vn'
+                      ? vnQuotesAsync.hasError
+                      : intlQuotesAsync.hasError,
                 );
               },
             ),
@@ -482,63 +463,108 @@ class _HoldingTile extends ConsumerWidget {
     String fmt(double v) => isVn
         ? '${groupThousands(v)}$currencySymbol'
         : '$currencySymbol${groupThousandsDecimal(v)}';
+    final unitLabel = ref.tr('wealth_stock_unit_share');
     return GlowBox(
       borderRadius: 18,
       child: Row(
         children: [
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  holding.symbol ?? '',
-                  style: AppTextStyles.body(weight: FontWeight.w800),
-                ),
-                Text(
-                  hidden
-                      ? '•••••••'
-                      : '$quantity ${ref.tr('wealth_stock_unit_share')} · '
-                            '${ref.tr('wealth_stock_avg_cost_label')} '
-                            '${fmt(avgCost)}',
-                  style: AppTextStyles.muted(size: 11),
-                ),
-              ],
-            ),
-          ),
-          if (currentPrice != null && gain != null)
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  hidden ? '•••••••' : fmt(currentPrice),
-                  style: AppTextStyles.body(weight: FontWeight.w800),
-                ),
-                if (!hidden)
-                  Text(
-                    '${gain >= 0 ? '+' : ''}${fmt(gain)}'
-                    '${gainPercent == null ? '' : ' (${gainPercent >= 0 ? '+' : ''}${gainPercent.toStringAsFixed(1)}%)'}',
-                    style: AppTextStyles.muted(size: 11).copyWith(
-                      color: gain >= 0 ? AppColors.teal : AppColors.pink,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => showWealthHoldingHistorySheet(
+                context,
+                holding: holding,
+                livePrice: currentPrice,
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          holding.symbol ?? '',
+                          style: AppTextStyles.body(weight: FontWeight.w800),
+                        ),
+                        Text(
+                          hidden
+                              ? '•••••••'
+                              : '$quantity ${ref.tr('wealth_stock_unit_share')} · '
+                                    '${ref.tr('wealth_stock_avg_cost_label')} '
+                                    '${fmt(avgCost)}',
+                          style: AppTextStyles.muted(size: 11),
+                        ),
+                      ],
                     ),
                   ),
-              ],
-            )
-          else if (quoteFailed)
-            Consumer(
-              builder: (context, ref, _) => Text(
-                ref.tr('wealth_quote_error'),
-                style: AppTextStyles.muted(size: 10.5),
-              ),
-            )
-          else
-            const SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: AppColors.wealthAccent,
+                  if (currentPrice != null && gain != null)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          hidden ? '•••••••' : fmt(currentPrice),
+                          style: AppTextStyles.body(weight: FontWeight.w800),
+                        ),
+                        if (!hidden)
+                          Text(
+                            '${gain >= 0 ? '+' : ''}${fmt(gain)}'
+                            '${gainPercent == null ? '' : ' (${gainPercent >= 0 ? '+' : ''}${gainPercent.toStringAsFixed(1)}%)'}',
+                            style: AppTextStyles.muted(size: 11).copyWith(
+                              color: gain >= 0
+                                  ? AppColors.teal
+                                  : AppColors.pink,
+                            ),
+                          ),
+                      ],
+                    )
+                  else if (quoteFailed)
+                    Text(
+                      ref.tr('wealth_quote_error'),
+                      style: AppTextStyles.muted(size: 10.5),
+                    )
+                  else
+                    const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.wealthAccent,
+                      ),
+                    ),
+                ],
               ),
             ),
+          ),
+          const SizedBox(width: 8),
+          WealthHoldingRowIconButton(
+            icon: Icons.history_rounded,
+            onTap: () => showWealthHoldingHistorySheet(
+              context,
+              holding: holding,
+              livePrice: currentPrice,
+            ),
+          ),
+          const SizedBox(width: 6),
+          WealthHoldingRowIconButton(
+            icon: Icons.add_rounded,
+            onTap: () => showHoldingActionsSheet(
+              context,
+              ref,
+              onEdit: () => _showAddHoldingSheet(context, existing: holding),
+              onBuyMore: () => showBuyMoreSheet(
+                context,
+                holding: holding,
+                unitLabel: unitLabel,
+                livePrice: currentPrice,
+              ),
+              onSell: () => showSellSheet(
+                context,
+                holding: holding,
+                unitLabel: unitLabel,
+                livePrice: currentPrice,
+              ),
+            ),
+          ),
         ],
       ),
     );

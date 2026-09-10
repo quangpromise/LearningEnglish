@@ -1004,6 +1004,18 @@ class AppStrings {
       AppLanguage.vi: '+ Thêm ngoại tệ khác',
       AppLanguage.en: '+ Add another currency',
     },
+    'wealth_holding_current_value': {
+      AppLanguage.vi: 'Giá trị hiện tại',
+      AppLanguage.en: 'Current value',
+    },
+    'wealth_holding_history_title': {
+      AppLanguage.vi: 'Lịch sử giao dịch',
+      AppLanguage.en: 'Transaction history',
+    },
+    'wealth_add_currency_holding': {
+      AppLanguage.vi: 'Thêm ngoại tệ',
+      AppLanguage.en: 'Add foreign currency',
+    },
     'wealth_currency_pick_title': {
       AppLanguage.vi: 'Chọn loại ngoại tệ',
       AppLanguage.en: 'Choose currency',
@@ -1646,6 +1658,284 @@ class AppStrings {
     'wealth_settings_banks_desc': {
       AppLanguage.vi: 'Chỉ những ngân hàng được chọn ở đây mới xuất hiện khi thêm chi tiêu, thêm số dư vào Ví hoặc thanh toán nợ. Chưa chọn ngân hàng nào thì hiện tất cả.',
       AppLanguage.en: 'Only banks selected here will show up when adding an expense, a wallet balance, or a debt payment. If none is selected, all banks are shown.',
+    },
+    'wealth_home_view_wallet': {
+      AppLanguage.vi: 'Xem chi tiết Ví',
+      AppLanguage.en: 'View wallet details',
+    },
+    'wealth_home_pay_receive': {
+      AppLanguage.vi: 'Chi/Thu',
+      AppLanguage.en: 'Pay/Receive',
+    },
+    'wealth_home_qr_code': {AppLanguage.vi: 'Mã QR', AppLanguage.en: 'QR Code'},
+    'wealth_split_bill_title': {
+      AppLanguage.vi: 'Chia tiền bill',
+      AppLanguage.en: 'Split bill',
+    },
+    'wealth_split_bill_total_hint': {
+      AppLanguage.vi: 'Tổng số tiền (VNĐ)',
+      AppLanguage.en: 'Total amount (VND)',
+    },
+    'wealth_split_bill_people_count_hint': {
+      AppLanguage.vi: 'Số người (kể cả bạn)',
+      AppLanguage.en: 'Number of people (including you)',
+    },
+    'wealth_split_bill_continue': {
+      AppLanguage.vi: 'Tiếp tục',
+      AppLanguage.en: 'Continue',
+    },
+    'wealth_split_bill_me_label': {AppLanguage.vi: 'Tôi', AppLanguage.en: 'Me'},
+    'wealth_split_bill_payment_method_label': {
+      AppLanguage.vi: 'Thanh toán bằng',
+      AppLanguage.en: 'Pay with',
+    },
+    'wealth_split_bill_pay_button': {
+      AppLanguage.vi: 'Pay',
+      AppLanguage.en: 'Pay',
+    },
+    'wealth_split_bill_confirm_title': {
+      AppLanguage.vi: 'Xác nhận thanh toán',
+      AppLanguage.en: 'Confirm payment',
+    },
+    'wealth_split_bill_confirm_desc': {
+      AppLanguage.vi: 'Trừ toàn bộ số tiền dưới đây khỏi nguồn đã chọn?',
+      AppLanguage.en: 'Deduct the full amount below from the chosen source?',
+    },
+    'wealth_split_bill_debt_button': {
+      AppLanguage.vi: 'Ghi nợ',
+      AppLanguage.en: 'Debt',
+    },
+    'wealth_split_bill_paid_button': {
+      AppLanguage.vi: 'Đã trả',
+      AppLanguage.en: 'Paid',
+    },
+    'wealth_split_bill_status_debt': {
+      AppLanguage.vi: 'Đã ghi nợ',
+      AppLanguage.en: 'Marked as debt',
+    },
+    'wealth_split_bill_status_paid': {
+      AppLanguage.vi: 'Đã nhận tiền',
+      AppLanguage.en: 'Received',
+    },
+    'wealth_split_bill_done_button': {
+      AppLanguage.vi: 'Xong',
+      AppLanguage.en: 'Done',
+    },
+    'wealth_split_bill_no_qr_note': {
+      AppLanguage.vi:
+          'Chưa có mã QR nhận tiền - thêm ở nút "Mã QR" trong thẻ Tổng Ví.',
+      AppLanguage.en: 'No payment QR yet - add one from the "QR Code" button on the Wallet card.',
+    },
+    'wealth_split_bill_history_title': {
+      AppLanguage.vi: 'Lịch sử chia bill',
+      AppLanguage.en: 'Split bill history',
+    },
+    'wealth_split_bill_history_empty': {
+      AppLanguage.vi: 'Chưa có lần chia bill nào',
+      AppLanguage.en: 'No split bills yet',
+    },
+    'wealth_split_bill_name_missing': {
+      AppLanguage.vi: 'Nhập đủ tên tất cả mọi người trước khi thanh toán',
+      AppLanguage.en: 'Enter everyone\'s name before paying',
+    },
+    'wealth_pay_screen_title': {
+      AppLanguage.vi: 'Chi / Thu',
+      AppLanguage.en: 'Pay / Receive',
+    },
+    'wealth_pay_tab_pay': {AppLanguage.vi: 'Chi tiêu', AppLanguage.en: 'Pay'},
+    'wealth_pay_tab_receive': {
+      AppLanguage.vi: 'Nạp tiền',
+      AppLanguage.en: 'Receive',
+    },
+    'wealth_pay_tab_withdraw': {
+      AppLanguage.vi: 'Rút tiền mặt',
+      AppLanguage.en: 'Withdraw',
+    },
+    'wealth_pay_tab_investment': {
+      AppLanguage.vi: 'Đầu tư',
+      AppLanguage.en: 'Investment',
+    },
+    'wealth_pay_pay_desc': {
+      AppLanguage.vi: 'Ghi lại 1 khoản chi tiêu - trừ thẳng vào Tiền mặt hoặc Ngân hàng bạn chọn.',
+      AppLanguage.en: 'Log an expense - deducted straight from the cash or bank account you choose.',
+    },
+    'wealth_pay_pay_button': {
+      AppLanguage.vi: 'Ghi khoản chi tiêu',
+      AppLanguage.en: 'Log expense',
+    },
+    'wealth_pay_receive_desc': {
+      AppLanguage.vi: 'Nạp thêm tiền vào Tiền mặt hoặc 1 tài khoản Ngân hàng.',
+      AppLanguage.en: 'Add money into Cash or a bank account.',
+    },
+    'wealth_pay_receive_button': {
+      AppLanguage.vi: 'Nạp tiền',
+      AppLanguage.en: 'Receive money',
+    },
+    'wealth_pay_withdraw_desc': {
+      AppLanguage.vi:
+          'Rút tiền từ 1 tài khoản Ngân hàng, tự động cộng sang Tiền mặt.',
+      AppLanguage.en:
+          'Withdraw from a bank account - automatically credited to Cash.',
+    },
+    'wealth_pay_withdraw_button': {
+      AppLanguage.vi: 'Rút tiền mặt',
+      AppLanguage.en: 'Withdraw cash',
+    },
+    'wealth_pay_choose_source': {
+      AppLanguage.vi: 'Chọn nguồn tiền',
+      AppLanguage.en: 'Choose account',
+    },
+    'wealth_pay_add_bank': {
+      AppLanguage.vi: 'Ngân hàng khác',
+      AppLanguage.en: 'Other bank',
+    },
+    'wealth_pay_withdraw_need_bank': {
+      AppLanguage.vi: 'Chọn 1 ngân hàng để rút tiền mặt',
+      AppLanguage.en: 'Choose a bank to withdraw cash from',
+    },
+    'wealth_investment_desc': {
+      AppLanguage.vi: 'Nhập số tiền lấy từ Ví, chọn khoản đầu tư và số lượng mua tương ứng.',
+      AppLanguage.en: 'Enter the amount taken from your wallet, then pick an investment and the quantity bought.',
+    },
+    'wealth_investment_asset_type_label': {
+      AppLanguage.vi: 'Loại đầu tư',
+      AppLanguage.en: 'Investment type',
+    },
+    'wealth_investment_asset_crypto': {
+      AppLanguage.vi: 'Crypto',
+      AppLanguage.en: 'Crypto',
+    },
+    'wealth_investment_asset_stock': {
+      AppLanguage.vi: 'Chứng khoán',
+      AppLanguage.en: 'Stocks',
+    },
+    'wealth_investment_asset_gold': {
+      AppLanguage.vi: 'Vàng',
+      AppLanguage.en: 'Gold',
+    },
+    'wealth_investment_asset_real_estate': {
+      AppLanguage.vi: 'Bất động sản',
+      AppLanguage.en: 'Real estate',
+    },
+    'wealth_investment_pick_asset_label': {
+      AppLanguage.vi: 'Chọn khoản đầu tư',
+      AppLanguage.en: 'Pick an investment',
+    },
+    'wealth_investment_search_add': {
+      AppLanguage.vi: 'Tìm để thêm',
+      AppLanguage.en: 'Search to add',
+    },
+    'wealth_investment_no_watchlist_crypto': {
+      AppLanguage.vi:
+          'Chưa có coin nào trong Theo dõi - vào Market để thêm trước.',
+      AppLanguage.en:
+          'No coins in your Watchlist yet - add one from Market first.',
+    },
+    'wealth_investment_no_watchlist_stock': {
+      AppLanguage.vi:
+          'Chưa có mã nào trong Theo dõi - bấm "Tìm để thêm" để chọn mã mới.',
+      AppLanguage.en:
+          'No symbols in your Watchlist yet - tap "Search to add" to pick one.',
+    },
+    'wealth_investment_quantity_hint': {
+      AppLanguage.vi: 'Số lượng mua',
+      AppLanguage.en: 'Quantity bought',
+    },
+    'wealth_investment_realestate_name_hint': {
+      AppLanguage.vi: 'Tên bất động sản',
+      AppLanguage.en: 'Property name',
+    },
+    'wealth_saved': {AppLanguage.vi: 'Đã lưu', AppLanguage.en: 'Saved'},
+    'wealth_investment_confirm_button': {
+      AppLanguage.vi: 'Xác nhận mua',
+      AppLanguage.en: 'Confirm purchase',
+    },
+    'wealth_qr_title': {
+      AppLanguage.vi: 'Mã QR nhận tiền',
+      AppLanguage.en: 'Payment QR code',
+    },
+    'wealth_qr_empty_title': {
+      AppLanguage.vi: 'Chưa có mã QR',
+      AppLanguage.en: 'No QR code yet',
+    },
+    'wealth_qr_empty_desc': {
+      AppLanguage.vi:
+          'Thêm ảnh mã QR nhận tiền của bạn để chia sẻ nhanh khi cần.',
+      AppLanguage.en:
+          'Add your payment QR image to share it quickly when needed.',
+    },
+    'wealth_qr_add_button': {
+      AppLanguage.vi: 'Thêm mã QR',
+      AppLanguage.en: 'Add QR code',
+    },
+    'wealth_qr_edit_title': {
+      AppLanguage.vi: 'Sửa mã QR',
+      AppLanguage.en: 'Edit QR code',
+    },
+    'wealth_qr_pick_image': {
+      AppLanguage.vi: 'Chạm để chọn ảnh QR',
+      AppLanguage.en: 'Tap to choose a QR image',
+    },
+    'wealth_qr_change_image': {
+      AppLanguage.vi: 'Chạm để đổi ảnh',
+      AppLanguage.en: 'Tap to change image',
+    },
+    'wealth_qr_holder_name_hint': {
+      AppLanguage.vi: 'Tên chủ tài khoản',
+      AppLanguage.en: 'Account holder name',
+    },
+    'wealth_qr_account_number_hint': {
+      AppLanguage.vi: 'Số tài khoản',
+      AppLanguage.en: 'Account number',
+    },
+    'wealth_qr_bank_name_hint': {
+      AppLanguage.vi: 'Tên ngân hàng',
+      AppLanguage.en: 'Bank name',
+    },
+    'wealth_settings_categories_title': {
+      AppLanguage.vi: 'Danh mục chi tiêu',
+      AppLanguage.en: 'Expense categories',
+    },
+    'wealth_settings_categories_desc': {
+      AppLanguage.vi: 'Ngoài các danh mục có sẵn, bạn có thể thêm danh mục riêng để dùng khi ghi chi tiêu.',
+      AppLanguage.en: 'Besides the built-in categories, you can add your own to use when logging expenses.',
+    },
+    'wealth_settings_categories_builtin': {
+      AppLanguage.vi: 'Có sẵn',
+      AppLanguage.en: 'Built-in',
+    },
+    'wealth_settings_categories_custom': {
+      AppLanguage.vi: 'Tự thêm',
+      AppLanguage.en: 'Your categories',
+    },
+    'wealth_settings_categories_empty': {
+      AppLanguage.vi: 'Chưa có danh mục tự thêm nào',
+      AppLanguage.en: 'No custom categories yet',
+    },
+    'wealth_settings_add_category': {
+      AppLanguage.vi: 'Thêm danh mục',
+      AppLanguage.en: 'Add category',
+    },
+    'wealth_settings_edit_category': {
+      AppLanguage.vi: 'Sửa danh mục',
+      AppLanguage.en: 'Edit category',
+    },
+    'wealth_settings_category_name_hint': {
+      AppLanguage.vi: 'Tên danh mục (VD: Học phí con)',
+      AppLanguage.en: 'Category name (e.g. Kids tuition)',
+    },
+    'wealth_settings_delete_category_title': {
+      AppLanguage.vi: 'Xóa danh mục?',
+      AppLanguage.en: 'Delete category?',
+    },
+    'wealth_settings_category_delete_confirm': {
+      AppLanguage.vi: 'Xóa danh mục này? Các khoản chi đã dùng danh mục này sẽ chuyển về "Khác".',
+      AppLanguage.en:
+          'Delete this category? Expenses using it will fall back to "Other".',
+    },
+    'wealth_category_no_custom': {
+      AppLanguage.vi: 'Không liên kết danh mục',
+      AppLanguage.en: 'No linked category',
     },
     'wealth_edit_holding': {
       AppLanguage.vi: 'Sửa mã cổ phiếu',

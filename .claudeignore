@@ -1,0 +1,71 @@
+# .claudeignore — han che Claude Code quet/doc cac thu muc nang, sinh tu
+# dong, hoac khong lien quan toi ma nguon (build artifact, cache, asset nhi
+# phan lon o root, thu muc trung lap). Danh sach nay MO RONG (khong thay
+# the) .gitignore - vai thu (vd anh/video mau o root, thu muc LearningEnglish/
+# trung lap) van duoc GIT theo doi/chua .gitignore nhung khong can Claude doc
+# noi dung khi tim kiem code.
+
+# --- Flutter / Dart build & cache ---
+app/.dart_tool/
+app/build/
+app/.pub-cache/
+app/.pub/
+app/android/.gradle/
+app/android/app/build/
+app/ios/Pods/
+app/ios/.symlinks/
+app/ios/build/
+app/web/build/
+app/windows/build/
+app/linux/build/
+app/macos/build/
+
+# --- Node / backend ---
+node_modules/
+**/node_modules/
+backend/**/node_modules/
+backend/**/__pycache__/
+**/__pycache__/
+dist/
+**/dist/
+
+# --- Supabase local cache ---
+supabase/.temp/
+
+# --- Build output / logs ---
+*.apk
+*.aab
+*.ipa
+*.log
+
+# --- IDE / OS ---
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# --- Thu muc trung lap o root (khong phai code, khong can quet) ---
+LearningEnglish/
+
+# --- Asset nhi phan lon o thu muc goc (anh mau, video, am thanh, PDF thiet
+# ke) - khong phai ma nguon, chi lam nang qua trinh quet neu Claude doc het
+# ca thu muc goc. Asset that su dung trong app nam trong app/assets/ (KHONG
+# bi loai boi cac dong duoi day).
+/*.jpg
+/*.jpeg
+/*.png
+/*.webp
+/*.pdf
+/*.mp3
+/*.ogg
+/*.key
+
+# --- Secrets (da co trong .gitignore, ghi lai o day de chac chan Claude
+# khong bao gio doc noi dung du file co ton tai tren dia hay khong) ---
+.env
+.env.*
+!.env.example
+**/secrets.dart
+google-services.json
+GoogleService-Info.plist

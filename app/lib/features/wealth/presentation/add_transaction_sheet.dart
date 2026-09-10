@@ -10,6 +10,7 @@ import '../data/recurring_service_model.dart';
 import '../data/recurring_service_repository.dart';
 import '../data/wealth_balance_entry_model.dart';
 import '../data/wealth_category.dart';
+import '../data/wealth_custom_category_model.dart';
 import '../data/wealth_transaction_model.dart';
 import 'payment_split_editor.dart';
 
@@ -307,6 +308,18 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
                                 _CategoryChip(
                                   icon: c.icon,
                                   label: ref.tr(c.labelKey),
+                                  selected: _categoryCode == c.code,
+                                  onTap: () =>
+                                      setState(() => _categoryCode = c.code),
+                                ),
+                              for (final c
+                                  in ref
+                                          .watch(wealthCustomCategoriesProvider)
+                                          .valueOrNull ??
+                                      const <WealthCustomCategory>[])
+                                _CategoryChip(
+                                  icon: c.icon,
+                                  label: c.name,
                                   selected: _categoryCode == c.code,
                                   onTap: () =>
                                       setState(() => _categoryCode = c.code),
