@@ -7,6 +7,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/thousands_input_formatter.dart';
 import '../../crypto/data/crypto_currency.dart';
 import '../../crypto/data/crypto_repository.dart';
+import '../../crypto/presentation/crypto_coin_picker_sheet.dart';
 import '../../crypto/presentation/crypto_providers.dart';
 import '../data/vn_bank_model.dart';
 import '../data/wealth_balance_entry_model.dart';
@@ -772,12 +773,6 @@ class _InvestmentTabState extends ConsumerState<_InvestmentTab> {
             .map((id) => coinById[id])
             .whereType<CryptoCoin>()
             .toList();
-        if (watchedCoins.isEmpty) {
-          return Text(
-            ref.tr('wealth_investment_no_watchlist_crypto'),
-            style: AppTextStyles.muted(size: 12.5),
-          );
-        }
         return Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -789,6 +784,19 @@ class _InvestmentTabState extends ConsumerState<_InvestmentTab> {
                 selected: _selectedCoin?.id == c.id,
                 onTap: () => setState(() => _selectedCoin = c),
               ),
+            if (watchedCoins.isEmpty)
+              Text(
+                ref.tr('wealth_investment_no_watchlist_crypto'),
+                style: AppTextStyles.muted(size: 12.5),
+              ),
+            _assetChip(
+              label: '+ ${ref.tr('wealth_investment_search_add')}',
+              selected: false,
+              onTap: () async {
+                final picked = await showCryptoSearchSheet(context);
+                if (picked != null) setState(() => _selectedCoin = picked);
+              },
+            ),
           ],
         );
       case _InvAssetType.stock:

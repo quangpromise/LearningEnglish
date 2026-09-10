@@ -34,12 +34,13 @@ class WealthHomeScreen extends ConsumerStatefulWidget {
 }
 
 class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
-  // Carousel 2 the: trang 0 = Tong Vi (Tien mat+Ngan hang, mac dinh hien),
-  // trang 1 = Tong Tai san dau tu (Crypto+Co phieu+Kim loai+Nha dat) - THAY
-  // THE nut "sync_alt" bam-de-doi truoc day bang thao tac VUOT (slide) giua
-  // 2 the, voi 1/3 goc phai cua the Dau tu ho ra san (viewportFraction 0.7)
-  // de goi y con the thu 2 co the vuot toi - theo dung yeu cau nguoi dung.
-  late final _pageController = PageController(viewportFraction: 0.7)
+  // Carousel 2 the: trang 0 = Tong Vi (Tien mat+Ngan hang, mac dinh hien, to
+  // het co the), trang 1 = Tong Tai san dau tu - THAY THE nut "sync_alt"
+  // bam-de-doi truoc day bang thao tac VUOT (slide) giua 2 the. The dang
+  // KHONG active chi ho 1 goc nho ra ("khung" de goi y co the vuot toi) va
+  // AN HAN so tien/ten (xem _TotalCard.showValue) - theo yeu cau nguoi dung:
+  // the Tong Vi to hon, the Dau tu khi peek chi thay khung, khong thay so.
+  late final _pageController = PageController(viewportFraction: 0.86)
     ..addListener(_onPageScroll);
   int _pageIndex = 0;
 
@@ -118,6 +119,8 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
                       title: ref.tr('wallet_total_assets'),
                       value: netWorth,
                       hidden: hidden,
+                      showValue: _pageIndex == 0,
+                      placeholderIcon: Icons.account_balance_wallet_rounded,
                       onTap: () => openAppPopup(context, const WalletScreen()),
                       onToggleHidden: () =>
                           ref.read(wealthPrivacyModeProvider.notifier).toggle(),
@@ -144,6 +147,8 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
                     hidden: hidden,
                     pnl: investmentPnl,
                     pnlPercent: investmentPnlPercent,
+                    showValue: _pageIndex == 1,
+                    placeholderIcon: Icons.trending_up_rounded,
                     onTap: () =>
                         openAppPopup(context, const WealthInvestmentScreen()),
                     onToggleHidden: () =>
@@ -359,6 +364,8 @@ class _TotalCard extends StatelessWidget {
     required this.onToggleHidden,
     required this.footer,
     required this.onTap,
+    required this.showValue,
+    required this.placeholderIcon,
     this.pnl,
     this.pnlPercent,
   });
@@ -370,9 +377,32 @@ class _TotalCard extends StatelessWidget {
   final VoidCallback onTap;
   final double? pnl;
   final double? pnlPercent;
+  // false = the nay dang chi "ho ra" 1 goc nho o canh (trang khong active
+  // cua carousel) - an het so tien/ten/footer, CHI con khung (nen+vien) +
+  // 1 icon lon mo nhat lam goi y "co the vuot qua day" - theo yeu cau nguoi
+  // dung "chi thay khung de slide qua, khong thay so tien".
+  final bool showValue;
+  final IconData placeholderIcon;
 
   @override
   Widget build(BuildContext context) {
+    if (!showValue) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(22),
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppColors.glassFill,
+            border: Border.all(color: AppColors.glassBorder),
+          ),
+          alignment: Alignment.center,
+          child: Icon(
+            placeholderIcon,
+            size: 32,
+            color: AppColors.textMuted.withValues(alpha: 0.4),
+          ),
+        ),
+      );
+    }
     return ClipRRect(
       borderRadius: BorderRadius.circular(22),
       child: Container(

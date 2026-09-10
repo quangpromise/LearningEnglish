@@ -53,6 +53,10 @@ class _SplitPersonEntry {
   // "cho xu ly" rieng nua, xem ghi chu o WealthSplitBillRepository.createBill.
   String status = 'debt'; // 'debt' | 'paid' (khong dung cho "Toi")
   String? shareId;
+  // CHI can khi status=='paid' - moi nguoi tu chon rieng tien ho tra vao
+  // Cash hay Bank nao (khac nhau giua tung nguoi, KHONG dung chung 1 "Pay
+  // with" cho ca man nhu truoc) - hien o ngay duoi nut "Paid" khi duoc chon.
+  _PaymentSource? paidSource;
 
   double get enteredAmount =>
       parseThousandsFormatted(amountController.text) ?? 0;
@@ -123,7 +127,9 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
           .skip(1)
           .every(
             (p) =>
-                p.nameController.text.trim().isNotEmpty && p.enteredAmount > 0,
+                p.nameController.text.trim().isNotEmpty &&
+                p.enteredAmount > 0 &&
+                (p.status != 'paid' || p.paidSource != null),
           );
 
   Future<void> _confirmPay() async {
@@ -228,17 +234,22 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
         final p = _people[i];
         if (p.isMe) continue;
         if (p.status == 'paid') {
+          final paidSource = p.paidSource!;
           await ref
               .read(wealthBalanceEntryRepositoryProvider)
               .addEntry(
                 userId,
                 WealthBalanceEntry(
                   id: '',
-                  accountType: source.isCash ? 'cash' : 'bank',
-                  bankCode: source.isCash
+                  accountType: paidSource.isCash ? 'cash' : 'bank',
+                  bankCode: paidSource.isCash
                       ? null
-                      : (source.bank!.isOther ? null : source.bank!.code),
-                  bankName: source.isCash ? null : source.bank!.shortName,
+                      : (paidSource.bank!.isOther
+                            ? null
+                            : paidSource.bank!.code),
+                  bankName: paidSource.isCash
+                      ? null
+                      : paidSource.bank!.shortName,
                   currency: 'VND',
                   amount: p.enteredAmount,
                   note:
@@ -465,40 +476,41 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
     // Center/textAlign lo can giua tung phan tu ben trong.
     return GlowBox(
       borderRadius: 16,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Center(
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(12),
               child: Container(
                 color: Colors.white,
-                padding: const EdgeInsets.all(8),
-                child: Image.network(qr.imageUrl!, width: 150, height: 150),
+                padding: const EdgeInsets.all(6),
+                child: Image.network(qr.imageUrl!, width: 104, height: 104),
               ),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           if ((qr.holderName ?? '').isNotEmpty)
             Text(
               qr.holderName!,
               textAlign: TextAlign.center,
-              style: AppTextStyles.body(weight: FontWeight.w800, size: 14),
+              style: AppTextStyles.body(weight: FontWeight.w800, size: 12.5),
             ),
           if ((qr.bankName ?? '').isNotEmpty) ...[
-            const SizedBox(height: 4),
+            const SizedBox(height: 2),
             Text(
               qr.bankName!,
               textAlign: TextAlign.center,
-              style: AppTextStyles.muted(size: 12),
+              style: AppTextStyles.muted(size: 11),
             ),
           ],
           if ((qr.accountNumber ?? '').isNotEmpty) ...[
-            const SizedBox(height: 2),
+            const SizedBox(height: 1),
             Text(
               qr.accountNumber!,
               textAlign: TextAlign.center,
-              style: AppTextStyles.body(size: 14, weight: FontWeight.w700),
+              style: AppTextStyles.body(size: 12.5, weight: FontWeight.w700),
             ),
           ],
         ],
@@ -507,69 +519,17 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
   }
 
   Widget _buildAllocate() {
-    final totals = ref.watch(walletTotalsProvider);
-    final seen = <String>{};
-    final banks = <VnBank>[];
-    for (final t in totals) {
-      if (t.accountType != 'bank') continue;
-      final key = '${t.bankCode}|${t.bankName}';
-      if (!seen.add(key)) continue;
-      banks.add(
-        VnBank(
-          code: t.bankCode ?? t.bankName ?? 'bank',
-          shortName: t.bankName ?? t.bankCode ?? '?',
-          name: t.bankName ?? t.bankCode ?? '?',
-          logoUrl: null,
-        ),
-      );
-    }
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildQrHeader(),
-          const SizedBox(height: 12),
-          Text(
-            ref.tr('wealth_split_bill_payment_method_label'),
-            style: AppTextStyles.body(weight: FontWeight.w800, size: 13),
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _sourceChip(
-                label: ref.tr('wallet_section_cash'),
-                selected: _source?.isCash ?? false,
-                onTap: () =>
-                    setState(() => _source = const _PaymentSource.cash()),
-              ),
-              for (final b in banks)
-                _sourceChip(
-                  label: b.shortName,
-                  selected:
-                      !(_source?.isCash ?? true) &&
-                      _source?.bank?.code == b.code,
-                  onTap: () => setState(() => _source = _PaymentSource.bank(b)),
-                ),
-              _sourceChip(
-                label: '+ ${ref.tr('wealth_pay_add_bank')}',
-                selected: false,
-                onTap: () async {
-                  final picked = await showBankPickerSheet(context);
-                  if (picked != null) {
-                    setState(() => _source = _PaymentSource.bank(picked));
-                  }
-                },
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 10),
           for (final p in _people) ...[
             _personAllocateRow(p),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
           ],
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           SizedBox(
             width: double.infinity,
             child: PillButton(
@@ -591,6 +551,58 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
     );
   }
 
+  /// Hang chip Tien mat/Ngan hang/+Ngan hang khac - dung CHUNG cho "Toi"
+  /// (nguon tru tong tien bill) VA cho tung nguoi rieng khi ho chon "Da tra"
+  /// (nguon nhan lai tien cua NGUOI DO, doc lap voi cac nguoi khac) - thay
+  /// the 1 khoi "Pay with" chung duy nhat truoc day.
+  Widget _sourceChipsRow(
+    _PaymentSource? selected,
+    ValueChanged<_PaymentSource> onSelect,
+  ) {
+    final totals = ref.watch(walletTotalsProvider);
+    final seen = <String>{};
+    final banks = <VnBank>[];
+    for (final t in totals) {
+      if (t.accountType != 'bank') continue;
+      final key = '${t.bankCode}|${t.bankName}';
+      if (!seen.add(key)) continue;
+      banks.add(
+        VnBank(
+          code: t.bankCode ?? t.bankName ?? 'bank',
+          shortName: t.bankName ?? t.bankCode ?? '?',
+          name: t.bankName ?? t.bankCode ?? '?',
+          logoUrl: null,
+        ),
+      );
+    }
+    return Wrap(
+      spacing: 6,
+      runSpacing: 6,
+      children: [
+        _sourceChip(
+          label: ref.tr('wallet_section_cash'),
+          selected: selected?.isCash ?? false,
+          onTap: () => onSelect(const _PaymentSource.cash()),
+        ),
+        for (final b in banks)
+          _sourceChip(
+            label: b.shortName,
+            selected:
+                !(selected?.isCash ?? true) && selected?.bank?.code == b.code,
+            onTap: () => onSelect(_PaymentSource.bank(b)),
+          ),
+        _sourceChip(
+          label: '+ ${ref.tr('wealth_pay_add_bank')}',
+          selected: false,
+          onTap: () async {
+            final picked = await showBankPickerSheet(context);
+            if (picked != null) onSelect(_PaymentSource.bank(picked));
+          },
+        ),
+      ],
+    );
+  }
+
   Widget _sourceChip({
     required String label,
     required bool selected,
@@ -599,7 +611,7 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
           color: selected
               ? AppColors.wealthAccent.withValues(alpha: 0.22)
@@ -612,7 +624,7 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
         child: Text(
           label,
           style: AppTextStyles.body(
-            size: 12,
+            size: 11,
             weight: FontWeight.w700,
             color: selected ? AppColors.wealthAccent : AppColors.textPrimary,
           ),
@@ -624,20 +636,38 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
   Widget _personAllocateRow(_SplitPersonEntry p) {
     return GlowBox(
       borderRadius: 14,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       child: p.isMe
-          ? Row(
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Text(
-                    ref.tr('wealth_split_bill_me_label'),
-                    style: AppTextStyles.body(weight: FontWeight.w800),
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        ref.tr('wealth_split_bill_me_label'),
+                        style: AppTextStyles.body(
+                          size: 13,
+                          weight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      formatVnd(_meAmount),
+                      style: AppTextStyles.body(
+                        size: 13,
+                        weight: FontWeight.w800,
+                      ).copyWith(color: AppColors.wealthAccent),
+                    ),
+                  ],
                 ),
+                const SizedBox(height: 6),
                 Text(
-                  formatVnd(_meAmount),
-                  style: AppTextStyles.body(weight: FontWeight.w800)
-                      .copyWith(color: AppColors.wealthAccent),
+                  ref.tr('wealth_split_bill_payment_method_label'),
+                  style: AppTextStyles.muted(size: 10),
                 ),
+                const SizedBox(height: 4),
+                _sourceChipsRow(_source, (s) => setState(() => _source = s)),
               ],
             )
           : Column(
@@ -653,11 +683,11 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
                   controller: p.nameController,
                   focusNode: p.nameFocusNode,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
                 Row(
                   children: [
                     SizedBox(
-                      width: 96,
+                      width: 84,
                       child: TextField(
                         controller: p.amountController,
                         textAlign: TextAlign.right,
@@ -666,7 +696,7 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
                         ),
                         inputFormatters: [ThousandsInputFormatter()],
                         style: AppTextStyles.body(
-                          size: 13,
+                          size: 12,
                           weight: FontWeight.w800,
                         ),
                         cursorColor: AppColors.wealthAccent,
@@ -675,18 +705,18 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
                           filled: true,
                           fillColor: AppColors.glassFill,
                           contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 10,
+                            horizontal: 6,
+                            vertical: 8,
                           ),
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(9),
                             borderSide: BorderSide.none,
                           ),
                         ),
                         onChanged: (_) => setState(() {}),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 6),
                     Expanded(
                       child: _statusToggleChip(
                         label: ref.tr('wealth_split_bill_debt_button'),
@@ -695,7 +725,7 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
                         onTap: () => setState(() => p.status = 'debt'),
                       ),
                     ),
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 5),
                     Expanded(
                       child: _statusToggleChip(
                         label: ref.tr('wealth_split_bill_paid_button'),
@@ -706,6 +736,16 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
                     ),
                   ],
                 ),
+                // Chi hien khi bam "Paid" - moi nguoi tu chon rieng tien ho
+                // tra vao Cash hay Bank nao cua minh (doc lap voi cac nguoi
+                // khac va voi nguon cua "Toi" o tren).
+                if (p.status == 'paid') ...[
+                  const SizedBox(height: 6),
+                  _sourceChipsRow(
+                    p.paidSource,
+                    (s) => setState(() => p.paidSource = s),
+                  ),
+                ],
               ],
             ),
     );
@@ -721,7 +761,7 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
       onTap: onTap,
       child: Container(
         alignment: Alignment.center,
-        padding: const EdgeInsets.symmetric(vertical: 9),
+        padding: const EdgeInsets.symmetric(vertical: 7),
         decoration: BoxDecoration(
           color: selected ? color.withValues(alpha: 0.18) : AppColors.glassFill,
           borderRadius: BorderRadius.circular(999),
@@ -730,7 +770,7 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
         child: Text(
           label,
           style: AppTextStyles.body(
-            size: 12,
+            size: 11,
             weight: FontWeight.w800,
           ).copyWith(color: selected ? color : AppColors.textPrimary),
         ),
@@ -814,14 +854,14 @@ class _PersonNameDropdownField extends ConsumerWidget {
         return TextField(
           controller: fieldController,
           focusNode: focusNode,
-          style: AppTextStyles.body(size: 13),
+          style: AppTextStyles.body(size: 12),
           decoration: InputDecoration(
             isDense: true,
             filled: true,
             fillColor: AppColors.glassFill,
             contentPadding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 10,
+              horizontal: 10,
+              vertical: 8,
             ),
             hintText: ref.tr('wealth_debt_person_hint'),
             hintStyle: const TextStyle(color: AppColors.textMuted),

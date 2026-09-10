@@ -16,20 +16,17 @@ import 'market_currency_tab.dart';
 import 'market_metals_tab.dart';
 import 'market_stocks_tab.dart';
 
-/// Man Market (Phase F, redesign theo yeu cau gop chung) - 2 tab o TREN
-/// CUNG: "Market" (chon loai tai san bang chip ben trong: Crypto/Co phieu/
-/// Kim loai hiem, giong cach 1 san giao dich that gop chung cac thi truong -
-/// KHONG co Nha dat vi khong co "gia thi truong" nao de theo doi, chi nam
-/// trong Vi > Tai san dau tu voi gia tu nhap) va "Watchlist" (gop TAT CA
-/// item da "theo doi" tu moi loai tai san vao 1 danh sach duy nhat) - thay
-/// the cau truc cu la 4 tab rieng biet (bi tran chu khi isScrollable + 4 tab
-/// dai).
+/// Man Market/Watchlist (Phase F+) - TACH THANH 2 MAN DOC LAP (khong con
+/// TabBar chuyen qua lai giua Market/Watchlist nhu truoc): [initialTabIndex]
+/// 0 = chi hien Market (chon loai tai san bang chip: Crypto/Co phieu/Kim
+/// loai hiem/Ngoai te), 1 = chi hien Watchlist (gop TAT CA item da "theo
+/// doi" tu moi loai tai san) - moi man mo tu 1 nut rieng o Home
+/// (wealth_home_screen.dart: "Market" va "Theo doi"), KHONG can chuyen qua
+/// lai trong cung 1 man nua.
 class MarketScreen extends StatefulWidget {
   const MarketScreen({super.key, this.initialTabIndex = 0});
 
-  /// 0 = tab "Market", 1 = tab "Watchlist" - cho phep mo thang vao Watchlist
-  /// tu nut rieng o man Home (xem wealth_home_screen.dart) thay vi luon mo
-  /// vao Market roi nguoi dung tu bam qua Watchlist.
+  /// 0 = chi hien Market, 1 = chi hien Watchlist.
   final int initialTabIndex;
 
   @override
@@ -38,26 +35,10 @@ class MarketScreen extends StatefulWidget {
 
 enum _MarketCategory { crypto, stocks, metals, currency }
 
-class _MarketScreenState extends State<MarketScreen>
-    with SingleTickerProviderStateMixin {
-  late final TabController _tabController;
+class _MarketScreenState extends State<MarketScreen> {
   _MarketCategory _category = _MarketCategory.crypto;
 
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(
-      length: 2,
-      vsync: this,
-      initialIndex: widget.initialTabIndex,
-    );
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
+  bool get _isWatchlist => widget.initialTabIndex == 1;
 
   @override
   Widget build(BuildContext context) {
@@ -89,7 +70,9 @@ class _MarketScreenState extends State<MarketScreen>
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      ref.tr('wealth_market_title'),
+                      _isWatchlist
+                          ? ref.tr('crypto_tab_watchlist')
+                          : ref.tr('wealth_market_title'),
                       style: AppTextStyles.heading(size: 20),
                     ),
                   ),
@@ -97,66 +80,20 @@ class _MarketScreenState extends State<MarketScreen>
               ),
             ),
             const SizedBox(height: 14),
-            Consumer(
-              builder: (context, ref, _) => Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Colors.white.withValues(alpha: 0.06),
-                      Colors.white.withValues(alpha: 0.02),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(999),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.14),
-                    width: 1.2,
-                  ),
-                ),
-                padding: const EdgeInsets.all(4),
-                child: TabBar(
-                  controller: _tabController,
-                  indicator: BoxDecoration(
-                    gradient: AppColors.wealthAccentGradient,
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  indicatorSize: TabBarIndicatorSize.tab,
-                  labelColor: Colors.white,
-                  unselectedLabelColor: AppColors.textMuted,
-                  dividerColor: Colors.transparent,
-                  labelStyle: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                  ),
-                  tabs: [
-                    Tab(text: ref.tr('crypto_tab_market')),
-                    Tab(text: ref.tr('crypto_tab_watchlist')),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 14),
             Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Consumer(
-                        builder: (context, ref, _) => _CategoryChipRow(
+              child: _isWatchlist
+                  ? const _WatchlistTab()
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _CategoryChipRow(
                           selected: _category,
                           onChanged: (c) => setState(() => _category = c),
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      Expanded(child: _buildCategoryContent()),
-                    ],
-                  ),
-                  const _WatchlistTab(),
-                ],
-              ),
+                        const SizedBox(height: 12),
+                        Expanded(child: _buildCategoryContent()),
+                      ],
+                    ),
             ),
           ],
         ),
@@ -178,8 +115,10 @@ class _MarketScreenState extends State<MarketScreen>
   }
 }
 
-/// Hang chip chon loai tai san dang xem trong tab "Market" - thay the 4 tab
-/// rieng bi tran chu truoc day, chip co the xuong dong neu khong vua 1 hang.
+/// Hang chip chon loai tai san dang xem trong Market - dung Row+Expanded+
+/// FittedBox (khong phai Wrap) de LUON vua DUNG 1 hang du nhan dai ("Foreign
+/// currency"), tu dong giam co chu neu khong gian qua hep, giong cach
+/// _WatchlistTab da lam cho hang category cua no.
 class _CategoryChipRow extends ConsumerWidget {
   const _CategoryChipRow({required this.selected, required this.onChanged});
   final _MarketCategory selected;
@@ -193,52 +132,54 @@ class _CategoryChipRow extends ConsumerWidget {
       (_MarketCategory.metals, ref.tr('wealth_investments_metal_title')),
       (_MarketCategory.currency, ref.tr('wealth_investments_currency_title')),
     ];
-    // Vien chung boc quanh CA 4 chip - phan biet ro day la nhom "chon loai
-    // thi truong" (cap tren), khac voi cac chip con rieng cua tung loai (vd
-    // "Quoc te/Viet Nam" trong Chung khoan, "Vang/Bac/Dong" trong Kim loai)
-    // hien o ngay ben duoi, tranh nhin gay nham la cung 1 nhom.
     return Container(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: AppColors.glassFill.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.glassBorder),
       ),
-      child: Wrap(
-        spacing: 8,
-        runSpacing: 8,
+      child: Row(
         children: [
-          for (final item in items)
-            GestureDetector(
-              onTap: () => onChanged(item.$1),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 9,
-                ),
-                decoration: BoxDecoration(
-                  color: selected == item.$1
-                      ? AppColors.wealthAccent.withValues(alpha: 0.22)
-                      : AppColors.glassFill,
-                  borderRadius: BorderRadius.circular(999),
-                  border: Border.all(
-                    color: selected == item.$1
-                        ? AppColors.wealthAccent
-                        : AppColors.glassBorder,
+          for (final item in items) ...[
+            Expanded(
+              child: GestureDetector(
+                onTap: () => onChanged(item.$1),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 8,
                   ),
-                ),
-                child: Text(
-                  item.$2,
-                  style: AppTextStyles.body(
-                    size: 12,
-                    weight: FontWeight.w700,
+                  decoration: BoxDecoration(
                     color: selected == item.$1
-                        ? AppColors.wealthAccent
-                        : AppColors.textPrimary,
+                        ? AppColors.wealthAccent.withValues(alpha: 0.22)
+                        : AppColors.glassFill,
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(
+                      color: selected == item.$1
+                          ? AppColors.wealthAccent
+                          : AppColors.glassBorder,
+                    ),
+                  ),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      item.$2,
+                      maxLines: 1,
+                      style: AppTextStyles.body(
+                        size: 12,
+                        weight: FontWeight.w700,
+                        color: selected == item.$1
+                            ? AppColors.wealthAccent
+                            : AppColors.textPrimary,
+                      ),
+                    ),
                   ),
                 ),
               ),
             ),
+            if (item != items.last) const SizedBox(width: 6),
+          ],
         ],
       ),
     );
