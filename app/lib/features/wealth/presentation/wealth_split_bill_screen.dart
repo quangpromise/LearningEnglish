@@ -12,7 +12,6 @@ import '../data/wealth_balance_entry_model.dart';
 import '../data/wealth_category.dart';
 import '../data/wealth_transaction_model.dart';
 import 'bank_picker_sheet.dart';
-import 'debt_person_picker_field.dart';
 import 'wealth_qr_screen.dart';
 import 'wealth_split_bill_history_screen.dart';
 import 'wealth_split_bill_receipt.dart';
@@ -46,6 +45,10 @@ class _SplitPersonEntry {
   final bool isMe;
   final TextEditingController amountController;
   final nameController = TextEditingController();
+  // RawAutocomplete BAT BUOC di kem 1 FocusNode ON DINH voi
+  // textEditingController da truyen (assert trong Flutter) - phai giu day,
+  // KHONG tao moi trong build(), neu khong dropdown goi y se mat focus/loi.
+  final nameFocusNode = FocusNode();
   // Chon SAN ngay luc phan bo (truoc khi bam Pay) - khong con trang thai
   // "cho xu ly" rieng nua, xem ghi chu o WealthSplitBillRepository.createBill.
   String status = 'debt'; // 'debt' | 'paid' (khong dung cho "Toi")
@@ -78,6 +81,7 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
     for (final p in _people) {
       p.amountController.dispose();
       p.nameController.dispose();
+      p.nameFocusNode.dispose();
     }
     super.dispose();
   }
@@ -453,20 +457,28 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
     }
     // QR to, dat giua, NAM TREN thong tin tai khoan (thay vi nho + nam ben
     // canh nhu truoc) - theo yeu cau nguoi dung de de quet hon.
+    // QUAN TRONG: Column mac dinh CO RUT LAI vua khop chieu rong con lon
+    // nhat (~150px cua QR) neu khong dung crossAxisAlignment.stretch - luc
+    // do the QR bi dat sang trai trong Column cha (crossAxisAlignment.start
+    // o _buildAllocate) thay vi can giua toan bo chieu rong man hinh nhu
+    // yeu cau ("can deu 2 ben"). stretch ep Column rong het co GlowBox, roi
+    // Center/textAlign lo can giua tung phan tu ben trong.
     return GlowBox(
       borderRadius: 16,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(14),
-            child: Container(
-              color: Colors.white,
-              padding: const EdgeInsets.all(8),
-              child: Image.network(qr.imageUrl!, width: 180, height: 180),
+          Center(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child: Container(
+                color: Colors.white,
+                padding: const EdgeInsets.all(8),
+                child: Image.network(qr.imageUrl!, width: 150, height: 150),
+              ),
             ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
           if ((qr.holderName ?? '').isNotEmpty)
             Text(
               qr.holderName!,
@@ -516,12 +528,12 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildQrHeader(),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           Text(
             ref.tr('wealth_split_bill_payment_method_label'),
             style: AppTextStyles.body(weight: FontWeight.w800, size: 13),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -552,12 +564,12 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 14),
           for (final p in _people) ...[
             _personAllocateRow(p),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
           ],
-          const SizedBox(height: 10),
+          const SizedBox(height: 6),
           SizedBox(
             width: double.infinity,
             child: PillButton(
@@ -631,16 +643,21 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // O ten dang DROPDOWN (RawAutocomplete) - CHI hien danh sach
+                // goi y trong 1 lop noi (overlay) khi dang go/focus, thay vi
+                // luon hien san 1 Wrap day het cac ten cu ben duoi nhu
+                // DebtPersonPickerField (nguyen nhan khien moi dong nguoi
+                // chiem qua nhieu chieu cao, khong the xem QR + tat ca dong
+                // trong 1 man hinh nhu nguoi dung yeu cau).
+                _PersonNameDropdownField(
+                  controller: p.nameController,
+                  focusNode: p.nameFocusNode,
+                ),
+                const SizedBox(height: 8),
                 Row(
                   children: [
-                    Expanded(
-                      child: DebtPersonPickerField(
-                        controller: p.nameController,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
                     SizedBox(
-                      width: 108,
+                      width: 96,
                       child: TextField(
                         controller: p.amountController,
                         textAlign: TextAlign.right,
@@ -648,14 +665,17 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
                           decimal: true,
                         ),
                         inputFormatters: [ThousandsInputFormatter()],
-                        style: AppTextStyles.body(weight: FontWeight.w800),
+                        style: AppTextStyles.body(
+                          size: 13,
+                          weight: FontWeight.w800,
+                        ),
                         cursorColor: AppColors.wealthAccent,
                         decoration: InputDecoration(
                           isDense: true,
                           filled: true,
                           fillColor: AppColors.glassFill,
                           contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 10,
+                            horizontal: 8,
                             vertical: 10,
                           ),
                           border: OutlineInputBorder(
@@ -666,11 +686,7 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
                         onChanged: (_) => setState(() {}),
                       ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
+                    const SizedBox(width: 8),
                     Expanded(
                       child: _statusToggleChip(
                         label: ref.tr('wealth_split_bill_debt_button'),
@@ -679,7 +695,7 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
                         onTap: () => setState(() => p.status = 'debt'),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 6),
                     Expanded(
                       child: _statusToggleChip(
                         label: ref.tr('wealth_split_bill_paid_button'),
@@ -761,6 +777,92 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// O nhap ten "Creditor/debtor" dang DROPDOWN - dung RawAutocomplete de danh
+/// sach goi y (ten da tung nhap No truoc do, tu debtPersonsProvider) chi
+/// hien trong 1 lop noi (overlay) NGAY DUOI o nhap khi dang go/focus, roi tu
+/// dong bien mat khi chon xong/bo focus - KHONG chiem cho co dinh trong bo
+/// cuc nhu Wrap luon-hien-san cua DebtPersonPickerField (danh cho cac man
+/// khac, van giu nguyen o do).
+class _PersonNameDropdownField extends ConsumerWidget {
+  const _PersonNameDropdownField({
+    required this.controller,
+    required this.focusNode,
+  });
+  final TextEditingController controller;
+  final FocusNode focusNode;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final allNames = (ref.watch(debtPersonsProvider).valueOrNull ?? [])
+        .map((p) => p.name)
+        .toList();
+    return RawAutocomplete<String>(
+      textEditingController: controller,
+      focusNode: focusNode,
+      optionsBuilder: (value) {
+        final query = value.text.trim().toLowerCase();
+        final source = query.isEmpty
+            ? allNames
+            : allNames.where((n) => n.toLowerCase().contains(query));
+        return source.take(6);
+      },
+      fieldViewBuilder: (context, fieldController, focusNode, onSubmitted) {
+        return TextField(
+          controller: fieldController,
+          focusNode: focusNode,
+          style: AppTextStyles.body(size: 13),
+          decoration: InputDecoration(
+            isDense: true,
+            filled: true,
+            fillColor: AppColors.glassFill,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 10,
+            ),
+            hintText: ref.tr('wealth_debt_person_hint'),
+            hintStyle: const TextStyle(color: AppColors.textMuted),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        );
+      },
+      optionsViewBuilder: (context, onSelected, options) {
+        return Align(
+          alignment: Alignment.topLeft,
+          child: Material(
+            color: const Color(0xFF1B2242),
+            borderRadius: BorderRadius.circular(12),
+            elevation: 6,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 176, minWidth: 160),
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                shrinkWrap: true,
+                itemCount: options.length,
+                itemBuilder: (context, i) {
+                  final name = options.elementAt(i);
+                  return InkWell(
+                    onTap: () => onSelected(name),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
+                      child: Text(name, style: AppTextStyles.body(size: 13)),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
