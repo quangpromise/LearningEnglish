@@ -63,6 +63,7 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
   Widget build(BuildContext context) {
     final unread = ref.watch(unreadMessageCountProvider).valueOrNull ?? 0;
     final hidden = ref.watch(wealthPrivacyModeProvider);
+    final investmentHidden = ref.watch(investmentPrivacyModeProvider);
     final netWorth = ref.watch(netWorthVndProvider);
     final investmentTotal = ref.watch(totalInvestmentValueVndProvider);
     final (investmentPnl, investmentPnlPercent) = ref.watch(
@@ -144,15 +145,16 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
                   _TotalCard(
                     title: ref.tr('wealth_investments_total'),
                     value: investmentTotal,
-                    hidden: hidden,
+                    hidden: investmentHidden,
                     pnl: investmentPnl,
                     pnlPercent: investmentPnlPercent,
                     showValue: _pageIndex == 1,
                     placeholderIcon: Icons.trending_up_rounded,
                     onTap: () =>
                         openAppPopup(context, const WealthInvestmentScreen()),
-                    onToggleHidden: () =>
-                        ref.read(wealthPrivacyModeProvider.notifier).toggle(),
+                    onToggleHidden: () => ref
+                        .read(investmentPrivacyModeProvider.notifier)
+                        .toggle(),
                     footer: _CardFooterRow(
                       items: [
                         (

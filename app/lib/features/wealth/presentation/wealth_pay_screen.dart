@@ -101,8 +101,7 @@ class _WealthPayScreenState extends State<WealthPayScreen>
                 padding: const EdgeInsets.all(4),
                 child: TabBar(
                   controller: _tabController,
-                  isScrollable: true,
-                  tabAlignment: TabAlignment.start,
+                  isScrollable: false,
                   indicator: BoxDecoration(
                     gradient: AppColors.wealthAccentGradient,
                     borderRadius: BorderRadius.circular(999),
@@ -111,15 +110,40 @@ class _WealthPayScreenState extends State<WealthPayScreen>
                   labelColor: Colors.white,
                   unselectedLabelColor: AppColors.textMuted,
                   dividerColor: Colors.transparent,
+                  labelPadding: const EdgeInsets.symmetric(horizontal: 2),
                   labelStyle: const TextStyle(
-                    fontSize: 13,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                  ),
+                  unselectedLabelStyle: const TextStyle(
+                    fontSize: 11,
                     fontWeight: FontWeight.w800,
                   ),
                   tabs: [
-                    Tab(text: ref.tr('wealth_pay_tab_pay')),
-                    Tab(text: ref.tr('wealth_pay_tab_receive')),
-                    Tab(text: ref.tr('wealth_pay_tab_withdraw')),
-                    Tab(text: ref.tr('wealth_pay_tab_investment')),
+                    Tab(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(ref.tr('wealth_pay_tab_pay')),
+                      ),
+                    ),
+                    Tab(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(ref.tr('wealth_pay_tab_receive')),
+                      ),
+                    ),
+                    Tab(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(ref.tr('wealth_pay_tab_withdraw')),
+                      ),
+                    ),
+                    Tab(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(ref.tr('wealth_pay_tab_investment')),
+                      ),
+                    ),
                   ],
                 ),
               ),

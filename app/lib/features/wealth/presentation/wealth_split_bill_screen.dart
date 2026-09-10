@@ -873,31 +873,40 @@ class _PersonNameDropdownField extends ConsumerWidget {
         );
       },
       optionsViewBuilder: (context, onSelected, options) {
-        return Align(
-          alignment: Alignment.topLeft,
-          child: Material(
-            color: const Color(0xFF1B2242),
-            borderRadius: BorderRadius.circular(12),
-            elevation: 6,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: 176, minWidth: 160),
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                shrinkWrap: true,
-                itemCount: options.length,
-                itemBuilder: (context, i) {
-                  final name = options.elementAt(i);
-                  return InkWell(
-                    onTap: () => onSelected(name),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 10,
+        // TextFieldTapRegion: KHONG co no thi tap vao item duoi day bi tinh
+        // la "tap ra ngoai" o nhap -> Flutter tu unfocus + xoa overlay nay
+        // NGAY LAP TUC (truoc khi InkWell kip nhan onTap), khien danh sach
+        // hien ra nhung bam ten nao cung khong chon duoc.
+        return TextFieldTapRegion(
+          child: Align(
+            alignment: Alignment.topLeft,
+            child: Material(
+              color: const Color(0xFF1B2242),
+              borderRadius: BorderRadius.circular(12),
+              elevation: 6,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxHeight: 176,
+                  minWidth: 160,
+                ),
+                child: ListView.builder(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  shrinkWrap: true,
+                  itemCount: options.length,
+                  itemBuilder: (context, i) {
+                    final name = options.elementAt(i);
+                    return InkWell(
+                      onTap: () => onSelected(name),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
+                        child: Text(name, style: AppTextStyles.body(size: 13)),
                       ),
-                      child: Text(name, style: AppTextStyles.body(size: 13)),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
             ),
           ),
