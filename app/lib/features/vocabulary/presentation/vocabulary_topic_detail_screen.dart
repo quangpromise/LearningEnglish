@@ -26,6 +26,11 @@ class _VocabularyTopicDetailScreenState
     extends ConsumerState<VocabularyTopicDetailScreen> {
   final Set<VocabWord> _selected = {};
 
+  // null = khong loc (hien tat ca, ke ca tu chua duoc gan nhan frequency/
+  // partOfSpeech - xem doc comment cua 2 field do trong vocabulary_data.dart).
+  VocabFrequency? _frequencyFilter;
+  VocabPartOfSpeech? _posFilter;
+
   void _toggle(VocabWord word) {
     setState(() {
       if (_selected.contains(word)) {
@@ -74,7 +79,12 @@ class _VocabularyTopicDetailScreenState
 
   @override
   Widget build(BuildContext context) {
-    final words = widget.topic.words;
+    final words = widget.topic.words.where((w) {
+      final matchesFreq =
+          _frequencyFilter == null || w.frequency == _frequencyFilter;
+      final matchesPos = _posFilter == null || w.partOfSpeech == _posFilter;
+      return matchesFreq && matchesPos;
+    }).toList();
     return ScreenBackground(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
@@ -137,83 +147,143 @@ class _VocabularyTopicDetailScreenState
               ],
             ),
             const SizedBox(height: 14),
+            SizedBox(
+              height: 34,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: [
+                  _FilterChip(
+                    label: ref.tr('vocab_filter_all'),
+                    selected: _frequencyFilter == null,
+                    color: widget.topic.color,
+                    onTap: () => setState(() => _frequencyFilter = null),
+                  ),
+                  const SizedBox(width: 8),
+                  for (final f in VocabFrequency.values) ...[
+                    _FilterChip(
+                      label: ref.tr(f.labelKeyVi),
+                      selected: _frequencyFilter == f,
+                      color: widget.topic.color,
+                      onTap: () => setState(() => _frequencyFilter = f),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              height: 34,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: [
+                  _FilterChip(
+                    label: ref.tr('vocab_filter_all'),
+                    selected: _posFilter == null,
+                    color: widget.topic.color,
+                    onTap: () => setState(() => _posFilter = null),
+                  ),
+                  const SizedBox(width: 8),
+                  for (final p in VocabPartOfSpeech.values) ...[
+                    _FilterChip(
+                      label: ref.tr(p.labelKey),
+                      selected: _posFilter == p,
+                      color: widget.topic.color,
+                      onTap: () => setState(() => _posFilter = p),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
             Expanded(
-              child: ListView.separated(
-                itemCount: words.length,
-                separatorBuilder: (_, _) => const SizedBox(height: 10),
-                itemBuilder: (context, i) {
-                  final word = words[i];
-                  final isSelected = _selected.contains(word);
-                  return GestureDetector(
-                    onTap: () => _toggle(word),
-                    child: GlowBox(
-                      borderRadius: 16,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
+              child: words.isEmpty
+                  ? Center(
+                      child: Text(
+                        ref.tr('search_no_results'),
+                        style: AppTextStyles.muted(),
                       ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 22,
-                            height: 22,
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? widget.topic.color
-                                  : Colors.transparent,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: isSelected
-                                    ? widget.topic.color
-                                    : AppColors.glassBorder,
-                                width: 1.5,
-                              ),
+                    )
+                  : ListView.separated(
+                      itemCount: words.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: 10),
+                      itemBuilder: (context, i) {
+                        final word = words[i];
+                        final isSelected = _selected.contains(word);
+                        return GestureDetector(
+                          onTap: () => _toggle(word),
+                          child: GlowBox(
+                            borderRadius: 16,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
                             ),
-                            child: isSelected
-                                ? const Icon(
-                                    Icons.check_rounded,
-                                    size: 14,
-                                    color: Colors.white,
-                                  )
-                                : null,
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            child: Row(
                               children: [
-                                Row(
-                                  children: [
-                                    Text(
-                                      word.en,
-                                      style: AppTextStyles.body(
-                                        weight: FontWeight.w800,
-                                      ),
+                                Container(
+                                  width: 22,
+                                  height: 22,
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? widget.topic.color
+                                        : Colors.transparent,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? widget.topic.color
+                                          : AppColors.glassBorder,
+                                      width: 1.5,
                                     ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      word.ipa,
-                                      style: AppTextStyles.muted(size: 11),
-                                    ),
-                                  ],
+                                  ),
+                                  child: isSelected
+                                      ? const Icon(
+                                          Icons.check_rounded,
+                                          size: 14,
+                                          color: Colors.white,
+                                        )
+                                      : null,
                                 ),
-                                Text(
-                                  word.vi,
-                                  style: AppTextStyles.muted(size: 12),
+                                const SizedBox(width: 14),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Text(
+                                            word.en,
+                                            style: AppTextStyles.body(
+                                              weight: FontWeight.w800,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            word.ipa,
+                                            style: AppTextStyles.muted(
+                                              size: 11,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      Text(
+                                        word.vi,
+                                        style: AppTextStyles.muted(size: 12),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                SpeakerButton(
+                                  onTap: () => AppTts.instance.speak(word.en),
+                                  color: widget.topic.color,
                                 ),
                               ],
                             ),
                           ),
-                          SpeakerButton(
-                            onTap: () => AppTts.instance.speak(word.en),
-                            color: widget.topic.color,
-                          ),
-                        ],
-                      ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
             ),
             const SizedBox(height: 12),
             Row(
@@ -246,6 +316,46 @@ class _VocabularyTopicDetailScreenState
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Chip loc theo frequency/partOfSpeech - cung kieu voi _FilterChip trong
+/// wealth_income_tab.dart, chi khac o cho mau accent lay theo [color] truyen
+/// vao (mau rieng cua tung chu de) thay vi mau co dinh.
+class _FilterChip extends StatelessWidget {
+  const _FilterChip({
+    required this.label,
+    required this.selected,
+    required this.color,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final Color color;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected ? color.withValues(alpha: 0.2) : AppColors.glassFill,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: selected ? color : AppColors.glassBorder),
+        ),
+        child: Text(
+          label,
+          style: AppTextStyles.body(
+            size: 12,
+            weight: FontWeight.w700,
+            color: selected ? color : AppColors.textPrimary,
+          ),
         ),
       ),
     );
