@@ -36,6 +36,10 @@ class WealthSplitBillRepository {
   /// insert rieng cho de dam bao khong bi thieu dong neu loi giua chung).
   /// Tra ve id cua bill vua tao + id CUA TUNG SHARE theo DUNG thu tu
   /// [shares] truyen vao (de UI gan lai shareId cho tung nguoi trong bo nho).
+  /// [status] cua tung nguoi (tru "Toi") duoc CHON SAN luc chia (Ghi no/Da
+  /// tra), khong con trang thai "cho xu ly" nua - xem wealth_split_bill_
+  /// screen.dart (nguoi dung chon Ghi no/Da tra NGAY khi phan bo, truoc khi
+  /// bam Pay, thay vi phai quay lai xu ly sau).
   Future<(String billId, List<String> shareIds)> createBill({
     required String userId,
     required double totalAmount,
@@ -45,7 +49,10 @@ class WealthSplitBillRepository {
     String? paymentBankName,
     String? transactionId,
     required DateTime occurredAt,
-    required List<({String personName, bool isMe, double amount})> shares,
+    required List<
+      ({String personName, bool isMe, double amount, String status})
+    >
+    shares,
   }) async {
     final billRow = await _supabase
         .from('wealth_split_bills')
@@ -73,7 +80,7 @@ class WealthSplitBillRepository {
               'person_name': s.personName,
               'is_me': s.isMe,
               'amount': s.amount,
-              'status': s.isMe ? 'paid' : 'pending',
+              'status': s.isMe ? 'paid' : s.status,
             },
         ])
         .select('id');

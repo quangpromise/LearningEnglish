@@ -46,7 +46,9 @@ class _SplitPersonEntry {
   final bool isMe;
   final TextEditingController amountController;
   final nameController = TextEditingController();
-  String status = 'pending'; // 'pending' | 'debt' | 'paid'
+  // Chon SAN ngay luc phan bo (truoc khi bam Pay) - khong con trang thai
+  // "cho xu ly" rieng nua, xem ghi chu o WealthSplitBillRepository.createBill.
+  String status = 'debt'; // 'debt' | 'paid' (khong dung cho "Toi")
   String? shareId;
 
   double get enteredAmount =>
@@ -210,35 +212,96 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
           );
 
       final meAmount = _meAmount;
-      final (billId, shareIds) = await ref
-          .read(wealthSplitBillRepositoryProvider)
-          .createBill(
-            userId: userId,
-            totalAmount: _total,
-            currency: 'VND',
-            paymentAccountType: source.isCash ? 'cash' : 'bank',
-            paymentBankCode: source.isCash
-                ? null
-                : (source.bank!.isOther ? null : source.bank!.code),
-            paymentBankName: source.isCash ? null : source.bank!.shortName,
-            transactionId: txId,
-            occurredAt: tx.occurredAt,
-            shares: [
-              for (final p in _people)
-                (
-                  personName: p.isMe
-                      ? ref.tr('wealth_split_bill_me_label')
-                      : p.nameController.text.trim(),
-                  isMe: p.isMe,
-                  amount: p.isMe ? meAmount : p.enteredAmount,
+
+      // Tung nguoi (tru "Toi") da CHON SAN Ghi no/Da tra ngay luc phan bo -
+      // thuc hien hanh dong tuong ung NGAY tai day (mot lan cung voi Pay,
+      // khong con buoc rieng sau do nua): "Da tra" cong thang tien ho vao
+      // lai Cash/Bank (coi nhu ho dua tien mat ngay tai cho), "Ghi no" tao 1
+      // khoan owed_to_me. debtId thu duoc de lien ket lai voi dong share
+      // sau khi tao bill (xem updateShareStatus ben duoi).
+      final debtIdByIndex = <int, String>{};
+      for (var i = 0; i < _people.length; i++) {
+        final p = _people[i];
+        if (p.isMe) continue;
+        if (p.status == 'paid') {
+          await ref
+              .read(wealthBalanceEntryRepositoryProvider)
+              .addEntry(
+                userId,
+                WealthBalanceEntry(
+                  id: '',
+                  accountType: source.isCash ? 'cash' : 'bank',
+                  bankCode: source.isCash
+                      ? null
+                      : (source.bank!.isOther ? null : source.bank!.code),
+                  bankName: source.isCash ? null : source.bank!.shortName,
+                  currency: 'VND',
+                  amount: p.enteredAmount,
+                  note:
+                      '${p.nameController.text.trim()} - ${ref.tr('wealth_split_bill_title')}',
+                  occurredAt: DateTime.now(),
+                  source: 'manual',
                 ),
-            ],
-          );
+              );
+        } else {
+          final name = p.nameController.text.trim();
+          final person = await ref
+              .read(wealthDebtPersonRepositoryProvider)
+              .findOrCreate(userId, name);
+          final debtId = await ref
+              .read(wealthDebtRepositoryProvider)
+              .create(
+                userId: userId,
+                personId: person.id,
+                direction: 'owed_to_me',
+                amount: p.enteredAmount,
+                currency: 'VND',
+                occurredAt: DateTime.now(),
+                note: ref.tr('wealth_split_bill_title'),
+              );
+          debtIdByIndex[i] = debtId;
+        }
+      }
+      ref.invalidate(walletBalanceEntriesProvider);
+      ref.invalidate(debtsProvider('owed_to_me'));
+
+      final billRepo = ref.read(wealthSplitBillRepositoryProvider);
+      final (billId, shareIds) = await billRepo.createBill(
+        userId: userId,
+        totalAmount: _total,
+        currency: 'VND',
+        paymentAccountType: source.isCash ? 'cash' : 'bank',
+        paymentBankCode: source.isCash
+            ? null
+            : (source.bank!.isOther ? null : source.bank!.code),
+        paymentBankName: source.isCash ? null : source.bank!.shortName,
+        transactionId: txId,
+        occurredAt: tx.occurredAt,
+        shares: [
+          for (final p in _people)
+            (
+              personName: p.isMe
+                  ? ref.tr('wealth_split_bill_me_label')
+                  : p.nameController.text.trim(),
+              isMe: p.isMe,
+              amount: p.isMe ? meAmount : p.enteredAmount,
+              status: p.status,
+            ),
+        ],
+      );
       for (var i = 0; i < _people.length && i < shareIds.length; i++) {
         _people[i].shareId = shareIds[i];
+        final debtId = debtIdByIndex[i];
+        if (debtId != null) {
+          await billRepo.updateShareStatus(
+            userId,
+            shareIds[i],
+            status: 'debt',
+            debtId: debtId,
+          );
+        }
       }
 
-      ref.invalidate(walletBalanceEntriesProvider);
       ref.invalidate(wealthTransactionsProvider);
       ref.invalidate(wealthSplitBillsProvider);
       if (mounted) {
@@ -249,70 +312,6 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
     } finally {
       if (mounted) setState(() => _saving = false);
     }
-  }
-
-  Future<void> _markDebt(_SplitPersonEntry p) async {
-    final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
-    if (userId == null) return;
-    final name = p.nameController.text.trim();
-    final person = await ref
-        .read(wealthDebtPersonRepositoryProvider)
-        .findOrCreate(userId, name);
-    final debtId = await ref
-        .read(wealthDebtRepositoryProvider)
-        .create(
-          userId: userId,
-          personId: person.id,
-          direction: 'owed_to_me',
-          amount: p.enteredAmount,
-          currency: 'VND',
-          occurredAt: DateTime.now(),
-          note: ref.tr('wealth_split_bill_title'),
-        );
-    ref.invalidate(debtsProvider('owed_to_me'));
-    if (p.shareId != null) {
-      await ref
-          .read(wealthSplitBillRepositoryProvider)
-          .updateShareStatus(
-            userId,
-            p.shareId!,
-            status: 'debt',
-            debtId: debtId,
-          );
-    }
-    setState(() => p.status = 'debt');
-  }
-
-  Future<void> _markPaid(_SplitPersonEntry p) async {
-    final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
-    if (userId == null) return;
-    final source = _source!;
-    await ref
-        .read(wealthBalanceEntryRepositoryProvider)
-        .addEntry(
-          userId,
-          WealthBalanceEntry(
-            id: '',
-            accountType: source.isCash ? 'cash' : 'bank',
-            bankCode: source.isCash
-                ? null
-                : (source.bank!.isOther ? null : source.bank!.code),
-            bankName: source.isCash ? null : source.bank!.shortName,
-            currency: 'VND',
-            amount: p.enteredAmount,
-            note:
-                '${p.nameController.text.trim()} - ${ref.tr('wealth_split_bill_title')}',
-            occurredAt: DateTime.now(),
-            source: 'manual',
-          ),
-        );
-    ref.invalidate(walletBalanceEntriesProvider);
-    if (p.shareId != null) {
-      await ref
-          .read(wealthSplitBillRepositoryProvider)
-          .updateShareStatus(userId, p.shareId!, status: 'paid');
-    }
-    setState(() => p.status = 'paid');
   }
 
   @override
@@ -452,41 +451,44 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
         ),
       );
     }
+    // QR to, dat giua, NAM TREN thong tin tai khoan (thay vi nho + nam ben
+    // canh nhu truoc) - theo yeu cau nguoi dung de de quet hon.
     return GlowBox(
       borderRadius: 16,
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
             child: Container(
               color: Colors.white,
-              padding: const EdgeInsets.all(4),
-              child: Image.network(qr.imageUrl!, width: 64, height: 64),
+              padding: const EdgeInsets.all(8),
+              child: Image.network(qr.imageUrl!, width: 180, height: 180),
             ),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if ((qr.holderName ?? '').isNotEmpty)
-                  Text(
-                    qr.holderName!,
-                    style: AppTextStyles.body(weight: FontWeight.w800),
-                  ),
-                if ((qr.bankName ?? '').isNotEmpty)
-                  Text(qr.bankName!, style: AppTextStyles.muted(size: 11.5)),
-                if ((qr.accountNumber ?? '').isNotEmpty)
-                  Text(
-                    qr.accountNumber!,
-                    style: AppTextStyles.body(
-                      size: 13,
-                      weight: FontWeight.w700,
-                    ),
-                  ),
-              ],
+          const SizedBox(height: 14),
+          if ((qr.holderName ?? '').isNotEmpty)
+            Text(
+              qr.holderName!,
+              textAlign: TextAlign.center,
+              style: AppTextStyles.body(weight: FontWeight.w800, size: 14),
             ),
-          ),
+          if ((qr.bankName ?? '').isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              qr.bankName!,
+              textAlign: TextAlign.center,
+              style: AppTextStyles.muted(size: 12),
+            ),
+          ],
+          if ((qr.accountNumber ?? '').isNotEmpty) ...[
+            const SizedBox(height: 2),
+            Text(
+              qr.accountNumber!,
+              textAlign: TextAlign.center,
+              style: AppTextStyles.body(size: 14, weight: FontWeight.w700),
+            ),
+          ],
         ],
       ),
     );
@@ -626,46 +628,104 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
                 ),
               ],
             )
-          : Row(
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: DebtPersonPickerField(controller: p.nameController),
+                Row(
+                  children: [
+                    Expanded(
+                      child: DebtPersonPickerField(
+                        controller: p.nameController,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    SizedBox(
+                      width: 108,
+                      child: TextField(
+                        controller: p.amountController,
+                        textAlign: TextAlign.right,
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        inputFormatters: [ThousandsInputFormatter()],
+                        style: AppTextStyles.body(weight: FontWeight.w800),
+                        cursorColor: AppColors.wealthAccent,
+                        decoration: InputDecoration(
+                          isDense: true,
+                          filled: true,
+                          fillColor: AppColors.glassFill,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 10,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        onChanged: (_) => setState(() {}),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 10),
-                SizedBox(
-                  width: 108,
-                  child: TextField(
-                    controller: p.amountController,
-                    textAlign: TextAlign.right,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    inputFormatters: [ThousandsInputFormatter()],
-                    style: AppTextStyles.body(weight: FontWeight.w800),
-                    cursorColor: AppColors.wealthAccent,
-                    decoration: InputDecoration(
-                      isDense: true,
-                      filled: true,
-                      fillColor: AppColors.glassFill,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 10,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _statusToggleChip(
+                        label: ref.tr('wealth_split_bill_debt_button'),
+                        color: AppColors.pink,
+                        selected: p.status == 'debt',
+                        onTap: () => setState(() => p.status = 'debt'),
                       ),
                     ),
-                    onChanged: (_) => setState(() {}),
-                  ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _statusToggleChip(
+                        label: ref.tr('wealth_split_bill_paid_button'),
+                        color: AppColors.teal,
+                        selected: p.status == 'paid',
+                        onTap: () => setState(() => p.status = 'paid'),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
     );
   }
 
+  Widget _statusToggleChip({
+    required String label,
+    required Color color,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(vertical: 9),
+        decoration: BoxDecoration(
+          color: selected ? color.withValues(alpha: 0.18) : AppColors.glassFill,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: selected ? color : AppColors.glassBorder),
+        ),
+        child: Text(
+          label,
+          style: AppTextStyles.body(
+            size: 12,
+            weight: FontWeight.w800,
+          ).copyWith(color: selected ? color : AppColors.textPrimary),
+        ),
+      ),
+    );
+  }
+
   Widget _buildSettle() {
-    final allDone = _people.skip(1).every((p) => p.status != 'pending');
+    // Trang thai Ghi no/Da tra da CHON SAN va thuc hien xong ngay luc bam
+    // Pay (xem _confirmPay) - man hinh nay chi con hien lai "hoa don" ket
+    // qua, khong con cho phep sua nua nen onDebt/onPaid luon null.
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -685,12 +745,6 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
                     amount: p.isMe ? _meAmount : p.enteredAmount,
                     isMe: p.isMe,
                     status: p.status,
-                    onDebt: (p.isMe || p.status != 'pending')
-                        ? null
-                        : () => _markDebt(p),
-                    onPaid: (p.isMe || p.status != 'pending')
-                        ? null
-                        : () => _markPaid(p),
                   ),
               ],
             ),
@@ -703,7 +757,7 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
             label: ref.tr('wealth_split_bill_done_button'),
             accentGradient: AppColors.wealthAccentGradient,
             accentColor: AppColors.wealthAccent,
-            onTap: allDone ? () => Navigator.of(context).maybePop() : null,
+            onTap: () => Navigator.of(context).maybePop(),
           ),
         ),
       ],

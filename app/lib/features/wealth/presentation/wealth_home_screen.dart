@@ -104,6 +104,13 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
               height: 146,
               child: PageView(
                 controller: _pageController,
+                // padEnds:false - mac dinh PageView TU THEM le dau/cuoi de
+                // trang dau/cuoi "can doi" nhu cac trang giua (padEnds:true),
+                // khien the Tong Vi (trang 0) bi day vao giua thay vi ap sat
+                // le trai nhu mong muon - day la nguyen nhan gay khoang
+                // trong ben trai nguoi dung bao, KHONG phai loi tinh toan
+                // viewportFraction.
+                padEnds: false,
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(right: 10),
