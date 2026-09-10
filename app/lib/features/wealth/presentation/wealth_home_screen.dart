@@ -409,8 +409,21 @@ class _TotalCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(22),
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.glassFill,
-          border: Border.all(color: AppColors.glassBorder),
+          // Nen toi pha vang dam (thay glassFill trung tinh truoc day) - lam
+          // 2 the Tong Vi/Tong Dau tu noi bat theo mau chu dao vang cua muc
+          // Quan ly tai san, van giu chu trang/heading de doc vi lop den lam
+          // nen chinh, vang chi la sac phu.
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xCC000000),
+              AppColors.wealthAccent.withValues(alpha: 0.4),
+            ],
+          ),
+          border: Border.all(
+            color: AppColors.wealthAccent.withValues(alpha: 0.45),
+          ),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,

@@ -254,6 +254,22 @@ class AppStrings {
       AppLanguage.en: 'Medium',
     },
     'vocab_frequency_rare': {AppLanguage.vi: 'Ít gặp', AppLanguage.en: 'Rare'},
+    'vocab_frequency_all_desc': {
+      AppLanguage.vi: 'Xem toàn bộ từ trong chủ đề, không phân biệt mức độ.',
+      AppLanguage.en: 'Shows every word in this topic, regardless of level.',
+    },
+    'vocab_frequency_common_desc': {
+      AppLanguage.vi: 'Từ gặp hằng ngày (vd "mother", "water") - phù hợp người mới bắt đầu, nên học nhóm này trước.',
+      AppLanguage.en: 'Words you meet every day (e.g. "mother", "water") - best for beginners, learn these first.',
+    },
+    'vocab_frequency_medium_desc': {
+      AppLanguage.vi: 'Từ thường gặp nhưng không cơ bản (vd "colleague", "umbrella") - phù hợp người đã nắm vững từ thông dụng.',
+      AppLanguage.en: 'Common but not basic words (e.g. "colleague", "umbrella") - for learners who already know the common set.',
+    },
+    'vocab_frequency_rare_desc': {
+      AppLanguage.vi: 'Từ ít gặp, chuyên sâu/trang trọng (vd "sibling", "itinerary") - phù hợp người muốn mở rộng vốn từ nâng cao.',
+      AppLanguage.en: 'Less common, more formal/advanced words (e.g. "sibling", "itinerary") - for learners wanting to expand further.',
+    },
     'vocab_pos_noun': {AppLanguage.vi: 'Danh từ', AppLanguage.en: 'Noun'},
     'vocab_pos_verb': {AppLanguage.vi: 'Động từ', AppLanguage.en: 'Verb'},
     'vocab_pos_adjective': {
@@ -450,6 +466,326 @@ class AppStrings {
       AppLanguage.vi: 'Tôi muốn tự học, tắt gợi ý',
       AppLanguage.en: "I'll study on my own, turn off suggestions",
     },
+
+    // Man "Lo trinh hoc" day du (learning_path_screen.dart) - xem
+    // docs/research-learning-path.md muc 7.
+    'lp_screen_title': {
+      AppLanguage.vi: 'Lộ trình học',
+      AppLanguage.en: 'Learning path',
+    },
+    'lp_screen_progress': {
+      AppLanguage.vi: '{done}/{total} bước hoàn thành',
+      AppLanguage.en: '{done}/{total} steps completed',
+    },
+    'lp_stage_open_button': {
+      AppLanguage.vi: 'Mở tính năng',
+      AppLanguage.en: 'Open feature',
+    },
+    'lp_stage_mark_done': {
+      AppLanguage.vi: 'Đánh dấu hoàn thành',
+      AppLanguage.en: 'Mark as done',
+    },
+    'lp_stage_completed_badge': {
+      AppLanguage.vi: 'Đã hoàn thành',
+      AppLanguage.en: 'Completed',
+    },
+    'lp_stage_unmark': {
+      AppLanguage.vi: 'Bỏ đánh dấu',
+      AppLanguage.en: 'Unmark',
+    },
+    'lp_change_path_button': {
+      AppLanguage.vi: 'Đổi lộ trình',
+      AppLanguage.en: 'Change path',
+    },
+    'lp_turn_off_button': {
+      AppLanguage.vi: 'Tắt gợi ý',
+      AppLanguage.en: 'Turn off suggestions',
+    },
+    'persona_name_beginner': {
+      AppLanguage.vi: 'Mất gốc',
+      AppLanguage.en: 'Absolute beginner',
+    },
+    'persona_name_dailyConversation': {
+      AppLanguage.vi: 'Giao tiếp hằng ngày',
+      AppLanguage.en: 'Daily conversation',
+    },
+    'persona_name_officeEnglish': {
+      AppLanguage.vi: 'Tiếng Anh công sở',
+      AppLanguage.en: 'Office English',
+    },
+    'persona_name_grammarOverhaul': {
+      AppLanguage.vi: 'Ôn tập toàn diện',
+      AppLanguage.en: 'Full grammar review',
+    },
+    'persona_name_toeicPrep': {
+      AppLanguage.vi: 'Luyện thi TOEIC',
+      AppLanguage.en: 'TOEIC prep',
+    },
+    'persona_name_ieltsPrep': {
+      AppLanguage.vi: 'Luyện thi IELTS',
+      AppLanguage.en: 'IELTS prep',
+    },
+
+    // Persona A - Mat goc (5 buoc).
+    'lp_stage_beginner_1_title': {
+      AppLanguage.vi: 'Học phát âm nền tảng (Phonics)',
+      AppLanguage.en: 'Build pronunciation basics (Phonics)',
+    },
+    'lp_stage_beginner_1_desc': {
+      AppLanguage.vi: 'Bắt đầu từ 12 bài Phonics để nắm chắc bảng âm cơ bản trước khi học từ vựng và ngữ pháp - nền tảng phát âm càng vững, càng dễ nghe/nói đúng về sau.',
+      AppLanguage.en: 'Start with all 12 Phonics lessons to master basic sounds before vocabulary and grammar - a solid pronunciation base makes listening/speaking correctly much easier later.',
+    },
+    'lp_stage_beginner_2_title': {
+      AppLanguage.vi: 'Xây vốn từ vựng cơ bản',
+      AppLanguage.en: 'Build basic vocabulary',
+    },
+    'lp_stage_beginner_2_desc': {
+      AppLanguage.vi: 'Học các chủ đề đời sống dễ nhất trước: Gia đình, Màu sắc, Thời tiết - từ ít, quen thuộc, giúp bạn thấy tiến bộ ngay từ đầu.',
+      AppLanguage.en: 'Learn the easiest everyday topics first: Family, Colors, Weather - short lists of familiar words that show quick progress.',
+    },
+    'lp_stage_beginner_3_title': {
+      AppLanguage.vi: 'Ngữ pháp nền tảng',
+      AppLanguage.en: 'Foundational grammar',
+    },
+    'lp_stage_beginner_3_desc': {
+      AppLanguage.vi: 'Chỉ cần nắm 5-6 chủ đề đầu: Thì hiện tại đơn, Thì hiện tại tiếp diễn, Danh từ, Đại từ, Giới từ - đủ để ghép được câu đơn giản.',
+      AppLanguage.en: 'Focus on 5-6 core topics first: Present Simple, Present Continuous, Nouns, Pronouns, Prepositions - enough to build simple sentences.',
+    },
+    'lp_stage_beginner_4_title': {
+      AppLanguage.vi: 'Đọc truyện trình độ A2',
+      AppLanguage.en: 'Read A2-level stories',
+    },
+    'lp_stage_beginner_4_desc': {
+      AppLanguage.vi: 'Vào mục Story, tìm truyện gắn nhãn trình độ A2 để luyện đọc/nghe hiểu vừa sức, củng cố từ vựng và ngữ pháp vừa học.',
+      AppLanguage.en: 'Open Story and look for stories labeled A2 for reading/listening practice at the right level, reinforcing what you just learned.',
+    },
+    'lp_stage_beginner_5_title': {
+      AppLanguage.vi: 'Luyện viết lại từ đã học',
+      AppLanguage.en: 'Practice writing learned words',
+    },
+    'lp_stage_beginner_5_desc': {
+      AppLanguage.vi: 'Dùng chế độ Từ vựng trong Luyện viết để gõ lại các từ ở bước 2 - biến từ thụ động thành từ chủ động. Hoàn thành lộ trình này, bạn có thể đổi sang lộ trình Giao tiếp hằng ngày hoặc Ôn tập toàn diện tuỳ mục tiêu.',
+      AppLanguage.en: 'Use the Vocabulary mode in Writing to retype the words from step 2 - turning passive vocabulary into active recall. After finishing, switch to the Daily Conversation or Full Grammar Review path depending on your goal.',
+    },
+
+    // Persona B - Giao tiep hang ngay (5 buoc).
+    'lp_stage_daily_1_title': {
+      AppLanguage.vi: 'Từ vựng giao tiếp hằng ngày',
+      AppLanguage.en: 'Everyday conversation vocabulary',
+    },
+    'lp_stage_daily_1_desc': {
+      AppLanguage.vi: 'Học các chủ đề dùng nhiều khi ra ngoài: Mua sắm, Du lịch, Phương hướng & Địa điểm, Nhà hàng & Ăn uống.',
+      AppLanguage.en: 'Learn topics you use out in the world: Shopping, Travel, Directions & Places, Dining Out.',
+    },
+    'lp_stage_daily_2_title': {
+      AppLanguage.vi: 'Luyện phát âm câu',
+      AppLanguage.en: 'Practice pronouncing sentences',
+    },
+    'lp_stage_daily_2_desc': {
+      AppLanguage.vi: 'Ghi âm và luyện nói các câu đơn giản, được chấm điểm phát âm tự động - luyện phản xạ nói trước khi cần ứng biến thật.',
+      AppLanguage.en: 'Record yourself saying simple sentences and get an automatic pronunciation score - build speaking reflexes before real improvisation.',
+    },
+    'lp_stage_daily_3_title': {
+      AppLanguage.vi: 'Ngữ pháp hội thoại cơ bản',
+      AppLanguage.en: 'Basic conversational grammar',
+    },
+    'lp_stage_daily_3_desc': {
+      AppLanguage.vi: 'Ôn 3 thì hay dùng nhất khi nói chuyện: Thì hiện tại đơn, Thì quá khứ đơn, Thì tương lai gần.',
+      AppLanguage.en: 'Review the 3 most-used tenses in conversation: Present Simple, Past Simple, Near Future (be going to).',
+    },
+    'lp_stage_daily_4_title': {
+      AppLanguage.vi: 'Trò chuyện tự do với AI',
+      AppLanguage.en: 'Free conversation with AI',
+    },
+    'lp_stage_daily_4_desc': {
+      AppLanguage.vi: 'Vào AI Voice Chat, thử các tình huống đời thường (gọi món, hỏi đường, hỏi thăm) để luyện phản xạ nói thật.',
+      AppLanguage.en: 'Open AI Voice Chat and try everyday situations (ordering food, asking for directions, small talk) to build real speaking reflexes.',
+    },
+    'lp_stage_daily_5_title': {
+      AppLanguage.vi: 'Đọc truyện dạng hội thoại',
+      AppLanguage.en: 'Read dialogue-style stories',
+    },
+    'lp_stage_daily_5_desc': {
+      AppLanguage.vi: 'Chọn truyện có nhiều đoạn hội thoại trong Story để làm quen cách người bản xứ nói chuyện tự nhiên.',
+      AppLanguage.en: 'Pick dialogue-heavy stories in Story to get used to how native speakers talk naturally.',
+    },
+
+    // Persona C - Tieng Anh cong so (6 buoc).
+    'lp_stage_office_1_title': {
+      AppLanguage.vi: 'Từ vựng công sở',
+      AppLanguage.en: 'Office vocabulary',
+    },
+    'lp_stage_office_1_desc': {
+      AppLanguage.vi: 'Học các chủ đề: Công việc, Kinh doanh, Máy tính (và Công nghệ & Mạng xã hội nếu cần) - vốn từ dùng trong email/họp hành.',
+      AppLanguage.en: 'Learn: Work, Business, Computers (and Technology & Social Media if needed) - vocabulary for emails and meetings.',
+    },
+    'lp_stage_office_2_title': {
+      AppLanguage.vi: 'Ngữ pháp câu hoàn chỉnh',
+      AppLanguage.en: 'Complete-sentence grammar',
+    },
+    'lp_stage_office_2_desc': {
+      AppLanguage.vi: 'Ôn đầy đủ các thì, cộng thêm Câu chủ động và bị động, Câu điều kiện - cần thiết để viết câu chuẩn mực, chuyên nghiệp.',
+      AppLanguage.en: 'Review all tenses, plus Active & Passive Voice and Conditional Sentences - needed for polished, professional writing.',
+    },
+    'lp_stage_office_3_title': {
+      AppLanguage.vi: 'Luyện viết - Từ vựng',
+      AppLanguage.en: 'Writing practice - Vocabulary mode',
+    },
+    'lp_stage_office_3_desc': {
+      AppLanguage.vi: 'Bắt đầu bằng chế độ Từ vựng trong Luyện viết để nhớ chắc các từ công sở vừa học.',
+      AppLanguage.en: 'Start with the Vocabulary mode in Writing to lock in the office words you just learned.',
+    },
+    'lp_stage_office_4_title': {
+      AppLanguage.vi: 'Luyện viết - Đoạn văn',
+      AppLanguage.en: 'Writing practice - Paragraph mode',
+    },
+    'lp_stage_office_4_desc': {
+      AppLanguage.vi: 'Chuyển sang chế độ Đoạn văn, dịch từng câu tiếng Việt sang tiếng Anh - sát nhất với việc viết email/báo cáo thật.',
+      AppLanguage.en: 'Switch to the Paragraph mode, translating Vietnamese sentences into English - closest to writing a real email or report.',
+    },
+    'lp_stage_office_5_title': {
+      AppLanguage.vi: 'Luyện phản xạ họp/thuyết trình',
+      AppLanguage.en: 'Practice meeting/presentation reflexes',
+    },
+    'lp_stage_office_5_desc': {
+      AppLanguage.vi: 'Dùng AI Voice Chat, thử hỏi AI về một tình huống họp hành hoặc thuyết trình để luyện phản xạ giao tiếp công việc.',
+      AppLanguage.en: 'Use AI Voice Chat and ask about a meeting or presentation scenario to practice work-related speaking reflexes.',
+    },
+    'lp_stage_office_6_title': {
+      AppLanguage.vi: 'Đọc tài liệu dài',
+      AppLanguage.en: 'Read longer material',
+    },
+    'lp_stage_office_6_desc': {
+      AppLanguage.vi: 'Vào Đọc sách để luyện đọc hiểu các đoạn văn dài, văn phong trang trọng hơn truyện ngắn.',
+      AppLanguage.en: 'Open Reading to practice comprehension on longer passages with a more formal tone than short stories.',
+    },
+
+    // Persona D - On tap toan dien ngu phap (5 buoc).
+    'lp_stage_grammar_1_title': {
+      AppLanguage.vi: 'Học hết 31 chủ đề ngữ pháp',
+      AppLanguage.en: 'Go through all 31 grammar topics',
+    },
+    'lp_stage_grammar_1_desc': {
+      AppLanguage.vi: 'Đi tuần tự theo đúng thứ tự đã sắp trong danh sách Ngữ pháp (từ thì cơ bản đến mệnh đề quan hệ) - thứ tự này vốn đã đi từ dễ đến khó.',
+      AppLanguage.en: 'Go in order through the Grammar list (from basic tenses to relative clauses) - the list is already ordered from easy to advanced.',
+    },
+    'lp_stage_grammar_2_title': {
+      AppLanguage.vi: 'Từ vựng song song',
+      AppLanguage.en: 'Vocabulary alongside grammar',
+    },
+    'lp_stage_grammar_2_desc': {
+      AppLanguage.vi: 'Mỗi tuần học thêm 1-2 chủ đề từ vựng bất kỳ, học song song với ngữ pháp thay vì học dồn 1 lần.',
+      AppLanguage.en: 'Add 1-2 vocabulary topics per week alongside grammar, instead of cramming everything at once.',
+    },
+    'lp_stage_grammar_3_title': {
+      AppLanguage.vi: 'Ôn lại bằng Đố vui',
+      AppLanguage.en: 'Review with Quiz',
+    },
+    'lp_stage_grammar_3_desc': {
+      AppLanguage.vi: 'Làm Đố vui định kỳ để ôn lại kiến thức đã học dưới dạng giải trí, nhớ lâu hơn học thuộc lòng.',
+      AppLanguage.en: 'Play Quiz regularly to review what you learned in a fun way - it sticks better than rote memorization.',
+    },
+    'lp_stage_grammar_4_title': {
+      AppLanguage.vi: 'Luyện viết đoạn văn',
+      AppLanguage.en: 'Paragraph writing practice',
+    },
+    'lp_stage_grammar_4_desc': {
+      AppLanguage.vi: 'Dùng chế độ Đoạn văn trong Luyện viết để áp dụng đúng ngữ pháp vừa học vào câu thật, thay vì chỉ học lý thuyết.',
+      AppLanguage.en: 'Use the Paragraph mode in Writing to apply the grammar you just learned to real sentences, not just theory.',
+    },
+    'lp_stage_grammar_5_title': {
+      AppLanguage.vi: 'Đọc sách củng cố',
+      AppLanguage.en: 'Reinforce with reading',
+    },
+    'lp_stage_grammar_5_desc': {
+      AppLanguage.vi: 'Đọc thêm ở mục Đọc sách hoặc Story để thấy ngữ pháp đã học xuất hiện trong ngữ cảnh thực tế.',
+      AppLanguage.en: 'Read more in Reading or Story to see the grammar you learned appear in real context.',
+    },
+
+    // Persona E - Luyen thi TOEIC (5 buoc).
+    'lp_stage_toeic_1_title': {
+      AppLanguage.vi: 'Từ vựng công việc/kinh doanh',
+      AppLanguage.en: 'Work/business vocabulary',
+    },
+    'lp_stage_toeic_1_desc': {
+      AppLanguage.vi: 'Ưu tiên 2 chủ đề: Công việc, Kinh doanh - nhóm từ xuất hiện nhiều nhất trong đề TOEIC.',
+      AppLanguage.en: 'Prioritize Work and Business - the word groups that appear most often in the TOEIC test.',
+    },
+    'lp_stage_toeic_2_title': {
+      AppLanguage.vi: 'Ôn nhanh ngữ pháp hay gặp',
+      AppLanguage.en: 'Quick review of common grammar points',
+    },
+    'lp_stage_toeic_2_desc': {
+      AppLanguage.vi: 'Tập trung vào: các thì, Câu chủ động và bị động, Liên từ, Giới từ - đúng dạng hay xuất hiện trong Part 5, 6 của đề TOEIC.',
+      AppLanguage.en: 'Focus on: tenses, Active & Passive Voice, Conjunctions, Prepositions - the patterns that show up in TOEIC Parts 5 and 6.',
+    },
+    'lp_stage_toeic_3_title': {
+      AppLanguage.vi: 'Ôn Phonics nếu yếu phần Nghe',
+      AppLanguage.en: 'Review Phonics if Listening is weak',
+    },
+    'lp_stage_toeic_3_desc': {
+      AppLanguage.vi: 'Nếu thấy khó nghe Part 1-4, quay lại ôn nhanh 12 bài Phonics để chắc lại các âm dễ nhầm.',
+      AppLanguage.en: 'If Parts 1-4 are hard to follow, revisit the 12 Phonics lessons to nail down commonly confused sounds.',
+    },
+    'lp_stage_toeic_4_title': {
+      AppLanguage.vi: 'Luyện tập rồi Thi thử TOEIC',
+      AppLanguage.en: 'Practice then take a TOEIC mock test',
+    },
+    'lp_stage_toeic_4_desc': {
+      AppLanguage.vi: 'Vào TOEIC, làm chế độ Luyện tập (Practice) trước để quen dạng đề, sau đó mới làm Thi thử (Exam) để tính thời gian thật.',
+      AppLanguage.en: 'Open TOEIC, use Practice mode first to get familiar with the format, then take a timed Exam mode test.',
+    },
+    'lp_stage_toeic_5_title': {
+      AppLanguage.vi: 'Lặp lại định kỳ, theo dõi tiến bộ',
+      AppLanguage.en: 'Repeat regularly and track progress',
+    },
+    'lp_stage_toeic_5_desc': {
+      AppLanguage.vi: 'Làm lại đề Thi thử định kỳ (vd mỗi tuần) và xem Lịch sử làm bài để biết điểm có tăng dần không.',
+      AppLanguage.en: 'Retake mock exams regularly (e.g. weekly) and check your score History to see if you are improving.',
+    },
+
+    // Persona F - Luyen thi IELTS (5 buoc).
+    'lp_stage_ielts_1_title': {
+      AppLanguage.vi: 'Từ vựng học thuật/xã hội',
+      AppLanguage.en: 'Academic/social vocabulary',
+    },
+    'lp_stage_ielts_1_desc': {
+      AppLanguage.vi: 'Ưu tiên các chủ đề thiên về học thuật/xã hội: Môi trường, Pháp luật & Tội phạm, Thiên tai & Khí hậu.',
+      AppLanguage.en: 'Prioritize academic/social topics: Environment, Law & Crime, Natural Disasters.',
+    },
+    'lp_stage_ielts_2_title': {
+      AppLanguage.vi: 'Ngữ pháp cấu trúc phức',
+      AppLanguage.en: 'Complex sentence structures',
+    },
+    'lp_stage_ielts_2_desc': {
+      AppLanguage.vi: 'Ôn kỹ: Câu điều kiện, Mệnh đề quan hệ xác định, Mệnh đề quan hệ không xác định, Câu chủ động và bị động - hay dùng trong câu học thuật.',
+      AppLanguage.en: 'Master: Conditional Sentences, Defining Relative Clauses, Non-defining Relative Clauses, Active & Passive Voice - common in academic writing.',
+    },
+    'lp_stage_ielts_3_title': {
+      AppLanguage.vi: 'Luyện viết đoạn văn',
+      AppLanguage.en: 'Paragraph writing practice',
+    },
+    'lp_stage_ielts_3_desc': {
+      AppLanguage.vi: 'Dùng chế độ Đoạn văn trong Luyện viết để luyện phản xạ viết câu đúng ngữ pháp - đây là bài tập bổ trợ, CHƯA phải đúng dạng đề Writing thật của IELTS.',
+      AppLanguage.en: 'Use the Paragraph mode in Writing to practice grammatically correct sentences - a supplementary exercise, not the actual IELTS Writing task format.',
+    },
+    'lp_stage_ielts_4_title': {
+      AppLanguage.vi: 'Luyện tập rồi Thi thử IELTS',
+      AppLanguage.en: 'Practice then take an IELTS mock test',
+    },
+    'lp_stage_ielts_4_desc': {
+      AppLanguage.vi: 'Vào IELTS, làm chế độ Luyện tập trước, sau đó Thi thử phần Đọc + Nghe, theo dõi qua Lịch sử làm bài.',
+      AppLanguage.en: 'Open IELTS, use Practice mode first, then take a Reading + Listening mock test and track it in History.',
+    },
+    'lp_stage_ielts_5_title': {
+      AppLanguage.vi: 'Đọc truyện trình độ B2/C1',
+      AppLanguage.en: 'Read B2/C1-level stories',
+    },
+    'lp_stage_ielts_5_desc': {
+      AppLanguage.vi: 'Vào Story, chọn truyện gắn nhãn B2 hoặc C1 để luyện đọc/nghe học thuật, nâng dần độ khó.',
+      AppLanguage.en: 'Open Story and pick stories labeled B2 or C1 for academic reading/listening practice, gradually raising the difficulty.',
+    },
+
     'vocab_add_to_daily': {
       AppLanguage.vi: 'Học hôm nay',
       AppLanguage.en: 'Learn today',

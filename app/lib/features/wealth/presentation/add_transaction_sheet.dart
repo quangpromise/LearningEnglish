@@ -29,21 +29,56 @@ void showAddWealthTransactionSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (_) => _AddTransactionSheet(type: type, existing: existing),
+    builder: (sheetContext) => GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => Navigator.of(sheetContext).pop(),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        resizeToAvoidBottomInset: true,
+        body: Align(
+          alignment: Alignment.bottomCenter,
+          child: GestureDetector(
+            onTap: () {},
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
+              decoration: const BoxDecoration(
+                color: Color(0xFF12172E),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              ),
+              child: SingleChildScrollView(
+                child: WealthTransactionForm(type: type, existing: existing),
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
   );
 }
 
-class _AddTransactionSheet extends ConsumerStatefulWidget {
-  const _AddTransactionSheet({required this.type, this.existing});
+/// Noi dung form them/sua 1 giao dich - dung lai (embed) o ca bottom sheet
+/// ([showAddWealthTransactionSheet], khi sua 1 giao dich cu hoac them Thu
+/// nhap) LAN o thang tab "Pay" cua WealthPayScreen (hien inline, khong qua
+/// sheet - xem wealth_pay_screen.dart). Khi [onSaved] duoc truyen (truong
+/// hop nhung inline), luu xong se CLEAR form de nhap tiep thay vi
+/// Navigator.pop() (khong co gi de pop trong ngu canh inline).
+class WealthTransactionForm extends ConsumerStatefulWidget {
+  const WealthTransactionForm({
+    super.key,
+    required this.type,
+    this.existing,
+    this.onSaved,
+  });
   final WealthTransactionType type;
   final WealthTransaction? existing;
+  final VoidCallback? onSaved;
 
   @override
-  ConsumerState<_AddTransactionSheet> createState() =>
-      _AddTransactionSheetState();
+  ConsumerState<WealthTransactionForm> createState() =>
+      _WealthTransactionFormState();
 }
 
-class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
+class _WealthTransactionFormState extends ConsumerState<WealthTransactionForm> {
   late final _amountController = TextEditingController(
     text: widget.existing == null
         ? ''
@@ -175,10 +210,32 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
       ref.invalidate(serviceRenewalsProvider);
       ref.invalidate(walletBalanceEntriesProvider);
       ref.invalidate(wealthTransactionsProvider);
-      if (mounted) Navigator.of(context).pop();
+      _onSaveComplete();
     } finally {
       if (mounted) setState(() => _saving = false);
     }
+  }
+
+  /// Sau khi luu thanh cong: co [widget.onSaved] (dung inline, vd tab Pay)
+  /// thi CLEAR form de nhap giao dich tiep theo va goi callback (vd hien
+  /// snackbar) thay vi pop - khong co route nao de pop trong ngu canh do.
+  /// Khong co onSaved (dung trong bottom sheet) thi giu nguyen hanh vi cu:
+  /// dong sheet lai.
+  void _onSaveComplete() {
+    if (!mounted) return;
+    final onSaved = widget.onSaved;
+    if (onSaved == null) {
+      Navigator.of(context).pop();
+      return;
+    }
+    setState(() {
+      _amountController.clear();
+      _noteController.clear();
+      _amount = 0;
+      _splits = const [PaymentSplit(accountType: 'cash', amount: 0)];
+      _selectedServiceId = null;
+    });
+    onSaved();
   }
 
   Future<void> _save() async {
@@ -262,7 +319,7 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
       }
       ref.invalidate(walletBalanceEntriesProvider);
       ref.invalidate(wealthTransactionsProvider);
-      if (mounted) Navigator.of(context).pop();
+      _onSaveComplete();
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -271,166 +328,135 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
   @override
   Widget build(BuildContext context) {
     final isExpense = widget.type == WealthTransactionType.expense;
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () => Navigator.of(context).pop(),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        resizeToAvoidBottomInset: true,
-        body: Align(
-          alignment: Alignment.bottomCenter,
-          child: GestureDetector(
-            onTap: () {},
-            child: Container(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
-              decoration: const BoxDecoration(
-                color: Color(0xFF12172E),
-                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-              ),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _isEditing
-                          ? ref.tr('wealth_edit_transaction')
-                          : ref.tr('wealth_add_transaction'),
-                      style: AppTextStyles.heading(size: 16),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          _isEditing
+              ? ref.tr('wealth_edit_transaction')
+              : ref.tr('wealth_add_transaction'),
+          style: AppTextStyles.heading(size: 16),
+        ),
+        const SizedBox(height: 16),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: isExpense
+              ? [
+                  for (final c in WealthExpenseCategory.values)
+                    _CategoryChip(
+                      icon: c.icon,
+                      label: ref.tr(c.labelKey),
+                      selected: _categoryCode == c.code,
+                      onTap: () => setState(() => _categoryCode = c.code),
                     ),
-                    const SizedBox(height: 16),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: isExpense
-                          ? [
-                              for (final c in WealthExpenseCategory.values)
-                                _CategoryChip(
-                                  icon: c.icon,
-                                  label: ref.tr(c.labelKey),
-                                  selected: _categoryCode == c.code,
-                                  onTap: () =>
-                                      setState(() => _categoryCode = c.code),
-                                ),
-                              for (final c
-                                  in ref
-                                          .watch(wealthCustomCategoriesProvider)
-                                          .valueOrNull ??
-                                      const <WealthCustomCategory>[])
-                                _CategoryChip(
-                                  icon: c.icon,
-                                  label: c.name,
-                                  selected: _categoryCode == c.code,
-                                  onTap: () =>
-                                      setState(() => _categoryCode = c.code),
-                                ),
-                            ]
-                          : [
-                              for (final c in WealthIncomeCategory.values)
-                                _CategoryChip(
-                                  icon: c.icon,
-                                  label: ref.tr(c.labelKey),
-                                  selected: _categoryCode == c.code,
-                                  onTap: () =>
-                                      setState(() => _categoryCode = c.code),
-                                ),
-                            ],
+                  for (final c
+                      in ref
+                              .watch(wealthCustomCategoriesProvider)
+                              .valueOrNull ??
+                          const <WealthCustomCategory>[])
+                    _CategoryChip(
+                      icon: c.icon,
+                      label: c.name,
+                      selected: _categoryCode == c.code,
+                      onTap: () => setState(() => _categoryCode = c.code),
                     ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _amountController,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      inputFormatters: [ThousandsInputFormatter()],
-                      style: AppTextStyles.body(),
-                      cursorColor: AppColors.wealthAccent,
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: AppColors.glassFill,
-                        hintText: ref.tr('wealth_amount_hint'),
-                        hintStyle: const TextStyle(color: AppColors.textMuted),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
+                ]
+              : [
+                  for (final c in WealthIncomeCategory.values)
+                    _CategoryChip(
+                      icon: c.icon,
+                      label: ref.tr(c.labelKey),
+                      selected: _categoryCode == c.code,
+                      onTap: () => setState(() => _categoryCode = c.code),
                     ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: _noteController,
-                      style: AppTextStyles.body(),
-                      cursorColor: AppColors.wealthAccent,
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: AppColors.glassFill,
-                        hintText: ref.tr('wealth_note_hint'),
-                        hintStyle: const TextStyle(color: AppColors.textMuted),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      ref.tr(isExpense ? 'wealth_pay_by' : 'wealth_receive_by'),
-                      style: AppTextStyles.muted(size: 11),
-                    ),
-                    const SizedBox(height: 6),
-                    PaymentSplitEditor(
-                      totalAmount: _amount,
-                      initialSplits: _initialSplits,
-                      onChanged: (splits) => setState(() => _splits = splits),
-                    ),
-                    const SizedBox(height: 10),
-                    GestureDetector(
-                      onTap: _pickDateTime,
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.glassFill,
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.schedule_rounded,
-                              size: 16,
-                              color: AppColors.textMuted,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              '${formatDateMdy(_occurredAt)} '
-                              '${_occurredAt.hour.toString().padLeft(2, '0')}:'
-                              '${_occurredAt.minute.toString().padLeft(2, '0')}',
-                              style: AppTextStyles.body(size: 13),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: PillButton(
-                        label: ref.tr('wealth_save'),
-                        accentGradient: AppColors.wealthAccentGradient,
-                        accentColor: AppColors.wealthAccent,
-                        onTap: _saving || !_splitsValid ? null : _save,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+                ],
+        ),
+        const SizedBox(height: 16),
+        TextField(
+          controller: _amountController,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          inputFormatters: [ThousandsInputFormatter()],
+          style: AppTextStyles.body(),
+          cursorColor: AppColors.wealthAccent,
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: AppColors.glassFill,
+            hintText: ref.tr('wealth_amount_hint'),
+            hintStyle: const TextStyle(color: AppColors.textMuted),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide.none,
             ),
           ),
         ),
-      ),
+        const SizedBox(height: 10),
+        TextField(
+          controller: _noteController,
+          style: AppTextStyles.body(),
+          cursorColor: AppColors.wealthAccent,
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: AppColors.glassFill,
+            hintText: ref.tr('wealth_note_hint'),
+            hintStyle: const TextStyle(color: AppColors.textMuted),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+        Text(
+          ref.tr(isExpense ? 'wealth_pay_by' : 'wealth_receive_by'),
+          style: AppTextStyles.muted(size: 11),
+        ),
+        const SizedBox(height: 6),
+        PaymentSplitEditor(
+          totalAmount: _amount,
+          initialSplits: _initialSplits,
+          onChanged: (splits) => setState(() => _splits = splits),
+        ),
+        const SizedBox(height: 10),
+        GestureDetector(
+          onTap: _pickDateTime,
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              color: AppColors.glassFill,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.schedule_rounded,
+                  size: 16,
+                  color: AppColors.textMuted,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '${formatDateMdy(_occurredAt)} '
+                  '${_occurredAt.hour.toString().padLeft(2, '0')}:'
+                  '${_occurredAt.minute.toString().padLeft(2, '0')}',
+                  style: AppTextStyles.body(size: 13),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          width: double.infinity,
+          child: PillButton(
+            label: ref.tr('wealth_save'),
+            accentGradient: AppColors.wealthAccentGradient,
+            accentColor: AppColors.wealthAccent,
+            onTap: _saving || !_splitsValid ? null : _save,
+          ),
+        ),
+      ],
     );
   }
 

@@ -147,31 +147,26 @@ class _VocabularyTopicDetailScreenState
               ],
             ),
             const SizedBox(height: 14),
-            SizedBox(
-              height: 34,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: [
-                  _FilterChip(
-                    label: ref.tr('vocab_filter_all'),
-                    selected: _frequencyFilter == null,
-                    color: widget.topic.color,
-                    onTap: () => setState(() => _frequencyFilter = null),
-                  ),
-                  const SizedBox(width: 8),
-                  for (final f in VocabFrequency.values) ...[
-                    _FilterChip(
-                      label: ref.tr(f.labelKeyVi),
-                      selected: _frequencyFilter == f,
-                      color: widget.topic.color,
-                      onTap: () => setState(() => _frequencyFilter = f),
-                    ),
-                    const SizedBox(width: 8),
-                  ],
-                ],
-              ),
+            // Tab theo muc do thong dung (thay cho hang chip cu) - moi tab
+            // ung voi 1 "phan khuc" nguoi hoc (moi bat dau/da co nen/nang
+            // cao), kem 1 dong mo ta ben duoi giai thich phan khuc do danh
+            // cho ai de nguoi dung tu chon dung tab phu hop trinh do minh.
+            _FrequencyTabBar(
+              value: _frequencyFilter,
+              color: widget.topic.color,
+              onChanged: (f) => setState(() => _frequencyFilter = f),
             ),
             const SizedBox(height: 8),
+            Text(
+              ref.tr(switch (_frequencyFilter) {
+                null => 'vocab_frequency_all_desc',
+                VocabFrequency.common => 'vocab_frequency_common_desc',
+                VocabFrequency.medium => 'vocab_frequency_medium_desc',
+                VocabFrequency.rare => 'vocab_frequency_rare_desc',
+              }),
+              style: AppTextStyles.muted(size: 11.5),
+            ),
+            const SizedBox(height: 10),
             SizedBox(
               height: 34,
               child: ListView(
@@ -322,7 +317,81 @@ class _VocabularyTopicDetailScreenState
   }
 }
 
-/// Chip loc theo frequency/partOfSpeech - cung kieu voi _FilterChip trong
+/// Tab chia theo muc do thong dung (Tat ca/Thong dung/Thuong gap/It gap) -
+/// segmented control chia deu 4 o thay vi hang chip cuon ngang, de nguoi
+/// dung thay het 4 lua chon cung luc (khong phai cuon moi thay "It gap").
+class _FrequencyTabBar extends ConsumerWidget {
+  const _FrequencyTabBar({
+    required this.value,
+    required this.color,
+    required this.onChanged,
+  });
+
+  final VocabFrequency? value;
+  final Color color;
+  final ValueChanged<VocabFrequency?> onChanged;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: AppColors.glassFill,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: AppColors.glassBorder),
+      ),
+      child: Row(
+        children: [
+          _segment(
+            label: ref.tr('vocab_filter_all'),
+            selected: value == null,
+            onTap: () => onChanged(null),
+          ),
+          for (final f in VocabFrequency.values)
+            _segment(
+              label: ref.tr(f.labelKeyVi),
+              selected: value == f,
+              onTap: () => onChanged(f),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _segment({
+    required String label,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            color: selected ? color : Colors.transparent,
+            borderRadius: BorderRadius.circular(999),
+          ),
+          alignment: Alignment.center,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              label,
+              style: AppTextStyles.body(
+                size: 11.5,
+                weight: FontWeight.w800,
+                color: selected ? Colors.white : AppColors.textPrimary,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Chip loc theo partOfSpeech - cung kieu voi _FilterChip trong
 /// wealth_income_tab.dart, chi khac o cho mau accent lay theo [color] truyen
 /// vao (mau rieng cua tung chu de) thay vi mau co dinh.
 class _FilterChip extends StatelessWidget {

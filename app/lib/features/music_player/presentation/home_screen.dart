@@ -10,6 +10,7 @@ import '../../social/presentation/conversations_screen.dart';
 import '../../grammar/presentation/grammar_topics_screen.dart';
 import '../../learning_path/data/learning_path_models.dart';
 import '../../learning_path/presentation/learning_path_accent.dart';
+import '../../learning_path/presentation/learning_path_screen.dart';
 import '../../learning_path/presentation/learning_path_survey_screen.dart';
 import '../../pronunciation/presentation/phonics_lessons_screen.dart';
 import '../../pronunciation/presentation/pronunciation_screen.dart';
@@ -72,12 +73,20 @@ class HomeScreen extends ConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     GestureDetector(
-                      onTap: () => showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true,
-                        backgroundColor: Colors.transparent,
-                        builder: (_) => const LearningPathSurveyScreen(),
-                      ),
+                      // Da chon persona roi -> mo thang man Lo trinh hoc day
+                      // du thay vi hoi lai khao sat moi lan bam (khao sat
+                      // van mo lai duoc tu nut "Doi lo trinh" trong man do).
+                      onTap: () => persona != null
+                          ? openAppPopup(
+                              context,
+                              LearningPathScreen(persona: persona),
+                            )
+                          : showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              backgroundColor: Colors.transparent,
+                              builder: (_) => const LearningPathSurveyScreen(),
+                            ),
                       child: Stack(
                         clipBehavior: Clip.none,
                         children: [

@@ -97,10 +97,21 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
     return _total - othersTotal;
   }
 
+  // Lam tron LEN toi boi so 1,000d (thay vi tron len 1d nhu truoc) cho phan
+  // goi y cua tung nguoi khac - de tra/chuyen khoan (vd 329,000d thay vi
+  // 328,572d). "Toi" luon nhan PHAN CON LAI (tong - tong nguoi khac * so
+  // nguoi) de tong CHUNG khop tuyet doi voi tong bill nhap ban dau.
+  static const _roundUnit = 1000.0;
+
   List<double> _computeShares(double total, int n) {
     final otherCount = n - 1;
     if (otherCount <= 0) return [total];
-    final otherShare = (total / n).ceilToDouble();
+    var otherShare = (total / n / _roundUnit).ceilToDouble() * _roundUnit;
+    // Bill qua nho so voi so nguoi khien tron len 1,000d lam Me con lai <= 0
+    // - fallback ve tron toi thieu (1d) nhu truoc de Me luon duong.
+    if (otherShare * otherCount >= total) {
+      otherShare = (total / n).ceilToDouble();
+    }
     final meShare = total - otherShare * otherCount;
     return [meShare, ...List.filled(otherCount, otherShare)];
   }

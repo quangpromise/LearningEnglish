@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/learning_path_models.dart';
 import 'learning_path_accent.dart';
+import 'learning_path_screen.dart';
 
 /// Popup khao sat 2 cau hoi de xac dinh persona nguoi hoc - xem
 /// docs/research-learning-path.md muc 3. Cau 1 co 2/3 nhanh CHOT NGAY persona
@@ -33,7 +35,11 @@ class _LearningPathSurveyScreenState
     if (!mounted) return;
     ref.invalidate(learningPathChoiceProvider);
     ref.invalidate(learningPathInteractedProvider);
+    // Dong popup khao sat (bottom sheet) roi mo THANG man Lo trinh hoc day
+    // du thay vi chi pop ve Home - nguoi dung vua chon xong muon thay lo
+    // trinh ngay, khong phai bam lai icon compass 1 lan nua.
     Navigator.of(context).maybePop();
+    openAppPopup(context, LearningPathScreen(persona: persona));
   }
 
   /// Nguoi dung chon "Tu hoc" - tat het highlight/goi y tren Home (khac voi

@@ -20,6 +20,7 @@ Future<void> showAddBalanceEntrySheet(
   VnBank? initialBank,
   WealthBalanceEntry? existing,
   bool initialIsAdd = true,
+  bool lockDirection = false,
 }) {
   return showModalBottomSheet(
     context: context,
@@ -29,6 +30,7 @@ Future<void> showAddBalanceEntrySheet(
       bank: initialBank,
       existing: existing,
       initialIsAdd: initialIsAdd,
+      lockDirection: lockDirection,
     ),
   );
 }
@@ -38,10 +40,16 @@ class _AddBalanceEntrySheet extends ConsumerStatefulWidget {
     this.bank,
     this.existing,
     this.initialIsAdd = true,
+    this.lockDirection = false,
   });
   final VnBank? bank;
   final WealthBalanceEntry? existing;
   final bool initialIsAdd;
+  // true = an han chip Nap/Rut, dung dung 1 chieu co dinh theo [initialIsAdd]
+  // - dung khi sheet nay duoc mo tu tab Receive/Withdraw rieng cua man
+  // Pay/Receive (WealthPayScreen), vi tab da the hien ro chieu roi, hien
+  // them chip trong sheet gay trung lap/gay nham voi tab Withdraw/Pay khac.
+  final bool lockDirection;
 
   @override
   ConsumerState<_AddBalanceEntrySheet> createState() =>
@@ -196,26 +204,28 @@ class _AddBalanceEntrySheetState extends ConsumerState<_AddBalanceEntrySheet> {
                           : bank.shortName,
                       style: AppTextStyles.heading(size: 16),
                     ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _DirectionChip(
-                            label: ref.tr('wallet_amount_direction_add'),
-                            selected: _isAdd,
-                            onTap: () => setState(() => _isAdd = true),
+                    if (!widget.lockDirection) ...[
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _DirectionChip(
+                              label: ref.tr('wallet_amount_direction_add'),
+                              selected: _isAdd,
+                              onTap: () => setState(() => _isAdd = true),
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: _DirectionChip(
-                            label: ref.tr('wallet_amount_direction_subtract'),
-                            selected: !_isAdd,
-                            onTap: () => setState(() => _isAdd = false),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _DirectionChip(
+                              label: ref.tr('wallet_amount_direction_subtract'),
+                              selected: !_isAdd,
+                              onTap: () => setState(() => _isAdd = false),
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
+                    ],
                     if (_showPushToCashOption) ...[
                       const SizedBox(height: 10),
                       GestureDetector(

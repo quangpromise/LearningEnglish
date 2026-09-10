@@ -84,4 +84,58 @@ class LearningPathRepository {
       // Xem ly do bo qua loi o choosePersona() ben tren.
     }
   }
+
+  /// Tap hop cac step_index da danh dau hoan thanh cho 1 persona - bang
+  /// `user_learning_path_progress` (migration 0051). Loi (vd chua migrate)
+  /// tra ve set rong thay vi nem loi - man Lo trinh hoc van hien duoc, chi
+  /// khong co buoc nao duoc tick san.
+  Future<Set<int>> fetchProgress(LearningPersona persona) async {
+    final userId = _supabase.auth.currentUser?.id;
+    if (userId == null) return const {};
+    try {
+      final rows = await _supabase
+          .from('user_learning_path_progress')
+          .select('step_index')
+          .eq('user_id', userId)
+          .eq('persona_id', persona.name);
+      return (rows as List).map((r) => r['step_index'] as int).toSet();
+    } catch (_) {
+      return const {};
+    }
+  }
+
+  /// Danh dau 1 buoc la da hoan thanh - khong nem loi ra ngoai (cung pattern
+  /// voi choosePersona()/turnOff() o tren), UI khong can try/catch.
+  Future<void> markStepCompleted(LearningPersona persona, int stepIndex) async {
+    final userId = _supabase.auth.currentUser?.id;
+    if (userId == null) return;
+    try {
+      await _supabase.from('user_learning_path_progress').upsert({
+        'user_id': userId,
+        'persona_id': persona.name,
+        'step_index': stepIndex,
+      }, onConflict: 'user_id,persona_id,step_index');
+    } catch (_) {
+      // Xem ly do bo qua loi o choosePersona() ben tren.
+    }
+  }
+
+  /// Bo danh dau hoan thanh 1 buoc (cho phep nguoi dung sua nham).
+  Future<void> unmarkStepCompleted(
+    LearningPersona persona,
+    int stepIndex,
+  ) async {
+    final userId = _supabase.auth.currentUser?.id;
+    if (userId == null) return;
+    try {
+      await _supabase
+          .from('user_learning_path_progress')
+          .delete()
+          .eq('user_id', userId)
+          .eq('persona_id', persona.name)
+          .eq('step_index', stepIndex);
+    } catch (_) {
+      // Xem ly do bo qua loi o choosePersona() ben tren.
+    }
+  }
 }

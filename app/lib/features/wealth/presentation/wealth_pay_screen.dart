@@ -167,46 +167,22 @@ class _WealthPayScreenState extends State<WealthPayScreen>
   }
 }
 
+/// Tab "Chi tieu" (Pay) - hien THANG form them giao dich ngay tren man hinh
+/// (giong cach _ReceiveTab/_WithdrawTab/_InvestmentTab hien form inline),
+/// khong qua bottom sheet nua - truoc day tab nay chi co 1 nut mo sheet,
+/// gay them 1 buoc bam thua so voi 3 tab con lai. Luu xong form tu clear de
+/// nhap tiep (xem WealthTransactionForm.onSaved trong add_transaction_sheet.dart).
 class _PayTab extends ConsumerWidget {
   const _PayTab();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.payments_rounded,
-              size: 56,
-              color: AppColors.textMuted,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              ref.tr('wealth_pay_pay_desc'),
-              textAlign: TextAlign.center,
-              style: AppTextStyles.muted(),
-            ),
-            const SizedBox(height: 20),
-            PillButton(
-              label: ref.tr('wealth_pay_pay_button'),
-              accentGradient: AppColors.wealthAccentGradient,
-              accentColor: AppColors.wealthAccent,
-              icon: const Icon(
-                Icons.add_rounded,
-                size: 16,
-                color: Colors.white,
-              ),
-              onTap: () => showAddWealthTransactionSheet(
-                context,
-                ref,
-                WealthTransactionType.expense,
-              ),
-            ),
-          ],
-        ),
+    return SingleChildScrollView(
+      child: WealthTransactionForm(
+        type: WealthTransactionType.expense,
+        onSaved: () =>
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(ref.tr('wealth_saved')))),
       ),
     );
   }
@@ -348,6 +324,7 @@ class _ReceiveTabState extends ConsumerState<_ReceiveTab> {
                 ref,
                 initialBank: _selection.isCash ? null : _selection.bank,
                 initialIsAdd: true,
+                lockDirection: true,
               ),
             ),
           ),
@@ -401,6 +378,7 @@ class _WithdrawTabState extends ConsumerState<_WithdrawTab> {
                       ref,
                       initialBank: _selection!.bank,
                       initialIsAdd: false,
+                      lockDirection: true,
                     ),
             ),
           ),

@@ -152,31 +152,37 @@ class WealthQrScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 20),
-            GlowBox(
-              borderRadius: 18,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if ((qr.holderName ?? '').isNotEmpty)
-                    Text(
-                      qr.holderName!,
-                      style: AppTextStyles.heading(size: 15),
-                    ),
-                  if ((qr.bankName ?? '').isNotEmpty) ...[
-                    const SizedBox(height: 6),
-                    Text(qr.bankName!, style: AppTextStyles.muted(size: 12.5)),
-                  ],
-                  if ((qr.accountNumber ?? '').isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      qr.accountNumber!,
-                      style: AppTextStyles.body(
-                        weight: FontWeight.w800,
-                        size: 14,
+            SizedBox(
+              width: 240,
+              child: GlowBox(
+                borderRadius: 18,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if ((qr.holderName ?? '').isNotEmpty)
+                      Text(
+                        qr.holderName!,
+                        style: AppTextStyles.heading(size: 15),
                       ),
-                    ),
+                    if ((qr.bankName ?? '').isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        qr.bankName!,
+                        style: AppTextStyles.muted(size: 12.5),
+                      ),
+                    ],
+                    if ((qr.accountNumber ?? '').isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        qr.accountNumber!,
+                        style: AppTextStyles.body(
+                          weight: FontWeight.w800,
+                          size: 14,
+                        ),
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
           ],
@@ -276,135 +282,146 @@ class _QrEditSheetState extends ConsumerState<_QrEditSheet> {
 
   @override
   Widget build(BuildContext context) {
+    // Boc Scaffold(resizeToAvoidBottomInset:true) - giong cach
+    // add_transaction_sheet.dart/add_balance_entry_sheet.dart da lam - de
+    // sheet TU DAY LEN khi ban phim mo (truoc day thieu lop nay, Align o
+    // duoi khong duoc mo rong het man hinh nen: 1) cac o nhap bi ban phim
+    // che khuat, 2) GestureDetector ngoai cung khong bao het vung man hinh
+    // phia tren sheet nen cham ra ngoai khong dong duoc popup).
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: () => Navigator.of(context).maybePop(),
-      child: Align(
-        alignment: Alignment.bottomCenter,
-        child: GestureDetector(
-          onTap: () {},
-          child: Container(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
-            decoration: const BoxDecoration(
-              color: Color(0xFF12172E),
-              borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-            ),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    ref.tr('wealth_qr_edit_title'),
-                    style: AppTextStyles.heading(size: 16),
-                  ),
-                  const SizedBox(height: 16),
-                  GestureDetector(
-                    onTap: _pickImage,
-                    child: Container(
-                      width: double.infinity,
-                      height: 160,
-                      decoration: BoxDecoration(
-                        color: AppColors.glassFill,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.glassBorder),
-                      ),
-                      child: _pickedBytes != null
-                          ? ClipRRect(
-                              borderRadius: BorderRadius.circular(16),
-                              child: Image.memory(
-                                _pickedBytes!,
-                                fit: BoxFit.contain,
-                              ),
-                            )
-                          : (widget.existing?.hasImage ?? false)
-                          ? ClipRRect(
-                              borderRadius: BorderRadius.circular(16),
-                              child: Image.network(
-                                widget.existing!.imageUrl!,
-                                fit: BoxFit.contain,
-                              ),
-                            )
-                          : Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(
-                                  Icons.add_photo_alternate_rounded,
-                                  color: AppColors.textMuted,
-                                  size: 32,
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  ref.tr('wealth_qr_pick_image'),
-                                  style: AppTextStyles.muted(size: 12.5),
-                                ),
-                              ],
-                            ),
-                    ),
-                  ),
-                  if (widget.existing?.hasImage ?? false) ...[
-                    const SizedBox(height: 6),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        resizeToAvoidBottomInset: true,
+        body: Align(
+          alignment: Alignment.bottomCenter,
+          child: GestureDetector(
+            onTap: () {},
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
+              decoration: const BoxDecoration(
+                color: Color(0xFF12172E),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Text(
-                      ref.tr('wealth_qr_change_image'),
-                      style: AppTextStyles.muted(size: 11),
+                      ref.tr('wealth_qr_edit_title'),
+                      style: AppTextStyles.heading(size: 16),
+                    ),
+                    const SizedBox(height: 16),
+                    GestureDetector(
+                      onTap: _pickImage,
+                      child: Container(
+                        width: double.infinity,
+                        height: 160,
+                        decoration: BoxDecoration(
+                          color: AppColors.glassFill,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: AppColors.glassBorder),
+                        ),
+                        child: _pickedBytes != null
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(16),
+                                child: Image.memory(
+                                  _pickedBytes!,
+                                  fit: BoxFit.contain,
+                                ),
+                              )
+                            : (widget.existing?.hasImage ?? false)
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(16),
+                                child: Image.network(
+                                  widget.existing!.imageUrl!,
+                                  fit: BoxFit.contain,
+                                ),
+                              )
+                            : Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(
+                                    Icons.add_photo_alternate_rounded,
+                                    color: AppColors.textMuted,
+                                    size: 32,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    ref.tr('wealth_qr_pick_image'),
+                                    style: AppTextStyles.muted(size: 12.5),
+                                  ),
+                                ],
+                              ),
+                      ),
+                    ),
+                    if (widget.existing?.hasImage ?? false) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        ref.tr('wealth_qr_change_image'),
+                        style: AppTextStyles.muted(size: 11),
+                      ),
+                    ],
+                    const SizedBox(height: 14),
+                    TextField(
+                      controller: _holderController,
+                      style: AppTextStyles.body(),
+                      decoration: InputDecoration(
+                        hintText: ref.tr('wealth_qr_holder_name_hint'),
+                        hintStyle: AppTextStyles.muted(),
+                        filled: true,
+                        fillColor: AppColors.glassFill,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: _bankController,
+                      style: AppTextStyles.body(),
+                      decoration: InputDecoration(
+                        hintText: ref.tr('wealth_qr_bank_name_hint'),
+                        hintStyle: AppTextStyles.muted(),
+                        filled: true,
+                        fillColor: AppColors.glassFill,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: _accountController,
+                      keyboardType: TextInputType.number,
+                      style: AppTextStyles.body(),
+                      decoration: InputDecoration(
+                        hintText: ref.tr('wealth_qr_account_number_hint'),
+                        hintStyle: AppTextStyles.muted(),
+                        filled: true,
+                        fillColor: AppColors.glassFill,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    SizedBox(
+                      width: double.infinity,
+                      child: PillButton(
+                        label: ref.tr('wealth_save'),
+                        accentGradient: AppColors.wealthAccentGradient,
+                        accentColor: AppColors.wealthAccent,
+                        onTap: _saving ? null : _save,
+                      ),
                     ),
                   ],
-                  const SizedBox(height: 14),
-                  TextField(
-                    controller: _holderController,
-                    style: AppTextStyles.body(),
-                    decoration: InputDecoration(
-                      hintText: ref.tr('wealth_qr_holder_name_hint'),
-                      hintStyle: AppTextStyles.muted(),
-                      filled: true,
-                      fillColor: AppColors.glassFill,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  TextField(
-                    controller: _bankController,
-                    style: AppTextStyles.body(),
-                    decoration: InputDecoration(
-                      hintText: ref.tr('wealth_qr_bank_name_hint'),
-                      hintStyle: AppTextStyles.muted(),
-                      filled: true,
-                      fillColor: AppColors.glassFill,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  TextField(
-                    controller: _accountController,
-                    keyboardType: TextInputType.number,
-                    style: AppTextStyles.body(),
-                    decoration: InputDecoration(
-                      hintText: ref.tr('wealth_qr_account_number_hint'),
-                      hintStyle: AppTextStyles.muted(),
-                      filled: true,
-                      fillColor: AppColors.glassFill,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  SizedBox(
-                    width: double.infinity,
-                    child: PillButton(
-                      label: ref.tr('wealth_save'),
-                      accentGradient: AppColors.wealthAccentGradient,
-                      accentColor: AppColors.wealthAccent,
-                      onTap: _saving ? null : _save,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
