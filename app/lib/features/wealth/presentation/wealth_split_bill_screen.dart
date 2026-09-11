@@ -633,8 +633,17 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
     );
   }
 
-  void _showPreview() {
+  Future<void> _showPreview() async {
     final source = _source!;
+    // PHAI await truc tiep .future (khong dung ref.read(...).valueOrNull) -
+    // wealthPaymentQrProvider la FutureProvider.autoDispose, KHONG duoc man
+    // nay watch o dau khac trong luc dang o phase allocate, nen tai thoi
+    // diem bam nut Xem truoc, provider co the van dang o trang thai LOADING
+    // (chua fetch xong tu Supabase) -> valueOrNull tra ve null oan, khien QR
+    // "bi mat" du da cau hinh day du (bug thuc te da gap: QR co that nhung
+    // Preview van trong vi doc gia tri qua som).
+    final qr = await ref.read(wealthPaymentQrProvider.future);
+    if (!mounted) return;
     openAppPopup(
       context,
       _SplitBillPreviewScreen(
@@ -645,11 +654,7 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
         note: _noteController.text.trim().isEmpty
             ? null
             : _noteController.text.trim(),
-        // Hien QR + thong tin tai khoan giong het bien lai THAT sau khi Pay
-        // (xem _buildSettle) - man Xem truoc phai phan anh dung 100% nhung
-        // gi nguoi nhan se thay sau nay, bao gom ca QR de kiem tra truoc khi
-        // bam Pay.
-        qr: ref.read(wealthPaymentQrProvider).valueOrNull,
+        qr: qr,
         people: [
           for (final p in _people)
             ReceiptPersonView(
