@@ -15,7 +15,44 @@ import '../data/vocabulary_data.dart';
 class LearnedWordsPopup extends ConsumerWidget {
   const LearnedWordsPopup({super.key});
 
-  Future<void> _unlearn(WidgetRef ref, VocabWord word) async {
+  /// Hoi xac nhan TRUOC (tu se quay lai hien trong danh sach Tu vung theo
+  /// chu de ngay sau khi dong y - xem ghi chu o learnedWordsProvider) roi
+  /// moi thuc su xoa khoi user_learned_words.
+  Future<void> _unlearn(
+    BuildContext context,
+    WidgetRef ref,
+    VocabWord word,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.bgMid,
+        title: Text(
+          ref.tr('vocab_unmark_learned_confirm_title'),
+          style: AppTextStyles.heading(size: 16),
+        ),
+        content: Text(
+          ref
+              .tr('vocab_unmark_learned_confirm_body')
+              .replaceFirst('{word}', word.en),
+          style: AppTextStyles.muted(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(ref.tr('common_cancel')),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(
+              ref.tr('common_delete'),
+              style: const TextStyle(color: AppColors.pink),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
     await ref.read(statsRepositoryProvider).unlearnWord(word.en);
     ref.invalidate(learnedWordsProvider);
     ref.invalidate(learnedVocabWordsProvider);
@@ -128,7 +165,7 @@ class LearnedWordsPopup extends ConsumerWidget {
                                     icon: Icons.close_rounded,
                                     iconSize: 18,
                                     color: AppColors.textMuted,
-                                    onTap: () => _unlearn(ref, word),
+                                    onTap: () => _unlearn(context, ref, word),
                                   ),
                                 ),
                               ],

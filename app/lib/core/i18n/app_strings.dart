@@ -261,6 +261,14 @@ class AppStrings {
       AppLanguage.vi: 'Bỏ đánh dấu đã học',
       AppLanguage.en: 'Unmark as learned',
     },
+    'vocab_unmark_learned_confirm_title': {
+      AppLanguage.vi: 'Bỏ đánh dấu đã học?',
+      AppLanguage.en: 'Unmark as learned?',
+    },
+    'vocab_unmark_learned_confirm_body': {
+      AppLanguage.vi: '"{word}" sẽ quay lại danh sách Từ vựng theo chủ đề.',
+      AppLanguage.en: '"{word}" will go back to the Vocabulary by topic list.',
+    },
     'vocab_learned_empty': {
       AppLanguage.vi: 'Chưa có từ nào được đánh dấu đã học',
       AppLanguage.en: 'No words marked as learned yet',

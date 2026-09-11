@@ -14,7 +14,6 @@ import '../data/wealth_payment_qr_model.dart';
 import '../data/wealth_split_bill_model.dart';
 import '../data/wealth_transaction_model.dart';
 import 'bank_picker_sheet.dart';
-import 'wealth_qr_screen.dart';
 import 'wealth_split_bill_history_screen.dart';
 import 'wealth_split_bill_receipt.dart';
 
@@ -107,8 +106,6 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
   // the quet thang QR khong can doc chu, chi bam "Xem them" khi thuc su can
   // (vd khong quet duoc, phai doc so tay) - giai phong cho cho danh sach
   // nguoi ben duoi vua het 1 man hinh khong can cuon.
-  bool _qrInfoExpanded = false;
-
   bool get _isEditing => widget.editingBill != null;
 
   _SplitPersonEntry _entryFromShare(WealthSplitBillShare s) {
@@ -636,101 +633,6 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
     );
   }
 
-  Widget _buildQrHeader() {
-    final qr = ref.watch(wealthPaymentQrProvider).valueOrNull;
-    if (qr == null || !qr.hasImage) {
-      return GestureDetector(
-        onTap: () => openAppPopup(context, const WealthQrScreen()),
-        child: GlowBox(
-          borderRadius: 16,
-          child: Text(
-            ref.tr('wealth_split_bill_no_qr_note'),
-            style: AppTextStyles.muted(size: 12),
-          ),
-        ),
-      );
-    }
-    // QR to, dat giua, NAM TREN thong tin tai khoan (thay vi nho + nam ben
-    // canh nhu truoc) - theo yeu cau nguoi dung de de quet hon.
-    // QUAN TRONG: Column mac dinh CO RUT LAI vua khop chieu rong con lon
-    // nhat (~150px cua QR) neu khong dung crossAxisAlignment.stretch - luc
-    // do the QR bi dat sang trai trong Column cha (crossAxisAlignment.start
-    // o _buildAllocate) thay vi can giua toan bo chieu rong man hinh nhu
-    // yeu cau ("can deu 2 ben"). stretch ep Column rong het co GlowBox, roi
-    // Center/textAlign lo can giua tung phan tu ben trong.
-    // QR to hon (86px) de de quet, nhung ten/ngan hang/so tai khoan AN MAC
-    // DINH sau 1 nut "Xem them" - phan lon truong hop chi can quet QR la du,
-    // an bot chu giai phong cho cho danh sach nguoi ben duoi.
-    final hasInfoText =
-        (qr.holderName ?? '').isNotEmpty ||
-        (qr.bankName ?? '').isNotEmpty ||
-        (qr.accountNumber ?? '').isNotEmpty;
-    return GlowBox(
-      borderRadius: 14,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Center(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: Container(
-                color: Colors.white,
-                padding: const EdgeInsets.all(5),
-                child: Image.network(qr.imageUrl!, width: 86, height: 86),
-              ),
-            ),
-          ),
-          if (hasInfoText) ...[
-            const SizedBox(height: 4),
-            Center(
-              child: GestureDetector(
-                onTap: () => setState(() => _qrInfoExpanded = !_qrInfoExpanded),
-                child: Text(
-                  ref.tr(
-                    _qrInfoExpanded
-                        ? 'wealth_split_bill_qr_hide_info'
-                        : 'wealth_split_bill_qr_show_info',
-                  ),
-                  style: AppTextStyles.body(
-                    size: 10.5,
-                    weight: FontWeight.w700,
-                    color: AppColors.wealthAccent,
-                  ),
-                ),
-              ),
-            ),
-          ],
-          if (_qrInfoExpanded) ...[
-            const SizedBox(height: 4),
-            if ((qr.holderName ?? '').isNotEmpty)
-              Text(
-                qr.holderName!,
-                textAlign: TextAlign.center,
-                style: AppTextStyles.body(weight: FontWeight.w800, size: 11),
-              ),
-            if ((qr.bankName ?? '').isNotEmpty) ...[
-              const SizedBox(height: 1),
-              Text(
-                qr.bankName!,
-                textAlign: TextAlign.center,
-                style: AppTextStyles.muted(size: 9.5),
-              ),
-            ],
-            if ((qr.accountNumber ?? '').isNotEmpty) ...[
-              const SizedBox(height: 1),
-              Text(
-                qr.accountNumber!,
-                textAlign: TextAlign.center,
-                style: AppTextStyles.body(size: 11, weight: FontWeight.w700),
-              ),
-            ],
-          ],
-        ],
-      ),
-    );
-  }
-
   void _showPreview() {
     final source = _source!;
     openAppPopup(
@@ -758,12 +660,16 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
   }
 
   Widget _buildAllocate() {
+    // KHONG con hien QR + thong tin tai khoan o man nay nua (theo yeu cau
+    // nguoi dung: qua nhieu noi dung dan den o nhap ten/tien phia duoi bi
+    // day sat xuong gan ban phim, danh sach goi y ten khi mo len se bi che
+    // mat) - QR van con nguyen ven o bien lai (SplitBillReceiptCard, xem
+    // _showPreview/_buildSettle/wealth_split_bill_history_screen.dart), chi
+    // bo o BUOC NHAP LIEU nay, khong phai bo hang.
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildQrHeader(),
-          const SizedBox(height: 6),
           for (final p in _people) ...[
             _personAllocateRow(p),
             const SizedBox(height: 4),
