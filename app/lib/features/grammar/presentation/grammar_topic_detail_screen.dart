@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/grammar_data.dart';
 import 'grammar_quiz_screen.dart';
@@ -114,11 +115,8 @@ class GrammarTopicDetailScreen extends ConsumerWidget {
               width: double.infinity,
               child: PillButton(
                 label: ref.tr('grammar_topics_start_practice'),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => GrammarQuizScreen(topic: topic),
-                  ),
-                ),
+                onTap: () =>
+                    openAppPopup(context, GrammarQuizScreen(topic: topic)),
               ),
             ),
           ],

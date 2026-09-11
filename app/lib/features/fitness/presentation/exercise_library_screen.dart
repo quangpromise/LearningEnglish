@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/exercise_model.dart';
@@ -177,11 +178,9 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
                       return _ExerciseTile(
                         exercise: exercise,
                         isFavorite: favoriteIds.contains(exercise.id),
-                        onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                ExerciseDetailScreen(exercise: exercise),
-                          ),
+                        onTap: () => openAppPopup(
+                          context,
+                          ExerciseDetailScreen(exercise: exercise),
                         ),
                       );
                     },

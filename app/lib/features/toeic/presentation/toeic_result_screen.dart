@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/toeic_models.dart';
 import 'toeic_history_screen.dart';
@@ -198,11 +199,8 @@ class ToeicResultScreen extends ConsumerWidget {
                 Expanded(
                   child: PillButton(
                     label: ref.tr('toeic_view_history'),
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const ToeicHistoryScreen(),
-                      ),
-                    ),
+                    onTap: () =>
+                        openAppPopup(context, const ToeicHistoryScreen()),
                   ),
                 ),
               ],

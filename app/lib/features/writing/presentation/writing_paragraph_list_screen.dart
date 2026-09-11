@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_language.dart';
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/writing_paragraph_data.dart';
@@ -67,10 +68,9 @@ class WritingParagraphListScreen extends ConsumerWidget {
                   final p = kWritingParagraphs[i];
                   final title = lang == AppLanguage.en ? p.titleEn : p.titleVi;
                   return GestureDetector(
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => WritingParagraphScreen(paragraph: p),
-                      ),
+                    onTap: () => openAppPopup(
+                      context,
+                      WritingParagraphScreen(paragraph: p),
                     ),
                     child: GlowBox(
                       borderRadius: 18,

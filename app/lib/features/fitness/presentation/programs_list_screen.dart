@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/program_model.dart';
@@ -62,10 +63,9 @@ class ProgramsListScreen extends ConsumerWidget {
                     return _ProgramCard(
                       program: program,
                       isActive: program.id == activeId,
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => ProgramDetailScreen(program: program),
-                        ),
+                      onTap: () => openAppPopup(
+                        context,
+                        ProgramDetailScreen(program: program),
                       ),
                     );
                   },

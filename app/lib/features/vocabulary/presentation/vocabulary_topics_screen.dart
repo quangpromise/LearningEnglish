@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/vocabulary_data.dart';
 import 'vocabulary_topic_detail_screen.dart';
@@ -138,11 +139,9 @@ class _VocabularyTopicsScreenState
                       itemBuilder: (context, i) {
                         final topic = topics[i];
                         return GestureDetector(
-                          onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  VocabularyTopicDetailScreen(topic: topic),
-                            ),
+                          onTap: () => openAppPopup(
+                            context,
+                            VocabularyTopicDetailScreen(topic: topic),
                           ),
                           child: GlowBox(
                             borderRadius: 22,

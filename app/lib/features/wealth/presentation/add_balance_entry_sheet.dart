@@ -14,7 +14,11 @@ import 'bank_picker_sheet.dart';
 /// Tien ngan hang - neu [initialBank] khac null nghia la dang them cho 1
 /// ngan hang cu the (da chon truoc do qua [showBankPickerSheet]); null
 /// nghia la Tien mat. Truyen [existing] de mo o CHE DO SUA.
-Future<void> showAddBalanceEntrySheet(
+/// Tra ve `true` neu nguoi dung da LUU thanh cong (khac voi dong sheet bang
+/// cham ra ngoai/khong luu gi, luc do tra ve null) - de noi goi (vd
+/// wealth_pay_screen.dart) biet co nen bao thanh cong + dong tiep popup cha
+/// hay khong.
+Future<bool?> showAddBalanceEntrySheet(
   BuildContext context,
   WidgetRef ref, {
   VnBank? initialBank,
@@ -22,7 +26,7 @@ Future<void> showAddBalanceEntrySheet(
   bool initialIsAdd = true,
   bool lockDirection = false,
 }) {
-  return showModalBottomSheet(
+  return showModalBottomSheet<bool>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
@@ -168,7 +172,7 @@ class _AddBalanceEntrySheetState extends ConsumerState<_AddBalanceEntrySheet> {
         }
       }
       ref.invalidate(walletBalanceEntriesProvider);
-      if (mounted) Navigator.of(context).pop();
+      if (mounted) Navigator.of(context).pop(true);
     } finally {
       if (mounted) setState(() => _saving = false);
     }

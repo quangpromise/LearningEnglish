@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/reading_data.dart';
 import 'reading_screen.dart';
@@ -63,11 +64,8 @@ class ReadingLibraryScreen extends ConsumerWidget {
                 itemBuilder: (context, i) {
                   final book = kBooks[i];
                   return GestureDetector(
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => ReadingScreen(book: book),
-                      ),
-                    ),
+                    onTap: () =>
+                        openAppPopup(context, ReadingScreen(book: book)),
                     child: GlowBox(
                       borderRadius: 20,
                       padding: const EdgeInsets.all(14),

@@ -45,9 +45,7 @@ class ToeicHomeScreen extends ConsumerWidget {
                 size: 16,
                 color: AppColors.wealthAccent,
               ),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const ToeicHistoryScreen()),
-              ),
+              onTap: () => openAppPopup(context, const ToeicHistoryScreen()),
             ),
           ],
         ),
@@ -79,10 +77,9 @@ class _TestCard extends ConsumerWidget {
             title: ref.tr('toeic_mode_practice'),
             description: ref.tr('toeic_mode_practice_desc'),
             color: AppColors.teal,
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => ToeicExamScreen(test: test, mode: 'practice'),
-              ),
+            onTap: () => openAppPopup(
+              context,
+              ToeicExamScreen(test: test, mode: 'practice'),
             ),
           ),
           const SizedBox(height: 10),
@@ -91,10 +88,12 @@ class _TestCard extends ConsumerWidget {
             title: ref.tr('toeic_mode_exam'),
             description: ref.tr('toeic_mode_exam_desc'),
             color: AppColors.pink,
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => ToeicExamScreen(test: test, mode: 'exam'),
-              ),
+            // dismissible: false - man thi co tinh gio, tranh vuot xuong lam
+            // mat bai dang lam do (xem doc comment cua openAppPopup).
+            onTap: () => openAppPopup(
+              context,
+              ToeicExamScreen(test: test, mode: 'exam'),
+              dismissible: false,
             ),
           ),
         ],

@@ -49,13 +49,9 @@ class LearningPathScreen extends ConsumerWidget {
       case LearningPathTarget.reading:
         openAppPopup(context, const ReadingLibraryScreen());
       case LearningPathTarget.writingVocab:
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const WritingVocabTopicScreen()),
-        );
+        openAppPopup(context, const WritingVocabTopicScreen());
       case LearningPathTarget.writingParagraph:
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const WritingParagraphListScreen()),
-        );
+        openAppPopup(context, const WritingParagraphListScreen());
       case LearningPathTarget.quiz:
         openAppPopup(context, const QuizCategoryScreen());
       case LearningPathTarget.toeic:

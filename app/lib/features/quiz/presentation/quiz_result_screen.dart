@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/quiz_data.dart';
@@ -181,11 +182,8 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
                 Expanded(
                   child: PillButton(
                     label: ref.tr('quiz_leaderboard_button'),
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => LeaderboardScreen(myXp: xp),
-                      ),
-                    ),
+                    onTap: () =>
+                        openAppPopup(context, LeaderboardScreen(myXp: xp)),
                   ),
                 ),
               ],

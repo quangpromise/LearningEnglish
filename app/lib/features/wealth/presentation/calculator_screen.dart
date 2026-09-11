@@ -53,16 +53,22 @@ class _CalculatorScreenState extends ConsumerState<CalculatorScreen> {
     _Op.divide => '÷',
   };
 
+  // TRA VE SO THO (khong chen dau `,`) - ham nay dung de gan vao [_display],
+  // ma [_display] chi luon luu so THO (giong luc dang go tay) roi build()
+  // moi goi [_groupDigits] 1 LAN DUY NHAT de hien thi (xem Text o build()).
+  // Truoc day ham nay tu goi _groupDigits() roi luu thang vao _display,
+  // khien build() goi _groupDigits LAN 2 tren chuoi DA CO dau `,` - dau `,`
+  // cu bi hieu nham la 1 ky tu thuong trong phan nguyen, chen them dau `,`
+  // sai vi tri (vd "162500" -> "162,500" -> "1,62,,500"). Noi nao can hien
+  // THI so da tinh (vd _historyText) phai tu goi _groupDigits() rieng.
   String _formatNumber(double n) {
-    String s;
     if (n == n.roundToDouble() && n.abs() < 1e15) {
-      s = n.toStringAsFixed(0);
-    } else {
-      s = n.toStringAsFixed(8);
-      s = s.replaceFirst(RegExp(r'0+$'), '');
-      s = s.replaceFirst(RegExp(r'\.$'), '');
+      return n.toStringAsFixed(0);
     }
-    return _groupDigits(s);
+    var s = n.toStringAsFixed(8);
+    s = s.replaceFirst(RegExp(r'0+$'), '');
+    s = s.replaceFirst(RegExp(r'\.$'), '');
+    return s;
   }
 
   /// Chen dau `,` phan cach hang nghin vao phan nguyen cua 1 chuoi so - dung
@@ -120,7 +126,7 @@ class _CalculatorScreenState extends ConsumerState<CalculatorScreen> {
   void _updateHistoryWhileTyping() {
     if (_first != null && _pendingOp != null) {
       _historyText =
-          '${_formatNumber(_first!)} ${_opSymbol(_pendingOp!)} '
+          '${_groupDigits(_formatNumber(_first!))} ${_opSymbol(_pendingOp!)} '
           '${_groupDigits(_display)}';
     }
   }
@@ -184,7 +190,7 @@ class _CalculatorScreenState extends ConsumerState<CalculatorScreen> {
       _pendingOp = op;
       _startFresh = true;
       _justEvaluated = false;
-      _historyText = '${_formatNumber(_first!)} ${_opSymbol(op)}';
+      _historyText = '${_groupDigits(_formatNumber(_first!))} ${_opSymbol(op)}';
     });
   }
 
@@ -194,8 +200,8 @@ class _CalculatorScreenState extends ConsumerState<CalculatorScreen> {
       final current = double.tryParse(_display) ?? 0;
       final result = _apply(_first!, current, _pendingOp!);
       _historyText =
-          '${_formatNumber(_first!)} ${_opSymbol(_pendingOp!)} '
-          '${_formatNumber(current)} =';
+          '${_groupDigits(_formatNumber(_first!))} ${_opSymbol(_pendingOp!)} '
+          '${_groupDigits(_formatNumber(current))} =';
       _display = result.isNaN ? 'Error' : _formatNumber(result);
       _first = null;
       _pendingOp = null;

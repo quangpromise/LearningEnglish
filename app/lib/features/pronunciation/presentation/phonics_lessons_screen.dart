@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_language.dart';
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/phonics_data.dart';
@@ -71,11 +72,9 @@ class PhonicsLessonsScreen extends ConsumerWidget {
                 itemBuilder: (context, i) {
                   final lesson = kPhonicsLessons[i];
                   return GestureDetector(
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) =>
-                            PhonicsLessonDetailScreen(lesson: lesson, index: i),
-                      ),
+                    onTap: () => openAppPopup(
+                      context,
+                      PhonicsLessonDetailScreen(lesson: lesson, index: i),
                     ),
                     child: GlowBox(
                       borderRadius: 18,

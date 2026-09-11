@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/quiz_data.dart';
 import 'quiz_question_screen.dart';
@@ -105,12 +106,11 @@ class QuizCategoryScreen extends ConsumerWidget {
                       final riddles = kRiddles
                           .where((r) => r.category == cat)
                           .toList();
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => QuizQuestionScreen(
-                            category: cat,
-                            riddles: riddles.isEmpty ? kRiddles : riddles,
-                          ),
+                      openAppPopup(
+                        context,
+                        QuizQuestionScreen(
+                          category: cat,
+                          riddles: riddles.isEmpty ? kRiddles : riddles,
                         ),
                       );
                     },

@@ -77,6 +77,11 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
   _PaymentSource? _source;
   double _total = 0;
   bool _saving = false;
+  // An mac dinh phan ten/ngan hang/so tai khoan duoi QR - nguoi dung da co
+  // the quet thang QR khong can doc chu, chi bam "Xem them" khi thuc su can
+  // (vd khong quet duoc, phai doc so tay) - giai phong cho cho danh sach
+  // nguoi ben duoi vua het 1 man hinh khong can cuon.
+  bool _qrInfoExpanded = false;
 
   @override
   void dispose() {
@@ -485,44 +490,73 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
     // o _buildAllocate) thay vi can giua toan bo chieu rong man hinh nhu
     // yeu cau ("can deu 2 ben"). stretch ep Column rong het co GlowBox, roi
     // Center/textAlign lo can giua tung phan tu ben trong.
+    // QR to hon (86px) de de quet, nhung ten/ngan hang/so tai khoan AN MAC
+    // DINH sau 1 nut "Xem them" - phan lon truong hop chi can quet QR la du,
+    // an bot chu giai phong cho cho danh sach nguoi ben duoi.
+    final hasInfoText =
+        (qr.holderName ?? '').isNotEmpty ||
+        (qr.bankName ?? '').isNotEmpty ||
+        (qr.accountNumber ?? '').isNotEmpty;
     return GlowBox(
-      borderRadius: 16,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      borderRadius: 14,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Center(
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(10),
               child: Container(
                 color: Colors.white,
-                padding: const EdgeInsets.all(6),
-                child: Image.network(qr.imageUrl!, width: 104, height: 104),
+                padding: const EdgeInsets.all(5),
+                child: Image.network(qr.imageUrl!, width: 86, height: 86),
               ),
             ),
           ),
-          const SizedBox(height: 8),
-          if ((qr.holderName ?? '').isNotEmpty)
-            Text(
-              qr.holderName!,
-              textAlign: TextAlign.center,
-              style: AppTextStyles.body(weight: FontWeight.w800, size: 12.5),
-            ),
-          if ((qr.bankName ?? '').isNotEmpty) ...[
-            const SizedBox(height: 2),
-            Text(
-              qr.bankName!,
-              textAlign: TextAlign.center,
-              style: AppTextStyles.muted(size: 11),
+          if (hasInfoText) ...[
+            const SizedBox(height: 4),
+            Center(
+              child: GestureDetector(
+                onTap: () => setState(() => _qrInfoExpanded = !_qrInfoExpanded),
+                child: Text(
+                  ref.tr(
+                    _qrInfoExpanded
+                        ? 'wealth_split_bill_qr_hide_info'
+                        : 'wealth_split_bill_qr_show_info',
+                  ),
+                  style: AppTextStyles.body(
+                    size: 10.5,
+                    weight: FontWeight.w700,
+                    color: AppColors.wealthAccent,
+                  ),
+                ),
+              ),
             ),
           ],
-          if ((qr.accountNumber ?? '').isNotEmpty) ...[
-            const SizedBox(height: 1),
-            Text(
-              qr.accountNumber!,
-              textAlign: TextAlign.center,
-              style: AppTextStyles.body(size: 12.5, weight: FontWeight.w700),
-            ),
+          if (_qrInfoExpanded) ...[
+            const SizedBox(height: 4),
+            if ((qr.holderName ?? '').isNotEmpty)
+              Text(
+                qr.holderName!,
+                textAlign: TextAlign.center,
+                style: AppTextStyles.body(weight: FontWeight.w800, size: 11),
+              ),
+            if ((qr.bankName ?? '').isNotEmpty) ...[
+              const SizedBox(height: 1),
+              Text(
+                qr.bankName!,
+                textAlign: TextAlign.center,
+                style: AppTextStyles.muted(size: 9.5),
+              ),
+            ],
+            if ((qr.accountNumber ?? '').isNotEmpty) ...[
+              const SizedBox(height: 1),
+              Text(
+                qr.accountNumber!,
+                textAlign: TextAlign.center,
+                style: AppTextStyles.body(size: 11, weight: FontWeight.w700),
+              ),
+            ],
           ],
         ],
       ),
@@ -535,10 +569,10 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildQrHeader(),
-          const SizedBox(height: 10),
+          const SizedBox(height: 6),
           for (final p in _people) ...[
             _personAllocateRow(p),
-            const SizedBox(height: 6),
+            const SizedBox(height: 4),
           ],
           const SizedBox(height: 4),
           SizedBox(
@@ -622,7 +656,7 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
         decoration: BoxDecoration(
           color: selected
               ? AppColors.wealthAccent.withValues(alpha: 0.22)
@@ -635,7 +669,7 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
         child: Text(
           label,
           style: AppTextStyles.body(
-            size: 11,
+            size: 10,
             weight: FontWeight.w700,
             color: selected ? AppColors.wealthAccent : AppColors.textPrimary,
           ),
@@ -645,9 +679,12 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
   }
 
   Widget _personAllocateRow(_SplitPersonEntry p) {
+    // Giam padding/font/khoang cach so voi truoc - toan bo danh sach nguoi
+    // (co the 4-6+ dong) phai vua trong 1 man hinh khong can cuon (yeu cau
+    // nguoi dung), giam ca cho GlowBox lan cac o nhap/chip ben trong.
     return GlowBox(
-      borderRadius: 14,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      borderRadius: 12,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       child: p.isMe
           ? Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -658,7 +695,7 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
                       child: Text(
                         ref.tr('wealth_split_bill_me_label'),
                         style: AppTextStyles.body(
-                          size: 13,
+                          size: 12,
                           weight: FontWeight.w800,
                         ),
                       ),
@@ -666,18 +703,18 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
                     Text(
                       formatVnd(_meAmount),
                       style: AppTextStyles.body(
-                        size: 13,
+                        size: 12,
                         weight: FontWeight.w800,
                       ).copyWith(color: AppColors.wealthAccent),
                     ),
                   ],
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 4),
                 Text(
                   ref.tr('wealth_split_bill_payment_method_label'),
-                  style: AppTextStyles.muted(size: 10),
+                  style: AppTextStyles.muted(size: 9),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 3),
                 _sourceChipsRow(_source, (s) => setState(() => _source = s)),
               ],
             )
@@ -694,11 +731,11 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
                   controller: p.nameController,
                   focusNode: p.nameFocusNode,
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 4),
                 Row(
                   children: [
                     SizedBox(
-                      width: 84,
+                      width: 76,
                       child: TextField(
                         controller: p.amountController,
                         textAlign: TextAlign.right,
@@ -707,7 +744,7 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
                         ),
                         inputFormatters: [ThousandsInputFormatter()],
                         style: AppTextStyles.body(
-                          size: 12,
+                          size: 11,
                           weight: FontWeight.w800,
                         ),
                         cursorColor: AppColors.wealthAccent,
@@ -716,18 +753,18 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
                           filled: true,
                           fillColor: AppColors.glassFill,
                           contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 8,
+                            horizontal: 5,
+                            vertical: 6,
                           ),
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(9),
+                            borderRadius: BorderRadius.circular(8),
                             borderSide: BorderSide.none,
                           ),
                         ),
                         onChanged: (_) => setState(() {}),
                       ),
                     ),
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 5),
                     Expanded(
                       child: _statusToggleChip(
                         label: ref.tr('wealth_split_bill_debt_button'),
@@ -736,7 +773,7 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
                         onTap: () => setState(() => p.status = 'debt'),
                       ),
                     ),
-                    const SizedBox(width: 5),
+                    const SizedBox(width: 4),
                     Expanded(
                       child: _statusToggleChip(
                         label: ref.tr('wealth_split_bill_paid_button'),
@@ -751,7 +788,7 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
                 // tra vao Cash hay Bank nao cua minh (doc lap voi cac nguoi
                 // khac va voi nguon cua "Toi" o tren).
                 if (p.status == 'paid') ...[
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 4),
                   _sourceChipsRow(
                     p.paidSource,
                     (s) => setState(() => p.paidSource = s),
@@ -772,7 +809,7 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
       onTap: onTap,
       child: Container(
         alignment: Alignment.center,
-        padding: const EdgeInsets.symmetric(vertical: 7),
+        padding: const EdgeInsets.symmetric(vertical: 5),
         decoration: BoxDecoration(
           color: selected ? color.withValues(alpha: 0.18) : AppColors.glassFill,
           borderRadius: BorderRadius.circular(999),
@@ -781,7 +818,7 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
         child: Text(
           label,
           style: AppTextStyles.body(
-            size: 11,
+            size: 10,
             weight: FontWeight.w800,
           ).copyWith(color: selected ? color : AppColors.textPrimary),
         ),
@@ -865,14 +902,14 @@ class _PersonNameDropdownField extends ConsumerWidget {
         return TextField(
           controller: fieldController,
           focusNode: focusNode,
-          style: AppTextStyles.body(size: 12),
+          style: AppTextStyles.body(size: 11),
           decoration: InputDecoration(
             isDense: true,
             filled: true,
             fillColor: AppColors.glassFill,
             contentPadding: const EdgeInsets.symmetric(
-              horizontal: 10,
-              vertical: 8,
+              horizontal: 9,
+              vertical: 6,
             ),
             hintText: ref.tr('wealth_debt_person_hint'),
             hintStyle: const TextStyle(color: AppColors.textMuted),
@@ -906,8 +943,17 @@ class _PersonNameDropdownField extends ConsumerWidget {
                   itemCount: options.length,
                   itemBuilder: (context, i) {
                     final name = options.elementAt(i);
+                    // Dung onTapDown (khong phai onTap) - onTap chi nhan
+                    // dien SAU khi tha ngon tay (tap-up), luc do TextField o
+                    // tren co the DA kip mat focus (vd do 1 field khac tren
+                    // man dang giu focus) va RawAutocomplete tu dong da dong
+                    // overlay nay truoc khi onTap kip chay, khien bam ten
+                    // nao cung khong an thua. onTapDown nhan dien NGAY khi
+                    // vua cham xuong (truoc khi co co hoi mat focus) nen
+                    // chon duoc chinh xac.
                     return InkWell(
-                      onTap: () => onSelected(name),
+                      onTap: () {},
+                      onTapDown: (_) => onSelected(name),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 14,

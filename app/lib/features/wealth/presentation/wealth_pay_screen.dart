@@ -180,12 +180,21 @@ class _PayTab extends ConsumerWidget {
     return SingleChildScrollView(
       child: WealthTransactionForm(
         type: WealthTransactionType.expense,
-        onSaved: () =>
-            ScaffoldMessenger.of(context)
-                .showSnackBar(SnackBar(content: Text(ref.tr('wealth_saved')))),
+        // Bao thanh cong RIENG VOI dong popup lai (thay vi chi clear form o
+        // lai tab) - theo yeu cau nguoi dung "sau khi save nen bao thanh
+        // cong va dong popup, man hinh nao cung nen vay" - ap dung dong bo
+        // cho ca 4 tab cua man nay (xem _ReceiveTab/_WithdrawTab/_confirm()
+        // o _InvestmentTab ben duoi).
+        onSaved: () => _closeWithSuccess(context, ref),
       ),
     );
   }
+}
+
+void _closeWithSuccess(BuildContext context, WidgetRef ref) {
+  ScaffoldMessenger.of(context)
+      .showSnackBar(SnackBar(content: Text(ref.tr('wealth_saved'))));
+  Navigator.of(context).maybePop();
 }
 
 /// Lua chon nguon/dich tien - "Tien mat" (tuy chon, [allowCash]) hoac 1
@@ -319,13 +328,18 @@ class _ReceiveTabState extends ConsumerState<_ReceiveTab> {
               label: ref.tr('wealth_pay_receive_button'),
               accentGradient: AppColors.wealthAccentGradient,
               accentColor: AppColors.wealthAccent,
-              onTap: () => showAddBalanceEntrySheet(
-                context,
-                ref,
-                initialBank: _selection.isCash ? null : _selection.bank,
-                initialIsAdd: true,
-                lockDirection: true,
-              ),
+              onTap: () async {
+                final saved = await showAddBalanceEntrySheet(
+                  context,
+                  ref,
+                  initialBank: _selection.isCash ? null : _selection.bank,
+                  initialIsAdd: true,
+                  lockDirection: true,
+                );
+                if (saved == true && context.mounted) {
+                  _closeWithSuccess(context, ref);
+                }
+              },
             ),
           ),
         ],
@@ -373,13 +387,18 @@ class _WithdrawTabState extends ConsumerState<_WithdrawTab> {
               accentColor: AppColors.wealthAccent,
               onTap: _selection?.bank == null
                   ? null
-                  : () => showAddBalanceEntrySheet(
-                      context,
-                      ref,
-                      initialBank: _selection!.bank,
-                      initialIsAdd: false,
-                      lockDirection: true,
-                    ),
+                  : () async {
+                      final saved = await showAddBalanceEntrySheet(
+                        context,
+                        ref,
+                        initialBank: _selection!.bank,
+                        initialIsAdd: false,
+                        lockDirection: true,
+                      );
+                      if (saved == true && context.mounted) {
+                        _closeWithSuccess(context, ref);
+                      }
+                    },
             ),
           ),
           if (_selection?.bank == null) ...[
@@ -618,16 +637,7 @@ class _InvestmentTabState extends ConsumerState<_InvestmentTab> {
       }
 
       ref.invalidate(walletBalanceEntriesProvider);
-      if (mounted) {
-        setState(() {
-          _amountController.clear();
-          _quantityController.clear();
-          _realEstateNameController.clear();
-          _resetAssetSelection();
-        });
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(ref.tr('wealth_saved'))));
-      }
+      if (mounted) _closeWithSuccess(context, ref);
     } finally {
       if (mounted) setState(() => _saving = false);
     }

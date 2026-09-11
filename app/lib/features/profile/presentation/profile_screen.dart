@@ -6,6 +6,7 @@ import '../../../core/audio/audio_service_diagnostics.dart';
 import '../../../core/config/env.dart';
 import '../../../core/i18n/app_language.dart';
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../attribution/presentation/attribution_screen.dart';
@@ -699,9 +700,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         const SizedBox(height: 14),
         if (isEnglishContext) ...[
           GestureDetector(
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const AttributionScreen()),
-            ),
+            onTap: () => openAppPopup(context, const AttributionScreen()),
             child: GlowBox(
               borderRadius: 20,
               child: Row(
@@ -1371,11 +1370,7 @@ class _DailyWordsSection extends ConsumerWidget {
                         }
                         await notifier.start();
                         if (!context.mounted) return;
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const DailyQuizPopupScreen(),
-                          ),
-                        );
+                        openAppPopup(context, const DailyQuizPopupScreen());
                       },
               ),
             ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/ielts_models.dart';
 import '../data/ielts_scoring.dart';
@@ -227,11 +228,8 @@ class IeltsResultScreen extends ConsumerWidget {
                 Expanded(
                   child: PillButton(
                     label: ref.tr('toeic_view_history'),
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const IeltsHistoryScreen(),
-                      ),
-                    ),
+                    onTap: () =>
+                        openAppPopup(context, const IeltsHistoryScreen()),
                   ),
                 ),
               ],

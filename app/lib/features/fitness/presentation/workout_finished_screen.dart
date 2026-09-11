@@ -128,15 +128,13 @@ class _WorkoutFinishedScreenState extends ConsumerState<WorkoutFinishedScreen> {
                 filled: false,
                 onTap: () {
                   // Toan bo luong Giao an/Tap luyen (danh sach -> chi tiet ->
-                  // preview -> session -> man nay) deu push/pushReplacement
-                  // TREN CUNG 1 Navigator goc voi popup mo tu FitnessHomeScreen
-                  // (openAppPopup dung useRootNavigator: true, khong tao
-                  // Navigator rieng) - can dong het ca chuoi lan luot ca
-                  // chinh cai bottom sheet do de that su ve lai Home, khong
-                  // chi 1 pop don le.
-                  final navigator = Navigator.of(context);
-                  navigator.popUntil((r) => r is ModalBottomSheetRoute);
-                  navigator.pop();
+                  // preview -> session -> man nay) deu la cac popup rieng
+                  // (openAppPopup) CHONG LEN NHAU tren CUNG 1 Navigator goc
+                  // (useRootNavigator: true, khong tao Navigator rieng) - can
+                  // dong het ca chuoi de ve lai dung Home, khong chi 1 pop
+                  // don le. r.isFirst = route dau tien (man Home thuc), giu
+                  // dung quy uoc nhu ielts_result_screen/toeic_result_screen.
+                  Navigator.of(context).popUntil((r) => r.isFirst);
                 },
               ),
             ],

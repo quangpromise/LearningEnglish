@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/theme/app_theme.dart';
 import 'writing_paragraph_list_screen.dart';
 import 'writing_vocab_topic_screen.dart';
@@ -66,11 +67,8 @@ class WritingHomeScreen extends ConsumerWidget {
               color: AppColors.purple,
               title: ref.tr('writing_mode_vocab_title'),
               desc: ref.tr('writing_mode_vocab_desc'),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const WritingVocabTopicScreen(),
-                ),
-              ),
+              onTap: () =>
+                  openAppPopup(context, const WritingVocabTopicScreen()),
             ),
             const SizedBox(height: 14),
             _WritingModeCard(
@@ -78,11 +76,8 @@ class WritingHomeScreen extends ConsumerWidget {
               color: AppColors.teal,
               title: ref.tr('writing_mode_paragraph_title'),
               desc: ref.tr('writing_mode_paragraph_desc'),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const WritingParagraphListScreen(),
-                ),
-              ),
+              onTap: () =>
+                  openAppPopup(context, const WritingParagraphListScreen()),
             ),
           ],
         ),

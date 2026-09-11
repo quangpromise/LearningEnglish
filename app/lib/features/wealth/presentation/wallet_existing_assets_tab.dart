@@ -8,7 +8,9 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_format.dart';
 import '../../../core/utils/date_format.dart';
 import '../data/wealth_balance_entry_model.dart';
+import '../data/wealth_transaction_model.dart';
 import 'add_balance_entry_sheet.dart';
+import 'add_transaction_sheet.dart';
 import 'confirm_delete.dart';
 import 'wallet_account_history_screen.dart';
 
@@ -418,9 +420,39 @@ class WalletEntryRow extends ConsumerWidget {
         ref.invalidate(walletBalanceEntriesProvider);
       },
       child: GestureDetector(
-        onTap: () => showAddBalanceEntrySheet(context, ref, existing: entry),
+        onTap: () => _openEditSheet(context, ref),
         child: content,
       ),
     );
+  }
+
+  /// Dong 'expense'/'income' (co sourceTransactionId) THUC RA la 1 giao dich
+  /// (co danh muc/ghi chu) chu khong phai 1 dieu chinh so du don thuan - mo
+  /// dung form "Sua giao dich" (WealthTransactionForm, giu duoc danh muc) o
+  /// day thay vi sheet Nap/Rut chung, tranh sua truc tiep dong
+  /// wealth_balance_entries ma khong dong bo lai voi wealth_transactions
+  /// goc (truoc day luon mo sheet Nap/Rut cho MOI dong, sai ngu canh voi
+  /// dong tu 1 khoan Chi tieu/Thu nhap).
+  Future<void> _openEditSheet(BuildContext context, WidgetRef ref) async {
+    if ((entry.source == 'expense' || entry.source == 'income') &&
+        entry.sourceTransactionId != null) {
+      final transactions = await ref.read(wealthTransactionsProvider.future);
+      WealthTransaction? tx;
+      for (final t in transactions) {
+        if (t.id == entry.sourceTransactionId) {
+          tx = t;
+          break;
+        }
+      }
+      if (tx != null) {
+        if (context.mounted) {
+          showAddWealthTransactionSheet(context, ref, tx.type, existing: tx);
+        }
+        return;
+      }
+    }
+    if (context.mounted) {
+      showAddBalanceEntrySheet(context, ref, existing: entry);
+    }
   }
 }

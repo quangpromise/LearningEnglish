@@ -7,6 +7,7 @@ import 'package:just_audio/just_audio.dart';
 
 import '../../../core/audio/now_playing_service.dart';
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../grammar/presentation/grammar_screen.dart';
@@ -215,14 +216,13 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
                     const SizedBox(width: 8),
                     _CircleBtn(
                       icon: Icons.menu_book_rounded,
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => GrammarScreen(
-                            sentence: LyricLine(
-                              lyrics[_currentLine].startSeconds,
-                              lyrics[_currentLine].en,
-                              lyrics[_currentLine].vi,
-                            ),
+                      onTap: () => openAppPopup(
+                        context,
+                        GrammarScreen(
+                          sentence: LyricLine(
+                            lyrics[_currentLine].startSeconds,
+                            lyrics[_currentLine].en,
+                            lyrics[_currentLine].vi,
                           ),
                         ),
                       ),

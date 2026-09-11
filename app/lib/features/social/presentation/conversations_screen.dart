@@ -39,11 +39,7 @@ class ConversationsScreen extends ConsumerWidget {
                     final pending =
                         ref.watch(pendingRequestCountProvider).valueOrNull ?? 0;
                     return GestureDetector(
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const FriendsScreen(),
-                        ),
-                      ),
+                      onTap: () => openAppPopup(context, const FriendsScreen()),
                       child: Stack(
                         clipBehavior: Clip.none,
                         children: [

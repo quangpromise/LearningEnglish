@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/grammar_data.dart';
 import 'grammar_topic_detail_screen.dart';
@@ -123,9 +124,7 @@ class _GrammarTopicsScreenState extends ConsumerState<GrammarTopicsScreen> {
             ),
             const SizedBox(height: 12),
             GestureDetector(
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const IrregularVerbsScreen()),
-              ),
+              onTap: () => openAppPopup(context, const IrregularVerbsScreen()),
               child: GlowBox(
                 borderRadius: 16,
                 padding: const EdgeInsets.symmetric(
@@ -177,11 +176,9 @@ class _GrammarTopicsScreenState extends ConsumerState<GrammarTopicsScreen> {
                       itemBuilder: (context, i) {
                         final topic = topics[i];
                         return GestureDetector(
-                          onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  GrammarTopicDetailScreen(topic: topic),
-                            ),
+                          onTap: () => openAppPopup(
+                            context,
+                            GrammarTopicDetailScreen(topic: topic),
                           ),
                           child: GlowBox(
                             borderRadius: 18,

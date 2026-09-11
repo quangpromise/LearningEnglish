@@ -23,11 +23,7 @@ class MuscleGroupCategoriesScreen extends ConsumerStatefulWidget {
 class _MuscleGroupCategoriesScreenState
     extends ConsumerState<MuscleGroupCategoriesScreen> {
   void _openLibrary({MuscleGroup? group}) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => ExerciseLibraryScreen(initialGroup: group),
-      ),
-    );
+    openAppPopup(context, ExerciseLibraryScreen(initialGroup: group));
   }
 
   @override

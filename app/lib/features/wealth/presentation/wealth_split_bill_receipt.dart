@@ -67,37 +67,53 @@ class SplitBillReceiptCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Header gon 1 dong (ten bill + gio) thay vi 2 dong rieng - nhuong
+            // cho TIEN TONG len ngay ben duoi, dung dau tien nguoi xem thay
+            // (yeu cau: "phai co tien tong tren cung").
             Center(
               child: Text(
-                ref.tr('wealth_split_bill_title').toUpperCase(),
+                '${ref.tr('wealth_split_bill_title').toUpperCase()} · '
+                '${formatDateMdy(occurredAt)} '
+                '${occurredAt.hour.toString().padLeft(2, '0')}:'
+                '${occurredAt.minute.toString().padLeft(2, '0')}',
                 style: const TextStyle(
-                  color: Colors.black87,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 15,
-                  letterSpacing: 1.2,
+                  color: Colors.black45,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 10.5,
+                  letterSpacing: 0.6,
                 ),
               ),
             ),
-            const SizedBox(height: 2),
+            const SizedBox(height: 6),
             Center(
               child: Text(
-                '${formatDateMdy(occurredAt)} ${occurredAt.hour.toString().padLeft(2, '0')}:${occurredAt.minute.toString().padLeft(2, '0')}',
-                style: const TextStyle(color: Colors.black45, fontSize: 11),
+                formatVnd(totalAmount),
+                style: const TextStyle(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 26,
+                ),
               ),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 10),
+            _dashedDivider(),
+            const SizedBox(height: 10),
+            // Chi con QR + thong tin tai khoan nhan tien o day (bo hang
+            // "Hinh thuc thanh toan" cu - do la cach TOI da tra, khong phai
+            // thong tin can cho NGUOI KHAC nhin vao bill de tra lai, gay
+            // roi/thua so voi muc dich cua 1 to bien lai de chia se).
             if (qr != null && qr!.hasImage) ...[
               Center(
                 child: Container(
-                  padding: const EdgeInsets.all(6),
+                  padding: const EdgeInsets.all(5),
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.black12),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Image.network(qr!.imageUrl!, width: 96, height: 96),
+                  child: Image.network(qr!.imageUrl!, width: 80, height: 80),
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
               if ((qr!.holderName ?? '').isNotEmpty)
                 Center(
                   child: Text(
@@ -105,7 +121,7 @@ class SplitBillReceiptCard extends StatelessWidget {
                     style: const TextStyle(
                       color: Colors.black87,
                       fontWeight: FontWeight.w800,
-                      fontSize: 13,
+                      fontSize: 12.5,
                     ),
                   ),
                 ),
@@ -117,54 +133,13 @@ class SplitBillReceiptCard extends StatelessWidget {
                       qr!.bankName,
                       qr!.accountNumber,
                     ].where((s) => (s ?? '').isNotEmpty).join(' · '),
-                    style: const TextStyle(
-                      color: Colors.black54,
-                      fontSize: 11.5,
-                    ),
+                    style: const TextStyle(color: Colors.black54, fontSize: 11),
                   ),
                 ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 10),
             ],
             _dashedDivider(),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  ref.tr('wealth_split_bill_total_hint'),
-                  style: const TextStyle(color: Colors.black54, fontSize: 12),
-                ),
-                Text(
-                  formatVnd(totalAmount),
-                  style: const TextStyle(
-                    color: Colors.black87,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 16,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  ref.tr('wealth_split_bill_payment_method_label'),
-                  style: const TextStyle(color: Colors.black54, fontSize: 12),
-                ),
-                Text(
-                  paymentLabel,
-                  style: const TextStyle(
-                    color: Colors.black87,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 12.5,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            _dashedDivider(),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             for (final p in people) _personRow(ref, p),
           ],
         ),

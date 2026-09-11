@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/tts/app_tts.dart';
 import '../../../core/widgets/speaker_button.dart';
@@ -288,12 +289,11 @@ class _VocabularyTopicDetailScreenState
                     label: ref.tr('vocab_start_learning'),
                     onTap: _selected.isEmpty
                         ? null
-                        : () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => VocabularyQuizScreen(
-                                topic: widget.topic,
-                                words: _selected.toList(),
-                              ),
+                        : () => openAppPopup(
+                            context,
+                            VocabularyQuizScreen(
+                              topic: widget.topic,
+                              words: _selected.toList(),
                             ),
                           ),
                   ),

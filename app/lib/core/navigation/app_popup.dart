@@ -11,12 +11,27 @@ import '../theme/app_theme.dart';
 /// dung Home - khong con "day sang man hinh rieng" (Navigator.push) nhu
 /// truoc. useRootNavigator: true de popup luon phu duoc TOAN MAN HINH bat
 /// ke duoc goi tu dau.
-void openAppPopup(BuildContext context, Widget child) {
-  showModalBottomSheet(
+/// [dismissible] = false cho cac man hinh KHONG duoc phep vuot xuong/bam ra
+/// ngoai de dong ngoai y muon (vd man lam bai thi co tinh gio nhu
+/// IeltsExamScreen/ToeicExamScreen mode "exam" - mat bai lam do neu vuot tay
+/// lo) - man do phai tu co nut dong/xac nhan roi rieng va goi
+/// `Navigator.of(context).maybePop()`/pop() tu ben trong.
+///
+/// Tra ve `Future<T?>` (gia tri duoc dua vao khi man con popup pop kem data
+/// qua `Navigator.pop(context, value)`) de giu duoc cac luong dang can lay
+/// ket qua tra ve giong `await Navigator.push<T>(...)` truoc day.
+Future<T?> openAppPopup<T>(
+  BuildContext context,
+  Widget child, {
+  bool dismissible = true,
+}) {
+  return showModalBottomSheet<T>(
     context: context,
     useRootNavigator: true,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
+    isDismissible: dismissible,
+    enableDrag: dismissible,
     builder: (_) => FractionallySizedBox(
       heightFactor: 0.94,
       child: ClipRRect(

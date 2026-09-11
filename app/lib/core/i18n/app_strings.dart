@@ -1246,6 +1246,10 @@ class AppStrings {
       AppLanguage.en: 'Note (optional)',
     },
     'wealth_save': {AppLanguage.vi: 'Lưu', AppLanguage.en: 'Save'},
+    'wealth_pay_action_button': {
+      AppLanguage.vi: 'Thanh toán',
+      AppLanguage.en: 'Pay',
+    },
     'wealth_empty_expense': {
       AppLanguage.vi: 'Chưa có giao dịch chi tiêu nào.',
       AppLanguage.en: 'No expense transactions yet.',
@@ -2061,6 +2065,14 @@ class AppStrings {
       AppLanguage.vi:
           'Chưa có mã QR nhận tiền - thêm ở nút "Mã QR" trong thẻ Tổng Ví.',
       AppLanguage.en: 'No payment QR yet - add one from the "QR Code" button on the Wallet card.',
+    },
+    'wealth_split_bill_qr_show_info': {
+      AppLanguage.vi: 'Xem tên/số tài khoản',
+      AppLanguage.en: 'Show name/account number',
+    },
+    'wealth_split_bill_qr_hide_info': {
+      AppLanguage.vi: 'Ẩn bớt',
+      AppLanguage.en: 'Hide',
     },
     'wealth_split_bill_history_title': {
       AppLanguage.vi: 'Lịch sử chia bill',

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/exercise_model.dart';
@@ -103,13 +104,9 @@ class ProgramDetailScreen extends ConsumerWidget {
                         day: day,
                         exercisesById: byId,
                         showStartButton: isActive && isToday && !day.isRestDay,
-                        onStart: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => WorkoutPreviewScreen(
-                              program: program,
-                              day: day,
-                            ),
-                          ),
+                        onStart: () => openAppPopup(
+                          context,
+                          WorkoutPreviewScreen(program: program, day: day),
                         ),
                       );
                     },

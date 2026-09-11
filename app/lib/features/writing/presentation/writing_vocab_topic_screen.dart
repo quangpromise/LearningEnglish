@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../vocabulary/data/vocabulary_data.dart';
 import 'writing_vocab_quiz_screen.dart';
@@ -71,10 +72,9 @@ class WritingVocabTopicScreen extends ConsumerWidget {
                 itemBuilder: (context, i) {
                   final topic = kVocabTopics[i];
                   return GestureDetector(
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => WritingVocabQuizScreen(topic: topic),
-                      ),
+                    onTap: () => openAppPopup(
+                      context,
+                      WritingVocabQuizScreen(topic: topic),
                     ),
                     child: GlowBox(
                       borderRadius: 22,

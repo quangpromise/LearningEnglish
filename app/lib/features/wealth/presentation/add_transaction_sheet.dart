@@ -109,6 +109,23 @@ class _WealthTransactionFormState extends ConsumerState<WealthTransactionForm> {
   List<PaymentSplit> get _initialSplits {
     final existing = widget.existing;
     if (existing == null) {
+      // Mac dinh NGAN HANG (khong phai Tien mat) neu nguoi dung da co san
+      // it nhat 1 tai khoan ngan hang - theo yeu cau nguoi dung, da so thanh
+      // toan qua ngan hang/the hon la tien mat. Chua co ngan hang nao thi
+      // fallback ve Tien mat nhu truoc.
+      final totals = ref.read(walletTotalsProvider);
+      for (final t in totals) {
+        if (t.accountType == 'bank') {
+          return [
+            PaymentSplit(
+              accountType: 'bank',
+              bankCode: t.bankCode,
+              bankName: t.bankName,
+              amount: 0,
+            ),
+          ];
+        }
+      }
       return const [PaymentSplit(accountType: 'cash', amount: 0)];
     }
     return [
@@ -132,6 +149,14 @@ class _WealthTransactionFormState extends ConsumerState<WealthTransactionForm> {
   String? _selectedServiceId;
 
   bool get _isEditing => widget.existing != null;
+
+  // "Pay" (thay vi "Save") CHI khi dang THEM MOI 1 khoan Chi tieu - dung ngu
+  // canh hanh dong ("dang thanh toan", khop voi tab "Pay") hon la khi SUA 1
+  // giao dich cu (chi cap nhat lai ban ghi, khong "tra tien" lan nua) hoac
+  // khi dang o luong Thu nhap (khong phai hanh dong tra tien).
+  String get _saveButtonLabel => (!_isEditing && _isExpense)
+      ? ref.tr('wealth_pay_action_button')
+      : ref.tr('wealth_save');
 
   @override
   void initState() {
@@ -450,7 +475,7 @@ class _WealthTransactionFormState extends ConsumerState<WealthTransactionForm> {
         SizedBox(
           width: double.infinity,
           child: PillButton(
-            label: ref.tr('wealth_save'),
+            label: _saveButtonLabel,
             accentGradient: AppColors.wealthAccentGradient,
             accentColor: AppColors.wealthAccent,
             onTap: _saving || !_splitsValid ? null : _save,
