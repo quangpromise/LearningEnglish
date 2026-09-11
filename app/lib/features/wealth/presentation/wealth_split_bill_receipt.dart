@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_language.dart';
 import '../../../core/i18n/app_strings.dart';
-import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_format.dart';
 import '../../../core/utils/date_format.dart';
@@ -29,18 +27,79 @@ class ReceiptPersonView {
   final VoidCallback? onPaid;
 }
 
+/// Nut doi ngon ngu VI/EN cho 1 to bien lai - dat BEN NGOAI [SplitBillReceiptCard]
+/// (o header cua man cha, goc phai) thay vi lot vao ben trong the trang nhu
+/// truoc, de noi dung chinh cua the (tien tong) duoc day len sat mep tren
+/// thay vi nhuong 1 dong cho nut nay. Man cha tu quan ly state ngon ngu (xem
+/// vd _SplitBillPreviewScreen._lang) va truyen [lang] xuong
+/// [SplitBillReceiptCard] tuong ung.
+class SplitBillLangToggle extends StatelessWidget {
+  const SplitBillLangToggle({
+    super.key,
+    required this.lang,
+    required this.onChanged,
+  });
+
+  final AppLanguage lang;
+  final ValueChanged<AppLanguage> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(2),
+      decoration: BoxDecoration(
+        color: AppColors.glassFill,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: AppColors.glassBorder),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [_chip('VI', AppLanguage.vi), _chip('EN', AppLanguage.en)],
+      ),
+    );
+  }
+
+  Widget _chip(String label, AppLanguage value) {
+    final selected = value == lang;
+    return GestureDetector(
+      onTap: () => onChanged(value),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: selected ? AppColors.wealthAccent : Colors.transparent,
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: selected ? Colors.white : AppColors.textMuted,
+            fontWeight: FontWeight.w800,
+            fontSize: 11,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// The "hoa don" (bill) chia tien - nen TRANG rieng biet voi giao dien toi
 /// cua ca app de trong giong 1 to bien lai in ra that, dung CHUNG cho ca man
 /// chia bill (ngay sau khi Pay) LAN man xem lai lich su (wealth_split_bill_
 /// history_screen.dart) - chi khac o cach [people] duoc gan callback hay
 /// khong.
-class SplitBillReceiptCard extends ConsumerStatefulWidget {
+///
+/// [lang] do MAN CHA quan ly (qua [SplitBillLangToggle] dat BEN NGOAI the
+/// nay, o header cua man cha) - truoc day nut VI/EN nam LOT vao trong the
+/// trang, choan mat 1 dong tren cung khien noi dung chinh (tien tong) bi day
+/// xuong; tach nut ra ngoai de noi dung the day len sat mep tren.
+class SplitBillReceiptCard extends StatelessWidget {
   const SplitBillReceiptCard({
     super.key,
     required this.totalAmount,
     required this.paymentLabel,
     required this.occurredAt,
     required this.people,
+    required this.lang,
     this.qr,
     this.note,
   });
@@ -49,28 +108,15 @@ class SplitBillReceiptCard extends ConsumerStatefulWidget {
   final String paymentLabel;
   final DateTime occurredAt;
   final List<ReceiptPersonView> people;
+  final AppLanguage lang;
   final WealthPaymentQr? qr;
   final String? note;
 
   @override
-  ConsumerState<SplitBillReceiptCard> createState() =>
-      _SplitBillReceiptCardState();
-}
-
-class _SplitBillReceiptCardState extends ConsumerState<SplitBillReceiptCard> {
-  // Ngon ngu RIENG cua to bien lai nay, doc lap voi ngon ngu giao dien chung
-  // cua app (appLanguageProvider) - nguoi dung co the dang dung app tieng
-  // Viet nhung muon gui bien lai tieng Anh cho ban be nuoc ngoai (hoac
-  // nguoc lai) ma khong can doi ngon ngu ca app. null = chua tu chon, mac
-  // dinh theo ngon ngu app hien tai.
-  AppLanguage? _lang;
-
-  @override
   Widget build(BuildContext context) {
-    final AppLanguage lang = _lang ?? ref.watch(appLanguageProvider);
     String tr(String key) => AppStrings.t(key, lang);
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -85,19 +131,15 @@ class _SplitBillReceiptCardState extends ConsumerState<SplitBillReceiptCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Nut chon ngon ngu VI/EN cho to bien lai - dat goc tren-phai, tren
-          // ca dong tieu de, de khong lan vao noi dung chinh.
-          Align(alignment: Alignment.topRight, child: _langToggle(lang)),
-          const SizedBox(height: 4),
           // Header gon 1 dong (ten bill + gio) thay vi 2 dong rieng - nhuong
           // cho TIEN TONG len ngay ben duoi, dung dau tien nguoi xem thay
           // (yeu cau: "phai co tien tong tren cung").
           Center(
             child: Text(
               '${tr('wealth_split_bill_title').toUpperCase()} · '
-              '${formatDateMdy(widget.occurredAt)} '
-              '${widget.occurredAt.hour.toString().padLeft(2, '0')}:'
-              '${widget.occurredAt.minute.toString().padLeft(2, '0')}',
+              '${formatDateMdy(occurredAt)} '
+              '${occurredAt.hour.toString().padLeft(2, '0')}:'
+              '${occurredAt.minute.toString().padLeft(2, '0')}',
               style: const TextStyle(
                 color: Colors.black45,
                 fontWeight: FontWeight.w700,
@@ -109,7 +151,7 @@ class _SplitBillReceiptCardState extends ConsumerState<SplitBillReceiptCard> {
           const SizedBox(height: 6),
           Center(
             child: Text(
-              formatVnd(widget.totalAmount),
+              formatVnd(totalAmount),
               style: const TextStyle(
                 color: Colors.black87,
                 fontWeight: FontWeight.w900,
@@ -117,11 +159,11 @@ class _SplitBillReceiptCardState extends ConsumerState<SplitBillReceiptCard> {
               ),
             ),
           ),
-          if ((widget.note ?? '').isNotEmpty) ...[
+          if ((note ?? '').isNotEmpty) ...[
             const SizedBox(height: 4),
             Center(
               child: Text(
-                widget.note!,
+                note!,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   color: Colors.black54,
@@ -138,7 +180,7 @@ class _SplitBillReceiptCardState extends ConsumerState<SplitBillReceiptCard> {
           // "Hinh thuc thanh toan" cu - do la cach TOI da tra, khong phai
           // thong tin can cho NGUOI KHAC nhin vao bill de tra lai, gay
           // roi/thua so voi muc dich cua 1 to bien lai de chia se).
-          if (widget.qr != null && widget.qr!.hasImage) ...[
+          if (qr != null && qr!.hasImage) ...[
             Center(
               child: Container(
                 padding: const EdgeInsets.all(8),
@@ -148,18 +190,14 @@ class _SplitBillReceiptCardState extends ConsumerState<SplitBillReceiptCard> {
                 ),
                 // QR to hon (140 thay vi 80) de de quet truc tiep tu bien
                 // lai khi gui/chup lai cho nguoi khac, khong can zoom.
-                child: Image.network(
-                  widget.qr!.imageUrl!,
-                  width: 140,
-                  height: 140,
-                ),
+                child: Image.network(qr!.imageUrl!, width: 140, height: 140),
               ),
             ),
             const SizedBox(height: 8),
-            if ((widget.qr!.holderName ?? '').isNotEmpty)
+            if ((qr!.holderName ?? '').isNotEmpty)
               Center(
                 child: Text(
-                  widget.qr!.holderName!,
+                  qr!.holderName!,
                   style: const TextStyle(
                     color: Colors.black87,
                     fontWeight: FontWeight.w800,
@@ -167,13 +205,13 @@ class _SplitBillReceiptCardState extends ConsumerState<SplitBillReceiptCard> {
                   ),
                 ),
               ),
-            if ((widget.qr!.bankName ?? '').isNotEmpty ||
-                (widget.qr!.accountNumber ?? '').isNotEmpty)
+            if ((qr!.bankName ?? '').isNotEmpty ||
+                (qr!.accountNumber ?? '').isNotEmpty)
               Center(
                 child: Text(
                   [
-                    widget.qr!.bankName,
-                    widget.qr!.accountNumber,
+                    qr!.bankName,
+                    qr!.accountNumber,
                   ].where((s) => (s ?? '').isNotEmpty).join(' · '),
                   style: const TextStyle(color: Colors.black54, fontSize: 11),
                 ),
@@ -182,47 +220,8 @@ class _SplitBillReceiptCardState extends ConsumerState<SplitBillReceiptCard> {
           ],
           _dashedDivider(),
           const SizedBox(height: 8),
-          for (final p in widget.people) _personRow(tr, p),
+          for (final p in people) _personRow(tr, p),
         ],
-      ),
-    );
-  }
-
-  Widget _langToggle(AppLanguage lang) {
-    return Container(
-      padding: const EdgeInsets.all(2),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _langChip('VI', AppLanguage.vi, lang),
-          _langChip('EN', AppLanguage.en, lang),
-        ],
-      ),
-    );
-  }
-
-  Widget _langChip(String label, AppLanguage value, AppLanguage current) {
-    final selected = value == current;
-    return GestureDetector(
-      onTap: () => setState(() => _lang = value),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(
-          color: selected ? Colors.black87 : Colors.transparent,
-          borderRadius: BorderRadius.circular(999),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: selected ? Colors.white : Colors.black45,
-            fontWeight: FontWeight.w800,
-            fontSize: 10.5,
-          ),
-        ),
       ),
     );
   }

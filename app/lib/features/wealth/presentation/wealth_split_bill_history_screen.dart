@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/app_language.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
@@ -239,9 +240,20 @@ class _BillRow extends ConsumerWidget {
 /// Xem lai/tiep tuc xu ly 1 hoa don da luu - doc that tu DB
 /// ([wealthSplitBillSharesProvider]) thay vi trang thai trong bo nho, nen
 /// van dung duoc du mo lai o phien app khac.
-class WealthSplitBillDetailScreen extends ConsumerWidget {
+class WealthSplitBillDetailScreen extends ConsumerStatefulWidget {
   const WealthSplitBillDetailScreen({super.key, required this.bill});
   final WealthSplitBill bill;
+
+  @override
+  ConsumerState<WealthSplitBillDetailScreen> createState() =>
+      _WealthSplitBillDetailScreenState();
+}
+
+class _WealthSplitBillDetailScreenState
+    extends ConsumerState<WealthSplitBillDetailScreen> {
+  // Ngon ngu rieng cua bien lai - xem giai thich o
+  // _SplitBillPreviewScreenState._lang (wealth_split_bill_screen.dart).
+  AppLanguage? _lang;
 
   Future<void> _markDebt(WidgetRef ref, WealthSplitBillShare share) async {
     final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
@@ -264,7 +276,7 @@ class WealthSplitBillDetailScreen extends ConsumerWidget {
     await ref
         .read(wealthSplitBillRepositoryProvider)
         .updateShareStatus(userId, share.id, status: 'debt', debtId: debtId);
-    ref.invalidate(wealthSplitBillSharesProvider(bill.id));
+    ref.invalidate(wealthSplitBillSharesProvider(widget.bill.id));
   }
 
   Future<void> _markPaid(WidgetRef ref, WealthSplitBillShare share) async {
@@ -276,9 +288,9 @@ class WealthSplitBillDetailScreen extends ConsumerWidget {
           userId,
           WealthBalanceEntry(
             id: '',
-            accountType: bill.paymentAccountType,
-            bankCode: bill.paymentBankCode,
-            bankName: bill.paymentBankName,
+            accountType: widget.bill.paymentAccountType,
+            bankCode: widget.bill.paymentBankCode,
+            bankName: widget.bill.paymentBankName,
             currency: 'VND',
             amount: share.amount,
             note: '${share.personName} - ${ref.tr('wealth_split_bill_title')}',
@@ -290,11 +302,13 @@ class WealthSplitBillDetailScreen extends ConsumerWidget {
     await ref
         .read(wealthSplitBillRepositoryProvider)
         .updateShareStatus(userId, share.id, status: 'paid');
-    ref.invalidate(wealthSplitBillSharesProvider(bill.id));
+    ref.invalidate(wealthSplitBillSharesProvider(widget.bill.id));
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
+    final bill = widget.bill;
+    final lang = _lang ?? ref.watch<AppLanguage>(appLanguageProvider);
     final sharesAsync = ref.watch(wealthSplitBillSharesProvider(bill.id));
     final qr = ref.watch(wealthPaymentQrProvider).valueOrNull;
     final paymentLabel = bill.paymentAccountType == 'cash'
@@ -331,6 +345,13 @@ class WealthSplitBillDetailScreen extends ConsumerWidget {
                     style: AppTextStyles.heading(size: 20),
                   ),
                 ),
+                // Nut doi ngon ngu bien lai - dat o goc phai header (BEN
+                // NGOAI the bien lai) de noi dung the (tien tong) khong bi
+                // day xuong.
+                SplitBillLangToggle(
+                  lang: lang,
+                  onChanged: (v) => setState(() => _lang = v),
+                ),
               ],
             ),
             const SizedBox(height: 18),
@@ -350,6 +371,7 @@ class WealthSplitBillDetailScreen extends ConsumerWidget {
                     occurredAt: bill.occurredAt,
                     note: bill.note,
                     qr: qr,
+                    lang: lang,
                     people: [
                       for (final s in shares)
                         ReceiptPersonView(

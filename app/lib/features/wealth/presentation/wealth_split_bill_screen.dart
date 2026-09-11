@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/app_language.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
@@ -102,6 +103,9 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
   // tron het phan chenh lech (xem _redistributeUnlocked()).
   double _othersPoolTotal = 0;
   bool _saving = false;
+  // Ngon ngu rieng cua bien lai o phase settle - xem giai thich o
+  // _SplitBillPreviewScreenState._lang.
+  AppLanguage? _receiptLang;
   // An mac dinh phan ten/ngan hang/so tai khoan duoi QR - nguoi dung da co
   // the quet thang QR khong can doc chu, chi bam "Xem them" khi thuc su can
   // (vd khong quet duoc, phai doc so tay) - giai phong cho cho danh sach
@@ -144,7 +148,22 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
       _SplitPersonEntry(isMe: true),
       for (final s in others) _entryFromShare(s),
     ];
+    _attachNameListeners();
     _phase = _SplitPhase.allocate;
+  }
+
+  /// Goi setState() moi khi 1 nguoi doi ten - can de dropdown goi y ten cua
+  /// CAC DONG KHAC kip loc bo ten vua duoc chon (xem excludeNames trong
+  /// _buildAllocate) ngay tuc thi, khong phai doi den khi co hanh dong khac
+  /// vo tinh lam Column rebuild.
+  void _attachNameListeners() {
+    for (final p in _people) {
+      p.nameController.addListener(_onAnyNameChanged);
+    }
+  }
+
+  void _onAnyNameChanged() {
+    if (mounted) setState(() {});
   }
 
   @override
@@ -210,6 +229,7 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
         for (var i = 1; i < shares.length; i++)
           _SplitPersonEntry(initialAmount: shares[i]),
       ];
+      _attachNameListeners();
       _phase = _SplitPhase.allocate;
     });
   }
@@ -521,9 +541,20 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
                     style: AppTextStyles.heading(size: 20),
                   ),
                 ),
+                // O phase settle (dang xem lai bien lai vua Pay), hien nut
+                // doi ngon ngu bien lai thay cho nut Lich su - dat o goc phai
+                // header (BEN NGOAI the bien lai) de noi dung the (tien
+                // tong) khong bi day xuong.
+                if (_phase == _SplitPhase.settle)
+                  SplitBillLangToggle(
+                    lang:
+                        _receiptLang ??
+                        ref.watch<AppLanguage>(appLanguageProvider),
+                    onChanged: (v) => setState(() => _receiptLang = v),
+                  )
                 // An nut Lich su khi dang o che do SUA (mo tu chinh man Lich
                 // su ra) - khong can mo lai chinh no tu ben trong.
-                if (!_isEditing)
+                else if (!_isEditing)
                   GestureDetector(
                     onTap: () => openAppPopup(
                       context,
@@ -680,7 +711,7 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           for (final p in _people) ...[
-            _personAllocateRow(p),
+            _personAllocateRow(p, _excludedNamesFor(p)),
             const SizedBox(height: 4),
           ],
           const SizedBox(height: 4),
@@ -823,7 +854,19 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
     );
   }
 
-  Widget _personAllocateRow(_SplitPersonEntry p) {
+  /// Ten cac nguoi KHAC (khong tinh "Toi" va khong tinh chinh dong nay) da
+  /// go/chon xong trong CUNG bill nay - dung de loc bot khoi dropdown goi y
+  /// cua dong hien tai (nguoi dung yeu cau: da chon roi thi an di cho gon,
+  /// tranh chon trung 2 dong cho cung 1 nguoi trong 1 bill).
+  Set<String> _excludedNamesFor(_SplitPersonEntry entry) {
+    return _people
+        .where((p) => p != entry && !p.isMe)
+        .map((p) => p.nameController.text.trim())
+        .where((n) => n.isNotEmpty)
+        .toSet();
+  }
+
+  Widget _personAllocateRow(_SplitPersonEntry p, Set<String> excludeNames) {
     // Giam padding/font/khoang cach so voi truoc - toan bo danh sach nguoi
     // (co the 4-6+ dong) phai vua trong 1 man hinh khong can cuon (yeu cau
     // nguoi dung), giam ca cho GlowBox lan cac o nhap/chip ben trong.
@@ -875,6 +918,7 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
                 _PersonNameDropdownField(
                   controller: p.nameController,
                   focusNode: p.nameFocusNode,
+                  excludeNames: excludeNames,
                 ),
                 const SizedBox(height: 4),
                 Row(
@@ -990,6 +1034,7 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
                   ? null
                   : _noteController.text.trim(),
               qr: ref.watch(wealthPaymentQrProvider).valueOrNull,
+              lang: _receiptLang ?? ref.watch<AppLanguage>(appLanguageProvider),
               people: [
                 for (final p in _people)
                   ReceiptPersonView(
@@ -1023,7 +1068,7 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
 /// ngu VI/EN cua rieng no) NHUNG CHUA luu gi vao DB - chi de nguoi dung kiem
 /// tra lai truoc khi thuc su bam Pay, dong popup nay khong anh huong gi den
 /// luong Pay ben duoi.
-class _SplitBillPreviewScreen extends ConsumerWidget {
+class _SplitBillPreviewScreen extends ConsumerStatefulWidget {
   const _SplitBillPreviewScreen({
     required this.totalAmount,
     required this.paymentLabel,
@@ -1039,7 +1084,21 @@ class _SplitBillPreviewScreen extends ConsumerWidget {
   final List<ReceiptPersonView> people;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_SplitBillPreviewScreen> createState() =>
+      _SplitBillPreviewScreenState();
+}
+
+class _SplitBillPreviewScreenState
+    extends ConsumerState<_SplitBillPreviewScreen> {
+  // Ngon ngu RIENG cua to bien lai, doc lap voi ngon ngu giao dien chung cua
+  // app (nguoi dung co the dang dung app tieng Viet nhung muon xem/gui bien
+  // lai tieng Anh cho ban be nuoc ngoai). null = chua tu chon, mac dinh theo
+  // ngon ngu app hien tai.
+  AppLanguage? _lang;
+
+  @override
+  Widget build(BuildContext context) {
+    final lang = _lang ?? ref.watch<AppLanguage>(appLanguageProvider);
     return ScreenBackground(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
@@ -1071,18 +1130,26 @@ class _SplitBillPreviewScreen extends ConsumerWidget {
                     style: AppTextStyles.heading(size: 20),
                   ),
                 ),
+                // Nut doi ngon ngu bien lai - dat o goc phai header (BEN
+                // NGOAI the bien lai, theo yeu cau) de noi dung the (tien
+                // tong) khong bi day xuong.
+                SplitBillLangToggle(
+                  lang: lang,
+                  onChanged: (v) => setState(() => _lang = v),
+                ),
               ],
             ),
             const SizedBox(height: 18),
             Expanded(
               child: SingleChildScrollView(
                 child: SplitBillReceiptCard(
-                  totalAmount: totalAmount,
-                  paymentLabel: paymentLabel,
+                  totalAmount: widget.totalAmount,
+                  paymentLabel: widget.paymentLabel,
                   occurredAt: DateTime.now(),
-                  note: note,
-                  qr: qr,
-                  people: people,
+                  note: widget.note,
+                  qr: widget.qr,
+                  lang: lang,
+                  people: widget.people,
                 ),
               ),
             ),
@@ -1147,14 +1214,22 @@ class _PersonNameDropdownField extends ConsumerWidget {
   const _PersonNameDropdownField({
     required this.controller,
     required this.focusNode,
+    this.excludeNames = const {},
   });
   final TextEditingController controller;
   final FocusNode focusNode;
+  // Ten cac dong KHAC trong CUNG bill nay da chon roi - loc bot khoi goi y
+  // cho gon danh sach, tranh chon trung 1 nguoi cho 2 dong (xem
+  // _excludedNamesFor o _WealthSplitBillScreenState).
+  final Set<String> excludeNames;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final allPersons = ref.watch(debtPersonsProvider).valueOrNull ?? [];
-    final allNames = allPersons.map((p) => p.name).toList();
+    final allNames = allPersons
+        .map((p) => p.name)
+        .where((n) => !excludeNames.contains(n))
+        .toList();
     final idByName = {for (final p in allPersons) p.name: p.id};
     return RawAutocomplete<String>(
       textEditingController: controller,
