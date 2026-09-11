@@ -58,6 +58,10 @@ export class GeminiLiveSession {
     this.connected = false;
     this.session = null;
     this._turnAudioParts = [];
+    // Rieng quota cua Google Search grounding (5.000 luot mien phi/thang)
+    // co the het truoc quota audio chinh - khi do chi tat tool search va
+    // ket noi lai, KHONG fallback toan bo sang pipeline tu host.
+    this._searchEnabled = true;
   }
 
   async connect() {
@@ -67,6 +71,10 @@ export class GeminiLiveSession {
       config: {
         responseModalities: [Modality.AUDIO],
         systemInstruction: SYSTEM_PROMPT,
+        // Cho phep Gemini tu tim kiem Google khi can du lieu thoi gian thuc
+        // (gia crypto, gia dat, tin tuc...) - Gemini 3.x: 5.000 luot mien
+        // phi/thang, sau do $14/1.000 luot ground. Xem docs/research-ai-voice.md.
+        ...(this._searchEnabled ? { tools: [{ googleSearch: {} }] } : {}),
       },
       callbacks: {
         onopen: () => {
@@ -78,11 +86,36 @@ export class GeminiLiveSession {
           this.connected = false;
           // Mot so loi quota/rate-limit duoc Gemini tra ve qua ma dong ket
           // noi (close code/reason) thay vi onerror - kiem tra ca 2 noi.
-          if (this._isQuotaIssue(event?.reason)) {
-            this.onQuotaExceeded?.(new Error(event.reason));
-          }
+          this._handleQuotaText(event?.reason);
         },
       },
+    });
+  }
+
+  _handleQuotaText(text) {
+    if (!text) return;
+    if (this._searchEnabled && this._isSearchQuotaIssue(text)) {
+      this._disableSearchAndReconnect();
+    } else if (this._isQuotaIssue(text)) {
+      this.onQuotaExceeded?.(new Error(text));
+    }
+  }
+
+  _isSearchQuotaIssue(text) {
+    return this._isQuotaIssue(text) && /search|ground/i.test(text ?? '');
+  }
+
+  _disableSearchAndReconnect() {
+    console.warn(
+      '[gemini] Het quota Google Search grounding — tat tinh nang tim kiem, ' +
+        'tiep tuc hoi thoai binh thuong (khong fallback).'
+    );
+    this._searchEnabled = false;
+    this.session?.close();
+    this.session = null;
+    this.connect().catch((err) => {
+      console.error('[gemini] Khong ket noi lai duoc sau khi tat search:', err.message);
+      this.onError?.(err);
     });
   }
 
@@ -120,9 +153,11 @@ export class GeminiLiveSession {
   }
 
   _handleError(err) {
-    const isQuotaError =
-      err?.status === 429 || this._isQuotaIssue(err?.message);
-    if (isQuotaError) {
+    const text = err?.message ?? '';
+    const isQuotaError = err?.status === 429 || this._isQuotaIssue(text);
+    if (this._searchEnabled && isQuotaError && this._isSearchQuotaIssue(text)) {
+      this._disableSearchAndReconnect();
+    } else if (isQuotaError) {
       this.onQuotaExceeded?.(err);
     } else {
       this.onError?.(err);
