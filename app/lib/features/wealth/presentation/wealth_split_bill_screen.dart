@@ -645,7 +645,11 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
         note: _noteController.text.trim().isEmpty
             ? null
             : _noteController.text.trim(),
-        qr: ref.read(wealthPaymentQrProvider).valueOrNull,
+        // KHONG hien QR/thong tin tai khoan o man Xem truoc (theo yeu cau
+        // nguoi dung) - popup nay chi de kiem tra lai ten/so tien truoc khi
+        // bam Pay, QR van con nguyen ven o bien lai THAT sau khi Pay xong
+        // (xem _buildSettle/wealth_split_bill_history_screen.dart).
+        qr: null,
         people: [
           for (final p in _people)
             ReceiptPersonView(

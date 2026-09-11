@@ -9,18 +9,15 @@ import '../data/vn_bank_model.dart';
 import '../data/wealth_category.dart';
 import '../data/wealth_custom_category_model.dart';
 
-/// Man Cai dat Quan ly tai san - gom 2 muc:
-/// 1) Danh muc chi tieu - xem cac danh muc co san + them/sua/xoa danh muc
-///    TUY CHINH (dung khi chon danh muc luc them Chi tieu, xem
-///    add_transaction_sheet.dart).
-/// 2) Chon cac ngan hang "dang su dung" (trong tong hang chuc ngan hang
-///    VietQR) de bank_picker_sheet chi hien nhung ngan hang nguoi dung THAT
-///    SU dung, khong phai cuon qua ca danh sach ~50 ngan hang moi lan.
-///
-/// Toan bo noi dung nam trong 1 ListView DUY NHAT (thay vi Expanded(ListView)
-/// rieng cho ngan hang nhu truoc) de muc Danh muc chi tieu (dai ngan tuy so
-/// danh muc tuy chinh nguoi dung da them) khong lam Column bi tran/am khi
-/// dat truoc no.
+/// Man Cai dat Quan ly tai san - 2 tab:
+/// 1) Danh muc - xem cac danh muc co san + them/sua/xoa danh muc TUY CHINH
+///    (dung khi chon danh muc luc them Chi tieu, xem add_transaction_sheet.dart)
+///    + cong tac Thong bao gia bien dong.
+/// 2) Ngan hang - chon cac ngan hang "dang su dung" (trong tong hang chuc
+///    ngan hang VietQR) de bank_picker_sheet chi hien nhung ngan hang nguoi
+///    dung THAT SU dung, khong phai cuon qua ca danh sach ~50 ngan hang moi
+///    lan. Tach tab rieng (truoc day dung chung 1 ListView voi Danh muc) vi
+///    danh sach ~50 ngan hang qua dai, don xuong duoi cung kho thao tac.
 class WealthSettingsScreen extends ConsumerStatefulWidget {
   const WealthSettingsScreen({super.key});
 
@@ -29,24 +26,27 @@ class WealthSettingsScreen extends ConsumerStatefulWidget {
       _WealthSettingsScreenState();
 }
 
-class _WealthSettingsScreenState extends ConsumerState<WealthSettingsScreen> {
+class _WealthSettingsScreenState extends ConsumerState<WealthSettingsScreen>
+    with SingleTickerProviderStateMixin {
   final _search = TextEditingController();
   String _query = '';
+  late final TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
 
   @override
   void dispose() {
     _search.dispose();
+    _tabController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final banksAsync = ref.watch(vnBanksProvider);
-    final usedCodes = ref.watch(usedBankCodesProvider);
-    final customCategories =
-        ref.watch(wealthCustomCategoriesProvider).valueOrNull ??
-        const <WealthCustomCategory>[];
-
     return ScreenBackground(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
@@ -81,88 +81,146 @@ class _WealthSettingsScreenState extends ConsumerState<WealthSettingsScreen> {
               ],
             ),
             const SizedBox(height: 14),
-            Expanded(
-              child: ListView(
-                children: [
-                  _categoriesSection(customCategories),
-                  const SizedBox(height: 20),
-                  _priceAlertsSection(),
-                  const SizedBox(height: 20),
-                  Text(
-                    ref.tr('wealth_settings_banks_title'),
-                    style: AppTextStyles.body(
-                      size: 15,
-                      weight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    ref.tr('wealth_settings_banks_desc'),
-                    style: AppTextStyles.muted(size: 12.5),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _search,
-                    style: AppTextStyles.body(),
-                    decoration: InputDecoration(
-                      hintText: ref.tr('wallet_pick_bank_search_hint'),
-                      hintStyle: AppTextStyles.muted(),
-                      prefixIcon: const Icon(
-                        Icons.search_rounded,
-                        color: AppColors.textMuted,
-                      ),
-                      filled: true,
-                      fillColor: AppColors.glassFill,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                    onChanged: (v) =>
-                        setState(() => _query = v.trim().toLowerCase()),
-                  ),
-                  const SizedBox(height: 12),
-                  banksAsync.when(
-                    loading: () => const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 40),
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          color: AppColors.wealthAccent,
-                        ),
-                      ),
-                    ),
-                    error: (_, _) =>
-                        Center(child: Text(ref.tr('wealth_load_error'))),
-                    data: (banks) {
-                      final real = banks.where((b) => !b.isOther).toList();
-                      final filtered = _query.isEmpty
-                          ? real
-                          : real
-                                .where(
-                                  (b) =>
-                                      b.shortName.toLowerCase().contains(
-                                        _query,
-                                      ) ||
-                                      b.name.toLowerCase().contains(_query),
-                                )
-                                .toList();
-                      return Column(
-                        children: [
-                          for (final b in filtered)
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 8),
-                              child: _bankTile(b, usedCodes.contains(b.code)),
-                            ),
-                        ],
-                      );
-                    },
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.white.withValues(alpha: 0.06),
+                    Colors.white.withValues(alpha: 0.02),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.14),
+                  width: 1.2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.25),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
                   ),
                 ],
+              ),
+              padding: const EdgeInsets.all(4),
+              child: TabBar(
+                controller: _tabController,
+                indicator: BoxDecoration(
+                  gradient: AppColors.wealthAccentGradient,
+                  borderRadius: BorderRadius.circular(999),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.wealthAccent.withValues(alpha: 0.45),
+                      blurRadius: 14,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                indicatorSize: TabBarIndicatorSize.tab,
+                labelColor: Colors.white,
+                unselectedLabelColor: AppColors.textMuted,
+                dividerColor: Colors.transparent,
+                labelStyle: const TextStyle(fontWeight: FontWeight.w800),
+                tabs: [
+                  Tab(text: ref.tr('wealth_settings_tab_categories')),
+                  Tab(text: ref.tr('wealth_settings_tab_banks')),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [_categoriesTab(), _banksTab()],
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _categoriesTab() {
+    final customCategories =
+        ref.watch(wealthCustomCategoriesProvider).valueOrNull ??
+        const <WealthCustomCategory>[];
+    return ListView(
+      children: [
+        _categoriesSection(customCategories),
+        const SizedBox(height: 20),
+        _priceAlertsSection(),
+      ],
+    );
+  }
+
+  Widget _banksTab() {
+    final banksAsync = ref.watch(vnBanksProvider);
+    final usedCodes = ref.watch(usedBankCodesProvider);
+    return ListView(
+      children: [
+        Text(
+          ref.tr('wealth_settings_banks_title'),
+          style: AppTextStyles.body(size: 15, weight: FontWeight.w800),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          ref.tr('wealth_settings_banks_desc'),
+          style: AppTextStyles.muted(size: 12.5),
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          controller: _search,
+          style: AppTextStyles.body(),
+          decoration: InputDecoration(
+            hintText: ref.tr('wallet_pick_bank_search_hint'),
+            hintStyle: AppTextStyles.muted(),
+            prefixIcon: const Icon(
+              Icons.search_rounded,
+              color: AppColors.textMuted,
+            ),
+            filled: true,
+            fillColor: AppColors.glassFill,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide.none,
+            ),
+          ),
+          onChanged: (v) => setState(() => _query = v.trim().toLowerCase()),
+        ),
+        const SizedBox(height: 12),
+        banksAsync.when(
+          loading: () => const Padding(
+            padding: EdgeInsets.symmetric(vertical: 40),
+            child: Center(
+              child: CircularProgressIndicator(color: AppColors.wealthAccent),
+            ),
+          ),
+          error: (_, _) => Center(child: Text(ref.tr('wealth_load_error'))),
+          data: (banks) {
+            final real = banks.where((b) => !b.isOther).toList();
+            final filtered = _query.isEmpty
+                ? real
+                : real
+                      .where(
+                        (b) =>
+                            b.shortName.toLowerCase().contains(_query) ||
+                            b.name.toLowerCase().contains(_query),
+                      )
+                      .toList();
+            return Column(
+              children: [
+                for (final b in filtered)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: _bankTile(b, usedCodes.contains(b.code)),
+                  ),
+              ],
+            );
+          },
+        ),
+      ],
     );
   }
 

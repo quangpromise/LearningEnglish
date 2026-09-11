@@ -2300,6 +2300,14 @@ class AppStrings {
       AppLanguage.vi: 'Xóa người này khỏi danh sách gợi ý? Bạn có thể thêm lại bất cứ lúc nào bằng cách nhập đúng tên.',
       AppLanguage.en: 'Remove this person from suggestions? You can add them back anytime by typing the exact name again.',
     },
+    'wealth_settings_tab_categories': {
+      AppLanguage.vi: 'Danh mục',
+      AppLanguage.en: 'Categories',
+    },
+    'wealth_settings_tab_banks': {
+      AppLanguage.vi: 'Ngân hàng',
+      AppLanguage.en: 'Banks',
+    },
     'wealth_settings_price_alerts_title': {
       AppLanguage.vi: 'Thông báo giá biến động mạnh',
       AppLanguage.en: 'Big price move alerts',
