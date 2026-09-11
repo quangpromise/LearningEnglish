@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/speaker_button.dart';
 import '../data/vocabulary_data.dart';
 
 /// Popup "Words Learned" - mo tu the thong ke cung ten o man Ho so
@@ -114,18 +115,20 @@ class LearnedWordsPopup extends ConsumerWidget {
                                     ],
                                   ),
                                 ),
-                                GestureDetector(
-                                  onTap: () => _unlearn(ref, word),
-                                  child: Tooltip(
-                                    message: ref.tr('vocab_unmark_learned'),
-                                    child: const Padding(
-                                      padding: EdgeInsets.all(6),
-                                      child: Icon(
-                                        Icons.close_rounded,
-                                        size: 18,
-                                        color: AppColors.textMuted,
-                                      ),
-                                    ),
+                                // Dung SpeakerButton (vung bam co dinh
+                                // 40x40) thay vi Icon boc GestureDetector
+                                // tran nhu truoc - vung bam cu chi bang kich
+                                // thuoc hinh hoc cua icon (~18-24px), rat kho
+                                // bam trung tren dien thoai that (cung 1 loi
+                                // da gap o man Tu vung theo chu de, xem
+                                // doc-comment cua SpeakerButton).
+                                Tooltip(
+                                  message: ref.tr('vocab_unmark_learned'),
+                                  child: SpeakerButton(
+                                    icon: Icons.close_rounded,
+                                    iconSize: 18,
+                                    color: AppColors.textMuted,
+                                    onTap: () => _unlearn(ref, word),
                                   ),
                                 ),
                               ],

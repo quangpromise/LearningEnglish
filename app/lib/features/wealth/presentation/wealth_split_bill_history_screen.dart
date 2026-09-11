@@ -11,6 +11,43 @@ import '../data/wealth_balance_entry_model.dart';
 import '../data/wealth_split_bill_model.dart';
 import 'confirm_delete.dart';
 import 'wealth_split_bill_receipt.dart';
+import 'wealth_split_bill_screen.dart';
+
+/// Xoa 1 lan chia bill - don dep het cac ban ghi da sinh ra cung luc voi no
+/// (khoan Chi tieu tru tong tien + khoan No "Ghi nợ" cho tung nguoi, xem
+/// _confirmPay trong wealth_split_bill_screen.dart) truoc khi xoa chinh dong
+/// wealth_split_bills, de KHONG con Chi tieu/No "mo coi" lam sai lech
+/// Vi/Bao cao sau khi xoa. Dung CHUNG cho ca 2 noi: xoa han (_BillRow) va
+/// sua bill (WealthSplitBillScreen o che do edit - xoa ban ghi CU truoc khi
+/// tao lai ban ghi MOI theo du lieu da sua).
+Future<void> deleteSplitBillCascade(WidgetRef ref, WealthSplitBill bill) async {
+  final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
+  if (userId == null) return;
+  final billRepo = ref.read(wealthSplitBillRepositoryProvider);
+  final shares = await billRepo.fetchShares(userId, bill.id);
+  final debtRepo = ref.read(wealthDebtRepositoryProvider);
+  for (final s in shares) {
+    // Xoa khoan No cascade xoa luon wealth_debt_payments + cac dong Vi da
+    // sinh tu no (xem migration 0032) - vd truong hop da THU roi moi xoa.
+    if (s.debtId != null) {
+      await debtRepo.delete(userId, s.debtId!);
+    }
+  }
+  // Xoa khoan Chi tieu cascade xoa dong Vi "-tong tien" cua "Toi"
+  // (source_transaction_id on delete cascade, xem migration 0032).
+  if (bill.transactionId != null) {
+    await ref
+        .read(wealthTransactionRepositoryProvider)
+        .deleteTransaction(userId, bill.transactionId!);
+  }
+  // Xoa chinh bill - cascade xoa het cac dong share, keo theo cascade xoa
+  // dong Vi "Da tra" cua tung nguoi (source_bill_share_id, migration 0052).
+  await billRepo.delete(userId, bill.id);
+  ref.invalidate(walletBalanceEntriesProvider);
+  ref.invalidate(wealthTransactionsProvider);
+  ref.invalidate(debtsProvider('owed_to_me'));
+  ref.invalidate(wealthSplitBillsProvider);
+}
 
 /// Lich su cac lan Chia tien bill da luu (xem wealth_split_bill_screen.dart)
 /// - bam vao 1 dong de xem lai hoa don day du, van co the bam "Ghi no"/"Da
@@ -90,81 +127,22 @@ class _BillRow extends ConsumerWidget {
   const _BillRow({required this.bill});
   final WealthSplitBill bill;
 
-  /// Xoa 1 lan chia bill - don dep het cac ban ghi da sinh ra cung luc voi
-  /// no (khoan Chi tieu tru tong tien + khoan No "Ghi nợ" cho tung nguoi,
-  /// xem _confirmPay trong wealth_split_bill_screen.dart) truoc khi xoa
-  /// chinh dong wealth_split_bills, de KHONG con Chi tieu/No "mo coi" lam
-  /// sai lech Vi/Bao cao sau khi xoa.
-  Future<void> _delete(WidgetRef ref) async {
+  /// Mo lai man Chia tien bill o CHE DO SUA - xoa het ban ghi CU (Chi
+  /// tieu/No cua bill nay) roi tao lai TU DAU theo du lieu nguoi dung sua
+  /// khi bam "Cap nhat" (xem WealthSplitBillScreen.editingBill va
+  /// _confirmPay o do) - don gian va chac chan dung hon so voi doi chieu
+  /// tung phan thay doi (nguoi them/bot, doi Ghi no <-> Da tra...).
+  Future<void> _editBill(BuildContext context, WidgetRef ref) async {
     final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
     if (userId == null) return;
-    final billRepo = ref.read(wealthSplitBillRepositoryProvider);
-    final shares = await billRepo.fetchShares(userId, bill.id);
-    final debtRepo = ref.read(wealthDebtRepositoryProvider);
-    for (final s in shares) {
-      // Xoa khoan No cascade xoa luon wealth_debt_payments + cac dong Vi da
-      // sinh tu no (xem migration 0032) - vd truong hop da THU roi moi xoa.
-      if (s.debtId != null) {
-        await debtRepo.delete(userId, s.debtId!);
-      }
-    }
-    // Xoa khoan Chi tieu cascade xoa dong Vi "-tong tien" cua "Toi"
-    // (source_transaction_id on delete cascade, xem migration 0032).
-    if (bill.transactionId != null) {
-      await ref
-          .read(wealthTransactionRepositoryProvider)
-          .deleteTransaction(userId, bill.transactionId!);
-    }
-    // Xoa chinh bill - cascade xoa het cac dong share, keo theo cascade xoa
-    // dong Vi "Da tra" cua tung nguoi (source_bill_share_id, migration 0052).
-    await billRepo.delete(userId, bill.id);
-    ref.invalidate(walletBalanceEntriesProvider);
-    ref.invalidate(wealthTransactionsProvider);
-    ref.invalidate(debtsProvider('owed_to_me'));
-    ref.invalidate(wealthSplitBillsProvider);
-  }
-
-  Future<void> _editNote(BuildContext context, WidgetRef ref) async {
-    final controller = TextEditingController(text: bill.note ?? '');
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: AppColors.bgMid,
-        title: Text(
-          ref.tr('wealth_split_bill_edit_note_title'),
-          style: AppTextStyles.heading(size: 16),
-        ),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          style: AppTextStyles.body(),
-          decoration: InputDecoration(
-            hintText: ref.tr('wealth_split_bill_note_hint'),
-            hintStyle: const TextStyle(color: AppColors.textMuted),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(ref.tr('common_cancel')),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(ref.tr('common_confirm')),
-          ),
-        ],
-      ),
-    );
-    if (result != true) return;
-    final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
-    if (userId == null) return;
-    final newNote = controller.text.trim().isEmpty
-        ? null
-        : controller.text.trim();
-    await ref
+    final shares = await ref
         .read(wealthSplitBillRepositoryProvider)
-        .updateNote(userId, bill.id, newNote);
-    ref.invalidate(wealthSplitBillsProvider);
+        .fetchShares(userId, bill.id);
+    if (!context.mounted) return;
+    openAppPopup(
+      context,
+      WealthSplitBillScreen(editingBill: bill, editingShares: shares),
+    );
   }
 
   @override
@@ -172,8 +150,21 @@ class _BillRow extends ConsumerWidget {
     return Dismissible(
       key: ValueKey(bill.id),
       direction: DismissDirection.endToStart,
-      confirmDismiss: (_) => confirmDelete(context, ref),
-      onDismissed: (_) => _delete(ref),
+      // Chay HET logic xoa (nhieu buoc await: xoa No -> xoa Chi tieu -> xoa
+      // bill) NGAY TRONG confirmDismiss, truoc khi tra ve true - Dismissible
+      // chi thuc su go widget nay khoi cay sau khi confirmDismiss hoan tat.
+      // TRUOC DAY logic xoa nam o onDismissed (chay SAU khi widget da bi go
+      // khoi cay) - WidgetRef cua 1 ConsumerWidget khong con dung duoc sau
+      // khi widget unmount, nen cac buoc xoa o GIUA/CUOI chuoi await (xoa
+      // Chi tieu, invalidate lai danh sach) hay bi bo do ref da "chet",
+      // trong khi buoc DAU (xoa No) vi chay som nen van kip thanh cong -
+      // dung khop trieu chung "nợ đã xoá nhưng Chi tiêu/Vi chưa xoá".
+      confirmDismiss: (_) async {
+        final ok = await confirmDelete(context, ref);
+        if (!ok) return false;
+        await deleteSplitBillCascade(ref, bill);
+        return true;
+      },
       background: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -223,7 +214,7 @@ class _BillRow extends ConsumerWidget {
                 ),
               ),
               GestureDetector(
-                onTap: () => _editNote(context, ref),
+                onTap: () => _editBill(context, ref),
                 child: const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 6),
                   child: Icon(

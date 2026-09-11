@@ -11,6 +11,7 @@ import '../data/vn_bank_model.dart';
 import '../data/wealth_balance_entry_model.dart';
 import '../data/wealth_category.dart';
 import '../data/wealth_payment_qr_model.dart';
+import '../data/wealth_split_bill_model.dart';
 import '../data/wealth_transaction_model.dart';
 import 'bank_picker_sheet.dart';
 import 'wealth_qr_screen.dart';
@@ -29,7 +30,20 @@ import 'wealth_split_bill_receipt.dart';
 /// (cong thang tien ho vao lai Cash/Bank) - trang thai luu thang vao DB nen
 /// co the quay lai xu ly tiep tu man Lich su neu chua xong het.
 class WealthSplitBillScreen extends ConsumerStatefulWidget {
-  const WealthSplitBillScreen({super.key});
+  const WealthSplitBillScreen({
+    super.key,
+    this.editingBill,
+    this.editingShares,
+  });
+
+  // Khac null = mo man nay o CHE DO SUA 1 bill da co san trong lich su (xem
+  // nut but chi o wealth_split_bill_history_screen.dart) - bo qua phase
+  // setup, vao thang phase allocate voi du lieu da dien san tu
+  // [editingShares], va khi bam "Cap nhat" se XOA het ban ghi CU cua bill
+  // nay (deleteSplitBillCascade) roi tao lai TU DAU theo du lieu da sua,
+  // thay vi doi chieu tung phan thay doi.
+  final WealthSplitBill? editingBill;
+  final List<WealthSplitBillShare>? editingShares;
 
   @override
   ConsumerState<WealthSplitBillScreen> createState() =>
@@ -94,6 +108,47 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
   // (vd khong quet duoc, phai doc so tay) - giai phong cho cho danh sach
   // nguoi ben duoi vua het 1 man hinh khong can cuon.
   bool _qrInfoExpanded = false;
+
+  bool get _isEditing => widget.editingBill != null;
+
+  _SplitPersonEntry _entryFromShare(WealthSplitBillShare s) {
+    final entry = _SplitPersonEntry(initialAmount: s.amount);
+    entry.nameController.text = s.personName;
+    entry.status = s.status == 'paid' ? 'paid' : 'debt';
+    // Khoa san TAT CA nguoi khi vao che do sua - day la gia tri THAT nguoi
+    // dung da luu, khong phai goi y tu dong nua, nen KHONG tu dong chia lai
+    // khi nguoi dung sua 1 nguoi khac (xem _onPersonAmountEdited) - tranh
+    // xao tron cac gia tri con lai ma nguoi dung khong dinh dong vao.
+    entry.locked = true;
+    return entry;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    final bill = widget.editingBill;
+    final shares = widget.editingShares;
+    if (bill == null || shares == null) return;
+    _total = bill.totalAmount;
+    _noteController.text = bill.note ?? '';
+    _source = bill.paymentAccountType == 'cash'
+        ? const _PaymentSource.cash()
+        : _PaymentSource.bank(
+            VnBank(
+              code: bill.paymentBankCode ?? bill.paymentBankName ?? 'bank',
+              shortName: bill.paymentBankName ?? bill.paymentBankCode ?? '?',
+              name: bill.paymentBankName ?? bill.paymentBankCode ?? '?',
+              logoUrl: null,
+            ),
+          );
+    final others = shares.where((s) => !s.isMe).toList();
+    _othersPoolTotal = others.fold<double>(0, (s, sh) => s + sh.amount);
+    _people = [
+      _SplitPersonEntry(isMe: true),
+      for (final s in others) _entryFromShare(s),
+    ];
+    _phase = _SplitPhase.allocate;
+  }
 
   @override
   void dispose() {
@@ -218,7 +273,11 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
         backgroundColor: const Color(0xFF12172E),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
-          ref.tr('wealth_split_bill_confirm_title'),
+          ref.tr(
+            _isEditing
+                ? 'wealth_split_bill_update_confirm_title'
+                : 'wealth_split_bill_confirm_title',
+          ),
           style: AppTextStyles.heading(size: 16),
         ),
         content: Column(
@@ -226,7 +285,11 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              ref.tr('wealth_split_bill_confirm_desc'),
+              ref.tr(
+                _isEditing
+                    ? 'wealth_split_bill_update_confirm_desc'
+                    : 'wealth_split_bill_confirm_desc',
+              ),
               style: AppTextStyles.body(size: 13),
             ),
             const SizedBox(height: 10),
@@ -260,6 +323,15 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
 
     setState(() => _saving = true);
     try {
+      // Che do SUA: xoa het ban ghi CU cua bill nay (Chi tieu + No lien
+      // quan) TRUOC, roi tao lai TU DAU o duoi giong y het luc Pay 1 bill
+      // moi - don gian va chac chan dung hon so voi doi chieu tung phan
+      // thay doi (nguoi them/bot, doi Ghi no <-> Da tra, doi nguon thanh
+      // toan...). Bill MOI se co id khac bill CU (chap nhan duoc, day la
+      // "thay the" chu khong phai "cap nhat tai cho").
+      if (_isEditing) {
+        await deleteSplitBillCascade(ref, widget.editingBill!);
+      }
       final source = _source!;
       final note = _noteController.text.trim().isEmpty
           ? null
@@ -444,30 +516,37 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    ref.tr('wealth_split_bill_title'),
+                    ref.tr(
+                      _isEditing
+                          ? 'wealth_split_bill_edit_title'
+                          : 'wealth_split_bill_title',
+                    ),
                     style: AppTextStyles.heading(size: 20),
                   ),
                 ),
-                GestureDetector(
-                  onTap: () => openAppPopup(
-                    context,
-                    const WealthSplitBillHistoryScreen(),
-                  ),
-                  child: Container(
-                    width: 34,
-                    height: 34,
-                    decoration: BoxDecoration(
-                      color: AppColors.glassFill,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.glassBorder),
+                // An nut Lich su khi dang o che do SUA (mo tu chinh man Lich
+                // su ra) - khong can mo lai chinh no tu ben trong.
+                if (!_isEditing)
+                  GestureDetector(
+                    onTap: () => openAppPopup(
+                      context,
+                      const WealthSplitBillHistoryScreen(),
                     ),
-                    child: const Icon(
-                      Icons.history_rounded,
-                      size: 16,
-                      color: AppColors.textPrimary,
+                    child: Container(
+                      width: 34,
+                      height: 34,
+                      decoration: BoxDecoration(
+                        color: AppColors.glassFill,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: AppColors.glassBorder),
+                      ),
+                      child: const Icon(
+                        Icons.history_rounded,
+                        size: 16,
+                        color: AppColors.textPrimary,
+                      ),
                     ),
                   ),
-                ),
               ],
             ),
             const SizedBox(height: 18),
@@ -723,7 +802,11 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
               const SizedBox(width: 10),
               Expanded(
                 child: PillButton(
-                  label: ref.tr('wealth_split_bill_pay_button'),
+                  label: ref.tr(
+                    _isEditing
+                        ? 'wealth_split_bill_update_button'
+                        : 'wealth_split_bill_pay_button',
+                  ),
                   accentGradient: AppColors.wealthAccentGradient,
                   accentColor: AppColors.wealthAccent,
                   onTap: (_canPay && !_saving) ? _confirmPay : null,

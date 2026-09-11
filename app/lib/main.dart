@@ -133,20 +133,38 @@ class LearnEnglishMusicApp extends StatelessWidget {
       // KHONG con o day - da chuyen vao giua thanh menu duoi cua tung khu
       // vuc (root_shell.dart / mini_app_bottom_nav.dart) thay vi noi rieng
       // tren toan man hinh.
-      // Listener ngoai cung: cham ra ngoai o nhap (bat ky dau tren man hinh)
-      // se dong ban phim. BAT BUOC dung Listener.onPointerDown (KHONG dung
-      // GestureDetector.onTap) - da tung dung GestureDetector.onTap va gay
-      // bug that: no la 1 TapGestureRecognizer, CHU DONG "accept" ngay khi
-      // nha tay (thang gesture arena), trong khi AssistiveFabOverlay (xem
-      // assistive_fab_overlay.dart) phan biet tap/keo bang onPanStart/
-      // onPanUpdate/onPanEnd (PanGestureRecognizer chi thang arena qua
-      // "sweep" thu dong) - nut do LUON THUA/mat tap ngay khi co 1
-      // GestureDetector.onTap khac o ngoai. Listener khong tham gia gesture
-      // arena (chi lang nghe pointer tho) nen khong gianh giat voi bat ky
-      // GestureDetector/Draggable nao khac trong app.
-      builder: (context, child) => Listener(
-        behavior: HitTestBehavior.translucent,
-        onPointerDown: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+      // Cham ra ngoai o nhap (bat ky dau tren man hinh) se dong ban phim.
+      // TRUOC DAY dung Listener.onPointerDown(unfocus()) o ngoai cung - "tho"
+      // qua muc: no bo qua het co che TapRegion/TextFieldTapRegion cua
+      // Flutter, nen bat ky o nhap dropdown/goi y nao boc trong
+      // TextFieldTapRegion (vd _PersonNameDropdownField o
+      // wealth_split_bill_screen.dart, DebtPersonPickerField...) cung bi tinh
+      // la "cham ra ngoai" va mat focus NGAY LUC POINTER DOWN - truoc ca khi
+      // onTap/onTapDown cua muc trong dropdown kip chay - khien danh sach goi
+      // y tu dong dong ma khong chon duoc muc nao (da xac nhan qua bao cao
+      // thuc te nguoi dung, sua onTapDown/mostSpace o cac man rieng le KHONG
+      // an thua vi goc van la o day).
+      //
+      // Fix dung: ghi de Action mac dinh cua EditableTextTapOutsideIntent (
+      // intent ma MOI TextField/EditableText tu phat ra khi Flutter da tu xac
+      // dinh 1 cham la THAT SU o NGOAI no, DA TON TRONG TextFieldTapRegion
+      // san) de LUON goi unfocus() - mac dinh cua Flutter tren Android chi lam
+      // vay voi chuot/stylus, KHONG lam voi cham tay (xem
+      // _EditableTextTapOutsideAction trong editable_text.dart), day chinh la
+      // ly do code cu phai tu lam rieng 1 co che. Dung Actions (khong phai 1
+      // GestureDetector/Listener moi) nen KHONG them gi vao gesture arena,
+      // van an toan voi AssistiveFabOverlay (xem assistive_fab_overlay.dart)
+      // nhu ly do Listener duoc chon truoc day.
+      builder: (context, child) => Actions(
+        actions: <Type, Action<Intent>>{
+          EditableTextTapOutsideIntent:
+              CallbackAction<EditableTextTapOutsideIntent>(
+                onInvoke: (intent) {
+                  intent.focusNode.unfocus();
+                  return null;
+                },
+              ),
+        },
         child: Stack(children: [?child, const AssistiveFabOverlay()]),
       ),
       theme: ThemeData(

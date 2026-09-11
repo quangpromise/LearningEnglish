@@ -2032,6 +2032,22 @@ class AppStrings {
       AppLanguage.vi: 'Chia tiền bill',
       AppLanguage.en: 'Split bill',
     },
+    'wealth_split_bill_edit_title': {
+      AppLanguage.vi: 'Sửa bill',
+      AppLanguage.en: 'Edit bill',
+    },
+    'wealth_split_bill_update_button': {
+      AppLanguage.vi: 'Cập nhật',
+      AppLanguage.en: 'Update',
+    },
+    'wealth_split_bill_update_confirm_title': {
+      AppLanguage.vi: 'Cập nhật bill này?',
+      AppLanguage.en: 'Update this bill?',
+    },
+    'wealth_split_bill_update_confirm_desc': {
+      AppLanguage.vi: 'Ghi chi tiêu/nợ cũ của bill này sẽ bị xóa và tạo lại theo dữ liệu vừa sửa.',
+      AppLanguage.en: "This bill's old expense/debt records will be deleted and recreated from your edits.",
+    },
     'wealth_split_bill_total_hint': {
       AppLanguage.vi: 'Tổng số tiền (VNĐ)',
       AppLanguage.en: 'Total amount (VND)',
