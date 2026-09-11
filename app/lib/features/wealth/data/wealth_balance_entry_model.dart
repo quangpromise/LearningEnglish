@@ -15,6 +15,7 @@ class WealthBalanceEntry {
     this.sourceTransactionId,
     this.sourceDebtPaymentId,
     this.sourceServiceRenewalPaymentId,
+    this.sourceBillShareId,
   });
 
   final String id;
@@ -29,6 +30,11 @@ class WealthBalanceEntry {
   final String? sourceTransactionId;
   final String? sourceDebtPaymentId;
   final String? sourceServiceRenewalPaymentId;
+  // Lien ket sang wealth_split_bill_shares - CHI dat khi dong nay la tien
+  // 1 nguoi (khac "Toi") da "Da tra" ngay luc chia bill (xem
+  // wealth_split_bill_screen.dart _confirmPay). Xoa share (do xoa ca bill)
+  // se cascade xoa luon dong nay, giu so du Vi dung sau khi xoa bill.
+  final String? sourceBillShareId;
 
   bool get isBank => accountType == 'bank';
 
@@ -47,6 +53,7 @@ class WealthBalanceEntry {
       sourceDebtPaymentId: row['source_debt_payment_id'] as String?,
       sourceServiceRenewalPaymentId:
           row['source_service_renewal_payment_id'] as String?,
+      sourceBillShareId: row['source_bill_share_id'] as String?,
     );
   }
 
@@ -66,6 +73,7 @@ class WealthBalanceEntry {
       'source_debt_payment_id': sourceDebtPaymentId,
     if (sourceServiceRenewalPaymentId != null)
       'source_service_renewal_payment_id': sourceServiceRenewalPaymentId,
+    if (sourceBillShareId != null) 'source_bill_share_id': sourceBillShareId,
   };
 }
 

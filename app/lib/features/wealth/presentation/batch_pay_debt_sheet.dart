@@ -115,7 +115,9 @@ class _BatchPayDebtSheetState extends ConsumerState<_BatchPayDebtSheet> {
     final debtRepo = ref.read(wealthDebtRepositoryProvider);
     final balanceRepo = ref.read(wealthBalanceEntryRepositoryProvider);
     final txRepo = ref.read(wealthTransactionRepositoryProvider);
+    final billRepo = ref.read(wealthSplitBillRepositoryProvider);
     var anyExpenseCreated = false;
+    var anyBillShareUpdated = false;
     final affectedPersonIds = <String>{};
     try {
       for (final group in _groups) {
@@ -161,6 +163,13 @@ class _BatchPayDebtSheetState extends ConsumerState<_BatchPayDebtSheet> {
             anyExpenseCreated = true;
           }
           await debtRepo.applyPayment(userId, debt.id, apply);
+          // Cung logic dong bo bien lai Chia bill nhu pay_debt_sheet.dart -
+          // apply == debt.remainingAmount (gia tri LUC MO man, xem vong lap
+          // FIFO ben tren) nghia la khoan No nay vua duoc thu HET.
+          if (!_isIOwe && apply >= debt.remainingAmount) {
+            await billRepo.markSharesPaidByDebtId(userId, debt.id);
+            anyBillShareUpdated = true;
+          }
           final signedAmount = _isIOwe ? -apply : apply;
           await balanceRepo.addEntry(
             userId,
@@ -186,6 +195,10 @@ class _BatchPayDebtSheetState extends ConsumerState<_BatchPayDebtSheet> {
       }
       if (anyExpenseCreated) {
         ref.invalidate(wealthTransactionsProvider);
+      }
+      if (anyBillShareUpdated) {
+        ref.invalidate(wealthSplitBillsProvider);
+        ref.invalidate(wealthSplitBillSharesProvider);
       }
       if (mounted) Navigator.of(context).pop();
     } finally {

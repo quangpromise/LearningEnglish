@@ -108,6 +108,18 @@ class _PayDebtSheetState extends ConsumerState<_PayDebtSheet> {
       await ref
           .read(wealthDebtRepositoryProvider)
           .applyPayment(userId, debt.id, amount);
+      // Khoan No nay THU XONG (owed_to_me, ve 0) VA gan voi 1 dong Chia bill
+      // (tao tu wealth_split_bill_screen.dart khi chon "Ghi nợ") - tu dong
+      // chuyen dong share tuong ung sang "Da nhan tien" (Received) de bien
+      // lai phan anh dung, khong can quay lai man Chia bill bam tay.
+      if (!debt.isIOwe &&
+          (debt.remainingAmount - amount).clamp(0, double.infinity) <= 0) {
+        await ref
+            .read(wealthSplitBillRepositoryProvider)
+            .markSharesPaidByDebtId(userId, debt.id);
+        ref.invalidate(wealthSplitBillsProvider);
+        ref.invalidate(wealthSplitBillSharesProvider);
+      }
       // Minh tra (i_owe) -> tru Vi; nguoi ta tra minh (owed_to_me) -> cong Vi.
       final signedAmount = debt.isIOwe ? -amount : amount;
       await ref

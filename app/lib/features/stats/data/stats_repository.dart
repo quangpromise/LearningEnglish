@@ -116,6 +116,38 @@ class StatsRepository {
     }, onConflict: 'user_id,word');
   }
 
+  /// Danh sach TAT CA tu da duoc ghi nhan "da hoc" (nguon duy nhat -
+  /// user_learned_words, xem migration 0004_real_stats.sql) - dung de:
+  /// (1) loc bot khoi danh sach Tu vung theo chu de (VocabularyTopicDetail
+  /// Screen) nhung tu da danh dau, (2) hien popup "Words Learned" o man Ho
+  /// so (xem learned_words_popup.dart). Tu luu lowercase (xem
+  /// recordWordLearned) nen so khop voi VocabWord.en can ha thuong truoc.
+  Future<List<String>> fetchLearnedWords() async {
+    final userId = _supabase.auth.currentUser?.id;
+    if (userId == null) return [];
+    final rows = await _supabase
+        .from('user_learned_words')
+        .select('word')
+        .eq('user_id', userId)
+        .order('first_seen_at', ascending: false);
+    return (rows as List)
+        .map((r) => (r as Map<String, dynamic>)['word'] as String)
+        .toList();
+  }
+
+  /// Bo danh dau "da hoc" cho 1 tu - dung khi nguoi dung bo chon lai trong
+  /// popup "Words Learned" (xem learned_words_popup.dart), tu do quay lai
+  /// hien trong danh sach Tu vung theo chu de nhu chua hoc.
+  Future<void> unlearnWord(String word) async {
+    final userId = _supabase.auth.currentUser?.id;
+    if (userId == null) return;
+    await _supabase
+        .from('user_learned_words')
+        .delete()
+        .eq('user_id', userId)
+        .eq('word', word.trim().toLowerCase());
+  }
+
   Future<void> recordSongCompleted(String songTitle) async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) return;

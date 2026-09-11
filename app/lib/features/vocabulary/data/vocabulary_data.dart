@@ -95,6 +95,31 @@ String topicLabel(WidgetRef ref, VocabTopic topic) =>
     ? topic.nameEn
     : topic.name;
 
+/// Danh sach day du (kem nghia/IPA) cac tu da danh dau "Da hoc" o man Tu
+/// vung theo chu de - dung cho popup "Words Learned" mo tu the Hoat dong o
+/// man Ho so (xem learned_words_popup.dart). Nguon DUY NHAT la
+/// user_learned_words (qua StatsRepository.fetchLearnedWords, giu thu tu
+/// hoc GAN DAY NHAT truoc) doi chieu lai voi [kVocabTopics] de lay nghia
+/// hien thi - tu nao khong khop duoc (ly thuyet khong xay ra vi cung 1
+/// nguon du lieu tu) se bi bo qua thay vi hien "null".
+final learnedVocabWordsProvider = FutureProvider.autoDispose<List<VocabWord>>((
+  ref,
+) async {
+  final userId = ref.watch(supabaseClientProvider).auth.currentUser?.id;
+  if (userId == null) return const [];
+  final learnedEn = await ref
+      .watch(statsRepositoryProvider)
+      .fetchLearnedWords();
+  final byEn = <String, VocabWord>{
+    for (final t in kVocabTopics)
+      for (final w in t.words) w.en.toLowerCase(): w,
+  };
+  return [
+    for (final en in learnedEn)
+      if (byEn[en] != null) byEn[en]!,
+  ];
+});
+
 const kVocabTopics = <VocabTopic>[
   VocabTopic(
     name: 'Gia đình',

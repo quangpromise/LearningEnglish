@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/navigation/app_popup.dart';
+import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/vocabulary_data.dart';
 import 'vocabulary_topic_detail_screen.dart';
@@ -33,6 +34,14 @@ class _VocabularyTopicsScreenState
       return t.name.toLowerCase().contains(_query) ||
           t.nameEn.toLowerCase().contains(_query);
     }).toList();
+    // So tu CON LAI (chua danh dau "Da hoc") cua tung chu de - tu da hoc bi
+    // an khoi man chi tiet chu de (xem VocabularyTopicDetailScreen.build)
+    // nen o day cung phai tru bot de khop voi so luong nguoi dung se thay
+    // khi bam vao.
+    final learned = ref.watch(learnedWordsProvider).valueOrNull ?? const {};
+    int remainingCount(VocabTopic t) => learned.isEmpty
+        ? t.words.length
+        : t.words.where((w) => !learned.contains(w.en.toLowerCase())).length;
 
     return ScreenBackground(
       child: Padding(
@@ -174,7 +183,7 @@ class _VocabularyTopicsScreenState
                                   ),
                                 ),
                                 Text(
-                                  '${topic.words.length} ${ref.tr('vocab_word_count')}',
+                                  '${remainingCount(topic)} ${ref.tr('vocab_word_count')}',
                                   style: AppTextStyles.muted(size: 11),
                                 ),
                               ],

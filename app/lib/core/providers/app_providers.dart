@@ -110,6 +110,20 @@ final myStatsProvider = FutureProvider.autoDispose(
   (ref) => ref.watch(statsRepositoryProvider).fetchMyStats(),
 );
 
+/// Danh sach tu (lowercase) da danh dau "Da hoc" o Tu vung theo chu de -
+/// nguon DUY NHAT cho ca 2 cho: loc bot khoi danh sach Tu vung
+/// (VocabularyTopicDetailScreen) va hien popup "Words Learned" tu the
+/// Hoat dong o man Ho so (xem learned_words_popup.dart). Invalidate sau
+/// khi danh dau/bo danh dau 1 tu de UI cap nhat ngay.
+final learnedWordsProvider = FutureProvider.autoDispose<Set<String>>((
+  ref,
+) async {
+  final userId = ref.watch(supabaseClientProvider).auth.currentUser?.id;
+  if (userId == null) return <String>{};
+  final words = await ref.watch(statsRepositoryProvider).fetchLearnedWords();
+  return words.map((w) => w.toLowerCase()).toSet();
+});
+
 /// Rieng bieu do "Hoat dong tuan nay" khi man Ho so duoc mo tu Fitness -
 /// tach khoi [myStatsProvider] (nguon 'english') de khong tron thoi gian
 /// dung 2 khu vuc lai voi nhau.

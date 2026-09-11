@@ -245,6 +245,26 @@ class AppStrings {
       AppLanguage.en: 'Pick a topic to start learning',
     },
     'vocab_word_count': {AppLanguage.vi: 'từ', AppLanguage.en: 'words'},
+    'vocab_mark_learned': {
+      AppLanguage.vi: 'Đánh dấu đã học',
+      AppLanguage.en: 'Mark as learned',
+    },
+    'vocab_mark_learned_confirm_title': {
+      AppLanguage.vi: 'Đánh dấu đã học?',
+      AppLanguage.en: 'Mark as learned?',
+    },
+    'vocab_mark_learned_confirm_body': {
+      AppLanguage.vi: '"{word}" sẽ ẩn khỏi danh sách Từ vựng và chuyển vào Words Learned. Bạn có thể xem lại hoặc bỏ đánh dấu bất cứ lúc nào.',
+      AppLanguage.en: '"{word}" will be hidden from the Vocabulary list and moved to Words Learned. You can review or unmark it anytime.',
+    },
+    'vocab_unmark_learned': {
+      AppLanguage.vi: 'Bỏ đánh dấu đã học',
+      AppLanguage.en: 'Unmark as learned',
+    },
+    'vocab_learned_empty': {
+      AppLanguage.vi: 'Chưa có từ nào được đánh dấu đã học',
+      AppLanguage.en: 'No words marked as learned yet',
+    },
     'vocab_frequency_common': {
       AppLanguage.vi: 'Thông dụng',
       AppLanguage.en: 'Common',
@@ -2073,6 +2093,18 @@ class AppStrings {
     'wealth_split_bill_qr_hide_info': {
       AppLanguage.vi: 'Ẩn bớt',
       AppLanguage.en: 'Hide',
+    },
+    'wealth_split_bill_preview_title': {
+      AppLanguage.vi: 'Xem trước bill',
+      AppLanguage.en: 'Preview bill',
+    },
+    'wealth_split_bill_note_hint': {
+      AppLanguage.vi: 'Ghi chú (không bắt buộc)',
+      AppLanguage.en: 'Note (optional)',
+    },
+    'wealth_split_bill_edit_note_title': {
+      AppLanguage.vi: 'Sửa ghi chú',
+      AppLanguage.en: 'Edit note',
     },
     'wealth_split_bill_history_title': {
       AppLanguage.vi: 'Lịch sử chia bill',

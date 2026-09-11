@@ -9,6 +9,7 @@ import '../../../core/utils/currency_format.dart';
 import '../../../core/utils/date_format.dart';
 import '../data/wealth_balance_entry_model.dart';
 import '../data/wealth_split_bill_model.dart';
+import 'confirm_delete.dart';
 import 'wealth_split_bill_receipt.dart';
 
 /// Lich su cac lan Chia tien bill da luu (xem wealth_split_bill_screen.dart)
@@ -89,46 +90,155 @@ class _BillRow extends ConsumerWidget {
   const _BillRow({required this.bill});
   final WealthSplitBill bill;
 
+  /// Xoa 1 lan chia bill - don dep het cac ban ghi da sinh ra cung luc voi
+  /// no (khoan Chi tieu tru tong tien + khoan No "Ghi nợ" cho tung nguoi,
+  /// xem _confirmPay trong wealth_split_bill_screen.dart) truoc khi xoa
+  /// chinh dong wealth_split_bills, de KHONG con Chi tieu/No "mo coi" lam
+  /// sai lech Vi/Bao cao sau khi xoa.
+  Future<void> _delete(WidgetRef ref) async {
+    final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
+    if (userId == null) return;
+    final billRepo = ref.read(wealthSplitBillRepositoryProvider);
+    final shares = await billRepo.fetchShares(userId, bill.id);
+    final debtRepo = ref.read(wealthDebtRepositoryProvider);
+    for (final s in shares) {
+      // Xoa khoan No cascade xoa luon wealth_debt_payments + cac dong Vi da
+      // sinh tu no (xem migration 0032) - vd truong hop da THU roi moi xoa.
+      if (s.debtId != null) {
+        await debtRepo.delete(userId, s.debtId!);
+      }
+    }
+    // Xoa khoan Chi tieu cascade xoa dong Vi "-tong tien" cua "Toi"
+    // (source_transaction_id on delete cascade, xem migration 0032).
+    if (bill.transactionId != null) {
+      await ref
+          .read(wealthTransactionRepositoryProvider)
+          .deleteTransaction(userId, bill.transactionId!);
+    }
+    // Xoa chinh bill - cascade xoa het cac dong share, keo theo cascade xoa
+    // dong Vi "Da tra" cua tung nguoi (source_bill_share_id, migration 0052).
+    await billRepo.delete(userId, bill.id);
+    ref.invalidate(walletBalanceEntriesProvider);
+    ref.invalidate(wealthTransactionsProvider);
+    ref.invalidate(debtsProvider('owed_to_me'));
+    ref.invalidate(wealthSplitBillsProvider);
+  }
+
+  Future<void> _editNote(BuildContext context, WidgetRef ref) async {
+    final controller = TextEditingController(text: bill.note ?? '');
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.bgMid,
+        title: Text(
+          ref.tr('wealth_split_bill_edit_note_title'),
+          style: AppTextStyles.heading(size: 16),
+        ),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          style: AppTextStyles.body(),
+          decoration: InputDecoration(
+            hintText: ref.tr('wealth_split_bill_note_hint'),
+            hintStyle: const TextStyle(color: AppColors.textMuted),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(ref.tr('common_cancel')),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(ref.tr('common_confirm')),
+          ),
+        ],
+      ),
+    );
+    if (result != true) return;
+    final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
+    if (userId == null) return;
+    final newNote = controller.text.trim().isEmpty
+        ? null
+        : controller.text.trim();
+    await ref
+        .read(wealthSplitBillRepositoryProvider)
+        .updateNote(userId, bill.id, newNote);
+    ref.invalidate(wealthSplitBillsProvider);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return GestureDetector(
-      onTap: () =>
-          openAppPopup(context, WealthSplitBillDetailScreen(bill: bill)),
-      child: GlowBox(
-        borderRadius: 16,
-        child: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: AppColors.wealthAccent.withValues(alpha: 0.18),
-                borderRadius: BorderRadius.circular(12),
+    return Dismissible(
+      key: ValueKey(bill.id),
+      direction: DismissDirection.endToStart,
+      confirmDismiss: (_) => confirmDelete(context, ref),
+      onDismissed: (_) => _delete(ref),
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        decoration: BoxDecoration(
+          color: AppColors.pink.withValues(alpha: 0.18),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: const Icon(Icons.delete_outline_rounded, color: AppColors.pink),
+      ),
+      child: GestureDetector(
+        onTap: () =>
+            openAppPopup(context, WealthSplitBillDetailScreen(bill: bill)),
+        child: GlowBox(
+          borderRadius: 16,
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: AppColors.wealthAccent.withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.call_split_rounded,
+                  color: AppColors.wealthAccent,
+                  size: 18,
+                ),
               ),
-              child: const Icon(
-                Icons.call_split_rounded,
-                color: AppColors.wealthAccent,
-                size: 18,
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      formatVnd(bill.totalAmount),
+                      style: AppTextStyles.body(weight: FontWeight.w800),
+                    ),
+                    Text(
+                      bill.note?.isNotEmpty == true
+                          ? '${formatDateMdy(bill.occurredAt)} · ${bill.note}'
+                          : formatDateMdy(bill.occurredAt),
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.muted(size: 11.5),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    formatVnd(bill.totalAmount),
-                    style: AppTextStyles.body(weight: FontWeight.w800),
+              GestureDetector(
+                onTap: () => _editNote(context, ref),
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 6),
+                  child: Icon(
+                    Icons.edit_rounded,
+                    size: 16,
+                    color: AppColors.textMuted,
                   ),
-                  Text(
-                    formatDateMdy(bill.occurredAt),
-                    style: AppTextStyles.muted(size: 11.5),
-                  ),
-                ],
+                ),
               ),
-            ),
-            const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
-          ],
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: AppColors.textMuted,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -247,6 +357,7 @@ class WealthSplitBillDetailScreen extends ConsumerWidget {
                     totalAmount: bill.totalAmount,
                     paymentLabel: paymentLabel,
                     occurredAt: bill.occurredAt,
+                    note: bill.note,
                     qr: qr,
                     people: [
                       for (final s in shares)

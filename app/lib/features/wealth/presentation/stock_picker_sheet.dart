@@ -245,13 +245,17 @@ class _IntlResults extends ConsumerWidget {
         }
         // Chi goi Twelve Data cho nhung ma DANG HIEN (sau loc tim kiem) - 1
         // lan goi gop (khong phai tung ma rieng). Free tier CHI cho 8
-        // credit/phut (1 credit/ma trong batch quote) - da xac nhan qua
-        // test thuc te goi 40 ma cung luc bi tra ve RONG hoan toan (loi 429
-        // "run out of API credits"). Gioi han toi da 8 ma/lan goi de luon
-        // trong han muc, uu tien 8 ma dau (da sap theo thanh khoan giam dan
-        // tu okxTokenizedStocksProvider) - ma ngoai top 8 khong hien gia,
-        // van chon duoc binh thuong (dung manual price neu can).
-        final symbolsKey = filtered.take(8).map((s) => s.symbol).join(',');
+        // credit/phut CHUNG CHO CA APP (khong rieng man nay - vd man Market/
+        // Portfolio cung co the vua goi truoc do trong cung 1 phut) - da xac
+        // nhan qua test thuc te goi 40 ma cung luc bi tra ve RONG hoan toan
+        // (loi 429 "run out of API credits"). Lay 6 (khong phai dung 8) de
+        // CHA LAI CHUT DU DIA cho cac man khac dang goi song song, giam kha
+        // nang batch nay bi Twelve Data tu choi GIUA CHUNG (tra gia cho vai
+        // ma dau roi loi rieng cho cac ma sau - xem fix cache o edge function
+        // stocks-intl/index.ts) - uu tien 6 ma dau (da sap theo thanh khoan
+        // giam dan tu okxTokenizedStocksProvider), ma ngoai top 6 khong hien
+        // gia, van chon duoc binh thuong (dung manual price neu can).
+        final symbolsKey = filtered.take(6).map((s) => s.symbol).join(',');
         final quotesAsync = ref.watch(stocksIntlQuotesProvider(symbolsKey));
         final quoteBySymbol = {
           for (final q in quotesAsync.valueOrNull ?? []) q.symbol: q,

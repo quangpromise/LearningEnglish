@@ -11,6 +11,8 @@ class WealthSplitBill {
     required this.occurredAt,
     this.paymentBankCode,
     this.paymentBankName,
+    this.transactionId,
+    this.note,
   });
 
   final String id;
@@ -20,6 +22,12 @@ class WealthSplitBill {
   final String? paymentBankCode;
   final String? paymentBankName;
   final DateTime occurredAt;
+  // Lien ket sang wealth_transactions (khoan Chi tieu tru tong tien bill
+  // khoi Cash/Bank) - can de XOA CASCADE khi nguoi dung xoa ca bill (xem
+  // WealthSplitBillDetailScreen/_deleteBill trong wealth_split_bill_history_
+  // screen.dart).
+  final String? transactionId;
+  final String? note;
 
   factory WealthSplitBill.fromRow(Map<String, dynamic> row) => WealthSplitBill(
     id: row['id'] as String,
@@ -29,6 +37,8 @@ class WealthSplitBill {
     paymentBankCode: row['payment_bank_code'] as String?,
     paymentBankName: row['payment_bank_name'] as String?,
     occurredAt: DateTime.parse(row['occurred_at'] as String),
+    transactionId: row['transaction_id'] as String?,
+    note: row['note'] as String?,
   );
 }
 

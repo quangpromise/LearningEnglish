@@ -10,6 +10,7 @@ import '../../../core/utils/thousands_input_formatter.dart';
 import '../data/vn_bank_model.dart';
 import '../data/wealth_balance_entry_model.dart';
 import '../data/wealth_category.dart';
+import '../data/wealth_payment_qr_model.dart';
 import '../data/wealth_transaction_model.dart';
 import 'bank_picker_sheet.dart';
 import 'wealth_qr_screen.dart';
@@ -53,6 +54,11 @@ class _SplitPersonEntry {
   // "cho xu ly" rieng nua, xem ghi chu o WealthSplitBillRepository.createBill.
   String status = 'debt'; // 'debt' | 'paid' (khong dung cho "Toi")
   String? shareId;
+  // Nguoi dung da TU TAY sua o tien cua nguoi nay chua (khong dung cho
+  // "Toi", vi "Toi" khong co o nhap rieng) - true thi GIU NGUYEN gia tri da
+  // sua, khong bi ghi de nua khi cac nguoi khac (chua sua) duoc tinh lai
+  // phan chia. Xem _redistributeUnlocked() o _WealthSplitBillScreenState.
+  bool locked = false;
   // CHI can khi status=='paid' - moi nguoi tu chon rieng tien ho tra vao
   // Cash hay Bank nao (khac nhau giua tung nguoi, KHONG dung chung 1 "Pay
   // with" cho ca man nhu truoc) - hien o ngay duoi nut "Paid" khi duoc chon.
@@ -73,9 +79,15 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
   _SplitPhase _phase = _SplitPhase.setup;
   final _totalController = TextEditingController();
   final _countController = TextEditingController();
+  final _noteController = TextEditingController();
   List<_SplitPersonEntry> _people = [];
   _PaymentSource? _source;
   double _total = 0;
+  // Tong tien danh cho "nhung nguoi khac" (khong tinh "Toi") ngay luc vua
+  // bam Tiep tuc - dung lam MOC CO DINH de chia lai cho nhung nguoi CHUA
+  // sua tay (unlocked) moi khi co 1 nguoi bi sua tien, thay vi de "Toi" hung
+  // tron het phan chenh lech (xem _redistributeUnlocked()).
+  double _othersPoolTotal = 0;
   bool _saving = false;
   // An mac dinh phan ten/ngan hang/so tai khoan duoi QR - nguoi dung da co
   // the quet thang QR khong can doc chu, chi bam "Xem them" khi thuc su can
@@ -87,12 +99,24 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
   void dispose() {
     _totalController.dispose();
     _countController.dispose();
+    _noteController.dispose();
     for (final p in _people) {
       p.amountController.dispose();
       p.nameController.dispose();
       p.nameFocusNode.dispose();
     }
     super.dispose();
+  }
+
+  // Ten hien thi cho "Toi" trong danh sach nguoi & tren bien lai - dung ten
+  // that tu ho so (Ho so > Ten hien thi/username, xem MyProfile.nameLabel)
+  // thay vi nhan chung "Me"/"Toi", de nguoi nhan bien lai biet chinh xac ai
+  // da tra tien. Fallback ve nhan dich "Me"/"Toi" neu chua tai duoc ho so.
+  String get _meName {
+    final name = ref.watch(myProfileProvider).valueOrNull?.nameLabel;
+    return (name != null && name.isNotEmpty)
+        ? name
+        : ref.tr('wealth_split_bill_me_label');
   }
 
   double get _meAmount {
@@ -128,6 +152,7 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
     final shares = _computeShares(total, count);
     setState(() {
       _total = total;
+      _othersPoolTotal = total - shares[0];
       _people = [
         _SplitPersonEntry(isMe: true),
         for (var i = 1; i < shares.length; i++)
@@ -135,6 +160,42 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
       ];
       _phase = _SplitPhase.allocate;
     });
+  }
+
+  /// Goi moi khi nguoi dung TU TAY sua o tien cua 1 nguoi (khong phai
+  /// "Toi") - khoa gia tri vua sua lai (khong bi ghi de nua), roi chia lai
+  /// PHAN CON LAI cua "quy nhung nguoi khac" ([_othersPoolTotal], KHONG
+  /// dong vao "Toi") deu cho nhung nguoi CHUA sua tay, van lam tron LEN toi
+  /// boi 1,000d cho tung nguoi giong luc goi y ban dau. "Toi" (qua getter
+  /// [_meAmount]) van tu dong nhan PHAN CON LAI thuc te sau cung, nen chi
+  /// thay doi chut it do sai so lam tron chu KHONG hung nguyen phan tien
+  /// nguoi kia vua giam/tang - dung yeu cau "giam tien 1-2 nguoi thi so con
+  /// lai chia deu cho nhung nguoi con lai".
+  void _onPersonAmountEdited(_SplitPersonEntry edited) {
+    edited.locked = true;
+    final others = _people.skip(1).toList();
+    final unlocked = others.where((p) => !p.locked).toList();
+    if (unlocked.isNotEmpty) {
+      final lockedSum = others
+          .where((p) => p.locked)
+          .fold<double>(0, (s, p) => s + p.enteredAmount);
+      final remaining = _othersPoolTotal - lockedSum;
+      var share = remaining <= 0
+          ? 0.0
+          : (remaining / unlocked.length / _roundUnit).ceilToDouble() *
+                _roundUnit;
+      // Neu tron len 1,000d khien "Toi" con lai <= 0 (quy con lai qua nho so
+      // voi so nguoi chua khoa) - fallback ve tron toi thieu (1d), giong
+      // _computeShares o tren.
+      final wouldBeMeAmount = _total - lockedSum - share * unlocked.length;
+      if (remaining > 0 && wouldBeMeAmount <= 0) {
+        share = (remaining / unlocked.length).ceilToDouble();
+      }
+      for (final p in unlocked) {
+        p.amountController.text = groupThousands(share);
+      }
+    }
+    setState(() {});
   }
 
   bool get _canPay =>
@@ -200,14 +261,24 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
     setState(() => _saving = true);
     try {
       final source = _source!;
+      final note = _noteController.text.trim().isEmpty
+          ? null
+          : _noteController.text.trim();
       final tx = WealthTransaction(
         id: '',
         type: WealthTransactionType.expense,
-        categoryCode: WealthExpenseCategory.other.code,
+        // Mac dinh xep vao danh muc "Ăn uống" - da so lan Chia bill la tien
+        // an chung, nguoi dung co the tu doi lai danh muc sau o man Lich su
+        // giao dich neu khong phai. Note dung THANG ghi chu nguoi dung nhap
+        // o man Chia bill (vd "Ăn trưa nhóm dự án") thay vi ten chung chung
+        // "Chia tiền bill" - de nguoi dung nhan ra ngay khoan chi nay la gi
+        // khi luot Lich su giao dich, fallback ve ten bill neu khong nhap
+        // ghi chu.
+        categoryCode: WealthExpenseCategory.food.code,
         amount: _total,
         currency: 'VND',
         occurredAt: DateTime.now(),
-        note: ref.tr('wealth_split_bill_title'),
+        note: note ?? ref.tr('wealth_split_bill_title'),
         paymentAccountType: source.isCash ? 'cash' : 'bank',
         paymentBankCode: source.isCash
             ? null
@@ -239,15 +310,43 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
 
       final meAmount = _meAmount;
 
+      // Tao bill + tung dong share TRUOC (can shareId de lien ket nguoc lai
+      // tu cac dong wealth_balance_entries/wealth_debts sinh ra o duoi -
+      // "Da tra" gan source_bill_share_id de xoa duoc dung dong khi xoa ca
+      // bill sau nay, xem wealth_split_bill_history_screen.dart _deleteBill).
+      final billRepo = ref.read(wealthSplitBillRepositoryProvider);
+      final (billId, shareIds) = await billRepo.createBill(
+        userId: userId,
+        totalAmount: _total,
+        currency: 'VND',
+        paymentAccountType: source.isCash ? 'cash' : 'bank',
+        paymentBankCode: source.isCash
+            ? null
+            : (source.bank!.isOther ? null : source.bank!.code),
+        paymentBankName: source.isCash ? null : source.bank!.shortName,
+        transactionId: txId,
+        note: note,
+        occurredAt: tx.occurredAt,
+        shares: [
+          for (final p in _people)
+            (
+              personName: p.isMe ? _meName : p.nameController.text.trim(),
+              isMe: p.isMe,
+              amount: p.isMe ? meAmount : p.enteredAmount,
+              status: p.status,
+            ),
+        ],
+      );
+      for (var i = 0; i < _people.length && i < shareIds.length; i++) {
+        _people[i].shareId = shareIds[i];
+      }
+
       // Tung nguoi (tru "Toi") da CHON SAN Ghi no/Da tra ngay luc phan bo -
       // thuc hien hanh dong tuong ung NGAY tai day (mot lan cung voi Pay,
       // khong con buoc rieng sau do nua): "Da tra" cong thang tien ho vao
       // lai Cash/Bank (coi nhu ho dua tien mat ngay tai cho), "Ghi no" tao 1
-      // khoan owed_to_me. debtId thu duoc de lien ket lai voi dong share
-      // sau khi tao bill (xem updateShareStatus ben duoi).
-      final debtIdByIndex = <int, String>{};
-      for (var i = 0; i < _people.length; i++) {
-        final p = _people[i];
+      // khoan owed_to_me roi lien ket nguoc lai vao share vua tao o tren.
+      for (final p in _people) {
         if (p.isMe) continue;
         if (p.status == 'paid') {
           final paidSource = p.paidSource!;
@@ -272,6 +371,7 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
                       '${p.nameController.text.trim()} - ${ref.tr('wealth_split_bill_title')}',
                   occurredAt: DateTime.now(),
                   source: 'manual',
+                  sourceBillShareId: p.shareId,
                 ),
               );
         } else {
@@ -290,48 +390,18 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
                 occurredAt: DateTime.now(),
                 note: ref.tr('wealth_split_bill_title'),
               );
-          debtIdByIndex[i] = debtId;
+          if (p.shareId != null) {
+            await billRepo.updateShareStatus(
+              userId,
+              p.shareId!,
+              status: 'debt',
+              debtId: debtId,
+            );
+          }
         }
       }
       ref.invalidate(walletBalanceEntriesProvider);
       ref.invalidate(debtsProvider('owed_to_me'));
-
-      final billRepo = ref.read(wealthSplitBillRepositoryProvider);
-      final (billId, shareIds) = await billRepo.createBill(
-        userId: userId,
-        totalAmount: _total,
-        currency: 'VND',
-        paymentAccountType: source.isCash ? 'cash' : 'bank',
-        paymentBankCode: source.isCash
-            ? null
-            : (source.bank!.isOther ? null : source.bank!.code),
-        paymentBankName: source.isCash ? null : source.bank!.shortName,
-        transactionId: txId,
-        occurredAt: tx.occurredAt,
-        shares: [
-          for (final p in _people)
-            (
-              personName: p.isMe
-                  ? ref.tr('wealth_split_bill_me_label')
-                  : p.nameController.text.trim(),
-              isMe: p.isMe,
-              amount: p.isMe ? meAmount : p.enteredAmount,
-              status: p.status,
-            ),
-        ],
-      );
-      for (var i = 0; i < _people.length && i < shareIds.length; i++) {
-        _people[i].shareId = shareIds[i];
-        final debtId = debtIdByIndex[i];
-        if (debtId != null) {
-          await billRepo.updateShareStatus(
-            userId,
-            shareIds[i],
-            status: 'debt',
-            debtId: debtId,
-          );
-        }
-      }
 
       ref.invalidate(wealthTransactionsProvider);
       ref.invalidate(wealthSplitBillsProvider);
@@ -453,6 +523,25 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
               ),
             ),
           ),
+          const SizedBox(height: 12),
+          // Ghi chu rieng cho lan chia bill nay (vd "Ăn trưa nhóm dự án") -
+          // khong bat buoc, hien lai duoi tong tien tren bien lai (xem
+          // SplitBillReceiptCard) de nguoi nhan biet chia cho khoan gi.
+          TextField(
+            controller: _noteController,
+            style: AppTextStyles.body(),
+            cursorColor: AppColors.wealthAccent,
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: AppColors.glassFill,
+              hintText: ref.tr('wealth_split_bill_note_hint'),
+              hintStyle: const TextStyle(color: AppColors.textMuted),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide.none,
+              ),
+            ),
+          ),
           const SizedBox(height: 20),
           SizedBox(
             width: double.infinity,
@@ -563,6 +652,32 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
     );
   }
 
+  void _showPreview() {
+    final source = _source!;
+    openAppPopup(
+      context,
+      _SplitBillPreviewScreen(
+        totalAmount: _total,
+        paymentLabel: source.isCash
+            ? ref.tr('wallet_section_cash')
+            : source.bank!.shortName,
+        note: _noteController.text.trim().isEmpty
+            ? null
+            : _noteController.text.trim(),
+        qr: ref.read(wealthPaymentQrProvider).valueOrNull,
+        people: [
+          for (final p in _people)
+            ReceiptPersonView(
+              name: p.isMe ? _meName : p.nameController.text.trim(),
+              amount: p.isMe ? _meAmount : p.enteredAmount,
+              isMe: p.isMe,
+              status: p.status,
+            ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildAllocate() {
     return SingleChildScrollView(
       child: Column(
@@ -575,14 +690,46 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
             const SizedBox(height: 4),
           ],
           const SizedBox(height: 4),
-          SizedBox(
-            width: double.infinity,
-            child: PillButton(
-              label: ref.tr('wealth_split_bill_pay_button'),
-              accentGradient: AppColors.wealthAccentGradient,
-              accentColor: AppColors.wealthAccent,
-              onTap: (_canPay && !_saving) ? _confirmPay : null,
-            ),
+          Row(
+            children: [
+              // Xem truoc bien lai (chua luu vao lich su) - CHI bat khi da
+              // dien du thong tin nhu Pay (dung chung dieu kien _canPay), de
+              // nguoi dung kiem tra lai truoc khi thuc su bam Pay (vd xem
+              // tong tien/QR co dung khong, hoac doi ngon ngu bien lai sang
+              // tieng Anh de gui truoc cho ban be nuoc ngoai).
+              GestureDetector(
+                onTap: (_canPay && !_saving) ? _showPreview : null,
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: AppColors.glassFill,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: _canPay
+                          ? AppColors.wealthAccent.withValues(alpha: 0.6)
+                          : AppColors.glassBorder,
+                    ),
+                  ),
+                  child: Icon(
+                    Icons.visibility_outlined,
+                    size: 20,
+                    color: _canPay
+                        ? AppColors.wealthAccent
+                        : AppColors.textMuted,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: PillButton(
+                  label: ref.tr('wealth_split_bill_pay_button'),
+                  accentGradient: AppColors.wealthAccentGradient,
+                  accentColor: AppColors.wealthAccent,
+                  onTap: (_canPay && !_saving) ? _confirmPay : null,
+                ),
+              ),
+            ],
           ),
           if (!_canPay) ...[
             const SizedBox(height: 8),
@@ -693,7 +840,7 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
                   children: [
                     Expanded(
                       child: Text(
-                        ref.tr('wealth_split_bill_me_label'),
+                        _meName,
                         style: AppTextStyles.body(
                           size: 12,
                           weight: FontWeight.w800,
@@ -761,7 +908,7 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
                             borderSide: BorderSide.none,
                           ),
                         ),
-                        onChanged: (_) => setState(() {}),
+                        onChanged: (_) => _onPersonAmountEdited(p),
                       ),
                     ),
                     const SizedBox(width: 5),
@@ -841,11 +988,14 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
                   ? ref.tr('wallet_section_cash')
                   : _source!.bank!.shortName,
               occurredAt: DateTime.now(),
+              note: _noteController.text.trim().isEmpty
+                  ? null
+                  : _noteController.text.trim(),
               qr: ref.watch(wealthPaymentQrProvider).valueOrNull,
               people: [
                 for (final p in _people)
                   ReceiptPersonView(
-                    name: p.nameController.text.trim(),
+                    name: p.isMe ? _meName : p.nameController.text.trim(),
                     amount: p.isMe ? _meAmount : p.enteredAmount,
                     isMe: p.isMe,
                     status: p.status,
@@ -865,6 +1015,82 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Popup XEM TRUOC bien lai chia bill - mo tu nut hinh con mat canh Pay
+/// (xem WealthSplitBillScreen._showPreview) khi da dien du thong tin,
+/// dung LAI [SplitBillReceiptCard] y het man Xong/Lich su (kem toggle ngon
+/// ngu VI/EN cua rieng no) NHUNG CHUA luu gi vao DB - chi de nguoi dung kiem
+/// tra lai truoc khi thuc su bam Pay, dong popup nay khong anh huong gi den
+/// luong Pay ben duoi.
+class _SplitBillPreviewScreen extends ConsumerWidget {
+  const _SplitBillPreviewScreen({
+    required this.totalAmount,
+    required this.paymentLabel,
+    required this.note,
+    required this.qr,
+    required this.people,
+  });
+
+  final double totalAmount;
+  final String paymentLabel;
+  final String? note;
+  final WealthPaymentQr? qr;
+  final List<ReceiptPersonView> people;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return ScreenBackground(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                GestureDetector(
+                  onTap: () => Navigator.of(context).maybePop(),
+                  child: Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color: AppColors.glassFill,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.glassBorder),
+                    ),
+                    child: const Icon(
+                      Icons.chevron_left_rounded,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    ref.tr('wealth_split_bill_preview_title'),
+                    style: AppTextStyles.heading(size: 20),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 18),
+            Expanded(
+              child: SingleChildScrollView(
+                child: SplitBillReceiptCard(
+                  totalAmount: totalAmount,
+                  paymentLabel: paymentLabel,
+                  occurredAt: DateTime.now(),
+                  note: note,
+                  qr: qr,
+                  people: people,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -891,6 +1117,12 @@ class _PersonNameDropdownField extends ConsumerWidget {
     return RawAutocomplete<String>(
       textEditingController: controller,
       focusNode: focusNode,
+      // mostSpace: gan cuoi danh sach thuong o sat ban phim, khong con du
+      // cho phia duoi o nhap de mo dropdown xuong (Flutter tu co danh sach
+      // lai rat nho hoac day no xuong vung bi ban phim che, khien vua bi
+      // "an" vua khong bam chon duoc) - tu dong mo LEN TREN khi phia duoi
+      // khong du cho, mo XUONG binh thuong voi cac dong con lai.
+      optionsViewOpenDirection: OptionsViewOpenDirection.mostSpace,
       optionsBuilder: (value) {
         final query = value.text.trim().toLowerCase();
         final source = query.isEmpty
@@ -925,45 +1157,49 @@ class _PersonNameDropdownField extends ConsumerWidget {
         // la "tap ra ngoai" o nhap -> Flutter tu unfocus + xoa overlay nay
         // NGAY LAP TUC (truoc khi InkWell kip nhan onTap), khien danh sach
         // hien ra nhung bam ten nao cung khong chon duoc.
+        // KHONG boc them Align(topLeft) o day nua - framework RawAutocomplete
+        // da tu boc san 1 Align(bottomStart khi mo LEN / topStart khi mo
+        // XUONG) ben ngoai ung voi optionsViewOpenDirection, ben trong 1 box
+        // co the CAO TOI HET KHOANG TRONG phia tren/duoi o nhap. Neu tu boc
+        // them Align(topLeft) o day, Align do se GIAN RA het co box lon do
+        // (vi khong co widthFactor/heightFactor) roi moi dat Material o goc
+        // tren-trai cua no - khi mo LEN TREN (mostSpace, xem ben tren) danh
+        // sach se bi day len tan dinh man hinh thay vi nam sat NGAY TREN o
+        // nhap nhu mong muon. Bo Align thua di, de outer Align cua framework
+        // tu can sat Material vao dung canh o nhap.
         return TextFieldTapRegion(
-          child: Align(
-            alignment: Alignment.topLeft,
-            child: Material(
-              color: const Color(0xFF1B2242),
-              borderRadius: BorderRadius.circular(12),
-              elevation: 6,
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(
-                  maxHeight: 176,
-                  minWidth: 160,
-                ),
-                child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  shrinkWrap: true,
-                  itemCount: options.length,
-                  itemBuilder: (context, i) {
-                    final name = options.elementAt(i);
-                    // Dung onTapDown (khong phai onTap) - onTap chi nhan
-                    // dien SAU khi tha ngon tay (tap-up), luc do TextField o
-                    // tren co the DA kip mat focus (vd do 1 field khac tren
-                    // man dang giu focus) va RawAutocomplete tu dong da dong
-                    // overlay nay truoc khi onTap kip chay, khien bam ten
-                    // nao cung khong an thua. onTapDown nhan dien NGAY khi
-                    // vua cham xuong (truoc khi co co hoi mat focus) nen
-                    // chon duoc chinh xac.
-                    return InkWell(
-                      onTap: () {},
-                      onTapDown: (_) => onSelected(name),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 10,
-                        ),
-                        child: Text(name, style: AppTextStyles.body(size: 13)),
+          child: Material(
+            color: const Color(0xFF1B2242),
+            borderRadius: BorderRadius.circular(12),
+            elevation: 6,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 176, minWidth: 160),
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                shrinkWrap: true,
+                itemCount: options.length,
+                itemBuilder: (context, i) {
+                  final name = options.elementAt(i);
+                  // Dung onTapDown (khong phai onTap) - onTap chi nhan dien
+                  // SAU khi tha ngon tay (tap-up), luc do TextField o tren
+                  // co the DA kip mat focus (vd do 1 field khac tren man
+                  // dang giu focus) va RawAutocomplete tu dong da dong
+                  // overlay nay truoc khi onTap kip chay, khien bam ten nao
+                  // cung khong an thua. onTapDown nhan dien NGAY khi vua
+                  // cham xuong (truoc khi co co hoi mat focus) nen chon
+                  // duoc chinh xac.
+                  return InkWell(
+                    onTap: () {},
+                    onTapDown: (_) => onSelected(name),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
                       ),
-                    );
-                  },
-                ),
+                      child: Text(name, style: AppTextStyles.body(size: 13)),
+                    ),
+                  );
+                },
               ),
             ),
           ),

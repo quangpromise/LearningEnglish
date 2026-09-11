@@ -16,6 +16,7 @@ import '../../stats/data/stats_repository.dart';
 import '../../update/data/update_checker.dart';
 import '../../vocabulary/presentation/daily_quiz_popup_screen.dart';
 import '../../vocabulary/presentation/daily_words_controller.dart';
+import '../../vocabulary/presentation/learned_words_popup.dart';
 import '../../wealth/data/recurring_service_model.dart';
 import '../../wealth/presentation/add_service_sheet.dart';
 import '../../wealth/presentation/renew_service_sheet.dart';
@@ -484,6 +485,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   color: AppColors.blue,
                   value: '${stats.wordsLearned}',
                   label: ref.tr('profile_words_learned'),
+                  onTap: () => openAppPopup(context, const LearnedWordsPopup()),
                 ),
                 _StatCard(
                   icon: Icons.music_note_rounded,
@@ -1007,15 +1009,17 @@ class _StatCard extends StatelessWidget {
     required this.color,
     required this.value,
     required this.label,
+    this.onTap,
   });
   final IconData icon;
   final Color color;
   final String value;
   final String label;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return GlowBox(
+    final card = GlowBox(
       borderRadius: 20,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1035,6 +1039,8 @@ class _StatCard extends StatelessWidget {
         ],
       ),
     );
+    if (onTap == null) return card;
+    return GestureDetector(onTap: onTap, child: card);
   }
 }
 

@@ -113,8 +113,21 @@ async function getQuotes(cacheKey: string, symbols: string[]): Promise<StockQuot
   }
   try {
     const fresh = await fetchFresh(symbols);
-    await writeCache(cacheKey, fresh);
-    return fresh;
+    // Chi ghi cache khi lay DU gia cho TAT CA ma da yeu cau. Da xac nhan qua
+    // test thuc te: khi vua het 8 credit/phut GIUA CHUNG 1 batch nhieu ma,
+    // Twelve Data KHONG loi CHUNG (status:"error", da xu ly o fetchFresh) ma
+    // tra ve object rieng { code, message } cho TUNG ma bi tu choi - cac ma
+    // do bi filter() loc mat am tham, khien fresh chi con 1 phan (vd 2/8 ma
+    // co gia). Neu cu ghi cache ket qua THIEU nay, no se duoc coi la "con
+    // tuoi" va phuc vu lai y het trong ca CACHE_TTL_MS ke tiep (3 phut) -
+    // nguoi dung thay danh sach thieu gia dai dang dai lau. Fix: coi ket qua
+    // thieu la "chua du tin cay", uu tien tra CACHE CU (co the du hon) neu
+    // co san, va KHONG ghi de len cache tot truoc do.
+    if (fresh.length >= symbols.length) {
+      await writeCache(cacheKey, fresh);
+      return fresh;
+    }
+    return cached ? cached.data : fresh;
   } catch (err) {
     if (cached) return cached.data;
     throw err;

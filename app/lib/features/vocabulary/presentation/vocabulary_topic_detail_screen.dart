@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/navigation/app_popup.dart';
+import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/tts/app_tts.dart';
 import '../../../core/widgets/speaker_button.dart';
@@ -40,6 +41,50 @@ class _VocabularyTopicDetailScreenState
         _selected.add(word);
       }
     });
+  }
+
+  /// Danh dau 1 tu "Da hoc" - HOI XAC NHAN TRUOC (tu se bien mat khoi danh
+  /// sach ngay sau khi dong y, xem ghi chu o duoi) roi moi ghi vao
+  /// user_learned_words (nguon DUY NHAT cho ca thong ke "Words Learned" o
+  /// man Ho so LAN popup xem lai, xem learnedWordsProvider) va lam moi lai
+  /// danh sach de tu nay bien mat khoi man Tu vung theo chu de (loc theo
+  /// learnedWordsProvider trong build() ben duoi) va cap nhat luon so tu
+  /// con lai o man luoi chu de.
+  Future<void> _markLearned(BuildContext context, VocabWord word) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.bgMid,
+        title: Text(
+          ref.tr('vocab_mark_learned_confirm_title'),
+          style: AppTextStyles.heading(size: 16),
+        ),
+        content: Text(
+          ref
+              .tr('vocab_mark_learned_confirm_body')
+              .replaceFirst('{word}', word.en),
+          style: AppTextStyles.muted(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(ref.tr('common_cancel')),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(
+              ref.tr('vocab_mark_learned'),
+              style: const TextStyle(color: AppColors.teal),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    await ref.read(statsRepositoryProvider).recordWordLearned(word.en);
+    _selected.remove(word);
+    ref.invalidate(learnedWordsProvider);
+    ref.invalidate(myStatsProvider);
   }
 
   Future<void> _saveToDailyList(BuildContext context) async {
@@ -80,11 +125,15 @@ class _VocabularyTopicDetailScreenState
 
   @override
   Widget build(BuildContext context) {
+    final learned = ref.watch(learnedWordsProvider).valueOrNull ?? const {};
     final words = widget.topic.words.where((w) {
       final matchesFreq =
           _frequencyFilter == null || w.frequency == _frequencyFilter;
       final matchesPos = _posFilter == null || w.partOfSpeech == _posFilter;
-      return matchesFreq && matchesPos;
+      // Tu da danh dau "Da hoc" khong con hien o day nua - chuyen sang xem
+      // trong popup "Words Learned" o the Hoat dong man Ho so.
+      final notLearned = !learned.contains(w.en.toLowerCase());
+      return matchesFreq && matchesPos && notLearned;
     }).toList();
     return ScreenBackground(
       child: Padding(
@@ -273,6 +322,16 @@ class _VocabularyTopicDetailScreenState
                                 SpeakerButton(
                                   onTap: () => AppTts.instance.speak(word.en),
                                   color: widget.topic.color,
+                                ),
+                                Tooltip(
+                                  message: ref.tr('vocab_mark_learned'),
+                                  child: SpeakerButton(
+                                    icon: Icons.check_circle_outline_rounded,
+                                    tapSize: 36,
+                                    iconSize: 20,
+                                    onTap: () => _markLearned(context, word),
+                                    color: AppColors.teal,
+                                  ),
                                 ),
                               ],
                             ),

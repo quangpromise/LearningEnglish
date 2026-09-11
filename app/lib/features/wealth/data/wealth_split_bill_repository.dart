@@ -48,6 +48,7 @@ class WealthSplitBillRepository {
     String? paymentBankCode,
     String? paymentBankName,
     String? transactionId,
+    String? note,
     required DateTime occurredAt,
     required List<
       ({String personName, bool isMe, double amount, String status})
@@ -64,6 +65,7 @@ class WealthSplitBillRepository {
           'payment_bank_code': paymentBankCode,
           'payment_bank_name': paymentBankName,
           'transaction_id': transactionId,
+          'note': note,
           'occurred_at': occurredAt.toIso8601String(),
         })
         .select('id')
@@ -98,6 +100,42 @@ class WealthSplitBillRepository {
         .from('wealth_split_bill_shares')
         .update({'status': status, 'debt_id': debtId})
         .eq('id', shareId)
+        .eq('user_id', userId);
+  }
+
+  /// Goi khi 1 khoan No (owed_to_me) gan voi 1 dong Chia bill (qua debt_id)
+  /// DA THU XONG (remaining_amount ve 0, xem pay_debt_sheet.dart va
+  /// batch_pay_debt_sheet.dart) - tu dong chuyen dong share tuong ung tu
+  /// 'debt' ("Da ghi no") sang 'paid' ("Da nhan tien") de bien lai phan anh
+  /// dung trang thai moi nhat ma khong can quay lai man Chia bill bam tay.
+  Future<void> markSharesPaidByDebtId(String userId, String debtId) async {
+    await _supabase
+        .from('wealth_split_bill_shares')
+        .update({'status': 'paid'})
+        .eq('debt_id', debtId)
+        .eq('user_id', userId);
+  }
+
+  Future<void> updateNote(String userId, String id, String? note) async {
+    await _supabase
+        .from('wealth_split_bills')
+        .update({'note': note})
+        .eq('id', id)
+        .eq('user_id', userId);
+  }
+
+  /// Xoa 1 lan chia bill - CHI xoa dong wealth_split_bills (+ cascade xoa
+  /// het cac dong wealth_split_bill_shares cua no, xem migration 0050/0052).
+  /// KHONG tu dong xoa khoan Chi tieu/No lien quan - noi goi (xem
+  /// wealth_split_bill_history_screen.dart _deleteBill) phai tu xoa cac dong
+  /// do TRUOC qua repo tuong ung (WealthTransactionRepository, WealthDebt
+  /// Repository) de tan dung dung cascade san co cua tung bang, tranh lap
+  /// lai logic "don dep Vi" da co san o cac repo do.
+  Future<void> delete(String userId, String id) async {
+    await _supabase
+        .from('wealth_split_bills')
+        .delete()
+        .eq('id', id)
         .eq('user_id', userId);
   }
 }
