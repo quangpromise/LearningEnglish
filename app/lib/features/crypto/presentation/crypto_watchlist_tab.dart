@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
+import '../data/crypto_repository.dart';
+import '../data/crypto_watchlist_repository.dart';
 import '../data/okx_service.dart';
 import 'crypto_coin_row.dart';
 import 'crypto_providers.dart';
@@ -10,11 +12,40 @@ import 'okx_only_coin_row.dart';
 
 /// Danh sach coin nguoi dung "theo doi" (bam sao o tab Market) - chi de xem
 /// gia, khong lien quan Portfolio (khong so luong nam giu, khong lai/lo).
-class CryptoWatchlistTab extends ConsumerWidget {
+class CryptoWatchlistTab extends ConsumerStatefulWidget {
   const CryptoWatchlistTab({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CryptoWatchlistTab> createState() => _CryptoWatchlistTabState();
+}
+
+class _CryptoWatchlistTabState extends ConsumerState<CryptoWatchlistTab> {
+  // Cac symbol da goi syncAdd trong phien nay - tranh goi lap lai moi lan
+  // widget rebuild (vd moi 30s do auto-refresh gia). Dung de "vun lai" nhung
+  // coin da theo doi TU TRUOC KHI co tinh nang Thong bao gia (nen chua bao
+  // gio duoc dong bo len price_alert_watchlist, vi luc do sync chi chay o
+  // thoi diem BAM SAO - xem CryptoWatchlistRepository.syncAdd) - moi lan mo
+  // tab Watchlist se tu dong bo bu nhung coin dang hien thi o day.
+  final _syncedSymbols = <String>{};
+
+  void _backfillServerSync(
+    List<CryptoCoin> watched,
+    List<OkxTickerRow> okxRows,
+  ) {
+    for (final c in watched) {
+      if (_syncedSymbols.add(c.symbol)) {
+        CryptoWatchlistRepository.syncAdd(symbol: c.symbol);
+      }
+    }
+    for (final r in okxRows) {
+      if (_syncedSymbols.add(r.symbol)) {
+        CryptoWatchlistRepository.syncAdd(symbol: r.symbol);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final currency = ref.watch(cryptoCurrencyProvider);
     final watchlist = ref.watch(cryptoWatchlistProvider);
     final coinsAsync = ref.watch(cryptoTop100Provider(currency));
@@ -43,6 +74,10 @@ class CryptoWatchlistTab extends ConsumerWidget {
         : (ref.watch(okxAllTickersProvider).valueOrNull ?? [])
               .where((r) => okxWatchedSymbols.contains(r.symbol))
               .toList();
+
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _backfillServerSync(watched, okxWatchedRows),
+    );
 
     if (watched.isEmpty && okxWatchedRows.isEmpty) {
       return Center(

@@ -10,6 +10,7 @@ import '../../crypto/presentation/crypto_coin_row.dart';
 import '../../crypto/presentation/crypto_market_tab.dart';
 import '../../crypto/presentation/crypto_providers.dart';
 import '../../crypto/presentation/okx_only_coin_row.dart';
+import '../data/asset_watchlist_repository.dart';
 import '../data/exchange_rate_repository.dart';
 import '../data/stocks_intl_repository.dart';
 import 'market_currency_tab.dart';
@@ -443,12 +444,36 @@ class _CurrencyWatchRow extends ConsumerWidget {
   }
 }
 
-class _StocksWatchlistSection extends ConsumerWidget {
+class _StocksWatchlistSection extends ConsumerStatefulWidget {
   const _StocksWatchlistSection();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_StocksWatchlistSection> createState() =>
+      _StocksWatchlistSectionState();
+}
+
+class _StocksWatchlistSectionState
+    extends ConsumerState<_StocksWatchlistSection> {
+  // Cac key da goi syncAdd trong phien nay - "vun lai" nhung ma da theo doi
+  // TU TRUOC KHI co tinh nang Thong bao gia (xem cung ly do o
+  // CryptoWatchlistTab._syncedSymbols).
+  final _syncedKeys = <String>{};
+
+  void _backfillServerSync(Set<String> assetWatchlist) {
+    for (final key in assetWatchlist) {
+      if ((key.startsWith('stock_okx:') || key.startsWith('stock_vn:')) &&
+          _syncedKeys.add(key)) {
+        AssetWatchlistRepository.syncAdd(key);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final assetWatchlist = ref.watch(assetWatchlistProvider);
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _backfillServerSync(assetWatchlist),
+    );
     final watchedStockSymbols = assetWatchlist
         .where((k) => k.startsWith('stock:'))
         .map((k) => k.substring('stock:'.length))
