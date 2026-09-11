@@ -75,21 +75,6 @@ class GeminiLiveDirectClient implements VoiceChatSession {
   final StringBuffer _inputText = StringBuffer();
   final StringBuffer _outputText = StringBuffer();
 
-  /// Rieng quota Google Search grounding (5.000 luot mien phi/thang, Gemini
-  /// 3.x) co the het truoc quota audio chinh - khi do chi tat tool search va
-  /// ket noi lai tu dong, KHONG bao loi cho nguoi dung (van tro chuyen binh
-  /// thuong, chi mat kha nang tra cuu du lieu thoi gian thuc).
-  bool _searchEnabled = true;
-
-  static final RegExp _quotaPattern = RegExp(
-    r'quota|rate.?limit|429|resource_exhausted',
-    caseSensitive: false,
-  );
-  static final RegExp _searchQuotaPattern = RegExp(
-    r'search|ground',
-    caseSensitive: false,
-  );
-
   static final RegExp _correctionPattern = RegExp(
     r'correction:\s*(.+?)(?:[.!?]\s|$)',
     caseSensitive: false,
@@ -125,7 +110,72 @@ class GeminiLiveDirectClient implements VoiceChatSession {
     // channel da mo, khong reconnect lai tu dau.
     if (_channel == null) {
       _stateController.add(VoiceChatState.connecting);
-      await _openChannel();
+      final uri = Uri.parse(
+        'wss://generativelanguage.googleapis.com/ws/'
+        'google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent'
+        '?key=$apiKey',
+      );
+      final channel = WebSocketChannel.connect(uri);
+      _channel = channel;
+      await channel.ready;
+
+      channel.sink.add(
+        jsonEncode({
+          'setup': {
+            'model': 'models/$model',
+            'generationConfig': {
+              'responseModalities': ['AUDIO'],
+              'speechConfig': {
+                'voiceConfig': {
+                  'prebuiltVoiceConfig': {'voiceName': voiceName},
+                },
+              },
+            },
+            'systemInstruction': {
+              'parts': [
+                {'text': _systemPrompt},
+              ],
+            },
+            // Bat transcription 2 chieu de hien thi hoi thoai dang text tren
+            // man hinh (xem AiVoiceChatScreen) - khong anh huong toi audio.
+            'inputAudioTranscription': <String, dynamic>{},
+            'outputAudioTranscription': <String, dynamic>{},
+            // Tat VAD tu dong phia server - nguoi dung tu bao luc bat dau/
+            // ket thuc noi (activityStart/activityEnd trong start()/
+            // endTurn()) thay vi de Gemini tu doan luc nao im lang la het
+            // luot. Truoc day dung VAD tu dong khien AI khong bao gio ("hoac
+            // rat lau") tra loi vi khong doan dung luc nguoi dung ngung noi.
+            'realtimeInputConfig': {
+              'automaticActivityDetection': {'disabled': true},
+            },
+          },
+        }),
+      );
+
+      channel.stream.listen(
+        _handleServerMessage,
+        onError: (Object e) {
+          lastError = 'Gemini Live connection error: $e';
+          _stateController.add(VoiceChatState.error);
+        },
+        onDone: () {
+          // Neu server tu dong dong ket noi (vd sai model, sai API key, het
+          // quota) ma khong phai do nguoi dung bam dung, closeCode se khac
+          // 1000 (normal closure) - phai bao loi ro rang thay vi im lang tro
+          // ve idle, neu khong nguoi dung se tuong minh dang noi ma "khong ai
+          // phan hoi" trong khi thuc ra ket noi da chet tu truoc.
+          final code = channel.closeCode;
+          if (code != null && code != 1000) {
+            lastError =
+                'Gemini Live closed the connection (code $code'
+                '${channel.closeReason != null ? ": ${channel.closeReason}" : ""})';
+            _stateController.add(VoiceChatState.error);
+          } else {
+            _stateController.add(VoiceChatState.idle);
+          }
+          _channel = null;
+        },
+      );
     }
 
     // Bao AI biet nguoi dung bat dau 1 luot noi moi - bat buoc phai gui
@@ -173,108 +223,6 @@ class GeminiLiveDirectClient implements VoiceChatSession {
       }),
     );
     _stateController.add(VoiceChatState.thinking);
-  }
-
-  Future<void> _openChannel() async {
-    final uri = Uri.parse(
-      'wss://generativelanguage.googleapis.com/ws/'
-      'google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent'
-      '?key=$apiKey',
-    );
-    final channel = WebSocketChannel.connect(uri);
-    _channel = channel;
-    await channel.ready;
-
-    channel.sink.add(
-      jsonEncode({
-        'setup': {
-          'model': 'models/$model',
-          'generationConfig': {
-            'responseModalities': ['AUDIO'],
-            'speechConfig': {
-              'voiceConfig': {
-                'prebuiltVoiceConfig': {'voiceName': voiceName},
-              },
-            },
-          },
-          'systemInstruction': {
-            'parts': [
-              {'text': _systemPrompt},
-            ],
-          },
-          // Cho phep Gemini tu tim kiem Google khi can du lieu thoi gian
-          // thuc (gia crypto, gia dat, tin tuc...) - chi gui khi con quota
-          // (xem _searchEnabled). Gemini 3.x: 5.000 luot mien phi/thang, sau
-          // do $14/1.000 luot ground.
-          if (_searchEnabled)
-            'tools': [
-              {'googleSearch': <String, dynamic>{}},
-            ],
-          // Bat transcription 2 chieu de hien thi hoi thoai dang text tren
-          // man hinh (xem AiVoiceChatScreen) - khong anh huong toi audio.
-          'inputAudioTranscription': <String, dynamic>{},
-          'outputAudioTranscription': <String, dynamic>{},
-          // Tat VAD tu dong phia server - nguoi dung tu bao luc bat dau/
-          // ket thuc noi (activityStart/activityEnd trong start()/
-          // endTurn()) thay vi de Gemini tu doan luc nao im lang la het
-          // luot. Truoc day dung VAD tu dong khien AI khong bao gio ("hoac
-          // rat lau") tra loi vi khong doan dung luc nguoi dung ngung noi.
-          'realtimeInputConfig': {
-            'automaticActivityDetection': {'disabled': true},
-          },
-        },
-      }),
-    );
-
-    channel.stream.listen(
-      _handleServerMessage,
-      onError: (Object e) {
-        if (_maybeDisableSearchAndReconnect('$e')) return;
-        lastError = 'Gemini Live connection error: $e';
-        _stateController.add(VoiceChatState.error);
-      },
-      onDone: () {
-        // Neu server tu dong dong ket noi (vd sai model, sai API key, het
-        // quota) ma khong phai do nguoi dung bam dung, closeCode se khac
-        // 1000 (normal closure) - phai bao loi ro rang thay vi im lang tro
-        // ve idle, neu khong nguoi dung se tuong minh dang noi ma "khong ai
-        // phan hoi" trong khi thuc ra ket noi da chet tu truoc.
-        final code = channel.closeCode;
-        final reason = channel.closeReason;
-        _channel = null;
-        if (code != null && code != 1000) {
-          if (_maybeDisableSearchAndReconnect(reason ?? '')) return;
-          lastError =
-              'Gemini Live closed the connection (code $code'
-              '${reason != null ? ": $reason" : ""})';
-          _stateController.add(VoiceChatState.error);
-        } else {
-          _stateController.add(VoiceChatState.idle);
-        }
-      },
-    );
-  }
-
-  /// Neu ly do dong/loi ket noi la het quota RIENG cho Google Search
-  /// grounding, tat tool search va tu ket noi lai ngay (khong bao loi cho
-  /// nguoi dung, chi mat kha nang tra cuu thoi gian thuc). Tra ve true neu
-  /// da xu ly theo huong nay (caller khong can bao loi nua).
-  bool _maybeDisableSearchAndReconnect(String reasonText) {
-    if (!_searchEnabled) return false;
-    final isQuota = _quotaPattern.hasMatch(reasonText);
-    final isSearch = _searchQuotaPattern.hasMatch(reasonText);
-    if (!isQuota || !isSearch) return false;
-
-    _searchEnabled = false;
-    _channel = null;
-    _stateController.add(VoiceChatState.connecting);
-    unawaited(
-      _openChannel().catchError((Object e) {
-        lastError = 'Gemini Live reconnect (search disabled) failed: $e';
-        _stateController.add(VoiceChatState.error);
-      }),
-    );
-    return true;
   }
 
   void _handleServerMessage(dynamic raw) {
