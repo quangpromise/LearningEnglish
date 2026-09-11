@@ -1090,6 +1090,50 @@ class _SplitBillPreviewScreen extends ConsumerWidget {
 /// dong bien mat khi chon xong/bo focus - KHONG chiem cho co dinh trong bo
 /// cuc nhu Wrap luon-hien-san cua DebtPersonPickerField (danh cho cac man
 /// khac, van giu nguyen o do).
+/// Bam "x" tren 1 goi y trong dropdown - hoi xac nhan roi AN nguoi do khoi
+/// danh sach goi y (khong xoa lich su no that, xem
+/// WealthDebtPersonRepository.hideFromSuggestions) - dung chung logic voi
+/// DebtPersonPickerField (man Them no) vi ca 2 cung nguon debtPersonsProvider.
+Future<void> _confirmRemovePerson(
+  BuildContext context,
+  WidgetRef ref,
+  String personId,
+  String name,
+) async {
+  final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
+  if (userId == null) return;
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      backgroundColor: const Color(0xFF12172E),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      title: Text(name, style: AppTextStyles.heading(size: 16)),
+      content: Text(
+        ref.tr('wealth_debt_person_remove_confirm'),
+        style: AppTextStyles.body(size: 13),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(false),
+          child: Text(ref.tr('common_cancel'), style: AppTextStyles.body()),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(true),
+          child: Text(
+            ref.tr('common_delete'),
+            style: AppTextStyles.body().copyWith(color: AppColors.pink),
+          ),
+        ),
+      ],
+    ),
+  );
+  if (confirmed != true) return;
+  await ref
+      .read(wealthDebtPersonRepositoryProvider)
+      .hideFromSuggestions(userId, personId);
+  ref.invalidate(debtPersonsProvider);
+}
+
 class _PersonNameDropdownField extends ConsumerWidget {
   const _PersonNameDropdownField({
     required this.controller,
@@ -1100,9 +1144,9 @@ class _PersonNameDropdownField extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final allNames = (ref.watch(debtPersonsProvider).valueOrNull ?? [])
-        .map((p) => p.name)
-        .toList();
+    final allPersons = ref.watch(debtPersonsProvider).valueOrNull ?? [];
+    final allNames = allPersons.map((p) => p.name).toList();
+    final idByName = {for (final p in allPersons) p.name: p.id};
     return RawAutocomplete<String>(
       textEditingController: controller,
       focusNode: focusNode,
@@ -1185,7 +1229,38 @@ class _PersonNameDropdownField extends ConsumerWidget {
                         horizontal: 14,
                         vertical: 10,
                       ),
-                      child: Text(name, style: AppTextStyles.body(size: 13)),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              name,
+                              style: AppTextStyles.body(size: 13),
+                            ),
+                          ),
+                          GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTapDown: (_) {
+                              final personId = idByName[name];
+                              if (personId != null) {
+                                _confirmRemovePerson(
+                                  context,
+                                  ref,
+                                  personId,
+                                  name,
+                                );
+                              }
+                            },
+                            child: const Padding(
+                              padding: EdgeInsets.all(4),
+                              child: Icon(
+                                Icons.close_rounded,
+                                size: 15,
+                                color: AppColors.textMuted,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 },

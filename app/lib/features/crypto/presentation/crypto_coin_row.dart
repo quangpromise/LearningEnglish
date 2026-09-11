@@ -43,8 +43,9 @@ class CryptoCoinRow extends ConsumerWidget {
           children: [
             GestureDetector(
               behavior: HitTestBehavior.opaque,
-              onTap: () =>
-                  ref.read(cryptoWatchlistProvider.notifier).toggle(coin.id),
+              onTap: () => ref
+                  .read(cryptoWatchlistProvider.notifier)
+                  .toggle(coin.id, symbol: coin.symbol),
               // Vung bam rong hon icon that (44x44 toi thieu theo khuyen nghi
               // touch target) de de bam hon, khong chi gioi han trong 18px
               // cua icon.

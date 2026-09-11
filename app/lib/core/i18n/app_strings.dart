@@ -2296,6 +2296,20 @@ class AppStrings {
       AppLanguage.vi: 'Tên ngân hàng',
       AppLanguage.en: 'Bank name',
     },
+    'wealth_debt_person_remove_confirm': {
+      AppLanguage.vi: 'Xóa người này khỏi danh sách gợi ý? Bạn có thể thêm lại bất cứ lúc nào bằng cách nhập đúng tên.',
+      AppLanguage.en: 'Remove this person from suggestions? You can add them back anytime by typing the exact name again.',
+    },
+    'wealth_settings_price_alerts_title': {
+      AppLanguage.vi: 'Thông báo giá biến động mạnh',
+      AppLanguage.en: 'Big price move alerts',
+    },
+    'wealth_settings_price_alerts_desc': {
+      AppLanguage.vi:
+          'Báo khi coin/cổ phiếu trong watchlist tăng hoặc giảm hơn 5% (24h)',
+      AppLanguage.en:
+          'Notify when a coin/stock in your watchlist moves more than 5% (24h)',
+    },
     'wealth_settings_categories_title': {
       AppLanguage.vi: 'Danh mục chi tiêu',
       AppLanguage.en: 'Expense categories',

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../data/price_alert_prefs_repository.dart';
 import '../data/vn_bank_model.dart';
 import '../data/wealth_category.dart';
 import '../data/wealth_custom_category_model.dart';
@@ -84,6 +85,8 @@ class _WealthSettingsScreenState extends ConsumerState<WealthSettingsScreen> {
               child: ListView(
                 children: [
                   _categoriesSection(customCategories),
+                  const SizedBox(height: 20),
+                  _priceAlertsSection(),
                   const SizedBox(height: 20),
                   Text(
                     ref.tr('wealth_settings_banks_title'),
@@ -245,6 +248,49 @@ class _WealthSettingsScreenState extends ConsumerState<WealthSettingsScreen> {
                 for (final c in customCategories) _customCategoryTile(c),
               ],
             ),
+        ],
+      ),
+    );
+  }
+
+  Widget _priceAlertsSection() {
+    final enabledAsync = ref.watch(priceAlertsEnabledProvider);
+    return GlowBox(
+      borderRadius: 18,
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  ref.tr('wealth_settings_price_alerts_title'),
+                  style: AppTextStyles.body(size: 15, weight: FontWeight.w800),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  ref.tr('wealth_settings_price_alerts_desc'),
+                  style: AppTextStyles.muted(size: 12.5),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: enabledAsync.valueOrNull ?? true,
+            activeTrackColor: AppColors.wealthAccent,
+            onChanged: enabledAsync.isLoading
+                ? null
+                : (value) async {
+                    final userId = ref
+                        .read(supabaseClientProvider)
+                        .auth
+                        .currentUser
+                        ?.id;
+                    if (userId == null) return;
+                    await PriceAlertPrefsRepository.setEnabled(userId, value);
+                    ref.invalidate(priceAlertsEnabledProvider);
+                  },
+          ),
         ],
       ),
     );

@@ -1,0 +1,20 @@
+name: Price alert check
+
+# Goi dinh ky Edge Function price-alert-check (xem
+# supabase/functions/price-alert-check/index.ts) - quet gia cac coin/co
+# phieu dang co trong watchlist cua bat ky user nao, bao push khi bien dong
+# >=5% (24h). 15 phut/lan la du nhanh, tai rat nhe (chi vai request REST
+# khong can API key).
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch: {}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call price-alert-check function
+        run: |
+          curl -sf -X POST "${{ secrets.PRICE_ALERT_FUNCTION_URL }}" \
+            -H "x-webhook-secret: ${{ secrets.PRICE_ALERT_WEBHOOK_SECRET }}"

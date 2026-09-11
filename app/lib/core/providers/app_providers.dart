@@ -7,6 +7,7 @@ import '../../features/auth/data/auth_repository.dart';
 import '../../features/crypto/data/crypto_currency.dart';
 import '../../features/crypto/presentation/crypto_providers.dart';
 import '../../features/wealth/data/asset_watchlist_repository.dart';
+import '../../features/wealth/data/price_alert_prefs_repository.dart';
 import '../../features/wealth/data/used_bank_repository.dart';
 import '../../features/fitness/data/community_post_model.dart';
 import '../../features/fitness/data/community_repository.dart';
@@ -948,9 +949,15 @@ class AssetWatchlistController extends StateNotifier<Set<String>> {
 
   Future<void> toggle(String key) async {
     final next = {...state};
-    if (!next.remove(key)) next.add(key);
+    final wasPresent = !next.add(key);
+    if (wasPresent) next.remove(key);
     state = next;
     await AssetWatchlistRepository.save(next);
+    if (wasPresent) {
+      await AssetWatchlistRepository.syncRemove(key);
+    } else {
+      await AssetWatchlistRepository.syncAdd(key);
+    }
   }
 }
 
@@ -958,6 +965,16 @@ final assetWatchlistProvider =
     StateNotifierProvider<AssetWatchlistController, Set<String>>(
       (ref) => AssetWatchlistController(),
     );
+
+/// Cong tac tong Thong bao gia bien dong >5% - xem
+/// [PriceAlertPrefsRepository]. `null` khi chua dang nhap.
+final priceAlertsEnabledProvider = FutureProvider.autoDispose<bool?>((
+  ref,
+) async {
+  final userId = ref.watch(supabaseClientProvider).auth.currentUser?.id;
+  if (userId == null) return null;
+  return PriceAlertPrefsRepository.fetchEnabled(userId);
+});
 
 /// Ma cac ngan hang nguoi dung chon "dang su dung" trong man Cai dat Quan ly
 /// tai san - CHI cac ma nay moi hien trong bank_picker_sheet.dart khi chon

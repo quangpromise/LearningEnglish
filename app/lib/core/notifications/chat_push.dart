@@ -9,9 +9,11 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../features/crypto/presentation/crypto_coin_detail_screen.dart';
 import '../../features/social/data/device_token_repository.dart';
 import '../../features/social/data/social_repository.dart';
 import '../../features/social/presentation/chat_screen.dart';
+import '../../features/wealth/presentation/market_screen.dart';
 import '../../features/wealth/presentation/recurring_services_screen.dart';
 import '../navigation/nav_keys.dart';
 
@@ -30,6 +32,10 @@ const kChatMessagesChannelId = 'chat_messages_v4';
 /// nhan de nguoi dung co the tat/chinh am rieng cho tung loai.
 const kServiceExpiryChannelId = 'service_expiry_v1';
 
+/// Kenh rieng cho Thong bao gia bien dong >5% (Crypto/Co phieu trong
+/// watchlist) - xem supabase/functions/price-alert-check/index.ts.
+const kPriceAlertChannelId = 'price_alert_v1';
+
 final _localNotifications = FlutterLocalNotificationsPlugin();
 
 /// Payload gui kem thong bao local de biet bam vao lam gi - tien to phan
@@ -37,6 +43,8 @@ final _localNotifications = FlutterLocalNotificationsPlugin();
 /// callback _handleNotificationAction.
 String _payloadFor(String senderId) => 'chat:$senderId';
 String _servicePayload() => 'service:';
+String _priceAlertPayload(String assetType, String symbol) =>
+    'price:$assetType:$symbol';
 
 /// Tai ve 1 anh/sticker (khong bo tron, khong resize vuong) lam anh xem
 /// truoc lon trong thong bao (BigPictureStyle) - voi sticker dong chi lay
@@ -144,14 +152,54 @@ Future<void> _showServiceExpiryNotification(RemoteMessage message) async {
   );
 }
 
+/// Bao gia 1 coin/co phieu trong watchlist bien dong >=5% (24h) - data-only
+/// message tu price-alert-check (xem
+/// supabase/functions/price-alert-check/index.ts). Android khong cho tuy
+/// chinh mau CHU cua 1 thong bao he thong chuan, nen dung emoji lam dau hieu
+/// mau xanh/do dung yeu cau (🟢 tang, 🔴 giam) thay vi mau chu that; dat them
+/// AndroidNotificationDetails.color de tint icon nho nhu 1 lop dau hieu phu.
+Future<void> _showPriceAlertNotification(RemoteMessage message) async {
+  final data = message.data;
+  final assetType = data['asset_type'] as String?;
+  final symbol = data['symbol'] as String?;
+  final body = data['body'] as String? ?? '';
+  final direction = data['direction'] as String?;
+  if (assetType == null || symbol == null || body.isEmpty) return;
+
+  final isUp = direction == 'up';
+  final emoji = isUp ? '🟢' : '🔴';
+  final color = isUp ? const Color(0xFF2ECC71) : const Color(0xFFFF6B6B);
+
+  await _localNotifications.show(
+    id: '$assetType:$symbol'.hashCode,
+    title: '$emoji $symbol',
+    body: body,
+    notificationDetails: NotificationDetails(
+      android: AndroidNotificationDetails(
+        kPriceAlertChannelId,
+        'Thông báo giá',
+        channelDescription:
+            'Thông báo khi giá coin/cổ phiếu trong watchlist tăng/giảm hơn 5%',
+        importance: Importance.high,
+        priority: Priority.high,
+        color: color,
+      ),
+    ),
+    payload: _priceAlertPayload(assetType, symbol),
+  );
+}
+
 /// Dispatch theo `type` trong data payload - PHAI kiem tra truoc khi doc cac
 /// truong rieng cua tung loai (chat dung sender_id/content, service_expiry
-/// dung service_id/body).
+/// dung service_id/body, price_alert dung asset_type/symbol/body).
 Future<void> _dispatchRemoteMessage(RemoteMessage message) async {
-  if (message.data['type'] == 'service_expiry') {
-    await _showServiceExpiryNotification(message);
-  } else {
-    await _showChatNotification(message);
+  switch (message.data['type']) {
+    case 'service_expiry':
+      await _showServiceExpiryNotification(message);
+    case 'price_alert':
+      await _showPriceAlertNotification(message);
+    default:
+      await _showChatNotification(message);
   }
 }
 
@@ -178,6 +226,16 @@ void _handleNotificationAction(NotificationResponse response) {
   if (payload == null) return;
   if (payload.startsWith('service:')) {
     ChatPush.instance._openRecurringServices();
+    return;
+  }
+  if (payload.startsWith('price:')) {
+    final parts = payload.substring('price:'.length).split(':');
+    if (parts.length == 2) {
+      ChatPush.instance._openPriceAlertTarget(
+        assetType: parts[0],
+        symbol: parts[1],
+      );
+    }
     return;
   }
   if (payload.startsWith('chat:')) {
@@ -233,12 +291,20 @@ class ChatPush {
       description: 'Thông báo khi dịch vụ định kỳ sắp/đã hết hạn',
       importance: Importance.high,
     );
+    const priceAlertChannel = AndroidNotificationChannel(
+      kPriceAlertChannelId,
+      'Thông báo giá',
+      description:
+          'Thông báo khi giá coin/cổ phiếu trong watchlist tăng/giảm hơn 5%',
+      importance: Importance.high,
+    );
     final androidImpl = _localNotifications
         .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin
         >();
     await androidImpl?.createNotificationChannel(channel);
     await androidImpl?.createNotificationChannel(serviceExpiryChannel);
+    await androidImpl?.createNotificationChannel(priceAlertChannel);
 
     await _localNotifications.initialize(
       settings: const InitializationSettings(
@@ -264,6 +330,8 @@ class ChatPush {
     FirebaseMessaging.onMessage.listen((message) {
       if (message.data['type'] == 'service_expiry') {
         _showServiceExpiryNotification(message);
+      } else if (message.data['type'] == 'price_alert') {
+        _showPriceAlertNotification(message);
       }
     });
   }
@@ -334,5 +402,30 @@ class ChatPush {
       context,
       rootNavigator: true,
     ).push(MaterialPageRoute(builder: (_) => const RecurringServicesScreen()));
+  }
+
+  /// Bam vao thong bao gia bien dong - crypto co man chi tiet rieng
+  /// (CryptoCoinDetailScreen chi can symbol+name la du, xem constructor cua
+  /// no) nen mo thang toi do; co phieu (OKX tokenized hoac HOSE) CHUA co man
+  /// chi tiet rieng nen mo man Market chung, giong cach _openRecurringServices
+  /// mo danh sach chung thay vi dung 1 dich vu cu the.
+  Future<void> _openPriceAlertTarget({
+    required String assetType,
+    required String symbol,
+  }) async {
+    final context = rootNavigatorKey.currentContext;
+    if (context == null) return;
+    if (assetType == 'crypto') {
+      await Navigator.of(context, rootNavigator: true).push(
+        MaterialPageRoute(
+          builder: (_) => CryptoCoinDetailScreen(symbol: symbol, name: symbol),
+        ),
+      );
+      return;
+    }
+    await Navigator.of(
+      context,
+      rootNavigator: true,
+    ).push(MaterialPageRoute(builder: (_) => const MarketScreen()));
   }
 }

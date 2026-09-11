@@ -272,11 +272,21 @@ class CryptoWatchlistController extends StateNotifier<Set<String>> {
     state = await CryptoWatchlistRepository.load();
   }
 
-  Future<void> toggle(String coinId) async {
+  /// `symbol` (ma OKX, vd "BTC") BAT BUOC phai truyen dung tu noi goi - day
+  /// la thoi diem DUY NHAT co san ca coinId (CoinGecko id hoac "okx:SYMBOL")
+  /// lan ma OKX that su, can de dong bo dung dong cho tinh nang Thong bao
+  /// gia bien dong (xem CryptoWatchlistRepository.syncAdd/syncRemove).
+  Future<void> toggle(String coinId, {required String symbol}) async {
     final next = Set<String>.from(state);
-    if (!next.remove(coinId)) next.add(coinId);
+    final wasPresent = !next.add(coinId);
+    if (wasPresent) next.remove(coinId);
     state = next;
     await CryptoWatchlistRepository.save(state);
+    if (wasPresent) {
+      await CryptoWatchlistRepository.syncRemove(symbol: symbol);
+    } else {
+      await CryptoWatchlistRepository.syncAdd(symbol: symbol);
+    }
   }
 }
 

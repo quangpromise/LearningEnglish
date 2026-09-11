@@ -41,8 +41,9 @@ class OkxOnlyCoinRow extends ConsumerWidget {
           children: [
             GestureDetector(
               behavior: HitTestBehavior.opaque,
-              onTap: () =>
-                  ref.read(cryptoWatchlistProvider.notifier).toggle(watchKey),
+              onTap: () => ref
+                  .read(cryptoWatchlistProvider.notifier)
+                  .toggle(watchKey, symbol: row.symbol),
               child: Padding(
                 padding: const EdgeInsets.all(6),
                 child: Icon(
