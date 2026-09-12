@@ -2,6 +2,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 
+import '../../../core/notifications/local_notifications_core.dart';
 import 'planner_models.dart';
 
 /// Dat/huy thong bao he thong khi den gio 1 viec trong Lap ke hoach - dung
@@ -38,18 +39,21 @@ class PlannerNotificationService {
     RingtoneChoice.cheerfulTone => 'Nhắc việc Lập kế hoạch (Giai điệu vui)',
   };
 
-  final _plugin = FlutterLocalNotificationsPlugin();
+  // Alias toi instance CHUNG (xem local_notifications_core.dart) - KHONG
+  // con tu tao FlutterLocalNotificationsPlugin() rieng o day nua. Truoc day
+  // goi _plugin.initialize() rieng O DAY (KHONG truyen callback nao) co the
+  // XOA MAT dispatcher tap-thong-bao dang hoat dong (dang ky boi noi khac -
+  // xem local_notifications_core.dart) neu ham nay chay SAU noi do.
+  final _plugin = localNotificationsPlugin;
   bool _initialized = false;
 
+  /// KHONG con tu goi _plugin.initialize() o day nua - da chuyen sang
+  /// initLocalNotifications() trong main.dart (goi 1 LAN DUY NHAT cho toan
+  /// app) - xem local_notifications_core.dart. init() o day chi con lo tz +
+  /// xin quyen (vo hai neu xin lai lan nua, Android tu bo qua neu da co).
   Future<void> init() async {
     if (_initialized) return;
     tzdata.initializeTimeZones();
-    const androidInit = AndroidInitializationSettings(
-      '@drawable/ic_stat_notify',
-    );
-    await _plugin.initialize(
-      settings: const InitializationSettings(android: androidInit),
-    );
     final androidImpl = _plugin
         .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin

@@ -1343,6 +1343,7 @@ class _TutorialFingerPointerState extends State<_TutorialFingerPointer>
 }
 
 const _kIntervalChoicesMinutes = [15, 30, 60, 90, 120];
+const _kMinCustomIntervalMinutes = 1;
 
 /// "Học 10 từ hôm nay" - hien danh sach tu da chon (o Vocabulary hoac luu
 /// tu khi tra cuu), cho phep dat khoang thoi gian nhac quiz + bat/tat.
@@ -1362,6 +1363,81 @@ class _DailyWordsSection extends ConsumerStatefulWidget {
 
 class _DailyWordsSectionState extends ConsumerState<_DailyWordsSection> {
   bool _pickedInterval = false;
+
+  /// Hop thoai nhap so phut nhac lai TUY Y (toi thieu
+  /// _kMinCustomIntervalMinutes) - dung cho cac moc khong co san trong danh
+  /// sach chip dinh san (vd de test nhanh chi 1 phut). [currentValue] khac
+  /// null se dien san vao o nhap (dang chon 1 gia tri tuy chinh tu truoc).
+  Future<void> _pickCustomInterval(
+    BuildContext context,
+    int? currentValue,
+  ) async {
+    final controller = TextEditingController(
+      text: currentValue == null ? '' : '$currentValue',
+    );
+    // "error" phai nam O NGOAI builder cua StatefulBuilder (khong phai bien
+    // local KHAI BAO LAI moi lan builder chay) - neu khong, moi lan
+    // setDialogState() goi lai builder se tu XOA error vua gan (khai bao lai
+    // = null tu dau), khien thong bao loi chop nhoang roi bien mat ngay.
+    String? error;
+    final result = await showDialog<int>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          void trySubmit() {
+            final value = int.tryParse(controller.text.trim());
+            if (value == null || value < _kMinCustomIntervalMinutes) {
+              setDialogState(
+                () =>
+                    error = ref.tr('profile_daily_words_custom_interval_error'),
+              );
+              return;
+            }
+            Navigator.of(context).pop(value);
+          }
+
+          return AlertDialog(
+            backgroundColor: const Color(0xFF12172E),
+            title: Text(
+              ref.tr('profile_daily_words_custom_interval_title'),
+              style: const TextStyle(color: AppColors.textPrimary),
+            ),
+            content: TextField(
+              controller: controller,
+              autofocus: true,
+              keyboardType: TextInputType.number,
+              style: const TextStyle(color: AppColors.textPrimary),
+              decoration: InputDecoration(
+                hintText: '$_kMinCustomIntervalMinutes',
+                hintStyle: AppTextStyles.muted(),
+                suffixText: ref.tr('profile_daily_words_minutes_suffix'),
+                suffixStyle: AppTextStyles.muted(),
+                errorText: error,
+              ),
+              onSubmitted: (_) => trySubmit(),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(ref.tr('common_cancel')),
+              ),
+              TextButton(
+                onPressed: trySubmit,
+                child: Text(ref.tr('common_confirm')),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+    if (result == null) return;
+    await ref
+        .read(dailyWordsControllerProvider.notifier)
+        .setIntervalMinutes(result);
+    if (widget.showTutorial && !_pickedInterval) {
+      setState(() => _pickedInterval = true);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1506,6 +1582,69 @@ class _DailyWordsSectionState extends ConsumerState<_DailyWordsSection> {
                           ),
                         ),
                       ),
+                    // Chip "Khac" - mo dialog nhap so phut TUY Y (toi thieu
+                    // _kMinCustomIntervalMinutes), cho cac moc khong co san
+                    // trong danh sach dinh san o tren (vd de test nhanh).
+                    // Neu gia tri dang chon khong trung moc nao co san, chip
+                    // nay TU hien chinh gia tri do (thay vi chu "Khac" chung
+                    // chung) va duoc to sang nhu da chon.
+                    Builder(
+                      builder: (context) {
+                        final isCustom = !_kIntervalChoicesMinutes.contains(
+                          state.intervalMinutes,
+                        );
+                        return GestureDetector(
+                          onTap: () => _pickCustomInterval(
+                            context,
+                            isCustom ? state.intervalMinutes : null,
+                          ),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isCustom
+                                  ? AppColors.blue.withValues(alpha: 0.22)
+                                  : AppColors.glassFill,
+                              borderRadius: BorderRadius.circular(999),
+                              border: Border.all(
+                                color: isCustom
+                                    ? AppColors.blue.withValues(alpha: 0.6)
+                                    : AppColors.glassBorder,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.edit_rounded,
+                                  size: 12,
+                                  color: isCustom
+                                      ? AppColors.blue
+                                      : AppColors.textMuted,
+                                ),
+                                const SizedBox(width: 5),
+                                Text(
+                                  isCustom
+                                      ? '${state.intervalMinutes} ${ref.tr('profile_daily_words_minutes_suffix')}'
+                                      : ref.tr(
+                                          'profile_daily_words_custom_interval',
+                                        ),
+                                  style: AppTextStyles.body(
+                                    size: 12,
+                                    weight: FontWeight.w700,
+                                    color: isCustom
+                                        ? AppColors.blue
+                                        : AppColors.textPrimary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ],
                 ),
                 if (showIntervalPointer)

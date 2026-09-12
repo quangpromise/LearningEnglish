@@ -8,6 +8,7 @@ import 'package:timezone/timezone.dart' as tz;
 import '../../features/vocabulary/presentation/daily_quiz_popup_screen.dart';
 import '../navigation/nav_keys.dart';
 import '../utils/vn_time.dart';
+import 'local_notifications_core.dart';
 
 /// Nhac hoc "10 tu hom nay" bang thong bao he thong dat lich truoc - hoat
 /// dong ca khi app da bi dong/khoa may, vi lich duoc AlarmManager (Android)
@@ -25,9 +26,9 @@ class DailyQuizNotifications {
   static const _idBase = 9000;
   static const _maxScheduled = 48;
 
-  /// Tien to payload de chat_push.dart._handleNotificationAction nhan dien
-  /// va dieu huong ve dung [openQuiz] - xem giai thich chi tiet trong
-  /// _scheduleOne.
+  /// Tien to payload de chat_push.dart.handleNotificationAction (dispatcher
+  /// CHUNG cho toan app - xem local_notifications_core.dart) nhan dien va
+  /// dieu huong ve dung [openQuiz].
   static const _payload = 'quiz:';
 
   // Do lech co y giua thong bao he thong (AlarmManager) va Timer trong tien
@@ -41,7 +42,9 @@ class DailyQuizNotifications {
   // thuong sau do nhu 1 phuong an du phong.
   static const _foregroundGraceDelay = Duration(seconds: 20);
 
-  final _plugin = FlutterLocalNotificationsPlugin();
+  // Alias toi instance CHUNG (xem local_notifications_core.dart) - KHONG
+  // con tu tao FlutterLocalNotificationsPlugin() rieng o day nua.
+  final _plugin = localNotificationsPlugin;
   bool _initialized = false;
 
   // Thong bao he thong (scheduleReminders o tren) chi TU MO man Quiz khi
@@ -54,54 +57,31 @@ class DailyQuizNotifications {
   Timer? _foregroundTimer;
   bool _quizShowing = false;
 
+  /// KHONG con tu goi _plugin.initialize() o day nua - viec dang ky
+  /// dispatcher chung (chat_push.dart.handleNotificationAction, goi
+  /// DailyQuizNotifications.instance.openQuiz() khi payload la "quiz:") da
+  /// chuyen sang initLocalNotifications() trong main.dart, chay SOM HON va
+  /// KHONG phu thuoc Firebase - xem local_notifications_core.dart. init()
+  /// o day gio CHI con lo tz + kiem tra cold-start, phai duoc goi SAU
+  /// initLocalNotifications() (main.dart dam bao dung thu tu nay).
   Future<void> init() async {
     if (_initialized) return;
     tzdata.initializeTimeZones();
-
-    // Xem giai thich chi tiet trong chat_push.dart: icon nho tren thanh trang
-    // thai PHAI la hinh trang/trong suot don gian, khong phai icon app day mau.
-    const androidInit = AndroidInitializationSettings(
-      '@drawable/ic_stat_notify',
-    );
-    const initSettings = InitializationSettings(android: androidInit);
-    await _plugin.initialize(
-      settings: initSettings,
-      onDidReceiveNotificationResponse: _onTap,
-    );
-
-    final androidImpl = _plugin
-        .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin
-        >();
-    try {
-      await androidImpl?.requestNotificationsPermission();
-      await androidImpl?.requestExactAlarmsPermission();
-    } catch (_) {
-      // Thiet bi/OS cu khong ho tro 1 trong 2 quyen nay - bo qua, thong bao
-      // van hoat dong (chi khong chinh xac tuyet doi ve gio neu thieu quyen
-      // exact alarm).
-    }
-
     _initialized = true;
 
     // Truong hop app dang BI DONG HOAN TOAN (vd dang o man hinh khoa lau,
     // tien trinh da bi he thong don) va nguoi dung bam vao thong bao -
-    // plugin se KHOI DONG LAI app tu dau NHUNG onDidReceiveNotificationResponse
-    // o tren KHONG duoc goi cho chinh lan bam gay khoi dong nay (chi goi cho
-    // cac lan bam trong luc app DA dang chay san) - phai tu kiem tra rieng
-    // qua getNotificationAppLaunchDetails() moi biet duoc, day chinh la
-    // nguyen nhan loi "bam thong bao tu man hinh khoa chi mo app chu chua
-    // vao man Quiz". Push sau addPostFrameCallback vi luc ham init() nay
-    // chay (truoc runApp() trong main.dart), rootNavigatorKey chua gan voi
-    // Navigator nao ca - phai doi frame dau tien duoc ve xong.
+    // plugin se KHOI DONG LAI app tu dau NHUNG dispatcher (dang ky trong
+    // initLocalNotifications) KHONG duoc goi cho chinh lan bam gay khoi
+    // dong nay (chi goi cho cac lan bam trong luc app DA dang chay san) -
+    // phai tu kiem tra rieng qua getNotificationAppLaunchDetails() moi biet
+    // duoc. Push sau addPostFrameCallback vi luc ham init() nay chay (truoc
+    // runApp() trong main.dart), rootNavigatorKey chua gan voi Navigator
+    // nao ca - phai doi frame dau tien duoc ve xong.
     final launchDetails = await _plugin.getNotificationAppLaunchDetails();
     if (launchDetails?.didNotificationLaunchApp == true) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _pushQuiz());
     }
-  }
-
-  static void _onTap(NotificationResponse response) {
-    instance._pushQuiz();
   }
 
   /// Dat lich thong bao moi [intervalMinutes] phut, tu bay gio den het ngay
@@ -169,16 +149,11 @@ class DailyQuizNotifications {
         scheduledDate: scheduled,
         notificationDetails: details,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        // "quiz:" - xem chat_push.dart _handleNotificationAction: dung 1
-        // dispatcher CHUNG cho MOI thong bao local trong app (chat/service_
-        // expiry/price_alert/quiz), vi flutter_local_notifications chi giu
-        // duoc DUY NHAT 1 onDidReceiveNotificationResponse dang hoat dong
-        // tai 1 thoi diem (goi initialize() nhieu lan o nhieu noi - ChatPush
-        // VA class nay - se GHI DE lan nhau, chi con callback cua lan
-        // initialize() SAU CUNG that su chay). Truoc day KHONG dat payload
-        // nao ca nen du co dung callback nao dang "thang the" cung khong
-        // biet phai mo man gi - day la nguyen nhan chinh cua loi "bam thong
-        // bao quiz khong mo duoc man Quiz".
+        // "quiz:" - xem chat_push.dart.handleNotificationAction: dispatcher
+        // CHUNG (dang ky boi initLocalNotifications trong main.dart, xem
+        // local_notifications_core.dart) cho MOI thong bao local trong app
+        // (chat/service_expiry/price_alert/quiz) doc payload nay de biet
+        // phai mo man gi.
         payload: _payload,
       );
     } catch (_) {
@@ -244,13 +219,13 @@ class DailyQuizNotifications {
   }
 
   /// Day man Quiz len TRUC TIEP (khong qua route Navigator.push binh
-  /// thuong tu widget nao) - dung chung cho ca 2 duong: bam vao thong bao
-  /// he thong (_onTap) VA tu dong bat khi den han luc app dang mo
-  /// (_maybeAutoOpenQuiz). Co _quizShowing de tranh day CHONG 2 lan cung 1
-  /// man (vd nguoi dung dang lam quiz tu lan nhac truoc, chua kip dong, thi
-  /// lan nhac tiep theo lai bam/den han). Cong khai (khong dau "_") de
-  /// chat_push.dart._handleNotificationAction goi duoc tu file khac - xem
-  /// giai thich o _payload/_scheduleOne ve ly do can dispatcher chung.
+  /// thuong tu widget nao) - dung chung cho ca 2 duong: bam vao thong bao he
+  /// thong (chat_push.dart.handleNotificationAction, dispatcher CHUNG cho
+  /// toan app - xem local_notifications_core.dart) VA tu dong bat khi den
+  /// han luc app dang mo (_maybeAutoOpenQuiz). Co _quizShowing de tranh day
+  /// CHONG 2 lan cung 1 man (vd nguoi dung dang lam quiz tu lan nhac truoc,
+  /// chua kip dong, thi lan nhac tiep theo lai bam/den han). Cong khai
+  /// (khong dau "_") de chat_push.dart goi duoc tu file khac.
   Future<void> openQuiz() => _pushQuiz();
 
   Future<void> _pushQuiz() async {

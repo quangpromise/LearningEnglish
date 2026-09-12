@@ -17,6 +17,7 @@ import '../../features/wealth/presentation/market_screen.dart';
 import '../../features/wealth/presentation/recurring_services_screen.dart';
 import '../navigation/nav_keys.dart';
 import 'daily_quiz_notifications.dart';
+import 'local_notifications_core.dart';
 
 /// Id kenh thong bao rieng cho tin nhan chat, kem am thanh tuy chinh (file
 /// res/raw/notification_tone.mp3) - phai tao 1 lan duy nhat truoc khi thong
@@ -37,11 +38,14 @@ const kServiceExpiryChannelId = 'service_expiry_v1';
 /// watchlist) - xem supabase/functions/price-alert-check/index.ts.
 const kPriceAlertChannelId = 'price_alert_v1';
 
-final _localNotifications = FlutterLocalNotificationsPlugin();
+// Alias toi instance CHUNG (xem local_notifications_core.dart) - KHONG con
+// tu tao FlutterLocalNotificationsPlugin() rieng o day nua, giu nguyen ten
+// _localNotifications de moi cho dung ben duoi khong can doi.
+final _localNotifications = localNotificationsPlugin;
 
 /// Payload gui kem thong bao local de biet bam vao lam gi - tien to phan
 /// biet loai thong bao (chat vs nhac han dich vu) vi ca 2 deu dung chung 1
-/// callback _handleNotificationAction.
+/// callback handleNotificationAction.
 String _payloadFor(String senderId) => 'chat:$senderId';
 String _servicePayload() => 'service:';
 String _priceAlertPayload(String assetType, String symbol) =>
@@ -240,19 +244,14 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 /// flutter_local_notifications, khong goi goAsync()) nen khong dam bao gui
 /// xong truoc khi bi he thong dung, gay mat tin nhan am tham khong on dinh.
 /// KHONG them lai neu chua co giai phap kien truc khac dang tin cay hon.
-void _handleNotificationAction(NotificationResponse response) {
+///
+/// PUBLIC (khong dau "_") vi day la dispatcher CHUNG cho toan app, duoc
+/// truyen vao initLocalNotifications() tu main.dart - xem
+/// local_notifications_core.dart.
+void handleNotificationAction(NotificationResponse response) {
   final payload = response.payload;
   if (payload == null) return;
   // "quiz:" - thong bao "Den gio on tu vung" cua DailyQuizNotifications.
-  // PHAI dieu huong qua DAY (dispatcher chung nay) thay vi tin vao
-  // onDidReceiveNotificationResponse rieng cua chinh DailyQuizNotifications
-  // (van con giu lam phuong an du phong) - vi flutter_local_notifications
-  // chi giu duoc 1 callback dang hoat dong tai 1 thoi diem tren toan app,
-  // goi initialize() o nhieu noi (ChatPush.init() o day VA
-  // DailyQuizNotifications.init()) se GHI DE lan nhau; ChatPush.init()
-  // thuong hoan tat SAU (phai cho Firebase.initializeApp() qua mang truoc)
-  // nen callback cua no hay la ban "thang the" cuoi cung, khien tap vao
-  // thong bao quiz truoc day khong lam gi ca (thieu payload de nhan dien).
   if (payload.startsWith('quiz:')) {
     DailyQuizNotifications.instance.openQuiz();
     return;
@@ -280,8 +279,8 @@ void _handleNotificationAction(NotificationResponse response) {
 /// nguoi dung tuong tac voi thong bao TRONG LUC app da bi tat han (khac voi
 /// onDidReceiveNotificationResponse chi chay duoc khi isolate chinh con song).
 @pragma('vm:entry-point')
-void _onBackgroundNotificationTap(NotificationResponse response) =>
-    _handleNotificationAction(response);
+void onBackgroundNotificationTap(NotificationResponse response) =>
+    handleNotificationAction(response);
 
 /// Push notification cho tin nhan chat qua Firebase Cloud Messaging - hoat
 /// dong ca khi app da dong han/khoa may (khac voi DailyQuizNotifications:
@@ -339,20 +338,11 @@ class ChatPush {
     await androidImpl?.createNotificationChannel(serviceExpiryChannel);
     await androidImpl?.createNotificationChannel(priceAlertChannel);
 
-    await _localNotifications.initialize(
-      settings: const InitializationSettings(
-        // Icon nho tren thanh trang thai PHAI la 1 hinh trang/trong suot don
-        // gian - Android tu bo mau, chi giu kenh alpha de ve mau trang len
-        // nen thong bao. Dung thang icon app day mau (@mipmap/ic_launcher,
-        // nen xanh navy dac) se bi Android render thanh 1 khoi dac gan nhu
-        // vuong, trong nhu 1 bieu tuong khac hoan toan (nguoi dung bao "giong
-        // logo Apple") thay vi logo GymTalk - xem drawable-*/ic_stat_notify.png
-        // (duong net trang tren nen trong suot, tach tu chinh app icon).
-        android: AndroidInitializationSettings('@drawable/ic_stat_notify'),
-      ),
-      onDidReceiveNotificationResponse: _handleNotificationAction,
-      onDidReceiveBackgroundNotificationResponse: _onBackgroundNotificationTap,
-    );
+    // KHONG con tu goi _localNotifications.initialize() o day nua - dang ky
+    // dispatcher (handleNotificationAction/onBackgroundNotificationTap) da
+    // chuyen sang initLocalNotifications() (goi 1 LAN DUY NHAT, som hon va
+    // KHONG phu thuoc Firebase, trong main.dart) - xem
+    // local_notifications_core.dart de biet ly do.
 
     FirebaseMessaging.instance.onTokenRefresh.listen(_saveTokenForCurrentUser);
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);

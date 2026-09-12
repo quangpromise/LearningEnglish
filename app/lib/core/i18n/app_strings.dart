@@ -874,6 +874,18 @@ class AppStrings {
       AppLanguage.vi: 'phút',
       AppLanguage.en: 'min',
     },
+    'profile_daily_words_custom_interval': {
+      AppLanguage.vi: 'Khác',
+      AppLanguage.en: 'Custom',
+    },
+    'profile_daily_words_custom_interval_title': {
+      AppLanguage.vi: 'Nhắc lại mỗi... phút',
+      AppLanguage.en: 'Remind every... minutes',
+    },
+    'profile_daily_words_custom_interval_error': {
+      AppLanguage.vi: 'Nhập số phút từ 1 trở lên',
+      AppLanguage.en: 'Enter a number of minutes, 1 or more',
+    },
     'profile_daily_words_start': {
       AppLanguage.vi: 'Bắt đầu học',
       AppLanguage.en: 'Start learning',

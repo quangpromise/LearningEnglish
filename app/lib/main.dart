@@ -15,6 +15,7 @@ import 'core/navigation/nav_keys.dart';
 import 'core/navigation/root_shell.dart';
 import 'core/notifications/chat_push.dart';
 import 'core/notifications/daily_quiz_notifications.dart';
+import 'core/notifications/local_notifications_core.dart';
 import 'core/providers/app_providers.dart';
 import 'core/theme/app_theme.dart';
 import 'core/tts/app_tts.dart';
@@ -67,6 +68,24 @@ Future<void> main() async {
   // thay vi de plugin nem loi luc khoi dong lam trang trang xoa (ca app web
   // khong load duoc) - xem docs/research-ios-distribution.md.
   if (!kIsWeb) {
+    // Dang ky dispatcher CHUNG cho MOI thong bao local trong app (nhac hoc
+    // tu vung, Lap ke hoach, chat, nhac han dich vu, thong bao gia) - BAT
+    // BUOC goi TRUOC 3 dong duoi (va truoc ca ChatPush.init(), du dong do
+    // KHONG await) - flutter_local_notifications chi giu duoc 1 callback
+    // tap-thong-bao dang hoat dong tren toan app, goi initialize() nhieu
+    // lan o nhieu noi se ghi de/xoa mat lan nhau. Xem
+    // core/notifications/local_notifications_core.dart de biet chi tiet ly
+    // do (bug thuc te da gap: dispatcher dung bi ChatPush.init() dang ky
+    // MUON hon PlannerNotificationService.init() - noi tung tu goi
+    // initialize() KHONG kem callback nao - nen neu Firebase cham/that bai,
+    // MOI thong bao local trong app tap vao chi mo lai app ma khong dieu
+    // huong di dau).
+    await _runStartupStep(
+      () => initLocalNotifications(
+        onTap: handleNotificationAction,
+        onBackgroundTap: onBackgroundNotificationTap,
+      ),
+    );
     await _runStartupStep(() => DailyQuizNotifications.instance.init());
     await _runStartupStep(() => PlannerNotificationService.instance.init());
     // KHONG await/timeout ngan o day: ChatPush.init() (Firebase.initializeApp
