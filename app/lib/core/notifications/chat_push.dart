@@ -165,7 +165,25 @@ Future<void> _showPriceAlertNotification(RemoteMessage message) async {
   final body = data['body'] as String? ?? '';
   final direction = data['direction'] as String?;
   if (assetType == null || symbol == null || body.isEmpty) return;
+  await _showPriceAlertLocal(
+    assetType: assetType,
+    symbol: symbol,
+    body: body,
+    direction: direction,
+  );
+}
 
+/// Phan hien thong bao THAT SU (dung chung cho ca 2 nguon: FCM push tu
+/// server o tren VA nut "Gui thu" trong Cai dat Quan ly tai san, xem
+/// ChatPush.sendTestPriceAlert) - tach rieng de nut test khong can dung
+/// FCM/server, chi can goi thang ham nay voi du lieu gia lap la kiem tra
+/// duoc dung GIAO DIEN + kenh thong bao that nguoi dung se thay.
+Future<void> _showPriceAlertLocal({
+  required String assetType,
+  required String symbol,
+  required String body,
+  required String? direction,
+}) async {
   final isUp = direction == 'up';
   final emoji = isUp ? '🟢' : '🔴';
   final color = isUp ? const Color(0xFF2ECC71) : const Color(0xFFFF6B6B);
@@ -334,6 +352,21 @@ class ChatPush {
         _showPriceAlertNotification(message);
       }
     });
+  }
+
+  /// Hien 1 thong bao "Thong bao gia" GIA LAP (BTC tang 5.2%) ngay tren may
+  /// hien tai - dung de nguoi dung tu kiem tra giao dien/kenh thong bao thuc
+  /// te (icon, mau, am thanh, bam vao co mo dung man Watchlist khong) MA
+  /// KHONG can cho gia that bien dong >=5% hay goi Edge Function tren server
+  /// (xem nut "Gui thu" trong Cai dat Quan ly tai san). KHONG di qua FCM/
+  /// server - chi goi thang plugin local notification tren chinh may nay.
+  Future<void> sendTestPriceAlert() async {
+    await _showPriceAlertLocal(
+      assetType: 'crypto',
+      symbol: 'BTC',
+      body: 'BTC tăng 5.2% (24h) - giá hiện tại 65000 (THÔNG BÁO THỬ)',
+      direction: 'up',
+    );
   }
 
   /// Goi ngay sau khi dang nhap thanh cong - xin quyen thong bao (bat buoc

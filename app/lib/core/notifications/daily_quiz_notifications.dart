@@ -25,6 +25,17 @@ class DailyQuizNotifications {
   static const _idBase = 9000;
   static const _maxScheduled = 48;
 
+  // Do lech co y giua thong bao he thong (AlarmManager) va Timer trong tien
+  // trinh app (xem scheduleForegroundAutoOpen) - ca 2 cung nham 1 thoi diem
+  // "den han", nhung THONG BAO duoc dat tre hon [_foregroundGraceDelay] de
+  // Timer trong app (chinh xac hon, chay ngay lap tuc khi den han NEU app
+  // dang mo) co co hoi chay TRUOC va HUY thong bao tuong ung (xem
+  // _maybeAutoOpenQuiz) truoc khi no kip hien - tranh vua tu mo man Quiz
+  // VUA hien them 1 thong bao thua khi app dang mo san. Neu app dang o
+  // nen/khoa may (Timer khong chay dung luc), thong bao van hien binh
+  // thuong sau do nhu 1 phuong an du phong.
+  static const _foregroundGraceDelay = Duration(seconds: 20);
+
   final _plugin = FlutterLocalNotificationsPlugin();
   bool _initialized = false;
 
@@ -67,6 +78,21 @@ class DailyQuizNotifications {
     }
 
     _initialized = true;
+
+    // Truong hop app dang BI DONG HOAN TOAN (vd dang o man hinh khoa lau,
+    // tien trinh da bi he thong don) va nguoi dung bam vao thong bao -
+    // plugin se KHOI DONG LAI app tu dau NHUNG onDidReceiveNotificationResponse
+    // o tren KHONG duoc goi cho chinh lan bam gay khoi dong nay (chi goi cho
+    // cac lan bam trong luc app DA dang chay san) - phai tu kiem tra rieng
+    // qua getNotificationAppLaunchDetails() moi biet duoc, day chinh la
+    // nguyen nhan loi "bam thong bao tu man hinh khoa chi mo app chu chua
+    // vao man Quiz". Push sau addPostFrameCallback vi luc ham init() nay
+    // chay (truoc runApp() trong main.dart), rootNavigatorKey chua gan voi
+    // Navigator nao ca - phai doi frame dau tien duoc ve xong.
+    final launchDetails = await _plugin.getNotificationAppLaunchDetails();
+    if (launchDetails?.didNotificationLaunchApp == true) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _pushQuiz());
+    }
   }
 
   static void _onTap(NotificationResponse response) {
@@ -99,8 +125,13 @@ class DailyQuizNotifications {
       // TZDateTime.from doi theo THOI DIEM tuyet doi cua DateTime goc, nen
       // dung tz.UTC lam Location khong lam sai gio bao thuc te - khong can
       // them package do mui gio thiet bi (flutter_timezone) chi de tinh
-      // "bay gio + X phut".
-      final scheduled = tz.TZDateTime.from(occurrence, tz.UTC);
+      // "bay gio + X phut". Cong them _foregroundGraceDelay CHI cho thoi
+      // diem HIEN THONG BAO THUC SU (khong doi "occurrence" dung de tinh
+      // vong lap/lan ke tiep) - xem doc _foregroundGraceDelay o tren.
+      final scheduled = tz.TZDateTime.from(
+        occurrence.add(_foregroundGraceDelay),
+        tz.UTC,
+      );
       await _scheduleOne(_idBase + count, scheduled, details);
       occurrence = occurrence.add(Duration(minutes: intervalMinutes));
       count++;
@@ -153,10 +184,15 @@ class DailyQuizNotifications {
   void scheduleForegroundAutoOpen({required int intervalMinutes}) {
     _foregroundTimer?.cancel();
     if (intervalMinutes <= 0) return;
-    _foregroundTimer = Timer.periodic(
-      Duration(minutes: intervalMinutes),
-      (_) => _maybeAutoOpenQuiz(),
-    );
+    // Chi so lan "tick" - khop VOI DUNG count dang dung o scheduleReminders
+    // o tren (ca 2 cung bat dau tu 0, cung dat lai ve 0 moi lan ham nay
+    // duoc goi lai) de biet chinh xac ID thong bao nao dang "cho" ung voi
+    // lan den han hien tai, phuc vu huy no o _maybeAutoOpenQuiz.
+    var tick = 0;
+    _foregroundTimer = Timer.periodic(Duration(minutes: intervalMinutes), (_) {
+      _maybeAutoOpenQuiz(occurrenceIndex: tick);
+      tick++;
+    });
   }
 
   void cancelForegroundAutoOpen() {
@@ -164,13 +200,18 @@ class DailyQuizNotifications {
     _foregroundTimer = null;
   }
 
-  void _maybeAutoOpenQuiz() {
+  void _maybeAutoOpenQuiz({required int occurrenceIndex}) {
     // Bo qua khi app dang o nen/da khoa may - thong bao he thong o tren se
     // lo viec nhac trong truong hop nay, TU MO man Quiz luc do se khong ai
     // thay va co the gay loi dieu huong khi nguoi dung mo lai app sau.
     if (WidgetsBinding.instance.lifecycleState != AppLifecycleState.resumed) {
       return;
     }
+    // Huy truoc thong bao he thong TUONG UNG cua dung lan den han nay (con
+    // dang doi them _foregroundGraceDelay nua moi thuc su hien, xem
+    // scheduleReminders) - vi app dang mo san va sap tu day man Quiz len
+    // ngay day, khong can thong bao do hien nua (tranh hien CHONG 2 lan).
+    _plugin.cancel(id: _idBase + occurrenceIndex);
     _pushQuiz();
   }
 

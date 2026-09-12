@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
-import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/tts/app_tts.dart';
 import '../../../core/widgets/speaker_button.dart';
@@ -61,12 +60,14 @@ class _DailyQuizPopupScreenState extends ConsumerState<DailyQuizPopupScreen> {
     setState(() => _picked = option);
     final correct = option == _current.en;
     if (correct) {
+      // CHI cap nhat tien do trong ngay (danh sach "da tra loi dung hom
+      // nay" dung de hien chip xanh + "3/10" o Ho so) - KHONG con ghi ngay
+      // vao thong ke "Tu da hoc" TOAN CUC (Words Learned popup) tai day nua.
+      // Viec do da chuyen sang luc bam "Ket thuc hoc" o Ho so (xem
+      // _DailyWordsSection trong profile_screen.dart) de tra loi dung trong
+      // luc dang LUYEN TAP (co the qua nhieu lan nhac trong ngay) khong bi
+      // tinh la "da hoc that su" cho toi khi nguoi dung tu ket thuc phien.
       ref.read(dailyWordsControllerProvider.notifier).markLearned(_current.en);
-      ref
-          .read(statsRepositoryProvider)
-          .recordWordLearned(_current.en)
-          .then((_) => ref.invalidate(myStatsProvider))
-          .catchError((_) {});
     }
     Future.delayed(const Duration(milliseconds: 700), () {
       if (!mounted) return;

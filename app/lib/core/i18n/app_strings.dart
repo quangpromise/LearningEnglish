@@ -2332,6 +2332,10 @@ class AppStrings {
       AppLanguage.en:
           'Notify when a coin/stock in your watchlist moves more than 5% (24h)',
     },
+    'wealth_settings_price_alerts_test': {
+      AppLanguage.vi: 'Gửi thử 1 thông báo',
+      AppLanguage.en: 'Send a test notification',
+    },
     'wealth_settings_categories_title': {
       AppLanguage.vi: 'Danh mục chi tiêu',
       AppLanguage.en: 'Expense categories',

@@ -1548,6 +1548,31 @@ class _DailyWordsSectionState extends ConsumerState<_DailyWordsSection> {
                         ? null
                         : () async {
                             if (state.active) {
+                              // Chi THUC SU ghi vao thong ke "Tu da hoc"
+                              // TOAN CUC (popup Words Learned, xem
+                              // recordWordLearned) O DAY - luc nguoi dung tu
+                              // quyet dinh KET THUC phien hoc - thay vi ghi
+                              // ngay moi lan tra loi dung trong quiz (xem
+                              // DailyQuizPopupScreen._pick), vi tra loi dung
+                              // trong luc dang on tap (co the qua nhieu lan
+                              // nhac trong ngay) chi la LUYEN TAP, chua chac
+                              // da "thuoc" that su. notifier.stop() ben duoi
+                              // se XOA state.learnedTodayEnLower ngay sau day
+                              // nen phai doc no TRUOC.
+                              final learned = state.learnedTodayEnLower;
+                              if (learned.isNotEmpty) {
+                                final repo = ref.read(statsRepositoryProvider);
+                                try {
+                                  for (final en in learned) {
+                                    await repo.recordWordLearned(en);
+                                  }
+                                  ref.invalidate(myStatsProvider);
+                                } catch (_) {
+                                  // Mang loi tam thoi - khong chan viec ket
+                                  // thuc phien, chi la cac tu do chua kip
+                                  // ghi vao thong ke toan cuc lan nay.
+                                }
+                              }
                               await notifier.stop();
                               return;
                             }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/notifications/chat_push.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/price_alert_prefs_repository.dart';
@@ -315,39 +316,76 @@ class _WealthSettingsScreenState extends ConsumerState<WealthSettingsScreen>
     final enabledAsync = ref.watch(priceAlertsEnabledProvider);
     return GlowBox(
       borderRadius: 18,
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  ref.tr('wealth_settings_price_alerts_title'),
-                  style: AppTextStyles.body(size: 15, weight: FontWeight.w800),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      ref.tr('wealth_settings_price_alerts_title'),
+                      style: AppTextStyles.body(
+                        size: 15,
+                        weight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      ref.tr('wealth_settings_price_alerts_desc'),
+                      style: AppTextStyles.muted(size: 12.5),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 4),
+              ),
+              Switch(
+                value: enabledAsync.valueOrNull ?? true,
+                activeTrackColor: AppColors.wealthAccent,
+                onChanged: enabledAsync.isLoading
+                    ? null
+                    : (value) async {
+                        final userId = ref
+                            .read(supabaseClientProvider)
+                            .auth
+                            .currentUser
+                            ?.id;
+                        if (userId == null) return;
+                        await PriceAlertPrefsRepository.setEnabled(
+                          userId,
+                          value,
+                        );
+                        ref.invalidate(priceAlertsEnabledProvider);
+                      },
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          // Hien 1 thong bao GIA LAP ngay tren may (khong can cho gia that
+          // bien dong >=5% hay dung server) - dung de kiem tra nhanh giao
+          // dien/kenh thong bao that (xem ChatPush.sendTestPriceAlert).
+          GestureDetector(
+            onTap: () => ChatPush.instance.sendTestPriceAlert(),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.notifications_active_rounded,
+                  size: 15,
+                  color: AppColors.wealthAccent,
+                ),
+                const SizedBox(width: 6),
                 Text(
-                  ref.tr('wealth_settings_price_alerts_desc'),
-                  style: AppTextStyles.muted(size: 12.5),
+                  ref.tr('wealth_settings_price_alerts_test'),
+                  style: AppTextStyles.body(
+                    size: 12.5,
+                    weight: FontWeight.w700,
+                    color: AppColors.wealthAccent,
+                  ),
                 ),
               ],
             ),
-          ),
-          Switch(
-            value: enabledAsync.valueOrNull ?? true,
-            activeTrackColor: AppColors.wealthAccent,
-            onChanged: enabledAsync.isLoading
-                ? null
-                : (value) async {
-                    final userId = ref
-                        .read(supabaseClientProvider)
-                        .auth
-                        .currentUser
-                        ?.id;
-                    if (userId == null) return;
-                    await PriceAlertPrefsRepository.setEnabled(userId, value);
-                    ref.invalidate(priceAlertsEnabledProvider);
-                  },
           ),
         ],
       ),
