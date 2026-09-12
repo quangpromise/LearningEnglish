@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
@@ -94,9 +95,10 @@ class DailyQuizNotifications {
     // fullScreenIntent + category alarm: khi thong bao den han VA may dang
     // o man hinh khoa, Android se TU DONG mo thang app (theo dung co che
     // bao thuc/cuoc goi den) de len TREN man hinh khoa thay vi chi hien 1
-    // dong thong bao cho nguoi dung tu bam - can them
-    // android:showWhenLocked/turnScreenOn tren MainActivity +
-    // USE_FULL_SCREEN_INTENT trong AndroidManifest.xml. importance/priority
+    // dong thong bao cho nguoi dung tu bam - can USE_FULL_SCREEN_INTENT
+    // trong AndroidManifest.xml + MainActivity.maybeShowOverLockScreen (CHI
+    // bat showWhenLocked/turnScreenOn luc chay cho dung thong bao nay, KHONG
+    // gan co dinh trong manifest nua - xem MainActivity.kt). importance/priority
     // nang len .max vi Android chi thuc su kich hoat fullScreenIntent voi
     // thong bao muc do khan cap cao nhat.
     const androidDetails = AndroidNotificationDetails(
@@ -246,5 +248,20 @@ class DailyQuizNotifications {
       MaterialPageRoute(builder: (_) => const DailyQuizPopupScreen()),
     );
     _quizShowing = false;
+    await _clearShowWhenLocked();
+  }
+
+  // Neu man Quiz duoc mo DE LEN man hinh khoa (fullScreenIntent luc may
+  // dang khoa - xem MainActivity.maybeShowOverLockScreen), dong Quiz xong
+  // phai tra lai man khoa ngay, khong de nguoi dung dung tiep app khi chua
+  // mo khoa. Khong lam gi neu Activity khong o che do do.
+  static const _lockChannel = MethodChannel('gymtalk/lock_screen');
+
+  Future<void> _clearShowWhenLocked() async {
+    try {
+      await _lockChannel.invokeMethod<void>('clearShowWhenLocked');
+    } catch (_) {
+      // Nen tang khong phai Android (chua cai kenh) - bo qua.
+    }
   }
 }
