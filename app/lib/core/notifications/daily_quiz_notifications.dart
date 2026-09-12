@@ -25,6 +25,11 @@ class DailyQuizNotifications {
   static const _idBase = 9000;
   static const _maxScheduled = 48;
 
+  /// Tien to payload de chat_push.dart._handleNotificationAction nhan dien
+  /// va dieu huong ve dung [openQuiz] - xem giai thich chi tiet trong
+  /// _scheduleOne.
+  static const _payload = 'quiz:';
+
   // Do lech co y giua thong bao he thong (AlarmManager) va Timer trong tien
   // trinh app (xem scheduleForegroundAutoOpen) - ca 2 cung nham 1 thoi diem
   // "den han", nhung THONG BAO duoc dat tre hon [_foregroundGraceDelay] de
@@ -153,6 +158,17 @@ class DailyQuizNotifications {
         scheduledDate: scheduled,
         notificationDetails: details,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        // "quiz:" - xem chat_push.dart _handleNotificationAction: dung 1
+        // dispatcher CHUNG cho MOI thong bao local trong app (chat/service_
+        // expiry/price_alert/quiz), vi flutter_local_notifications chi giu
+        // duoc DUY NHAT 1 onDidReceiveNotificationResponse dang hoat dong
+        // tai 1 thoi diem (goi initialize() nhieu lan o nhieu noi - ChatPush
+        // VA class nay - se GHI DE lan nhau, chi con callback cua lan
+        // initialize() SAU CUNG that su chay). Truoc day KHONG dat payload
+        // nao ca nen du co dung callback nao dang "thang the" cung khong
+        // biet phai mo man gi - day la nguyen nhan chinh cua loi "bam thong
+        // bao quiz khong mo duoc man Quiz".
+        payload: _payload,
       );
     } catch (_) {
       // He thong tu choi exact alarm (thieu quyen "Alarms & reminders") -
@@ -166,6 +182,7 @@ class DailyQuizNotifications {
           scheduledDate: scheduled,
           notificationDetails: details,
           androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          payload: _payload,
         );
       } catch (_) {}
     }
@@ -220,10 +237,23 @@ class DailyQuizNotifications {
   /// he thong (_onTap) VA tu dong bat khi den han luc app dang mo
   /// (_maybeAutoOpenQuiz). Co _quizShowing de tranh day CHONG 2 lan cung 1
   /// man (vd nguoi dung dang lam quiz tu lan nhac truoc, chua kip dong, thi
-  /// lan nhac tiep theo lai bam/den han).
+  /// lan nhac tiep theo lai bam/den han). Cong khai (khong dau "_") de
+  /// chat_push.dart._handleNotificationAction goi duoc tu file khac - xem
+  /// giai thich o _payload/_scheduleOne ve ly do can dispatcher chung.
+  Future<void> openQuiz() => _pushQuiz();
+
   Future<void> _pushQuiz() async {
     if (_quizShowing) return;
-    final nav = rootNavigatorKey.currentState;
+    // Ngay luc bam thong bao gay KHOI DONG LAI app (cold start) tu man
+    // hinh khoa, rootNavigatorKey co the CHUA gan Navigator nao ca (frame
+    // dau tien chua kip ve xong) - thu lai vai lan thay vi bo cuoc ngay,
+    // toi da ~3s, du thoi gian cho app khoi dong xong trong da so truong
+    // hop thay vi im lang that bai.
+    var nav = rootNavigatorKey.currentState;
+    for (var i = 0; i < 15 && nav == null; i++) {
+      await Future.delayed(const Duration(milliseconds: 200));
+      nav = rootNavigatorKey.currentState;
+    }
     if (nav == null) return;
     _quizShowing = true;
     await nav.push(

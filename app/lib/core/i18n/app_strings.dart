@@ -1839,6 +1839,14 @@ class AppStrings {
       AppLanguage.vi: 'Thu chi trong tháng',
       AppLanguage.en: 'Income & expense this month',
     },
+    'wealth_report_income_expense_title_all_time': {
+      AppLanguage.vi: 'Thu chi tất cả các tháng',
+      AppLanguage.en: 'Income & expense (all time)',
+    },
+    'wealth_report_all_time': {
+      AppLanguage.vi: 'Tất cả',
+      AppLanguage.en: 'All time',
+    },
     'wealth_report_category_title': {
       AppLanguage.vi: 'Chi tiêu theo danh mục',
       AppLanguage.en: 'Expense by category',
@@ -1850,6 +1858,10 @@ class AppStrings {
     'wealth_report_renewal_history_title': {
       AppLanguage.vi: 'Lịch sử gia hạn',
       AppLanguage.en: 'Renewal history',
+    },
+    'wealth_report_renewal_history_more': {
+      AppLanguage.vi: '+{n} mục khác',
+      AppLanguage.en: '+{n} more',
     },
     'wealth_report_vs_last_month': {
       AppLanguage.vi: 'so với tháng trước',

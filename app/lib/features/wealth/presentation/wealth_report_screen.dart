@@ -79,6 +79,11 @@ class WealthReportScreen extends ConsumerStatefulWidget {
 
 class _WealthReportScreenState extends ConsumerState<WealthReportScreen> {
   late DateTime _month;
+  // Che do xem "Tat ca" - gop TOAN BO lich su thay vi loc theo 1 thang cu
+  // the (_month). Bam mui ten < > chuyen thang se TU DONG tat che do nay
+  // (xem _changeMonth) vi luc do nguoi dung ro rang muon quay lai xem theo
+  // tung thang.
+  bool _allTime = false;
 
   @override
   void initState() {
@@ -89,7 +94,10 @@ class _WealthReportScreenState extends ConsumerState<WealthReportScreen> {
 
   void _changeMonth(int delta) {
     final total = _month.year * 12 + (_month.month - 1) + delta;
-    setState(() => _month = DateTime(total ~/ 12, total % 12 + 1, 1));
+    setState(() {
+      _month = DateTime(total ~/ 12, total % 12 + 1, 1);
+      _allTime = false;
+    });
   }
 
   @override
@@ -159,6 +167,40 @@ class _WealthReportScreenState extends ConsumerState<WealthReportScreen> {
                       color: AppColors.wealthAccent,
                     ),
                   ),
+                  const Spacer(),
+                  // Bam vao de xem tong CONG DON toan bo lich su thay vi
+                  // loc theo 1 thang cu the - bam lai (hoac bam < >) de
+                  // quay ve xem theo tung thang (xem _changeMonth).
+                  GestureDetector(
+                    onTap: () => setState(() => _allTime = !_allTime),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _allTime
+                            ? AppColors.wealthAccent.withValues(alpha: 0.22)
+                            : AppColors.glassFill,
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(
+                          color: _allTime
+                              ? AppColors.wealthAccent
+                              : AppColors.glassBorder,
+                        ),
+                      ),
+                      child: Text(
+                        ref.tr('wealth_report_all_time'),
+                        style: AppTextStyles.body(
+                          size: 11.5,
+                          weight: FontWeight.w700,
+                          color: _allTime
+                              ? AppColors.wealthAccent
+                              : AppColors.textMuted,
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -202,6 +244,7 @@ class _WealthReportScreenState extends ConsumerState<WealthReportScreen> {
                     ),
                     data: (balanceEntries) => _ReportBody(
                       month: _month,
+                      allTime: _allTime,
                       transactions: transactions,
                       renewals: renewals,
                       balanceEntries: balanceEntries,
@@ -220,12 +263,17 @@ class _WealthReportScreenState extends ConsumerState<WealthReportScreen> {
 class _ReportBody extends ConsumerWidget {
   const _ReportBody({
     required this.month,
+    required this.allTime,
     required this.transactions,
     required this.renewals,
     required this.balanceEntries,
   });
 
   final DateTime month;
+  // Che do xem "Tat ca" (xem WealthReportScreen._allTime) - cac tong hop
+  // duoi day gop TOAN BO lich su thay vi loc theo [month], va khong con so
+  // sanh "vs thang truoc" (khong co y nghia khi da la tong cong don).
+  final bool allTime;
   final List<WealthTransaction> transactions;
   final List<ServiceRenewalRecord> renewals;
   final List<WealthBalanceEntry> balanceEntries;
@@ -247,48 +295,40 @@ class _ReportBody extends ConsumerWidget {
       usdVnd = vnAssets.valueOrNull?.usdVnd;
     }
 
-    final months = lastNMonths(month, _kTrendMonths);
+    final months = allTime
+        ? allMonthsRange(transactions, balanceEntries, renewals)
+        : lastNMonths(month, _kTrendMonths);
     final prevMonth = DateTime(month.year, month.month - 1, 1);
 
-    final thisExpense = computeMonthlyTotals(
-      transactions,
-      month,
-      usdVnd: usdVnd,
-    ).expense;
-    final prevExpense = computeMonthlyTotals(
-      transactions,
-      prevMonth,
-      usdVnd: usdVnd,
-    ).expense;
+    final thisExpense = allTime
+        ? computeAllTimeTotals(transactions, usdVnd: usdVnd).expense
+        : computeMonthlyTotals(transactions, month, usdVnd: usdVnd).expense;
+    final prevExpense = allTime
+        ? 0.0
+        : computeMonthlyTotals(transactions, prevMonth, usdVnd: usdVnd).expense;
     // "Thu nhap" lay tu tien THAT vao Cash/Ngan hang (moi dong balance_entries
     // duong), KHONG lay tu wealth_transactions.type=income (tab Thu nhap) -
     // nguoi dung phai tu khai bao rieng va de quen cap nhat, khien so lech
     // voi tien thuc te nhan duoc (xem wealth_report_data.dart).
-    final thisIncome = computeMonthlyWalletInflow(
-      balanceEntries,
-      month,
-      usdVnd: usdVnd,
-    );
-    final prevIncome = computeMonthlyWalletInflow(
-      balanceEntries,
-      prevMonth,
-      usdVnd: usdVnd,
-    );
-    final categoryTotals = computeExpenseByCategory(
-      transactions,
-      month,
-      usdVnd: usdVnd,
-    );
-    final thisRenewalTotal = computeMonthlyServiceRenewalTotal(
-      renewals,
-      month,
-      usdVnd: usdVnd,
-    );
-    final prevRenewalTotal = computeMonthlyServiceRenewalTotal(
-      renewals,
-      prevMonth,
-      usdVnd: usdVnd,
-    );
+    final thisIncome = allTime
+        ? computeAllTimeWalletInflow(balanceEntries, usdVnd: usdVnd)
+        : computeMonthlyWalletInflow(balanceEntries, month, usdVnd: usdVnd);
+    final prevIncome = allTime
+        ? 0.0
+        : computeMonthlyWalletInflow(balanceEntries, prevMonth, usdVnd: usdVnd);
+    final categoryTotals = allTime
+        ? computeAllTimeExpenseByCategory(transactions, usdVnd: usdVnd)
+        : computeExpenseByCategory(transactions, month, usdVnd: usdVnd);
+    final thisRenewalTotal = allTime
+        ? computeAllTimeServiceRenewalTotal(renewals, usdVnd: usdVnd)
+        : computeMonthlyServiceRenewalTotal(renewals, month, usdVnd: usdVnd);
+    final prevRenewalTotal = allTime
+        ? 0.0
+        : computeMonthlyServiceRenewalTotal(
+            renewals,
+            prevMonth,
+            usdVnd: usdVnd,
+          );
 
     final incomeByMonth = [
       for (final m in months)
@@ -315,19 +355,36 @@ class _ReportBody extends ConsumerWidget {
             expense: thisExpense,
             prevIncome: prevIncome,
             prevExpense: prevExpense,
+            showDelta: !allTime,
             months: months,
             incomeByMonth: incomeByMonth,
             expenseByMonth: expenseByMonth,
           ),
           const SizedBox(height: 16),
-          _CategoryBreakdownCard(categoryTotals: categoryTotals),
-          const SizedBox(height: 16),
-          _RecurringServiceCard(
-            thisTotal: thisRenewalTotal,
-            prevTotal: prevRenewalTotal,
-            months: months,
-            renewalByMonth: renewalByMonth,
-            history: sortedRenewals,
+          // Chi tieu theo danh muc + Dich vu dinh ky dat CHUNG 1 hang (moi
+          // ben 1 nua be rong) thay vi 2 card day du rieng biet nhu truoc -
+          // ca 2 deu da thu gon noi dung (bieu do/danh sach) de vua khung
+          // hep hon (xem doc rieng trong tung card).
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: _CategoryBreakdownCard(categoryTotals: categoryTotals),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _RecurringServiceCard(
+                    thisTotal: thisRenewalTotal,
+                    prevTotal: prevRenewalTotal,
+                    showDelta: !allTime,
+                    months: months,
+                    renewalByMonth: renewalByMonth,
+                    history: sortedRenewals,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -396,6 +453,7 @@ class _IncomeExpenseCard extends ConsumerWidget {
     required this.expense,
     required this.prevIncome,
     required this.prevExpense,
+    required this.showDelta,
     required this.months,
     required this.incomeByMonth,
     required this.expenseByMonth,
@@ -405,6 +463,9 @@ class _IncomeExpenseCard extends ConsumerWidget {
   final double expense;
   final double prevIncome;
   final double prevExpense;
+  // false o che do "Tat ca" (xem WealthReportScreen._allTime) - so sanh "vs
+  // thang truoc" khong co y nghia khi da la tong cong don ca lich su.
+  final bool showDelta;
   final List<DateTime> months;
   final List<double> incomeByMonth;
   final List<double> expenseByMonth;
@@ -422,7 +483,11 @@ class _IncomeExpenseCard extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            ref.tr('wealth_report_income_expense_title'),
+            ref.tr(
+              showDelta
+                  ? 'wealth_report_income_expense_title'
+                  : 'wealth_report_income_expense_title_all_time',
+            ),
             style: AppTextStyles.heading(size: 14),
           ),
           const SizedBox(height: 14),
@@ -445,12 +510,14 @@ class _IncomeExpenseCard extends ConsumerWidget {
                         color: AppColors.teal,
                       ),
                     ),
-                    const SizedBox(height: 3),
-                    _DeltaLabel(
-                      current: income,
-                      previous: prevIncome,
-                      higherIsBad: false,
-                    ),
+                    if (showDelta) ...[
+                      const SizedBox(height: 3),
+                      _DeltaLabel(
+                        current: income,
+                        previous: prevIncome,
+                        higherIsBad: false,
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -471,12 +538,14 @@ class _IncomeExpenseCard extends ConsumerWidget {
                         color: AppColors.pink,
                       ),
                     ),
-                    const SizedBox(height: 3),
-                    _DeltaLabel(
-                      current: expense,
-                      previous: prevExpense,
-                      higherIsBad: true,
-                    ),
+                    if (showDelta) ...[
+                      const SizedBox(height: 3),
+                      _DeltaLabel(
+                        current: expense,
+                        previous: prevExpense,
+                        higherIsBad: true,
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -575,9 +644,11 @@ class _CategoryBreakdownCard extends ConsumerWidget {
         children: [
           Text(
             ref.tr('wealth_report_category_title'),
-            style: AppTextStyles.heading(size: 14),
+            style: AppTextStyles.heading(size: 13),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 10),
           if (total <= 0)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 20),
@@ -589,65 +660,79 @@ class _CategoryBreakdownCard extends ConsumerWidget {
               ),
             )
           else ...[
+            // Bieu do tron thu gon lai (140 -> 96, ban kinh cung giam theo)
+            // so voi truoc de card nay ngan bot, giup cac card duoi (Dich
+            // vu dinh ky...) hien ra gan hon khi cuon, khong doi du lieu -
+            // chi thu nho phan bieu do.
             SizedBox(
-              height: 140,
+              height: 96,
               child: PieChart(
                 PieChartData(
                   sectionsSpace: 2,
-                  centerSpaceRadius: 34,
+                  centerSpaceRadius: 24,
                   sections: [
                     for (var i = 0; i < sortedEntries.length; i++)
                       PieChartSectionData(
                         value: sortedEntries[i].value,
                         color: _kCategoryColors[i % _kCategoryColors.length],
-                        radius: 36,
+                        radius: 24,
                         showTitle: false,
                       ),
                   ],
                 ),
               ),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 10),
+            // Bo icon danh muc (trung lap voi cham mau) + gop so tien/% vao
+            // 1 cot doc ben phai - the nay gio dung chung 1 hang voi the
+            // Dich vu dinh ky (chi bang nua be rong man hinh) nen phai rut
+            // gon moi dong xuong con: cham mau + ten danh muc (1 dong,
+            // rut gon neu dai) + so tien/% xep doc ben phai.
             for (var i = 0; i < sortedEntries.length; i++)
               Padding(
-                padding: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.only(bottom: 6),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      width: 10,
-                      height: 10,
+                      margin: const EdgeInsets.only(top: 3),
+                      width: 8,
+                      height: 8,
                       decoration: BoxDecoration(
                         color: _kCategoryColors[i % _kCategoryColors.length],
                         shape: BoxShape.circle,
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    Icon(
-                      sortedEntries[i].key.icon,
-                      size: 14,
-                      color: AppColors.textMuted,
-                    ),
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
                         ref.tr(sortedEntries[i].key.labelKey),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: AppTextStyles.body(
-                          size: 12,
+                          size: 11,
                           weight: FontWeight.w600,
                         ),
                       ),
                     ),
-                    Text(
-                      formatVnd(sortedEntries[i].value),
-                      style: AppTextStyles.body(
-                        size: 12,
-                        weight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '${(sortedEntries[i].value / total * 100).toStringAsFixed(0)}%',
-                      style: AppTextStyles.muted(size: 11),
+                    const SizedBox(width: 6),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          formatVnd(sortedEntries[i].value),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.body(
+                            size: 11,
+                            weight: FontWeight.w700,
+                          ),
+                        ),
+                        Text(
+                          '${(sortedEntries[i].value / total * 100).toStringAsFixed(0)}%',
+                          style: AppTextStyles.muted(size: 9.5),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -663,6 +748,7 @@ class _RecurringServiceCard extends ConsumerWidget {
   const _RecurringServiceCard({
     required this.thisTotal,
     required this.prevTotal,
+    required this.showDelta,
     required this.months,
     required this.renewalByMonth,
     required this.history,
@@ -670,6 +756,7 @@ class _RecurringServiceCard extends ConsumerWidget {
 
   final double thisTotal;
   final double prevTotal;
+  final bool showDelta;
   final List<DateTime> months;
   final List<double> renewalByMonth;
   final List<ServiceRenewalRecord> history;
@@ -685,31 +772,42 @@ class _RecurringServiceCard extends ConsumerWidget {
         children: [
           Text(
             ref.tr('wealth_report_service_title'),
-            style: AppTextStyles.heading(size: 14),
+            style: AppTextStyles.heading(size: 13),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           Text(
             formatVnd(thisTotal),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: AppTextStyles.body(
-              size: 15,
+              size: 14,
               weight: FontWeight.w800,
               color: AppColors.wealthAccent,
             ),
           ),
-          const SizedBox(height: 3),
-          _DeltaLabel(
-            current: thisTotal,
-            previous: prevTotal,
-            higherIsBad: true,
-          ),
-          const SizedBox(height: 16),
+          if (showDelta) ...[
+            const SizedBox(height: 3),
+            _DeltaLabel(
+              current: thisTotal,
+              previous: prevTotal,
+              higherIsBad: true,
+            ),
+          ],
+          const SizedBox(height: 12),
+          // Bieu do xu huong + danh sach lich su renew duoi day deu THU
+          // GON lai (thap hon, it nhan truc, gioi han so dong hien) so voi
+          // truoc - card nay gio dung CHUNG 1 hang voi the Chi tieu theo
+          // danh muc (chi bang nua be rong man hinh) thay vi 1 card rieng
+          // day du nhu cu.
           SizedBox(
-            height: 120,
+            height: 64,
             child: maxY <= 0
                 ? Center(
                     child: Text(
                       ref.tr('wealth_report_no_data'),
-                      style: AppTextStyles.muted(size: 11),
+                      style: AppTextStyles.muted(size: 10),
                     ),
                   )
                 : BarChart(
@@ -731,17 +829,20 @@ class _RecurringServiceCard extends ConsumerWidget {
                         bottomTitles: AxisTitles(
                           sideTitles: SideTitles(
                             showTitles: true,
-                            reservedSize: 22,
+                            reservedSize: 18,
+                            interval: (months.length / 4)
+                                .clamp(1, double.infinity)
+                                .ceilToDouble(),
                             getTitlesWidget: (value, meta) {
                               final i = value.toInt();
                               if (i < 0 || i >= months.length) {
                                 return const SizedBox.shrink();
                               }
                               return Padding(
-                                padding: const EdgeInsets.only(top: 6),
+                                padding: const EdgeInsets.only(top: 4),
                                 child: Text(
                                   _shortMonthLabel(months[i], lang),
-                                  style: AppTextStyles.muted(size: 9.5),
+                                  style: AppTextStyles.muted(size: 8.5),
                                 ),
                               );
                             },
@@ -756,8 +857,8 @@ class _RecurringServiceCard extends ConsumerWidget {
                               BarChartRodData(
                                 toY: renewalByMonth[i],
                                 color: AppColors.wealthAccent,
-                                width: 14,
-                                borderRadius: BorderRadius.circular(4),
+                                width: months.length > 8 ? 5 : 9,
+                                borderRadius: BorderRadius.circular(3),
                               ),
                             ],
                           ),
@@ -765,21 +866,23 @@ class _RecurringServiceCard extends ConsumerWidget {
                     ),
                   ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           Text(
             ref.tr('wealth_report_renewal_history_title'),
-            style: AppTextStyles.body(size: 12.5, weight: FontWeight.w800),
+            style: AppTextStyles.body(size: 11.5, weight: FontWeight.w800),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           if (history.isEmpty)
             Text(
               ref.tr('wealth_report_no_data'),
-              style: AppTextStyles.muted(size: 11),
+              style: AppTextStyles.muted(size: 10),
             )
-          else
-            for (final r in history)
+          else ...[
+            // Chi hien toi da _kMaxCompactHistory muc de danh sach khong
+            // qua dai trong the hep - con lai nhac qua 1 dong "+N khac".
+            for (final r in history.take(_kMaxCompactHistory))
               Padding(
-                padding: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.only(bottom: 6),
                 child: Row(
                   children: [
                     Expanded(
@@ -788,8 +891,10 @@ class _RecurringServiceCard extends ConsumerWidget {
                         children: [
                           Text(
                             r.serviceName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: AppTextStyles.body(
-                              size: 12.5,
+                              size: 11,
                               weight: FontWeight.w700,
                             ),
                           ),
@@ -797,23 +902,42 @@ class _RecurringServiceCard extends ConsumerWidget {
                             '${r.occurredAt.day.toString().padLeft(2, '0')}/'
                             '${r.occurredAt.month.toString().padLeft(2, '0')}/'
                             '${r.occurredAt.year}',
-                            style: AppTextStyles.muted(size: 10.5),
+                            style: AppTextStyles.muted(size: 9.5),
                           ),
                         ],
                       ),
                     ),
                     Text(
                       formatByCurrency(r.amount, r.currency),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.body(
-                        size: 12.5,
+                        size: 11,
                         weight: FontWeight.w700,
                       ),
                     ),
                   ],
                 ),
               ),
+            if (history.length > _kMaxCompactHistory)
+              Text(
+                ref
+                    .tr('wealth_report_renewal_history_more')
+                    .replaceFirst(
+                      '{n}',
+                      '${history.length - _kMaxCompactHistory}',
+                    ),
+                style: AppTextStyles.muted(size: 10),
+              ),
+          ],
         ],
       ),
     );
   }
 }
+
+/// So dong lich su renew toi da hien trong the "Dich vu dinh ky" - the nay
+/// gio dung CHUNG 1 hang voi the Chi tieu theo danh muc (chi bang nua be
+/// rong man hinh) nen phai gioi han, khong danh sach se qua dai/lam lech
+/// chieu cao 2 the trong cung 1 hang.
+const _kMaxCompactHistory = 4;

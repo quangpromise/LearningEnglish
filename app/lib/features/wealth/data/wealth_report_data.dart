@@ -104,3 +104,98 @@ List<DateTime> lastNMonths(DateTime end, int n) {
     return DateTime(year, month, 1);
   });
 }
+
+/// Tong Thu/Chi CONG DON toan bo lich su (khong loc theo 1 thang cu the) -
+/// dung cho che do xem "Tat ca" o man Bao cao (WealthReportScreen).
+MonthlyTotals computeAllTimeTotals(
+  List<WealthTransaction> transactions, {
+  double? usdVnd,
+}) {
+  var income = 0.0;
+  var expense = 0.0;
+  for (final t in transactions) {
+    final vnd = _toVnd(t.amount, t.currency, usdVnd);
+    if (t.type == WealthTransactionType.income) {
+      income += vnd;
+    } else {
+      expense += vnd;
+    }
+  }
+  return MonthlyTotals(income: income, expense: expense);
+}
+
+/// Ban all-time cua computeMonthlyWalletInflow - tong tien THAT vao Vi
+/// (Cash/Ngan hang) tu truoc gio, khong loc theo thang.
+double computeAllTimeWalletInflow(
+  List<WealthBalanceEntry> entries, {
+  double? usdVnd,
+}) {
+  var total = 0.0;
+  for (final e in entries) {
+    if (e.amount <= 0) continue;
+    total += _toVnd(e.amount, e.currency, usdVnd);
+  }
+  return total;
+}
+
+/// Ban all-time cua computeExpenseByCategory - gop chi tieu theo danh muc
+/// tu TRUOC GIO, khong loc theo thang.
+Map<WealthExpenseCategory, double> computeAllTimeExpenseByCategory(
+  List<WealthTransaction> transactions, {
+  double? usdVnd,
+}) {
+  final result = <WealthExpenseCategory, double>{};
+  for (final t in transactions) {
+    if (t.type != WealthTransactionType.expense) continue;
+    final category = WealthExpenseCategory.fromCode(t.categoryCode);
+    final vnd = _toVnd(t.amount, t.currency, usdVnd);
+    result[category] = (result[category] ?? 0) + vnd;
+  }
+  return result;
+}
+
+/// Ban all-time cua computeMonthlyServiceRenewalTotal - tong tien dich vu
+/// dinh ky da renew tu TRUOC GIO, khong loc theo thang.
+double computeAllTimeServiceRenewalTotal(
+  List<ServiceRenewalRecord> renewals, {
+  double? usdVnd,
+}) {
+  var total = 0.0;
+  for (final r in renewals) {
+    total += _toVnd(r.amount, r.currency, usdVnd);
+  }
+  return total;
+}
+
+/// Danh sach cac thang tu ban ghi CU NHAT (trong ca 3 nguon du lieu) den
+/// THANG HIEN TAI, gioi han toi da [maxMonths] thang GAN NHAT - dung cho
+/// bieu do xu huong khi dang xem che do "Tat ca" (thay vi co dinh 6 thang
+/// gan nhat nhu che do xem theo 1 thang cu the).
+List<DateTime> allMonthsRange(
+  List<WealthTransaction> transactions,
+  List<WealthBalanceEntry> balanceEntries,
+  List<ServiceRenewalRecord> renewals, {
+  int maxMonths = 24,
+}) {
+  DateTime? earliest;
+  void consider(DateTime d) {
+    if (earliest == null || d.isBefore(earliest!)) earliest = d;
+  }
+
+  for (final t in transactions) {
+    consider(t.occurredAt);
+  }
+  for (final e in balanceEntries) {
+    consider(e.occurredAt);
+  }
+  for (final r in renewals) {
+    consider(r.occurredAt);
+  }
+
+  final now = DateTime.now();
+  final start = earliest ?? now;
+  final startIndex = start.year * 12 + (start.month - 1);
+  final endIndex = now.year * 12 + (now.month - 1);
+  final totalMonths = (endIndex - startIndex + 1).clamp(1, maxMonths);
+  return lastNMonths(DateTime(now.year, now.month, 1), totalMonths);
+}

@@ -5,6 +5,7 @@ import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_format.dart';
+import '../../../core/widgets/equal_font_chip_bar.dart';
 import '../../crypto/data/okx_service.dart';
 import '../../crypto/presentation/crypto_coin_row.dart';
 import '../../crypto/presentation/crypto_market_tab.dart';
@@ -116,10 +117,10 @@ class _MarketScreenState extends State<MarketScreen> {
   }
 }
 
-/// Hang chip chon loai tai san dang xem trong Market - dung Row+Expanded+
-/// FittedBox (khong phai Wrap) de LUON vua DUNG 1 hang du nhan dai ("Foreign
-/// currency"), tu dong giam co chu neu khong gian qua hep, giong cach
-/// _WatchlistTab da lam cho hang category cua no.
+/// Hang chip chon loai tai san dang xem trong Market - xem EqualFontChipBar
+/// (dung chung voi hang category cua _WatchlistTab) de biet ly do KHONG con
+/// dung FittedBox rieng tung o (tung khien nhan ngan nhu "Crypto" to han han
+/// nhan dai nhu "Foreign currency" du cung 1 style goc).
 class _CategoryChipRow extends ConsumerWidget {
   const _CategoryChipRow({required this.selected, required this.onChanged});
   final _MarketCategory selected;
@@ -127,62 +128,16 @@ class _CategoryChipRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final items = [
-      (_MarketCategory.crypto, 'Crypto'),
-      (_MarketCategory.stocks, ref.tr('wealth_investments_stocks_title')),
-      (_MarketCategory.metals, ref.tr('wealth_investments_metal_title')),
-      (_MarketCategory.currency, ref.tr('wealth_investments_currency_title')),
-    ];
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: AppColors.glassFill.withValues(alpha: 0.4),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.glassBorder),
-      ),
-      child: Row(
-        children: [
-          for (final item in items) ...[
-            Expanded(
-              child: GestureDetector(
-                onTap: () => onChanged(item.$1),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: selected == item.$1
-                        ? AppColors.wealthAccent.withValues(alpha: 0.22)
-                        : AppColors.glassFill,
-                    borderRadius: BorderRadius.circular(999),
-                    border: Border.all(
-                      color: selected == item.$1
-                          ? AppColors.wealthAccent
-                          : AppColors.glassBorder,
-                    ),
-                  ),
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      item.$2,
-                      maxLines: 1,
-                      style: AppTextStyles.body(
-                        size: 12,
-                        weight: FontWeight.w700,
-                        color: selected == item.$1
-                            ? AppColors.wealthAccent
-                            : AppColors.textPrimary,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            if (item != items.last) const SizedBox(width: 6),
-          ],
-        ],
-      ),
+    return EqualFontChipBar<_MarketCategory>(
+      selected: selected,
+      onChanged: onChanged,
+      accentColor: AppColors.wealthAccent,
+      items: [
+        (_MarketCategory.crypto, 'Crypto'),
+        (_MarketCategory.stocks, ref.tr('wealth_investments_stocks_title')),
+        (_MarketCategory.metals, ref.tr('wealth_investments_metal_title')),
+        (_MarketCategory.currency, ref.tr('wealth_investments_currency_title')),
+      ],
     );
   }
 }
@@ -208,8 +163,14 @@ class _WatchlistTabState extends State<_WatchlistTab> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Consumer(
-          builder: (context, ref, _) {
-            final items = [
+          // Xem EqualFontChipBar - CA 4 nhan (ke ca "Rare metals"/"Foreign
+          // currency" dai) dung CHUNG 1 co chu thay vi tung o tu FittedBox
+          // rieng khien nhan ngan bi to han han nhan dai.
+          builder: (context, ref, _) => EqualFontChipBar<_WatchlistCategory>(
+            selected: _category,
+            onChanged: (v) => setState(() => _category = v),
+            accentColor: AppColors.wealthAccent,
+            items: [
               (_WatchlistCategory.crypto, 'Crypto'),
               (
                 _WatchlistCategory.metals,
@@ -220,63 +181,8 @@ class _WatchlistTabState extends State<_WatchlistTab> {
                 ref.tr('wealth_investments_currency_title'),
               ),
               (_WatchlistCategory.stocks, ref.tr('wealth_watchlist_stocks')),
-            ];
-            // Row + Expanded (khong phai Wrap) - luon vua DUNG 1 hang du
-            // nhan dai ("Rare metals"), tu dong chia deu be rong thay vi
-            // xuong dong; giam padding/co chu + cho phep tu giam co chu
-            // (FittedBox) khi khong gian qua hep tren man nho.
-            return Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppColors.glassFill.withValues(alpha: 0.4),
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: AppColors.glassBorder),
-              ),
-              child: Row(
-                children: [
-                  for (final item in items) ...[
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => setState(() => _category = item.$1),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: _category == item.$1
-                                ? AppColors.wealthAccent.withValues(alpha: 0.22)
-                                : AppColors.glassFill,
-                            borderRadius: BorderRadius.circular(999),
-                            border: Border.all(
-                              color: _category == item.$1
-                                  ? AppColors.wealthAccent
-                                  : AppColors.glassBorder,
-                            ),
-                          ),
-                          child: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Text(
-                              item.$2,
-                              maxLines: 1,
-                              style: AppTextStyles.body(
-                                size: 12,
-                                weight: FontWeight.w700,
-                                color: _category == item.$1
-                                    ? AppColors.wealthAccent
-                                    : AppColors.textPrimary,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    if (item != items.last) const SizedBox(width: 6),
-                  ],
-                ],
-              ),
-            );
-          },
+            ],
+          ),
         ),
         const SizedBox(height: 12),
         Expanded(

@@ -16,6 +16,7 @@ import '../../features/social/presentation/chat_screen.dart';
 import '../../features/wealth/presentation/market_screen.dart';
 import '../../features/wealth/presentation/recurring_services_screen.dart';
 import '../navigation/nav_keys.dart';
+import 'daily_quiz_notifications.dart';
 
 /// Id kenh thong bao rieng cho tin nhan chat, kem am thanh tuy chinh (file
 /// res/raw/notification_tone.mp3) - phai tao 1 lan duy nhat truoc khi thong
@@ -242,6 +243,20 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 void _handleNotificationAction(NotificationResponse response) {
   final payload = response.payload;
   if (payload == null) return;
+  // "quiz:" - thong bao "Den gio on tu vung" cua DailyQuizNotifications.
+  // PHAI dieu huong qua DAY (dispatcher chung nay) thay vi tin vao
+  // onDidReceiveNotificationResponse rieng cua chinh DailyQuizNotifications
+  // (van con giu lam phuong an du phong) - vi flutter_local_notifications
+  // chi giu duoc 1 callback dang hoat dong tai 1 thoi diem tren toan app,
+  // goi initialize() o nhieu noi (ChatPush.init() o day VA
+  // DailyQuizNotifications.init()) se GHI DE lan nhau; ChatPush.init()
+  // thuong hoan tat SAU (phai cho Firebase.initializeApp() qua mang truoc)
+  // nen callback cua no hay la ban "thang the" cuoi cung, khien tap vao
+  // thong bao quiz truoc day khong lam gi ca (thieu payload de nhan dien).
+  if (payload.startsWith('quiz:')) {
+    DailyQuizNotifications.instance.openQuiz();
+    return;
+  }
   if (payload.startsWith('service:')) {
     ChatPush.instance._openRecurringServices();
     return;
