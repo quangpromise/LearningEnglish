@@ -49,6 +49,13 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
   StreamSubscription<TranscriptEvent>? _transcriptSub;
   StreamSubscription<Uint8List>? _liveAudioSub;
   StreamSubscription<void>? _turnAudioEndSub;
+  StreamSubscription<String>? _partialAiTextSub;
+  // Ban nhap "dang go" cua AI, cap nhat tang dan tu
+  // VoiceChatSession.partialAiText - xem build() (them 1 bubble tam vao cuoi
+  // ListView khi khac rong) va _onTranscript (xoa ve rong luc chot tin nhan
+  // that). Muc dich: nguoi dung thay chu xuat hien dan khi AI dang noi thay
+  // vi phai doi het ca luot moi thay gi do, giam cam giac tre "lau".
+  String _livePartialAiText = '';
   // Chi duoc dung khi kUseAnamAvatar = true - xem build()/_toggle().
   final _anamKey = GlobalKey<AnamLiveAvatarState>();
   bool _anamReady = false;
@@ -73,12 +80,8 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
   void initState() {
     super.initState();
     _voiceName = GeminiVoiceSelection.instance.value;
-    // Nghe truc tiep GeminiVoiceSelection (nguon dung chung ca man Ho so lan
-    // man nay) thay vi tu load/luu rieng - truoc day doi giong o man Ho so
-    // khong lam man nay biet ma cap nhat (man nay la 1 tab thuong truc,
-    // initState chi chay 1 lan luc mo app), phai khoi dong lai app moi thay
-    // hieu luc. Gio doi tu dau cung deu bao ve day ngay lap tuc.
     GeminiVoiceSelection.instance.addListener(_onVoiceChanged);
+    _ensurePlaybackSession();
   }
 
   void _onVoiceChanged() {
@@ -86,13 +89,6 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
     final newVoice = GeminiVoiceSelection.instance.value;
     if (newVoice == _voiceName) return;
     setState(() => _voiceName = newVoice);
-    // GeminiLiveDirectClient chi gui voiceName 1 lan luc setup, va man hinh
-    // nay la 1 tab thuong truc (khong bao gio bi dispose khi chuyen tab) nen
-    // _client van song sau khi ket thuc 1 cuoc noi chuyen - neu khong dong
-    // no o day, lan bam mic tiep theo se TAI SU DUNG client cu (van con
-    // giong cu) thay vi ap dung giong vua chon. Chi dong duoc khi dang idle -
-    // dang noi/dang cho AI tra loi thi de nguyen, giong moi se ap dung tu
-    // lan bat dau phien tiep theo.
     if (_state == VoiceChatState.idle && _client != null) {
       _client!.dispose();
       _client = null;
@@ -118,6 +114,7 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
     _transcriptSub?.cancel();
     _liveAudioSub?.cancel();
     _turnAudioEndSub?.cancel();
+    _partialAiTextSub?.cancel();
     _client?.dispose();
     _player.dispose();
     _scrollCtrl.dispose();
@@ -125,6 +122,11 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
   }
 
   Future<void> _toggle() async {
+    // Neu dang phat/dang nghe va nguoi dung bam ngat loi (barge-in):
+    if (kUseAnamAvatar) {
+      _anamKey.currentState?.interruptPersona();
+    }
+
     // Dang noi - bam lai nghia la "toi noi xong roi", ket thuc luot nay va
     // cho AI tra loi (khong dong ca phien - xem VoiceChatSession.endTurn).
     if (_state == VoiceChatState.listening) {
@@ -179,6 +181,11 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
                 client.lastError ??
                 _error ??
                 ref.tr('voice_chat_error_generic');
+          } else if (s == VoiceChatState.listening) {
+            // Khi nguoi dung bat dau noi (barge-in): dung ngay lap tuc avatar va loa
+            if (kUseAnamAvatar) {
+              _anamKey.currentState?.interruptPersona();
+            }
           }
         });
       });
@@ -186,11 +193,19 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
       _audioSub = client.incomingAudio.listen(_playResponse);
       _transcriptSub?.cancel();
       _transcriptSub = client.transcriptStream.listen(_onTranscript);
+      _partialAiTextSub?.cancel();
+      _partialAiTextSub = client.partialAiText.listen((text) {
+        if (!mounted) return;
+        setState(() => _livePartialAiText = text);
+        if (text.isEmpty) return;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!_scrollCtrl.hasClients) return;
+          _scrollCtrl.jumpTo(_scrollCtrl.position.maxScrollExtent);
+        });
+      });
 
       // Nap tung chunk audio ngay khi Gemini tra ve vao mieng avatar Anam de
-      // lipsync realtime, do tre thap nhat - xem
-      // VoiceChatSession.liveAudioChunks/turnAudioEnd. Chi GeminiLiveDirectClient
-      // ho tro (2 stream nay rong o VoiceChatClient qua backend).
+      // lipsync realtime, do tre thap nhat (<500ms) non-blocking.
       if (kUseAnamAvatar) {
         _liveAudioSub?.cancel();
         _liveAudioSub = client.liveAudioChunks.listen(
@@ -331,7 +346,26 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
   Future<String> _ensurePlaybackSession() async {
     try {
       final session = await AudioSession.instance;
-      await session.configure(const AudioSessionConfiguration.music());
+      // KHONG dung const o day - operator | cua AVAudioSessionCategoryOptions
+      // khong phai const (chi constructor cua no la const), nen bieu thuc
+      // ket hop 3 flag bang | phai tinh luc chay, khong the la hang so bien
+      // dich (analyzer bao loi const_eval_type_bool_int neu ep const).
+      await session.configure(
+        AudioSessionConfiguration(
+          avAudioSessionCategory: AVAudioSessionCategory.playAndRecord,
+          avAudioSessionCategoryOptions:
+              AVAudioSessionCategoryOptions.defaultToSpeaker |
+              AVAudioSessionCategoryOptions.allowBluetooth |
+              AVAudioSessionCategoryOptions.mixWithOthers,
+          avAudioSessionMode: AVAudioSessionMode.spokenAudio,
+          androidAudioAttributes: const AndroidAudioAttributes(
+            contentType: AndroidAudioContentType.speech,
+            usage: AndroidAudioUsage.voiceCommunication,
+          ),
+          androidAudioFocusGainType:
+              AndroidAudioFocusGainType.gainTransientMayDuck,
+        ),
+      );
       final gotFocus = await session.setActive(true);
       return 'setActive=$gotFocus';
     } catch (e) {
@@ -482,12 +516,19 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
                   width: double.infinity,
                   child: AnamLiveAvatar(
                     key: _anamKey,
-                    sessionTokenProvider: () =>
-                        AnamSessionApi.fetchSessionToken(
-                          apiKey: Env.anamApiKeyDirect,
-                          avatarId: kAnamAvatarId,
-                          avatarModel: kAnamAvatarModel,
-                        ),
+                    // Uu tien qua Vercel proxy (xem anam_vercel_server/) neu
+                    // da deploy - API key that CHI nam tren server, khong
+                    // con bi nhung vao APK. Chua deploy (kAnamVercelProxyUrl
+                    // rong) thi tam dung cach cu goi thang API key trong app.
+                    sessionTokenProvider: () => kAnamVercelProxyUrl.isNotEmpty
+                        ? AnamSessionApi.fetchSessionTokenFromProxy(
+                            kAnamVercelProxyUrl,
+                          )
+                        : AnamSessionApi.fetchSessionToken(
+                            apiKey: Env.anamApiKeyDirect,
+                            avatarId: kAnamAvatarId,
+                            avatarModel: kAnamAvatarModel,
+                          ),
                     onReady: () {
                       if (mounted) setState(() => _anamReady = true);
                     },
@@ -500,7 +541,7 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
               const SizedBox(height: 12),
             ],
             Expanded(
-              child: _messages.isEmpty
+              child: _messages.isEmpty && _livePartialAiText.isEmpty
                   ? Center(
                       child: Text(
                         ref.tr('voice_chat_empty'),
@@ -510,11 +551,27 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
                     )
                   : ListView.builder(
                       controller: _scrollCtrl,
-                      itemCount: _messages.length,
-                      itemBuilder: (context, i) => _MessageBubble(
-                        message: _messages[i],
-                        onReplay: _replayAudio,
-                      ),
+                      // +1 cho bubble "dang go" tam thoi (partial transcript)
+                      // khi AI dang noi nhung chua het luot - xem
+                      // _livePartialAiText.
+                      itemCount:
+                          _messages.length +
+                          (_livePartialAiText.isEmpty ? 0 : 1),
+                      itemBuilder: (context, i) {
+                        if (i >= _messages.length) {
+                          return _MessageBubble(
+                            message: TranscriptEvent(
+                              role: ChatRole.ai,
+                              text: _livePartialAiText,
+                            ),
+                            onReplay: _replayAudio,
+                          );
+                        }
+                        return _MessageBubble(
+                          message: _messages[i],
+                          onReplay: _replayAudio,
+                        );
+                      },
                     ),
             ),
             const SizedBox(height: 8),

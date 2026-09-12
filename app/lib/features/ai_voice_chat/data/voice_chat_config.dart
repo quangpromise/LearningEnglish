@@ -30,3 +30,16 @@ const kAnamAvatarId = '68b4b44d-874b-4343-a1c9-b97d3c4a4d6e';
 /// passthrough luc viet code nay (2026-09), doi lai neu Anam doi ten model
 /// hoac dashboard cua avatar tren bao model khac.
 const kAnamAvatarModel = 'cara-4';
+
+/// URL cua serverless function Vercel - repo rieng
+/// github.com/quangpromise/anam-session-proxy (tach khoi repo app vi Vercel
+/// can root repo chua dung vercel.json/api/, xem README trong repo do). Khi
+/// khac rong, AiVoiceChatScreen se doi session token Anam qua day THAY VI
+/// goi thang API key trong app (Env.anamApiKeyDirect) - day la cach dung
+/// nen, vi ANAM_API_KEY that CHI nam tren Vercel, khong con bi nhung vao
+/// APK nua.
+///
+/// Gia tri nay CUNG chinh la noi Anam tu dong xin token moi khi phien 3
+/// phut (gioi han goi Free) bi dong dot ngot - xem
+/// AnamLiveAvatar._onSessionExpired trong anam_live_avatar.dart.
+const kAnamVercelProxyUrl = 'https://anam-session-proxy.vercel.app';

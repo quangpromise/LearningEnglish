@@ -50,4 +50,28 @@ class AnamSessionApi {
     }
     return token;
   }
+
+  /// Doi session token qua serverless function Vercel (xem
+  /// anam_vercel_server/api/main.py) thay vi goi thang API key trong app -
+  /// day la cach dung nen sau khi da deploy (xem kAnamVercelProxyUrl trong
+  /// voice_chat_config.dart), vi API key that CHI nam tren Vercel, khong
+  /// con bi nhung vao APK nua.
+  static Future<String> fetchSessionTokenFromProxy(String proxyUrl) async {
+    final res = await http
+        .get(Uri.parse(proxyUrl))
+        .timeout(const Duration(seconds: 10));
+
+    if (res.statusCode != 200) {
+      throw Exception(
+        'Vercel proxy request failed (${res.statusCode}): ${res.body}',
+      );
+    }
+
+    final data = jsonDecode(res.body) as Map<String, dynamic>;
+    final token = data['sessionToken'] as String?;
+    if (token == null || token.isEmpty) {
+      throw Exception('Vercel proxy response missing sessionToken');
+    }
+    return token;
+  }
 }

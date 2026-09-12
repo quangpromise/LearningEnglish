@@ -146,6 +146,10 @@ class GeminiLiveDirectClient implements VoiceChatSession {
   @override
   Stream<void> get turnAudioEnd => _turnAudioEndController.stream;
 
+  final _partialAiTextController = StreamController<String>.broadcast();
+  @override
+  Stream<String> get partialAiText => _partialAiTextController.stream;
+
   @override
   Future<void> start() async {
     if (!await _recorder.hasPermission()) {
@@ -270,6 +274,9 @@ class GeminiLiveDirectClient implements VoiceChatSession {
         'realtimeInput': {'activityEnd': <String, dynamic>{}},
       }),
     );
+    // Xoa ban nhap "dang go" cu (neu con sot) truoc khi cho luot moi -
+    // xem VoiceChatSession.partialAiText.
+    _partialAiTextController.add('');
     _stateController.add(VoiceChatState.thinking);
   }
 
@@ -329,7 +336,12 @@ class GeminiLiveDirectClient implements VoiceChatSession {
     final outputChunk =
         (serverContent['outputTranscription'] as Map<String, dynamic>?)?['text']
             as String?;
-    if (outputChunk != null) _outputText.write(outputChunk);
+    if (outputChunk != null) {
+      _outputText.write(outputChunk);
+      // Hien ngay ban nhap tang dan - khong doi turnComplete moi hien text,
+      // xem giai thich o VoiceChatSession.partialAiText.
+      _partialAiTextController.add(_outputText.toString());
+    }
 
     if (serverContent['turnComplete'] == true) {
       if (_turnAudio.isNotEmpty) {
@@ -348,6 +360,9 @@ class GeminiLiveDirectClient implements VoiceChatSession {
 
       var aiText = _outputText.toString().trim();
       _outputText.clear();
+      // Chot xong tin nhan hoan chinh trong _messages - xoa bubble "dang go"
+      // tam thoi de khong bi hien trung 2 lan (1 o preview, 1 o list chinh).
+      _partialAiTextController.add('');
       if (aiText.isNotEmpty) {
         final correction = _extractCorrection(aiText);
         if (correction != null) {
@@ -425,6 +440,7 @@ class GeminiLiveDirectClient implements VoiceChatSession {
     _transcriptController.close();
     _liveAudioController.close();
     _turnAudioEndController.close();
+    _partialAiTextController.close();
     _recorder.dispose();
   }
 }

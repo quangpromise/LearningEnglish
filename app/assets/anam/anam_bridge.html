@@ -30,14 +30,25 @@
 </style>
 </head>
 <body>
-  <video id="anam-video" autoplay playsinline muted="false"></video>
+  <!-- KHONG duoc dat thuoc tinh "muted" tren the nay du kem gia tri gi -
+       muted la boolean attribute cua HTML: CHI CAN CO MAT la video bi cam
+       tieng, bat ke ghi muted="false" hay muted="0". Day chinh la nguyen
+       nhan goc cua bug "avatar map may moi nhung khong ra tieng" - stream
+       WebRTC tra ve tu Anam (audio passthrough) da mang san am thanh dong
+       bo voi video (xem streamToVideoElement/createAgentAudioInputStream
+       trong docs Anam), chi can KHONG bi mute la nghe duoc, khong can tu
+       dung Web Audio API phat lai rieng (da bo hoan toan lop do - vua thua
+       vua la nguon xung dot/tre tiem an). mediaPlaybackRequiresUserGesture
+       da tat o phia Dart (anam_live_avatar.dart) nen video co the tu phat
+       ca tieng lan hinh ma khong can nguoi dung cham vao man hinh truoc. -->
+  <video id="anam-video" autoplay playsinline></video>
 
   <script type="module">
     // Ban ESM build cua @anam-ai/js-sdk qua jsdelivr +esm (tu dong bundle
     // dependency noi bo) - KHONG can npm/bundler rieng, phu hop nhung file
     // HTML tinh nam trong assets Flutter. Ghim version ro rang, kiem tra lai
     // https://www.npmjs.com/package/@anam-ai/js-sdk neu can nang cap.
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@anam-ai/js-sdk@4.27.0/+esm';
+    import { createClient, AnamEvent } from 'https://cdn.jsdelivr.net/npm/@anam-ai/js-sdk@4.27.0/+esm';
 
     const VIDEO_ELEMENT_ID = 'anam-video';
     // Dinh dang audio Gemini Live tra ve (PCM 16-bit, mono, 24kHz - xem
@@ -50,6 +61,13 @@
 
     let anamClient = null;
     let audioInputStream = null;
+    const videoEl = document.getElementById(VIDEO_ELEMENT_ID);
+    // true chi trong luc chinh window.stopAnam() dang dong ket noi CHU DINH
+    // (roi man hinh, dispose Widget...) - CONNECTION_CLOSED nhan duoc luc do
+    // KHONG duoc coi la "phien het han ngoai y muon", tranh vong lap goi
+    // fetchNewAnamToken()/restartAnamSession vo ich sau khi nguoi dung da
+    // chu dong thoat.
+    let intentionalStop = false;
 
     /** Bao trang thai/loi ve phia Flutter qua channel cua flutter_inappwebview
      *  (dang ky bang controller.addJavaScriptHandler('anamEvent', ...) ben
@@ -74,15 +92,81 @@
         if (anamClient) {
           await window.stopAnam();
         }
+        intentionalStop = false;
 
         anamClient = createClient(sessionToken, {
           // Tat mic cua chinh WebView - nguoi dung da noi qua mic that o
           // tang Flutter (record package), Anam KHONG duoc tu xin quyen mic
-          // rieng trong WebView nua vi se dam voi nhau.
+          // rieng trong WebView nua vi se dam voi nhau. Bo qua duoc luon
+          // buoc xin quyen mic cua trinh duyet (von gay tre dang ke luc
+          // khoi dong) vi flag nay tat hoan toan input audio cua Anam.
           disableInputAudio: true,
+          // sessionOptions.videoQuality: "high" (MAC DINH cua Anam) moi la
+          // che do ep bitrate cao nhat NGAY TU DAU (khong ramp-up dan) -
+          // "auto" nguoc lai la che do ABR, TU TANG DAN bitrate tu thap len
+          // cao. Doi voi muc tieu "thay khung hinh dau tien nhanh nhat"
+          // (time-to-first-frame) tren mang di dong khong on dinh, "auto"
+          // thuc te thuong NHANH HON vi khong phai cho dam phan/dem du bang
+          // thong cho bitrate cao truoc khi hien frame nao - danh doi la
+          // frame dau co the hoi mo, net dan len sau vai giay.
+          sessionOptions: {
+            videoQuality: 'auto',
+          },
+        });
+
+        // Goi Free cua Anam tu dong dong phien sau 1 khoang thoi gian nhat
+        // dinh (maxSessionLengthSeconds dat trong
+        // anam_vercel_server/api/main.py, mac dinh 180s) - CONNECTION_CLOSED
+        // se bao hieu luc do. Bao ngay ve Flutter qua 1 handler RIENG
+        // ('anamSessionExpired', khac voi kenh 'anamEvent' dung cho
+        // ready/error) de Flutter tu xin token moi + goi lai initAnam(),
+        // khong can nguoi dung tu mo lai man hinh.
+        anamClient.addListener(AnamEvent.CONNECTION_CLOSED, (reason, details) => {
+          if (intentionalStop) return;
+          try {
+            if (window.flutter_inappwebview) {
+              window.flutter_inappwebview.callHandler(
+                'anamSessionExpired',
+                String(reason ?? ''),
+                details ? String(details) : null,
+              );
+            }
+          } catch (e) {
+            // Bo qua - khong co cau moi de bao.
+          }
+        });
+
+        // Bao Flutter biet khung hinh dau tien THUC SU da hien de an anh
+        // tinh che WebView (xem AnamLiveAvatar/ai_voice_chat_screen.dart) -
+        // dung VIDEO_PLAY_STARTED (frame that su bat dau phat) thay vi
+        // CONNECTION_ESTABLISHED (chi la WebRTC da noi xong, co the xay ra
+        // TRUOC khi co frame nao render, an anh tinh luc do se lo ra 1
+        // khoang den/trong ngan truoc khi video that su xuat hien).
+        anamClient.addListener(AnamEvent.VIDEO_PLAY_STARTED, () => {
+          try {
+            if (window.flutter_inappwebview) {
+              window.flutter_inappwebview.callHandler('avatarReady');
+            }
+          } catch (e) {
+            // Bo qua - khong co cau moi de bao.
+          }
         });
 
         await anamClient.streamToVideoElement(VIDEO_ELEMENT_ID);
+        // Dam bao thuoc tinh muted THAT SU la false tren DOM property (khac
+        // voi HTML attribute) - phong truong hop trinh duyet/SDK tu dat lai
+        // muted=true sau khi gan srcObject (mot so browser mac dinh mute
+        // video moi de duoc phep autoplay, roi cho code tu bo mute sau khi
+        // xac nhan duoc phep phat co tieng - o day da tat yeu cau gesture
+        // qua mediaPlaybackRequiresUserGesture:false nen bo duoc ngay).
+        if (videoEl) {
+          videoEl.muted = false;
+          videoEl.volume = 1.0;
+          // play() co the bi tu choi neu WebView van ap dung autoplay
+          // policy rieng - thu goi lai 1 lan, bo qua loi neu co (video van
+          // tu autoplay duoc nho attribute autoplay trong da so truong hop).
+          videoEl.play().catch(() => {});
+        }
 
         audioInputStream = anamClient.createAgentAudioInputStream({
           encoding: AUDIO_ENCODING,
@@ -98,9 +182,12 @@
 
     /** Nhan 1 doan audio Gemini Live (PCM16 24kHz mono, ma hoa base64) tu
      *  tang Flutter va nap thang vao mieng avatar de lipsync realtime - goi
-     *  lai lien tuc, cang nhieu chunk nho cang giam do tre (xem
-     *  AnamLiveAvatar.sendAudioChunk ben Dart, duoc GeminiLiveDirectClient
-     *  goi moi khi co inlineData audio moi, TRUOC ca khi luot noi ket thuc). */
+     *  lai lien tuc, cang nhieu chunk nho cang giam do tre. KHONG tu phat
+     *  lai am thanh o day - video WebRTC (streamToVideoElement o tren) da
+     *  tu mang san audio dong bo voi lipsync, tu phat rieng qua Web Audio
+     *  API se tao ra 2 nguon tieng ganh nhau (hoac ca 2 cung khong phat
+     *  duoc do tranh chap AudioContext) - day chinh la nguyen nhan bug
+     *  "avatar map may moi nhung khong nghe tieng" truoc do. */
     window.sendGeminiStreamToAnam = function sendGeminiStreamToAnam(audioChunkBase64) {
       if (!audioInputStream || !audioChunkBase64) return;
       try {
@@ -112,6 +199,23 @@
         audioInputStream.sendAudioChunk(bytes);
       } catch (e) {
         notifyFlutter('error', 'sendAudioChunk: ' + String(e && e.message ? e.message : e));
+      }
+    };
+
+    /** Flutter goi khi nguoi dung bat dau noi de ngat loi (barge-in) - xoa
+     *  ngay hang doi audio dang cho lipsync/phat, tranh avatar noi de len
+     *  loi nguoi dung dang noi. */
+    window.interruptPersona = function interruptPersona() {
+      try {
+        if (anamClient && typeof anamClient.interruptPersona === 'function') {
+          anamClient.interruptPersona();
+        }
+        if (audioInputStream && typeof audioInputStream.endSequence === 'function') {
+          audioInputStream.endSequence();
+        }
+        notifyFlutter('interrupted');
+      } catch (e) {
+        notifyFlutter('error', 'interruptPersona: ' + String(e && e.message ? e.message : e));
       }
     };
 
@@ -129,6 +233,7 @@
     /** Dong hoan toan phien WebRTC - goi khi roi man AI Voice Chat hoac dispose
      *  Widget. */
     window.stopAnam = async function stopAnam() {
+      intentionalStop = true;
       try {
         await anamClient?.stopStreaming();
       } catch (e) {
@@ -138,6 +243,15 @@
         audioInputStream = null;
       }
     };
+
+    /** Ten goi tu Flutter khi can noi lai sau khi phien cu bi Anam tu dong
+     *  dong (CONNECTION_CLOSED, xem tren) - thuc chat CHINH LA initAnam(),
+     *  vi SDK Anam KHONG co API "resume/reconnect" rieng, cach dung dung la
+     *  tao lai client hoan toan tu 1 session token moi (xem docs.anam.ai/
+     *  sdk-reference/events - khong co client.start()/reconnect() nao duoc
+     *  cong bo). Dat alias rieng ten de code Dart goi cho ro nghia, khong
+     *  phai vi hanh vi khac initAnam. */
+    window.restartAnamSession = window.initAnam;
 
     notifyFlutter('script_loaded');
   </script>

@@ -66,3 +66,10 @@ backend/**/*.pyc
 # duoc chen thang vao songs_data.dart o buoc emit, khong giu 2 ban de tranh
 # lech nhau.
 content/pending/
+
+# Serverless proxy Anam session token - da tach thanh repo Git RIENG
+# (github.com/quangpromise/anam-session-proxy, tu deploy Vercel), thu muc
+# nay o day chi de tham khao/chinh sua tai cho + tu day len repo rieng, KHONG
+# commit vao repo app (tranh loi "embedded git repository" vi no da co
+# .git rieng ben trong).
+anam_vercel_server/
