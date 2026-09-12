@@ -18,7 +18,6 @@ Color personaColor(LearningPersona persona) => switch (persona) {
 };
 
 /// Key i18n cho ten hien thi cua 1 persona (dang ky trong app_strings.dart,
-/// vd 'persona_name_beginner') - dung o man learning_path_screen.dart de
-/// hien thi "Lo trinh: {ten persona}".
+/// vd 'persona_name_beginner').
 String personaNameKey(LearningPersona persona) =>
     'persona_name_${persona.name}';

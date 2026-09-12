@@ -15,3 +15,18 @@ const kVoiceChatBackendUrl = 'wss://your-backend-host.example/voice-chat';
 /// nam trong source code, no van bi nhung thang vao file APK sau khi build).
 /// Doi lai `false` va dung [kVoiceChatBackendUrl] ngay khi co server that.
 const kUseDirectGeminiConnection = true;
+
+/// Bat/tat avatar sieu thuc Anam.ai (WebRTC, lipsync theo audio Gemini Live
+/// tra ve) hien phia tren khung chat - xem AnamLiveAvatar +
+/// GeminiLiveDirectClient.liveAudioChunks/turnAudioEnd. CHI hoat dong khi
+/// [kUseDirectGeminiConnection] = true, vi VoiceChatClient (qua backend) chua
+/// lam viec phat audio tung chunk truoc khi het luot noi.
+const kUseAnamAvatar = false;
+
+/// ID avatar da tao san tren Anam.ai (xem anam.ai/dashboard).
+const kAnamAvatarId = '68b4b44d-874b-4343-a1c9-b97d3c4a4d6e';
+
+/// Model render avatar - "cara-4" la model moi nhat Anam ho tro audio
+/// passthrough luc viet code nay (2026-09), doi lai neu Anam doi ten model
+/// hoac dashboard cua avatar tren bao model khac.
+const kAnamAvatarModel = 'cara-4';

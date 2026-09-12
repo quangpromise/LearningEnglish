@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:audio_session/audio_session.dart';
 import 'package:audioplayers/audioplayers.dart' as ap;
@@ -16,11 +17,13 @@ import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/tts/app_tts.dart';
 import '../../../core/widgets/speaker_button.dart';
+import '../data/anam_session_api.dart';
 import '../data/gemini_live_direct_client.dart';
 import '../data/gemini_voices.dart';
 import '../data/voice_chat_client.dart';
 import '../data/voice_chat_config.dart';
 import '../../translation/presentation/word_popup_sheet.dart';
+import 'anam_live_avatar.dart';
 import 'gemini_voice_picker_sheet.dart';
 
 /// AI Voice Chat: tro chuyen tu do bang giong noi voi AI qua backend
@@ -44,6 +47,11 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
   StreamSubscription<VoiceChatState>? _stateSub;
   StreamSubscription<List<int>>? _audioSub;
   StreamSubscription<TranscriptEvent>? _transcriptSub;
+  StreamSubscription<Uint8List>? _liveAudioSub;
+  StreamSubscription<void>? _turnAudioEndSub;
+  // Chi duoc dung khi kUseAnamAvatar = true - xem build()/_toggle().
+  final _anamKey = GlobalKey<AnamLiveAvatarState>();
+  bool _anamReady = false;
   // Dung `audioplayers` (KHONG dung just_audio) - xem giai thich chi tiet
   // trong pubspec.yaml/app_tts.dart: just_audio_background chi ho tro DUY
   // NHAT 1 AudioPlayer trong toan app (NowPlayingService.player), 1
@@ -108,6 +116,8 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
     _stateSub?.cancel();
     _audioSub?.cancel();
     _transcriptSub?.cancel();
+    _liveAudioSub?.cancel();
+    _turnAudioEndSub?.cancel();
     _client?.dispose();
     _player.dispose();
     _scrollCtrl.dispose();
@@ -176,6 +186,21 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
       _audioSub = client.incomingAudio.listen(_playResponse);
       _transcriptSub?.cancel();
       _transcriptSub = client.transcriptStream.listen(_onTranscript);
+
+      // Nap tung chunk audio ngay khi Gemini tra ve vao mieng avatar Anam de
+      // lipsync realtime, do tre thap nhat - xem
+      // VoiceChatSession.liveAudioChunks/turnAudioEnd. Chi GeminiLiveDirectClient
+      // ho tro (2 stream nay rong o VoiceChatClient qua backend).
+      if (kUseAnamAvatar) {
+        _liveAudioSub?.cancel();
+        _liveAudioSub = client.liveAudioChunks.listen(
+          (chunk) => _anamKey.currentState?.sendAudioChunk(chunk),
+        );
+        _turnAudioEndSub?.cancel();
+        _turnAudioEndSub = client.turnAudioEnd.listen(
+          (_) => _anamKey.currentState?.endTurn(),
+        );
+      }
     }
 
     setState(() {
@@ -322,6 +347,11 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
     _pendingAudioFuture = future;
     final path = await future;
     if (path == null) return;
+    // Van luu file de nut "nghe lai" tren bong chat dung duoc (xem
+    // _replayAudio) - chi bo qua phat NGAY luc nay, vi Anam da tu phat tieng
+    // dong bo voi video qua WebRTC roi (xem AnamLiveAvatar), phat them lan
+    // nua o day se bi vang/lech dong bo 2 nguon tieng.
+    if (kUseAnamAvatar && _anamReady) return;
     try {
       await _ensurePlaybackSession();
       await _player.play(ap.DeviceFileSource(path));
@@ -444,6 +474,31 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
             ),
             Text(ref.tr('voice_chat_subtitle'), style: AppTextStyles.muted()),
             const SizedBox(height: 12),
+            if (kUseAnamAvatar) ...[
+              ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: SizedBox(
+                  height: 220,
+                  width: double.infinity,
+                  child: AnamLiveAvatar(
+                    key: _anamKey,
+                    sessionTokenProvider: () =>
+                        AnamSessionApi.fetchSessionToken(
+                          apiKey: Env.anamApiKeyDirect,
+                          avatarId: kAnamAvatarId,
+                          avatarModel: kAnamAvatarModel,
+                        ),
+                    onReady: () {
+                      if (mounted) setState(() => _anamReady = true);
+                    },
+                    onError: (msg) {
+                      if (mounted) setState(() => _anamReady = false);
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
             Expanded(
               child: _messages.isEmpty
                   ? Center(

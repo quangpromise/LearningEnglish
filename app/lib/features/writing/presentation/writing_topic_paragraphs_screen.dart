@@ -6,10 +6,8 @@ import '../../../core/i18n/app_strings.dart';
 import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/pointing_hand_badge.dart';
 import '../../learning_path/data/learning_path_models.dart';
 import '../../learning_path/presentation/learner_level_banner.dart';
-import '../../learning_path/presentation/learning_path_accent.dart';
 import '../data/writing_bank.dart';
 import '../data/writing_paragraph_data.dart';
 import '../data/writing_progress.dart';
@@ -27,12 +25,8 @@ class WritingTopicParagraphsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final lang = ref.watch(appLanguageProvider);
     final level = ref.watch(learnerLevelProvider);
-    final persona = ref.watch(learningPathChoiceProvider).valueOrNull;
     final done = ref.watch(writingDoneParagraphsProvider).valueOrNull ?? {};
     final paragraphs = topic.paragraphsFor(level);
-    final handParagraph = level == null || persona == null
-        ? null
-        : paragraphs.where((p) => !done.contains(p.id)).firstOrNull;
 
     Widget item(WritingParagraph p, int number) => _ParagraphTile(
       number: number,
@@ -40,7 +34,6 @@ class WritingTopicParagraphsScreen extends ConsumerWidget {
       subtitle: '${p.sentences.length} ${ref.tr('writing_sentence_count')}',
       color: topic.color,
       done: done.contains(p.id),
-      handColor: p == handParagraph ? personaColor(persona!) : null,
       onTap: () => openAppPopup(context, WritingParagraphScreen(paragraph: p)),
     );
 
@@ -132,7 +125,6 @@ class _ParagraphTile extends StatelessWidget {
     required this.color,
     required this.done,
     required this.onTap,
-    this.handColor,
   });
 
   final int number;
@@ -141,68 +133,54 @@ class _ParagraphTile extends StatelessWidget {
   final Color color;
   final bool done;
   final VoidCallback onTap;
-  final Color? handColor;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          GlowBox(
-            borderRadius: 18,
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [color, color.withValues(alpha: 0.6)],
-                    ),
-                    borderRadius: BorderRadius.circular(13),
-                  ),
-                  child: Center(
-                    child: Text(
-                      '$number',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 15,
-                      ),
-                    ),
+      child: GlowBox(
+        borderRadius: 18,
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [color, color.withValues(alpha: 0.6)],
+                ),
+                borderRadius: BorderRadius.circular(13),
+              ),
+              child: Center(
+                child: Text(
+                  '$number',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 15,
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: AppTextStyles.body(weight: FontWeight.w800),
-                      ),
-                      Text(subtitle, style: AppTextStyles.muted(size: 11)),
-                    ],
-                  ),
-                ),
-                Icon(
-                  done
-                      ? Icons.check_circle_rounded
-                      : Icons.chevron_right_rounded,
-                  color: done ? AppColors.teal : AppColors.textMuted,
-                ),
-              ],
+              ),
             ),
-          ),
-          if (handColor != null)
-            Positioned(
-              right: 36,
-              bottom: -8,
-              child: PointingHandBadge(color: handColor!),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: AppTextStyles.body(weight: FontWeight.w800),
+                  ),
+                  Text(subtitle, style: AppTextStyles.muted(size: 11)),
+                ],
+              ),
             ),
-        ],
+            Icon(
+              done ? Icons.check_circle_rounded : Icons.chevron_right_rounded,
+              color: done ? AppColors.teal : AppColors.textMuted,
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -138,6 +138,14 @@ class GeminiLiveDirectClient implements VoiceChatSession {
   @override
   Stream<TranscriptEvent> get transcriptStream => _transcriptController.stream;
 
+  final _liveAudioController = StreamController<Uint8List>.broadcast();
+  @override
+  Stream<Uint8List> get liveAudioChunks => _liveAudioController.stream;
+
+  final _turnAudioEndController = StreamController<void>.broadcast();
+  @override
+  Stream<void> get turnAudioEnd => _turnAudioEndController.stream;
+
   @override
   Future<void> start() async {
     if (!await _recorder.hasPermission()) {
@@ -304,7 +312,11 @@ class GeminiLiveDirectClient implements VoiceChatSession {
                 as Map<String, dynamic>?;
         final data = inlineData?['data'] as String?;
         if (data != null) {
-          _turnAudio.addAll(base64Decode(data));
+          final chunk = base64Decode(data);
+          _turnAudio.addAll(chunk);
+          // Phat ngay cho AnamLiveAvatar (neu dang bat) truoc ca khi turn
+          // ket thuc - xem VoiceChatSession.liveAudioChunks.
+          _liveAudioController.add(Uint8List.fromList(chunk));
         }
       }
     }
@@ -324,6 +336,7 @@ class GeminiLiveDirectClient implements VoiceChatSession {
         _audioController.add(_pcmToWav(Uint8List.fromList(_turnAudio)));
         _turnAudio.clear();
       }
+      _turnAudioEndController.add(null);
 
       final userText = _inputText.toString().trim();
       _inputText.clear();
@@ -410,6 +423,8 @@ class GeminiLiveDirectClient implements VoiceChatSession {
     _stateController.close();
     _audioController.close();
     _transcriptController.close();
+    _liveAudioController.close();
+    _turnAudioEndController.close();
     _recorder.dispose();
   }
 }

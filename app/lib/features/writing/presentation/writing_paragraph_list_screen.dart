@@ -6,10 +6,8 @@ import '../../../core/i18n/app_strings.dart';
 import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/pointing_hand_badge.dart';
 import '../../learning_path/data/learning_path_models.dart';
 import '../../learning_path/presentation/learner_level_banner.dart';
-import '../../learning_path/presentation/learning_path_accent.dart';
 import '../data/writing_bank.dart';
 import '../data/writing_progress.dart';
 import 'writing_mixed_list_screen.dart';
@@ -27,17 +25,11 @@ class WritingParagraphListScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final lang = ref.watch(appLanguageProvider);
     final level = ref.watch(learnerLevelProvider);
-    final persona = ref.watch(learningPathChoiceProvider).valueOrNull;
     final done = ref.watch(writingDoneParagraphsProvider).valueOrNull ?? {};
     final showMixed = level == null || level == LearnerLevel.advanced;
 
     int doneCount(WritingTopic t) =>
         t.paragraphsFor(level).where((p) => done.contains(p.id)).length;
-    final handTopic = level == null || persona == null
-        ? null
-        : kWritingTopics
-              .where((t) => doneCount(t) < t.paragraphsFor(level).length)
-              .firstOrNull;
 
     return ScreenBackground(
       child: Padding(
@@ -99,7 +91,6 @@ class WritingParagraphListScreen extends ConsumerWidget {
                           ' · ${ref.tr('writing_done_count').replaceFirst('{done}', '${doneCount(t)}').replaceFirst('{total}', '${t.paragraphsFor(level).length}')}',
                       icon: t.icon,
                       color: t.color,
-                      handColor: t == handTopic ? personaColor(persona!) : null,
                       onTap: () => openAppPopup(
                         context,
                         WritingTopicParagraphsScreen(topic: t),
@@ -135,7 +126,6 @@ class _TopicCard extends StatelessWidget {
     required this.icon,
     required this.color,
     required this.onTap,
-    this.handColor,
   });
 
   final String title;
@@ -144,58 +134,41 @@ class _TopicCard extends StatelessWidget {
   final Color color;
   final VoidCallback onTap;
 
-  /// Khac null = chu de goi y tiep theo -> gan ban tay (luon hien).
-  final Color? handColor;
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          GlowBox(
-            borderRadius: 18,
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [color, color.withValues(alpha: 0.6)],
-                    ),
-                    borderRadius: BorderRadius.circular(13),
-                  ),
-                  child: Icon(icon, color: Colors.white, size: 20),
+      child: GlowBox(
+        borderRadius: 18,
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [color, color.withValues(alpha: 0.6)],
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: AppTextStyles.body(weight: FontWeight.w800),
-                      ),
-                      Text(subtitle, style: AppTextStyles.muted(size: 11)),
-                    ],
-                  ),
-                ),
-                const Icon(
-                  Icons.chevron_right_rounded,
-                  color: AppColors.textMuted,
-                ),
-              ],
+                borderRadius: BorderRadius.circular(13),
+              ),
+              child: Icon(icon, color: Colors.white, size: 20),
             ),
-          ),
-          if (handColor != null)
-            Positioned(
-              right: 36,
-              bottom: -8,
-              child: PointingHandBadge(color: handColor!),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: AppTextStyles.body(weight: FontWeight.w800),
+                  ),
+                  Text(subtitle, style: AppTextStyles.muted(size: 11)),
+                ],
+              ),
             ),
-        ],
+            const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
+          ],
+        ),
       ),
     );
   }

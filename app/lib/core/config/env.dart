@@ -44,4 +44,19 @@ class Env {
   /// hardcode gia tri that vao day, luon truyen qua
   /// --dart-define=GIPHY_API_KEY=... (CI da cau hinh sẵn secret GIPHY_API_KEY).
   static const giphyApiKey = String.fromEnvironment('GIPHY_API_KEY');
+
+  /// TAM THOI (cung tinh chat voi geminiApiKeyDirect o tren): API key that
+  /// cua Anam.ai, dung de app tu goi thang REST API
+  /// POST https://api.anam.ai/v1/auth/session-token va doi lay session token
+  /// ngan han cho AnamLiveAvatar (xem
+  /// ai_voice_chat/data/anam_session_api.dart). Khong hardcode gia tri that,
+  /// luon truyen qua --dart-define=ANAM_API_KEY_DIRECT=...
+  ///
+  /// CANH BAO BAO MAT giong het geminiApiKeyDirect: key nay se bi nhung vao
+  /// APK sau khi build, ai decompile APK deu lay duoc va dung duoc quota Anam
+  /// cua ban. Chi dung tam trong luc phat trien/test - truoc khi phat APK
+  /// that cho nguoi dung, PHAI chuyen viec tao session token sang 1 backend
+  /// rieng (vd them 1 endpoint nho vao backend/gemini-proxy) de key that chi
+  /// nam tren server, khong bao gio xuong may nguoi dung.
+  static const anamApiKeyDirect = String.fromEnvironment('ANAM_API_KEY_DIRECT');
 }

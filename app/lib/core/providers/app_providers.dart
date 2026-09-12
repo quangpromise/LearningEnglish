@@ -173,16 +173,6 @@ final learnerLevelProvider = Provider<LearnerLevel?>(
   (ref) => ref.watch(learningPathChoiceProvider).valueOrNull?.level,
 );
 
-/// Tap hop step_index da hoan thanh cua 1 persona (man
-/// learning_path_screen.dart) - autoDispose vi chi can khi man do dang mo,
-/// invalidate sau moi lan markStepCompleted/unmarkStepCompleted de cap nhat
-/// thanh tien do ngay.
-final learningPathProgressProvider = FutureProvider.autoDispose
-    .family<Set<int>, LearningPersona>(
-      (ref, persona) =>
-          ref.watch(learningPathRepositoryProvider).fetchProgress(persona),
-    );
-
 final leaderboardRepositoryProvider = Provider<LeaderboardRepository>(
   (ref) => LeaderboardRepository(ref.watch(supabaseClientProvider)),
 );

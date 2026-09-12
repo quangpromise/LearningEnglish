@@ -113,6 +113,12 @@ dependencies:
   # ^1.0.0 (khong phai 0.69 truoc day) vi CandlestickChart (nen xanh/do kieu
   # OKX) chi co tu fl_chart 1.0.0 tro len.
   fl_chart: ^1.2.0
+  # Hien avatar sieu thuc Anam.ai (video WebRTC + lipsync realtime) qua 1 file
+  # HTML nhung trong assets - MIT, mien phi. Xem
+  # ai_voice_chat/presentation/anam_live_avatar.dart va
+  # assets/anam/anam_bridge.html. Chi dung khi kUseAnamAvatar = true (xem
+  # voice_chat_config.dart).
+  flutter_inappwebview: ^6.1.5
 
 dev_dependencies:
   flutter_test:
@@ -164,6 +170,7 @@ flutter:
     - assets/home/
     - assets/wealth/
     - assets/toeic/
+    - assets/anam/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Anam Live Avatar Bridge</title>
+<style>
+  /* Video WebRTC tran toan man hinh, an moi control mac dinh - Anam SDK
+     khong tu ve control nao len tren <video>, nhung de phong SDK doi API va
+     tu ve them UI rieng trong tuong lai, khoa cung object-fit/pointer-events
+     o day luon. */
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    overflow: hidden;
+  }
+  #anam-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background: #000;
+    pointer-events: none;
+  }
+  #anam-video::-webkit-media-controls {
+    display: none !important;
+  }
+</style>
+</head>
+<body>
+  <video id="anam-video" autoplay playsinline muted="false"></video>
+
+  <script type="module">
+    // Ban ESM build cua @anam-ai/js-sdk qua jsdelivr +esm (tu dong bundle
+    // dependency noi bo) - KHONG can npm/bundler rieng, phu hop nhung file
+    // HTML tinh nam trong assets Flutter. Ghim version ro rang, kiem tra lai
+    // https://www.npmjs.com/package/@anam-ai/js-sdk neu can nang cap.
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@anam-ai/js-sdk@4.27.0/+esm';
+
+    const VIDEO_ELEMENT_ID = 'anam-video';
+    // Dinh dang audio Gemini Live tra ve (PCM 16-bit, mono, 24kHz - xem
+    // GeminiLiveDirectClient._outputSampleRate ben Dart) - khai bao dung
+    // sampleRate nay de Anam KHONG can ta resample truoc, tranh mat them do
+    // tre + rui ro lech dong bo tieng/hinh.
+    const AUDIO_ENCODING = 'pcm_s16le';
+    const AUDIO_SAMPLE_RATE = 24000;
+    const AUDIO_CHANNELS = 1;
+
+    let anamClient = null;
+    let audioInputStream = null;
+
+    /** Bao trang thai/loi ve phia Flutter qua channel cua flutter_inappwebview
+     *  (dang ky bang controller.addJavaScriptHandler('anamEvent', ...) ben
+     *  Dart - xem anam_live_avatar.dart). */
+    function notifyFlutter(type, detail) {
+      try {
+        if (window.flutter_inappwebview) {
+          window.flutter_inappwebview.callHandler('anamEvent', type, detail ?? null);
+        }
+      } catch (e) {
+        // Khong co cau moi (vd dang mo file nay truc tiep tren trinh duyet
+        // thuong de test) - bo qua, khong lam gian doan luong avatar.
+      }
+    }
+
+    /** Flutter goi ham nay 1 lan sau khi doi duoc sessionToken tu
+     *  AnamSessionApi.fetchSessionToken (xem anam_session_api.dart) - KHONG
+     *  bao gio truyen API key that vao day, chi truyen session token ngan
+     *  han. */
+    window.initAnam = async function initAnam(sessionToken) {
+      try {
+        if (anamClient) {
+          await window.stopAnam();
+        }
+
+        anamClient = createClient(sessionToken, {
+          // Tat mic cua chinh WebView - nguoi dung da noi qua mic that o
+          // tang Flutter (record package), Anam KHONG duoc tu xin quyen mic
+          // rieng trong WebView nua vi se dam voi nhau.
+          disableInputAudio: true,
+        });
+
+        await anamClient.streamToVideoElement(VIDEO_ELEMENT_ID);
+
+        audioInputStream = anamClient.createAgentAudioInputStream({
+          encoding: AUDIO_ENCODING,
+          sampleRate: AUDIO_SAMPLE_RATE,
+          channels: AUDIO_CHANNELS,
+        });
+
+        notifyFlutter('ready');
+      } catch (e) {
+        notifyFlutter('error', String(e && e.message ? e.message : e));
+      }
+    };
+
+    /** Nhan 1 doan audio Gemini Live (PCM16 24kHz mono, ma hoa base64) tu
+     *  tang Flutter va nap thang vao mieng avatar de lipsync realtime - goi
+     *  lai lien tuc, cang nhieu chunk nho cang giam do tre (xem
+     *  AnamLiveAvatar.sendAudioChunk ben Dart, duoc GeminiLiveDirectClient
+     *  goi moi khi co inlineData audio moi, TRUOC ca khi luot noi ket thuc). */
+    window.sendGeminiStreamToAnam = function sendGeminiStreamToAnam(audioChunkBase64) {
+      if (!audioInputStream || !audioChunkBase64) return;
+      try {
+        const binary = atob(audioChunkBase64);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) {
+          bytes[i] = binary.charCodeAt(i);
+        }
+        audioInputStream.sendAudioChunk(bytes);
+      } catch (e) {
+        notifyFlutter('error', 'sendAudioChunk: ' + String(e && e.message ? e.message : e));
+      }
+    };
+
+    /** Flutter goi khi Gemini Live bao 1 luot AI noi da xong (turnComplete) -
+     *  bao Anam biet khong con audio nao them cho cau tra loi nay, de no
+     *  ngung cho/flush buffer lipsync dung luc thay vi treo mieng cho hoai. */
+    window.endAnamTurn = function endAnamTurn() {
+      try {
+        audioInputStream && audioInputStream.endSequence();
+      } catch (e) {
+        notifyFlutter('error', 'endSequence: ' + String(e && e.message ? e.message : e));
+      }
+    };
+
+    /** Dong hoan toan phien WebRTC - goi khi roi man AI Voice Chat hoac dispose
+     *  Widget. */
+    window.stopAnam = async function stopAnam() {
+      try {
+        await anamClient?.stopStreaming();
+      } catch (e) {
+        // Bo qua loi luc dong - khong quan trong bang viec dam bao chay xong.
+      } finally {
+        anamClient = null;
+        audioInputStream = null;
+      }
+    };
+
+    notifyFlutter('script_loaded');
+  </script>
+</body>
+</html>

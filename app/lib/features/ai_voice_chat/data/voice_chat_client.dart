@@ -80,6 +80,19 @@ abstract class VoiceChatSession {
   /// transcription that su); backend/gemini-proxy chua lam viec nay.
   Stream<TranscriptEvent> get transcriptStream =>
       const Stream<TranscriptEvent>.empty();
+
+  /// Tung chunk audio PCM16 tho cua AI, phat ra NGAY luc nhan duoc tu server
+  /// (truoc ca khi luot noi ket thuc) - danh cho AnamLiveAvatar nap vao
+  /// mieng avatar de lipsync realtime, do tre thap nhat co the. Mac dinh
+  /// rong - chi GeminiLiveDirectClient ho tro; backend/gemini-proxy chua
+  /// stream tung chunk kieu nay (xem incomingAudio: chi tra ve 1 file WAV
+  /// hoan chinh sau khi het luot noi).
+  Stream<Uint8List> get liveAudioChunks => const Stream<Uint8List>.empty();
+
+  /// Bao AI vua noi xong 1 luot (turnComplete) - AnamLiveAvatar dung tin
+  /// hieu nay de goi endAnamTurn() ben JS, bao Anam khong con audio nao them
+  /// cho cau tra loi vua roi. Mac dinh rong, cung ly do voi liveAudioChunks.
+  Stream<void> get turnAudioEnd => const Stream<void>.empty();
 }
 
 /// Ket noi toi backend/gemini-proxy (xem backend/README.md): mo WebSocket,
@@ -124,6 +137,14 @@ class VoiceChatClient implements VoiceChatSession {
   @override
   Stream<TranscriptEvent> get transcriptStream =>
       const Stream<TranscriptEvent>.empty();
+
+  // Backend/gemini-proxy chua stream tung chunk audio truoc khi het luot noi -
+  // xem giai thich o VoiceChatSession.liveAudioChunks/turnAudioEnd.
+  @override
+  Stream<Uint8List> get liveAudioChunks => const Stream<Uint8List>.empty();
+
+  @override
+  Stream<void> get turnAudioEnd => const Stream<void>.empty();
 
   @override
   Future<void> start() async {
