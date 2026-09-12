@@ -1,6 +1,7 @@
 // Edge Function: quet toan bo (asset_type, symbol) dang co it nhat 1 user
-// theo doi trong price_alert_watchlist, so gia hien tai voi 24h truoc - neu
-// LECH >=5% (tang hoac giam) VA day la lan DAU vua vuot nguong (khac
+// theo doi trong price_alert_watchlist, so gia hien tai voi 24h truoc - cu
+// moi lan LECH vuot THEM 1 moc 5% moi (5%, 10%, 15%, 20%... ca tang lan
+// giam, xem tinh "tier" duoi) VA day la lan DAU vua vuot moc do (khac
 // price_alert_state da luu), gui push FCM cho MOI user dang theo doi ma do
 // (loc theo profiles.price_alerts_enabled = true) - goi 1 lan/15 phut boi
 // GitHub Actions scheduled workflow (xem
@@ -196,10 +197,10 @@ Deno.serve(async (req: Request) => {
 
   const { data: states } = await admin
     .from('price_alert_state')
-    .select('asset_type, symbol, direction');
-  const stateByKey = new Map<string, string | null>();
-  for (const s of (states as Array<{ asset_type: string; symbol: string; direction: string | null }>) ?? []) {
-    stateByKey.set(`${s.asset_type}:${s.symbol}`, s.direction);
+    .select('asset_type, symbol, tier');
+  const stateByKey = new Map<string, number | null>();
+  for (const s of (states as Array<{ asset_type: string; symbol: string; tier: number | null }>) ?? []) {
+    stateByKey.set(`${s.asset_type}:${s.symbol}`, s.tier);
   }
 
   let accessToken: string | null = null;
@@ -208,27 +209,29 @@ Deno.serve(async (req: Request) => {
 
   let notified = 0;
   for (const info of allPrices) {
-    const direction: 'up' | 'down' | null =
-      info.changePercent >= ALERT_THRESHOLD_PERCENT
-        ? 'up'
-        : info.changePercent <= -ALERT_THRESHOLD_PERCENT
-          ? 'down'
-          : null;
+    // "tier" = da vuot bao nhieu MOC 5% lien tiep (5,10,15,20...), am/duong
+    // theo chieu giam/tang - vd changePercent=12.4 -> tier=2 (vua vuot moc
+    // 10%, |12.4|/5 lam tron xuong = 2), changePercent=-23 -> tier=-4 (vua
+    // vuot moc -20%). 0 nghia la chua cham moc 5% nao ca.
+    const magnitude = Math.floor(Math.abs(info.changePercent) / ALERT_THRESHOLD_PERCENT);
+    const tier = magnitude === 0 ? 0 : (info.changePercent > 0 ? magnitude : -magnitude);
+    const direction: 'up' | 'down' | null = tier > 0 ? 'up' : tier < 0 ? 'down' : null;
 
     const key = `${info.assetType}:${info.symbol}`;
-    const previousDirection = stateByKey.get(key) ?? null;
+    const previousTier = stateByKey.get(key) ?? null;
 
-    // Luon ghi de state moi nhat (ke ca khi direction ve null) - de lan vuot
-    // nguong TIEP THEO duoc tinh la 1 su kien moi, khong bi coi la "da bao roi".
+    // Luon ghi de state moi nhat (ke ca khi tier ve 0) - de lan vuot moc
+    // TIEP THEO (hoac vuot lai TU DAU sau khi da tut ve duoi 5%) duoc tinh
+    // la 1 su kien moi, khong bi coi la "da bao roi".
     await admin.from('price_alert_state').upsert({
       asset_type: info.assetType,
       symbol: info.symbol,
-      direction,
+      tier,
       change_percent: info.changePercent,
       alerted_at: new Date().toISOString(),
     });
 
-    if (direction === null || direction === previousDirection) continue;
+    if (tier === 0 || tier === previousTier) continue;
 
     if (!serviceAccountRaw || !projectId) continue; // chua cau hinh Firebase - bo qua gui push, van cap nhat state
     if (!accessToken) {
@@ -263,10 +266,11 @@ Deno.serve(async (req: Request) => {
     const tokens = new Set((tokenRows ?? []).map((t: { fcm_token: string }) => t.fcm_token));
     if (tokens.size === 0) continue;
 
+    const milestone = Math.abs(tier) * ALERT_THRESHOLD_PERCENT;
     const body =
       direction === 'up'
-        ? `${info.symbol} tăng ${info.changePercent.toFixed(1)}% (24h) - giá hiện tại ${info.price}`
-        : `${info.symbol} giảm ${Math.abs(info.changePercent).toFixed(1)}% (24h) - giá hiện tại ${info.price}`;
+        ? `${info.symbol} vượt mốc tăng ${milestone}% (hiện +${info.changePercent.toFixed(1)}%, 24h) - giá hiện tại ${info.price}`
+        : `${info.symbol} vượt mốc giảm ${milestone}% (hiện -${Math.abs(info.changePercent).toFixed(1)}%, 24h) - giá hiện tại ${info.price}`;
 
     await Promise.all(
       [...tokens].map((fcm_token) =>
