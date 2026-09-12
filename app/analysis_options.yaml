@@ -18,6 +18,9 @@ analyzer:
     - windows/**
     - macos/**
     - linux/**
+    # Package Android vendor da sua (xem pubspec.yaml dependency_overrides) -
+    # code cua ho, khong ap dung lint rieng cua du an nay.
+    - third_party/**
 
 linter:
   # The lint rules applied to this project can be customized in the

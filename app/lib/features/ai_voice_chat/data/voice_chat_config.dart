@@ -21,7 +21,7 @@ const kUseDirectGeminiConnection = true;
 /// GeminiLiveDirectClient.liveAudioChunks/turnAudioEnd. CHI hoat dong khi
 /// [kUseDirectGeminiConnection] = true, vi VoiceChatClient (qua backend) chua
 /// lam viec phat audio tung chunk truoc khi het luot noi.
-const kUseAnamAvatar = false;
+const kUseAnamAvatar = true;
 
 /// ID avatar da tao san tren Anam.ai (xem anam.ai/dashboard).
 const kAnamAvatarId = '68b4b44d-874b-4343-a1c9-b97d3c4a4d6e';

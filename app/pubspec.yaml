@@ -218,3 +218,15 @@ flutter_launcher_icons:
     image_path: "assets/icon/app_icon_square.png"
     background_color: "#0B1E4D"
     theme_color: "#0B1E4D"
+
+# VA tuong thich AGP 9 (2026-09): ban pub.dev cua flutter_inappwebview_android
+# (1.1.3, moi nhat luc viet) dung getDefaultProguardFile('proguard-android.txt')
+# trong android/build.gradle - AGP 9.1.0 cua du an nay CHAN CUNG API do (loi
+# evaluate, khong phai canh bao) vi no gom '-dontoptimize'. Vendor 1 ban sao
+# da sua (doi sang bien the '-optimize') vao third_party/ va override ve day
+# thay vi cho pub tu tai ban goc tren pub.dev. XOA override nay + thu muc
+# third_party/flutter_inappwebview_android/ ngay khi upstream phat hanh ban
+# vá that su (kiem tra CHANGELOG.md tai pub.dev/packages/flutter_inappwebview_android).
+dependency_overrides:
+  flutter_inappwebview_android:
+    path: third_party/flutter_inappwebview_android
