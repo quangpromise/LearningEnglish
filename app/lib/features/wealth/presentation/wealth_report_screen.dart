@@ -566,6 +566,24 @@ class _IncomeExpenseCard extends ConsumerWidget {
                       maxY: maxY * 1.2,
                       gridData: const FlGridData(show: false),
                       borderData: FlBorderData(show: false),
+                      // Mac dinh fl_chart hien so THO khong dinh dang (vd
+                      // "6175036.0") khi giu tay tren 1 cot - dinh dang lai
+                      // bang formatVnd() giong moi noi khac hien tien trong
+                      // app (dau phay ngan cach hang nghin, khong con .0 du
+                      // thua o cuoi).
+                      barTouchData: BarTouchData(
+                        touchTooltipData: BarTouchTooltipData(
+                          getTooltipItem: (group, groupIndex, rod, rodIndex) =>
+                              BarTooltipItem(
+                                formatVnd(rod.toY),
+                                const TextStyle(
+                                  color: AppColors.textPrimary,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 12,
+                                ),
+                              ),
+                        ),
+                      ),
                       titlesData: FlTitlesData(
                         show: true,
                         leftTitles: const AxisTitles(
@@ -815,6 +833,24 @@ class _RecurringServiceCard extends ConsumerWidget {
                       maxY: maxY * 1.2,
                       gridData: const FlGridData(show: false),
                       borderData: FlBorderData(show: false),
+                      // Mac dinh fl_chart hien so THO khong dinh dang (vd
+                      // "6175036.0") khi giu tay tren 1 cot - dinh dang lai
+                      // bang formatVnd() giong moi noi khac hien tien trong
+                      // app (dau phay ngan cach hang nghin, khong con .0 du
+                      // thua o cuoi).
+                      barTouchData: BarTouchData(
+                        touchTooltipData: BarTouchTooltipData(
+                          getTooltipItem: (group, groupIndex, rod, rodIndex) =>
+                              BarTooltipItem(
+                                formatVnd(rod.toY),
+                                const TextStyle(
+                                  color: AppColors.textPrimary,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 12,
+                                ),
+                              ),
+                        ),
+                      ),
                       titlesData: FlTitlesData(
                         show: true,
                         leftTitles: const AxisTitles(

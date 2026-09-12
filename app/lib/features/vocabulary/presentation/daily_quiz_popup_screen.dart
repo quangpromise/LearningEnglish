@@ -36,6 +36,13 @@ class _DailyQuizPopupScreenState extends ConsumerState<DailyQuizPopupScreen> {
 
   void _initIfNeeded(DailyWordsState state) {
     if (_initialized) return;
+    // Doi provider tai XONG (state.loaded) roi moi "chot" danh sach cau hoi -
+    // truoc day chot ngay tu lan build DAU TIEN bat ke da tai xong hay chua,
+    // nen truong hop mo Quiz NGAY LUC app vua khoi dong lai tu thong bao
+    // (dailyWordsControllerProvider con dang doc SharedPreferences, state.words
+    // van dang rong) se bi "dong bang" vinh vien voi danh sach rong - man
+    // hinh bao "khong co tu de hoc" du du lieu that load xong ngay sau do.
+    if (!state.loaded) return;
     _initialized = true;
     final words = state.words;
     if (words.isEmpty) return;

@@ -111,12 +111,23 @@ class DailyQuizNotifications {
     await cancelReminders();
     if (intervalMinutes <= 0) return;
 
+    // fullScreenIntent + category alarm: khi thong bao den han VA may dang
+    // o man hinh khoa, Android se TU DONG mo thang app (theo dung co che
+    // bao thuc/cuoc goi den) de len TREN man hinh khoa thay vi chi hien 1
+    // dong thong bao cho nguoi dung tu bam - can them
+    // android:showWhenLocked/turnScreenOn tren MainActivity +
+    // USE_FULL_SCREEN_INTENT trong AndroidManifest.xml. importance/priority
+    // nang len .max vi Android chi thuc su kich hoat fullScreenIntent voi
+    // thong bao muc do khan cap cao nhat.
     const androidDetails = AndroidNotificationDetails(
       _channelId,
       _channelName,
       channelDescription: _channelDesc,
-      importance: Importance.high,
-      priority: Priority.high,
+      importance: Importance.max,
+      priority: Priority.max,
+      category: AndroidNotificationCategory.alarm,
+      fullScreenIntent: true,
+      visibility: NotificationVisibility.public,
     );
     const details = NotificationDetails(android: androidDetails);
 
