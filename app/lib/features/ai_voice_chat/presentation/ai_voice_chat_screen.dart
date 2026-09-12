@@ -110,7 +110,24 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
     _client?.dispose();
     _player.dispose();
     _scrollCtrl.dispose();
+    // Khoi phuc audio session ve "music" luc roi man - man nay doi sang
+    // playAndRecord/voiceCommunication (loa thoai) de mic ghi am ro luc dang
+    // chat (xem _ensurePlaybackSession). AudioSession la SINGLETON dung
+    // chung toan app, khong tu dong reset - neu khong khoi phuc o day, nguoi
+    // dung roi man nay ra bam PHAT TIEP 1 bai dang mo do (khong mo playlist
+    // moi) se nghe rat nho, vi NowPlayingService.setQueue chi ep lai
+    // .music() luc BAT DAU 1 hang doi moi, khong phai moi lan resume/play.
+    unawaited(_restoreMusicSession());
     super.dispose();
+  }
+
+  Future<void> _restoreMusicSession() async {
+    try {
+      final session = await AudioSession.instance;
+      await session.configure(const AudioSessionConfiguration.music());
+    } catch (_) {
+      // Bo qua - khong lam gian doan viec dong man hinh.
+    }
   }
 
   Future<void> _toggle() async {
