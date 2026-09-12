@@ -93,16 +93,6 @@ abstract class VoiceChatSession {
   /// hieu nay de goi endAnamTurn() ben JS, bao Anam khong con audio nao them
   /// cho cau tra loi vua roi. Mac dinh rong, cung ly do voi liveAudioChunks.
   Stream<void> get turnAudioEnd => const Stream<void>.empty();
-
-  /// Ban transcribe TANG DAN cua cau AI dang noi (chua ket thuc luot) - moi
-  /// gia tri la toan bo text tich luy tu dau luot toi thoi diem hien tai
-  /// (khong phai delta), de man hinh hien 1 bubble "dang go" cap nhat song
-  /// song voi giong AI thay vi phai doi het ca luot moi thay chu (truoc day
-  /// text chi xuat hien 1 lan duy nhat luc turnComplete, tao cam giac tre
-  /// rat lau du am thanh/lipsync da chay tu truoc do). Phat 1 chuoi rong khi
-  /// bat dau luot moi de man hinh xoa bubble "dang go" cu. Mac dinh rong,
-  /// cung ly do voi liveAudioChunks - chi GeminiLiveDirectClient ho tro.
-  Stream<String> get partialAiText => const Stream<String>.empty();
 }
 
 /// Ket noi toi backend/gemini-proxy (xem backend/README.md): mo WebSocket,
@@ -155,9 +145,6 @@ class VoiceChatClient implements VoiceChatSession {
 
   @override
   Stream<void> get turnAudioEnd => const Stream<void>.empty();
-
-  @override
-  Stream<String> get partialAiText => const Stream<String>.empty();
 
   @override
   Future<void> start() async {

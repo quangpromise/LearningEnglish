@@ -49,13 +49,6 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
   StreamSubscription<TranscriptEvent>? _transcriptSub;
   StreamSubscription<Uint8List>? _liveAudioSub;
   StreamSubscription<void>? _turnAudioEndSub;
-  StreamSubscription<String>? _partialAiTextSub;
-  // Ban nhap "dang go" cua AI, cap nhat tang dan tu
-  // VoiceChatSession.partialAiText - xem build() (them 1 bubble tam vao cuoi
-  // ListView khi khac rong) va _onTranscript (xoa ve rong luc chot tin nhan
-  // that). Muc dich: nguoi dung thay chu xuat hien dan khi AI dang noi thay
-  // vi phai doi het ca luot moi thay gi do, giam cam giac tre "lau".
-  String _livePartialAiText = '';
   // Chi duoc dung khi kUseAnamAvatar = true - xem build()/_toggle().
   final _anamKey = GlobalKey<AnamLiveAvatarState>();
   bool _anamReady = false;
@@ -114,7 +107,6 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
     _transcriptSub?.cancel();
     _liveAudioSub?.cancel();
     _turnAudioEndSub?.cancel();
-    _partialAiTextSub?.cancel();
     _client?.dispose();
     _player.dispose();
     _scrollCtrl.dispose();
@@ -193,16 +185,6 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
       _audioSub = client.incomingAudio.listen(_playResponse);
       _transcriptSub?.cancel();
       _transcriptSub = client.transcriptStream.listen(_onTranscript);
-      _partialAiTextSub?.cancel();
-      _partialAiTextSub = client.partialAiText.listen((text) {
-        if (!mounted) return;
-        setState(() => _livePartialAiText = text);
-        if (text.isEmpty) return;
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!_scrollCtrl.hasClients) return;
-          _scrollCtrl.jumpTo(_scrollCtrl.position.maxScrollExtent);
-        });
-      });
 
       // Nap tung chunk audio ngay khi Gemini tra ve vao mieng avatar Anam de
       // lipsync realtime, do tre thap nhat (<500ms) non-blocking.
@@ -541,7 +523,7 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
               const SizedBox(height: 12),
             ],
             Expanded(
-              child: _messages.isEmpty && _livePartialAiText.isEmpty
+              child: _messages.isEmpty
                   ? Center(
                       child: Text(
                         ref.tr('voice_chat_empty'),
@@ -551,27 +533,11 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
                     )
                   : ListView.builder(
                       controller: _scrollCtrl,
-                      // +1 cho bubble "dang go" tam thoi (partial transcript)
-                      // khi AI dang noi nhung chua het luot - xem
-                      // _livePartialAiText.
-                      itemCount:
-                          _messages.length +
-                          (_livePartialAiText.isEmpty ? 0 : 1),
-                      itemBuilder: (context, i) {
-                        if (i >= _messages.length) {
-                          return _MessageBubble(
-                            message: TranscriptEvent(
-                              role: ChatRole.ai,
-                              text: _livePartialAiText,
-                            ),
-                            onReplay: _replayAudio,
-                          );
-                        }
-                        return _MessageBubble(
-                          message: _messages[i],
-                          onReplay: _replayAudio,
-                        );
-                      },
+                      itemCount: _messages.length,
+                      itemBuilder: (context, i) => _MessageBubble(
+                        message: _messages[i],
+                        onReplay: _replayAudio,
+                      ),
                     ),
             ),
             const SizedBox(height: 8),
