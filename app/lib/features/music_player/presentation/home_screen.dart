@@ -6,6 +6,7 @@ import '../../../core/navigation/app_popup.dart';
 import '../../../core/navigation/app_top_bar.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/pointing_hand_badge.dart';
 import '../../social/presentation/conversations_screen.dart';
 import '../../grammar/presentation/grammar_topics_screen.dart';
 import '../../learning_path/data/learning_path_models.dart';
@@ -386,7 +387,7 @@ class _CategoryItem extends StatelessWidget {
                   Positioned(
                     right: -10,
                     bottom: -8,
-                    child: _PointingHandBadge(color: accentColor),
+                    child: PointingHandBadge(color: accentColor),
                   )
                 else if (data.isRecommended)
                   Positioned(
@@ -423,68 +424,8 @@ class _CategoryItem extends StatelessWidget {
   }
 }
 
-/// Hinh ban tay CHAM VAO man hinh, tu chay animation nay len-xuong lien tuc
-/// de gay chu y vao tile goi y chinh - StatefulWidget rieng (khong bien
-/// _CategoryItem thanh Stateful) vi chi widget nho nay can AnimationController.
-class _PointingHandBadge extends StatefulWidget {
-  const _PointingHandBadge({required this.color});
-  final Color color;
-
-  @override
-  State<_PointingHandBadge> createState() => _PointingHandBadgeState();
-}
-
-class _PointingHandBadgeState extends State<_PointingHandBadge>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  late final Animation<double> _bounce;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 700),
-    )..repeat(reverse: true);
-    _bounce = Tween<double>(
-      begin: 0,
-      end: -6,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _bounce,
-      builder: (context, child) =>
-          Transform.translate(offset: Offset(0, _bounce.value), child: child),
-      child: Container(
-        width: 26,
-        height: 26,
-        decoration: BoxDecoration(
-          color: widget.color,
-          shape: BoxShape.circle,
-          border: Border.all(color: Colors.white.withValues(alpha: 0.6)),
-          boxShadow: const [BoxShadow(color: Colors.black38, blurRadius: 6)],
-        ),
-        child: const Icon(
-          Icons.touch_app_rounded,
-          size: 15,
-          color: Colors.white,
-        ),
-      ),
-    );
-  }
-}
-
 /// Ban tay tro + dong chu goi y nguoi dung CHUA TUNG mo khao sat "Goi y lo
-/// trinh hoc" bam vao nut do (xem [_PointingHandBadge], tai su dung nguyen
+/// trinh hoc" bam vao nut do (xem [PointingHandBadge], tai su dung nguyen
 /// con vat nay - cung 1 ngon ngu hinh anh voi tile goi y o luoi Home) - tu
 /// an ngay sau khi ho chon 1 gia tri BAT KY trong khao sat, ke ca "Tu hoc"
 /// (xem learningPathInteractedProvider).
@@ -497,7 +438,7 @@ class _SuggestHint extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        _PointingHandBadge(color: color),
+        PointingHandBadge(color: color),
         const SizedBox(height: 4),
         Container(
           constraints: const BoxConstraints(maxWidth: 128),

@@ -4,6 +4,8 @@ import 'dart:typed_data';
 import 'package:record/record.dart' as rec;
 import 'package:web_socket_channel/web_socket_channel.dart';
 
+import '../../learning_path/data/learning_path_models.dart';
+
 /// Trang thai 1 phien AI Voice Chat. [thinking] = nguoi dung da dung ghi am
 /// (goi [VoiceChatSession.endTurn]), dang cho AI xu ly va tra loi.
 enum VoiceChatState { idle, connecting, listening, thinking, error }
@@ -15,7 +17,7 @@ enum ChatRole { user, ai }
 /// chat. [hasError] danh dau tin nhan bi phat hien sai ngu phap/chinh ta/
 /// phat am; [correction] la cau noi dung goi y - co the den tu Gemini (trich
 /// tu cau tra loi cua no, gan vao tin nhan cua AI - xem
-/// GeminiLiveDirectClient._systemPrompt) HOAC tu LanguageTool (phan tich
+/// GeminiLiveDirectClient.systemPromptFor) HOAC tu LanguageTool (phan tich
 /// thang van ban nguoi dung noi, gan vao chinh tin nhan cua nguoi dung - xem
 /// AiVoiceChatScreen._checkGrammar) - ca 2 co che chay doc lap, khong phu
 /// thuoc lan nhau. [audioPath] la duong dan file WAV da luu tam cua dung
@@ -86,13 +88,21 @@ abstract class VoiceChatSession {
 /// phan hoi dang file WAV hoan chinh moi luot noi (ca 2 nhanh Gemini/fallback
 /// deu tra ve cung 1 dinh dang - xem geminiClient.js/tts.py ben backend).
 class VoiceChatClient implements VoiceChatSession {
-  VoiceChatClient({required this.backendUrl, required this.accessToken});
+  VoiceChatClient({
+    required this.backendUrl,
+    required this.accessToken,
+    this.level,
+  });
 
   /// URL WebSocket cua gemini-proxy, vd wss://your-server.example/voice-chat.
   /// Backend chua duoc deploy san - phai tu chay backend/gemini-proxy roi
   /// thay URL that vao day (xem VoiceChatConfig).
   final String backendUrl;
   final String accessToken;
+
+  /// Cap hoc - gui kem query `level` de gemini-proxy chon prompt hop trinh
+  /// do (xem backend/gemini-proxy/src/geminiClient.js). null = Tu hoc.
+  final LearnerLevel? level;
 
   WebSocketChannel? _channel;
   StreamSubscription<Uint8List>? _micSub;
@@ -124,7 +134,8 @@ class VoiceChatClient implements VoiceChatSession {
 
     _stateController.add(VoiceChatState.connecting);
     final uri = Uri.parse(
-      '$backendUrl?token=${Uri.encodeQueryComponent(accessToken)}',
+      '$backendUrl?token=${Uri.encodeQueryComponent(accessToken)}'
+      '${level != null ? '&level=${level!.name}' : ''}',
     );
     final channel = WebSocketChannel.connect(uri);
     _channel = channel;

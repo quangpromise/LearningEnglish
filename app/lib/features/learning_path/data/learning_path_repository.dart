@@ -1,3 +1,4 @@
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'learning_path_models.dart';
@@ -6,28 +7,56 @@ import 'learning_path_models.dart';
 /// bang `user_learning_path_choice` (migration 0042), 1 dong/user, mirror
 /// dung pattern cua LessonProgressRepository
 /// (story/data/lesson_progress_repository.dart).
+///
+/// Kem 1 BAN SAO tren may (SharedPreferences, key rieng theo user): truoc
+/// day chi doc tu Supabase, loi mang luc mo app bi nuot thanh "chua chon"
+/// -> ban tay goi y tren Home + bo loc theo cap hoc bien mat cho toi lan mo
+/// app sau. Gio ghi ban sao moi khi doc/luu thanh cong, va dung no khi goi
+/// server that bai.
 class LearningPathRepository {
   LearningPathRepository(this._supabase);
   final SupabaseClient _supabase;
 
-  Future<LearningPersona?> fetchChoice() async {
-    final userId = _supabase.auth.currentUser?.id;
-    if (userId == null) return null;
+  /// Gia tri luu trong cot `persona` khi nguoi dung chon "Tu hoc".
+  static const _noneValue = 'none';
+
+  static String _cacheKey(String userId) => 'learning_path_choice_$userId';
+
+  /// Gia tri tho cua cot `persona`: ten 1 LearningPersona, 'none' (Tu hoc),
+  /// hoac null (chua tung tuong tac voi khao sat).
+  Future<String?> _fetchRaw(String userId) async {
+    final prefs = await SharedPreferences.getInstance();
     try {
       final row = await _supabase
           .from('user_learning_path_choice')
           .select('persona')
           .eq('user_id', userId)
           .maybeSingle();
-      final persona = row?['persona'] as String?;
-      if (persona == null) return null;
-      return LearningPersona.values.byName(persona);
+      final raw = row?['persona'] as String?;
+      if (raw == null) {
+        await prefs.remove(_cacheKey(userId));
+      } else {
+        await prefs.setString(_cacheKey(userId), raw);
+      }
+      return raw;
     } catch (_) {
-      // Bang co the chua duoc migrate len server (vd moi them, chua chay
-      // migration) - coi nhu chua chon persona nao thay vi de loi lam vo
-      // FutureProvider (Home van hoat dong binh thuong, chi khong highlight).
-      return null;
+      // Mat mang / bang chua migrate - dung ban sao tren may (neu co) thay
+      // vi coi nhu chua chon gi.
+      return prefs.getString(_cacheKey(userId));
     }
+  }
+
+  Future<void> _writeCache(String userId, String raw) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_cacheKey(userId), raw);
+  }
+
+  Future<LearningPersona?> fetchChoice() async {
+    final userId = _supabase.auth.currentUser?.id;
+    if (userId == null) return null;
+    final raw = await _fetchRaw(userId);
+    // Chuoi khong khop ten enum nao ('none' = Tu hoc) -> null.
+    return LearningPersona.values.asNameMap()[raw];
   }
 
   /// Da tung tuong tac voi khao sat chua (chon 1 persona HOAC bam "Tu hoc")
@@ -38,21 +67,15 @@ class LearningPathRepository {
   Future<bool> hasInteracted() async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) return false;
-    try {
-      final row = await _supabase
-          .from('user_learning_path_choice')
-          .select('user_id')
-          .eq('user_id', userId)
-          .maybeSingle();
-      return row != null;
-    } catch (_) {
-      return false;
-    }
+    return await _fetchRaw(userId) != null;
   }
 
   Future<void> choosePersona(LearningPersona persona) async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) return;
+    // Ghi ban sao tren may TRUOC - ke ca khi luu len server that bai, lua
+    // chon van co hieu luc ngay tren may nay.
+    await _writeCache(userId, persona.name);
     try {
       await _supabase.from('user_learning_path_choice').upsert({
         'user_id': userId,
@@ -75,10 +98,11 @@ class LearningPathRepository {
   Future<void> turnOff() async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) return;
+    await _writeCache(userId, _noneValue);
     try {
       await _supabase.from('user_learning_path_choice').upsert({
         'user_id': userId,
-        'persona': 'none',
+        'persona': _noneValue,
       }, onConflict: 'user_id');
     } catch (_) {
       // Xem ly do bo qua loi o choosePersona() ben tren.

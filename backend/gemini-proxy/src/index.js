@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { WebSocketServer } from 'ws';
 
-import { GeminiLiveSession } from './geminiClient.js';
+import { GeminiLiveSession, normalizeLevel } from './geminiClient.js';
 import { connectFallback } from './fallbackClient.js';
 import { verifySupabaseToken, RateLimiter } from './auth.js';
 
@@ -35,7 +35,11 @@ wss.on('connection', (clientSocket, request) => {
     return;
   }
 
-  console.log(`[gemini-proxy] Client Flutter kết nối (user ${userId})`);
+  // Cap hoc (basic/intermediate/advanced) app gui kem de chon prompt hop
+  // trinh do - gia tri la/thieu tu dong ve 'intermediate'.
+  const level = normalizeLevel(url.searchParams.get('level'));
+
+  console.log(`[gemini-proxy] Client Flutter kết nối (user ${userId}, level ${level})`);
 
   let usingFallback = false;
   let fallbackSocket = null;
@@ -44,7 +48,9 @@ wss.on('connection', (clientSocket, request) => {
     if (usingFallback) return;
     usingFallback = true;
     console.warn(`[gemini-proxy] Chuyển sang fallback-pipeline. Lý do: ${reason}`);
-    fallbackSocket = connectFallback(FALLBACK_PIPELINE_URL, {
+    const fallbackUrl = new URL(FALLBACK_PIPELINE_URL);
+    fallbackUrl.searchParams.set('level', level);
+    fallbackSocket = connectFallback(fallbackUrl.toString(), {
       onAudioChunk: (chunk) => clientSocket.send(chunk),
       onError: (err) => console.error('[fallback] Lỗi:', err.message),
     });
@@ -54,6 +60,7 @@ wss.on('connection', (clientSocket, request) => {
   if (GEMINI_API_KEY) {
     geminiSession = new GeminiLiveSession({
       apiKey: GEMINI_API_KEY,
+      level,
       onAudioChunk: (chunk) => clientSocket.send(chunk),
       onQuotaExceeded: () => switchToFallback('Gemini Live báo lỗi quota/429'),
       onError: (err) => console.error('[gemini] Lỗi:', err.message),

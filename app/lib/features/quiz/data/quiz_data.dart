@@ -118,6 +118,589 @@ const kRiddles = [
     answer: 'Bicycle',
     distractors: ['Car', 'Bus', 'Motorbike'],
   ),
+  // --- Bo sung (tu soan, khong lay tu nguon ngoai): nang 3 chu de Cuoc
+  // song / Bang chu cai / Trai cay & xe co tu 1-2 cau len 25 cau moi chu de.
+  // Dap an KHONG trung voi cac chu de da co (Suy luan, Do vat trong nha,
+  // Trai cay & rau cu, Phuong tien giao thong...) de tranh lap cau.
+  Riddle(
+    category: 'Cuộc sống',
+    en: 'What can you catch but never throw?',
+    vi: 'Cái gì bạn có thể "bắt" nhưng không bao giờ ném đi được?',
+    answer: 'A cold',
+    distractors: ['A ball', 'A frisbee', 'A stone'],
+  ),
+  Riddle(
+    category: 'Cuộc sống',
+    en: 'What belongs to you, but other people use it more than you do?',
+    vi: 'Cái gì thuộc về bạn nhưng người khác dùng nó nhiều hơn bạn?',
+    answer: 'Your name',
+    distractors: ['Your phone', 'Your car', 'Your house'],
+  ),
+  Riddle(
+    category: 'Cuộc sống',
+    en: 'What can you break without touching it?',
+    vi: 'Cái gì bạn có thể phá vỡ mà không cần chạm vào?',
+    answer: 'A promise',
+    distractors: ['A glass', 'A window', 'A plate'],
+  ),
+  Riddle(
+    category: 'Cuộc sống',
+    en: 'What gets bigger the more you take away from it?',
+    vi: 'Cái gì càng lấy bớt đi thì càng to ra?',
+    answer: 'A hole',
+    distractors: ['A cake', 'A pile of sand', 'A balloon'],
+  ),
+  Riddle(
+    category: 'Cuộc sống',
+    en: 'What goes through towns and over hills but never moves?',
+    vi: 'Cái gì đi qua thị trấn, vượt qua đồi núi nhưng không bao giờ di chuyển?',
+    answer: 'A road',
+    distractors: ['A car', 'A train', 'A river'],
+  ),
+  Riddle(
+    category: 'Cuộc sống',
+    en: 'What can travel around the world while staying in a corner?',
+    vi: 'Cái gì có thể đi vòng quanh thế giới mà vẫn nằm yên ở một góc?',
+    answer: 'A stamp',
+    distractors: ['A map', 'A letter', 'A plane'],
+  ),
+  Riddle(
+    category: 'Cuộc sống',
+    en: 'What goes up when the rain comes down?',
+    vi: 'Cái gì được giương lên khi trời đổ mưa?',
+    answer: 'An umbrella',
+    distractors: ['A kite', 'A balloon', 'A window'],
+  ),
+  Riddle(
+    category: 'Cuộc sống',
+    en: 'What can fill a room but takes up no space?',
+    vi: 'Cái gì có thể lấp đầy căn phòng nhưng không chiếm chỗ?',
+    answer: 'Light',
+    distractors: ['Water', 'Furniture', 'Boxes'],
+  ),
+  Riddle(
+    category: 'Cuộc sống',
+    en: 'The more you take, the more you leave behind. What are they?',
+    vi: 'Bạn càng bước nhiều thì càng để lại nhiều. Đó là gì?',
+    answer: 'Footsteps',
+    distractors: ['Photos', 'Coins', 'Books'],
+  ),
+  Riddle(
+    category: 'Cuộc sống',
+    en: 'What has a ring but no finger?',
+    vi: 'Cái gì biết "reo" (ring) nhưng không có ngón tay để đeo nhẫn?',
+    answer: 'A telephone',
+    distractors: ['A watch', 'A key', 'A door'],
+  ),
+  Riddle(
+    category: 'Cuộc sống',
+    en: 'What begins with T, ends with T, and has tea in it?',
+    vi: 'Cái gì bắt đầu bằng chữ T, kết thúc bằng chữ T và có trà (tea) bên trong?',
+    answer: 'A teapot',
+    distractors: ['A kettle', 'A tray', 'A cup'],
+  ),
+  Riddle(
+    category: 'Cuộc sống',
+    en: 'What kind of room has no doors or windows?',
+    vi: 'Loại "room" (phòng) nào không có cửa ra vào hay cửa sổ?',
+    answer: 'A mushroom',
+    distractors: ['A bedroom', 'A classroom', 'A kitchen'],
+  ),
+  Riddle(
+    category: 'Cuộc sống',
+    en:
+        'You cannot see me or touch me, but I answer when you shout. '
+        'What am I?',
+    vi:
+        'Bạn không nhìn thấy hay chạm được vào tôi, nhưng tôi đáp lại khi '
+        'bạn hét lên. Tôi là gì?',
+    answer: 'An echo',
+    distractors: ['A shadow', 'A song', 'A friend'],
+  ),
+  Riddle(
+    category: 'Cuộc sống',
+    en: 'What follows you everywhere in the sun but disappears in the dark?',
+    vi: 'Cái gì đi theo bạn khắp nơi dưới nắng nhưng biến mất trong bóng tối?',
+    answer: 'Your shadow',
+    distractors: ['Your dog', 'Your friend', 'Your hat'],
+  ),
+  Riddle(
+    category: 'Cuộc sống',
+    en: 'What has a head and a tail but no body?',
+    vi: 'Cái gì có đầu (mặt ngửa) và đuôi (mặt sấp) nhưng không có thân?',
+    answer: 'A coin',
+    distractors: ['A snake', 'A fish', 'A kite'],
+  ),
+  Riddle(
+    category: 'Cuộc sống',
+    en: 'What do you buy to eat from but never eat?',
+    vi: 'Thứ gì bạn mua để đựng đồ ăn nhưng không bao giờ ăn nó?',
+    answer: 'A plate',
+    distractors: ['A cake', 'A sandwich', 'An apple'],
+  ),
+  Riddle(
+    category: 'Cuộc sống',
+    en: 'What gets sharper the more you use it?',
+    vi: 'Cái gì càng dùng nhiều càng sắc bén?',
+    answer: 'Your brain',
+    distractors: ['A knife', 'A pencil', 'Scissors'],
+  ),
+  Riddle(
+    category: 'Cuộc sống',
+    en: 'What can you share with everyone and still have all of it?',
+    vi: 'Cái gì bạn chia sẻ cho mọi người mà mình vẫn còn nguyên?',
+    answer: 'Knowledge',
+    distractors: ['Money', 'Cake', 'Candy'],
+  ),
+  Riddle(
+    category: 'Cuộc sống',
+    en: 'Which month has 28 days?',
+    vi: 'Tháng nào có 28 ngày?',
+    answer: 'All of them',
+    distractors: ['February', 'January', 'December'],
+  ),
+  Riddle(
+    category: 'Cuộc sống',
+    en: 'If you share me, you lose me. What am I?',
+    vi: 'Nếu bạn chia sẻ tôi, bạn sẽ mất tôi. Tôi là gì?',
+    answer: 'A secret',
+    distractors: ['A toy', 'A book', 'A photo'],
+  ),
+  Riddle(
+    category: 'Cuộc sống',
+    en: 'What goes up and down but never moves?',
+    vi: 'Cái gì đi lên đi xuống nhưng không bao giờ di chuyển?',
+    answer: 'Stairs',
+    distractors: ['An elevator', 'A ball', 'A yo-yo'],
+  ),
+  Riddle(
+    category: 'Cuộc sống',
+    en:
+        'I am black when you buy me, red when you use me, and gray when you '
+        'throw me away. What am I?',
+    vi:
+        'Lúc mua tôi màu đen, lúc dùng tôi màu đỏ, lúc vứt đi tôi màu xám. '
+        'Tôi là gì?',
+    answer: 'Charcoal',
+    distractors: ['Coffee', 'Ink', 'Paper'],
+  ),
+  Riddle(
+    category: 'Cuộc sống',
+    en: 'What is always coming but never arrives?',
+    vi: 'Cái gì lúc nào cũng sắp đến nhưng không bao giờ đến?',
+    answer: 'Tomorrow',
+    distractors: ['Yesterday', 'Today', 'The bus'],
+  ),
+  Riddle(
+    category: 'Cuộc sống',
+    en: 'What starts with P, ends with E, and has thousands of letters?',
+    vi:
+        'Cái gì bắt đầu bằng P, kết thúc bằng E và chứa hàng nghìn lá thư '
+        '(letters)?',
+    answer: 'A post office',
+    distractors: ['A park', 'A printer', 'A pen'],
+  ),
+  Riddle(
+    category: 'Bảng chữ cái',
+    en:
+        'What comes once in a minute, twice in a moment, but never in a '
+        'thousand years?',
+    vi:
+        'Cái gì xuất hiện 1 lần trong "minute", 2 lần trong "moment" nhưng '
+        'không bao giờ có trong "a thousand years"?',
+    answer: 'M',
+    distractors: ['N', 'T', 'E'],
+  ),
+  Riddle(
+    category: 'Bảng chữ cái',
+    en: 'Which letter sounds like a hot drink?',
+    vi: 'Chữ cái nào phát âm giống một loại đồ uống nóng (tea - trà)?',
+    answer: 'T',
+    distractors: ['C', 'J', 'D'],
+  ),
+  Riddle(
+    category: 'Bảng chữ cái',
+    en: 'Which letter sounds like a big body of salt water?',
+    vi: 'Chữ cái nào phát âm giống vùng nước mặn rộng lớn (sea - biển)?',
+    answer: 'C',
+    distractors: ['T', 'B', 'Z'],
+  ),
+  Riddle(
+    category: 'Bảng chữ cái',
+    en: 'Which letter sounds like a question word?',
+    vi: 'Chữ cái nào phát âm giống một từ để hỏi (why - tại sao)?',
+    answer: 'Y',
+    distractors: ['A', 'H', 'G'],
+  ),
+  Riddle(
+    category: 'Bảng chữ cái',
+    en: 'Which letter sounds like the part of your face that you see with?',
+    vi: 'Chữ cái nào phát âm giống bộ phận trên mặt dùng để nhìn (eye - mắt)?',
+    answer: 'I',
+    distractors: ['A', 'U', 'O'],
+  ),
+  Riddle(
+    category: 'Bảng chữ cái',
+    en: 'Which letter sounds like small, round, green vegetables?',
+    vi:
+        'Chữ cái nào phát âm giống loại rau củ nhỏ, tròn, màu xanh (peas - '
+        'đậu Hà Lan)?',
+    answer: 'P',
+    distractors: ['B', 'G', 'D'],
+  ),
+  Riddle(
+    category: 'Bảng chữ cái',
+    en: 'Which letter sounds like the word "you"?',
+    vi: 'Chữ cái nào phát âm giống từ "you" (bạn)?',
+    answer: 'U',
+    distractors: ['Y', 'W', 'Q'],
+  ),
+  Riddle(
+    category: 'Bảng chữ cái',
+    en: 'Which letter comes between M and O?',
+    vi: 'Chữ cái nào nằm giữa M và O?',
+    answer: 'N',
+    distractors: ['L', 'P', 'Q'],
+  ),
+  Riddle(
+    category: 'Bảng chữ cái',
+    en: 'What is at the end of a rainbow?',
+    vi: 'Cái gì nằm ở cuối "rainbow" (cầu vồng)?',
+    answer: 'W',
+    distractors: ['R', 'B', 'N'],
+  ),
+  Riddle(
+    category: 'Bảng chữ cái',
+    en: 'What starts with E, ends with E, and has only one letter in it?',
+    vi:
+        'Cái gì bắt đầu bằng E, kết thúc bằng E và chỉ chứa đúng một lá thư '
+        '(letter)?',
+    answer: 'An envelope',
+    distractors: ['An egg', 'An elephant', 'An eraser'],
+  ),
+  Riddle(
+    category: 'Bảng chữ cái',
+    en: 'Which letter is in the middle of the word "Paris"?',
+    vi: 'Chữ cái nào nằm ở giữa từ "Paris"?',
+    answer: 'R',
+    distractors: ['P', 'S', 'A'],
+  ),
+  Riddle(
+    category: 'Bảng chữ cái',
+    en: 'Which word becomes shorter when you add two letters to it?',
+    vi: 'Từ nào trở nên "ngắn hơn" khi bạn thêm hai chữ cái vào nó?',
+    answer: 'Short',
+    distractors: ['Long', 'Tall', 'Small'],
+  ),
+  Riddle(
+    category: 'Bảng chữ cái',
+    en: 'How many letters are there in the English alphabet?',
+    vi: 'Bảng chữ cái tiếng Anh có bao nhiêu chữ cái?',
+    answer: '26',
+    distractors: ['24', '25', '28'],
+  ),
+  Riddle(
+    category: 'Bảng chữ cái',
+    en: 'What is the last letter of the alphabet?',
+    vi: 'Chữ cái cuối cùng của bảng chữ cái là gì?',
+    answer: 'Z',
+    distractors: ['X', 'Y', 'W'],
+  ),
+  Riddle(
+    category: 'Bảng chữ cái',
+    en: 'Which letter has the shape of a snake?',
+    vi: 'Chữ cái nào có hình dạng giống con rắn?',
+    answer: 'S',
+    distractors: ['Z', 'C', 'L'],
+  ),
+  Riddle(
+    category: 'Bảng chữ cái',
+    en: 'What appears twice in a week, once in a year, but never in a day?',
+    vi:
+        'Cái gì xuất hiện 2 lần trong "week", 1 lần trong "year" nhưng không '
+        'có trong "day"?',
+    answer: 'E',
+    distractors: ['A', 'Y', 'K'],
+  ),
+  Riddle(
+    category: 'Bảng chữ cái',
+    en: 'What word contains all 26 letters?',
+    vi: 'Từ nào chứa đủ cả 26 chữ cái?',
+    answer: 'The alphabet',
+    distractors: ['The dictionary', 'The language', 'The keyboard'],
+  ),
+  Riddle(
+    category: 'Bảng chữ cái',
+    en: 'Which letter sounds like a line of people waiting for their turn?',
+    vi: 'Chữ cái nào phát âm giống một hàng người xếp chờ đến lượt (queue)?',
+    answer: 'Q',
+    distractors: ['K', 'U', 'C'],
+  ),
+  Riddle(
+    category: 'Bảng chữ cái',
+    en: 'Which letter marks the spot of the treasure on a pirate map?',
+    vi: 'Chữ cái nào đánh dấu chỗ giấu kho báu trên bản đồ hải tặc?',
+    answer: 'X',
+    distractors: ['O', 'T', 'V'],
+  ),
+  Riddle(
+    category: 'Bảng chữ cái',
+    en: 'Which letter looks like the number 7 turned upside down?',
+    vi: 'Chữ cái nào trông giống số 7 bị lật ngược?',
+    answer: 'L',
+    distractors: ['J', 'T', 'V'],
+  ),
+  Riddle(
+    category: 'Bảng chữ cái',
+    en: 'Which letter is the Roman number for five?',
+    vi: 'Chữ cái nào là số La Mã của số năm?',
+    answer: 'V',
+    distractors: ['X', 'I', 'L'],
+  ),
+  Riddle(
+    category: 'Bảng chữ cái',
+    en: 'Which letter is silent in the word "knot"?',
+    vi: 'Chữ cái nào bị câm (không đọc) trong từ "knot" (nút thắt)?',
+    answer: 'K',
+    distractors: ['N', 'O', 'T'],
+  ),
+  Riddle(
+    category: 'Bảng chữ cái',
+    en: 'Which letter looks like a fishing hook?',
+    vi: 'Chữ cái nào trông giống lưỡi câu cá?',
+    answer: 'J',
+    distractors: ['L', 'U', 'C'],
+  ),
+  Riddle(
+    category: 'Bảng chữ cái',
+    en: 'Which one of these letters is a vowel?',
+    vi: 'Chữ cái nào dưới đây là nguyên âm?',
+    answer: 'O',
+    distractors: ['B', 'K', 'S'],
+  ),
+  Riddle(
+    category: 'Trái cây & xe cộ',
+    en: 'I am a sweet yellow fruit with one big flat seed inside. What am I?',
+    vi:
+        'Tôi là loại quả vàng, ngọt, bên trong có một hạt to và dẹt. Tôi là '
+        'quả gì?',
+    answer: 'Mango',
+    distractors: ['Banana', 'Lemon', 'Peach'],
+  ),
+  Riddle(
+    category: 'Trái cây & xe cộ',
+    en:
+        'I have two small wheels and a long handle. You stand on me and push '
+        'with one foot. What am I?',
+    vi:
+        'Tôi có hai bánh nhỏ và tay cầm dài. Bạn đứng lên tôi và đẩy bằng một '
+        'chân. Tôi là gì?',
+    answer: 'Scooter',
+    distractors: ['Bicycle', 'Car', 'Bus'],
+  ),
+  Riddle(
+    category: 'Trái cây & xe cộ',
+    en:
+        'I have a spiky shell and a very strong smell. Some hotels do not let '
+        'me in! What am I?',
+    vi:
+        'Tôi có vỏ đầy gai và mùi rất nồng. Một số khách sạn không cho tôi vào! '
+        'Tôi là quả gì?',
+    answer: 'Durian',
+    distractors: ['Pineapple', 'Mango', 'Coconut'],
+  ),
+  Riddle(
+    category: 'Trái cây & xe cộ',
+    en:
+        'I have no wheels and no wings. Hot air lifts me into the sky with a '
+        'basket under me. What am I?',
+    vi:
+        'Tôi không có bánh xe cũng không có cánh. Khí nóng đưa tôi bay lên trời '
+        'với một chiếc giỏ bên dưới. Tôi là gì?',
+    answer: 'Hot air balloon',
+    distractors: ['Helicopter', 'Airplane', 'Rocket'],
+  ),
+  Riddle(
+    category: 'Trái cây & xe cộ',
+    en:
+        'My skin is pink with green "flames", and inside I am white with tiny '
+        'black seeds. What am I?',
+    vi:
+        'Vỏ tôi màu hồng với những "ngọn lửa" xanh, ruột trắng có hạt đen li '
+        'ti. Tôi là quả gì?',
+    answer: 'Dragon fruit',
+    distractors: ['Watermelon', 'Kiwi', 'Papaya'],
+  ),
+  Riddle(
+    category: 'Trái cây & xe cộ',
+    en: 'I hang on a thick wire and carry people up the mountain. What am I?',
+    vi: 'Tôi treo trên một sợi cáp to và chở người lên núi. Tôi là gì?',
+    answer: 'Cable car',
+    distractors: ['Train', 'Bus', 'Boat'],
+  ),
+  Riddle(
+    category: 'Trái cây & xe cộ',
+    en:
+        'I am small and round with rough red skin. Inside I am white, juicy '
+        'and sweet. What am I?',
+    vi:
+        'Tôi nhỏ, tròn, vỏ đỏ sần sùi. Bên trong trắng, mọng nước và ngọt. Tôi '
+        'là quả gì?',
+    answer: 'Lychee',
+    distractors: ['Cherry', 'Tomato', 'Plum'],
+  ),
+  Riddle(
+    category: 'Trái cây & xe cộ',
+    en: 'I carry people, cars and motorbikes across the river. What am I?',
+    vi: 'Tôi chở người, ô tô và xe máy qua sông. Tôi là gì?',
+    answer: 'Ferry',
+    distractors: ['Bus', 'Train', 'Taxi'],
+  ),
+  Riddle(
+    category: 'Trái cây & xe cộ',
+    en:
+        'I am brown and hairy outside, green inside, and I share my name with '
+        'a bird. What am I?',
+    vi:
+        'Bên ngoài tôi màu nâu, có lông, bên trong màu xanh, và tôi trùng tên '
+        'với một loài chim. Tôi là quả gì?',
+    answer: 'Kiwi',
+    distractors: ['Coconut', 'Avocado', 'Pear'],
+  ),
+  Riddle(
+    category: 'Trái cây & xe cộ',
+    en: 'I am a small, narrow boat. You move me with a paddle. What am I?',
+    vi: 'Tôi là chiếc thuyền nhỏ và hẹp. Bạn chèo tôi bằng mái chèo. Tôi là gì?',
+    answer: 'Canoe',
+    distractors: ['Ship', 'Submarine', 'Ferry'],
+  ),
+  Riddle(
+    category: 'Trái cây & xe cộ',
+    en:
+        'I am small, red and round, and I often sit on top of a cake. What am '
+        'I?',
+    vi:
+        'Tôi nhỏ, đỏ, tròn và thường nằm trên đỉnh chiếc bánh kem. Tôi là quả '
+        'gì?',
+    answer: 'Cherry',
+    distractors: ['Lemon', 'Peach', 'Kiwi'],
+  ),
+  Riddle(
+    category: 'Trái cây & xe cộ',
+    en: 'What has four wheels and flies?',
+    vi: 'Cái gì có bốn bánh và có "flies" (ruồi / bay)?',
+    answer: 'Garbage truck',
+    distractors: ['Airplane', 'Rocket', 'Helicopter'],
+  ),
+  Riddle(
+    category: 'Trái cây & xe cộ',
+    en:
+        'I am green, I have one big round seed, and people make guacamole '
+        'from me. What am I?',
+    vi:
+        'Tôi màu xanh, có một hạt to tròn, và người ta làm sốt guacamole từ '
+        'tôi. Tôi là quả gì?',
+    answer: 'Avocado',
+    distractors: ['Mango', 'Lime', 'Pear'],
+  ),
+  Riddle(
+    category: 'Trái cây & xe cộ',
+    en:
+        'I have a siren and flashing lights, and I help catch people who '
+        'break the law. What am I?',
+    vi:
+        'Tôi có còi hụ và đèn nhấp nháy, giúp bắt những người phạm luật. Tôi là '
+        'xe gì?',
+    answer: 'Police car',
+    distractors: ['Ambulance', 'Fire truck', 'Taxi'],
+  ),
+  Riddle(
+    category: 'Trái cây & xe cộ',
+    en:
+        'My skin is soft and fuzzy, I am orange-pink, and I have a hard stone '
+        'in the middle. What am I?',
+    vi:
+        'Vỏ tôi mềm, có lông tơ, màu cam hồng, giữa có một hạt cứng. Tôi là '
+        'quả gì?',
+    answer: 'Peach',
+    distractors: ['Orange', 'Apple', 'Mango'],
+  ),
+  Riddle(
+    category: 'Trái cây & xe cộ',
+    en: 'I am a train that runs in tunnels under the city. What am I?',
+    vi: 'Tôi là đoàn tàu chạy trong đường hầm dưới lòng thành phố. Tôi là gì?',
+    answer: 'Subway',
+    distractors: ['Bus', 'Tram', 'Taxi'],
+  ),
+  Riddle(
+    category: 'Trái cây & xe cộ',
+    en:
+        'I look like an apple, but I am wide at the bottom and thin at the '
+        'top. What am I?',
+    vi:
+        'Tôi trông giống quả táo nhưng phần dưới to, phần trên thon nhỏ. Tôi là '
+        'quả gì?',
+    answer: 'Pear',
+    distractors: ['Plum', 'Mango', 'Lemon'],
+  ),
+  Riddle(
+    category: 'Trái cây & xe cộ',
+    en: 'I am a flat board with four small wheels and no handle. What am I?',
+    vi: 'Tôi là tấm ván phẳng có bốn bánh nhỏ và không có tay cầm. Tôi là gì?',
+    answer: 'Skateboard',
+    distractors: ['Scooter', 'Bicycle', 'Car'],
+  ),
+  Riddle(
+    category: 'Trái cây & xe cộ',
+    en:
+        'I am the biggest fruit that grows on a tree. I am green and bumpy, '
+        'and I can weigh more than 20 kilograms. What am I?',
+    vi:
+        'Tôi là loại quả mọc trên cây to nhất thế giới. Tôi màu xanh, vỏ sần, có '
+        'thể nặng hơn 20 ki-lô-gam. Tôi là quả gì?',
+    answer: 'Jackfruit',
+    distractors: ['Watermelon', 'Durian', 'Papaya'],
+  ),
+  Riddle(
+    category: 'Trái cây & xe cộ',
+    en:
+        'I have three wheels. The driver pedals behind you while you sit in '
+        'front and enjoy the streets of Hanoi. What am I?',
+    vi:
+        'Tôi có ba bánh. Người lái đạp phía sau trong khi bạn ngồi phía trước '
+        'ngắm phố phường Hà Nội. Tôi là gì?',
+    answer: 'Cyclo',
+    distractors: ['Taxi', 'Bus', 'Motorbike'],
+  ),
+  Riddle(
+    category: 'Trái cây & xe cộ',
+    en: 'When you cut me across, every slice looks like a star. What am I?',
+    vi: 'Khi bạn cắt ngang tôi, lát nào cũng có hình ngôi sao. Tôi là quả gì?',
+    answer: 'Star fruit',
+    distractors: ['Lemon', 'Kiwi', 'Banana'],
+  ),
+  Riddle(
+    category: 'Trái cây & xe cộ',
+    en:
+        'I am bigger than a car but smaller than a truck, and I carry many '
+        'boxes for delivery workers. What am I?',
+    vi:
+        'Tôi to hơn ô tô con nhưng nhỏ hơn xe tải, và chở nhiều thùng hàng cho '
+        'người giao hàng. Tôi là xe gì?',
+    answer: 'Van',
+    distractors: ['Bicycle', 'Scooter', 'Motorbike'],
+  ),
+  Riddle(
+    category: 'Trái cây & xe cộ',
+    en:
+        'I am red and round, and when you open me there are hundreds of '
+        'juicy red seeds inside. What am I?',
+    vi:
+        'Tôi màu đỏ, tròn, khi mở ra bên trong có hàng trăm hạt đỏ mọng nước. '
+        'Tôi là quả gì?',
+    answer: 'Pomegranate',
+    distractors: ['Apple', 'Tomato', 'Cherry'],
+  ),
   Riddle(
     category: 'Chơi chữ',
     en: 'What has a neck without a head?',

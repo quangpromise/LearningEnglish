@@ -166,6 +166,13 @@ final learningPathInteractedProvider = FutureProvider<bool>(
   (ref) => ref.watch(learningPathRepositoryProvider).hasInteracted(),
 );
 
+/// Cap hoc suy tu persona dang chon (null = "Tu hoc"/chua chon -> hien day
+/// du, khong loc, khong goi y) - moi feature chi doc provider nay de loc noi
+/// dung theo cap, xem docs/research-level-based-content.md.
+final learnerLevelProvider = Provider<LearnerLevel?>(
+  (ref) => ref.watch(learningPathChoiceProvider).valueOrNull?.level,
+);
+
 /// Tap hop step_index da hoan thanh cua 1 persona (man
 /// learning_path_screen.dart) - autoDispose vi chi can khi man do dang mo,
 /// invalidate sau moi lan markStepCompleted/unmarkStepCompleted de cap nhat
@@ -323,6 +330,11 @@ void invalidateUserScopedProviders(WidgetRef ref) {
   ref.invalidate(wealthTransactionsProvider);
   ref.invalidate(wealthHoldingsProvider);
   ref.invalidate(walletBalanceEntriesProvider);
+  // Truoc day KHONG co 2 dong nay - persona chi tai 1 lan luc mo app, nen
+  // mo app truoc khi dang nhap xong/doi tai khoan thi goi y lo trinh (ban
+  // tay tren Home + bo loc theo cap hoc) mat cho toi lan mo app sau.
+  ref.invalidate(learningPathChoiceProvider);
+  ref.invalidate(learningPathInteractedProvider);
 }
 
 /// Nhip realtime tu bang messages (khong quan tam noi dung, chi de kich

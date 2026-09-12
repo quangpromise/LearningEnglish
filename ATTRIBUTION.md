@@ -36,3 +36,17 @@ Lời bài hát (lyrics) trích từ dữ liệu `MusicComposition` (schema.org 
 công khai trên chính trang bài hát của tác giả, dùng cho mục đích học ngôn ngữ
 theo đúng phạm vi cho phép của CC-BY 4.0 (cho phép sao chép, chuyển thể, dùng
 thương mại, miễn có ghi công như trên).
+
+## CEFR-J Wordlist — dữ liệu tham khảo (không nhúng vào app)
+
+Nhãn mức độ từ vựng (Thông dụng/Thường gặp/Ít gặp) trong
+`app/lib/features/vocabulary/data/vocabulary_data.dart` được đối chiếu và
+hiệu chỉnh thủ công với CEFR-J Wordlist bằng `scripts/check_vocab_cefr.py`.
+File dữ liệu CEFR-J không được đưa vào repo hay vào app; script tải trực tiếp
+mỗi lần chạy.
+
+- The CEFR-J Wordlist Version 1.5. Compiled by Yukio Tono, Tokyo University of
+  Foreign Studies. http://www.cefr-j.org/ — bản phân phối:
+  https://github.com/openlanguageprofiles/olp-en-cefrj
+- Điều khoản: được dùng cho nghiên cứu và thương mại miễn phí, với điều kiện
+  trích dẫn nguồn như trên. Bản quyền thuộc Tono Laboratory, TUFS.

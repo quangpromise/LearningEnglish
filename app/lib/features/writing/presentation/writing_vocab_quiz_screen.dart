@@ -4,7 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../learning_path/data/learning_path_models.dart';
+import '../../vocabulary/data/vocab_level_filter.dart';
 import '../../vocabulary/data/vocabulary_data.dart';
 import '../data/writing_scoring.dart';
 
@@ -27,6 +30,10 @@ class WritingVocabQuizScreen extends ConsumerStatefulWidget {
 class _WritingVocabQuizScreenState
     extends ConsumerState<WritingVocabQuizScreen> {
   late final List<VocabWord> _order;
+
+  /// Cap hoc chot luc mo vong (doi cap giua chung khong anh huong vong dang
+  /// lam) - null = Tu hoc, giu nguyen hanh vi cu (ca chu de, khong goi y).
+  late final LearnerLevel? _level;
   final _controller = TextEditingController();
   final _focusNode = FocusNode();
   int _index = 0;
@@ -37,8 +44,44 @@ class _WritingVocabQuizScreenState
   @override
   void initState() {
     super.initState();
-    _order = List.of(widget.topic.words)..shuffle(Random());
+    _level = ref.read(learnerLevelProvider);
+    final words = List.of(wordsForLevel(widget.topic, _level))
+      ..shuffle(Random());
+    // So tu moi vong theo cap (xem docs/research-level-based-content.md muc
+    // 4a) - truoc day bat go ca ~100 tu cua chu de trong 1 vong.
+    final perRound = switch (_level) {
+      null => words.length,
+      LearnerLevel.basic => 10,
+      LearnerLevel.intermediate => 15,
+      LearnerLevel.advanced => 20,
+    };
+    _order = words.take(perRound).toList();
+    // Chu de khong con tu nao o cap nay (ly thuyet khong xay ra vi luoi chu
+    // de da an chu de qua it tu) - vao thang man ket qua thay vi loi index.
+    _finished = _order.isEmpty;
   }
+
+  /// Goi y theo cap: Co ban = chu cai dau + so ky tu, Trung cap = so ky tu,
+  /// Nang cao/Tu hoc = khong goi y.
+  String? _hintFor(VocabWord word) {
+    final letters = word.en.replaceAll(RegExp(r'[^A-Za-z]'), '').length;
+    return switch (_level) {
+      LearnerLevel.basic =>
+        ref
+            .tr('writing_vocab_hint_letters')
+            .replaceFirst('{hint}', '${word.en[0]}...')
+            .replaceFirst('{count}', '$letters'),
+      LearnerLevel.intermediate =>
+        ref.tr('writing_vocab_hint_count').replaceFirst('{count}', '$letters'),
+      _ => null,
+    };
+  }
+
+  /// Cap Co ban: sai chinh ta nhe (closeTypo) van tinh la dung khi cham
+  /// tong ket - nguoi moi hay go thieu/du 1 chu, khong nen bi tru diem.
+  bool _countsAsCorrect(VocabAnswerResult r) =>
+      r == VocabAnswerResult.correct ||
+      (_level == LearnerLevel.basic && r == VocabAnswerResult.closeTypo);
 
   @override
   void dispose() {
@@ -165,6 +208,14 @@ class _WritingVocabQuizScreenState
                   ),
                   const SizedBox(height: 6),
                   Text(_current.vi, style: AppTextStyles.heading(size: 20)),
+                  if (_hintFor(_current) case final hint?) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      hint,
+                      style: AppTextStyles.muted(size: 12)
+                          .copyWith(fontStyle: FontStyle.italic),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -229,9 +280,7 @@ class _WritingVocabQuizScreenState
   }
 
   Widget _buildResult(BuildContext context) {
-    final correct = _results
-        .where((r) => r == VocabAnswerResult.correct)
-        .length;
+    final correct = _results.where(_countsAsCorrect).length;
     return ScreenBackground(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
@@ -288,8 +337,7 @@ class _WritingVocabQuizScreenState
                 separatorBuilder: (_, _) => const SizedBox(height: 8),
                 itemBuilder: (context, i) {
                   final ok =
-                      i < _results.length &&
-                      _results[i] == VocabAnswerResult.correct;
+                      i < _results.length && _countsAsCorrect(_results[i]);
                   return Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 14,

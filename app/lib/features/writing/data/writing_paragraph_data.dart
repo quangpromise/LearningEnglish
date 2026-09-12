@@ -7,21 +7,41 @@
 // cham diem (xem writing_scoring.dart), khong chap nhan cau dong nghia khac
 // cau truc.
 
+import '../../learning_path/data/learning_path_models.dart';
+
 class WritingSentence {
   const WritingSentence({
     required this.id,
     required this.vi,
     required this.en,
     required this.tenseLabel,
+    this.alternatives = const [],
   });
+
+  /// Dang gon cho ngan hang bai theo cap (writing_bank_*.dart) - khong can
+  /// id rieng tung cau (UI khong dung toi, chi bo 24 doan cu co id de test
+  /// cu van giu nguyen).
+  const WritingSentence.of(
+    this.vi,
+    this.en,
+    this.tenseLabel, {
+    this.alternatives = const [],
+  }) : id = '';
 
   final String id;
   final String vi;
 
-  /// Dap an tham chieu DUY NHAT dung de cham diem.
+  /// Dap an tham chieu CHINH dung de cham diem va hien "Dap an dung".
   final String en;
 
-  /// Ten thi ngu phap - hien sau khi cham de giai thich vi sao dung/sai.
+  /// Cac cach viet dung KHAC cung cau truc (vd "mom" thay "mother") - cham
+  /// diem lay ket qua cao nhat giua [en] va cac cau nay (xem
+  /// scoreSentenceBest), tranh cham sai oan khi 1 cau co nhieu cach dich.
+  final List<String> alternatives;
+
+  /// Ten thi/cau truc ngu phap - hien sau khi cham de giai thich vi sao
+  /// dung/sai. Bo 24 doan cu chi dung 12 thi (kAllTenseLabels); ngan hang
+  /// theo cap dung them cac cau truc khac (xem kGrammarLabelsByLevel).
   final String tenseLabel;
 }
 
@@ -31,12 +51,17 @@ class WritingParagraph {
     required this.titleVi,
     required this.titleEn,
     required this.sentences,
+    this.level,
   });
 
   final String id;
   final String titleVi;
   final String titleEn;
   final List<WritingSentence> sentences;
+
+  /// Cap cua bai (ngan hang theo cap) - null = bo 24 doan "Tong hop 12 thi"
+  /// cu, tron nhieu thi trong 1 doan.
+  final LearnerLevel? level;
 }
 
 /// 12 thi co dinh cua tieng Anh - dung lam nhan giai thich va de test kiem

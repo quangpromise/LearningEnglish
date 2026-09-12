@@ -3,7 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/navigation/app_popup.dart';
+import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/pointing_hand_badge.dart';
+import '../../learning_path/presentation/learner_level_banner.dart';
+import '../../learning_path/presentation/learning_path_accent.dart';
+import '../../vocabulary/data/vocab_level_filter.dart';
 import '../../vocabulary/data/vocabulary_data.dart';
 import 'writing_vocab_quiz_screen.dart';
 
@@ -17,6 +22,14 @@ class WritingVocabTopicScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Cung bo loc cap hoc voi man Tu vung theo chu de (vocab_level_filter.dart)
+    // - null = Tu hoc, hien du moi chu de/moi tu nhu cu.
+    final level = ref.watch(learnerLevelProvider);
+    final persona = ref.watch(learningPathChoiceProvider).valueOrNull;
+    final topics = topicsForLevel(kVocabTopics, level);
+    final handTopic = level != null && persona != null && topics.isNotEmpty
+        ? topics.first
+        : null;
     return ScreenBackground(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
@@ -59,10 +72,14 @@ class WritingVocabTopicScreen extends ConsumerWidget {
                 ),
               ],
             ),
+            if (level != null) ...[
+              const SizedBox(height: 10),
+              const LearnerLevelBanner(),
+            ],
             const SizedBox(height: 14),
             Expanded(
               child: GridView.builder(
-                itemCount: kVocabTopics.length,
+                itemCount: topics.length,
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
                   mainAxisSpacing: 14,
@@ -70,46 +87,63 @@ class WritingVocabTopicScreen extends ConsumerWidget {
                   childAspectRatio: 0.95,
                 ),
                 itemBuilder: (context, i) {
-                  final topic = kVocabTopics[i];
+                  final topic = topics[i];
                   return GestureDetector(
                     onTap: () => openAppPopup(
                       context,
                       WritingVocabQuizScreen(topic: topic),
                     ),
-                    child: GlowBox(
-                      borderRadius: 22,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            width: 44,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  topic.color,
-                                  topic.color.withValues(alpha: 0.6),
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(14),
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Positioned.fill(
+                          child: GlowBox(
+                            borderRadius: 22,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  width: 44,
+                                  height: 44,
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        topic.color,
+                                        topic.color.withValues(alpha: 0.6),
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                  child: Icon(
+                                    topic.icon,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
+                                ),
+                                const Spacer(),
+                                Text(
+                                  topicLabel(ref, topic),
+                                  style: AppTextStyles.body(
+                                    weight: FontWeight.w800,
+                                  ),
+                                ),
+                                Text(
+                                  '${wordsForLevel(topic, level).length} ${ref.tr('vocab_word_count')}',
+                                  style: AppTextStyles.muted(size: 11),
+                                ),
+                              ],
                             ),
-                            child: Icon(
-                              topic.icon,
-                              color: Colors.white,
-                              size: 20,
+                          ),
+                        ),
+                        if (topic == handTopic)
+                          Positioned(
+                            right: 10,
+                            top: 10,
+                            child: PointingHandBadge(
+                              color: personaColor(persona!),
                             ),
                           ),
-                          const Spacer(),
-                          Text(
-                            topicLabel(ref, topic),
-                            style: AppTextStyles.body(weight: FontWeight.w800),
-                          ),
-                          Text(
-                            '${topic.words.length} ${ref.tr('vocab_word_count')}',
-                            style: AppTextStyles.muted(size: 11),
-                          ),
-                        ],
-                      ),
+                      ],
                     ),
                   );
                 },

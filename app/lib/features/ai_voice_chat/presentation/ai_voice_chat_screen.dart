@@ -12,6 +12,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/config/env.dart';
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/tts/app_tts.dart';
 import '../../../core/widgets/speaker_button.dart';
@@ -139,6 +140,7 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
         client = GeminiLiveDirectClient(
           apiKey: Env.geminiApiKeyDirect,
           voiceName: _voiceName,
+          level: ref.read(learnerLevelProvider),
         );
       } else {
         final token = Supabase.instance.client.auth.currentSession?.accessToken;
@@ -152,6 +154,7 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
         client = VoiceChatClient(
           backendUrl: kVoiceChatBackendUrl,
           accessToken: token,
+          level: ref.read(learnerLevelProvider),
         );
       }
       _client = client;

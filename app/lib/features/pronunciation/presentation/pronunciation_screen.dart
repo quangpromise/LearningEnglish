@@ -7,7 +7,10 @@ import '../../../core/i18n/app_strings.dart';
 import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../learning_path/data/learning_path_models.dart';
+import '../../learning_path/presentation/learner_level_banner.dart';
 import '../../music_player/data/songs_data.dart';
+import '../../writing/data/writing_bank.dart';
 import 'pronunciation_practice.dart';
 
 /// Man "Luyen phat am" - truoc day la 1 tab co dinh o thanh Menu duoi (giu
@@ -33,7 +36,14 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
   @override
   void initState() {
     super.initState();
-    final initial = _randomSongLine();
+    // Da chon goi y lo trinh -> cau luyen lay tu ngan hang Doan van CUNG CAP
+    // (do dai/ngu phap/tu vung da kiem soat theo cap - xem
+    // docs/research-level-based-content.md muc 5); Tu hoc -> lyric ngau
+    // nhien nhu truoc.
+    final level = ref.read(learnerLevelProvider);
+    final initial = level == null
+        ? _randomSongLine()
+        : _randomLevelSentence(level);
     _targetEn = initial.en;
     _targetVi = initial.vi;
     // An FAB AI Voice Chat trong luc man nay mo - ca 2 deu dung mic, tranh
@@ -49,6 +59,15 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
   void dispose() {
     ref.read(pronunciationTabActiveProvider.notifier).state = false;
     super.dispose();
+  }
+
+  static _PracticeChoice _randomLevelSentence(LearnerLevel level) {
+    final sentences = [
+      for (final t in kWritingTopics)
+        for (final p in t.paragraphsFor(level)) ...p.sentences,
+    ];
+    final s = sentences[Random().nextInt(sentences.length)];
+    return _PracticeChoice(s.en, s.vi);
   }
 
   _PracticeChoice _randomSongLine() {
@@ -88,7 +107,9 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             PopupHeader(title: ref.tr('pron_title')),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
+            const LearnerLevelBanner(),
+            const SizedBox(height: 8),
             // SingleChildScrollView thay vi Column+Spacer nhu ban goc:
             // PronunciationPractice dung mainAxisSize.min de dung lai duoc
             // ca o day (man toan thoi gian, khong cuon) lan long trong
@@ -229,6 +250,52 @@ class _PracticeSourcePickerState extends ConsumerState<_PracticeSourcePicker> {
                   ),
                 ],
               ),
+              if (ref.watch(learnerLevelProvider) case final level?) ...[
+                const SizedBox(height: 14),
+                GestureDetector(
+                  onTap: () => Navigator.of(
+                    context,
+                  ).pop(_PronunciationScreenState._randomLevelSentence(level)),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.teal.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: AppColors.teal.withValues(alpha: 0.5),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.casino_rounded,
+                          size: 18,
+                          color: AppColors.teal,
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            ref
+                                .tr('pron_level_random')
+                                .replaceFirst(
+                                  '{level}',
+                                  ref.tr(level.labelKey),
+                                ),
+                            style: AppTextStyles.body(
+                              weight: FontWeight.w800,
+                              color: AppColors.teal,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(height: 20),
               Text(
                 ref.tr('pron_pick_from_song'),

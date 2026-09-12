@@ -33,13 +33,50 @@ function pcmToWav(pcmBuffer, sampleRate = OUTPUT_SAMPLE_RATE) {
   return Buffer.concat([header, pcmBuffer]);
 }
 
-const SYSTEM_PROMPT =
+const BASE_PROMPT =
   'Ban la mot nguoi ban luyen noi tieng Anh than thien, kien nhan. Tro chuyen ' +
-  'tu nhien bang tieng Anh voi nguoi dung (nguoi hoc tieng Anh trinh do trung ' +
-  'binh). Neu nguoi dung dung sai ngu phap hoac dung tu chua chinh xac, nhe ' +
-  'nhang chi ra cach noi dung hon NGAY TRONG luc tro chuyen (khong ngat mach ' +
-  'hoi thoai qua nhieu), roi tiep tuc cau chuyen. Giu cau tra loi ngan gon, ' +
-  'de hieu, phu hop de luyen nghe-noi.';
+  'tu nhien bang tieng Anh voi nguoi dung ({learner}). Neu nguoi dung dung sai ' +
+  'ngu phap hoac dung tu chua chinh xac, nhe nhang chi ra cach noi dung hon ' +
+  'NGAY TRONG luc tro chuyen (khong ngat mach hoi thoai qua nhieu), roi tiep ' +
+  'tuc cau chuyen. Giu cau tra loi ngan gon, de hieu, phu hop de luyen nghe-noi.';
+
+// Huong dan rieng theo cap hoc (query `level` tu app - xem
+// app/lib/features/learning_path/data/learning_path_models.dart LearnerLevel
+// va docs/research-level-based-content.md muc 6). Khong co/khong hop le ->
+// dung cap trung cap nhu truoc.
+const LEVEL_PROMPTS = {
+  basic: {
+    learner: 'nguoi moi bat dau, trinh do A1-A2',
+    guide:
+      'Noi CHAM, ro rang. Chi dung tu rat thong dung, cau toi da 8 tu. Hoi cau ' +
+      'dang Co/Khong hoac chon 1 trong 2 (vd "Do you like tea or coffee?"). Moi ' +
+      'luot chi sua 1 loi quan trong nhat. Neu nguoi hoc bi hoac noi tieng Viet, ' +
+      'goi y tu tieng Anh tuong ung va dong vien.',
+  },
+  intermediate: {
+    learner: 'nguoi hoc trinh do trung binh',
+    guide:
+      'Noi toc do tu nhien nhung ro, dung tu vung doi thuong, hoi cau mo ve ' +
+      'cuoc song hang ngay.',
+  },
+  advanced: {
+    learner: 'nguoi hoc nang cao B1-C1, dang di lam hoac luyen thi TOEIC/IELTS',
+    guide:
+      'Noi toc do ban ngu, dung thanh ngu va cum dong tu tu nhien. Khi phu hop, ' +
+      'de xuat nhap vai tinh huong that (hop, phong van, trao doi email, cau hoi ' +
+      'kieu IELTS Speaking Part 1-3). Ngoai sua loi, neu cau dung nhung chua tu ' +
+      'nhien thi goi y cach noi tu nhien hon.',
+  },
+};
+
+export function normalizeLevel(level) {
+  return Object.hasOwn(LEVEL_PROMPTS, level) ? level : 'intermediate';
+}
+
+export function systemPromptFor(level) {
+  const { learner, guide } = LEVEL_PROMPTS[normalizeLevel(level)];
+  return `${BASE_PROMPT.replace('{learner}', learner)}\n\n${guide}`;
+}
 
 /**
  * Wrapper ket noi toi Google Gemini Live API qua SDK chinh thuc @google/genai.
@@ -50,8 +87,9 @@ const SYSTEM_PROMPT =
  * phan hoi tu Gemini duoc forward nguoc lai qua onAudioChunk.
  */
 export class GeminiLiveSession {
-  constructor({ apiKey, onAudioChunk, onQuotaExceeded, onError }) {
+  constructor({ apiKey, level, onAudioChunk, onQuotaExceeded, onError }) {
     this.apiKey = apiKey;
+    this.level = normalizeLevel(level);
     this.onAudioChunk = onAudioChunk;
     this.onQuotaExceeded = onQuotaExceeded;
     this.onError = onError;
@@ -66,7 +104,7 @@ export class GeminiLiveSession {
       model: MODEL,
       config: {
         responseModalities: [Modality.AUDIO],
-        systemInstruction: SYSTEM_PROMPT,
+        systemInstruction: systemPromptFor(this.level),
       },
       callbacks: {
         onopen: () => {

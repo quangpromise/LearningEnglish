@@ -4658,7 +4658,7 @@ const kVocabTopics = <VocabTopic>[
         vi: 'có động lực',
         exampleEn: "The coach's speech left the team motivated.",
         exampleVi: 'Bài phát biểu của huấn luyện viên khiến đội có động lực.',
-        frequency: VocabFrequency.common,
+        frequency: VocabFrequency.medium,
         partOfSpeech: VocabPartOfSpeech.adjective,
       ),
       VocabWord(
@@ -4676,7 +4676,7 @@ const kVocabTopics = <VocabTopic>[
         vi: 'quyết tâm',
         exampleEn: 'He is determined to pass the exam.',
         exampleVi: 'Anh ấy quyết tâm đậu kỳ thi.',
-        frequency: VocabFrequency.common,
+        frequency: VocabFrequency.medium,
         partOfSpeech: VocabPartOfSpeech.adjective,
       ),
       VocabWord(
@@ -8496,7 +8496,7 @@ const kVocabTopics = <VocabTopic>[
         exampleEn:
             'The view from the mountain top was absolutely breathtaking.',
         exampleVi: 'Khung cảnh từ đỉnh núi thật sự đẹp đến nghẹt thở.',
-        frequency: VocabFrequency.common,
+        frequency: VocabFrequency.medium,
         partOfSpeech: VocabPartOfSpeech.adjective,
       ),
       VocabWord(
@@ -9571,7 +9571,7 @@ const kVocabTopics = <VocabTopic>[
         vi: 'đúng giờ',
         exampleEn: 'Teachers expect students to be punctual every morning.',
         exampleVi: 'Giáo viên mong học sinh đến đúng giờ mỗi sáng.',
-        frequency: VocabFrequency.common,
+        frequency: VocabFrequency.medium,
         partOfSpeech: VocabPartOfSpeech.adjective,
       ),
       VocabWord(
@@ -10068,7 +10068,7 @@ const kVocabTopics = <VocabTopic>[
         vi: 'thấu hiểu, cảm thông',
         exampleEn: 'She has an understanding friend who listens well.',
         exampleVi: 'Cô ấy có một người bạn thấu hiểu và biết lắng nghe.',
-        frequency: VocabFrequency.common,
+        frequency: VocabFrequency.medium,
         partOfSpeech: VocabPartOfSpeech.adjective,
       ),
       VocabWord(
@@ -11190,7 +11190,7 @@ const kVocabTopics = <VocabTopic>[
         vi: 'nhiệt kế',
         exampleEn: 'The thermometer showed thirty-eight degrees.',
         exampleVi: 'Nhiệt kế hiện ba mươi tám độ.',
-        frequency: VocabFrequency.common,
+        frequency: VocabFrequency.medium,
         partOfSpeech: VocabPartOfSpeech.noun,
       ),
       VocabWord(
@@ -11509,7 +11509,7 @@ const kVocabTopics = <VocabTopic>[
         exampleEn: 'Climate change affects weather patterns worldwide.',
         exampleVi:
             'Biến đổi khí hậu ảnh hưởng đến thời tiết trên toàn thế giới.',
-        frequency: VocabFrequency.common,
+        frequency: VocabFrequency.medium,
         partOfSpeech: VocabPartOfSpeech.noun,
       ),
       VocabWord(
@@ -11626,7 +11626,7 @@ const kVocabTopics = <VocabTopic>[
         vi: 'nóng lên toàn cầu',
         exampleEn: 'Global warming is melting the polar ice.',
         exampleVi: 'Nóng lên toàn cầu đang làm tan băng ở hai cực.',
-        frequency: VocabFrequency.common,
+        frequency: VocabFrequency.medium,
         partOfSpeech: VocabPartOfSpeech.noun,
       ),
       VocabWord(
@@ -14276,7 +14276,7 @@ const kVocabTopics = <VocabTopic>[
         vi: 'mềm, dễ nhai (thịt)',
         exampleEn: 'The steak was cooked until perfectly tender.',
         exampleVi: 'Miếng bít tết được nấu đến khi mềm hoàn hảo.',
-        frequency: VocabFrequency.common,
+        frequency: VocabFrequency.medium,
         partOfSpeech: VocabPartOfSpeech.adjective,
       ),
       VocabWord(
@@ -17081,7 +17081,7 @@ const kVocabTopics = <VocabTopic>[
         vi: 'đi lại (giữa nhà và nơi làm việc)',
         exampleEn: 'He commutes to the office by train every day.',
         exampleVi: 'Anh ấy đi lại đến văn phòng bằng tàu điện mỗi ngày.',
-        frequency: VocabFrequency.common,
+        frequency: VocabFrequency.medium,
         partOfSpeech: VocabPartOfSpeech.verb,
       ),
       VocabWord(
@@ -17144,7 +17144,7 @@ const kVocabTopics = <VocabTopic>[
         vi: 'khoản đầu tư',
         exampleEn: 'This project needs a large investment.',
         exampleVi: 'Dự án này cần một khoản đầu tư lớn.',
-        frequency: VocabFrequency.common,
+        frequency: VocabFrequency.medium,
         partOfSpeech: VocabPartOfSpeech.noun,
       ),
       VocabWord(
@@ -17153,7 +17153,7 @@ const kVocabTopics = <VocabTopic>[
         vi: 'lợi nhuận',
         exampleEn: 'The company made a huge profit this year.',
         exampleVi: 'Công ty thu được lợi nhuận lớn trong năm nay.',
-        frequency: VocabFrequency.common,
+        frequency: VocabFrequency.medium,
         partOfSpeech: VocabPartOfSpeech.noun,
       ),
       VocabWord(
@@ -17171,7 +17171,7 @@ const kVocabTopics = <VocabTopic>[
         vi: 'khách hàng (dịch vụ)',
         exampleEn: 'We met an important client today.',
         exampleVi: 'Chúng tôi gặp một khách hàng quan trọng hôm nay.',
-        frequency: VocabFrequency.common,
+        frequency: VocabFrequency.medium,
         partOfSpeech: VocabPartOfSpeech.noun,
       ),
       VocabWord(
@@ -17189,7 +17189,7 @@ const kVocabTopics = <VocabTopic>[
         vi: 'hợp đồng',
         exampleEn: 'Both sides signed the contract.',
         exampleVi: 'Cả hai bên đã ký hợp đồng.',
-        frequency: VocabFrequency.common,
+        frequency: VocabFrequency.medium,
         partOfSpeech: VocabPartOfSpeech.noun,
       ),
       VocabWord(
@@ -20032,7 +20032,7 @@ const kVocabTopics = <VocabTopic>[
         vi: 'trình duyệt',
         exampleEn: 'Open the link in your browser.',
         exampleVi: 'Mở liên kết bằng trình duyệt của bạn.',
-        frequency: VocabFrequency.common,
+        frequency: VocabFrequency.medium,
         partOfSpeech: VocabPartOfSpeech.noun,
       ),
       VocabWord(
@@ -20977,7 +20977,7 @@ const kVocabTopics = <VocabTopic>[
         vi: 'vắc xin',
         exampleEn: 'Children need several vaccines.',
         exampleVi: 'Trẻ em cần tiêm một số loại vắc xin.',
-        frequency: VocabFrequency.common,
+        frequency: VocabFrequency.medium,
         partOfSpeech: VocabPartOfSpeech.noun,
       ),
       VocabWord(
@@ -21607,7 +21607,7 @@ const kVocabTopics = <VocabTopic>[
         vi: 'sốt rét',
         exampleEn: 'He caught malaria during his trip.',
         exampleVi: 'Anh ấy bị sốt rét trong chuyến đi.',
-        frequency: VocabFrequency.common,
+        frequency: VocabFrequency.medium,
         partOfSpeech: VocabPartOfSpeech.noun,
       ),
       VocabWord(
@@ -24719,7 +24719,7 @@ const kVocabTopics = <VocabTopic>[
         vi: 'thập kỷ',
         exampleEn: 'She has lived here for over a decade.',
         exampleVi: 'Cô ấy đã sống ở đây hơn một thập kỷ.',
-        frequency: VocabFrequency.common,
+        frequency: VocabFrequency.medium,
         partOfSpeech: VocabPartOfSpeech.noun,
       ),
       VocabWord(
@@ -26189,7 +26189,7 @@ const kVocabTopics = <VocabTopic>[
         vi: 'lỗi, pha phạm lỗi',
         exampleEn: 'The referee called a foul.',
         exampleVi: 'Trọng tài thổi còi lỗi.',
-        frequency: VocabFrequency.common,
+        frequency: VocabFrequency.medium,
         partOfSpeech: VocabPartOfSpeech.noun,
       ),
       VocabWord(
@@ -29973,7 +29973,7 @@ const kVocabTopics = <VocabTopic>[
         vi: 'cổ phiếu',
         exampleEn: 'He bought stock in a technology company.',
         exampleVi: 'Anh ấy mua cổ phiếu của một công ty công nghệ.',
-        frequency: VocabFrequency.common,
+        frequency: VocabFrequency.medium,
         partOfSpeech: VocabPartOfSpeech.noun,
       ),
       VocabWord(
@@ -30997,7 +30997,7 @@ const kVocabTopics = <VocabTopic>[
         vi: 'tỉnh',
         exampleEn: 'My hometown is in a coastal province.',
         exampleVi: 'Quê tôi ở một tỉnh ven biển.',
-        frequency: VocabFrequency.common,
+        frequency: VocabFrequency.medium,
         partOfSpeech: VocabPartOfSpeech.noun,
       ),
       VocabWord(
@@ -32279,7 +32279,7 @@ const kVocabTopics = <VocabTopic>[
         vi: 'tuyển dụng',
         exampleEn: 'The company plans to recruit ten new engineers this year.',
         exampleVi: 'Công ty dự định tuyển dụng mười kỹ sư mới trong năm nay.',
-        frequency: VocabFrequency.common,
+        frequency: VocabFrequency.medium,
         partOfSpeech: VocabPartOfSpeech.verb,
       ),
       VocabWord(
@@ -36492,7 +36492,7 @@ const kVocabTopics = <VocabTopic>[
         vi: 'hạn hán',
         exampleEn: 'The long drought destroyed the farmers\' crops.',
         exampleVi: 'Hạn hán kéo dài phá hủy mùa màng của nông dân.',
-        frequency: VocabFrequency.common,
+        frequency: VocabFrequency.medium,
         partOfSpeech: VocabPartOfSpeech.noun,
       ),
       VocabWord(
@@ -40915,7 +40915,7 @@ const kVocabTopics = <VocabTopic>[
         vi: 'hồ sơ cá nhân',
         exampleEn: 'She updated her profile picture.',
         exampleVi: 'Cô ấy đã cập nhật ảnh đại diện.',
-        frequency: VocabFrequency.common,
+        frequency: VocabFrequency.medium,
         partOfSpeech: VocabPartOfSpeech.noun,
       ),
       VocabWord(
@@ -44715,7 +44715,7 @@ const kVocabTopics = <VocabTopic>[
         vi: 'phần trăm',
         exampleEn: 'What percentage of students passed?',
         exampleVi: 'Bao nhiêu phần trăm học sinh đã đậu?',
-        frequency: VocabFrequency.common,
+        frequency: VocabFrequency.medium,
         partOfSpeech: VocabPartOfSpeech.noun,
       ),
       VocabWord(
@@ -44760,7 +44760,7 @@ const kVocabTopics = <VocabTopic>[
         vi: 'nhân',
         exampleEn: 'Multiply the length by the width.',
         exampleVi: 'Nhân chiều dài với chiều rộng.',
-        frequency: VocabFrequency.common,
+        frequency: VocabFrequency.medium,
         partOfSpeech: VocabPartOfSpeech.verb,
       ),
       VocabWord(
@@ -48416,7 +48416,7 @@ const kVocabTopics = <VocabTopic>[
         vi: 'đoạn phim quảng cáo',
         exampleEn: 'The trailer made the movie look exciting.',
         exampleVi: 'Đoạn phim quảng cáo khiến bộ phim trông hấp dẫn.',
-        frequency: VocabFrequency.common,
+        frequency: VocabFrequency.medium,
         partOfSpeech: VocabPartOfSpeech.noun,
       ),
       VocabWord(
@@ -49306,7 +49306,7 @@ const kVocabTopics = <VocabTopic>[
         vi: 'người dẫn chuyện',
         exampleEn: 'The narrator explains what each character is thinking.',
         exampleVi: 'Người dẫn chuyện giải thích suy nghĩ của từng nhân vật.',
-        frequency: VocabFrequency.common,
+        frequency: VocabFrequency.medium,
         partOfSpeech: VocabPartOfSpeech.noun,
       ),
     ],
@@ -50233,7 +50233,7 @@ const kVocabTopics = <VocabTopic>[
         vi: 'điều hướng, lái (tàu thuyền)',
         exampleEn: 'The captain navigated the ship safely through the storm.',
         exampleVi: 'Thuyền trưởng đã lái con tàu an toàn xuyên qua cơn bão.',
-        frequency: VocabFrequency.common,
+        frequency: VocabFrequency.medium,
         partOfSpeech: VocabPartOfSpeech.verb,
       ),
       VocabWord(
@@ -52999,7 +52999,7 @@ const kVocabTopics = <VocabTopic>[
         vi: 'nhún vai',
         exampleEn: "She shrugged and said she didn't know the answer.",
         exampleVi: 'Cô ấy nhún vai và nói rằng cô không biết câu trả lời.',
-        frequency: VocabFrequency.common,
+        frequency: VocabFrequency.medium,
         partOfSpeech: VocabPartOfSpeech.verb,
       ),
       VocabWord(
@@ -53017,7 +53017,7 @@ const kVocabTopics = <VocabTopic>[
         vi: 'chạy nước rút',
         exampleEn: 'She sprinted to catch the last bus.',
         exampleVi: 'Cô ấy chạy nước rút để bắt kịp chuyến xe buýt cuối cùng.',
-        frequency: VocabFrequency.common,
+        frequency: VocabFrequency.medium,
         partOfSpeech: VocabPartOfSpeech.verb,
       ),
       VocabWord(
@@ -55220,7 +55220,7 @@ const kVocabTopics = <VocabTopic>[
         vi: 'chim sẻ',
         exampleEn: 'A sparrow pecked at crumbs on the pavement.',
         exampleVi: 'Một con chim sẻ mổ vụn bánh mì trên vỉa hè.',
-        frequency: VocabFrequency.common,
+        frequency: VocabFrequency.medium,
         partOfSpeech: VocabPartOfSpeech.noun,
       ),
       VocabWord(
@@ -55603,7 +55603,7 @@ const kVocabTopics = <VocabTopic>[
         vi: 'mỏ chim',
         exampleEn: 'The woodpecker uses its beak to drill into wood.',
         exampleVi: 'Chim gõ kiến dùng mỏ để khoan vào gỗ.',
-        frequency: VocabFrequency.common,
+        frequency: VocabFrequency.medium,
         partOfSpeech: VocabPartOfSpeech.noun,
       ),
       VocabWord(
@@ -55842,7 +55842,7 @@ const kVocabTopics = <VocabTopic>[
         vi: 'bay lượn trên cao',
         exampleEn: 'Eagles can soar for hours without flapping their wings.',
         exampleVi: 'Đại bàng có thể bay lượn hàng giờ mà không cần vỗ cánh.',
-        frequency: VocabFrequency.common,
+        frequency: VocabFrequency.medium,
         partOfSpeech: VocabPartOfSpeech.verb,
       ),
       VocabWord(

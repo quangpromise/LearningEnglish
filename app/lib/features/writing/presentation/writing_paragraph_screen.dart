@@ -6,6 +6,7 @@ import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/writing_paragraph_data.dart';
+import '../data/writing_progress.dart';
 import '../data/writing_scoring.dart';
 
 /// Man dich TUNG CAU mot cua 1 doan van - moi cau go xong bam "Cham diem" la
@@ -43,8 +44,9 @@ class _WritingParagraphScreenState
 
   void _submit() {
     if (_result != null) return;
-    final result = scoreSentence(
+    final result = scoreSentenceBest(
       targetEn: _current.en,
+      alternatives: _current.alternatives,
       userInput: _controller.text,
     );
     setState(() {
@@ -65,7 +67,19 @@ class _WritingParagraphScreenState
       _focusNode.requestFocus();
     } else {
       setState(() => _finished = true);
+      _markDone();
     }
+  }
+
+  /// Bai thuoc ngan hang theo cap -> danh dau da lam xong (dau tick + ban
+  /// tay goi y chuyen sang bai ke tiep). Bo 24 doan cu (level null) khong
+  /// theo doi tien do.
+  Future<void> _markDone() async {
+    if (widget.paragraph.level == null) return;
+    await ref
+        .read(writingProgressRepositoryProvider)
+        .markDone(widget.paragraph.id);
+    ref.invalidate(writingDoneParagraphsProvider);
   }
 
   @override
@@ -430,7 +444,8 @@ class _ResultExplain extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '${ref.tr('writing_correct_answer_label')}: ${sentence.en}',
+                '${ref.tr('writing_correct_answer_label')}: '
+                '${result.targetText.isEmpty ? sentence.en : result.targetText}',
                 style: AppTextStyles.body(size: 12, weight: FontWeight.w700),
               ),
               const SizedBox(height: 3),

@@ -5,6 +5,10 @@ import '../../../core/i18n/app_strings.dart';
 import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/pointing_hand_badge.dart';
+import '../../learning_path/presentation/learner_level_banner.dart';
+import '../../learning_path/presentation/learning_path_accent.dart';
+import '../data/vocab_level_filter.dart';
 import '../data/vocabulary_data.dart';
 import 'vocabulary_topic_detail_screen.dart';
 
@@ -29,19 +33,31 @@ class _VocabularyTopicsScreenState
 
   @override
   Widget build(BuildContext context) {
-    final topics = kVocabTopics.where((t) {
+    // Cap hoc tu "Goi y lo trinh" (null = Tu hoc -> hien du 59 chu de, dem
+    // du tu nhu cu) - xem vocab_level_filter.dart.
+    final level = ref.watch(learnerLevelProvider);
+    final persona = ref.watch(learningPathChoiceProvider).valueOrNull;
+    final topics = topicsForLevel(kVocabTopics, level).where((t) {
       if (_query.isEmpty) return true;
       return t.name.toLowerCase().contains(_query) ||
           t.nameEn.toLowerCase().contains(_query);
     }).toList();
+    // Ban tay LUON hien o chu de goi y dau tien (khong tat sau lan bam) khi
+    // da chon 1 goi y - an khi dang tim kiem (thu tu da bi xao tron).
+    final handTopic = level != null && persona != null && _query.isEmpty
+        ? (topics.isEmpty ? null : topics.first)
+        : null;
     // So tu CON LAI (chua danh dau "Da hoc") cua tung chu de - tu da hoc bi
     // an khoi man chi tiet chu de (xem VocabularyTopicDetailScreen.build)
     // nen o day cung phai tru bot de khop voi so luong nguoi dung se thay
     // khi bam vao.
     final learned = ref.watch(learnedWordsProvider).valueOrNull ?? const {};
-    int remainingCount(VocabTopic t) => learned.isEmpty
-        ? t.words.length
-        : t.words.where((w) => !learned.contains(w.en.toLowerCase())).length;
+    int remainingCount(VocabTopic t) {
+      final words = wordsForLevel(t, level);
+      return learned.isEmpty
+          ? words.length
+          : words.where((w) => !learned.contains(w.en.toLowerCase())).length;
+    }
 
     return ScreenBackground(
       child: Padding(
@@ -85,6 +101,10 @@ class _VocabularyTopicsScreenState
                 ),
               ],
             ),
+            if (level != null) ...[
+              const SizedBox(height: 10),
+              const LearnerLevelBanner(),
+            ],
             const SizedBox(height: 14),
             GlowBox(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
@@ -152,42 +172,62 @@ class _VocabularyTopicsScreenState
                             context,
                             VocabularyTopicDetailScreen(topic: topic),
                           ),
-                          child: GlowBox(
-                            borderRadius: 22,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  width: 44,
-                                  height: 44,
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        topic.color,
-                                        topic.color.withValues(alpha: 0.6),
-                                      ],
-                                    ),
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                  child: Icon(
-                                    topic.icon,
-                                    color: Colors.white,
-                                    size: 20,
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              Positioned.fill(
+                                child: GlowBox(
+                                  borderRadius: 22,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        width: 44,
+                                        height: 44,
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            colors: [
+                                              topic.color,
+                                              topic.color.withValues(
+                                                alpha: 0.6,
+                                              ),
+                                            ],
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            14,
+                                          ),
+                                        ),
+                                        child: Icon(
+                                          topic.icon,
+                                          color: Colors.white,
+                                          size: 20,
+                                        ),
+                                      ),
+                                      const Spacer(),
+                                      Text(
+                                        topicLabel(ref, topic),
+                                        style: AppTextStyles.body(
+                                          weight: FontWeight.w800,
+                                        ),
+                                      ),
+                                      Text(
+                                        '${remainingCount(topic)} ${ref.tr('vocab_word_count')}',
+                                        style: AppTextStyles.muted(size: 11),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                const Spacer(),
-                                Text(
-                                  topicLabel(ref, topic),
-                                  style: AppTextStyles.body(
-                                    weight: FontWeight.w800,
+                              ),
+                              if (topic == handTopic)
+                                Positioned(
+                                  right: 10,
+                                  top: 10,
+                                  child: PointingHandBadge(
+                                    color: personaColor(persona!),
                                   ),
                                 ),
-                                Text(
-                                  '${remainingCount(topic)} ${ref.tr('vocab_word_count')}',
-                                  style: AppTextStyles.muted(size: 11),
-                                ),
-                              ],
-                            ),
+                            ],
                           ),
                         );
                       },

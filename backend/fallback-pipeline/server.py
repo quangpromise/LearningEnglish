@@ -11,19 +11,31 @@ thiện thêm (ví dụ dùng VAD để biết khi nào người dùng nói xong
 import asyncio
 import tempfile
 import wave
+from urllib.parse import parse_qs, urlparse
 
 import websockets
 
 from stt import transcribe
-from llm import reply
+from llm import Conversation
 from tts import synthesize
 
 HOST = "localhost"
 PORT = 8788
 
 
+def _request_path(websocket) -> str:
+    # websockets >= 14 (asyncio API mới): websocket.request.path;
+    # bản legacy cũ hơn: websocket.path.
+    request = getattr(websocket, "request", None)
+    return getattr(request, "path", None) or getattr(websocket, "path", "") or ""
+
+
 async def handle_connection(websocket):
-    print("[fallback-pipeline] Client kết nối (thường là gemini-proxy)")
+    # gemini-proxy gửi kèm ?level=basic|intermediate|advanced (cấp học của
+    # người dùng) — xem gemini-proxy/src/index.js.
+    level = parse_qs(urlparse(_request_path(websocket)).query).get("level", [None])[0]
+    print(f"[fallback-pipeline] Client kết nối (thường là gemini-proxy), level={level}")
+    conversation = Conversation(level)
     audio_buffer = bytearray()
 
     async for message in websocket:
@@ -44,7 +56,7 @@ async def handle_connection(websocket):
             continue
 
         print(f"[fallback-pipeline] Nghe được: {user_text}")
-        reply_text = reply(user_text)
+        reply_text = conversation.reply(user_text)
         print(f"[fallback-pipeline] Trả lời: {reply_text}")
 
         audio_response = synthesize(reply_text)

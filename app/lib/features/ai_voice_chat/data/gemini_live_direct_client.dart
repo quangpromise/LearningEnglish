@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:record/record.dart' as rec;
 import 'package:web_socket_channel/web_socket_channel.dart';
 
+import '../../learning_path/data/learning_path_models.dart';
 import 'gemini_voices.dart' show kDefaultGeminiVoiceName;
 import 'voice_chat_client.dart'
     show ChatRole, TranscriptEvent, VoiceChatSession, VoiceChatState;
@@ -23,6 +24,7 @@ class GeminiLiveDirectClient implements VoiceChatSession {
     required this.apiKey,
     this.model = _defaultModel,
     this.voiceName = kDefaultGeminiVoiceName,
+    this.level,
   });
 
   final String apiKey;
@@ -32,6 +34,10 @@ class GeminiLiveDirectClient implements VoiceChatSession {
   /// - chi co tac dung luc gui setup luc bat dau ket noi, doi giong giua
   /// chung phien dang mo se khong co tac dung cho toi lan ket noi tiep theo.
   final String voiceName;
+
+  /// Cap hoc tu "Goi y lo trinh" - doi cach AI noi/sua loi cho hop trinh do
+  /// (xem [systemPromptFor]). null = Tu hoc -> dung prompt Trung cap nhu cu.
+  final LearnerLevel? level;
 
   static const _defaultModel = 'gemini-3.1-flash-live-preview';
   static const _outputSampleRate = 24000;
@@ -44,9 +50,9 @@ class GeminiLiveDirectClient implements VoiceChatSession {
   /// _extractCorrection) de boi do tin nhan cua nguoi dung va hien goi y sua.
   /// Day la giai phap "best-effort" - phu thuoc model co tuan thu dung mau
   /// cau nay khi noi hay khong, khong dam bao 100%.
-  static const _systemPrompt =
+  static const _basePrompt =
       'You are a friendly, patient English-speaking practice partner having '
-      'a natural voice conversation with an intermediate English learner. '
+      'a natural voice conversation with {learner}. '
       'You have ONE job on top of chatting: catch mistakes. Listen closely '
       'to every sentence the user says for grammar mistakes (verb tense, '
       'articles, word order, subject-verb agreement), wrong word choice or '
@@ -67,6 +73,40 @@ class GeminiLiveDirectClient implements VoiceChatSession {
       'this lesson."\n\n'
       'If the user did not make any mistake, just reply normally and never '
       'say the word "Correction". Keep the normal part of your reply short.';
+
+  /// Mo ta nguoi hoc + huong dan rieng theo cap - xem
+  /// docs/research-level-based-content.md muc 6. Phan "Correction: ..." o
+  /// [_basePrompt] giu nguyen o moi cap vi client doc chuoi do de boi do loi.
+  static String systemPromptFor(LearnerLevel? level) {
+    final (learner, guide) = switch (level) {
+      LearnerLevel.basic => (
+        'a Vietnamese beginner (CEFR A1-A2) English learner',
+        'LEVEL RULES (beginner): speak slowly and clearly. Use only very '
+            'common, simple words and short sentences of at most 8 words. '
+            'Ask easy yes/no or either-or questions (for example "Do you '
+            'like tea or coffee?"). Correct only the ONE most important '
+            'mistake per turn. If the learner is stuck or says a word in '
+            'Vietnamese, give them the English word and encourage them.',
+      ),
+      LearnerLevel.advanced => (
+        'an advanced (CEFR B1-C1) English learner preparing for work or '
+            'exams such as TOEIC and IELTS',
+        'LEVEL RULES (advanced): speak at a natural native pace and use '
+            'natural idioms and phrasal verbs. Offer realistic role-plays '
+            'when it fits (a work meeting, a job interview, an email '
+            'discussion, or IELTS Speaking Part 1-3 style questions) and ask '
+            'open follow-up questions. Besides fixing mistakes, when a '
+            'sentence is correct but sounds unnatural, give the more natural '
+            'version using the same "Correction: " format.',
+      ),
+      _ => (
+        'an intermediate English learner',
+        'LEVEL RULES (intermediate): speak at a natural but clear pace, use '
+            'everyday vocabulary, and ask open questions about daily life.',
+      ),
+    };
+    return '${_basePrompt.replaceFirst('{learner}', learner)}\n\n$guide';
+  }
 
   WebSocketChannel? _channel;
   StreamSubscription<Uint8List>? _micSub;
@@ -133,7 +173,7 @@ class GeminiLiveDirectClient implements VoiceChatSession {
             },
             'systemInstruction': {
               'parts': [
-                {'text': _systemPrompt},
+                {'text': systemPromptFor(level)},
               ],
             },
             // Bat transcription 2 chieu de hien thi hoi thoai dang text tren
@@ -316,7 +356,7 @@ class GeminiLiveDirectClient implements VoiceChatSession {
   }
 
   /// Tim cum "Correction: ..." (cau dung) trong ban transcribe loi noi cua
-  /// AI - tra ve null neu AI khong bat loi nao o luot nay (xem _systemPrompt).
+  /// AI - tra ve null neu AI khong bat loi nao o luot nay (xem systemPromptFor).
   String? _extractCorrection(String aiText) {
     final match = _correctionPattern.firstMatch(aiText);
     return match?.group(1)?.trim();

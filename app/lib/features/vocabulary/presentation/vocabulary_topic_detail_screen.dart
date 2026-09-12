@@ -7,8 +7,10 @@ import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/tts/app_tts.dart';
 import '../../../core/widgets/speaker_button.dart';
+import '../../learning_path/presentation/learner_level_banner.dart';
 import '../../profile/presentation/profile_screen.dart';
 import '../data/daily_words_repository.dart';
+import '../data/vocab_level_filter.dart';
 import '../data/vocabulary_data.dart';
 import 'daily_words_controller.dart';
 import 'vocabulary_quiz_screen.dart';
@@ -109,9 +111,20 @@ class _VocabularyTopicDetailScreenState
   @override
   Widget build(BuildContext context) {
     final learned = ref.watch(learnedWordsProvider).valueOrNull ?? const {};
-    final words = widget.topic.words.where((w) {
+    // Cap hoc tu "Goi y lo trinh" - chi hien tu thuoc cap do (null = Tu hoc,
+    // hien du 4 tab nhu cu). Tab "Tat ca" luc nay = tat ca tu CUA CAP DO.
+    final level = ref.watch(learnerLevelProvider);
+    final allowed = frequenciesForLevel(level);
+    final tabs = allowed == null
+        ? VocabFrequency.values
+        : VocabFrequency.values.where(allowed.contains).toList();
+    // Doi cap trong luc dang mo man nay -> tab dang chon co the khong con.
+    final frequencyFilter = tabs.contains(_frequencyFilter)
+        ? _frequencyFilter
+        : null;
+    final words = wordsForLevel(widget.topic, level).where((w) {
       final matchesFreq =
-          _frequencyFilter == null || w.frequency == _frequencyFilter;
+          frequencyFilter == null || w.frequency == frequencyFilter;
       final matchesPos = _posFilter == null || w.partOfSpeech == _posFilter;
       // Tu da danh dau "Da hoc" khong con hien o day nua - chuyen sang xem
       // trong popup "Words Learned" o the Hoat dong man Ho so.
@@ -184,14 +197,27 @@ class _VocabularyTopicDetailScreenState
             // ung voi 1 "phan khuc" nguoi hoc (moi bat dau/da co nen/nang
             // cao), kem 1 dong mo ta ben duoi giai thich phan khuc do danh
             // cho ai de nguoi dung tu chon dung tab phu hop trinh do minh.
-            _FrequencyTabBar(
-              value: _frequencyFilter,
-              color: widget.topic.color,
-              onChanged: (f) => setState(() => _frequencyFilter = f),
-            ),
-            const SizedBox(height: 8),
+            if (level != null) ...[
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: LearnerLevelBanner(),
+              ),
+              const SizedBox(height: 10),
+            ],
+            // Cap Co ban chi con 1 muc (Thong dung) -> an thanh tab, khong co
+            // gi de chon.
+            if (tabs.length > 1) ...[
+              _FrequencyTabBar(
+                value: frequencyFilter,
+                tabs: tabs,
+                color: widget.topic.color,
+                onChanged: (f) => setState(() => _frequencyFilter = f),
+              ),
+              const SizedBox(height: 8),
+            ],
             Text(
-              ref.tr(switch (_frequencyFilter) {
+              ref.tr(switch (frequencyFilter) {
+                null when level != null => 'vocab_frequency_level_desc',
                 null => 'vocab_frequency_all_desc',
                 VocabFrequency.common => 'vocab_frequency_common_desc',
                 VocabFrequency.medium => 'vocab_frequency_medium_desc',
@@ -365,11 +391,16 @@ class _VocabularyTopicDetailScreenState
 class _FrequencyTabBar extends ConsumerWidget {
   const _FrequencyTabBar({
     required this.value,
+    required this.tabs,
     required this.color,
     required this.onChanged,
   });
 
   final VocabFrequency? value;
+
+  /// Cac muc hien thanh tab (sau o "Tat ca") - chi gom muc thuoc cap hoc
+  /// dang chon, hoac du 3 muc khi Tu hoc.
+  final List<VocabFrequency> tabs;
   final Color color;
   final ValueChanged<VocabFrequency?> onChanged;
 
@@ -389,7 +420,7 @@ class _FrequencyTabBar extends ConsumerWidget {
             selected: value == null,
             onTap: () => onChanged(null),
           ),
-          for (final f in VocabFrequency.values)
+          for (final f in tabs)
             _segment(
               label: ref.tr(f.labelKeyVi),
               selected: value == f,

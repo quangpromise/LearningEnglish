@@ -137,7 +137,12 @@ class SentenceScore {
     required this.targetWords,
     required this.wordResults,
     required this.score,
+    this.targetText = '',
   });
+
+  /// Cau dap an (nguyen van, chua normalize) da dung de cham - khi cau co
+  /// nhieu cach viet dung, day la cach GAN nhat voi cau nguoi dung go.
+  final String targetText;
 
   final List<String> targetWords;
 
@@ -157,5 +162,25 @@ SentenceScore scoreSentence({
   final results = writingLcsMatch(target, typed);
   final correct = results.where((r) => r).length;
   final score = target.isEmpty ? 0 : ((correct / target.length) * 100).round();
-  return SentenceScore(targetWords: target, wordResults: results, score: score);
+  return SentenceScore(
+    targetWords: target,
+    wordResults: results,
+    score: score,
+    targetText: targetEn,
+  );
+}
+
+/// Cham voi dap an chinh + cac cach viet dung khac, lay ket qua CAO NHAT
+/// (bang diem thi uu tien dap an chinh vi dung truoc trong danh sach).
+SentenceScore scoreSentenceBest({
+  required String targetEn,
+  List<String> alternatives = const [],
+  required String userInput,
+}) {
+  var best = scoreSentence(targetEn: targetEn, userInput: userInput);
+  for (final alt in alternatives) {
+    final s = scoreSentence(targetEn: alt, userInput: userInput);
+    if (s.score > best.score) best = s;
+  }
+  return best;
 }

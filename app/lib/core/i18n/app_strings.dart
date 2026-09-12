@@ -355,8 +355,8 @@ class AppStrings {
       AppLanguage.en: 'Paragraph',
     },
     'writing_mode_paragraph_desc': {
-      AppLanguage.vi: 'Dịch đoạn văn ngắn sang tiếng Anh, đủ các thì',
-      AppLanguage.en: 'Translate a short paragraph, covering every tense',
+      AppLanguage.vi: 'Dịch đoạn văn ngắn sang tiếng Anh, bài theo từng cấp độ',
+      AppLanguage.en: 'Translate short paragraphs, graded by level',
     },
     'writing_vocab_pick_topic': {
       AppLanguage.vi: 'Chọn 1 chủ đề để bắt đầu',
@@ -398,6 +398,25 @@ class AppStrings {
       AppLanguage.vi: 'Chọn 1 đoạn văn để dịch',
       AppLanguage.en: 'Pick a paragraph to translate',
     },
+    'writing_topic_pick_hint': {
+      AppLanguage.vi: 'Chọn chủ đề, mỗi chủ đề có bài theo từng cấp',
+      AppLanguage.en: 'Pick a topic - each has lessons for every level',
+    },
+    'writing_mixed_title': {
+      AppLanguage.vi: 'Ôn tổng hợp 12 thì',
+      AppLanguage.en: 'Mixed review: 12 tenses',
+    },
+    'writing_mixed_desc': {
+      AppLanguage.vi:
+          '24 đoạn, mỗi đoạn trộn nhiều thì - hợp người đã học đủ các thì',
+      AppLanguage.en:
+          '24 paragraphs mixing many tenses - for learners who know them all',
+    },
+    'writing_lesson_count': {AppLanguage.vi: 'bài', AppLanguage.en: 'lessons'},
+    'writing_done_count': {
+      AppLanguage.vi: '{done}/{total} đã làm',
+      AppLanguage.en: '{done}/{total} done',
+    },
     'writing_sentence_count': {
       AppLanguage.vi: 'câu',
       AppLanguage.en: 'sentences',
@@ -431,8 +450,8 @@ class AppStrings {
       AppLanguage.en: 'Correct answer',
     },
     'writing_tense_label': {
-      AppLanguage.vi: 'Thì ngữ pháp',
-      AppLanguage.en: 'Tense',
+      AppLanguage.vi: 'Ngữ pháp',
+      AppLanguage.en: 'Grammar',
     },
     'media_bar_not_playing': {
       AppLanguage.vi: 'Chưa phát nhạc',
@@ -493,6 +512,38 @@ class AppStrings {
     'learning_path_turn_off': {
       AppLanguage.vi: 'Tôi muốn tự học, tắt gợi ý',
       AppLanguage.en: "I'll study on my own, turn off suggestions",
+    },
+
+    // 3 cap hoc suy tu persona - xem docs/research-level-based-content.md.
+    'learner_level_basic': {AppLanguage.vi: 'Cơ bản', AppLanguage.en: 'Basic'},
+    'learner_level_intermediate': {
+      AppLanguage.vi: 'Trung cấp',
+      AppLanguage.en: 'Intermediate',
+    },
+    'learner_level_advanced': {
+      AppLanguage.vi: 'Nâng cao',
+      AppLanguage.en: 'Advanced',
+    },
+    'learner_level_showing': {
+      AppLanguage.vi: 'Đang hiển thị cấp',
+      AppLanguage.en: 'Showing level',
+    },
+    'learner_level_change': {AppLanguage.vi: 'Đổi', AppLanguage.en: 'Change'},
+    'pron_level_random': {
+      AppLanguage.vi: 'Câu ngẫu nhiên hợp cấp {level}',
+      AppLanguage.en: 'Random sentence for {level} level',
+    },
+    'vocab_frequency_level_desc': {
+      AppLanguage.vi: 'Chỉ hiện từ hợp với cấp bạn đã chọn ở Gợi ý lộ trình.',
+      AppLanguage.en: 'Only words that match the level you picked are shown.',
+    },
+    'writing_vocab_hint_letters': {
+      AppLanguage.vi: 'Gợi ý: {hint} ({count} chữ cái)',
+      AppLanguage.en: 'Hint: {hint} ({count} letters)',
+    },
+    'writing_vocab_hint_count': {
+      AppLanguage.vi: 'Gợi ý: từ có {count} chữ cái',
+      AppLanguage.en: 'Hint: the word has {count} letters',
     },
 
     // Man "Lo trinh hoc" day du (learning_path_screen.dart) - xem
