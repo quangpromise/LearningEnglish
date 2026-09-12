@@ -17,6 +17,7 @@ import '../../update/data/update_checker.dart';
 import '../../vocabulary/presentation/daily_quiz_popup_screen.dart';
 import '../../vocabulary/presentation/daily_words_controller.dart';
 import '../../vocabulary/presentation/learned_words_popup.dart';
+import '../../vocabulary/presentation/vocabulary_topics_screen.dart';
 import '../../wealth/data/recurring_service_model.dart';
 import '../../wealth/presentation/add_service_sheet.dart';
 import '../../wealth/presentation/renew_service_sheet.dart';
@@ -1405,12 +1406,21 @@ class _DailyWordsSectionState extends ConsumerState<_DailyWordsSection> {
             ],
           ),
           const SizedBox(height: 12),
-          if (total == 0)
+          if (total == 0) ...[
             Text(
               ref.tr('profile_daily_words_empty'),
               style: AppTextStyles.muted(size: 12),
-            )
-          else ...[
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: PillButton(
+                label: ref.tr('profile_daily_words_select'),
+                onTap: () =>
+                    openAppPopup(context, const VocabularyTopicsScreen()),
+              ),
+            ),
+          ] else ...[
             Text(
               ref
                   .tr('profile_daily_words_progress')
@@ -1526,7 +1536,15 @@ class _DailyWordsSectionState extends ConsumerState<_DailyWordsSection> {
                           : 'profile_daily_words_start',
                     ),
                     filled: !state.active,
-                    onTap: state.pending.isEmpty && !state.active
+                    // CHI vo hieu hoa khi khong con tu nao trong danh sach
+                    // (thuc te khong xay ra o day vi nhanh nay chi hien khi
+                    // total > 0 - xem "if (total == 0)" o tren) - TRUOC DAY
+                    // dung state.pending.isEmpty (tu CHUA tung tra loi dung)
+                    // lam dieu kien, khien nut "Bat dau hoc" bi khoa VINH
+                    // VIEN ngay sau khi da tra loi dung het 10/10 tu (pending
+                    // rong) + da bam "Ket thuc hoc" (active=false), khong the
+                    // bam lai duoc nua du danh sach tu van con nguyen.
+                    onTap: state.words.isEmpty && !state.active
                         ? null
                         : () async {
                             if (state.active) {

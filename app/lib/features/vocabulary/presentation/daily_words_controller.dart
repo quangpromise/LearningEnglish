@@ -83,6 +83,7 @@ class DailyWordsController extends StateNotifier<DailyWordsState> {
       await DailyWordsRepository.saveLearnedToday({});
       await DailyWordsRepository.saveActive(false);
       await DailyQuizNotifications.instance.cancelReminders();
+      DailyQuizNotifications.instance.cancelForegroundAutoOpen();
       state = state.copyWith(
         words: [],
         learnedTodayEnLower: {},
@@ -101,6 +102,17 @@ class DailyWordsController extends StateNotifier<DailyWordsState> {
         active: active,
         loaded: true,
       );
+      // App vua duoc MO LAI (khong phai lan dau bat nhac) trong luc nhac
+      // van con active tu truoc - Timer tu mo Quiz o foreground KHONG song
+      // sot qua lan dong app truoc do (khac voi thong bao he thong da dat
+      // san van con nguyen), phai tu bat lai o day de tinh nang "dang mo app
+      // luc den han thi tu mo Quiz" tiep tuc hoat dong ngay ca sau khi
+      // nguoi dung tat/mo lai app giua chung.
+      if (active) {
+        DailyQuizNotifications.instance.scheduleForegroundAutoOpen(
+          intervalMinutes: interval,
+        );
+      }
     }
     _scheduleMidnightReset();
   }
@@ -183,10 +195,21 @@ class DailyWordsController extends StateNotifier<DailyWordsState> {
     await _rescheduleReminders();
   }
 
+  /// Bam "Ket thuc hoc" (hoac danh sach tu rong sau khi xoa het qua
+  /// removeWord - xem _rescheduleReminders duoi) - XOA LUON danh sach 10 tu
+  /// dang chon (khong chi tat nhac) de tro ve dung trang thai "chua chon tu
+  /// nao" (total == 0, hien nut "Chon 10 tu" o _DailyWordsSection) thay vi
+  /// giu lai danh sach cu voi nut "Bat dau hoc" bi VO HIEU HOA vinh vien khi
+  /// tat ca da tung tra loi dung (state.pending rong + active=false khien
+  /// dieu kien "state.pending.isEmpty && !state.active" luon dung) - day la
+  /// nguyen nhan loi "bam Ket thuc hoc xong khong bam lai duoc Bat dau hoc".
   Future<void> stop() async {
-    state = state.copyWith(active: false);
+    state = state.copyWith(active: false, words: [], learnedTodayEnLower: {});
     await DailyWordsRepository.saveActive(false);
+    await DailyWordsRepository.saveWords([]);
+    await DailyWordsRepository.saveLearnedToday({});
     await DailyQuizNotifications.instance.cancelReminders();
+    DailyQuizNotifications.instance.cancelForegroundAutoOpen();
   }
 
   Future<void> _rescheduleReminders() async {
@@ -195,6 +218,12 @@ class DailyWordsController extends StateNotifier<DailyWordsState> {
       return;
     }
     await DailyQuizNotifications.instance.scheduleReminders(
+      intervalMinutes: state.intervalMinutes,
+    );
+    // Ngoai thong bao he thong o tren (chi hien de nguoi dung TU CHAM), bat
+    // them Timer tu dong DAY man Quiz len khi den han NEU dang mo san app -
+    // xem doc cua scheduleForegroundAutoOpen.
+    DailyQuizNotifications.instance.scheduleForegroundAutoOpen(
       intervalMinutes: state.intervalMinutes,
     );
   }
@@ -208,6 +237,7 @@ class DailyWordsController extends StateNotifier<DailyWordsState> {
     await DailyWordsRepository.saveLearnedToday({});
     await DailyWordsRepository.saveActive(false);
     await DailyQuizNotifications.instance.cancelReminders();
+    DailyQuizNotifications.instance.cancelForegroundAutoOpen();
     state = state.copyWith(words: [], learnedTodayEnLower: {}, active: false);
   }
 }

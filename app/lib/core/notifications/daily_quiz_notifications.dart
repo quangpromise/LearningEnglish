@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tzdata;
@@ -25,6 +27,16 @@ class DailyQuizNotifications {
 
   final _plugin = FlutterLocalNotificationsPlugin();
   bool _initialized = false;
+
+  // Thong bao he thong (scheduleReminders o tren) chi TU MO man Quiz khi
+  // nguoi dung CHAM vao no - neu dang mo san app luc den han, thong bao van
+  // hien nhung de bi bo qua/luot tat vi khong "bat buoc" nhu 1 alarm that.
+  // Timer rieng nay (chay TRONG tien trinh app, KHONG thay the notification
+  // o tren - notification van can de bao khi app o nen/da dong) tu dong
+  // DAY man Quiz len ngay khi den han, NEU app dang o foreground (resumed) -
+  // giong cam giac 1 alarm bat thang man hinh, khong can nguoi dung tu bam.
+  Timer? _foregroundTimer;
+  bool _quizShowing = false;
 
   Future<void> init() async {
     if (_initialized) return;
@@ -58,9 +70,7 @@ class DailyQuizNotifications {
   }
 
   static void _onTap(NotificationResponse response) {
-    rootNavigatorKey.currentState?.push(
-      MaterialPageRoute(builder: (_) => const DailyQuizPopupScreen()),
-    );
+    instance._pushQuiz();
   }
 
   /// Dat lich thong bao moi [intervalMinutes] phut, tu bay gio den het ngay
@@ -134,5 +144,50 @@ class DailyQuizNotifications {
     for (var i = 0; i < _maxScheduled; i++) {
       await _plugin.cancel(id: _idBase + i);
     }
+  }
+
+  /// Bat Timer trong tien trinh app, cu moi [intervalMinutes] phut lai kiem
+  /// tra + tu day man Quiz len NEU app dang o foreground luc do (xem
+  /// _maybeAutoOpenQuiz) - goi CUNG LUC voi scheduleReminders() o tren (xem
+  /// DailyWordsController._rescheduleReminders), KHONG thay the no.
+  void scheduleForegroundAutoOpen({required int intervalMinutes}) {
+    _foregroundTimer?.cancel();
+    if (intervalMinutes <= 0) return;
+    _foregroundTimer = Timer.periodic(
+      Duration(minutes: intervalMinutes),
+      (_) => _maybeAutoOpenQuiz(),
+    );
+  }
+
+  void cancelForegroundAutoOpen() {
+    _foregroundTimer?.cancel();
+    _foregroundTimer = null;
+  }
+
+  void _maybeAutoOpenQuiz() {
+    // Bo qua khi app dang o nen/da khoa may - thong bao he thong o tren se
+    // lo viec nhac trong truong hop nay, TU MO man Quiz luc do se khong ai
+    // thay va co the gay loi dieu huong khi nguoi dung mo lai app sau.
+    if (WidgetsBinding.instance.lifecycleState != AppLifecycleState.resumed) {
+      return;
+    }
+    _pushQuiz();
+  }
+
+  /// Day man Quiz len TRUC TIEP (khong qua route Navigator.push binh
+  /// thuong tu widget nao) - dung chung cho ca 2 duong: bam vao thong bao
+  /// he thong (_onTap) VA tu dong bat khi den han luc app dang mo
+  /// (_maybeAutoOpenQuiz). Co _quizShowing de tranh day CHONG 2 lan cung 1
+  /// man (vd nguoi dung dang lam quiz tu lan nhac truoc, chua kip dong, thi
+  /// lan nhac tiep theo lai bam/den han).
+  Future<void> _pushQuiz() async {
+    if (_quizShowing) return;
+    final nav = rootNavigatorKey.currentState;
+    if (nav == null) return;
+    _quizShowing = true;
+    await nav.push(
+      MaterialPageRoute(builder: (_) => const DailyQuizPopupScreen()),
+    );
+    _quizShowing = false;
   }
 }

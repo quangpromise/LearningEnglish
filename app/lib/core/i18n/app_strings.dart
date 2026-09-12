@@ -858,6 +858,10 @@ class AppStrings {
       AppLanguage.vi: 'Chưa có từ nào — vào Từ vựng theo chủ đề để chọn, hoặc bấm "Lưu" khi tra một từ.',
       AppLanguage.en: 'No words yet — pick some in Vocabulary by Topic, or tap "Save" when looking up a word.',
     },
+    'profile_daily_words_select': {
+      AppLanguage.vi: 'Chọn 10 từ',
+      AppLanguage.en: 'Select 10 words',
+    },
     'profile_daily_words_progress': {
       AppLanguage.vi: '{learned}/{total} từ đã học hôm nay',
       AppLanguage.en: '{learned}/{total} words learned today',
