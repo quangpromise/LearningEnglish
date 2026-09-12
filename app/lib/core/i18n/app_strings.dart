@@ -883,6 +883,16 @@ class AppStrings {
           'Đang bật nhắc quiz — thông báo sẽ hiện kể cả khi tắt app',
       AppLanguage.en: 'Reminders are on — notifications will show even if the app is closed',
     },
+    // Huong dan ngon tay 2 buoc khi vua bam "Hoc hom nay" tu Vocabulary -
+    // xem ProfileScreen.highlightDailyWords / _TutorialFingerPointer.
+    'profile_daily_words_tutorial_pick_minutes': {
+      AppLanguage.vi: 'Chọn số phút nhắc lại',
+      AppLanguage.en: 'Pick a reminder interval',
+    },
+    'profile_daily_words_tutorial_start': {
+      AppLanguage.vi: 'Bấm để bắt đầu học',
+      AppLanguage.en: 'Tap to start learning',
+    },
 
     // Sign-in screen
     'auth_tagline': {

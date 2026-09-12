@@ -7,6 +7,7 @@ import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/tts/app_tts.dart';
 import '../../../core/widgets/speaker_button.dart';
+import '../../profile/presentation/profile_screen.dart';
 import '../data/daily_words_repository.dart';
 import '../data/vocabulary_data.dart';
 import 'daily_words_controller.dart';
@@ -93,33 +94,15 @@ class _VocabularyTopicDetailScreenState
         .toList();
     await ref.read(dailyWordsControllerProvider.notifier).setWords(entries);
     if (!context.mounted) return;
-    // Ro rang hon SnackBar mac dinh (chi chu trang tren nen xam, de bi luot
-    // qua khong de y) - kem icon check + so tu vua duoc them.
-    ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-      SnackBar(
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: const Color(0xEB0F1326),
-        duration: const Duration(seconds: 3),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        content: Row(
-          children: [
-            const Icon(
-              Icons.check_circle_rounded,
-              color: AppColors.teal,
-              size: 20,
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                ref
-                    .tr('vocab_added_to_daily')
-                    .replaceFirst('{n}', '${entries.length}'),
-                style: AppTextStyles.body(weight: FontWeight.w700),
-              ),
-            ),
-          ],
-        ),
-      ),
+    // Thay vi chi bao "da them" bang SnackBar roi de nguoi dung TU di tim
+    // cho chon phut nhac lai + bam "Bat dau hoc", dua thang toi man Ho so >
+    // tab Hoat dong, tu cuon toi dung khung "Hoc hom nay" VA hien huong dan
+    // ngon tay tung buoc (xem ProfileScreen.highlightDailyWords) - giup
+    // nguoi dung hoan tat ca luong trong 1 lan bam thay vi phai tu doan
+    // buoc tiep theo.
+    await openAppPopup(
+      context,
+      const ProfileScreen(initialTab: 1, highlightDailyWords: true),
     );
   }
 

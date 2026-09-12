@@ -22,7 +22,23 @@ import '../../wealth/presentation/add_service_sheet.dart';
 import '../../wealth/presentation/renew_service_sheet.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
-  const ProfileScreen({super.key});
+  const ProfileScreen({
+    super.key,
+    this.initialTab = 0,
+    this.highlightDailyWords = false,
+  });
+
+  /// Tab mo san khi man hien ra (0 = Settings, 1 = Activity) - dung khi mo
+  /// TU nut "Hoc hom nay" o VocabularyTopicDetailScreen (xem
+  /// highlightDailyWords) de nhay thang toi tab Activity thay vi Settings
+  /// mac dinh.
+  final int initialTab;
+
+  /// true = vua bam "Hoc hom nay" xong, can TU DONG cuon toi
+  /// [_DailyWordsSection] VA hien huong dan ngon tay tung buoc (tro vao
+  /// khoang chon phut nhac lai, roi tro vao nut "Bat dau hoc") - xem
+  /// _DailyWordsSectionState.
+  final bool highlightDailyWords;
 
   @override
   ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
@@ -30,8 +46,32 @@ class ProfileScreen extends ConsumerStatefulWidget {
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   // Tab Settings o vi tri 0 (trai), Activity o vi tri 1 (phai) - mac dinh
-  // mo o Settings theo yeu cau.
-  int _tab = 0;
+  // mo o Settings theo yeu cau, TRU KHI duoc mo voi initialTab rieng (xem
+  // widget.initialTab).
+  late int _tab = widget.initialTab;
+
+  // Gan vao _DailyWordsSection de tu dong cuon toi dung vi tri cua no khi
+  // widget.highlightDailyWords (xem initState) - Scrollable.ensureVisible
+  // hoat dong voi BAT KY Scrollable to nao boc no (ListView cua
+  // _buildActivityTab), khong can tu quan ly ScrollController rieng.
+  final _dailyWordsKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.highlightDailyWords) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final ctx = _dailyWordsKey.currentContext;
+        if (ctx == null) return;
+        Scrollable.ensureVisible(
+          ctx,
+          duration: const Duration(milliseconds: 450),
+          curve: Curves.easeOutCubic,
+          alignment: 0.05,
+        );
+      });
+    }
+  }
 
   /// Kiem tra cap nhat thu cong, hien chi tiet TUNG BUOC thay vi im lang -
   /// dung khi popup tu dong (showUpdateDialogIfAvailable, chay ngam luc mo
@@ -511,7 +551,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
           ),
           const SizedBox(height: 14),
-          const _DailyWordsSection(),
+          _DailyWordsSection(
+            key: _dailyWordsKey,
+            showTutorial: widget.highlightDailyWords,
+          ),
           const SizedBox(height: 14),
         ],
         _WeeklyActivityCard(
@@ -1228,19 +1271,109 @@ class _FeeServiceRow extends ConsumerWidget {
   }
 }
 
+/// Ngon tay nhap nhay (bounce len xuong) + bong bong chu ngan, dat NGAY
+/// TREN 1 muc tieu can chi dan (khoang chon phut / nut "Bat dau hoc") qua
+/// Positioned(top: -34...) boc no - xem _DailyWordsSectionState.build().
+class _TutorialFingerPointer extends StatefulWidget {
+  const _TutorialFingerPointer({required this.label});
+  final String label;
+
+  @override
+  State<_TutorialFingerPointer> createState() => _TutorialFingerPointerState();
+}
+
+class _TutorialFingerPointerState extends State<_TutorialFingerPointer>
+    with SingleTickerProviderStateMixin {
+  late final _ctrl = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 650),
+  )..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: AppColors.blue,
+              borderRadius: BorderRadius.circular(999),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.blue.withValues(alpha: 0.5),
+                  blurRadius: 10,
+                ),
+              ],
+            ),
+            child: Text(
+              widget.label,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+          AnimatedBuilder(
+            animation: _ctrl,
+            builder: (context, child) => Transform.translate(
+              offset: Offset(0, _ctrl.value * 6),
+              child: child,
+            ),
+            child: const Icon(
+              Icons.touch_app_rounded,
+              color: AppColors.blue,
+              size: 28,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 const _kIntervalChoicesMinutes = [15, 30, 60, 90, 120];
 
 /// "Học 10 từ hôm nay" - hien danh sach tu da chon (o Vocabulary hoac luu
 /// tu khi tra cuu), cho phep dat khoang thoi gian nhac quiz + bat/tat.
-class _DailyWordsSection extends ConsumerWidget {
-  const _DailyWordsSection();
+class _DailyWordsSection extends ConsumerStatefulWidget {
+  const _DailyWordsSection({super.key, this.showTutorial = false});
+
+  /// true = vua duoc mo TU nut "Hoc hom nay" (xem ProfileScreen.
+  /// highlightDailyWords) - hien huong dan ngon tay tung buoc: tro vao
+  /// khoang chon phut nhac lai TRUOC, sau khi nguoi dung cham 1 moc phut
+  /// (xem _pickedInterval) doi sang tro vao nut "Bat dau hoc". Tu an hoan
+  /// toan khi da bat nhac (state.active).
+  final bool showTutorial;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_DailyWordsSection> createState() => _DailyWordsSectionState();
+}
+
+class _DailyWordsSectionState extends ConsumerState<_DailyWordsSection> {
+  bool _pickedInterval = false;
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(dailyWordsControllerProvider);
     final notifier = ref.read(dailyWordsControllerProvider.notifier);
     final total = state.words.length;
     final learned = total - state.pending.length;
+    // Huong dan ngon tay 2 buoc (xem widget.showTutorial): buoc 1 tro vao
+    // khoang chon phut nhac lai, buoc 2 (sau khi da cham 1 moc phut) tro
+    // vao nut "Bat dau hoc" - tu an het khi da bat nhac (state.active).
+    final tutorialActive = widget.showTutorial && !state.active;
+    final showIntervalPointer = tutorialActive && !_pickedInterval;
+    final showStartPointer = tutorialActive && _pickedInterval;
 
     return GlowBox(
       borderRadius: 22,
@@ -1320,37 +1453,60 @@ class _DailyWordsSection extends ConsumerWidget {
               style: AppTextStyles.muted(size: 11).copyWith(letterSpacing: 0.4),
             ),
             const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
+            Stack(
+              clipBehavior: Clip.none,
               children: [
-                for (final m in _kIntervalChoicesMinutes)
-                  GestureDetector(
-                    onTap: () => notifier.setIntervalMinutes(m),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: state.intervalMinutes == m
-                            ? AppColors.blue.withValues(alpha: 0.22)
-                            : AppColors.glassFill,
-                        borderRadius: BorderRadius.circular(999),
-                        border: Border.all(
-                          color: state.intervalMinutes == m
-                              ? AppColors.blue.withValues(alpha: 0.6)
-                              : AppColors.glassBorder,
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final m in _kIntervalChoicesMinutes)
+                      GestureDetector(
+                        onTap: () {
+                          notifier.setIntervalMinutes(m);
+                          if (widget.showTutorial && !_pickedInterval) {
+                            setState(() => _pickedInterval = true);
+                          }
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: state.intervalMinutes == m
+                                ? AppColors.blue.withValues(alpha: 0.22)
+                                : AppColors.glassFill,
+                            borderRadius: BorderRadius.circular(999),
+                            border: Border.all(
+                              color: state.intervalMinutes == m
+                                  ? AppColors.blue.withValues(alpha: 0.6)
+                                  : AppColors.glassBorder,
+                            ),
+                          ),
+                          child: Text(
+                            '$m ${ref.tr('profile_daily_words_minutes_suffix')}',
+                            style: AppTextStyles.body(
+                              size: 12,
+                              weight: FontWeight.w700,
+                              color: state.intervalMinutes == m
+                                  ? AppColors.blue
+                                  : AppColors.textPrimary,
+                            ),
+                          ),
                         ),
                       ),
-                      child: Text(
-                        '$m ${ref.tr('profile_daily_words_minutes_suffix')}',
-                        style: AppTextStyles.body(
-                          size: 12,
-                          weight: FontWeight.w700,
-                          color: state.intervalMinutes == m
-                              ? AppColors.blue
-                              : AppColors.textPrimary,
+                  ],
+                ),
+                if (showIntervalPointer)
+                  Positioned(
+                    top: -34,
+                    left: 0,
+                    right: 0,
+                    child: Center(
+                      child: _TutorialFingerPointer(
+                        label: ref.tr(
+                          'profile_daily_words_tutorial_pick_minutes',
                         ),
                       ),
                     ),
@@ -1358,27 +1514,43 @@ class _DailyWordsSection extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 14),
-            SizedBox(
-              width: double.infinity,
-              child: PillButton(
-                label: ref.tr(
-                  state.active
-                      ? 'profile_daily_words_stop'
-                      : 'profile_daily_words_start',
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                SizedBox(
+                  width: double.infinity,
+                  child: PillButton(
+                    label: ref.tr(
+                      state.active
+                          ? 'profile_daily_words_stop'
+                          : 'profile_daily_words_start',
+                    ),
+                    filled: !state.active,
+                    onTap: state.pending.isEmpty && !state.active
+                        ? null
+                        : () async {
+                            if (state.active) {
+                              await notifier.stop();
+                              return;
+                            }
+                            await notifier.start();
+                            if (!context.mounted) return;
+                            openAppPopup(context, const DailyQuizPopupScreen());
+                          },
+                  ),
                 ),
-                filled: !state.active,
-                onTap: state.pending.isEmpty && !state.active
-                    ? null
-                    : () async {
-                        if (state.active) {
-                          await notifier.stop();
-                          return;
-                        }
-                        await notifier.start();
-                        if (!context.mounted) return;
-                        openAppPopup(context, const DailyQuizPopupScreen());
-                      },
-              ),
+                if (showStartPointer)
+                  Positioned(
+                    top: -34,
+                    left: 0,
+                    right: 0,
+                    child: Center(
+                      child: _TutorialFingerPointer(
+                        label: ref.tr('profile_daily_words_tutorial_start'),
+                      ),
+                    ),
+                  ),
+              ],
             ),
             if (state.active) ...[
               const SizedBox(height: 8),

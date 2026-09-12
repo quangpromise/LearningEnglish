@@ -108,6 +108,14 @@ class _CryptoCoinDetailScreenState
   // fl_chart vi tooltip mac dinh chi hien trong luc giu tay, khong dung y
   // muon "hien den khi bam lai".
   int? _selectedCandleIndex;
+  // Vi tri Y (px, trong khong gian [0, plotHeight]) cua duong ke NGANG
+  // (crosshair) - luon bam theo DUNG toa do ngon tay dang cham/keo (KHONG
+  // snap ve gia dong cua cua 1 cay nen cu the), giong "thuoc do" cua OKX:
+  // vua tap 1 phat VUA nhan-giu-keo (long-press) deu cap nhat truong nay
+  // (xem candlestickTouchData trong build()) de gia hien o o noi bam
+  // (_FloatingPriceLabel) luon dung theo tung pixel keo, khong bi giat theo
+  // buoc nhay tung cay nen.
+  double? _crosshairY;
 
   // Pinch 2 ngon de zoom truc gia (bo sung cho cach keo doc 1 ngon tren cot
   // truc gia da co) - giong OKX cho phep pinch O BAT KY DAU tren chart, KHONG
@@ -131,7 +139,10 @@ class _CryptoCoinDetailScreenState
     // giai thich chi tiet o Listener ben duoi) - candlestickTouchData se
     // CHON LAI ngay sau do neu diem bam dung la 1 cay nen.
     if (_selectedCandleIndex != null) {
-      setState(() => _selectedCandleIndex = null);
+      setState(() {
+        _selectedCandleIndex = null;
+        _crosshairY = null;
+      });
     }
     _activePointers[event.pointer] = event.position;
     if (_activePointers.length == 2) {
@@ -333,6 +344,7 @@ class _CryptoCoinDetailScreenState
                           _noMoreHistory = false;
                           _pendingScrollToEnd = true;
                           _selectedCandleIndex = null;
+                          _crosshairY = null;
                         }),
                       ),
                       const SizedBox(width: 8),
@@ -434,6 +446,25 @@ class _CryptoCoinDetailScreenState
                             final zoomedHalf = halfRange * _yZoomFactor;
                             final minY = mid - zoomedHalf;
                             final maxY = mid + zoomedHalf;
+                            // Chieu cao vung ve nen THUC SU (tru phan
+                            // bottomTitles danh cho truc ngay, reservedSize:
+                            // 22 duoi CandlestickChart) - tinh o day (thay vi
+                            // trong LayoutBuilder rieng cua vung nen ben
+                            // duoi) de CA vung nen LAN cot truc gia co dinh
+                            // ben phai (2 nhanh con khac nhau cua cung 1 Row)
+                            // deu dung chung 1 gia tri, giup duong ke ngang +
+                            // o gia noi tren truc phai luon thang hang nhau.
+                            const bottomAxisHeight = 22.0;
+                            final plotHeight =
+                                outerConstraints.maxHeight - bottomAxisHeight;
+                            final crosshairY = _crosshairY?.clamp(
+                              0.0,
+                              plotHeight,
+                            );
+                            final crosshairPrice = crosshairY == null
+                                ? null
+                                : maxY -
+                                      (crosshairY / plotHeight) * (maxY - minY);
                             return Stack(
                               children: [
                                 Row(
@@ -462,16 +493,6 @@ class _CryptoCoinDetailScreenState
                                                     }
                                                   });
                                             }
-                                            // Chieu cao vung ve nen THUC SU (tru
-                                            // phan bottomTitles danh cho truc ngay,
-                                            // reservedSize: 22 ben duoi) - dung de
-                                            // tinh dung vi tri Y cua duong ke ngang
-                                            // (crosshair) theo dung ty le [minY,
-                                            // maxY] cua chinh CandlestickChart.
-                                            const bottomAxisHeight = 22.0;
-                                            final plotHeight =
-                                                constraints.maxHeight -
-                                                bottomAxisHeight;
                                             final candleSlotWidth =
                                                 totalWidth / candles.length;
                                             return SingleChildScrollView(
@@ -612,21 +633,48 @@ class _CryptoCoinDetailScreenState
                                                                 CandlestickTouchResponse?
                                                                 response,
                                                               ) {
-                                                                if (event
-                                                                    is! FlTapUpEvent) {
+                                                                // Bam nhanh (tap) VUA nhan-giu-roi-keo
+                                                                // (long-press + move) deu cap nhat
+                                                                // crosshair - CO Y dung long-press (khong
+                                                                // phai pan/drag) de KHONG tranh chap gesture
+                                                                // arena voi cuon ngang 1 ngon cua
+                                                                // SingleChildScrollView bao ngoai (vuot tay
+                                                                // nhanh van cuon nhu binh thuong, phai giu
+                                                                // yen 1 chut roi moi keo thi crosshair moi
+                                                                // "thang" theo tay, giong thao tac scrub
+                                                                // cua OKX).
+                                                                final Offset?
+                                                                pos = switch (event) {
+                                                                  FlTapUpEvent
+                                                                  e =>
+                                                                    e.localPosition,
+                                                                  FlLongPressStart
+                                                                  e =>
+                                                                    e.localPosition,
+                                                                  FlLongPressMoveUpdate
+                                                                  e =>
+                                                                    e.localPosition,
+                                                                  _ => null,
+                                                                };
+                                                                if (pos ==
+                                                                    null) {
                                                                   return;
                                                                 }
-                                                                final i = response
-                                                                    ?.touchedSpot
-                                                                    ?.spotIndex;
-                                                                if (i == null) {
-                                                                  return;
-                                                                }
-                                                                setState(
-                                                                  () =>
-                                                                      _selectedCandleIndex =
-                                                                          i,
-                                                                );
+                                                                final i =
+                                                                    (pos.dx /
+                                                                            candleSlotWidth)
+                                                                        .floor()
+                                                                        .clamp(
+                                                                          0,
+                                                                          candles.length -
+                                                                              1,
+                                                                        );
+                                                                setState(() {
+                                                                  _selectedCandleIndex =
+                                                                      i;
+                                                                  _crosshairY =
+                                                                      pos.dy;
+                                                                });
                                                               },
                                                         ),
                                                         candlestickSpots: [
@@ -649,13 +697,15 @@ class _CryptoCoinDetailScreenState
                                                         ],
                                                       ),
                                                     ),
-                                                    // Duong ke doc + ngang (crosshair)
-                                                    // qua cay nen dang chon, giong OKX -
-                                                    // giup doi chieu chinh xac dang bam
-                                                    // vao nen nao va muc gia nao.
+                                                    // Duong ke doc (qua cay nen dang chon) + duong
+                                                    // ke ngang (qua DUNG toa do Y dang bam/keo, KHONG
+                                                    // snap theo gia dong cua nen) giong "thuoc do"
+                                                    // cua OKX - giup doi chieu chinh xac dang bam vao
+                                                    // nen nao va muc gia nao tai vi tri cham.
                                                     if (selectedCandle !=
                                                             null &&
-                                                        selectedIndex != null)
+                                                        selectedIndex != null &&
+                                                        crosshairY != null)
                                                       IgnorePointer(
                                                         child: CustomPaint(
                                                           size: Size(
@@ -667,13 +717,7 @@ class _CryptoCoinDetailScreenState
                                                                 (selectedIndex +
                                                                     0.5) *
                                                                 candleSlotWidth,
-                                                            y:
-                                                                ((maxY -
-                                                                        selectedCandle
-                                                                            .close) /
-                                                                    (maxY -
-                                                                        minY)) *
-                                                                plotHeight,
+                                                            y: crosshairY,
                                                             color: AppColors
                                                                 .wealthAccent,
                                                           ),
@@ -717,6 +761,28 @@ class _CryptoCoinDetailScreenState
                                               },
                                             ),
                                           ),
+                                          // O gia NOI, "giai linh hoat" bam theo
+                                          // dung vi tri Y dang cham/keo (khong
+                                          // theo cac moc co dinh cua
+                                          // _PriceAxisLabels) - giong the gia
+                                          // dong tren truc phai cua OKX khi keo
+                                          // crosshair.
+                                          if (crosshairPrice != null)
+                                            Positioned(
+                                              top: (crosshairY! - 9).clamp(
+                                                0.0,
+                                                plotHeight - 18,
+                                              ),
+                                              left: 0,
+                                              right: 0,
+                                              child: IgnorePointer(
+                                                child: _FloatingPriceLabel(
+                                                  text: _formatPrice(
+                                                    crosshairPrice,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
                                         ],
                                       ),
                                     ),
@@ -927,6 +993,38 @@ class _PriceAxisLabels extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+}
+
+/// O gia noi tren truc phai, bam theo dung vi tri Y dang cham/keo tren
+/// chart (xem Positioned boc no trong build()) - nen mau accent + chu trang
+/// de noi bat, de len TREN cac moc gia co dinh cua [_PriceAxisLabels] khi
+/// trung vi tri, giong the gia "giai linh hoat" cua OKX khi keo crosshair.
+class _FloatingPriceLabel extends StatelessWidget {
+  const _FloatingPriceLabel({required this.text});
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.only(left: 1),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+        decoration: BoxDecoration(
+          color: AppColors.wealthAccent,
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Text(
+          text,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w800,
+            fontSize: 10,
+          ),
+        ),
+      ),
     );
   }
 }
