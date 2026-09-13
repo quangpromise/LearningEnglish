@@ -2,14 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
-import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../learning_path/presentation/learner_level_banner.dart';
 import '../data/vocab_level_filter.dart';
 import '../data/vocabulary_data.dart';
+import 'vocabulary_quiz_screen.dart';
 import 'vocabulary_topic_detail_screen.dart';
 
+enum _VocabStep { topics, detail, quiz }
+
+/// Man goc cua tinh nang Tu vung theo chu de - dong thoi la "khung" duy
+/// nhat cho CA luong (chon chu de -> xem/chon tu -> lam quiz), KHONG mo
+/// them bat ky popup/route nao khac cho 2 buoc sau (xem [_step]) - chi 1
+/// showModalBottomSheet duy nhat (openAppPopup goi tu home_screen.dart) ton
+/// tai tu dau den cuoi. Ly do: vuot xuong/tap ra ngoai la gesture CO SAN
+/// cua CHINH sheet do - neu tung mo THEM 1 sheet/route khac chong len (thu
+/// da lam truoc, bi loi: nen trang lo ra, vuot/tap ngoai khong dong duoc gi
+/// vi route moi khong co gesture do), nguoi dung se khong con dong duoc het
+/// ca luong bang 1 thao tac vuot/tap o BAT KY buoc nao - phai dung dung 1
+/// State duy nhat, chuyen "man hinh" bang doi noi dung hien thi (switch
+/// theo [_step]) thay vi Navigator.
 class VocabularyTopicsScreen extends ConsumerStatefulWidget {
   const VocabularyTopicsScreen({super.key});
 
@@ -23,14 +36,66 @@ class _VocabularyTopicsScreenState
   final _searchController = TextEditingController();
   String _query = '';
 
+  _VocabStep _step = _VocabStep.topics;
+  VocabTopic? _activeTopic;
+  List<VocabWord> _quizWords = const [];
+
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
   }
 
+  void _openTopic(VocabTopic topic) {
+    setState(() {
+      _activeTopic = topic;
+      _step = _VocabStep.detail;
+    });
+  }
+
+  void _backToTopics() => setState(() => _step = _VocabStep.topics);
+
+  void _startQuiz(List<VocabWord> words) {
+    setState(() {
+      _quizWords = words;
+      _step = _VocabStep.quiz;
+    });
+  }
+
+  void _backToDetail() => setState(() => _step = _VocabStep.detail);
+
   @override
   Widget build(BuildContext context) {
+    switch (_step) {
+      case _VocabStep.detail:
+        final topic = _activeTopic;
+        if (topic == null) {
+          // Khong the xay ra qua luong _openTopic binh thuong - phong ho
+          // trong truong hop hot-reload/state la giua chung, tranh crash.
+          return VocabularyTopicDetailScreen(
+            topic: kVocabTopics.first,
+            onBack: _backToTopics,
+            onStartQuiz: _startQuiz,
+          );
+        }
+        return VocabularyTopicDetailScreen(
+          topic: topic,
+          onBack: _backToTopics,
+          onStartQuiz: _startQuiz,
+        );
+      case _VocabStep.quiz:
+        return VocabularyQuizScreen(
+          topic: _activeTopic ?? kVocabTopics.first,
+          words: _quizWords,
+          onClose: _backToDetail,
+          onFinishToTopics: _backToTopics,
+        );
+      case _VocabStep.topics:
+        return _buildTopicsGrid(context);
+    }
+  }
+
+  Widget _buildTopicsGrid(BuildContext context) {
     // Cap hoc tu "Goi y lo trinh" (null = Tu hoc -> hien du 59 chu de, dem
     // du tu nhu cu) - xem vocab_level_filter.dart.
     final level = ref.watch(learnerLevelProvider);
@@ -160,10 +225,7 @@ class _VocabularyTopicsScreenState
                       itemBuilder: (context, i) {
                         final topic = topics[i];
                         return GestureDetector(
-                          onTap: () => pushWithinPopup(
-                            context,
-                            VocabularyTopicDetailScreen(topic: topic),
-                          ),
+                          onTap: () => _openTopic(topic),
                           child: GlowBox(
                             borderRadius: 22,
                             child: Column(

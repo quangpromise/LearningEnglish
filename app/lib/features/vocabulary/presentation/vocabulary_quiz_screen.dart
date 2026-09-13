@@ -16,10 +16,22 @@ class VocabularyQuizScreen extends ConsumerStatefulWidget {
     super.key,
     required this.topic,
     required this.words,
+    required this.onClose,
+    required this.onFinishToTopics,
   });
 
   final VocabTopic topic;
   final List<VocabWord> words;
+
+  /// Bam nut dong (X) o header - quay ve man chi tiet chu de (buoc TRUOC
+  /// quiz). Doi noi dung NGAY TRONG CUNG 1 popup (xem
+  /// VocabularyTopicsScreen._step), khong dung Navigator.
+  final VoidCallback onClose;
+
+  /// Bam "Done" sau khi lam xong quiz - quay THANG ve luoi chu de, bo qua
+  /// man chi tiet (theo dung y muon cu: xem xong ket qua thi ve luon danh
+  /// sach chu de, khong quay lai man chon tu vua dung).
+  final VoidCallback onFinishToTopics;
 
   @override
   ConsumerState<VocabularyQuizScreen> createState() =>
@@ -85,7 +97,7 @@ class _VocabularyQuizScreenState extends ConsumerState<VocabularyQuizScreen> {
             Row(
               children: [
                 GestureDetector(
-                  onTap: () => Navigator.of(context).maybePop(),
+                  onTap: widget.onClose,
                   child: Container(
                     width: 34,
                     height: 34,
@@ -335,11 +347,7 @@ class _VocabularyQuizScreenState extends ConsumerState<VocabularyQuizScreen> {
                 // Dung lai o day theo dung yeu cau - khong tu dong lam lai
                 // hay chuyen sang bo tu tiep theo. Quay thang ve man danh
                 // sach chu de (bo qua man chi tiet/chon tu vua dung).
-                onTap: () {
-                  final nav = Navigator.of(context);
-                  nav.pop();
-                  nav.pop();
-                },
+                onTap: widget.onFinishToTopics,
               ),
             ),
           ],

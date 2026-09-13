@@ -42,50 +42,6 @@ Future<T?> openAppPopup<T>(
   );
 }
 
-/// Dieu huong "trong CUNG 1 popup" - dung khi 1 man DA duoc mo boi
-/// [openAppPopup] (vd VocabularyTopicsScreen) can di sau hon trong CHINH
-/// tinh nang do (vd bam 1 chu de -> xem tu vung chu de do) - PUSH 1 route
-/// MOI len CUNG Navigator (moi "popup" thuc chat la 1 route
-/// ModalBottomSheetRoute tren CUNG 1 Navigator goc, khong phai overlay
-/// rieng) thay vi mo THEM 1 [openAppPopup] khac (se tao cam giac sai la "2
-/// lop popup chong len nhau", vi ModalBottomSheetRoute moi luon truot dot
-/// ngot tu duoi len + phu them 1 lop backdrop toi ngay ca khi route cu da
-/// la 1 popup roi).
-///
-/// Giu NGUYEN khung 94% chieu cao + bo goc tren giong het [openAppPopup] de
-/// nhin nhu van dang o trong "chiec the" ban dau, chi doi hieu ung chuyen
-/// canh sang TRUOT NGANG (tu phai sang, kieu "di toi 1 buoc" thay vi "mo 1
-/// thu moi") - back (`Navigator.of(context).maybePop()`) hoat dong y het
-/// binh thuong, khong can doi gi o man duoc push.
-///
-/// CHI dung cho dieu huong NOI BO trong 1 tinh nang (drill-down) - nhay
-/// SANG tinh nang khac hoan toan (vd tu Tu vung nhay sang Ho so) van nen
-/// dung [openAppPopup] nhu cu, vi do la 1 diem den doc lap, khong phai
-/// "buoc tiep theo" cua cung 1 luong.
-Future<T?> pushWithinPopup<T>(BuildContext context, Widget child) {
-  return Navigator.of(context).push<T>(
-    PageRouteBuilder<T>(
-      transitionDuration: const Duration(milliseconds: 260),
-      reverseTransitionDuration: const Duration(milliseconds: 220),
-      pageBuilder: (_, _, _) => FractionallySizedBox(
-        heightFactor: 0.94,
-        alignment: Alignment.bottomCenter,
-        child: ClipRRect(
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-          child: child,
-        ),
-      ),
-      transitionsBuilder: (_, animation, _, pageChild) => SlideTransition(
-        position: Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero)
-            .animate(
-              CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
-            ),
-        child: pageChild,
-      ),
-    ),
-  );
-}
-
 /// Nut dong (X) dung chung cho header cua MOI man popup - cac man nay
 /// KHONG con AppTopBar/avatar (chi man Home chinh moi co "header nhu
 /// headpage" voi avatar), nen can 1 cach ro rang de dong lai thay vi chi

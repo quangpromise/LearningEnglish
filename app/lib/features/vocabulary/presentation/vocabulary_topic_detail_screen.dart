@@ -13,14 +13,27 @@ import '../data/daily_words_repository.dart';
 import '../data/vocab_level_filter.dart';
 import '../data/vocabulary_data.dart';
 import 'daily_words_controller.dart';
-import 'vocabulary_quiz_screen.dart';
 
 const _maxWordsPerSession = 10;
 
 class VocabularyTopicDetailScreen extends ConsumerStatefulWidget {
-  const VocabularyTopicDetailScreen({super.key, required this.topic});
+  const VocabularyTopicDetailScreen({
+    super.key,
+    required this.topic,
+    required this.onBack,
+    required this.onStartQuiz,
+  });
 
   final VocabTopic topic;
+
+  /// Quay ve luoi chu de - goi khi bam nut back o header. Doi noi dung
+  /// NGAY TRONG CUNG 1 popup (xem VocabularyTopicsScreen._step), khong mo/
+  /// dong route/popup nao.
+  final VoidCallback onBack;
+
+  /// Chuyen sang buoc quiz voi danh sach tu da chon - cung nguyen tac voi
+  /// [onBack], khong dung Navigator/openAppPopup.
+  final void Function(List<VocabWord> words) onStartQuiz;
 
   @override
   ConsumerState<VocabularyTopicDetailScreen> createState() =>
@@ -139,7 +152,7 @@ class _VocabularyTopicDetailScreenState
             Row(
               children: [
                 GestureDetector(
-                  onTap: () => Navigator.of(context).maybePop(),
+                  onTap: widget.onBack,
                   child: Container(
                     width: 34,
                     height: 34,
@@ -357,13 +370,7 @@ class _VocabularyTopicDetailScreenState
                     label: ref.tr('vocab_start_learning'),
                     onTap: _selected.isEmpty
                         ? null
-                        : () => pushWithinPopup(
-                            context,
-                            VocabularyQuizScreen(
-                              topic: widget.topic,
-                              words: _selected.toList(),
-                            ),
-                          ),
+                        : () => widget.onStartQuiz(_selected.toList()),
                   ),
                 ),
                 const SizedBox(width: 12),
