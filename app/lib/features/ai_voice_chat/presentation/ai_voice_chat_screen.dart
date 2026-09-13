@@ -304,8 +304,17 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
   /// that su, hoac (thuong gap hon) do xin token moi that bai sau khi phien
   /// 3 phut cua goi Free bi dong vi da het quota 30 phut/thang (xem
   /// AnamLiveAvatar._onSessionExpired). Chi doi UI + huong audio sang
-  /// Spatius (da duoc "hoi am" san tu _warmSpatiusIfNeeded) - KHONG dong
-  /// GeminiLiveDirectClient, cuoc tro chuyen tiep tuc lien tuc.
+  /// Spatius - KHONG dong GeminiLiveDirectClient, cuoc tro chuyen tiep tuc
+  /// lien tuc.
+  ///
+  /// BUG DA SUA: truoc day chi doi _avatarProvider ma KHONG tu goi
+  /// _warmSpatiusIfNeeded() - neu Anam loi NGAY TU LAN KET NOI DAU TIEN
+  /// (chua bao gio vao duoc onReady, vd het quota 30 phut/thang tu truoc do),
+  /// _spatiusWarmed van la false vinh vien, khien lop Spatius KHONG BAO GIO
+  /// duoc mount trong Stack (xem dieu kien `if (_spatiusWarmed)` trong
+  /// build()) - ca 2 lop avatar deu vo hinh, de lo nen anh phia sau nhu
+  /// khong co gi (bug nguoi dung bao cao: "Anam het han dang load avatar thi
+  /// bien mat"). Goi thang o day thay vi chi trong chieu Anam.onReady.
   void _onAnamUnrecoverable(String msg) {
     if (!mounted) return;
     if (!kUseSpatiusFailover) {
@@ -316,6 +325,7 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
       _anamReady = false;
       _avatarProvider = AvatarProvider.spatius;
     });
+    _warmSpatiusIfNeeded();
   }
 
   /// Khoi tao truoc (ngam, khong hien UI) ket noi Spatius ngay khi Anam vua
@@ -608,6 +618,13 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
                   width: double.infinity,
                   child: Stack(
                     children: [
+                      // Lop DAY CUNG, luon hien dien - phong truong hop CA 2
+                      // nha cung cap deu loi (xem SpatiusLiveAvatar.onError
+                      // ben duoi dat lai _spatiusWarmed = false, unmount
+                      // luon lop Spatius) - khong de khung 220px nay TRONG
+                      // SUOT hoan toan lam lo nen anh phia sau (bug da gap:
+                      // "Anam het han dang load avatar thi bien mat").
+                      Container(color: Colors.black),
                       // Lop Anam - luon ton tai, an di (opacity 0) sau khi da
                       // chuyen sang Spatius thay vi unmount, vi AnamLiveAvatar
                       // khong con nhan audio nua (_forwardAudioChunk da doi
