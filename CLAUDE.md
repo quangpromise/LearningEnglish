@@ -65,6 +65,7 @@ D:\Projects\Learn Engligh\
 - **lyric-sync** — parse file `.lrc`, đồng bộ với vị trí phát nhạc để highlight từ đang hát.
 - **apk-release** — quy trình build & ký APK release, checklist trước phát hành, hướng dẫn host & hướng dẫn người dùng cài từ nguồn ngoài Play.
 - **wealth-data-sync** — quy trình gọi Edge Function proxy lấy giá cổ phiếu (Twelve Data quốc tế, SSI FastConnect VN ở Phase 2) cho tính năng Quản lý tài sản, kèm checklist xác minh nguồn dữ liệu mới.
+- **anam-avatar-integration** — kiến trúc + các bug đã gặp khi tích hợp avatar 3D Anam.ai (video WebRTC lipsync theo audio Gemini Live) cho AI Voice Chat, dùng khi cần bật/sửa/nâng cấp tính năng này.
 
 ## Quy ước
 - Cấu trúc code theo feature-first (mỗi tính năng 1 thư mục trong `lib/features/`).
