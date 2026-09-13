@@ -22,17 +22,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
   <script>
     // VA cho 1 bug that su cua ENGINE Flutter Web (khong phai loi code app -
-    // xem flutter/flutter#175074, anh huong TAT CA man hinh co TextField
-    // tren trinh duyet mobile, dac biet Android Chrome): sau khi mo ban phim
-    // roi dong lai (nut back he thong, nut Done, hay bam ra ngoai), man hinh
-    // bi "ket" o kich thuoc da co lai theo ban phim, khong tu gian lai du
-    // ban phim da bien mat that su - vi CanvasKit/Skwasm renderer chi tinh
-    // lai layout khi nhan duoc 1 su kien 'resize' MOI cua window, ma trinh
-    // duyet khong luon tu bien resize do lai dung luc ban phim dong.
+    // xem flutter/flutter#175074 va #179438, anh huong TAT CA man hinh co
+    // TextField tren trinh duyet mobile, dac biet Android Chrome): sau khi
+    // mo ban phim roi dong lai, man hinh bi "ket" o kich thuoc da co lai
+    // theo ban phim, khong tu gian lai du ban phim da bien mat that su - vi
+    // CanvasKit/Skwasm renderer chi tinh lai layout khi nhan duoc 1 su kien
+    // 'resize' MOI cua window, ma trinh duyet khong luon tu ban resize do
+    // lai dung luc ban phim dong. Rieng truong hop dong ban phim bang CU CHI
+    // BACK cua he thong (khac voi cham ra ngoai/nut Done) con bi NANG hon
+    // (xem #179438) vi visualViewport bao chieu cao thay doi tre/khong on
+    // dinh - nen ngoai theo doi visualViewport, con nghe them su kien
+    // 'focusout' toan cuc (input DOM mat focus NGAY LAP TUC bat ke dong ban
+    // phim bang cach nao) lam tin hieu kich hoat thu 2, dang tin cay hon.
     //
-    // Fix: theo doi window.visualViewport (API chuan phat hien chieu cao
-    // thuc te con lai sau khi ban phim choan cho) - khi chieu cao TANG DOT
-    // NGOT (>100px, dau hieu ban phim vua dong), chu dong:
+    // Fix, khi phat hien ban phim vua dong that su (chieu cao hien tai gan
+    // bang chieu cao day du ghi nhan 1 LAN DUY NHAT luc trang vua tai, truoc
+    // khi ban phim tung mo):
     //  1. Dua scroll cua trang ve (0,0) - trinh duyet đôi khi giu nguyen vi
     //     tri scroll da nhay len luc ban phim mo, khien Flutter lech toa do.
     //  2. Bo focus khoi input DOM dang giu (neu con) - bao Flutter biet
@@ -41,13 +46,13 @@
     //     tu ban 1 su kien 'resize' - ep renderer tinh lai layout dung kich
     //     thuoc thuc te, thay vi cho 1 tuong tac ngau nhien khac cua nguoi
     //     dung (cham/cuon) tinh co kich hoat lai.
-    // Lam lai vai lan voi do tre khac nhau vi Chrome Android doi luc bao
+    // Lam lai nhieu lan voi do tre tang dan vi Chrome Android doi luc bao
     // muon hon Flutter kip xu ly.
     (function () {
       if (!window.visualViewport) return;
       var vv = window.visualViewport;
-      var maxHeight = vv.height;
-      var lastHeight = vv.height;
+      var fullHeight = window.innerHeight;
+      var recalcRunning = false;
 
       function forceRecalc() {
         var glassPane = document.querySelector('flt-glass-pane');
@@ -69,19 +74,39 @@
         }
       }
 
-      vv.addEventListener('resize', function () {
-        var diff = vv.height - lastHeight;
-        // Ban phim vua dong: chieu cao "hien" tang manh VA da gan bang muc
-        // cao nhat tung ghi nhan (tranh nham lan voi luc ban phim MO ra it -
-        // truong hop do chieu cao GIAM, khong vao nhanh nay).
-        if (diff > 100 && vv.height >= maxHeight - 50) {
-          forceRecalc();
-          setTimeout(forceRecalc, 100);
-          setTimeout(forceRecalc, 250);
-        }
-        if (vv.height > maxHeight) maxHeight = vv.height;
-        lastHeight = vv.height;
-      });
+      // Lam lai nhieu lan voi do tre tang dan (thay vi chi 3 moc co dinh
+      // nhu truoc) - gop chung 1 ham cho ca 2 nguon kich hoat (visualViewport
+      // VA focusout) de tranh chay trung lap chong cheo nhau.
+      function scheduleRecalc() {
+        if (recalcRunning) return;
+        recalcRunning = true;
+        [0, 100, 250, 450, 700, 1000].forEach(function (delay, i, arr) {
+          setTimeout(function () {
+            forceRecalc();
+            if (delay === arr[arr.length - 1]) recalcRunning = false;
+          }, delay);
+        });
+      }
+
+      function maybeRecalc() {
+        // Chi coi la "ban phim da dong" khi chieu cao hien tai gan bang
+        // chieu cao day du ghi nhan luc dau (con ban phim dang mo thi
+        // vv.height se nho hon fullHeight kha nhieu).
+        if (vv.height >= fullHeight - 60) scheduleRecalc();
+      }
+
+      vv.addEventListener('resize', maybeRecalc);
+      vv.addEventListener('scroll', maybeRecalc);
+      // focusout: bat duoc NGAY thoi diem 1 o nhap mat focus (ca khi dong
+      // ban phim bang cu chi back), khong can doi visualViewport bao ve sau.
+      window.addEventListener(
+        'focusout',
+        function () {
+          setTimeout(maybeRecalc, 250);
+          setTimeout(maybeRecalc, 500);
+        },
+        true
+      );
     })();
   </script>
 
