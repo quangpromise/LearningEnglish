@@ -35,26 +35,42 @@
     // 'focusout' toan cuc (input DOM mat focus NGAY LAP TUC bat ke dong ban
     // phim bang cach nao) lam tin hieu kich hoat thu 2, dang tin cay hon.
     //
-    // Fix, khi phat hien ban phim vua dong that su (chieu cao hien tai gan
-    // bang chieu cao day du ghi nhan 1 LAN DUY NHAT luc trang vua tai, truoc
-    // khi ban phim tung mo, VA hien khong con o INPUT/TEXTAREA nao dang giu
-    // focus - xem guard trong maybeRecalc(), BAT BUOC de tranh interupt luc
-    // 1 o vua duoc autofocus dang cho ban phim mo len):
+    // Fix, khi phat hien ban phim vua dong that su:
     //  1. Dua scroll cua trang ve (0,0) - trinh duyet đôi khi giu nguyen vi
     //     tri scroll da nhay len luc ban phim mo, khien Flutter lech toa do.
     //  2. "Rung" nhe khung ve chinh (flt-glass-pane) 1px roi tra ve ngay +
     //     tu ban 1 su kien 'resize' - ep renderer tinh lai layout dung kich
     //     thuoc thuc te, thay vi cho 1 tuong tac ngau nhien khac cua nguoi
     //     dung (cham/cuon) tinh co kich hoat lai.
-    // Lam lai nhieu lan voi do tre tang dan vi Chrome Android doi luc bao
-    // muon hon Flutter kip xu ly.
+    //
+    // CHU Y quan trong (rut kinh nghiem tu 2 lan sua truoc lam hong ban
+    // phim o man Dich/Writing): CHI dung 1 hen gio DUY NHAT, doi ON DINH
+    // [_settleDelay] KHONG co gi thay doi them roi moi thuc su dong vao DOM,
+    // VA kiem tra LAI dieu kien (con focus khong/chieu cao co dung khong)
+    // NGAY BEN TRONG forceRecalc() truoc khi lam bat cu gi - neu nguoi dung
+    // da go tiep (focus lai) hoac ban phim da mo lai trong luc cho, HUY BO
+    // ngay lap tuc. Ban truoc lam lai 6 lan lien tiep trong 1 giay MA KHONG
+    // kiem tra lai dieu kien o moi lan, nen neu nguoi dung go/cham nhanh
+    // trong khoang do se bi "rung" khung ve giua chung, ngat ban phim.
     (function () {
       if (!window.visualViewport) return;
       var vv = window.visualViewport;
       var fullHeight = window.innerHeight;
-      var recalcRunning = false;
+      var settleTimer = null;
+      var _settleDelay = 400;
+
+      function isInputFocused() {
+        var active = document.activeElement;
+        return !!(
+          active &&
+          (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')
+        );
+      }
 
       function forceRecalc() {
+        // Kiem tra LAI ngay truoc khi dong vao gi - dieu kien co the da
+        // khac di trong luc cho ON DINH.
+        if (isInputFocused() || vv.height < fullHeight - 60) return;
         var glassPane = document.querySelector('flt-glass-pane');
         if (glassPane) {
           glassPane.style.width = 'calc(100% - 1px)';
@@ -68,54 +84,36 @@
           });
         }
         window.scrollTo(0, 0);
-        // KHONG con tu blur() o dang focus o day nua - day chinh la nguyen
-        // nhan gay bug MOI "khong mo duoc ban phim" o man Dich/Writing >
-        // Doan van (ca 2 deu autofocus:true): ngay luc autofocus vua chiem
-        // focus, trinh duyet phat sinh 1 su kien 'focusout' "gia" tu phan tu
-        // truoc do trong luc ban phim CHUA KIP mo (vv.height con gan full),
-        // khien maybeRecalc() tuong nham "ban phim vua dong" va tu blur()
-        // luon o VUA MOI duoc autofocus, ban phim khong bao gio hien ra
-        // duoc. Xem guard o maybeRecalc() thay the: chi chay khi THAT SU
-        // khong con o nao dang focus.
       }
 
-      // Lam lai nhieu lan voi do tre tang dan (thay vi chi 3 moc co dinh
-      // nhu truoc) - gop chung 1 ham cho ca 2 nguon kich hoat (visualViewport
-      // VA focusout) de tranh chay trung lap chong cheo nhau.
       function scheduleRecalc() {
-        if (recalcRunning) return;
-        recalcRunning = true;
-        [0, 100, 250, 450, 700, 1000].forEach(function (delay, i, arr) {
-          setTimeout(function () {
-            forceRecalc();
-            if (delay === arr[arr.length - 1]) recalcRunning = false;
-          }, delay);
-        });
+        if (settleTimer) clearTimeout(settleTimer);
+        settleTimer = setTimeout(forceRecalc, _settleDelay);
       }
 
       function maybeRecalc() {
         // Chi coi la "ban phim da dong" khi CA 2 dieu kien: (a) chieu cao
         // hien tai gan bang chieu cao day du ghi nhan luc dau, VA (b) hien
-        // KHONG co o INPUT/TEXTAREA nao dang giu focus - neu con 1 o dang
-        // focus (vd vua duoc autofocus, ban phim co the dang tren duong mo
-        // len nhung trinh duyet chua kip thu nho vv.height) thi TUYET DOI
-        // khong dong vao gi ca, tranh interupt luc nguoi dung/app dang can
-        // mo ban phim that su.
-        var active = document.activeElement;
-        var stillFocused =
-          active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA');
-        if (!stillFocused && vv.height >= fullHeight - 60) scheduleRecalc();
+        // KHONG co o INPUT/TEXTAREA nao dang giu focus.
+        if (!isInputFocused() && vv.height >= fullHeight - 60) {
+          scheduleRecalc();
+        } else if (settleTimer) {
+          // Dieu kien khong con dung (vd nguoi dung vua focus lai 1 o khac)
+          // - huy lich cho dang cho, tranh forceRecalc chay tre vao dung
+          // luc dang go.
+          clearTimeout(settleTimer);
+          settleTimer = null;
+        }
       }
 
       vv.addEventListener('resize', maybeRecalc);
-      vv.addEventListener('scroll', maybeRecalc);
       // focusout: bat duoc NGAY thoi diem 1 o nhap mat focus (ca khi dong
-      // ban phim bang cu chi back), khong can doi visualViewport bao ve sau.
+      // ban phim bang cu chi back cua he thong, xem flutter/flutter#179438),
+      // khong can doi visualViewport bao ve sau (co the tre/khong on dinh).
       window.addEventListener(
         'focusout',
         function () {
-          setTimeout(maybeRecalc, 250);
-          setTimeout(maybeRecalc, 500);
+          setTimeout(maybeRecalc, 300);
         },
         true
       );

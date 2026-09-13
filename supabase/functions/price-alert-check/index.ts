@@ -75,6 +75,25 @@ async function getAccessToken(clientEmail: string, privateKeyPem: string): Promi
 
 const ALERT_THRESHOLD_PERCENT = 5;
 
+// Dinh dang gia hien trong noi dung thong bao - crypto/stock_okx dinh gia
+// USD (them "$" truoc + dau phay ngan cach hang nghin, giu them so le thap
+// phan cho coin gia nho de khong bi lam tron mat het thong tin nhu
+// formatCryptoPrice ben Dart, xem crypto_currency.dart); stock_vn dinh gia
+// VND (dau phay ngan cach hang nghin + hau to "đ", khong thap phan).
+function formatAlertPrice(price: number, assetType: 'crypto' | 'stock_okx' | 'stock_vn'): string {
+  if (assetType === 'stock_vn') {
+    return `${Math.round(price).toLocaleString('en-US')}đ`;
+  }
+  if (price >= 1) {
+    return `$${price.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+  }
+  if (price >= 0.01) return `$${price.toFixed(4)}`;
+  return `$${price.toFixed(8)}`;
+}
+
 interface PriceInfo {
   assetType: 'crypto' | 'stock_okx' | 'stock_vn';
   symbol: string;
@@ -267,10 +286,11 @@ Deno.serve(async (req: Request) => {
     if (tokens.size === 0) continue;
 
     const milestone = Math.abs(tier) * ALERT_THRESHOLD_PERCENT;
+    const priceLabel = formatAlertPrice(info.price, info.assetType);
     const body =
       direction === 'up'
-        ? `${info.symbol} vượt mốc tăng ${milestone}% (hiện +${info.changePercent.toFixed(1)}%, 24h) - giá hiện tại ${info.price}`
-        : `${info.symbol} vượt mốc giảm ${milestone}% (hiện -${Math.abs(info.changePercent).toFixed(1)}%, 24h) - giá hiện tại ${info.price}`;
+        ? `${info.symbol} vượt mốc tăng ${milestone}% (hiện +${info.changePercent.toFixed(1)}%, 24h) - giá hiện tại ${priceLabel}`
+        : `${info.symbol} vượt mốc giảm ${milestone}% (hiện -${Math.abs(info.changePercent).toFixed(1)}%, 24h) - giá hiện tại ${priceLabel}`;
 
     await Promise.all(
       [...tokens].map((fcm_token) =>

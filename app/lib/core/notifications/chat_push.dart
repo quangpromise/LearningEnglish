@@ -16,6 +16,7 @@ import '../../features/social/presentation/chat_screen.dart';
 import '../../features/wealth/presentation/market_screen.dart';
 import '../../features/wealth/presentation/recurring_services_screen.dart';
 import '../navigation/nav_keys.dart';
+import '../utils/currency_format.dart';
 import 'daily_quiz_notifications.dart';
 import 'local_notifications_core.dart';
 
@@ -190,7 +191,12 @@ Future<void> _showPriceAlertLocal({
   required String? direction,
 }) async {
   final isUp = direction == 'up';
-  final emoji = isUp ? '🟢' : '🔴';
+  // Mui ten bieu do kieu crypto (xanh khi tang/do khi giam) thay cho hinh
+  // tron mau don gian truoc day - Android khong cho tuy chinh mau CHU cua 1
+  // thong bao he thong chuan (xem ghi chu tren dau file), nen van phai dung
+  // emoji lam dau hieu truc quan, doi sang 📈/📉 giong bieu do gia tang/giam
+  // pho bien trong cac app crypto/chung khoan.
+  final emoji = isUp ? '📈' : '📉';
   final color = isUp ? const Color(0xFF2ECC71) : const Color(0xFFFF6B6B);
 
   await _localNotifications.show(
@@ -252,8 +258,11 @@ void handleNotificationAction(NotificationResponse response) {
   final payload = response.payload;
   if (payload == null) return;
   // "quiz:" - thong bao "Den gio on tu vung" cua DailyQuizNotifications.
+  // Truyen kem response.id de openQuiz tu huy thong bao nay (xem
+  // DailyQuizNotifications.openQuiz) - tranh con lai thua trong thanh
+  // trang thai sau khi da mo Quiz.
   if (payload.startsWith('quiz:')) {
-    DailyQuizNotifications.instance.openQuiz();
+    DailyQuizNotifications.instance.openQuiz(notificationId: response.id);
     return;
   }
   if (payload.startsWith('service:')) {
@@ -369,7 +378,9 @@ class ChatPush {
     await _showPriceAlertLocal(
       assetType: 'crypto',
       symbol: 'BTC',
-      body: 'BTC tăng 5.2% (24h) - giá hiện tại 65000 (THÔNG BÁO THỬ)',
+      body:
+          'BTC tăng 5.2% (24h) - giá hiện tại ${formatUsd(65000)} '
+          '(THÔNG BÁO THỬ)',
       direction: 'up',
     );
   }

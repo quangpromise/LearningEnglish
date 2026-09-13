@@ -81,7 +81,16 @@ class DailyQuizNotifications {
     // nao ca - phai doi frame dau tien duoc ve xong.
     final launchDetails = await _plugin.getNotificationAppLaunchDetails();
     if (launchDetails?.didNotificationLaunchApp == true) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _pushQuiz());
+      // Truyen kem id cua CHINH thong bao vua khoi dong app (vd fullScreenIntent
+      // tu dong bat len tren man hinh khoa) de _pushQuiz tu huy no ngay - neu
+      // khong, thong bao van con nam trong thanh trang thai/man khoa DU quiz
+      // da tu mo san, bam vao no lan nua se mo LAP LAI khong can thiet (theo
+      // yeu cau nguoi dung: chi nen con thong bao khi nguoi dung dang dung
+      // dien thoai NGOAI app, khong phai khi da tu mo san).
+      final notificationId = launchDetails?.notificationResponse?.id;
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _pushQuiz(notificationId: notificationId),
+      );
     }
   }
 
@@ -228,10 +237,20 @@ class DailyQuizNotifications {
   /// CHONG 2 lan cung 1 man (vd nguoi dung dang lam quiz tu lan nhac truoc,
   /// chua kip dong, thi lan nhac tiep theo lai bam/den han). Cong khai
   /// (khong dau "_") de chat_push.dart goi duoc tu file khac.
-  Future<void> openQuiz() => _pushQuiz();
+  ///
+  /// [notificationId]: id cua thong bao he thong da dan den lan mo nay (bam
+  /// vao no, hoac no tu dong bat man hinh len qua fullScreenIntent luc dang
+  /// khoa may) - huy luon thong bao do (xem _pushQuiz) de no KHONG con nam
+  /// lai trong thanh trang thai/man khoa nua, tranh nguoi dung bam lai lan 2
+  /// gay mo Quiz THEM 1 lan khong can thiet du da tu mo san.
+  Future<void> openQuiz({int? notificationId}) =>
+      _pushQuiz(notificationId: notificationId);
 
-  Future<void> _pushQuiz() async {
+  Future<void> _pushQuiz({int? notificationId}) async {
     if (_quizShowing) return;
+    if (notificationId != null) {
+      await _plugin.cancel(id: notificationId);
+    }
     // Ngay luc bam thong bao gay KHOI DONG LAI app (cold start) tu man
     // hinh khoa, rootNavigatorKey co the CHUA gan Navigator nao ca (frame
     // dau tien chua kip ve xong) - thu lai vai lan thay vi bo cuoc ngay,
