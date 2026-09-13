@@ -177,7 +177,16 @@ class _WritingParagraphScreenState
               focusNode: _focusNode,
               autofocus: true,
               enabled: _result == null,
+              // maxLines: null van cho tu dong xuong hang khi go qua dai
+              // (word-wrap tu nhien cua TextField) - KHONG lien quan gi den
+              // phim Enter, chi anh huong hien thi. textInputAction.done +
+              // onSubmitted moi la thu quyet dinh phim Enter lam gi: an nut
+              // "Done" tren ban phim thay vi nut xuong dong, bam vao se goi
+              // _submit() giong nhap tu vung (1 dong, Enter = nop bai) thay
+              // vi chen ky tu \n nhu truoc (theo yeu cau nguoi dung).
               maxLines: null,
+              textInputAction: TextInputAction.done,
+              onSubmitted: (_) => _submit(),
               style: AppTextStyles.body(size: 14.5, weight: FontWeight.w700),
               decoration: InputDecoration(
                 hintText: ref.tr('writing_paragraph_type_hint'),
