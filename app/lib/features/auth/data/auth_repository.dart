@@ -1,7 +1,15 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/config/env.dart';
+
+/// URL app web da deploy (GitHub Pages, xem .github/workflows/build-web.yml
+/// --base-href) - dung lam redirectTo cho OAuth flow tren web (xem
+/// signInWithGoogle) de Supabase biet dua trinh duyet quay lai dau sau khi
+/// dang nhap Google xong. PHAI nam trong danh sach "Redirect URLs" o
+/// Supabase Dashboard > Authentication > URL Configuration.
+const _kWebRedirectUrl = 'https://quangpromise.github.io/LearningEnglish/';
 
 class AuthRepository {
   AuthRepository(this._supabase);
@@ -12,9 +20,22 @@ class AuthRepository {
 
   User? get currentUser => _supabase.auth.currentUser;
 
-  /// Đăng nhập bằng Google mail: lấy ID token qua `google_sign_in`, sau đó
-  /// đưa cho Supabase Auth xác thực & tạo/khôi phục tài khoản tương ứng.
+  /// Đăng nhập bằng Google mail. Trên di động dùng `google_sign_in` (lấy ID
+  /// token, xác thực trực tiếp qua Supabase - không cần rời khỏi app). Trên
+  /// web, gói `google_sign_in` (bản 6.x/google_sign_in_web 0.12+) KHÔNG còn
+  /// hỗ trợ gọi `.signIn()` theo kiểu chủ động nữa (chỉ hỗ trợ vẽ sẵn 1 nút
+  /// Google gốc hoặc "One Tap" - không thể tuỳ biến giao diện theo nút pill
+  /// hiện có của app) nên chuyển sang dùng thẳng OAuth flow của Supabase
+  /// (chuyển hướng cả trang sang trang đăng nhập Google rồi quay lại) - cách
+  /// làm chuẩn cho web, không cần thay đổi giao diện nút bấm.
   Future<void> signInWithGoogle() async {
+    if (kIsWeb) {
+      await _supabase.auth.signInWithOAuth(
+        OAuthProvider.google,
+        redirectTo: _kWebRedirectUrl,
+      );
+      return;
+    }
     final googleSignIn = GoogleSignIn(
       serverClientId: Env.googleWebClientId,
       scopes: ['email', 'profile'],
