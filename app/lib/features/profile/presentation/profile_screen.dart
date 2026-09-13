@@ -155,40 +155,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
   }
 
-  Future<void> _confirmResetStats(BuildContext context, WidgetRef ref) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF12172E),
-        title: Text(
-          ref.tr('profile_reset_title'),
-          style: const TextStyle(color: AppColors.textPrimary),
-        ),
-        content: Text(
-          ref.tr('profile_reset_body'),
-          style: AppTextStyles.muted(),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(ref.tr('common_cancel')),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(
-              ref.tr('profile_reset_confirm'),
-              style: const TextStyle(color: AppColors.pink),
-            ),
-          ),
-        ],
-      ),
-    );
-    if (confirmed == true) {
-      await ref.read(statsRepositoryProvider).resetStats();
-      ref.invalidate(myStatsProvider);
-    }
-  }
-
   void _showLanguagePicker(BuildContext context, WidgetRef ref) {
     showModalBottomSheet(
       context: context,
@@ -557,39 +523,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ? ref.watch(myStatsProvider).whenData((s) => s.weeklyActivity)
               : ref.watch(fitnessWeeklyActivityProvider),
         ),
-        if (isEnglishContext) ...[
-          const SizedBox(height: 14),
-          GestureDetector(
-            onTap: () => _confirmResetStats(context, ref),
-            child: GlowBox(
-              borderRadius: 20,
-              child: Row(
-                children: [
-                  Container(
-                    width: 34,
-                    height: 34,
-                    decoration: BoxDecoration(
-                      color: AppColors.amber.withValues(alpha: 0.18),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.restart_alt_rounded,
-                      size: 16,
-                      color: AppColors.amber,
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Text(
-                      ref.tr('profile_reset_stats'),
-                      style: AppTextStyles.body(weight: FontWeight.w800),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
       ],
     );
   }

@@ -54,6 +54,11 @@ class HomeScreen extends ConsumerWidget {
     // moi nguoi) - dung chung 1 mau voi chip da chon o man khao sat de 2
     // man "noi" duoc voi nhau (xem learning_path_accent.dart).
     final accent = persona != null ? personaColor(persona) : AppColors.teal;
+    // Neo goi y ban tay vao dung nut la ban - goi y ve o LOP TREN CUNG cua
+    // man (xem Stack ben duoi) thay vi trong thanh tren cung, de khong bi
+    // khung "Doc viet" ve de len lam mo, va canh phai theo nut nen khong tran
+    // ra ngoai mep man hinh.
+    final compassLink = LayerLink();
     return ScreenBackground(
       child: Padding(
         // Le ngang giam tu 24 -> 14 de khung the loai sat 2 canh man hinh
@@ -61,157 +66,182 @@ class HomeScreen extends ConsumerWidget {
         // hon thay vi bi ep vao giua khung qua hep.
         padding: const EdgeInsets.fromLTRB(14, 12, 14, 16),
         child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Stack(
+            clipBehavior: Clip.none,
             children: [
-              AppTopBar(
-                unreadCount: unread,
-                onMessagesTap: () =>
-                    openAppPopup(context, const ConversationsScreen()),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    GestureDetector(
-                      // Bam icon compass luon mo lai khao sat (chon/doi/tat
-                      // goi y lo trinh) - da bo man "Lo trinh hoc" day du
-                      // rieng theo yeu cau.
-                      onTap: () => showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true,
-                        backgroundColor: Colors.transparent,
-                        builder: (_) => const LearningPathSurveyScreen(),
-                      ),
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          Tooltip(
-                            message: ref.tr('learning_path_tooltip'),
-                            child: const _IconCircle(
-                              icon: Icons.explore_rounded,
-                            ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppTopBar(
+                    unreadCount: unread,
+                    onMessagesTap: () =>
+                        openAppPopup(context, const ConversationsScreen()),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        GestureDetector(
+                          // Bam icon compass luon mo lai khao sat (chon/doi/tat
+                          // goi y lo trinh) - da bo man "Lo trinh hoc" day du
+                          // rieng theo yeu cau.
+                          onTap: () => showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
+                            builder: (_) => const LearningPathSurveyScreen(),
                           ),
-                          if (showSurveyHint)
-                            Positioned(
-                              top: 46,
-                              right: -74,
-                              child: IgnorePointer(
-                                child: _SuggestHint(color: AppColors.teal),
+                          child: CompositedTransformTarget(
+                            link: compassLink,
+                            child: Tooltip(
+                              message: ref.tr('learning_path_tooltip'),
+                              child: const _IconCircle(
+                                icon: Icons.explore_rounded,
                               ),
                             ),
-                        ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 22),
+                  const ServiceExpiryBanner(section: AppSection.learnEnglish),
+                  _CategorySection(
+                    title: ref.tr('home_category_reading'),
+                    accentColor: accent,
+                    items: [
+                      _CategoryItemData(
+                        icon: Icons.style_rounded,
+                        label: ref.tr('home_vocabulary_quick_title'),
+                        onTap: () => openAppPopup(
+                          context,
+                          const VocabularyTopicsScreen(),
+                        ),
+                        isRecommended: recommended.contains(
+                          HomeFeature.vocabulary,
+                        ),
+                        isTopPick: topPick == HomeFeature.vocabulary,
                       ),
+                      _CategoryItemData(
+                        icon: Icons.menu_book_rounded,
+                        label: ref.tr('grammar_topics_title'),
+                        onTap: () =>
+                            openAppPopup(context, const GrammarTopicsScreen()),
+                        isRecommended: recommended.contains(
+                          HomeFeature.grammar,
+                        ),
+                        isTopPick: topPick == HomeFeature.grammar,
+                      ),
+                      _CategoryItemData(
+                        icon: Icons.local_library_rounded,
+                        label: ref.tr('reading_title'),
+                        onTap: () =>
+                            openAppPopup(context, const ReadingLibraryScreen()),
+                        isRecommended: recommended.contains(
+                          HomeFeature.reading,
+                        ),
+                        isTopPick: topPick == HomeFeature.reading,
+                      ),
+                      _CategoryItemData(
+                        icon: Icons.edit_note_rounded,
+                        label: ref.tr('writing_title'),
+                        onTap: () =>
+                            openAppPopup(context, const WritingHomeScreen()),
+                        isRecommended: recommended.contains(
+                          HomeFeature.writing,
+                        ),
+                        isTopPick: topPick == HomeFeature.writing,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  _CategorySection(
+                    title: ref.tr('home_category_listening'),
+                    accentColor: accent,
+                    items: [
+                      _CategoryItemData(
+                        icon: Icons.graphic_eq_rounded,
+                        label: ref.tr('phonics_title'),
+                        onTap: () =>
+                            openAppPopup(context, const PhonicsLessonsScreen()),
+                        isRecommended: recommended.contains(
+                          HomeFeature.phonics,
+                        ),
+                        isTopPick: topPick == HomeFeature.phonics,
+                      ),
+                      _CategoryItemData(
+                        // "Luyen phat am" - truoc day 1 tab rieng o thanh Menu,
+                        // gio la 1 the trong nhom Nghe noi (giai phong cho thanh
+                        // nhac dai chiem giua thanh Menu, xem root_shell.dart).
+                        icon: Icons.mic_rounded,
+                        label: ref.tr('pron_title'),
+                        onTap: () =>
+                            openAppPopup(context, const PronunciationScreen()),
+                        isRecommended: recommended.contains(
+                          HomeFeature.pronunciation,
+                        ),
+                        isTopPick: topPick == HomeFeature.pronunciation,
+                      ),
+                      _CategoryItemData(
+                        icon: Icons.auto_stories_rounded,
+                        label: ref.tr('home_story_quick_title'),
+                        onTap: () =>
+                            openAppPopup(context, const StoryListScreen()),
+                        isRecommended: recommended.contains(HomeFeature.story),
+                        isTopPick: topPick == HomeFeature.story,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  _CategorySection(
+                    title: ref.tr('home_category_test_prep'),
+                    accentColor: accent,
+                    items: [
+                      _CategoryItemData(
+                        icon: Icons.assignment_rounded,
+                        label: ref.tr('toeic_title'),
+                        onTap: () =>
+                            openAppPopup(context, const ToeicHomeScreen()),
+                        isRecommended: recommended.contains(HomeFeature.toeic),
+                        isTopPick: topPick == HomeFeature.toeic,
+                      ),
+                      _CategoryItemData(
+                        icon: Icons.public_rounded,
+                        label: ref.tr('ielts_title'),
+                        onTap: () =>
+                            openAppPopup(context, const IeltsHomeScreen()),
+                        isRecommended: recommended.contains(HomeFeature.ielts),
+                        isTopPick: topPick == HomeFeature.ielts,
+                      ),
+                      _CategoryItemData(
+                        // "Do vui" chuyen tu nhom "Doc viet" sang chung box voi
+                        // Luyen thi TOEIC/IELTS theo yeu cau - cung la dang bai
+                        // tap trac nghiem tu cham diem, hop nhom hon la o nhom
+                        // tu vung/ngu phap/doc sach thuan tuy.
+                        icon: Icons.extension_rounded,
+                        label: ref.tr('quiz_title'),
+                        onTap: () =>
+                            openAppPopup(context, const QuizCategoryScreen()),
+                        isRecommended: recommended.contains(HomeFeature.quiz),
+                        isTopPick: topPick == HomeFeature.quiz,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              if (showSurveyHint)
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: CompositedTransformFollower(
+                    link: compassLink,
+                    showWhenUnlinked: false,
+                    targetAnchor: Alignment.bottomRight,
+                    followerAnchor: Alignment.topRight,
+                    offset: const Offset(0, 4),
+                    child: const IgnorePointer(
+                      child: _SuggestHint(color: AppColors.teal),
                     ),
-                  ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 22),
-              const ServiceExpiryBanner(section: AppSection.learnEnglish),
-              _CategorySection(
-                title: ref.tr('home_category_reading'),
-                accentColor: accent,
-                items: [
-                  _CategoryItemData(
-                    icon: Icons.style_rounded,
-                    label: ref.tr('home_vocabulary_quick_title'),
-                    onTap: () =>
-                        openAppPopup(context, const VocabularyTopicsScreen()),
-                    isRecommended: recommended.contains(HomeFeature.vocabulary),
-                    isTopPick: topPick == HomeFeature.vocabulary,
-                  ),
-                  _CategoryItemData(
-                    icon: Icons.menu_book_rounded,
-                    label: ref.tr('grammar_topics_title'),
-                    onTap: () =>
-                        openAppPopup(context, const GrammarTopicsScreen()),
-                    isRecommended: recommended.contains(HomeFeature.grammar),
-                    isTopPick: topPick == HomeFeature.grammar,
-                  ),
-                  _CategoryItemData(
-                    icon: Icons.local_library_rounded,
-                    label: ref.tr('reading_title'),
-                    onTap: () =>
-                        openAppPopup(context, const ReadingLibraryScreen()),
-                    isRecommended: recommended.contains(HomeFeature.reading),
-                    isTopPick: topPick == HomeFeature.reading,
-                  ),
-                  _CategoryItemData(
-                    icon: Icons.edit_note_rounded,
-                    label: ref.tr('writing_title'),
-                    onTap: () =>
-                        openAppPopup(context, const WritingHomeScreen()),
-                    isRecommended: recommended.contains(HomeFeature.writing),
-                    isTopPick: topPick == HomeFeature.writing,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              _CategorySection(
-                title: ref.tr('home_category_listening'),
-                accentColor: accent,
-                items: [
-                  _CategoryItemData(
-                    icon: Icons.graphic_eq_rounded,
-                    label: ref.tr('phonics_title'),
-                    onTap: () =>
-                        openAppPopup(context, const PhonicsLessonsScreen()),
-                    isRecommended: recommended.contains(HomeFeature.phonics),
-                    isTopPick: topPick == HomeFeature.phonics,
-                  ),
-                  _CategoryItemData(
-                    // "Luyen phat am" - truoc day 1 tab rieng o thanh Menu,
-                    // gio la 1 the trong nhom Nghe noi (giai phong cho thanh
-                    // nhac dai chiem giua thanh Menu, xem root_shell.dart).
-                    icon: Icons.mic_rounded,
-                    label: ref.tr('pron_title'),
-                    onTap: () =>
-                        openAppPopup(context, const PronunciationScreen()),
-                    isRecommended: recommended.contains(
-                      HomeFeature.pronunciation,
-                    ),
-                    isTopPick: topPick == HomeFeature.pronunciation,
-                  ),
-                  _CategoryItemData(
-                    icon: Icons.auto_stories_rounded,
-                    label: ref.tr('home_story_quick_title'),
-                    onTap: () => openAppPopup(context, const StoryListScreen()),
-                    isRecommended: recommended.contains(HomeFeature.story),
-                    isTopPick: topPick == HomeFeature.story,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              _CategorySection(
-                title: ref.tr('home_category_test_prep'),
-                accentColor: accent,
-                items: [
-                  _CategoryItemData(
-                    icon: Icons.assignment_rounded,
-                    label: ref.tr('toeic_title'),
-                    onTap: () => openAppPopup(context, const ToeicHomeScreen()),
-                    isRecommended: recommended.contains(HomeFeature.toeic),
-                    isTopPick: topPick == HomeFeature.toeic,
-                  ),
-                  _CategoryItemData(
-                    icon: Icons.public_rounded,
-                    label: ref.tr('ielts_title'),
-                    onTap: () => openAppPopup(context, const IeltsHomeScreen()),
-                    isRecommended: recommended.contains(HomeFeature.ielts),
-                    isTopPick: topPick == HomeFeature.ielts,
-                  ),
-                  _CategoryItemData(
-                    // "Do vui" chuyen tu nhom "Doc viet" sang chung box voi
-                    // Luyen thi TOEIC/IELTS theo yeu cau - cung la dang bai
-                    // tap trac nghiem tu cham diem, hop nhom hon la o nhom
-                    // tu vung/ngu phap/doc sach thuan tuy.
-                    icon: Icons.extension_rounded,
-                    label: ref.tr('quiz_title'),
-                    onTap: () =>
-                        openAppPopup(context, const QuizCategoryScreen()),
-                    isRecommended: recommended.contains(HomeFeature.quiz),
-                    isTopPick: topPick == HomeFeature.quiz,
-                  ),
-                ],
-              ),
             ],
           ),
         ),
@@ -413,10 +443,15 @@ class _SuggestHint extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        PointingHandBadge(color: color),
-        const SizedBox(height: 4),
+        // Canh giua ban tay voi nut la ban (rong 42) - bong bong chu ben
+        // duoi canh phai theo mep nut, luon nam trong man hinh.
+        Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: PointingHandBadge(color: color),
+        ),
+        const SizedBox(height: 6),
         Container(
-          constraints: const BoxConstraints(maxWidth: 128),
+          constraints: const BoxConstraints(maxWidth: 150),
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
           decoration: BoxDecoration(
             color: color,

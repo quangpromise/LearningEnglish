@@ -801,10 +801,6 @@ class AppStrings {
       AppLanguage.vi: 'Cài đặt',
       AppLanguage.en: 'Settings',
     },
-    'profile_reset_stats': {
-      AppLanguage.vi: 'Đặt lại thống kê',
-      AppLanguage.en: 'Reset statistics',
-    },
     'profile_sign_out': {
       AppLanguage.vi: 'Đăng xuất',
       AppLanguage.en: 'Sign out',
@@ -819,18 +815,6 @@ class AppStrings {
     'profile_signout_body': {
       AppLanguage.vi: 'Bạn có chắc muốn đăng xuất khỏi tài khoản này?',
       AppLanguage.en: 'Are you sure you want to sign out of this account?',
-    },
-    'profile_reset_title': {
-      AppLanguage.vi: 'Đặt lại thống kê?',
-      AppLanguage.en: 'Reset statistics?',
-    },
-    'profile_reset_body': {
-      AppLanguage.vi: 'Toàn bộ số liệu (từ đã học, bài hoàn thành, điểm phát âm, thời gian luyện tập) sẽ về 0. Không thể hoàn tác.',
-      AppLanguage.en: 'All stats (words learned, songs completed, pronunciation score, practice time) will reset to 0. This cannot be undone.',
-    },
-    'profile_reset_confirm': {
-      AppLanguage.vi: 'Đặt lại',
-      AppLanguage.en: 'Reset',
     },
     'profile_stats_error': {
       AppLanguage.vi: 'Không tải được thống kê lúc này.',
@@ -1657,6 +1641,14 @@ class AppStrings {
       AppLanguage.vi: '+{n} mục khác',
       AppLanguage.en: '+{n} more',
     },
+    'wealth_report_renewal_total': {
+      AppLanguage.vi: 'Tổng gia hạn',
+      AppLanguage.en: 'Total renewals',
+    },
+    'wealth_report_show_less': {
+      AppLanguage.vi: 'Thu gọn',
+      AppLanguage.en: 'Show less',
+    },
     'wealth_report_vs_last_month': {
       AppLanguage.vi: 'so với tháng trước',
       AppLanguage.en: 'vs last month',
@@ -1920,6 +1912,31 @@ class AppStrings {
     'wealth_split_bill_status_paid': {
       AppLanguage.vi: 'Đã nhận tiền',
       AppLanguage.en: 'Received',
+    },
+    // Chon nguoi tra bill (xem WealthSplitBillScreen._payer)
+    'wealth_split_bill_payer_label': {
+      AppLanguage.vi: 'Người trả bill',
+      AppLanguage.en: 'Who paid the bill',
+    },
+    'wealth_split_bill_status_payer': {
+      AppLanguage.vi: 'Trả bill',
+      AppLanguage.en: 'Paid bill',
+    },
+    'wealth_split_bill_status_i_owe': {
+      AppLanguage.vi: 'Tôi nợ',
+      AppLanguage.en: 'I owe',
+    },
+    'wealth_split_bill_my_share_to': {
+      AppLanguage.vi: 'Trả phần của tôi cho {name} bằng',
+      AppLanguage.en: 'Pay my share to {name} with',
+    },
+    'wealth_split_bill_pays_payer': {
+      AppLanguage.vi: 'Trả cho {name} — chỉ hiển thị',
+      AppLanguage.en: 'Pays {name} — info only',
+    },
+    'wealth_split_bill_debt_to': {
+      AppLanguage.vi: 'Ghi nợ {name}',
+      AppLanguage.en: 'Owe {name}',
     },
     'wealth_split_bill_done_button': {
       AppLanguage.vi: 'Xong',

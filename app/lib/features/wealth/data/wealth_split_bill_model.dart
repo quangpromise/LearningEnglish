@@ -13,12 +13,16 @@ class WealthSplitBill {
     this.paymentBankName,
     this.transactionId,
     this.note,
+    this.payerName,
   });
 
   final String id;
   final double totalAmount;
   final String currency;
-  final String paymentAccountType; // 'cash' | 'bank'
+
+  /// 'cash' | 'bank' - nguon tien "Toi" da tra; 'debt' = nguoi khac tra bill
+  /// va "Toi" ghi no phan cua minh cho ho (khong tru Vi, xem [payerName]).
+  final String paymentAccountType;
   final String? paymentBankCode;
   final String? paymentBankName;
   final DateTime occurredAt;
@@ -28,6 +32,12 @@ class WealthSplitBill {
   // screen.dart).
   final String? transactionId;
   final String? note;
+
+  /// Ten nguoi da TRA ca bill - null = "Toi" tra (migration 0062). Khac null
+  /// thi chi phan cua "Toi" anh huong Vi/No, nguoi con lai chi hien thi.
+  final String? payerName;
+
+  bool get paidByOther => payerName != null;
 
   factory WealthSplitBill.fromRow(Map<String, dynamic> row) => WealthSplitBill(
     id: row['id'] as String,
@@ -39,6 +49,7 @@ class WealthSplitBill {
     occurredAt: DateTime.parse(row['occurred_at'] as String),
     transactionId: row['transaction_id'] as String?,
     note: row['note'] as String?,
+    payerName: row['payer_name'] as String?,
   );
 }
 

@@ -49,6 +49,7 @@ class WealthSplitBillRepository {
     String? paymentBankName,
     String? transactionId,
     String? note,
+    String? payerName,
     required DateTime occurredAt,
     required List<
       ({String personName, bool isMe, double amount, String status})
@@ -66,6 +67,9 @@ class WealthSplitBillRepository {
           'payment_bank_name': paymentBankName,
           'transaction_id': transactionId,
           'note': note,
+          // Chi gui khi nguoi khac tra bill - bill "Toi" tra van luu duoc ca
+          // khi DB chua chay migration 0062 (chua co cot payer_name).
+          'payer_name': ?payerName,
           'occurred_at': occurredAt.toIso8601String(),
         })
         .select('id')
@@ -82,7 +86,7 @@ class WealthSplitBillRepository {
               'person_name': s.personName,
               'is_me': s.isMe,
               'amount': s.amount,
-              'status': s.isMe ? 'paid' : s.status,
+              'status': s.status,
             },
         ])
         .select('id');

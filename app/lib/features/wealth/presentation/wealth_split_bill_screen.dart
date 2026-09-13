@@ -28,6 +28,10 @@ import 'wealth_split_bill_receipt.dart';
 /// nguoi (tru Toi) chon "Ghi no" (tao khoan no owed_to_me) hoac "Da tra"
 /// (cong thang tien ho vao lai Cash/Bank) - trang thai luu thang vao DB nen
 /// co the quay lai xu ly tiep tu man Lich su neu chua xong het.
+///
+/// Neu chon NGUOI KHAC la nguoi tra bill (xem _payer): chi phan cua "Toi"
+/// anh huong Vi/No (Ghi no -> khoan i_owe, Cash/Bank -> chi tru phan cua
+/// Toi), nhung nguoi con lai chi hien thi.
 class WealthSplitBillScreen extends ConsumerStatefulWidget {
   const WealthSplitBillScreen({
     super.key,
@@ -99,6 +103,13 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
   final _noteController = TextEditingController();
   List<_SplitPersonEntry> _people = [];
   _PaymentSource? _source;
+  // Nguoi da TRA ca bill - null = "Toi" tra (hanh vi cu: tru tong bill khoi
+  // Vi, tung nguoi khac Ghi no/Da tra cho Toi). Khac null: "Toi" chi tra
+  // PHAN CUA MINH cho nguoi nay - Ghi no ([_meDebt], tao khoan i_owe) hoac
+  // Cash/Bank ([_source], chi tru dung phan cua minh); nhung nguoi con lai
+  // chi hien thi, khong tao no/khong cong tru Vi cua Toi.
+  _SplitPersonEntry? _payer;
+  bool _meDebt = false;
   double _total = 0;
   // Tong tien danh cho "nhung nguoi khac" (khong tinh "Toi") ngay luc vua
   // bam Tiep tuc - dung lam MOC CO DINH de chia lai cho nhung nguoi CHUA
@@ -135,22 +146,31 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
     if (bill == null || shares == null) return;
     _total = bill.totalAmount;
     _noteController.text = bill.note ?? '';
-    _source = bill.paymentAccountType == 'cash'
-        ? const _PaymentSource.cash()
-        : _PaymentSource.bank(
-            VnBank(
-              code: bill.paymentBankCode ?? bill.paymentBankName ?? 'bank',
-              shortName: bill.paymentBankName ?? bill.paymentBankCode ?? '?',
-              name: bill.paymentBankName ?? bill.paymentBankCode ?? '?',
-              logoUrl: null,
-            ),
-          );
+    _meDebt = bill.paymentAccountType == 'debt';
+    _source = switch (bill.paymentAccountType) {
+      'debt' => null,
+      'cash' => const _PaymentSource.cash(),
+      _ => _PaymentSource.bank(
+        VnBank(
+          code: bill.paymentBankCode ?? bill.paymentBankName ?? 'bank',
+          shortName: bill.paymentBankName ?? bill.paymentBankCode ?? '?',
+          name: bill.paymentBankName ?? bill.paymentBankCode ?? '?',
+          logoUrl: null,
+        ),
+      ),
+    };
     final others = shares.where((s) => !s.isMe).toList();
     _othersPoolTotal = others.fold<double>(0, (s, sh) => s + sh.amount);
     _people = [
       _SplitPersonEntry(isMe: true),
       for (final s in others) _entryFromShare(s),
     ];
+    if (bill.payerName case final payerName?) {
+      _payer = _people
+          .skip(1)
+          .where((p) => p.nameController.text.trim() == payerName)
+          .firstOrNull;
+    }
     _attachNameListeners();
     _phase = _SplitPhase.allocate;
   }
@@ -273,16 +293,54 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
     setState(() {});
   }
 
-  bool get _canPay =>
-      _source != null &&
-      _people
-          .skip(1)
-          .every(
-            (p) =>
-                p.nameController.text.trim().isNotEmpty &&
-                p.enteredAmount > 0 &&
-                (p.status != 'paid' || p.paidSource != null),
-          );
+  bool get _paidByOther => _payer != null;
+
+  String get _payerName => _payer?.nameController.text.trim() ?? '';
+
+  bool get _canPay {
+    final meReady = _paidByOther
+        ? _payerName.isNotEmpty && (_meDebt || _source != null)
+        : _source != null;
+    return meReady &&
+        _people
+            .skip(1)
+            .every(
+              (p) =>
+                  p.nameController.text.trim().isNotEmpty &&
+                  p.enteredAmount > 0 &&
+                  // Bill nguoi khac tra: nguoi con lai chi hien thi, khong
+                  // can chon nguon nhan tien.
+                  (_paidByOther || p.status != 'paid' || p.paidSource != null),
+            );
+  }
+
+  /// Nhan nguon tien cua "Toi" (hop xac nhan/xem truoc).
+  String get _mySourceLabel {
+    if (_paidByOther && _meDebt) {
+      return ref
+          .tr('wealth_split_bill_debt_to')
+          .replaceFirst('{name}', _payerName);
+    }
+    final source = _source;
+    if (source == null) return '';
+    return source.isCash
+        ? ref.tr('wallet_section_cash')
+        : source.bank!.shortName;
+  }
+
+  /// Danh sach nguoi cho bien lai (xem truoc + man Xong) - danh dau nguoi
+  /// tra bill va nguoi chi hien thi khi bill do nguoi khac tra.
+  List<ReceiptPersonView> _receiptPeople() => [
+    for (final p in _people)
+      ReceiptPersonView(
+        name: p.isMe ? _meName : p.nameController.text.trim(),
+        amount: p.isMe ? _meAmount : p.enteredAmount,
+        isMe: p.isMe,
+        status: p.isMe ? (_paidByOther && _meDebt ? 'debt' : 'paid') : p.status,
+        isPayer: _paidByOther && identical(p, _payer),
+        infoOnly: _paidByOther && !p.isMe && !identical(p, _payer),
+      ),
+  ];
 
   Future<void> _confirmPay() async {
     final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
@@ -313,14 +371,13 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
               style: AppTextStyles.body(size: 13),
             ),
             const SizedBox(height: 10),
-            Text(formatVnd(_total), style: AppTextStyles.heading(size: 20)),
-            const SizedBox(height: 4),
+            // Bill nguoi khac tra: chi phan cua "Toi" moi anh huong Vi/No.
             Text(
-              _source!.isCash
-                  ? ref.tr('wallet_section_cash')
-                  : _source!.bank!.shortName,
-              style: AppTextStyles.muted(size: 12.5),
+              formatVnd(_paidByOther ? _meAmount : _total),
+              style: AppTextStyles.heading(size: 20),
             ),
+            const SizedBox(height: 4),
+            Text(_mySourceLabel, style: AppTextStyles.muted(size: 12.5)),
           ],
         ),
         actions: [
@@ -352,55 +409,68 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
       if (_isEditing) {
         await deleteSplitBillCascade(ref, widget.editingBill!);
       }
-      final source = _source!;
+      final paidByOther = _paidByOther;
+      final payerName = paidByOther ? _payerName : null;
+      // Bill nguoi khac tra + "Toi" ghi no phan cua minh: KHONG tru Vi, KHONG
+      // tao Chi tieu ngay (Chi tieu se ghi luc tra no, xem pay_debt_sheet).
+      final meDebt = paidByOther && _meDebt;
+      final source = meDebt ? null : _source!;
+      final meAmount = _meAmount;
+      final occurredAt = DateTime.now();
       final note = _noteController.text.trim().isEmpty
           ? null
           : _noteController.text.trim();
-      final tx = WealthTransaction(
-        id: '',
-        type: WealthTransactionType.expense,
-        // Mac dinh xep vao danh muc "Ăn uống" - da so lan Chia bill la tien
-        // an chung, nguoi dung co the tu doi lai danh muc sau o man Lich su
-        // giao dich neu khong phai. Note dung THANG ghi chu nguoi dung nhap
-        // o man Chia bill (vd "Ăn trưa nhóm dự án") thay vi ten chung chung
-        // "Chia tiền bill" - de nguoi dung nhan ra ngay khoan chi nay la gi
-        // khi luot Lich su giao dich, fallback ve ten bill neu khong nhap
-        // ghi chu.
-        categoryCode: WealthExpenseCategory.food.code,
-        amount: _total,
-        currency: 'VND',
-        occurredAt: DateTime.now(),
-        note: note ?? ref.tr('wealth_split_bill_title'),
-        paymentAccountType: source.isCash ? 'cash' : 'bank',
-        paymentBankCode: source.isCash
-            ? null
-            : (source.bank!.isOther ? null : source.bank!.code),
-        paymentBankName: source.isCash ? null : source.bank!.shortName,
-      );
-      final txId = await ref
-          .read(wealthTransactionRepositoryProvider)
-          .addTransaction(userId, tx);
-      await ref
-          .read(wealthBalanceEntryRepositoryProvider)
-          .addEntry(
-            userId,
-            WealthBalanceEntry(
-              id: '',
-              accountType: source.isCash ? 'cash' : 'bank',
-              bankCode: source.isCash
-                  ? null
-                  : (source.bank!.isOther ? null : source.bank!.code),
-              bankName: source.isCash ? null : source.bank!.shortName,
-              currency: 'VND',
-              amount: -_total,
-              note: tx.note,
-              occurredAt: tx.occurredAt,
-              source: 'expense',
-              sourceTransactionId: txId,
-            ),
-          );
-
-      final meAmount = _meAmount;
+      // So tien THAT SU ra khoi Vi cua "Toi": ca bill khi Toi tra, chi phan
+      // cua Toi khi nguoi khac tra.
+      final walletAmount = paidByOther ? meAmount : _total;
+      String? txId;
+      if (source != null && walletAmount > 0) {
+        final tx = WealthTransaction(
+          id: '',
+          type: WealthTransactionType.expense,
+          // Mac dinh xep vao danh muc "Ăn uống" - da so lan Chia bill la tien
+          // an chung, nguoi dung co the tu doi lai danh muc sau o man Lich su
+          // giao dich neu khong phai. Note dung THANG ghi chu nguoi dung nhap
+          // o man Chia bill (vd "Ăn trưa nhóm dự án") thay vi ten chung chung
+          // "Chia tiền bill", fallback ve ten bill neu khong nhap ghi chu.
+          categoryCode: WealthExpenseCategory.food.code,
+          amount: walletAmount,
+          currency: 'VND',
+          occurredAt: occurredAt,
+          note: [
+            note ?? ref.tr('wealth_split_bill_title'),
+            ?payerName,
+          ].join(' - '),
+          paymentAccountType: source.isCash ? 'cash' : 'bank',
+          paymentBankCode: source.isCash
+              ? null
+              : (source.bank!.isOther ? null : source.bank!.code),
+          paymentBankName: source.isCash ? null : source.bank!.shortName,
+        );
+        final newTxId = await ref
+            .read(wealthTransactionRepositoryProvider)
+            .addTransaction(userId, tx);
+        txId = newTxId;
+        await ref
+            .read(wealthBalanceEntryRepositoryProvider)
+            .addEntry(
+              userId,
+              WealthBalanceEntry(
+                id: '',
+                accountType: source.isCash ? 'cash' : 'bank',
+                bankCode: source.isCash
+                    ? null
+                    : (source.bank!.isOther ? null : source.bank!.code),
+                bankName: source.isCash ? null : source.bank!.shortName,
+                currency: 'VND',
+                amount: -walletAmount,
+                note: tx.note,
+                occurredAt: occurredAt,
+                source: 'expense',
+                sourceTransactionId: newTxId,
+              ),
+            );
+      }
 
       // Tao bill + tung dong share TRUOC (can shareId de lien ket nguoc lai
       // tu cac dong wealth_balance_entries/wealth_debts sinh ra o duoi -
@@ -411,21 +481,33 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
         userId: userId,
         totalAmount: _total,
         currency: 'VND',
-        paymentAccountType: source.isCash ? 'cash' : 'bank',
-        paymentBankCode: source.isCash
+        paymentAccountType: source == null
+            ? 'debt'
+            : (source.isCash ? 'cash' : 'bank'),
+        paymentBankCode: source == null || source.isCash
             ? null
             : (source.bank!.isOther ? null : source.bank!.code),
-        paymentBankName: source.isCash ? null : source.bank!.shortName,
+        paymentBankName: source == null || source.isCash
+            ? null
+            : source.bank!.shortName,
         transactionId: txId,
         note: note,
-        occurredAt: tx.occurredAt,
+        payerName: payerName,
+        occurredAt: occurredAt,
         shares: [
           for (final p in _people)
             (
               personName: p.isMe ? _meName : p.nameController.text.trim(),
               isMe: p.isMe,
               amount: p.isMe ? meAmount : p.enteredAmount,
-              status: p.status,
+              status: switch (p) {
+                _ when p.isMe => meDebt ? 'debt' : 'paid',
+                _ when !paidByOther => p.status,
+                // Bill nguoi khac tra: nguoi tra = 'paid', con lai chi hien
+                // thi ('pending', khong co nut xu ly - xem receipt).
+                _ when identical(p, _payer) => 'paid',
+                _ => 'pending',
+              },
             ),
         ],
       );
@@ -433,12 +515,45 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
         _people[i].shareId = shareIds[i];
       }
 
+      if (paidByOther) {
+        // "Toi" ghi no phan cua minh cho nguoi da tra bill - tao khoan
+        // i_owe va lien ket vao share cua Toi (de xoa/sua bill don dung no).
+        // Nguoi con lai KHONG tao no, KHONG cong tru Vi.
+        if (meDebt && meAmount > 0) {
+          final person = await ref
+              .read(wealthDebtPersonRepositoryProvider)
+              .findOrCreate(userId, payerName!);
+          final debtId = await ref
+              .read(wealthDebtRepositoryProvider)
+              .create(
+                userId: userId,
+                personId: person.id,
+                direction: 'i_owe',
+                amount: meAmount,
+                currency: 'VND',
+                occurredAt: occurredAt,
+                note: note ?? ref.tr('wealth_split_bill_title'),
+              );
+          final myShareId = _people.first.shareId;
+          if (myShareId != null) {
+            await billRepo.updateShareStatus(
+              userId,
+              myShareId,
+              status: 'debt',
+              debtId: debtId,
+            );
+          }
+          ref.invalidate(debtsProvider('i_owe'));
+        }
+      }
+
       // Tung nguoi (tru "Toi") da CHON SAN Ghi no/Da tra ngay luc phan bo -
       // thuc hien hanh dong tuong ung NGAY tai day (mot lan cung voi Pay,
       // khong con buoc rieng sau do nua): "Da tra" cong thang tien ho vao
       // lai Cash/Bank (coi nhu ho dua tien mat ngay tai cho), "Ghi no" tao 1
       // khoan owed_to_me roi lien ket nguoc lai vao share vua tao o tren.
-      for (final p in _people) {
+      // CHI khi "Toi" tra bill.
+      for (final p in paidByOther ? const <_SplitPersonEntry>[] : _people) {
         if (p.isMe) continue;
         if (p.status == 'paid') {
           final paidSource = p.paidSource!;
@@ -688,7 +803,6 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
   }
 
   Future<void> _showPreview() async {
-    final source = _source!;
     // PHAI await truc tiep .future (khong dung ref.read(...).valueOrNull) -
     // wealthPaymentQrProvider la FutureProvider.autoDispose, KHONG duoc man
     // nay watch o dau khac trong luc dang o phase allocate, nen tai thoi
@@ -696,27 +810,21 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
     // (chua fetch xong tu Supabase) -> valueOrNull tra ve null oan, khien QR
     // "bi mat" du da cau hinh day du (bug thuc te da gap: QR co that nhung
     // Preview van trong vi doc gia tri qua som).
-    final qr = await ref.read(wealthPaymentQrProvider.future);
+    // Bill nguoi khac tra: moi nguoi tra tien cho HO, khong phai cho "Toi"
+    // - khong hien QR nhan tien cua Toi tren bien lai.
+    final qr = _paidByOther
+        ? null
+        : await ref.read(wealthPaymentQrProvider.future);
     if (!mounted) return;
     setState(() {
       _previewArgs = _PreviewArgs(
         totalAmount: _total,
-        paymentLabel: source.isCash
-            ? ref.tr('wallet_section_cash')
-            : source.bank!.shortName,
+        paymentLabel: _mySourceLabel,
         note: _noteController.text.trim().isEmpty
             ? null
             : _noteController.text.trim(),
         qr: qr,
-        people: [
-          for (final p in _people)
-            ReceiptPersonView(
-              name: p.isMe ? _meName : p.nameController.text.trim(),
-              amount: p.isMe ? _meAmount : p.enteredAmount,
-              isMe: p.isMe,
-              status: p.status,
-            ),
-        ],
+        people: _receiptPeople(),
       );
     });
   }
@@ -732,6 +840,8 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          _payerSelector(),
+          const SizedBox(height: 6),
           for (final p in _people) ...[
             _personAllocateRow(p, _excludedNamesFor(p)),
             const SizedBox(height: 4),
@@ -794,14 +904,59 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
     );
   }
 
+  /// Chon NGUOI TRA BILL: "Toi" (mac dinh) hoac 1 nguoi da nhap ten - xem
+  /// [_payer].
+  Widget _payerSelector() {
+    final named = _people
+        .skip(1)
+        .where((p) => p.nameController.text.trim().isNotEmpty)
+        .toList();
+    return GlowBox(
+      borderRadius: 12,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            ref.tr('wealth_split_bill_payer_label'),
+            style: AppTextStyles.muted(size: 9),
+          ),
+          const SizedBox(height: 3),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              _sourceChip(
+                label: _meName,
+                selected: _payer == null,
+                onTap: () => setState(() {
+                  _payer = null;
+                  _meDebt = false;
+                }),
+              ),
+              for (final p in named)
+                _sourceChip(
+                  label: p.nameController.text.trim(),
+                  selected: identical(p, _payer),
+                  onTap: () => setState(() => _payer = p),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   /// Hang chip Tien mat/Ngan hang/+Ngan hang khac - dung CHUNG cho "Toi"
   /// (nguon tru tong tien bill) VA cho tung nguoi rieng khi ho chon "Da tra"
   /// (nguon nhan lai tien cua NGUOI DO, doc lap voi cac nguoi khac) - thay
-  /// the 1 khoi "Pay with" chung duy nhat truoc day.
+  /// the 1 khoi "Pay with" chung duy nhat truoc day. [leading] = chip them
+  /// dat truoc (vd "Ghi no" cho phan cua Toi khi nguoi khac tra bill).
   Widget _sourceChipsRow(
     _PaymentSource? selected,
-    ValueChanged<_PaymentSource> onSelect,
-  ) {
+    ValueChanged<_PaymentSource> onSelect, {
+    List<Widget> leading = const [],
+  }) {
     final totals = ref.watch(walletTotalsProvider);
     final seen = <String>{};
     final banks = <VnBank>[];
@@ -822,6 +977,7 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
       spacing: 6,
       runSpacing: 6,
       children: [
+        ...leading,
         _sourceChip(
           label: ref.tr('wallet_section_cash'),
           selected: selected?.isCash ?? false,
@@ -921,11 +1077,34 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  ref.tr('wealth_split_bill_payment_method_label'),
+                  _paidByOther
+                      ? ref
+                            .tr('wealth_split_bill_my_share_to')
+                            .replaceFirst('{name}', _payerName)
+                      : ref.tr('wealth_split_bill_payment_method_label'),
                   style: AppTextStyles.muted(size: 9),
                 ),
                 const SizedBox(height: 3),
-                _sourceChipsRow(_source, (s) => setState(() => _source = s)),
+                _sourceChipsRow(
+                  _meDebt ? null : _source,
+                  (s) => setState(() {
+                    _source = s;
+                    _meDebt = false;
+                  }),
+                  // Nguoi khac tra bill: phan cua Toi co the Ghi no (tao
+                  // khoan i_owe) thay vi tru Cash/Bank.
+                  leading: [
+                    if (_paidByOther)
+                      _sourceChip(
+                        label: ref.tr('wealth_split_bill_debt_button'),
+                        selected: _meDebt,
+                        onTap: () => setState(() {
+                          _meDebt = true;
+                          _source = null;
+                        }),
+                      ),
+                  ],
+                ),
               ],
             )
           : Column(
@@ -976,29 +1155,54 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
                       ),
                     ),
                     const SizedBox(width: 5),
-                    Expanded(
-                      child: _statusToggleChip(
-                        label: ref.tr('wealth_split_bill_debt_button'),
-                        color: AppColors.pink,
-                        selected: p.status == 'debt',
-                        onTap: () => setState(() => p.status = 'debt'),
+                    // Bill nguoi khac tra: nguoi tra co nhan "Tra bill", con
+                    // lai chi hien thi (khong Ghi no/Da tra - khong lien
+                    // quan tien cua Toi).
+                    if (identical(p, _payer))
+                      Expanded(
+                        child: _statusToggleChip(
+                          label: ref.tr('wealth_split_bill_status_payer'),
+                          color: AppColors.teal,
+                          selected: true,
+                          onTap: () {},
+                        ),
+                      )
+                    else if (_paidByOther)
+                      Expanded(
+                        child: Text(
+                          ref
+                              .tr('wealth_split_bill_pays_payer')
+                              .replaceFirst('{name}', _payerName),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.muted(size: 9.5),
+                        ),
+                      )
+                    else ...[
+                      Expanded(
+                        child: _statusToggleChip(
+                          label: ref.tr('wealth_split_bill_debt_button'),
+                          color: AppColors.pink,
+                          selected: p.status == 'debt',
+                          onTap: () => setState(() => p.status = 'debt'),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: _statusToggleChip(
-                        label: ref.tr('wealth_split_bill_paid_button'),
-                        color: AppColors.teal,
-                        selected: p.status == 'paid',
-                        onTap: () => setState(() => p.status = 'paid'),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: _statusToggleChip(
+                          label: ref.tr('wealth_split_bill_paid_button'),
+                          color: AppColors.teal,
+                          selected: p.status == 'paid',
+                          onTap: () => setState(() => p.status = 'paid'),
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
                 // Chi hien khi bam "Paid" - moi nguoi tu chon rieng tien ho
                 // tra vao Cash hay Bank nao cua minh (doc lap voi cac nguoi
                 // khac va voi nguon cua "Toi" o tren).
-                if (p.status == 'paid') ...[
+                if (!_paidByOther && p.status == 'paid') ...[
                   const SizedBox(height: 4),
                   _sourceChipsRow(
                     p.paidSource,
@@ -1048,24 +1252,16 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
           child: SingleChildScrollView(
             child: SplitBillReceiptCard(
               totalAmount: _total,
-              paymentLabel: _source!.isCash
-                  ? ref.tr('wallet_section_cash')
-                  : _source!.bank!.shortName,
+              paymentLabel: _mySourceLabel,
               occurredAt: DateTime.now(),
               note: _noteController.text.trim().isEmpty
                   ? null
                   : _noteController.text.trim(),
-              qr: ref.watch(wealthPaymentQrProvider).valueOrNull,
+              qr: _paidByOther
+                  ? null
+                  : ref.watch(wealthPaymentQrProvider).valueOrNull,
               lang: _receiptLang ?? ref.watch<AppLanguage>(appLanguageProvider),
-              people: [
-                for (final p in _people)
-                  ReceiptPersonView(
-                    name: p.isMe ? _meName : p.nameController.text.trim(),
-                    amount: p.isMe ? _meAmount : p.enteredAmount,
-                    isMe: p.isMe,
-                    status: p.status,
-                  ),
-              ],
+              people: _receiptPeople(),
             ),
           ),
         ),

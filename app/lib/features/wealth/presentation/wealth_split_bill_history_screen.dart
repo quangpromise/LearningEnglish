@@ -46,6 +46,8 @@ Future<void> deleteSplitBillCascade(WidgetRef ref, WealthSplitBill bill) async {
   ref.invalidate(walletBalanceEntriesProvider);
   ref.invalidate(wealthTransactionsProvider);
   ref.invalidate(debtsProvider('owed_to_me'));
+  // Bill nguoi khac tra + "Toi" ghi no: khoan i_owe gan vao share cua Toi.
+  ref.invalidate(debtsProvider('i_owe'));
   ref.invalidate(wealthSplitBillsProvider);
 }
 
@@ -362,10 +364,18 @@ class _WealthSplitBillDetailScreenState
     final bill = widget.bill;
     final lang = _lang ?? ref.watch<AppLanguage>(appLanguageProvider);
     final sharesAsync = ref.watch(wealthSplitBillSharesProvider(bill.id));
-    final qr = ref.watch(wealthPaymentQrProvider).valueOrNull;
-    final paymentLabel = bill.paymentAccountType == 'cash'
-        ? ref.tr('wallet_section_cash')
-        : (bill.paymentBankName ?? bill.paymentBankCode ?? '');
+    // Bill nguoi khac tra: moi nguoi tra cho HO - khong hien QR cua "Toi".
+    final qr = bill.paidByOther
+        ? null
+        : ref.watch(wealthPaymentQrProvider).valueOrNull;
+    final paymentLabel = switch (bill.paymentAccountType) {
+      'cash' => ref.tr('wallet_section_cash'),
+      'debt' =>
+        ref
+            .tr('wealth_split_bill_debt_to')
+            .replaceFirst('{name}', bill.payerName ?? ''),
+      _ => bill.paymentBankName ?? bill.paymentBankCode ?? '',
+    };
     return ScreenBackground(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
@@ -433,18 +443,30 @@ class _WealthSplitBillDetailScreenState
                     lang: lang,
                     people: [
                       for (final s in shares)
-                        ReceiptPersonView(
-                          name: s.personName,
-                          amount: s.amount,
-                          isMe: s.isMe,
-                          status: s.status,
-                          onDebt: (s.isMe || s.status != 'pending')
-                              ? null
-                              : () => _markDebt(ref, s),
-                          onPaid: (s.isMe || s.status != 'pending')
-                              ? null
-                              : () => _markPaid(ref, s),
-                        ),
+                        if (bill.paidByOther)
+                          // Nguoi khac tra bill: chi hien thi, khong co nut
+                          // Ghi no/Da tra cho nguoi con lai.
+                          ReceiptPersonView(
+                            name: s.personName,
+                            amount: s.amount,
+                            isMe: s.isMe,
+                            status: s.status,
+                            isPayer: !s.isMe && s.personName == bill.payerName,
+                            infoOnly: !s.isMe && s.personName != bill.payerName,
+                          )
+                        else
+                          ReceiptPersonView(
+                            name: s.personName,
+                            amount: s.amount,
+                            isMe: s.isMe,
+                            status: s.status,
+                            onDebt: (s.isMe || s.status != 'pending')
+                                ? null
+                                : () => _markDebt(ref, s),
+                            onPaid: (s.isMe || s.status != 'pending')
+                                ? null
+                                : () => _markPaid(ref, s),
+                          ),
                     ],
                   ),
                 ),

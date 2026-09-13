@@ -18,6 +18,8 @@ class ReceiptPersonView {
     required this.status,
     this.onDebt,
     this.onPaid,
+    this.isPayer = false,
+    this.infoOnly = false,
   });
   final String name;
   final double amount;
@@ -25,6 +27,13 @@ class ReceiptPersonView {
   final String status; // 'pending' | 'debt' | 'paid'
   final VoidCallback? onDebt;
   final VoidCallback? onPaid;
+
+  /// Nguoi (khong phai "Toi") da tra ca bill - hien nhan "Tra bill".
+  final bool isPayer;
+
+  /// Bill do nguoi khac tra: nguoi nay chi hien thi (khong co trang thai/
+  /// nut xu ly nao vi khong lien quan tien cua "Toi").
+  final bool infoOnly;
 }
 
 /// Nut doi ngon ngu VI/EN cho 1 to bien lai - dat BEN NGOAI [SplitBillReceiptCard]
@@ -283,7 +292,28 @@ class SplitBillReceiptCard extends StatelessWidget {
     );
   }
 
+  Widget _statusLabel(String text, Color color) => Align(
+    alignment: Alignment.centerRight,
+    child: Text(
+      text,
+      textAlign: TextAlign.right,
+      style: TextStyle(
+        color: color,
+        fontWeight: FontWeight.w800,
+        fontSize: 10.5,
+      ),
+    ),
+  );
+
   Widget _statusWidget(String Function(String) tr, ReceiptPersonView p) {
+    if (p.isPayer) {
+      return _statusLabel(tr('wealth_split_bill_status_payer'), AppColors.teal);
+    }
+    if (p.infoOnly) return const SizedBox.shrink();
+    // "Toi" ghi no phan cua minh cho nguoi da tra bill.
+    if (p.isMe && p.status == 'debt') {
+      return _statusLabel(tr('wealth_split_bill_status_i_owe'), AppColors.pink);
+    }
     if (p.isMe) {
       return const Align(
         alignment: Alignment.centerRight,
@@ -296,30 +326,14 @@ class SplitBillReceiptCard extends StatelessWidget {
     }
     switch (p.status) {
       case 'debt':
-        return Align(
-          alignment: Alignment.centerRight,
-          child: Text(
-            tr('wealth_split_bill_status_debt'),
-            textAlign: TextAlign.right,
-            style: const TextStyle(
-              color: AppColors.pink,
-              fontWeight: FontWeight.w800,
-              fontSize: 10.5,
-            ),
-          ),
+        return _statusLabel(
+          tr('wealth_split_bill_status_debt'),
+          AppColors.pink,
         );
       case 'paid':
-        return Align(
-          alignment: Alignment.centerRight,
-          child: Text(
-            tr('wealth_split_bill_status_paid'),
-            textAlign: TextAlign.right,
-            style: const TextStyle(
-              color: AppColors.teal,
-              fontWeight: FontWeight.w800,
-              fontSize: 10.5,
-            ),
-          ),
+        return _statusLabel(
+          tr('wealth_split_bill_status_paid'),
+          AppColors.teal,
         );
       default:
         return Row(

@@ -113,7 +113,7 @@ class _WealthReportScreenState extends ConsumerState<WealthReportScreen> {
 
     return ScreenBackground(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -209,7 +209,7 @@ class _WealthReportScreenState extends ConsumerState<WealthReportScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 10),
             Expanded(
               child: transactionsAsync.when(
                 loading: () => const Center(
@@ -382,34 +382,21 @@ class _ReportBody extends ConsumerWidget {
             incomeByMonth: incomeByMonth,
             expenseByMonth: expenseByMonth,
           ),
-          const SizedBox(height: 16),
-          // Chi tieu theo danh muc + Dich vu dinh ky dat CHUNG 1 hang (moi
-          // ben 1 nua be rong) thay vi 2 card day du rieng biet nhu truoc -
-          // ca 2 deu da thu gon noi dung (bieu do/danh sach) de vua khung
-          // hep hon (xem doc rieng trong tung card).
-          IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(
-                  child: _CategoryBreakdownCard(
-                    categoryTotals: categoryTotals,
-                    customCategories: customCategories,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _RecurringServiceCard(
-                    thisTotal: thisRenewalTotal,
-                    prevTotal: prevRenewalTotal,
-                    showDelta: !allTime,
-                    months: months,
-                    renewalByMonth: renewalByMonth,
-                    history: sortedRenewals,
-                  ),
-                ),
-              ],
-            ),
+          // 3 the moi the 1 hang, noi dung ben trong dan NGANG (bieu do 1
+          // ben, so lieu/danh sach 1 ben) va da thu gon de vua 1 man hinh.
+          const SizedBox(height: 10),
+          _CategoryBreakdownCard(
+            categoryTotals: categoryTotals,
+            customCategories: customCategories,
+          ),
+          const SizedBox(height: 10),
+          _RecurringServiceCard(
+            thisTotal: thisRenewalTotal,
+            prevTotal: prevRenewalTotal,
+            showDelta: !allTime,
+            months: months,
+            renewalByMonth: renewalByMonth,
+            history: sortedRenewals,
           ),
         ],
       ),
@@ -472,6 +459,178 @@ class _DeltaLabel extends ConsumerWidget {
   }
 }
 
+/// Padding + bo goc chung cho ca 3 the bao cao - gon hon mac dinh cua
+/// GlowBox de 3 the vua 1 man hinh.
+const _kCardPadding = EdgeInsets.fromLTRB(14, 12, 14, 12);
+const _kCardRadius = 18.0;
+
+Widget _cardTitle(String text) => Text(
+  text,
+  style: AppTextStyles.heading(size: 13),
+  maxLines: 1,
+  overflow: TextOverflow.ellipsis,
+);
+
+/// Bieu do cot theo thang dung chung cho the Thu/Chi va Dich vu dinh ky -
+/// moi phan tu [series] la 1 day gia tri (cung do dai [months]) + mau cot.
+class _MonthBarChart extends ConsumerWidget {
+  const _MonthBarChart({
+    required this.months,
+    required this.series,
+    required this.height,
+  });
+
+  final List<DateTime> months;
+  final List<(List<double>, Color)> series;
+  final double height;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final lang = ref.watch(appLanguageProvider);
+    final maxY = series
+        .expand((s) => s.$1)
+        .fold<double>(0, (m, v) => v > m ? v : m);
+    final rodWidth = months.length > 8 ? 4.0 : (series.length > 1 ? 6.0 : 9.0);
+    return SizedBox(
+      height: height,
+      child: maxY <= 0
+          ? Center(
+              child: Text(
+                ref.tr('wealth_report_no_data'),
+                style: AppTextStyles.muted(size: 10),
+              ),
+            )
+          : BarChart(
+              BarChartData(
+                maxY: maxY * 1.15,
+                gridData: const FlGridData(show: false),
+                borderData: FlBorderData(show: false),
+                // Mac dinh fl_chart hien so THO khong dinh dang (vd
+                // "6175036.0") khi giu tay tren 1 cot - dinh dang lai bang
+                // formatVnd() giong moi noi khac hien tien trong app.
+                barTouchData: BarTouchData(
+                  touchTooltipData: BarTouchTooltipData(
+                    getTooltipItem: (group, groupIndex, rod, rodIndex) =>
+                        BarTooltipItem(
+                          formatVnd(rod.toY),
+                          const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 11,
+                          ),
+                        ),
+                  ),
+                ),
+                titlesData: FlTitlesData(
+                  show: true,
+                  leftTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  rightTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  topTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 16,
+                      interval: (months.length / 6)
+                          .clamp(1, double.infinity)
+                          .ceilToDouble(),
+                      getTitlesWidget: (value, meta) {
+                        final i = value.toInt();
+                        if (i < 0 || i >= months.length) {
+                          return const SizedBox.shrink();
+                        }
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 3),
+                          child: Text(
+                            _shortMonthLabel(months[i], lang),
+                            style: AppTextStyles.muted(size: 8.5),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                barGroups: [
+                  for (var i = 0; i < months.length; i++)
+                    BarChartGroupData(
+                      x: i,
+                      barsSpace: 3,
+                      barRods: [
+                        for (final (values, color) in series)
+                          BarChartRodData(
+                            toY: values[i],
+                            color: color,
+                            width: rodWidth,
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                      ],
+                    ),
+                ],
+              ),
+            ),
+    );
+  }
+}
+
+/// 1 so lieu (nhan + so tien + % so voi thang truoc) - dung trong cot trai
+/// cua the Thu/Chi va Dich vu dinh ky.
+class _Figure extends ConsumerWidget {
+  const _Figure({
+    required this.label,
+    required this.value,
+    required this.color,
+    required this.showDelta,
+    required this.previous,
+    required this.higherIsBad,
+  });
+
+  final String label;
+  final double value;
+  final Color color;
+  final bool showDelta;
+  final double previous;
+  final bool higherIsBad;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: AppTextStyles.muted(size: 10.5)),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Text(
+            formatVnd(value),
+            style: AppTextStyles.body(
+              size: 14,
+              weight: FontWeight.w800,
+              color: color,
+            ),
+          ),
+        ),
+        if (showDelta)
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: _DeltaLabel(
+              current: value,
+              previous: previous,
+              higherIsBad: higherIsBad,
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// The Thu/Chi - bo cuc NGANG: so lieu Thu nhap/Chi tieu xep doc ben trai,
+/// bieu do cot theo thang ben phai.
 class _IncomeExpenseCard extends ConsumerWidget {
   const _IncomeExpenseCard({
     required this.income,
@@ -497,172 +656,61 @@ class _IncomeExpenseCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final lang = ref.watch(appLanguageProvider);
-    final maxY = [
-      ...incomeByMonth,
-      ...expenseByMonth,
-    ].fold<double>(0, (m, v) => v > m ? v : m);
     return GlowBox(
-      borderRadius: 20,
+      padding: _kCardPadding,
+      borderRadius: _kCardRadius,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          _cardTitle(
             ref.tr(
               showDelta
                   ? 'wealth_report_income_expense_title'
                   : 'wealth_report_income_expense_title_all_time',
             ),
-            style: AppTextStyles.heading(size: 14),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 8),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(
+                flex: 2,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      ref.tr('wealth_tab_income'),
-                      style: AppTextStyles.muted(size: 11),
+                    _Figure(
+                      label: ref.tr('wealth_tab_income'),
+                      value: income,
+                      color: AppColors.teal,
+                      showDelta: showDelta,
+                      previous: prevIncome,
+                      higherIsBad: false,
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      formatVnd(income),
-                      style: AppTextStyles.body(
-                        size: 15,
-                        weight: FontWeight.w800,
-                        color: AppColors.teal,
-                      ),
+                    const SizedBox(height: 8),
+                    _Figure(
+                      label: ref.tr('wealth_tab_expense'),
+                      value: expense,
+                      color: AppColors.pink,
+                      showDelta: showDelta,
+                      previous: prevExpense,
+                      higherIsBad: true,
                     ),
-                    if (showDelta) ...[
-                      const SizedBox(height: 3),
-                      _DeltaLabel(
-                        current: income,
-                        previous: prevIncome,
-                        higherIsBad: false,
-                      ),
-                    ],
                   ],
                 ),
               ),
+              const SizedBox(width: 10),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      ref.tr('wealth_tab_expense'),
-                      style: AppTextStyles.muted(size: 11),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      formatVnd(expense),
-                      style: AppTextStyles.body(
-                        size: 15,
-                        weight: FontWeight.w800,
-                        color: AppColors.pink,
-                      ),
-                    ),
-                    if (showDelta) ...[
-                      const SizedBox(height: 3),
-                      _DeltaLabel(
-                        current: expense,
-                        previous: prevExpense,
-                        higherIsBad: true,
-                      ),
-                    ],
+                flex: 3,
+                child: _MonthBarChart(
+                  months: months,
+                  height: 96,
+                  series: [
+                    (incomeByMonth, AppColors.teal),
+                    (expenseByMonth, AppColors.pink),
                   ],
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 18),
-          SizedBox(
-            height: 140,
-            child: maxY <= 0
-                ? Center(
-                    child: Text(
-                      ref.tr('wealth_report_no_data'),
-                      style: AppTextStyles.muted(size: 11),
-                    ),
-                  )
-                : BarChart(
-                    BarChartData(
-                      maxY: maxY * 1.2,
-                      gridData: const FlGridData(show: false),
-                      borderData: FlBorderData(show: false),
-                      // Mac dinh fl_chart hien so THO khong dinh dang (vd
-                      // "6175036.0") khi giu tay tren 1 cot - dinh dang lai
-                      // bang formatVnd() giong moi noi khac hien tien trong
-                      // app (dau phay ngan cach hang nghin, khong con .0 du
-                      // thua o cuoi).
-                      barTouchData: BarTouchData(
-                        touchTooltipData: BarTouchTooltipData(
-                          getTooltipItem: (group, groupIndex, rod, rodIndex) =>
-                              BarTooltipItem(
-                                formatVnd(rod.toY),
-                                const TextStyle(
-                                  color: AppColors.textPrimary,
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 12,
-                                ),
-                              ),
-                        ),
-                      ),
-                      titlesData: FlTitlesData(
-                        show: true,
-                        leftTitles: const AxisTitles(
-                          sideTitles: SideTitles(showTitles: false),
-                        ),
-                        rightTitles: const AxisTitles(
-                          sideTitles: SideTitles(showTitles: false),
-                        ),
-                        topTitles: const AxisTitles(
-                          sideTitles: SideTitles(showTitles: false),
-                        ),
-                        bottomTitles: AxisTitles(
-                          sideTitles: SideTitles(
-                            showTitles: true,
-                            reservedSize: 22,
-                            getTitlesWidget: (value, meta) {
-                              final i = value.toInt();
-                              if (i < 0 || i >= months.length) {
-                                return const SizedBox.shrink();
-                              }
-                              return Padding(
-                                padding: const EdgeInsets.only(top: 6),
-                                child: Text(
-                                  _shortMonthLabel(months[i], lang),
-                                  style: AppTextStyles.muted(size: 9.5),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                      barGroups: [
-                        for (var i = 0; i < months.length; i++)
-                          BarChartGroupData(
-                            x: i,
-                            barsSpace: 4,
-                            barRods: [
-                              BarChartRodData(
-                                toY: incomeByMonth[i],
-                                color: AppColors.teal,
-                                width: 7,
-                                borderRadius: BorderRadius.circular(3),
-                              ),
-                              BarChartRodData(
-                                toY: expenseByMonth[i],
-                                color: AppColors.pink,
-                                width: 7,
-                                borderRadius: BorderRadius.circular(3),
-                              ),
-                            ],
-                          ),
-                      ],
-                    ),
-                  ),
           ),
         ],
       ),
@@ -670,7 +718,13 @@ class _IncomeExpenseCard extends ConsumerWidget {
   }
 }
 
-class _CategoryBreakdownCard extends ConsumerWidget {
+/// So danh muc hien san trong chu giai the Chi tieu theo danh muc - con lai
+/// gom vao 1 dong "+N muc khac" bam de xem day du (giu 3 the vua 1 man).
+const _kCategoryPreviewCount = 4;
+
+/// The Chi tieu theo danh muc - bo cuc NGANG: bieu do tron ben trai, chu
+/// giai (ten + so tien + %) ben phai.
+class _CategoryBreakdownCard extends ConsumerStatefulWidget {
   const _CategoryBreakdownCard({
     required this.categoryTotals,
     required this.customCategories,
@@ -682,26 +736,35 @@ class _CategoryBreakdownCard extends ConsumerWidget {
   final List<WealthCustomCategory> customCategories;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final total = categoryTotals.values.fold<double>(0, (s, v) => s + v);
-    final sortedEntries = categoryTotals.entries.toList()
+  ConsumerState<_CategoryBreakdownCard> createState() =>
+      _CategoryBreakdownCardState();
+}
+
+class _CategoryBreakdownCardState
+    extends ConsumerState<_CategoryBreakdownCard> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final total = widget.categoryTotals.values.fold<double>(0, (s, v) => s + v);
+    final sortedEntries = widget.categoryTotals.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
+    final hidden = sortedEntries.length - _kCategoryPreviewCount;
+    final visibleCount = _expanded || hidden <= 0
+        ? sortedEntries.length
+        : _kCategoryPreviewCount;
 
     return GlowBox(
-      borderRadius: 20,
+      padding: _kCardPadding,
+      borderRadius: _kCardRadius,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            ref.tr('wealth_report_category_title'),
-            style: AppTextStyles.heading(size: 13),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 10),
+          _cardTitle(ref.tr('wealth_report_category_title')),
+          const SizedBox(height: 8),
           if (total <= 0)
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20),
+              padding: const EdgeInsets.symmetric(vertical: 12),
               child: Center(
                 child: Text(
                   ref.tr('wealth_report_no_data'),
@@ -709,95 +772,117 @@ class _CategoryBreakdownCard extends ConsumerWidget {
                 ),
               ),
             )
-          else ...[
-            // Bieu do tron thu gon lai (140 -> 96, ban kinh cung giam theo)
-            // so voi truoc de card nay ngan bot, giup cac card duoi (Dich
-            // vu dinh ky...) hien ra gan hon khi cuon, khong doi du lieu -
-            // chi thu nho phan bieu do.
-            SizedBox(
-              height: 96,
-              child: PieChart(
-                PieChartData(
-                  sectionsSpace: 2,
-                  centerSpaceRadius: 24,
-                  sections: [
-                    for (var i = 0; i < sortedEntries.length; i++)
-                      PieChartSectionData(
-                        value: sortedEntries[i].value,
-                        color: _kCategoryColors[i % _kCategoryColors.length],
-                        radius: 24,
-                        showTitle: false,
-                      ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            // Bo icon danh muc (trung lap voi cham mau) + gop so tien/% vao
-            // 1 cot doc ben phai - the nay gio dung chung 1 hang voi the
-            // Dich vu dinh ky (chi bang nua be rong man hinh) nen phai rut
-            // gon moi dong xuong con: cham mau + ten danh muc (1 dong,
-            // rut gon neu dai) + so tien/% xep doc ben phai.
-            for (var i = 0; i < sortedEntries.length; i++)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.only(top: 3),
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: _kCategoryColors[i % _kCategoryColors.length],
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        resolveExpenseCategoryDisplay(
-                          ref,
-                          sortedEntries[i].key,
-                          customCategories,
-                        ).$2,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.body(
-                          size: 11,
-                          weight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          formatVnd(sortedEntries[i].value),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.body(
-                            size: 11,
-                            weight: FontWeight.w700,
+          else
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  width: 88,
+                  height: 88,
+                  child: PieChart(
+                    PieChartData(
+                      sectionsSpace: 2,
+                      centerSpaceRadius: 22,
+                      sections: [
+                        for (var i = 0; i < sortedEntries.length; i++)
+                          PieChartSectionData(
+                            value: sortedEntries[i].value,
+                            color:
+                                _kCategoryColors[i % _kCategoryColors.length],
+                            radius: 20,
+                            showTitle: false,
                           ),
-                        ),
-                        Text(
-                          '${(sortedEntries[i].value / total * 100).toStringAsFixed(0)}%',
-                          style: AppTextStyles.muted(size: 9.5),
-                        ),
                       ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
-          ],
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    children: [
+                      for (var i = 0; i < visibleCount; i++)
+                        _legendRow(i, sortedEntries[i], total),
+                      if (hidden > 0)
+                        GestureDetector(
+                          onTap: () => setState(() => _expanded = !_expanded),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 2),
+                              child: Text(
+                                _expanded
+                                    ? ref.tr('wealth_report_show_less')
+                                    : ref
+                                          .tr(
+                                            'wealth_report_renewal_history_more',
+                                          )
+                                          .replaceFirst('{n}', '$hidden'),
+                                style: AppTextStyles.body(
+                                  size: 10.5,
+                                  weight: FontWeight.w700,
+                                  color: AppColors.wealthAccent,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _legendRow(int i, MapEntry<String, double> entry, double total) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 5),
+      child: Row(
+        children: [
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(
+              color: _kCategoryColors[i % _kCategoryColors.length],
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              resolveExpenseCategoryDisplay(
+                ref,
+                entry.key,
+                widget.customCategories,
+              ).$2,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.body(size: 11, weight: FontWeight.w600),
+            ),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            formatVnd(entry.value),
+            style: AppTextStyles.body(size: 11, weight: FontWeight.w700),
+          ),
+          SizedBox(
+            width: 34,
+            child: Text(
+              '${(entry.value / total * 100).toStringAsFixed(0)}%',
+              textAlign: TextAlign.right,
+              style: AppTextStyles.muted(size: 10),
+            ),
+          ),
         ],
       ),
     );
   }
 }
 
+/// The Dich vu dinh ky - bo cuc NGANG: tong renew + bieu do cot nho ben
+/// trai, vai lan renew gan nhat ben phai.
 class _RecurringServiceCard extends ConsumerWidget {
   const _RecurringServiceCard({
     required this.thisTotal,
@@ -817,199 +902,103 @@ class _RecurringServiceCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final lang = ref.watch(appLanguageProvider);
-    final maxY = renewalByMonth.fold<double>(0, (m, v) => v > m ? v : m);
     return GlowBox(
-      borderRadius: 20,
+      padding: _kCardPadding,
+      borderRadius: _kCardRadius,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            ref.tr('wealth_report_service_title'),
-            style: AppTextStyles.heading(size: 13),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
+          _cardTitle(ref.tr('wealth_report_service_title')),
           const SizedBox(height: 8),
-          Text(
-            formatVnd(thisTotal),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: AppTextStyles.body(
-              size: 14,
-              weight: FontWeight.w800,
-              color: AppColors.wealthAccent,
-            ),
-          ),
-          if (showDelta) ...[
-            const SizedBox(height: 3),
-            _DeltaLabel(
-              current: thisTotal,
-              previous: prevTotal,
-              higherIsBad: true,
-            ),
-          ],
-          const SizedBox(height: 12),
-          // Bieu do xu huong + danh sach lich su renew duoi day deu THU
-          // GON lai (thap hon, it nhan truc, gioi han so dong hien) so voi
-          // truoc - card nay gio dung CHUNG 1 hang voi the Chi tieu theo
-          // danh muc (chi bang nua be rong man hinh) thay vi 1 card rieng
-          // day du nhu cu.
-          SizedBox(
-            height: 64,
-            child: maxY <= 0
-                ? Center(
-                    child: Text(
-                      ref.tr('wealth_report_no_data'),
-                      style: AppTextStyles.muted(size: 10),
-                    ),
-                  )
-                : BarChart(
-                    BarChartData(
-                      maxY: maxY * 1.2,
-                      gridData: const FlGridData(show: false),
-                      borderData: FlBorderData(show: false),
-                      // Mac dinh fl_chart hien so THO khong dinh dang (vd
-                      // "6175036.0") khi giu tay tren 1 cot - dinh dang lai
-                      // bang formatVnd() giong moi noi khac hien tien trong
-                      // app (dau phay ngan cach hang nghin, khong con .0 du
-                      // thua o cuoi).
-                      barTouchData: BarTouchData(
-                        touchTooltipData: BarTouchTooltipData(
-                          getTooltipItem: (group, groupIndex, rod, rodIndex) =>
-                              BarTooltipItem(
-                                formatVnd(rod.toY),
-                                const TextStyle(
-                                  color: AppColors.textPrimary,
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 12,
-                                ),
-                              ),
-                        ),
-                      ),
-                      titlesData: FlTitlesData(
-                        show: true,
-                        leftTitles: const AxisTitles(
-                          sideTitles: SideTitles(showTitles: false),
-                        ),
-                        rightTitles: const AxisTitles(
-                          sideTitles: SideTitles(showTitles: false),
-                        ),
-                        topTitles: const AxisTitles(
-                          sideTitles: SideTitles(showTitles: false),
-                        ),
-                        bottomTitles: AxisTitles(
-                          sideTitles: SideTitles(
-                            showTitles: true,
-                            reservedSize: 18,
-                            interval: (months.length / 4)
-                                .clamp(1, double.infinity)
-                                .ceilToDouble(),
-                            getTitlesWidget: (value, meta) {
-                              final i = value.toInt();
-                              if (i < 0 || i >= months.length) {
-                                return const SizedBox.shrink();
-                              }
-                              return Padding(
-                                padding: const EdgeInsets.only(top: 4),
-                                child: Text(
-                                  _shortMonthLabel(months[i], lang),
-                                  style: AppTextStyles.muted(size: 8.5),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                      barGroups: [
-                        for (var i = 0; i < months.length; i++)
-                          BarChartGroupData(
-                            x: i,
-                            barRods: [
-                              BarChartRodData(
-                                toY: renewalByMonth[i],
-                                color: AppColors.wealthAccent,
-                                width: months.length > 8 ? 5 : 9,
-                                borderRadius: BorderRadius.circular(3),
-                              ),
-                            ],
-                          ),
-                      ],
-                    ),
-                  ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            ref.tr('wealth_report_renewal_history_title'),
-            style: AppTextStyles.body(size: 11.5, weight: FontWeight.w800),
-          ),
-          const SizedBox(height: 6),
-          if (history.isEmpty)
-            Text(
-              ref.tr('wealth_report_no_data'),
-              style: AppTextStyles.muted(size: 10),
-            )
-          else ...[
-            // Chi hien toi da _kMaxCompactHistory muc de danh sach khong
-            // qua dai trong the hep - con lai nhac qua 1 dong "+N khac".
-            for (final r in history.take(_kMaxCompactHistory))
-              Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: Row(
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            r.serviceName,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.body(
-                              size: 11,
-                              weight: FontWeight.w700,
-                            ),
-                          ),
-                          Text(
-                            '${r.occurredAt.day.toString().padLeft(2, '0')}/'
-                            '${r.occurredAt.month.toString().padLeft(2, '0')}/'
-                            '${r.occurredAt.year}',
-                            style: AppTextStyles.muted(size: 9.5),
-                          ),
-                        ],
-                      ),
+                    _Figure(
+                      label: ref.tr('wealth_report_renewal_total'),
+                      value: thisTotal,
+                      color: AppColors.wealthAccent,
+                      showDelta: showDelta,
+                      previous: prevTotal,
+                      higherIsBad: true,
                     ),
-                    Text(
-                      formatByCurrency(r.amount, r.currency),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.body(
-                        size: 11,
-                        weight: FontWeight.w700,
-                      ),
+                    const SizedBox(height: 6),
+                    _MonthBarChart(
+                      months: months,
+                      height: 52,
+                      series: [(renewalByMonth, AppColors.wealthAccent)],
                     ),
                   ],
                 ),
               ),
-            if (history.length > _kMaxCompactHistory)
-              Text(
-                ref
-                    .tr('wealth_report_renewal_history_more')
-                    .replaceFirst(
-                      '{n}',
-                      '${history.length - _kMaxCompactHistory}',
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      ref.tr('wealth_report_renewal_history_title'),
+                      style: AppTextStyles.muted(size: 10.5),
                     ),
-                style: AppTextStyles.muted(size: 10),
+                    const SizedBox(height: 4),
+                    if (history.isEmpty)
+                      Text(
+                        ref.tr('wealth_report_no_data'),
+                        style: AppTextStyles.muted(size: 10),
+                      )
+                    else ...[
+                      for (final r in history.take(_kMaxCompactHistory))
+                        _historyRow(r),
+                      if (history.length > _kMaxCompactHistory)
+                        Text(
+                          ref
+                              .tr('wealth_report_renewal_history_more')
+                              .replaceFirst(
+                                '{n}',
+                                '${history.length - _kMaxCompactHistory}',
+                              ),
+                          style: AppTextStyles.muted(size: 10),
+                        ),
+                    ],
+                  ],
+                ),
               ),
-          ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _historyRow(ServiceRenewalRecord r) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              '${r.occurredAt.day.toString().padLeft(2, '0')}/'
+              '${r.occurredAt.month.toString().padLeft(2, '0')} '
+              '${r.serviceName}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.body(size: 10.5, weight: FontWeight.w600),
+            ),
+          ),
+          const SizedBox(width: 4),
+          Text(
+            formatByCurrency(r.amount, r.currency),
+            style: AppTextStyles.body(size: 10.5, weight: FontWeight.w700),
+          ),
         ],
       ),
     );
   }
 }
 
-/// So dong lich su renew toi da hien trong the "Dich vu dinh ky" - the nay
-/// gio dung CHUNG 1 hang voi the Chi tieu theo danh muc (chi bang nua be
-/// rong man hinh) nen phai gioi han, khong danh sach se qua dai/lam lech
-/// chieu cao 2 the trong cung 1 hang.
-const _kMaxCompactHistory = 4;
+/// So dong lich su renew toi da hien trong the "Dich vu dinh ky" - con lai
+/// nhac qua 1 dong "+N muc khac" (giu 3 the vua 1 man hinh).
+const _kMaxCompactHistory = 3;
