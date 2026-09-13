@@ -396,7 +396,8 @@ class DeviceScore {
       return 0;
     }
 
-    return DeviceScore(cpuScore: asInt('cpuScore'), gpuScore: asInt('gpuScore'));
+    return DeviceScore(
+        cpuScore: asInt('cpuScore'), gpuScore: asInt('gpuScore'));
   }
 }
 
@@ -414,8 +415,11 @@ class AvatarManager {
   }
 
   Future<Avatar> load(
-      {required String id, bool useCompressedModel = false, void Function(double progress)? onProgress}) {
-    return _platform.load(id: id, useCompressedModel: useCompressedModel, onProgress: onProgress);
+      {required String id,
+      bool useCompressedModel = false,
+      void Function(double progress)? onProgress}) {
+    return _platform.load(
+        id: id, useCompressedModel: useCompressedModel, onProgress: onProgress);
   }
 
   Future<void> cancelLoading({required String id}) {

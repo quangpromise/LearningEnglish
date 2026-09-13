@@ -117,7 +117,8 @@ abstract class AvatarKitPlatform extends PlatformInterface {
 
   /// Test-only: encodes PCM16 (mono, little-endian) into one continuous Ogg
   /// Opus stream. Returns null if the encoder can't be created.
-  Future<Uint8List?> encodeWholePcmToOggForTesting(Uint8List pcm, int sampleRate,
+  Future<Uint8List?> encodeWholePcmToOggForTesting(
+      Uint8List pcm, int sampleRate,
       {int? bitrate}) {
     throw UnimplementedError(
         'encodeWholePcmToOggForTesting() has not been implemented.');
@@ -151,7 +152,9 @@ abstract class AvatarKitPlatform extends PlatformInterface {
   /// Set [useCompressedModel] to fetch the smaller compressed model. Loading
   /// progress is reported through [onProgress] in the range 0.0–1.0.
   Future<Avatar> load(
-      {required String id, bool useCompressedModel = false, void Function(double progress)? onProgress}) {
+      {required String id,
+      bool useCompressedModel = false,
+      void Function(double progress)? onProgress}) {
     throw UnimplementedError('load() has not been implemented.');
   }
 

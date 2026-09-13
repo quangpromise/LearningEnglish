@@ -29,8 +29,8 @@ class AvatarKitChannel extends AvatarKitPlatform {
         inputAudioFormat: inputAudioFormat != null
             ? AudioCodec.fromName(inputAudioFormat)
             : defaults.inputAudioFormat,
-        opusUplinkEnabled:
-            (result['opusUplinkEnabled'] as bool?) ?? defaults.opusUplinkEnabled,
+        opusUplinkEnabled: (result['opusUplinkEnabled'] as bool?) ??
+            defaults.opusUplinkEnabled,
         opusBitrate: opusBitrate ?? defaults.opusBitrate,
       ),
       drivingServiceMode:
@@ -113,7 +113,8 @@ class AvatarKitChannel extends AvatarKitPlatform {
 
   @override
   Future<void> setDrivingServiceModeForTesting(DrivingServiceMode mode) async {
-    await _methodChannel.invokeMethod('setDrivingServiceModeForTesting', mode.name);
+    await _methodChannel.invokeMethod(
+        'setDrivingServiceModeForTesting', mode.name);
   }
 
   @override
@@ -130,8 +131,8 @@ class AvatarKitChannel extends AvatarKitPlatform {
   Future<Uint8List?> encodeWholePcmToOggForTesting(
       Uint8List pcm, int sampleRate,
       {int? bitrate}) async {
-    return await _methodChannel.invokeMethod<Uint8List>(
-        'encodeWholePcmToOggForTesting', {
+    return await _methodChannel
+        .invokeMethod<Uint8List>('encodeWholePcmToOggForTesting', {
       'pcm': pcm,
       'sampleRate': sampleRate,
       if (bitrate != null) 'bitrate': bitrate,
@@ -140,14 +141,16 @@ class AvatarKitChannel extends AvatarKitPlatform {
 
   @override
   Future<int> keyframeCount(Uint8List rawMessage) async {
-    final result = await _methodChannel.invokeMethod('keyframeCount', rawMessage);
+    final result =
+        await _methodChannel.invokeMethod('keyframeCount', rawMessage);
     return (result as num?)?.toInt() ?? 0;
   }
 
   @override
   Future<Uint8List?> sliceRawAnimationMessage(
       Uint8List rawMessage, int startFrame, int endFrame) async {
-    final result = await _methodChannel.invokeMethod('sliceRawAnimationMessage', {
+    final result =
+        await _methodChannel.invokeMethod('sliceRawAnimationMessage', {
       'rawMessage': rawMessage,
       'startFrame': startFrame,
       'endFrame': endFrame,
@@ -171,7 +174,9 @@ class AvatarKitChannel extends AvatarKitPlatform {
 
   @override
   Future<Avatar> load(
-      {required String id, bool useCompressedModel = false, void Function(double progress)? onProgress}) async {
+      {required String id,
+      bool useCompressedModel = false,
+      void Function(double progress)? onProgress}) async {
     final random = Random().nextInt(1000000000);
     final eventID = '${id}_${DateTime.now().millisecondsSinceEpoch}_$random';
     StreamSubscription? subscription;
@@ -182,8 +187,11 @@ class AvatarKitChannel extends AvatarKitPlatform {
       });
     }
     try {
-      final result = await _methodChannel
-          .invokeMethod('load', {'id': id, 'eventID': eventID, 'useCompressedModel': useCompressedModel});
+      final result = await _methodChannel.invokeMethod('load', {
+        'id': id,
+        'eventID': eventID,
+        'useCompressedModel': useCompressedModel
+      });
       return Avatar.fromJson(Map<String, dynamic>.from(result));
     } on PlatformException catch (e) {
       final error = AvatarError.fromNameOrNull(e.code);
