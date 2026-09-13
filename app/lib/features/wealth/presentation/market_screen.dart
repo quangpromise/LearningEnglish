@@ -7,6 +7,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_format.dart';
 import '../../../core/widgets/equal_font_chip_bar.dart';
 import '../../crypto/data/okx_service.dart';
+import '../../crypto/presentation/crypto_coin_detail_screen.dart';
 import '../../crypto/presentation/crypto_coin_row.dart';
 import '../../crypto/presentation/crypto_market_tab.dart';
 import '../../crypto/presentation/crypto_providers.dart';
@@ -44,6 +45,32 @@ class _MarketScreenState extends State<MarketScreen> {
 
   @override
   Widget build(BuildContext context) {
+    return Consumer(
+      builder: (context, ref, _) {
+        // Coin/co phieu dang xem chart chi tiet - dung 1 provider dung
+        // chung (xem crypto_providers.dart/marketCoinDetailProvider) vi cac
+        // dong coin xuat hien o RAT NHIEU tab con khac nhau trong man nay
+        // (Market theo loai tai san LAN 4 muc Watchlist), tranh phai truyen
+        // callback qua tung tang. Hien chart NGAY TRONG CUNG 1 popup nay,
+        // khong mo them popup moi.
+        final detail = ref.watch(marketCoinDetailProvider);
+        if (detail != null) {
+          return CryptoCoinDetailScreen(
+            symbol: detail.symbol,
+            name: detail.name,
+            imageUrl: detail.imageUrl,
+            fallbackPrice: detail.fallbackPrice,
+            fallbackChangePercent: detail.fallbackChangePercent,
+            onBack: () =>
+                ref.read(marketCoinDetailProvider.notifier).state = null,
+          );
+        }
+        return _buildBody(context);
+      },
+    );
+  }
+
+  Widget _buildBody(BuildContext context) {
     return ScreenBackground(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),

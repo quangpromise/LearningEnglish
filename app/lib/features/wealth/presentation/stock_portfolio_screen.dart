@@ -19,11 +19,29 @@ import 'wealth_holding_history_sheet.dart';
 /// Data, gia THAT - khac Market > Quoc te dung gia token OKX chi de tham
 /// khao) - ma nao khong co nguon gia song (tu nhap thu cong) dung lai
 /// manualValue da luu luc them.
-class StockPortfolioScreen extends ConsumerWidget {
-  const StockPortfolioScreen({super.key});
+class StockPortfolioScreen extends ConsumerStatefulWidget {
+  const StockPortfolioScreen({super.key, this.onBack});
+
+  final VoidCallback? onBack;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<StockPortfolioScreen> createState() =>
+      _StockPortfolioScreenState();
+}
+
+class _StockPortfolioScreenState extends ConsumerState<StockPortfolioScreen> {
+  WealthHolding? _historyHolding;
+  double? _historyLivePrice;
+
+  void _openHistory(WealthHolding holding, double? livePrice) {
+    setState(() {
+      _historyHolding = holding;
+      _historyLivePrice = livePrice;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final intlHoldingsAsync = ref.watch(wealthHoldingsProvider('stock_intl'));
     final vnHoldingsAsync = ref.watch(wealthHoldingsProvider('stock_vn'));
     final isLoading = intlHoldingsAsync.isLoading || vnHoldingsAsync.isLoading;
@@ -31,6 +49,19 @@ class StockPortfolioScreen extends ConsumerWidget {
       ...intlHoldingsAsync.valueOrNull ?? const [],
       ...vnHoldingsAsync.valueOrNull ?? const [],
     ];
+
+    if (_historyHolding != null) {
+      return ScreenBackground(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+          child: WealthHoldingHistoryView(
+            holding: _historyHolding!,
+            livePrice: _historyLivePrice,
+            onBack: () => setState(() => _historyHolding = null),
+          ),
+        ),
+      );
+    }
 
     return ScreenBackground(
       child: Padding(
@@ -41,7 +72,14 @@ class StockPortfolioScreen extends ConsumerWidget {
             Row(
               children: [
                 GestureDetector(
-                  onTap: () => Navigator.of(context).maybePop(),
+                  onTap: () {
+                    final back = widget.onBack;
+                    if (back != null) {
+                      back();
+                    } else {
+                      Navigator.of(context).maybePop();
+                    }
+                  },
                   child: Container(
                     width: 34,
                     height: 34,
@@ -80,7 +118,10 @@ class StockPortfolioScreen extends ConsumerWidget {
                         style: AppTextStyles.muted(),
                       ),
                     )
-                  : _HoldingsList(holdings: holdings),
+                  : _HoldingsList(
+                      holdings: holdings,
+                      onOpenHistory: _openHistory,
+                    ),
             ),
             const SizedBox(height: 12),
             SizedBox(
@@ -111,8 +152,9 @@ class StockPortfolioScreen extends ConsumerWidget {
 }
 
 class _HoldingsList extends ConsumerWidget {
-  const _HoldingsList({required this.holdings});
+  const _HoldingsList({required this.holdings, required this.onOpenHistory});
   final List<WealthHolding> holdings;
+  final void Function(WealthHolding holding, double? livePrice) onOpenHistory;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -177,6 +219,7 @@ class _HoldingsList extends ConsumerWidget {
                   quoteFailed: h.assetType == 'stock_vn'
                       ? vnQuotesAsync.hasError
                       : intlQuotesAsync.hasError,
+                  onOpenHistory: onOpenHistory,
                 );
               },
             ),
@@ -439,10 +482,12 @@ class _HoldingTile extends ConsumerWidget {
     required this.holding,
     required this.quote,
     required this.quoteFailed,
+    required this.onOpenHistory,
   });
   final WealthHolding holding;
   final StockQuote? quote;
   final bool quoteFailed;
+  final void Function(WealthHolding holding, double? livePrice) onOpenHistory;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -471,11 +516,7 @@ class _HoldingTile extends ConsumerWidget {
           Expanded(
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
-              onTap: () => showWealthHoldingHistorySheet(
-                context,
-                holding: holding,
-                livePrice: currentPrice,
-              ),
+              onTap: () => onOpenHistory(holding, currentPrice),
               child: Row(
                 children: [
                   Expanded(
@@ -538,11 +579,7 @@ class _HoldingTile extends ConsumerWidget {
           const SizedBox(width: 8),
           WealthHoldingRowIconButton(
             icon: Icons.history_rounded,
-            onTap: () => showWealthHoldingHistorySheet(
-              context,
-              holding: holding,
-              livePrice: currentPrice,
-            ),
+            onTap: () => onOpenHistory(holding, currentPrice),
           ),
           const SizedBox(width: 6),
           WealthHoldingRowIconButton(

@@ -2,24 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
-import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_format.dart';
 import '../../crypto/data/crypto_currency.dart';
-import '../../crypto/presentation/crypto_portfolio_screen.dart';
 import '../../crypto/presentation/crypto_providers.dart';
-import 'foreign_currency_portfolio_screen.dart';
-import 'metal_portfolio_screen.dart';
-import 'real_estate_portfolio_screen.dart';
-import 'stock_portfolio_screen.dart';
 
 /// Tab "Tai san dau tu" trong man Vi (Phase C) - 4 the: Crypto/Co phieu/
-/// Kim loai quy/Nha dat, moi the mo 1 man Portfolio rieng. Thay the
-/// WealthInvestmentsTab cu (chi co Crypto+Co phieu, Crypto la link ngoai
-/// sang CryptoScreen thay vi Portfolio thuc).
+/// Kim loai quy/Nha dat, moi the mo 1 man Portfolio - hien INLINE ben trong
+/// WealthInvestmentScreen (state-machine 1 popup, xem cac callback
+/// onOpen*) thay vi tu mo openAppPopup rieng chong len.
 class WalletInvestmentAssetsTab extends ConsumerWidget {
-  const WalletInvestmentAssetsTab({super.key});
+  const WalletInvestmentAssetsTab({
+    super.key,
+    required this.onOpenCrypto,
+    required this.onOpenStock,
+    required this.onOpenMetal,
+    required this.onOpenRealEstate,
+    required this.onOpenCurrency,
+  });
+
+  final VoidCallback onOpenCrypto;
+  final VoidCallback onOpenStock;
+  final VoidCallback onOpenMetal;
+  final VoidCallback onOpenRealEstate;
+  final VoidCallback onOpenCurrency;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -220,7 +227,7 @@ class WalletInvestmentAssetsTab extends ConsumerWidget {
           changeColor: cryptoPercent == null
               ? null
               : (cryptoPercent >= 0 ? AppColors.teal : AppColors.pink),
-          onTap: () => openAppPopup(context, const CryptoPortfolioScreen()),
+          onTap: onOpenCrypto,
         ),
         const SizedBox(height: 10),
         _InvestmentTile(
@@ -235,7 +242,7 @@ class WalletInvestmentAssetsTab extends ConsumerWidget {
           changeColor: stockCostVnd == 0
               ? null
               : (stockPnlVnd >= 0 ? AppColors.teal : AppColors.pink),
-          onTap: () => openAppPopup(context, const StockPortfolioScreen()),
+          onTap: onOpenStock,
         ),
         const SizedBox(height: 10),
         _InvestmentTile(
@@ -250,7 +257,7 @@ class WalletInvestmentAssetsTab extends ConsumerWidget {
           changeColor: metalCostVnd == 0
               ? null
               : (metalPnlVnd >= 0 ? AppColors.teal : AppColors.pink),
-          onTap: () => openAppPopup(context, const MetalPortfolioScreen()),
+          onTap: onOpenMetal,
         ),
         const SizedBox(height: 10),
         _InvestmentTile(
@@ -258,7 +265,7 @@ class WalletInvestmentAssetsTab extends ConsumerWidget {
           color: AppColors.teal,
           title: ref.tr('wealth_investments_real_estate_title'),
           value: hidden ? null : display(realEstateValueVnd),
-          onTap: () => openAppPopup(context, const RealEstatePortfolioScreen()),
+          onTap: onOpenRealEstate,
         ),
         const SizedBox(height: 10),
         _InvestmentTile(
@@ -273,8 +280,7 @@ class WalletInvestmentAssetsTab extends ConsumerWidget {
           changeColor: currencyCostVnd == 0
               ? null
               : (currencyPnlVnd >= 0 ? AppColors.teal : AppColors.pink),
-          onTap: () =>
-              openAppPopup(context, const ForeignCurrencyPortfolioScreen()),
+          onTap: onOpenCurrency,
         ),
       ],
     );

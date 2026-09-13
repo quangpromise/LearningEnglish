@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
-import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/thousands_input_formatter.dart';
 import '../../crypto/data/okx_service.dart';
-import '../../crypto/presentation/crypto_coin_detail_screen.dart';
 import '../../crypto/presentation/crypto_providers.dart';
 
 /// Danh sach blue-chip VN (san HOSE) TIEU BIEU co dinh - gia lay tu chinh
@@ -305,15 +303,13 @@ class IntlStockRow extends ConsumerWidget {
     final watchKey = 'stock_okx:${stock.symbol}';
     final isFavorite = watchlist.contains(watchKey);
     return GestureDetector(
-      onTap: () => openAppPopup(
-        context,
-        CryptoCoinDetailScreen(
-          symbol: stock.okxSymbol,
-          name: stock.symbol,
-          fallbackPrice: stock.price,
-          fallbackChangePercent: stock.changePercent24h,
-        ),
-      ),
+      onTap: () =>
+          ref.read(marketCoinDetailProvider.notifier).state = CoinDetailArgs(
+            symbol: stock.okxSymbol,
+            name: stock.symbol,
+            fallbackPrice: stock.price,
+            fallbackChangePercent: stock.changePercent24h,
+          ),
       child: GlowBox(
         borderRadius: 16,
         child: Row(

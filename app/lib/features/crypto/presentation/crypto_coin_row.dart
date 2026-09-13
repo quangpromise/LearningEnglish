@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/navigation/app_popup.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/crypto_currency.dart';
 import '../data/crypto_repository.dart';
-import 'crypto_coin_detail_screen.dart';
 import 'crypto_providers.dart';
 
 /// 1 dong coin gon trong 2 dong chu - CA 4 chi so (Gia, 24h%, Von hoa,
@@ -25,16 +23,14 @@ class CryptoCoinRow extends ConsumerWidget {
     final watchlist = ref.watch(cryptoWatchlistProvider);
     final watched = watchlist.contains(coin.id);
     return GestureDetector(
-      onTap: () => openAppPopup(
-        context,
-        CryptoCoinDetailScreen(
-          symbol: coin.symbol,
-          name: coin.name,
-          imageUrl: coin.imageUrl,
-          fallbackPrice: coin.price,
-          fallbackChangePercent: coin.change24hPercent,
-        ),
-      ),
+      onTap: () =>
+          ref.read(marketCoinDetailProvider.notifier).state = CoinDetailArgs(
+            symbol: coin.symbol,
+            name: coin.name,
+            imageUrl: coin.imageUrl,
+            fallbackPrice: coin.price,
+            fallbackChangePercent: coin.change24hPercent,
+          ),
       child: GlowBox(
         borderRadius: 14,
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),

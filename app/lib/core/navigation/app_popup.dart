@@ -47,12 +47,18 @@ Future<T?> openAppPopup<T>(
 /// headpage" voi avatar), nen can 1 cach ro rang de dong lai thay vi chi
 /// dua vao vuot xuong.
 class PopupCloseButton extends StatelessWidget {
-  const PopupCloseButton({super.key});
+  const PopupCloseButton({super.key, this.onClose});
+
+  /// Ghi de hanh vi dong mac dinh (Navigator.maybePop) - dung khi man nay
+  /// duoc gop chung 1 popup voi man cha (xem VocabularyTopicsScreen va cac
+  /// man tuong tu) nen "dong" thuc chat la doi state noi bo ve buoc truoc,
+  /// khong phai pop 1 route that su. Null (mac dinh) = giu hanh vi cu.
+  final VoidCallback? onClose;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.of(context).maybePop(),
+      onTap: onClose ?? () => Navigator.of(context).maybePop(),
       child: Container(
         width: 34,
         height: 34,
@@ -74,9 +80,17 @@ class PopupCloseButton extends StatelessWidget {
 /// Header don gian (tieu de + nut dong) dung cho man popup thay cho
 /// AppTopBar - khong avatar, khong pill chuyen app.
 class PopupHeader extends StatelessWidget {
-  const PopupHeader({super.key, required this.title, this.trailing});
+  const PopupHeader({
+    super.key,
+    required this.title,
+    this.trailing,
+    this.onClose,
+  });
   final String title;
   final Widget? trailing;
+
+  /// Xem [PopupCloseButton.onClose].
+  final VoidCallback? onClose;
 
   @override
   Widget build(BuildContext context) {
@@ -84,7 +98,7 @@ class PopupHeader extends StatelessWidget {
       children: [
         Expanded(child: Text(title, style: AppTextStyles.heading(size: 18))),
         if (trailing != null) ...[trailing!, const SizedBox(width: 10)],
-        const PopupCloseButton(),
+        PopupCloseButton(onClose: onClose),
       ],
     );
   }

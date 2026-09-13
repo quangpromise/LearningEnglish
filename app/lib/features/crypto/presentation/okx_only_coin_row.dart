@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/navigation/app_popup.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/okx_service.dart';
-import 'crypto_coin_detail_screen.dart';
 import 'crypto_providers.dart';
 
 /// 1 dong coin tim thay tren OKX nhung KHONG nam trong top 100 von hoa cua
@@ -25,15 +23,13 @@ class OkxOnlyCoinRow extends ConsumerWidget {
     final watchKey = 'okx:${row.symbol}';
     final watched = watchlist.contains(watchKey);
     return GestureDetector(
-      onTap: () => openAppPopup(
-        context,
-        CryptoCoinDetailScreen(
-          symbol: row.symbol,
-          name: row.symbol,
-          fallbackPrice: row.price,
-          fallbackChangePercent: row.changePercent24h,
-        ),
-      ),
+      onTap: () =>
+          ref.read(marketCoinDetailProvider.notifier).state = CoinDetailArgs(
+            symbol: row.symbol,
+            name: row.symbol,
+            fallbackPrice: row.price,
+            fallbackChangePercent: row.changePercent24h,
+          ),
       child: GlowBox(
         borderRadius: 14,
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),

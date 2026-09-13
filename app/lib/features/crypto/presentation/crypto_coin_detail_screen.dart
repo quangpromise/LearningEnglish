@@ -58,6 +58,7 @@ class CryptoCoinDetailScreen extends ConsumerStatefulWidget {
     this.imageUrl,
     this.fallbackPrice,
     this.fallbackChangePercent,
+    this.onBack,
   });
 
   final String symbol;
@@ -65,6 +66,12 @@ class CryptoCoinDetailScreen extends ConsumerStatefulWidget {
   final String? imageUrl;
   final double? fallbackPrice;
   final double? fallbackChangePercent;
+
+  /// Man nay duoc mo tu RAT NHIEU noi khac nhau (Market, Watchlist, Vi > Tai
+  /// san dau tu...) - xem [PopupCloseButton.onClose]. Null = fallback ve
+  /// Navigator.maybePop nhu cu (khi con duoc mo qua openAppPopup rieng, vd
+  /// tu crypto_portfolio_tab.dart).
+  final VoidCallback? onBack;
 
   @override
   ConsumerState<CryptoCoinDetailScreen> createState() =>
@@ -306,7 +313,7 @@ class _CryptoCoinDetailScreenState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              PopupHeader(title: widget.name),
+              PopupHeader(title: widget.name, onClose: widget.onBack),
               const SizedBox(height: 4),
               Text(widget.symbol, style: AppTextStyles.muted(size: 12.5)),
               const SizedBox(height: 14),

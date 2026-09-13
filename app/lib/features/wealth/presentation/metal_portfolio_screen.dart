@@ -18,7 +18,9 @@ import 'wealth_holding_history_sheet.dart';
 /// lan. Gia hien tai lay tu wealth-vn-assets (Vang SJC/PNJ trong nuoc, Bac/
 /// Dong la GIA THE GIOI quy doi - ghi chu ro trong UI).
 class MetalPortfolioScreen extends ConsumerStatefulWidget {
-  const MetalPortfolioScreen({super.key});
+  const MetalPortfolioScreen({super.key, this.onBack});
+
+  final VoidCallback? onBack;
 
   @override
   ConsumerState<MetalPortfolioScreen> createState() =>
@@ -43,9 +45,18 @@ const _kinds = [
 
 class _MetalPortfolioScreenState extends ConsumerState<MetalPortfolioScreen> {
   _MetalKind _selected = _kinds[0];
+  WealthHolding? _historyHolding;
+  double? _historyLivePrice;
 
   double? _currentUnitPrice(WealthVnAssetSnapshot snap) =>
       snap.goldSjcSell ?? snap.goldPnjSell;
+
+  void _openHistory(WealthHolding holding, double? livePrice) {
+    setState(() {
+      _historyHolding = holding;
+      _historyLivePrice = livePrice;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,6 +68,19 @@ class _MetalPortfolioScreenState extends ConsumerState<MetalPortfolioScreen> {
         ? null
         : _currentUnitPrice(snapAsync.valueOrNull!);
 
+    if (_historyHolding != null) {
+      return ScreenBackground(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+          child: WealthHoldingHistoryView(
+            holding: _historyHolding!,
+            livePrice: _historyLivePrice,
+            onBack: () => setState(() => _historyHolding = null),
+          ),
+        ),
+      );
+    }
+
     return ScreenBackground(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
@@ -66,7 +90,14 @@ class _MetalPortfolioScreenState extends ConsumerState<MetalPortfolioScreen> {
             Row(
               children: [
                 GestureDetector(
-                  onTap: () => Navigator.of(context).maybePop(),
+                  onTap: () {
+                    final back = widget.onBack;
+                    if (back != null) {
+                      back();
+                    } else {
+                      Navigator.of(context).maybePop();
+                    }
+                  },
                   child: Container(
                     width: 34,
                     height: 34,
@@ -148,6 +179,7 @@ class _MetalPortfolioScreenState extends ConsumerState<MetalPortfolioScreen> {
                       holding: holdings[i],
                       unit: ref.tr(_selected.unitKey),
                       unitPrice: unitPrice,
+                      onOpenHistory: _openHistory,
                     ),
                   );
                 },
@@ -227,10 +259,12 @@ class _LotTile extends ConsumerWidget {
     required this.holding,
     required this.unit,
     required this.unitPrice,
+    required this.onOpenHistory,
   });
   final WealthHolding holding;
   final String unit;
   final double? unitPrice;
+  final void Function(WealthHolding holding, double? livePrice) onOpenHistory;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -271,11 +305,7 @@ class _LotTile extends ConsumerWidget {
             Expanded(
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
-                onTap: () => showWealthHoldingHistorySheet(
-                  context,
-                  holding: holding,
-                  livePrice: unitPrice,
-                ),
+                onTap: () => onOpenHistory(holding, unitPrice),
                 child: Row(
                   children: [
                     Expanded(
@@ -322,11 +352,7 @@ class _LotTile extends ConsumerWidget {
             const SizedBox(width: 8),
             WealthHoldingRowIconButton(
               icon: Icons.history_rounded,
-              onTap: () => showWealthHoldingHistorySheet(
-                context,
-                holding: holding,
-                livePrice: unitPrice,
-              ),
+              onTap: () => onOpenHistory(holding, unitPrice),
             ),
             const SizedBox(width: 6),
             WealthHoldingRowIconButton(

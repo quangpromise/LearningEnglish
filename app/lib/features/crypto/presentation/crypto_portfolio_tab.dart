@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
-import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/date_format.dart';
@@ -12,11 +11,16 @@ import '../data/crypto_repository.dart';
 import '../data/crypto_transaction_repository.dart';
 import '../../wealth/presentation/confirm_delete.dart';
 import '../../wealth/presentation/wealth_holding_history_sheet.dart';
-import 'crypto_coin_detail_screen.dart';
 import 'crypto_providers.dart';
 
+/// [onOpenHistory] duoc goi khi bam icon lich su (coinId == null la xem tat
+/// ca, khac null la loc theo 1 coin) - man cha (CryptoPortfolioScreen) hien
+/// lich su INLINE thay vi mo them 1 showModalBottomSheet moi chong len popup
+/// dang mo, tranh loi "pop-up long pop-up".
 class CryptoPortfolioTab extends ConsumerWidget {
-  const CryptoPortfolioTab({super.key});
+  const CryptoPortfolioTab({super.key, required this.onOpenHistory});
+
+  final void Function(String? coinId) onOpenHistory;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -101,7 +105,7 @@ class CryptoPortfolioTab extends ConsumerWidget {
                   ),
                 ),
                 GestureDetector(
-                  onTap: () => _openCryptoHistory(context),
+                  onTap: () => onOpenHistory(null),
                   child: Container(
                     width: 34,
                     height: 34,
@@ -137,6 +141,7 @@ class CryptoPortfolioTab extends ConsumerWidget {
                       holding: holdings[i],
                       coin: byId[holdings[i].coinId],
                       currency: currency,
+                      onOpenHistory: onOpenHistory,
                     ),
                   ),
           ),
@@ -152,25 +157,18 @@ class CryptoPortfolioTab extends ConsumerWidget {
   }
 }
 
-void _openCryptoHistory(BuildContext context, {String? coinId}) {
-  showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    builder: (_) => _HistorySheet(coinId: coinId),
-  );
-}
-
 class _HoldingTile extends ConsumerWidget {
   const _HoldingTile({
     required this.holding,
     required this.coin,
     required this.currency,
+    required this.onOpenHistory,
   });
 
   final CryptoHolding holding;
   final CryptoCoin? coin;
   final CryptoCurrency currency;
+  final void Function(String? coinId) onOpenHistory;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -203,16 +201,14 @@ class _HoldingTile extends ConsumerWidget {
             Expanded(
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
-                onTap: () => openAppPopup(
-                  context,
-                  CryptoCoinDetailScreen(
-                    symbol: holding.symbol,
-                    name: holding.name,
-                    imageUrl: holding.imageUrl,
-                    fallbackPrice: coin?.price,
-                    fallbackChangePercent: coin?.change24hPercent,
-                  ),
-                ),
+                onTap: () => ref.read(marketCoinDetailProvider.notifier).state =
+                    CoinDetailArgs(
+                      symbol: holding.symbol,
+                      name: holding.name,
+                      imageUrl: holding.imageUrl,
+                      fallbackPrice: coin?.price,
+                      fallbackChangePercent: coin?.change24hPercent,
+                    ),
                 child: Row(
                   children: [
                     ClipOval(
@@ -278,7 +274,7 @@ class _HoldingTile extends ConsumerWidget {
             const SizedBox(width: 6),
             WealthHoldingRowIconButton(
               icon: Icons.history_rounded,
-              onTap: () => _openCryptoHistory(context, coinId: holding.coinId),
+              onTap: () => onOpenHistory(holding.coinId),
             ),
             const SizedBox(width: 6),
             WealthHoldingRowIconButton(
@@ -396,9 +392,13 @@ class _BuySellResult {
   final double quantity;
 }
 
-class _HistorySheet extends ConsumerWidget {
-  const _HistorySheet({this.coinId});
+/// Man lich su giao dich crypto - hien INLINE ben trong CryptoPortfolioScreen
+/// (khong con la showModalBottomSheet rieng) de tranh chong 2 popup, swipe
+/// xuong/tap ngoai tat ca deu dong het ve Home dung 1 lan.
+class CryptoHistoryView extends ConsumerWidget {
+  const CryptoHistoryView({super.key, this.coinId, required this.onBack});
   final String? coinId;
+  final VoidCallback onBack;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -408,65 +408,54 @@ class _HistorySheet extends ConsumerWidget {
         : historyAsync.whenData(
             (list) => list.where((t) => t.coinId == coinId).toList(),
           );
-    return FractionallySizedBox(
-      heightFactor: 0.75,
-      child: ClipRRect(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        child: ScreenBackground(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        ref.tr('crypto_history_title'),
-                        style: AppTextStyles.heading(size: 18),
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () => Navigator.of(context).maybePop(),
-                      child: Container(
-                        width: 34,
-                        height: 34,
-                        decoration: BoxDecoration(
-                          color: AppColors.glassFill,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: AppColors.glassBorder),
-                        ),
-                        child: const Icon(
-                          Icons.close_rounded,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                    ),
-                  ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            GestureDetector(
+              onTap: onBack,
+              child: Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: AppColors.glassFill,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.glassBorder),
                 ),
-                const SizedBox(height: 16),
-                Expanded(
-                  child: switch (filteredAsync) {
-                    AsyncData(:final value) when value.isEmpty => Center(
-                      child: Text(
-                        ref.tr('crypto_history_empty'),
-                        style: AppTextStyles.muted(),
-                      ),
-                    ),
-                    AsyncData(:final value) => ListView.separated(
-                      itemCount: value.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 10),
-                      itemBuilder: (context, i) =>
-                          _HistoryRow(transaction: value[i]),
-                    ),
-                    _ => const Center(child: CircularProgressIndicator()),
-                  },
+                child: const Icon(
+                  Icons.chevron_left_rounded,
+                  color: AppColors.textPrimary,
                 ),
-              ],
+              ),
             ),
-          ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                ref.tr('crypto_history_title'),
+                style: AppTextStyles.heading(size: 18),
+              ),
+            ),
+          ],
         ),
-      ),
+        const SizedBox(height: 16),
+        Expanded(
+          child: switch (filteredAsync) {
+            AsyncData(:final value) when value.isEmpty => Center(
+              child: Text(
+                ref.tr('crypto_history_empty'),
+                style: AppTextStyles.muted(),
+              ),
+            ),
+            AsyncData(:final value) => ListView.separated(
+              itemCount: value.length,
+              separatorBuilder: (_, _) => const SizedBox(height: 10),
+              itemBuilder: (context, i) => _HistoryRow(transaction: value[i]),
+            ),
+            _ => const Center(child: CircularProgressIndicator()),
+          },
+        ),
+      ],
     );
   }
 }

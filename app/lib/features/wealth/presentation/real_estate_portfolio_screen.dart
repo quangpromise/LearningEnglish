@@ -17,12 +17,36 @@ const _kAssetType = 'real_estate';
 /// cu the nen nguoi dung TU NHAP gia tri uoc tinh (`manualValue`), co the
 /// sua lai bat ky luc nao. Moi bat dong san la 1 dong doc lap (khong co
 /// symbol/quantity nhu cac loai tai san khac).
-class RealEstatePortfolioScreen extends ConsumerWidget {
-  const RealEstatePortfolioScreen({super.key});
+class RealEstatePortfolioScreen extends ConsumerStatefulWidget {
+  const RealEstatePortfolioScreen({super.key, this.onBack});
+
+  final VoidCallback? onBack;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<RealEstatePortfolioScreen> createState() =>
+      _RealEstatePortfolioScreenState();
+}
+
+class _RealEstatePortfolioScreenState
+    extends ConsumerState<RealEstatePortfolioScreen> {
+  WealthHolding? _historyHolding;
+
+  @override
+  Widget build(BuildContext context) {
     final holdingsAsync = ref.watch(wealthHoldingsProvider(_kAssetType));
+
+    if (_historyHolding != null) {
+      return ScreenBackground(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+          child: WealthHoldingHistoryView(
+            holding: _historyHolding!,
+            onBack: () => setState(() => _historyHolding = null),
+          ),
+        ),
+      );
+    }
+
     return ScreenBackground(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
@@ -32,7 +56,14 @@ class RealEstatePortfolioScreen extends ConsumerWidget {
             Row(
               children: [
                 GestureDetector(
-                  onTap: () => Navigator.of(context).maybePop(),
+                  onTap: () {
+                    final back = widget.onBack;
+                    if (back != null) {
+                      back();
+                    } else {
+                      Navigator.of(context).maybePop();
+                    }
+                  },
                   child: Container(
                     width: 34,
                     height: 34,
@@ -87,8 +118,10 @@ class RealEstatePortfolioScreen extends ConsumerWidget {
                   return ListView.separated(
                     itemCount: holdings.length,
                     separatorBuilder: (_, _) => const SizedBox(height: 10),
-                    itemBuilder: (context, i) =>
-                        _PropertyTile(holding: holdings[i]),
+                    itemBuilder: (context, i) => _PropertyTile(
+                      holding: holdings[i],
+                      onOpenHistory: (h) => setState(() => _historyHolding = h),
+                    ),
                   );
                 },
               ),
@@ -125,8 +158,9 @@ class RealEstatePortfolioScreen extends ConsumerWidget {
 }
 
 class _PropertyTile extends ConsumerWidget {
-  const _PropertyTile({required this.holding});
+  const _PropertyTile({required this.holding, required this.onOpenHistory});
   final WealthHolding holding;
+  final void Function(WealthHolding holding) onOpenHistory;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -172,8 +206,7 @@ class _PropertyTile extends ConsumerWidget {
             Expanded(
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
-                onTap: () =>
-                    showWealthHoldingHistorySheet(context, holding: holding),
+                onTap: () => onOpenHistory(holding),
                 child: Row(
                   children: [
                     Expanded(
@@ -221,8 +254,7 @@ class _PropertyTile extends ConsumerWidget {
             const SizedBox(width: 8),
             WealthHoldingRowIconButton(
               icon: Icons.history_rounded,
-              onTap: () =>
-                  showWealthHoldingHistorySheet(context, holding: holding),
+              onTap: () => onOpenHistory(holding),
             ),
             const SizedBox(width: 6),
             WealthHoldingRowIconButton(

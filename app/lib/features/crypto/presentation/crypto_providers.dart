@@ -13,6 +13,43 @@ final cryptoCurrencyProvider = StateProvider<CryptoCurrency>(
   (ref) => CryptoCurrency.usd,
 );
 
+/// Tham so de mo CryptoCoinDetailScreen - tach rieng khoi widget de nhieu
+/// noi (CryptoCoinRow, OkxOnlyCoinRow, danh sach co phieu quoc te...) co
+/// the cung tro toi 1 diem hien thi chung (xem [marketCoinDetailProvider])
+/// ma khong can truyen callback qua nhieu tang widget trung gian.
+class CoinDetailArgs {
+  const CoinDetailArgs({
+    required this.symbol,
+    required this.name,
+    this.imageUrl,
+    this.fallbackPrice,
+    this.fallbackChangePercent,
+  });
+  final String symbol;
+  final String name;
+  final String? imageUrl;
+  final double? fallbackPrice;
+  final double? fallbackChangePercent;
+}
+
+/// Coin/co phieu dang duoc xem chart chi tiet trong MAN Market (xem
+/// market_screen.dart) - null = dang hien danh sach binh thuong. Cac dong
+/// coin (CryptoCoinRow, OkxOnlyCoinRow...) xuat hien o RAT NHIEU tab con
+/// khac nhau trong cung 1 MarketScreen (Market theo loai tai san LAN ca 4
+/// muc Watchlist) nen dung 1 provider dung chung thay vi truyen callback
+/// qua tung tang, giup MarketScreen la NOI DUY NHAT quyet dinh hien chart
+/// hay danh sach - tranh mo THEM 1 popup moi (xem VocabularyTopicsScreen
+/// de biet ly do chung, tuy o day dung provider thay vi callback vi so
+/// luong noi goi qua nhieu/qua sau de truyen tay).
+///
+/// BAT BUOC autoDispose: neu khong, gia tri se TON TAI VINH VIEN sau khi
+/// dong ca MarketScreen (vd vuot xuong dong luon popup trong luc dang xem
+/// 1 coin) - lan mo Market TIEP THEO se lap tuc nhay thang vao chart coin
+/// CU thay vi hien danh sach, vi StateProvider thuong khong tu reset state.
+final marketCoinDetailProvider = StateProvider.autoDispose<CoinDetailArgs?>(
+  (ref) => null,
+);
+
 final cryptoTop100Provider = FutureProvider.autoDispose
     .family<List<CryptoCoin>, CryptoCurrency>(
       (ref, currency) => CryptoRepository.fetchTop100(currency: currency),

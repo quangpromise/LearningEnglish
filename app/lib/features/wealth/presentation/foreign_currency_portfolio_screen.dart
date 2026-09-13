@@ -22,7 +22,9 @@ const _kAssetType = 'foreign_currency';
 /// ngoai te cua ban -> so tien VND ban thuc nhan duoc), khong dung "Ban ra"
 /// (gia ban NGOAI TE cho ban, khong lien quan khi dang GIU ngoai te).
 class ForeignCurrencyPortfolioScreen extends ConsumerStatefulWidget {
-  const ForeignCurrencyPortfolioScreen({super.key});
+  const ForeignCurrencyPortfolioScreen({super.key, this.onBack});
+
+  final VoidCallback? onBack;
 
   @override
   ConsumerState<ForeignCurrencyPortfolioScreen> createState() =>
@@ -32,10 +34,33 @@ class ForeignCurrencyPortfolioScreen extends ConsumerStatefulWidget {
 class _ForeignCurrencyPortfolioScreenState
     extends ConsumerState<ForeignCurrencyPortfolioScreen> {
   String? _selectedCode;
+  WealthHolding? _historyHolding;
+  double? _historyLivePrice;
+
+  void _openHistory(WealthHolding holding, double? livePrice) {
+    setState(() {
+      _historyHolding = holding;
+      _historyLivePrice = livePrice;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final holdingsAsync = ref.watch(wealthHoldingsProvider(_kAssetType));
+
+    if (_historyHolding != null) {
+      return ScreenBackground(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+          child: WealthHoldingHistoryView(
+            holding: _historyHolding!,
+            livePrice: _historyLivePrice,
+            onBack: () => setState(() => _historyHolding = null),
+          ),
+        ),
+      );
+    }
+
     final snap = ref.watch(wealthVnAssetsProvider).valueOrNull;
     final holdings = holdingsAsync.valueOrNull ?? [];
     final codes = <String>[];
@@ -61,7 +86,14 @@ class _ForeignCurrencyPortfolioScreenState
             Row(
               children: [
                 GestureDetector(
-                  onTap: () => Navigator.of(context).maybePop(),
+                  onTap: () {
+                    final back = widget.onBack;
+                    if (back != null) {
+                      back();
+                    } else {
+                      Navigator.of(context).maybePop();
+                    }
+                  },
                   child: Container(
                     width: 34,
                     height: 34,
@@ -145,6 +177,7 @@ class _ForeignCurrencyPortfolioScreenState
                       unitPrice: snap
                           ?.rateFor(filtered[i].symbol ?? '')
                           ?.buyTransfer,
+                      onOpenHistory: _openHistory,
                     ),
                   );
                 },
@@ -290,9 +323,14 @@ class _KindChip extends StatelessWidget {
 }
 
 class _LotTile extends ConsumerWidget {
-  const _LotTile({required this.holding, required this.unitPrice});
+  const _LotTile({
+    required this.holding,
+    required this.unitPrice,
+    required this.onOpenHistory,
+  });
   final WealthHolding holding;
   final double? unitPrice;
+  final void Function(WealthHolding holding, double? livePrice) onOpenHistory;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -333,11 +371,7 @@ class _LotTile extends ConsumerWidget {
             Expanded(
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
-                onTap: () => showWealthHoldingHistorySheet(
-                  context,
-                  holding: holding,
-                  livePrice: unitPrice,
-                ),
+                onTap: () => onOpenHistory(holding, unitPrice),
                 child: Row(
                   children: [
                     Expanded(
@@ -384,11 +418,7 @@ class _LotTile extends ConsumerWidget {
             const SizedBox(width: 8),
             WealthHoldingRowIconButton(
               icon: Icons.history_rounded,
-              onTap: () => showWealthHoldingHistorySheet(
-                context,
-                holding: holding,
-                livePrice: unitPrice,
-              ),
+              onTap: () => onOpenHistory(holding, unitPrice),
             ),
             const SizedBox(width: 6),
             WealthHoldingRowIconButton(
