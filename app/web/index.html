@@ -25,12 +25,49 @@
     full_page_embedding_strategy.dart _applyViewportMeta trong SDK) - cac
     lan truoc doi interactive-widget o day deu KHONG co tac dung gi.
 
-    KHONG them script "va" ban phim o day nua khi chua co so lieu do tren
-    dien thoai that: da thu 5 kieu (blur/scroll/rung flt-glass-pane/phat
-    resize tren window/phat resize tren visualViewport), kieu nao cung gay
-    loi moi, ban cuoi con lam man hinh hong khong phuc hoi duoc sau khi mo
-    lai web.
+    Nguyen nhan THAT cua bug "mo ban phim o Dich/Writing > Doan van thi man
+    hinh ket, nen trang, khong keo duoc" (xac dinh qua anh chup tu iPhone):
+    tren iOS moi trinh duyet deu la WebKit, ma WebKit TU PHONG TO trang khi
+    focus 1 o nhap co co chu < 16px va KHONG tu thu nho lai sau khi dong ban
+    phim. Engine Flutter chep nguyen co chu cua TextField vao o <input> an
+    (Dich 14px, Doan van 14.5px -> bi phong to; Writing > Tu vung 16px ->
+    khong bi), con meta viewport cua engine lai cho phep phong to toi 5x va
+    khoa thao tac cham (touch-action: none) nen khong keo/thu nho lai duoc.
+
+    Sua: tren iOS, doi meta viewport ma engine vua chen thanh
+    maximum-scale=1.0 - chan WebKit tu phong to khi focus o nhap (iOS 10+
+    van cho nguoi dung chum 2 ngon phong to neu can, nen khong vi pham
+    kha nang tiep can). Chi dong vao dung thuoc tinh content cua the meta,
+    khong dong focus/scroll/style DOM nao khac.
   -->
+  <script>
+    (function () {
+      var ua = navigator.userAgent;
+      var isIOS =
+        /iPad|iPhone|iPod/.test(ua) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      if (!isIOS) return;
+      var CONTENT = 'width=device-width, initial-scale=1.0, maximum-scale=1.0';
+      function patchAll() {
+        var metas = document.head.querySelectorAll('meta[name="viewport"]');
+        for (var i = 0; i < metas.length; i++) {
+          if (metas[i].getAttribute('content') !== CONTENT) {
+            metas[i].setAttribute('content', CONTENT);
+          }
+        }
+      }
+      // Engine xoa the viewport cu va chen the moi cua no luc khoi dong
+      // (full_page_embedding_strategy.dart _applyViewportMeta) - theo doi
+      // de sua lai ngay khi no chen.
+      new MutationObserver(patchAll).observe(document.head, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['content'],
+      });
+      patchAll();
+    })();
+  </script>
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
