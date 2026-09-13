@@ -12,11 +12,31 @@ import 'toeic_history_screen.dart';
 /// Man vao cua tinh nang TOEIC - chon 1 de trong [kToeicTests] (hien chi co
 /// 1 de, nhung list nay da chuan bi san cho nhieu de sau nay khong can doi
 /// code) roi chon che do Luyen tap/Thi thu.
-class ToeicHomeScreen extends ConsumerWidget {
+///
+/// CHI gop rieng man Lich su (ToeicHistoryScreen, khong co gi can bao ve)
+/// vao CUNG 1 popup - man Thi (ToeicExamScreen, ca 2 che do Luyen tap/Thi
+/// thu) CO Y giu nguyen la 1 openAppPopup RIENG voi dismissible: false cho
+/// che do "exam" (tranh vuot tay lam mat bai dang lam do, xem doc comment
+/// cua openAppPopup trong app_popup.dart) - neu gop chung vao 1 State se
+/// lam popup ngoai cung tro thanh vuot-tat-duoc tro lai, xoa mat lop bao ve
+/// nay.
+class ToeicHomeScreen extends ConsumerStatefulWidget {
   const ToeicHomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ToeicHomeScreen> createState() => _ToeicHomeScreenState();
+}
+
+class _ToeicHomeScreenState extends ConsumerState<ToeicHomeScreen> {
+  bool _showHistory = false;
+
+  @override
+  Widget build(BuildContext context) {
+    if (_showHistory) {
+      return ToeicHistoryScreen(
+        onBack: () => setState(() => _showHistory = false),
+      );
+    }
     return ScreenBackground(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
@@ -45,7 +65,7 @@ class ToeicHomeScreen extends ConsumerWidget {
                 size: 16,
                 color: AppColors.wealthAccent,
               ),
-              onTap: () => openAppPopup(context, const ToeicHistoryScreen()),
+              onTap: () => setState(() => _showHistory = true),
             ),
           ],
         ),

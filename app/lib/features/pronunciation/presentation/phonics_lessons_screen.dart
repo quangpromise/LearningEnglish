@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_language.dart';
 import '../../../core/i18n/app_strings.dart';
-import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/phonics_data.dart';
@@ -16,12 +15,34 @@ String phonicsLessonLabel(WidgetRef ref, PhonicsLesson lesson) =>
 
 /// Danh sach 12 bai hoc phat am co cau truc (am vi -> trong am -> ngu dieu
 /// -> noi am) - xem docs/research-pronunciation-lessons.md. Vao tu man Menu,
-/// canh Doc sach/Do vui.
-class PhonicsLessonsScreen extends ConsumerWidget {
+/// canh Doc sach/Do vui. Dong thoi la khung duy nhat cho ca luong (danh
+/// sach -> chi tiet 1 bai, ke ca chuyen bai truoc/sau), KHONG mo them popup
+/// - xem giai thich chi tiet trong VocabularyTopicsScreen (cung nguyen tac).
+class PhonicsLessonsScreen extends StatefulWidget {
   const PhonicsLessonsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  State<PhonicsLessonsScreen> createState() => _PhonicsLessonsScreenState();
+}
+
+class _PhonicsLessonsScreenState extends State<PhonicsLessonsScreen> {
+  int? _activeIndex;
+
+  @override
+  Widget build(BuildContext context) {
+    final index = _activeIndex;
+    if (index != null) {
+      return PhonicsLessonDetailScreen(
+        lesson: kPhonicsLessons[index],
+        index: index,
+        onBack: () => setState(() => _activeIndex = null),
+        onGoTo: (newIndex) => setState(() => _activeIndex = newIndex),
+      );
+    }
+    return Consumer(builder: (context, ref, _) => _buildList(context, ref));
+  }
+
+  Widget _buildList(BuildContext context, WidgetRef ref) {
     return ScreenBackground(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
@@ -72,10 +93,7 @@ class PhonicsLessonsScreen extends ConsumerWidget {
                 itemBuilder: (context, i) {
                   final lesson = kPhonicsLessons[i];
                   return GestureDetector(
-                    onTap: () => openAppPopup(
-                      context,
-                      PhonicsLessonDetailScreen(lesson: lesson, index: i),
-                    ),
+                    onTap: () => setState(() => _activeIndex = i),
                     child: GlowBox(
                       borderRadius: 18,
                       padding: const EdgeInsets.symmetric(

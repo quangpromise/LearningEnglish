@@ -12,11 +12,28 @@ import 'ielts_history_screen.dart';
 /// Man vao cua tinh nang IELTS - mirror toeic_home_screen.dart. Phase 1 chi
 /// co Reading + Listening (Writing/Speaking se dung Gemini AI cham diem, lam
 /// o phase sau).
-class IeltsHomeScreen extends ConsumerWidget {
+///
+/// CHI gop rieng man Lich su vao CUNG 1 popup - man Thi (IeltsExamScreen)
+/// CO Y giu nguyen la 1 openAppPopup RIENG voi dismissible: false cho che
+/// do "exam" - xem giai thich chi tiet trong ToeicHomeScreen (mirror y
+/// het).
+class IeltsHomeScreen extends ConsumerStatefulWidget {
   const IeltsHomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<IeltsHomeScreen> createState() => _IeltsHomeScreenState();
+}
+
+class _IeltsHomeScreenState extends ConsumerState<IeltsHomeScreen> {
+  bool _showHistory = false;
+
+  @override
+  Widget build(BuildContext context) {
+    if (_showHistory) {
+      return IeltsHistoryScreen(
+        onBack: () => setState(() => _showHistory = false),
+      );
+    }
     return ScreenBackground(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
@@ -45,7 +62,7 @@ class IeltsHomeScreen extends ConsumerWidget {
                 size: 16,
                 color: AppColors.wealthAccent,
               ),
-              onTap: () => openAppPopup(context, const IeltsHistoryScreen()),
+              onTap: () => setState(() => _showHistory = true),
             ),
           ],
         ),

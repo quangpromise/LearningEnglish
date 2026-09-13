@@ -14,10 +14,20 @@ class PhonicsLessonDetailScreen extends ConsumerWidget {
     super.key,
     required this.lesson,
     required this.index,
+    required this.onBack,
+    required this.onGoTo,
   });
 
   final PhonicsLesson lesson;
   final int index;
+
+  /// Quay ve danh sach bai hoc - doi noi dung NGAY TRONG CUNG 1 popup (xem
+  /// PhonicsLessonsScreen), khong dung Navigator.
+  final VoidCallback onBack;
+
+  /// Chuyen sang bai hoc [newIndex] (nut mui ten truoc/sau) - cung nguyen
+  /// tac voi [onBack].
+  final void Function(int newIndex) onGoTo;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -30,7 +40,7 @@ class PhonicsLessonDetailScreen extends ConsumerWidget {
             Row(
               children: [
                 GestureDetector(
-                  onTap: () => Navigator.of(context).maybePop(),
+                  onTap: onBack,
                   child: Container(
                     width: 34,
                     height: 34,
@@ -95,7 +105,7 @@ class PhonicsLessonDetailScreen extends ConsumerWidget {
               children: [
                 _NavButton(
                   icon: Icons.chevron_left_rounded,
-                  onTap: index > 0 ? () => _goTo(context, index - 1) : null,
+                  onTap: index > 0 ? () => onGoTo(index - 1) : null,
                 ),
                 Text(
                   '${index + 1} / ${kPhonicsLessons.length}',
@@ -104,23 +114,12 @@ class PhonicsLessonDetailScreen extends ConsumerWidget {
                 _NavButton(
                   icon: Icons.chevron_right_rounded,
                   onTap: index < kPhonicsLessons.length - 1
-                      ? () => _goTo(context, index + 1)
+                      ? () => onGoTo(index + 1)
                       : null,
                 ),
               ],
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  void _goTo(BuildContext context, int newIndex) {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (_) => PhonicsLessonDetailScreen(
-          lesson: kPhonicsLessons[newIndex],
-          index: newIndex,
         ),
       ),
     );

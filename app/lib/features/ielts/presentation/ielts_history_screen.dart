@@ -9,7 +9,13 @@ import '../data/ielts_attempt_repository.dart';
 
 /// Danh sach cac lan lam bai IELTS truoc do - mirror toeic_history_screen.dart.
 class IeltsHistoryScreen extends ConsumerWidget {
-  const IeltsHistoryScreen({super.key});
+  const IeltsHistoryScreen({super.key, this.onBack});
+
+  /// Man nay duoc dung o 2 cho: gop vao CUNG 1 popup voi IeltsHomeScreen
+  /// (truyen onBack de doi state noi bo, khong dung Navigator) VA mo rieng
+  /// qua openAppPopup tu IeltsResultScreen (khong truyen gi - fallback ve
+  /// Navigator.maybePop nhu cu, vi luc do day THAT SU la 1 route rieng).
+  final VoidCallback? onBack;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -23,7 +29,14 @@ class IeltsHistoryScreen extends ConsumerWidget {
             Row(
               children: [
                 GestureDetector(
-                  onTap: () => Navigator.of(context).maybePop(),
+                  onTap: () {
+                    final back = onBack;
+                    if (back != null) {
+                      back();
+                    } else {
+                      Navigator.of(context).maybePop();
+                    }
+                  },
                   child: Container(
                     width: 34,
                     height: 34,

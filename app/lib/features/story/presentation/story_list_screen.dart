@@ -2,19 +2,38 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
-import '../../../core/navigation/app_popup.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/story_data.dart';
 import 'story_screen.dart';
 
 /// Danh sach Luyen nghe, nhom theo [StoryCategory] (Truyen ngan/Hoi thoai/
 /// TOEIC/IELTS/...) - thay the cach cu mo thang `kStories.first` tu Home,
-/// vi gio co nhieu hon 1 story chia theo nhieu chu de.
-class StoryListScreen extends ConsumerWidget {
+/// vi gio co nhieu hon 1 story chia theo nhieu chu de. Dong thoi la khung
+/// duy nhat cho ca luong (danh sach -> doc 1 truyen), KHONG mo them popup -
+/// xem giai thich chi tiet trong VocabularyTopicsScreen (cung nguyen tac).
+class StoryListScreen extends StatefulWidget {
   const StoryListScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  State<StoryListScreen> createState() => _StoryListScreenState();
+}
+
+class _StoryListScreenState extends State<StoryListScreen> {
+  Story? _activeStory;
+
+  @override
+  Widget build(BuildContext context) {
+    final story = _activeStory;
+    if (story != null) {
+      return StoryScreen(
+        story: story,
+        onBack: () => setState(() => _activeStory = null),
+      );
+    }
+    return Consumer(builder: (context, ref, _) => _buildList(context, ref));
+  }
+
+  Widget _buildList(BuildContext context, WidgetRef ref) {
     final byCategory = <StoryCategory, List<Story>>{};
     for (final s in kStories) {
       byCategory.putIfAbsent(s.category, () => []).add(s);
@@ -63,7 +82,10 @@ class StoryListScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 8),
                       for (final story in byCategory[category]!) ...[
-                        _StoryTile(story: story),
+                        _StoryTile(
+                          story: story,
+                          onTap: () => setState(() => _activeStory = story),
+                        ),
                         const SizedBox(height: 10),
                       ],
                       const SizedBox(height: 8),
@@ -79,13 +101,14 @@ class StoryListScreen extends ConsumerWidget {
 }
 
 class _StoryTile extends StatelessWidget {
-  const _StoryTile({required this.story});
+  const _StoryTile({required this.story, required this.onTap});
   final Story story;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => openAppPopup(context, StoryScreen(story: story)),
+      onTap: onTap,
       child: GlowBox(
         borderRadius: 16,
         child: Row(

@@ -23,8 +23,12 @@ import 'story_illustration.dart';
 /// docs/architecture-multimedia-platform.md §A.4, §C.6, §D Phase 1) + phụ
 /// đề song ngữ + từ vựng + shadowing lồng ngay trong bài.
 class StoryScreen extends ConsumerStatefulWidget {
-  const StoryScreen({super.key, required this.story});
+  const StoryScreen({super.key, required this.story, required this.onBack});
   final Story story;
+
+  /// Quay ve danh sach truyen - doi noi dung NGAY TRONG CUNG 1 popup (xem
+  /// StoryListScreen), khong dung Navigator.
+  final VoidCallback onBack;
 
   @override
   ConsumerState<StoryScreen> createState() => _StoryScreenState();
@@ -193,7 +197,7 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
             Row(
               children: [
                 GestureDetector(
-                  onTap: () => Navigator.of(context).maybePop(),
+                  onTap: widget.onBack,
                   child: Container(
                     width: 34,
                     height: 34,
