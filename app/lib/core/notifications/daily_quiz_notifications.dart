@@ -247,10 +247,12 @@ class DailyQuizNotifications {
       _pushQuiz(notificationId: notificationId);
 
   Future<void> _pushQuiz({int? notificationId}) async {
-    if (_quizShowing) return;
+    // Huy TRUOC ca khi kiem tra _quizShowing - neu Quiz dang mo san roi thi
+    // thong bao nay cang thua, van phai go khoi man khoa/thanh trang thai.
     if (notificationId != null) {
       await _plugin.cancel(id: notificationId);
     }
+    if (_quizShowing) return;
     // Ngay luc bam thong bao gay KHOI DONG LAI app (cold start) tu man
     // hinh khoa, rootNavigatorKey co the CHUA gan Navigator nao ca (frame
     // dau tien chua kip ve xong) - thu lai vai lan thay vi bo cuoc ngay,

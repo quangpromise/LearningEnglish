@@ -20,23 +20,48 @@
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="Học tiếng Anh qua âm nhạc - nghe nhạc, tra từ, luyện phát âm.">
   <!--
-    Sau 3 lan va (o day tung co 1 <script> dung window.visualViewport +
-    "rung" flt-glass-pane de vam viec ban phim dong xong man hinh bi ket kich
-    thuoc nho tren web mobile - xem flutter/flutter#175074/#179438) MA lan
-    nao cung keo theo it nhat 1 loi moi (khong mo duoc ban phim, ngat ban
-    phim khi go nhanh) roi van khong het han duoc trieu chung goc, doi huong
-    hoan toan: bo het script vam do, VA doi "interactive-widget" tu
-    "resizes-content" (chinh gia tri nay - CHINH LOP MO O DAY LAN DAU - lam
-    TRINH DUYET tu co RESIZE LUON CA LOP LAYOUT, khong chi lop hien thi, khi
-    ban phim mo, day moi la nguon goc that su khien no de "ket" khi dong lai)
-    sang "resizes-visual" (mac dinh cua da so trinh duyet, CHI lop hien thi
-    (visualViewport) thay doi, lop layout giu nguyen kich thuoc goc xuyen
-    suot) - Flutter engine ban 3.47+ (xem flutter/flutter#179581, da vao
-    stable tu thang 1/2026) DA TU SUA dung phan viewInsets tu chinh lech
-    layout/visual nay, KHONG can them script rieng nua trong che do
-    resizes-visual.
+    KHONG dat <meta name="viewport"> o day: engine Flutter Web tu XOA moi
+    the viewport co san va thay bang the cua no luc khoi dong (xem
+    full_page_embedding_strategy.dart _applyViewportMeta trong SDK) - cac
+    lan truoc doi interactive-widget o day deu KHONG co tac dung gi.
   -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-visual">
+  <script>
+    // Va bug engine Flutter Web tren Android Chrome (flutter/flutter#179438):
+    // dong ban phim xong, man hinh van "co" (viewInsets/physicalSize bi ket
+    // gia tri cu) vi engine CHI tinh lai kich thuoc khi nhan su kien 'resize'
+    // tren window.visualViewport (xem full_page_dimensions_provider.dart) -
+    // ma su kien that doi khi den luc chieu cao con chua cap nhat xong, sau
+    // do khong co su kien nao nua.
+    //
+    // Cach va: sau khi moi thu da on dinh, PHAT LAI 1 su kien 'resize' gia
+    // tren CHINH window.visualViewport - engine se doc lai chieu cao THUC TE
+    // luc do va tinh lai dung. Tuong duong trinh duyet ban them 1 su kien
+    // resize nua: KHONG blur, KHONG scroll, KHONG sua style DOM nao (cac ban
+    // va truoc lam 3 viec do nen gay loi khong mo duoc/tu ngat ban phim, va
+    // con phat su kien tren window - engine khong he nghe window nen vo tac
+    // dung).
+    (function () {
+      var vv = window.visualViewport;
+      if (!vv) return;
+      var timer = null;
+      function nudge() {
+        timer = null;
+        vv.dispatchEvent(new Event('resize'));
+      }
+      function schedule() {
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(nudge, 350);
+      }
+      // Chi phan ung voi su kien THAT (isTrusted) - su kien gia do chinh
+      // nudge() phat ra khong duoc kich hoat lai vong lap.
+      vv.addEventListener('resize', function (e) {
+        if (e.isTrusted) schedule();
+      });
+      // O nhap mat focus (bam ra ngoai, bam Done, dong popup, back ra
+      // ngoai...) - ban phim dang/sap dong, cho on dinh roi tinh lai.
+      window.addEventListener('focusout', schedule, true);
+    })();
+  </script>
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">

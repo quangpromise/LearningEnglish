@@ -1,6 +1,7 @@
 package com.learnenglishmusic.learn_english_music
 
 import android.app.KeyguardManager
+import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -46,6 +47,7 @@ class MainActivity : AudioServiceActivity() {
         // fullScreenIntent, voi action/extra ben duoi.
         private const val SELECT_NOTIFICATION = "SELECT_NOTIFICATION"
         private const val PAYLOAD_EXTRA = "payload"
+        private const val NOTIFICATION_ID_EXTRA = "notificationId"
         private const val QUIZ_PAYLOAD_PREFIX = "quiz:"
     }
 
@@ -86,6 +88,16 @@ class MainActivity : AudioServiceActivity() {
         if ((intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) != 0) return
         val payload = intent.getStringExtra(PAYLOAD_EXTRA) ?: return
         if (!payload.startsWith(QUIZ_PAYLOAD_PREFIX)) return
+        // Quiz da tu mo (fullScreenIntent tren man khoa, hoac bam thong bao) -
+        // go luon thong bao tuong ung khoi man khoa/thanh trang thai, neu
+        // khong nguoi dung bam lai vao no se mo Quiz them 1 lan nua. Lam o
+        // phia native vi chay NGAY khi Activity nhan intent, khong phu thuoc
+        // Dart da khoi dong xong hay chua.
+        val notificationId = intent.getIntExtra(NOTIFICATION_ID_EXTRA, -1)
+        if (notificationId != -1) {
+            (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
+                .cancel(notificationId)
+        }
         val keyguard = getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
         if (!keyguard.isKeyguardLocked) return
         setShowOverLockScreen(true)
