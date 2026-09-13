@@ -88,7 +88,7 @@ class _WordPopupSheetState extends ConsumerState<WordPopupSheet> {
   Future<void> _saveToDaily() async {
     final info = _result;
     if (info == null) return;
-    final added = await ref
+    await ref
         .read(dailyWordsControllerProvider.notifier)
         .addWord(
           DailyWordEntry(
@@ -102,11 +102,7 @@ class _WordPopupSheetState extends ConsumerState<WordPopupSheet> {
     final nav = Navigator.of(context);
     nav.pop();
     messenger?.showSnackBar(
-      SnackBar(
-        content: Text(
-          ref.tr(added ? 'word_saved_to_daily' : 'daily_words_full'),
-        ),
-      ),
+      SnackBar(content: Text(ref.tr('word_saved_to_daily'))),
     );
   }
 

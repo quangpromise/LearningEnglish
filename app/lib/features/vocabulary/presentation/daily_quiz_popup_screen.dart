@@ -7,25 +7,36 @@ import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/tts/app_tts.dart';
 import '../../../core/widgets/speaker_button.dart';
+import '../../writing/data/writing_scoring.dart';
 import '../data/daily_words_repository.dart';
 import '../data/vocabulary_data.dart';
 import 'daily_words_controller.dart';
 
-/// Man hinh quiz, mo khi bam vao thong bao nhac "hoc hom nay" (hoac bam
-/// "Bat dau hoc" o Ho so) - hoi LAN LUOT TAT CA cac tu DA CHON (khong loc
-/// bot tu da tung tra loi dung truoc do - moi lan mo deu hoi du danh sach),
-/// giong nhu VocabularyQuizScreen. Tra loi DUNG se ghi vao thong ke "Tu da
-/// hoc" o Ho so (khong anh huong lan hoi ke tiep - tu do van tiep tuc duoc
-/// hoi lai o cac lan nhac sau, giup on lap lai xuyen suot ngay).
-class DailyQuizPopupScreen extends ConsumerStatefulWidget {
+/// Man on tap "hoc hom nay", mo khi bam vao thong bao nhac (hoac bam "Bat
+/// dau hoc" o Ho so) - hoi LAN LUOT TAT CA cac tu DA CHON theo cach on nguoi
+/// dung da chon ([DailyStudyMode]): Quiz = trac nghiem chon 1 trong 4,
+/// Writing = go tu tieng Anh theo nghia, cham bang scoreVocabAnswer giong
+/// tinh nang Luyen viet. Tra loi dung chi cap nhat tien do trong ngay.
+class DailyQuizPopupScreen extends ConsumerWidget {
   const DailyQuizPopupScreen({super.key});
 
   @override
-  ConsumerState<DailyQuizPopupScreen> createState() =>
-      _DailyQuizPopupScreenState();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final mode = ref.watch(dailyWordsControllerProvider.select((s) => s.mode));
+    return mode == DailyStudyMode.writing
+        ? const _DailyWritingView()
+        : const _DailyQuizView();
+  }
 }
 
-class _DailyQuizPopupScreenState extends ConsumerState<DailyQuizPopupScreen> {
+class _DailyQuizView extends ConsumerStatefulWidget {
+  const _DailyQuizView();
+
+  @override
+  ConsumerState<_DailyQuizView> createState() => _DailyQuizViewState();
+}
+
+class _DailyQuizViewState extends ConsumerState<_DailyQuizView> {
   List<DailyWordEntry>? _order;
   List<List<String>>? _options;
   int _index = 0;
@@ -96,38 +107,9 @@ class _DailyQuizPopupScreenState extends ConsumerState<DailyQuizPopupScreen> {
     _initIfNeeded(state);
 
     final order = _order;
-    if (order == null || order.isEmpty) {
-      return ScreenBackground(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(32),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.check_circle_rounded,
-                  color: AppColors.teal,
-                  size: 48,
-                ),
-                const SizedBox(height: 14),
-                Text(
-                  ref.tr('daily_quiz_empty'),
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.body(weight: FontWeight.w700),
-                ),
-                const SizedBox(height: 20),
-                PillButton(
-                  label: ref.tr('daily_quiz_close'),
-                  onTap: () => Navigator.of(context).maybePop(),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
+    if (order == null || order.isEmpty) return const _DailyEmptyView();
 
-    if (_finished) return _buildResult(context, order);
+    if (_finished) return _DailyResultView(order: order, results: _results);
 
     final options = _options![_index];
     final word = _current;
@@ -140,46 +122,7 @@ class _DailyQuizPopupScreenState extends ConsumerState<DailyQuizPopupScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                GestureDetector(
-                  onTap: () => Navigator.of(context).maybePop(),
-                  child: Container(
-                    width: 34,
-                    height: 34,
-                    decoration: BoxDecoration(
-                      color: AppColors.glassFill,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.glassBorder),
-                    ),
-                    child: const Icon(
-                      Icons.close_rounded,
-                      size: 16,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Row(
-                    children: List.generate(order.length, (i) {
-                      final done = i <= _index;
-                      return Expanded(
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 2),
-                          height: 8,
-                          decoration: BoxDecoration(
-                            gradient: done ? AppColors.accentGradient : null,
-                            color: done ? null : AppColors.glassFill,
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                        ),
-                      );
-                    }),
-                  ),
-                ),
-              ],
-            ),
+            _DailyProgressHeader(total: order.length, index: _index),
             const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
@@ -303,9 +246,299 @@ class _DailyQuizPopupScreenState extends ConsumerState<DailyQuizPopupScreen> {
       ),
     );
   }
+}
 
-  Widget _buildResult(BuildContext context, List<DailyWordEntry> order) {
-    final correct = _results.where((r) => r).length;
+/// Che do Writing: hien nghia tieng Viet, nguoi dung go tu tieng Anh vao o
+/// nhap, cham bang scoreVocabAnswer (dung/gan dung do sai chinh ta nhe/sai)
+/// - cung cach cham voi WritingVocabQuizScreen cua tinh nang Luyen viet.
+/// Nguoi dung tu bam de qua cau tiep sau khi xem ket qua.
+class _DailyWritingView extends ConsumerStatefulWidget {
+  const _DailyWritingView();
+
+  @override
+  ConsumerState<_DailyWritingView> createState() => _DailyWritingViewState();
+}
+
+class _DailyWritingViewState extends ConsumerState<_DailyWritingView> {
+  final _controller = TextEditingController();
+  final _focusNode = FocusNode();
+  List<DailyWordEntry>? _order;
+  int _index = 0;
+  VocabAnswerResult? _result;
+  final List<bool> _results = [];
+  bool _finished = false;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  DailyWordEntry get _current => _order![_index];
+
+  void _submit() {
+    if (_result != null) return;
+    final result = scoreVocabAnswer(_controller.text, _current.en);
+    // Gan dung (chi sai chinh ta nhe) van tinh la dung - giong cap Co ban
+    // cua Luyen viet, day la on tap nhanh chu khong phai bai kiem tra.
+    final ok = result != VocabAnswerResult.wrong;
+    if (ok) {
+      ref.read(dailyWordsControllerProvider.notifier).markLearned(_current.en);
+    }
+    setState(() {
+      _result = result;
+      _results.add(ok);
+    });
+  }
+
+  void _next() {
+    if (_index < _order!.length - 1) {
+      setState(() {
+        _index++;
+        _result = null;
+        _controller.clear();
+      });
+      _focusNode.requestFocus();
+    } else {
+      setState(() => _finished = true);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = ref.watch(dailyWordsControllerProvider);
+    if (!state.loaded) return const ScreenBackground(child: SizedBox.expand());
+    final order = _order ??= List.of(state.words)..shuffle(Random());
+    if (order.isEmpty) return const _DailyEmptyView();
+    if (_finished) return _DailyResultView(order: order, results: _results);
+
+    final word = _current;
+    final (borderColor, fillColor) = switch (_result) {
+      VocabAnswerResult.correct => (
+        AppColors.teal,
+        AppColors.teal.withValues(alpha: 0.12),
+      ),
+      VocabAnswerResult.closeTypo => (
+        AppColors.amber,
+        AppColors.amber.withValues(alpha: 0.12),
+      ),
+      VocabAnswerResult.wrong => (
+        AppColors.pink,
+        AppColors.pink.withValues(alpha: 0.12),
+      ),
+      null => (AppColors.glassBorder, AppColors.glassFill),
+    };
+    final inputBorder = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(16),
+      borderSide: BorderSide(color: borderColor),
+    );
+
+    return ScreenBackground(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _DailyProgressHeader(total: order.length, index: _index),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.purple.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                '${ref.tr('daily_writing_title').toUpperCase()} · ${ref.tr('vocab_question_label')} ${_index + 1}/${order.length}',
+                style: const TextStyle(
+                  color: AppColors.purple,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 11,
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
+            GlowBox(
+              borderRadius: 24,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    ref.tr('writing_vocab_type_for'),
+                    style: AppTextStyles.muted(size: 10)
+                        .copyWith(letterSpacing: 0.6),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(word.vi, style: AppTextStyles.heading(size: 20)),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            TextField(
+              controller: _controller,
+              focusNode: _focusNode,
+              autofocus: true,
+              enabled: _result == null,
+              autocorrect: false,
+              enableSuggestions: false,
+              onSubmitted: (_) => _submit(),
+              style: AppTextStyles.body(size: 16, weight: FontWeight.w700),
+              decoration: InputDecoration(
+                hintText: ref.tr('writing_vocab_hint'),
+                hintStyle: AppTextStyles.muted(),
+                filled: true,
+                fillColor: fillColor,
+                border: inputBorder,
+                enabledBorder: inputBorder,
+                disabledBorder: inputBorder,
+              ),
+            ),
+            if (_result case final result?) ...[
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      switch (result) {
+                        VocabAnswerResult.correct => ref.tr(
+                          'writing_result_correct',
+                        ),
+                        VocabAnswerResult.closeTypo =>
+                          '${ref.tr('writing_result_close')} — ${word.en}',
+                        VocabAnswerResult.wrong =>
+                          '${ref.tr('writing_result_wrong')} — ${word.en}',
+                      },
+                      style: AppTextStyles.body(
+                        size: 13,
+                        weight: FontWeight.w700,
+                        color: borderColor,
+                      ),
+                    ),
+                  ),
+                  SpeakerButton(
+                    onTap: () => AppTts.instance.speak(word.en),
+                    color: borderColor,
+                  ),
+                ],
+              ),
+            ],
+            const Spacer(),
+            SizedBox(
+              width: double.infinity,
+              child: PillButton(
+                label: ref.tr(
+                  _result == null
+                      ? 'writing_check_button'
+                      : (_index < order.length - 1
+                            ? 'writing_next_button'
+                            : 'writing_see_result_button'),
+                ),
+                onTap: _result == null ? _submit : _next,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Nut dong + thanh tien do chia o theo so cau - dung chung cho Quiz/Writing.
+class _DailyProgressHeader extends StatelessWidget {
+  const _DailyProgressHeader({required this.total, required this.index});
+  final int total;
+  final int index;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        GestureDetector(
+          onTap: () => Navigator.of(context).maybePop(),
+          child: Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: AppColors.glassFill,
+              shape: BoxShape.circle,
+              border: Border.all(color: AppColors.glassBorder),
+            ),
+            child: const Icon(
+              Icons.close_rounded,
+              size: 16,
+              color: AppColors.textPrimary,
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Row(
+            children: List.generate(total, (i) {
+              final done = i <= index;
+              return Expanded(
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 2),
+                  height: 8,
+                  decoration: BoxDecoration(
+                    gradient: done ? AppColors.accentGradient : null,
+                    color: done ? null : AppColors.glassFill,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+              );
+            }),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _DailyEmptyView extends ConsumerWidget {
+  const _DailyEmptyView();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return ScreenBackground(
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.check_circle_rounded,
+                color: AppColors.teal,
+                size: 48,
+              ),
+              const SizedBox(height: 14),
+              Text(
+                ref.tr('daily_quiz_empty'),
+                textAlign: TextAlign.center,
+                style: AppTextStyles.body(weight: FontWeight.w700),
+              ),
+              const SizedBox(height: 20),
+              PillButton(
+                label: ref.tr('daily_quiz_close'),
+                onTap: () => Navigator.of(context).maybePop(),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Man tong ket cuoi luot on - dung chung cho Quiz/Writing.
+class _DailyResultView extends ConsumerWidget {
+  const _DailyResultView({required this.order, required this.results});
+  final List<DailyWordEntry> order;
+  final List<bool> results;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final correct = results.where((r) => r).length;
     return ScreenBackground(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
@@ -327,7 +560,7 @@ class _DailyQuizPopupScreenState extends ConsumerState<DailyQuizPopupScreen> {
                     width: 160,
                     height: 160,
                     child: CircularProgressIndicator(
-                      value: _results.isEmpty ? 0 : correct / _results.length,
+                      value: results.isEmpty ? 0 : correct / results.length,
                       strokeWidth: 10,
                       backgroundColor: Colors.white.withValues(alpha: 0.08),
                       color: AppColors.purple,
@@ -337,7 +570,7 @@ class _DailyQuizPopupScreenState extends ConsumerState<DailyQuizPopupScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        '$correct/${_results.length}',
+                        '$correct/${results.length}',
                         style: AppTextStyles.heading(size: 24)
                             .copyWith(height: 1.0),
                       ),
@@ -361,7 +594,7 @@ class _DailyQuizPopupScreenState extends ConsumerState<DailyQuizPopupScreen> {
                 itemCount: order.length,
                 separatorBuilder: (_, _) => const SizedBox(height: 8),
                 itemBuilder: (context, i) {
-                  final ok = i < _results.length && _results[i];
+                  final ok = i < results.length && results[i];
                   return Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 14,

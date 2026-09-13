@@ -6,26 +6,38 @@ import '../../../core/notifications/daily_quiz_notifications.dart';
 import '../../../core/utils/vn_time.dart';
 import '../data/daily_words_repository.dart';
 
-const kMaxDailyWords = 10;
-
 class DailyWordsState {
   const DailyWordsState({
     required this.words,
     required this.learnedTodayEnLower,
     required this.intervalMinutes,
+    required this.mode,
     required this.active,
+    required this.expired,
     required this.loaded,
   });
 
   final List<DailyWordEntry> words;
   final Set<String> learnedTodayEnLower;
-  final int intervalMinutes;
+
+  /// null = chua chon so phut nhac lai (khong co gia tri mac dinh).
+  final int? intervalMinutes;
+
+  /// null = chua chon cach on (Quiz/Writing).
+  final DailyStudyMode? mode;
   final bool active;
+
+  /// Danh sach con lai tu ngay hom truoc (da qua nua dem VN) - man Ho so chi
+  /// hien 2 nut "Ket thuc hoc"/"Hoc lai" (xem _DailyWordsSection).
+  final bool expired;
   final bool loaded;
 
-  /// Chi dung de HIEN THI tien do (vd "3/10 tu da hoc" o Ho so) - KHONG con
-  /// dung de loc cau hoi trong quiz nua (quiz luon hoi du ca 10 tu moi lan,
-  /// xem DailyQuizPopupScreen).
+  /// Du ca so phut lan cach on de bam "Bat dau hoc".
+  bool get canStart =>
+      words.isNotEmpty && intervalMinutes != null && mode != null;
+
+  /// Chi dung de HIEN THI tien do (vd "3/12 tu da hoc" o Ho so) - KHONG
+  /// dung de loc cau hoi (moi lan on luon hoi du danh sach).
   List<DailyWordEntry> get pending => words
       .where((w) => !learnedTodayEnLower.contains(w.en.toLowerCase()))
       .toList();
@@ -33,38 +45,45 @@ class DailyWordsState {
   static const empty = DailyWordsState(
     words: [],
     learnedTodayEnLower: {},
-    intervalMinutes: DailyWordsRepository.defaultIntervalMinutes,
+    intervalMinutes: null,
+    mode: null,
     active: false,
+    expired: false,
     loaded: false,
   );
 
   DailyWordsState copyWith({
     List<DailyWordEntry>? words,
     Set<String>? learnedTodayEnLower,
-    int? intervalMinutes,
+    int? Function()? intervalMinutes,
+    DailyStudyMode? Function()? mode,
     bool? active,
+    bool? expired,
     bool? loaded,
   }) {
     return DailyWordsState(
       words: words ?? this.words,
       learnedTodayEnLower: learnedTodayEnLower ?? this.learnedTodayEnLower,
-      intervalMinutes: intervalMinutes ?? this.intervalMinutes,
+      intervalMinutes: intervalMinutes != null
+          ? intervalMinutes()
+          : this.intervalMinutes,
+      mode: mode != null ? mode() : this.mode,
       active: active ?? this.active,
+      expired: expired ?? this.expired,
       loaded: loaded ?? this.loaded,
     );
   }
 }
 
-/// Quan ly danh sach "10 tu hoc hom nay" + bat/tat nhac quiz dinh ky.
+/// Quan ly danh sach "tu hoc hom nay" (KHONG gioi han so tu) + bat/tat nhac
+/// on dinh ky theo cach on da chon (Quiz hoac Writing).
 ///
-/// - Quiz moi lan mo (thong bao nhac hoac bam "Bat dau hoc") hoi DU CA danh
-///   sach da chon, khong loc bot tu da tra loi dung truoc do - xem
-///   DailyQuizPopupScreen.
-/// - CHI tu dong ket thuc (huy nhac + reset danh sach) khi SANG NGAY MOI
-///   THEO GIO VIET NAM (khong con tu dong ket thuc khi da tra loi dung het
-///   10 tu) - vua kiem tra luc khoi tao (mo lai app), vua dat 1 Timer bat
-///   dung luc nua dem VN de ket thuc ngay ca khi app dang mo xuyen qua thoi
-///   diem do.
+/// - Moi lan on (thong bao nhac hoac bam "Bat dau hoc") hoi DU CA danh sach
+///   - xem DailyQuizPopupScreen.
+/// - Sang NGAY MOI THEO GIO VIET NAM: tat nhac nhung GIU danh sach tu, danh
+///   dau [DailyWordsState.expired] - nguoi dung tu chon "Hoc lai" (on tiep
+///   dung cac tu do) hoac "Ket thuc hoc" (ghi het vao Tu da hoc). Vua kiem
+///   tra luc khoi tao (mo lai app), vua dat 1 Timer bat dung luc nua dem VN.
 class DailyWordsController extends StateNotifier<DailyWordsState> {
   DailyWordsController() : super(DailyWordsState.empty) {
     _restore();
@@ -73,59 +92,41 @@ class DailyWordsController extends StateNotifier<DailyWordsState> {
   Timer? _midnightTimer;
 
   Future<void> _restore() async {
-    final savedDate = await DailyWordsRepository.loadDate();
-    final today = todayVnIso();
-    if (savedDate != today) {
-      // Sang ngay moi (gio VN) - danh sach hom qua khong con y nghia, reset
-      // het va huy moi nhac cu con sot lai (neu co).
-      await DailyWordsRepository.saveDate(today);
-      await DailyWordsRepository.saveWords([]);
-      await DailyWordsRepository.saveLearnedToday({});
-      await DailyWordsRepository.saveActive(false);
-      await DailyQuizNotifications.instance.cancelReminders();
-      DailyQuizNotifications.instance.cancelForegroundAutoOpen();
-      state = state.copyWith(
-        words: [],
-        learnedTodayEnLower: {},
-        active: false,
-        loaded: true,
+    final words = await DailyWordsRepository.loadWords();
+    final learned = await DailyWordsRepository.loadLearnedToday();
+    final interval = await DailyWordsRepository.loadIntervalMinutes();
+    final mode = await DailyWordsRepository.loadMode();
+    final active = await DailyWordsRepository.loadActive();
+    final expired = await DailyWordsRepository.loadExpired();
+    state = state.copyWith(
+      words: words,
+      learnedTodayEnLower: learned,
+      intervalMinutes: () => interval,
+      mode: () => mode,
+      active: active,
+      expired: expired,
+      loaded: true,
+    );
+    final rolledOver = await _rolloverIfNewDay();
+    // App vua duoc MO LAI trong luc nhac van con active tu truoc (cung ngay)
+    // - Timer tu mo man on o foreground KHONG song sot qua lan dong app (khac
+    // voi thong bao he thong da dat san), phai tu bat lai o day.
+    if (!rolledOver && state.active && state.intervalMinutes != null) {
+      DailyQuizNotifications.instance.scheduleForegroundAutoOpen(
+        intervalMinutes: state.intervalMinutes!,
       );
-    } else {
-      final words = await DailyWordsRepository.loadWords();
-      final learned = await DailyWordsRepository.loadLearnedToday();
-      final interval = await DailyWordsRepository.loadIntervalMinutes();
-      final active = await DailyWordsRepository.loadActive();
-      state = state.copyWith(
-        words: words,
-        learnedTodayEnLower: learned,
-        intervalMinutes: interval,
-        active: active,
-        loaded: true,
-      );
-      // App vua duoc MO LAI (khong phai lan dau bat nhac) trong luc nhac
-      // van con active tu truoc - Timer tu mo Quiz o foreground KHONG song
-      // sot qua lan dong app truoc do (khac voi thong bao he thong da dat
-      // san van con nguyen), phai tu bat lai o day de tinh nang "dang mo app
-      // luc den han thi tu mo Quiz" tiep tuc hoat dong ngay ca sau khi
-      // nguoi dung tat/mo lai app giua chung.
-      if (active) {
-        DailyQuizNotifications.instance.scheduleForegroundAutoOpen(
-          intervalMinutes: interval,
-        );
-      }
     }
     _scheduleMidnightReset();
   }
 
-  /// Dat 1 lan Timer bat dung luc nua dem gio VN tiep theo de tu dong reset
-  /// - can thiet vi _restore() chi chay 1 lan luc tao controller (luc mo
-  /// app), neu app cu mo xuyen qua nua dem se khong tu biet ma reset neu
-  /// khong co co che chu dong nay.
+  /// Dat 1 lan Timer bat dung luc nua dem gio VN tiep theo - can thiet vi
+  /// _restore() chi chay 1 lan luc mo app, app mo xuyen qua nua dem se khong
+  /// tu biet sang ngay moi neu khong co co che chu dong nay.
   void _scheduleMidnightReset() {
     _midnightTimer?.cancel();
     final delay = nextVnMidnightInstant().difference(DateTime.now());
     _midnightTimer = Timer(delay.isNegative ? Duration.zero : delay, () {
-      _resetIfNewDay().then((_) => _scheduleMidnightReset());
+      _rolloverIfNewDay().then((_) => _scheduleMidnightReset());
     });
   }
 
@@ -136,28 +137,46 @@ class DailyWordsController extends StateNotifier<DailyWordsState> {
   }
 
   /// Them 1 tu (vd tu nut "Luu" o popup tra tu) - bo qua neu da co (trung
-  /// khong phan biet hoa/thuong) hoac da du 10 tu. Tra ve true neu them
-  /// thanh cong (hoac da co san).
-  Future<bool> addWord(DailyWordEntry entry) async {
-    await _resetIfNewDay();
+  /// khong phan biet hoa/thuong). Khong con gioi han so tu.
+  Future<void> addWord(DailyWordEntry entry) async {
+    await _rolloverIfNewDay();
     final lower = entry.en.toLowerCase();
-    if (state.words.any((w) => w.en.toLowerCase() == lower)) return true;
-    if (state.words.length >= kMaxDailyWords) return false;
+    if (state.words.any((w) => w.en.toLowerCase() == lower)) return;
     final updated = [...state.words, entry];
     state = state.copyWith(words: updated);
     await DailyWordsRepository.saveWords(updated);
     if (state.active) await _rescheduleReminders();
-    return true;
   }
 
-  /// Thay the toan bo danh sach (vd tu man chi tiet chu de, chon hang loat) -
-  /// gioi han toi da 10 tu.
+  /// Nhan danh sach tu chon hang loat o man chi tiet chu de:
+  /// - Chua co phien nao dang chay/con lai tu hom truoc -> THAY danh sach va
+  ///   bo chon so phut + cach on (bat nguoi dung tu chon lai, khong mac dinh).
+  /// - Dang hoc hoac con danh sach hom truoc -> GOP them (bo trung), khong
+  ///   lam mat tu dang hoc.
   Future<void> setWords(List<DailyWordEntry> words) async {
-    await _resetIfNewDay();
-    final capped = words.take(kMaxDailyWords).toList();
-    state = state.copyWith(words: capped);
-    await DailyWordsRepository.saveWords(capped);
-    if (state.active) await _rescheduleReminders();
+    await _rolloverIfNewDay();
+    if (state.active || state.expired) {
+      final existing = state.words.map((w) => w.en.toLowerCase()).toSet();
+      final merged = [
+        ...state.words,
+        for (final w in words)
+          if (existing.add(w.en.toLowerCase())) w,
+      ];
+      state = state.copyWith(words: merged);
+      await DailyWordsRepository.saveWords(merged);
+      if (state.active) await _rescheduleReminders();
+      return;
+    }
+    state = state.copyWith(
+      words: words,
+      learnedTodayEnLower: {},
+      intervalMinutes: () => null,
+      mode: () => null,
+    );
+    await DailyWordsRepository.saveWords(words);
+    await DailyWordsRepository.saveLearnedToday({});
+    await DailyWordsRepository.saveIntervalMinutes(null);
+    await DailyWordsRepository.saveMode(null);
   }
 
   Future<void> removeWord(String en) async {
@@ -171,16 +190,18 @@ class DailyWordsController extends StateNotifier<DailyWordsState> {
   }
 
   Future<void> setIntervalMinutes(int minutes) async {
-    state = state.copyWith(intervalMinutes: minutes);
+    state = state.copyWith(intervalMinutes: () => minutes);
     await DailyWordsRepository.saveIntervalMinutes(minutes);
     if (state.active) await _rescheduleReminders();
   }
 
+  Future<void> setMode(DailyStudyMode mode) async {
+    state = state.copyWith(mode: () => mode);
+    await DailyWordsRepository.saveMode(mode);
+  }
+
   /// Danh dau 1 tu la DA TUNG tra loi dung it nhat 1 lan hom nay - chi dung
-  /// de hien thi tien do o Ho so va ghi vao thong ke "Tu da hoc" (goi rieng
-  /// o noi mo quiz). KHONG anh huong den viec quiz co hoi lai tu nay o cac
-  /// lan sau hay khong (luon hoi du danh sach) va KHONG tu dong ket thuc
-  /// nhac khi tat ca da duoc danh dau.
+  /// de hien thi tien do o Ho so.
   Future<void> markLearned(String en) async {
     final lower = en.toLowerCase();
     final updated = {...state.learnedTodayEnLower, lower};
@@ -189,56 +210,85 @@ class DailyWordsController extends StateNotifier<DailyWordsState> {
   }
 
   Future<void> start() async {
-    if (state.words.isEmpty) return;
-    state = state.copyWith(active: true);
+    if (!state.canStart) return;
+    state = state.copyWith(active: true, expired: false);
     await DailyWordsRepository.saveActive(true);
+    await DailyWordsRepository.saveExpired(false);
     await _rescheduleReminders();
   }
 
-  /// Bam "Ket thuc hoc" (hoac danh sach tu rong sau khi xoa het qua
-  /// removeWord - xem _rescheduleReminders duoi) - XOA LUON danh sach 10 tu
-  /// dang chon (khong chi tat nhac) de tro ve dung trang thai "chua chon tu
-  /// nao" (total == 0, hien nut "Chon 10 tu" o _DailyWordsSection) thay vi
-  /// giu lai danh sach cu voi nut "Bat dau hoc" bi VO HIEU HOA vinh vien khi
-  /// tat ca da tung tra loi dung (state.pending rong + active=false khien
-  /// dieu kien "state.pending.isEmpty && !state.active" luon dung) - day la
-  /// nguyen nhan loi "bam Ket thuc hoc xong khong bam lai duoc Bat dau hoc".
+  /// "Hoc lai" danh sach con lai tu hom truoc - on tiep dung cac tu do voi
+  /// so phut + cach on cu. Tra ve true neu da bat nhac lai ngay (du cau
+  /// hinh); false = phien cu chua tung chon du so phut/cach on, chi go trang
+  /// thai "hom truoc" de nguoi dung chon roi bam "Bat dau hoc" nhu binh
+  /// thuong.
+  Future<bool> relearn() async {
+    state = state.copyWith(expired: false, learnedTodayEnLower: {});
+    await DailyWordsRepository.saveExpired(false);
+    await DailyWordsRepository.saveLearnedToday({});
+    if (!state.canStart) return false;
+    await start();
+    return true;
+  }
+
+  /// Bam "Ket thuc hoc" - XOA danh sach + tat nhac, tro ve trang thai "chua
+  /// chon tu nao". Viec ghi cac tu vao thong ke "Tu da hoc" do noi goi lam
+  /// (can statsRepository, xem _DailyWordsSection) TRUOC khi goi ham nay.
   Future<void> stop() async {
-    state = state.copyWith(active: false, words: [], learnedTodayEnLower: {});
+    state = state.copyWith(
+      active: false,
+      expired: false,
+      words: [],
+      learnedTodayEnLower: {},
+      intervalMinutes: () => null,
+      mode: () => null,
+    );
     await DailyWordsRepository.saveActive(false);
+    await DailyWordsRepository.saveExpired(false);
     await DailyWordsRepository.saveWords([]);
     await DailyWordsRepository.saveLearnedToday({});
+    await DailyWordsRepository.saveIntervalMinutes(null);
+    await DailyWordsRepository.saveMode(null);
     await DailyQuizNotifications.instance.cancelReminders();
     DailyQuizNotifications.instance.cancelForegroundAutoOpen();
   }
 
   Future<void> _rescheduleReminders() async {
-    if (state.words.isEmpty) {
+    final interval = state.intervalMinutes;
+    if (state.words.isEmpty || interval == null) {
       await stop();
       return;
     }
     await DailyQuizNotifications.instance.scheduleReminders(
-      intervalMinutes: state.intervalMinutes,
+      intervalMinutes: interval,
     );
-    // Ngoai thong bao he thong o tren (chi hien de nguoi dung TU CHAM), bat
-    // them Timer tu dong DAY man Quiz len khi den han NEU dang mo san app -
-    // xem doc cua scheduleForegroundAutoOpen.
+    // Ngoai thong bao he thong (chi hien de nguoi dung TU CHAM), bat them
+    // Timer tu dong DAY man on len khi den han NEU dang mo san app.
     DailyQuizNotifications.instance.scheduleForegroundAutoOpen(
-      intervalMinutes: state.intervalMinutes,
+      intervalMinutes: interval,
     );
   }
 
-  Future<void> _resetIfNewDay() async {
+  /// Sang ngay moi (gio VN): tat nhac nhung GIU danh sach tu, chuyen sang
+  /// trang thai [DailyWordsState.expired] neu con tu. Tra ve true neu vua
+  /// chuyen ngay.
+  Future<bool> _rolloverIfNewDay() async {
     final savedDate = await DailyWordsRepository.loadDate();
     final today = todayVnIso();
-    if (savedDate == today) return;
+    if (savedDate == today) return false;
     await DailyWordsRepository.saveDate(today);
-    await DailyWordsRepository.saveWords([]);
-    await DailyWordsRepository.saveLearnedToday({});
+    final expired = state.words.isNotEmpty;
     await DailyWordsRepository.saveActive(false);
+    await DailyWordsRepository.saveExpired(expired);
+    await DailyWordsRepository.saveLearnedToday({});
     await DailyQuizNotifications.instance.cancelReminders();
     DailyQuizNotifications.instance.cancelForegroundAutoOpen();
-    state = state.copyWith(words: [], learnedTodayEnLower: {}, active: false);
+    state = state.copyWith(
+      active: false,
+      expired: expired,
+      learnedTodayEnLower: {},
+    );
+    return true;
   }
 }
 

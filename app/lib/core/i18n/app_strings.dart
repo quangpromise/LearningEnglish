@@ -320,12 +320,8 @@ class AppStrings {
       AppLanguage.en: 'No results found',
     },
     'vocab_select_hint': {
-      AppLanguage.vi: 'Chọn tối đa {max} từ để học hôm nay',
-      AppLanguage.en: 'Select up to {max} words to learn today',
-    },
-    'vocab_start_learning': {
-      AppLanguage.vi: 'Bắt đầu học',
-      AppLanguage.en: 'Start learning',
+      AppLanguage.vi: 'Chọn các từ muốn học hôm nay',
+      AppLanguage.en: 'Select the words you want to learn today',
     },
     'vocab_question_label': {AppLanguage.vi: 'Câu', AppLanguage.en: 'Question'},
     'vocab_choose_word_for': {
@@ -576,8 +572,8 @@ class AppStrings {
     },
 
     'vocab_add_to_daily': {
-      AppLanguage.vi: 'Học hôm nay',
-      AppLanguage.en: 'Learn today',
+      AppLanguage.vi: 'Học {n} từ hôm nay',
+      AppLanguage.en: 'Learn {n} words today',
     },
     'vocab_added_to_daily': {
       AppLanguage.vi: 'Đã thêm {n} từ vào danh sách học hôm nay',
@@ -586,10 +582,6 @@ class AppStrings {
     'word_saved_to_daily': {
       AppLanguage.vi: 'Đã thêm vào danh sách học hôm nay',
       AppLanguage.en: "Added to today's learning list",
-    },
-    'daily_words_full': {
-      AppLanguage.vi: 'Danh sách học hôm nay đã đủ 10 từ',
-      AppLanguage.en: "Today's learning list is already full (10 words)",
     },
     'daily_quiz_title': {
       AppLanguage.vi: 'Quiz nhanh',
@@ -609,19 +601,48 @@ class AppStrings {
     },
     'daily_quiz_close': {AppLanguage.vi: 'Đóng', AppLanguage.en: 'Close'},
 
-    // Profile - "Học 10 từ hôm nay" (chon o Vocabulary hoac khi luu tu tra
+    'daily_writing_title': {
+      AppLanguage.vi: 'Luyện viết từ',
+      AppLanguage.en: 'Word writing',
+    },
+
+    // Profile - "Học {n} từ hôm nay" (chon o Vocabulary hoac khi luu tu tra
     // cuu, nhac hoc bang thong bao dinh ky)
     'profile_daily_words_title': {
-      AppLanguage.vi: 'Học 10 từ hôm nay',
-      AppLanguage.en: 'Learn 10 words today',
+      AppLanguage.vi: 'Học {n} từ hôm nay',
+      AppLanguage.en: 'Learn {n} words today',
+    },
+    'profile_daily_words_mode_label': {
+      AppLanguage.vi: 'Cách ôn tập',
+      AppLanguage.en: 'Review method',
+    },
+    'profile_daily_words_mode_quiz': {
+      AppLanguage.vi: 'Quiz',
+      AppLanguage.en: 'Quiz',
+    },
+    'profile_daily_words_mode_writing': {
+      AppLanguage.vi: 'Writing',
+      AppLanguage.en: 'Writing',
+    },
+    'profile_daily_words_tutorial_pick_mode': {
+      AppLanguage.vi: 'Chọn Quiz hay Writing',
+      AppLanguage.en: 'Pick Quiz or Writing',
+    },
+    'profile_daily_words_relearn': {
+      AppLanguage.vi: 'Học lại',
+      AppLanguage.en: 'Learn again',
+    },
+    'profile_daily_words_expired_hint': {
+      AppLanguage.vi: 'Đã sang ngày mới — học lại các từ này hoặc kết thúc để lưu vào Từ đã học.',
+      AppLanguage.en: "It's a new day — learn these words again, or end to save them to Words Learned.",
     },
     'profile_daily_words_empty': {
       AppLanguage.vi: 'Chưa có từ nào — vào Từ vựng theo chủ đề để chọn, hoặc bấm "Lưu" khi tra một từ.',
       AppLanguage.en: 'No words yet — pick some in Vocabulary by Topic, or tap "Save" when looking up a word.',
     },
     'profile_daily_words_select': {
-      AppLanguage.vi: 'Chọn 10 từ',
-      AppLanguage.en: 'Select 10 words',
+      AppLanguage.vi: 'Chọn từ để học',
+      AppLanguage.en: 'Select words',
     },
     'profile_daily_words_progress': {
       AppLanguage.vi: '{learned}/{total} từ đã học hôm nay',
@@ -2731,12 +2752,12 @@ class AppStrings {
       AppLanguage.en: 'Record your voice and the app compares it to the original sentence, scoring how close your pronunciation is.',
     },
     'onboarding_page3_title': {
-      AppLanguage.vi: 'Học 10 từ mới mỗi ngày',
-      AppLanguage.en: 'Learn 10 new words a day',
+      AppLanguage.vi: 'Học từ mới mỗi ngày',
+      AppLanguage.en: 'Learn new words every day',
     },
     'onboarding_page3_body': {
-      AppLanguage.vi: 'Chọn 10 từ muốn học, đặt giờ nhắc, app sẽ tự mở đố vui theo lịch để ôn lại — kể cả khi app đang đóng.',
-      AppLanguage.en: 'Pick 10 words to learn, set a reminder interval, and the app quizzes you on schedule — even while it\'s closed.',
+      AppLanguage.vi: 'Chọn từ muốn học, đặt giờ nhắc, chọn Quiz hoặc Writing — app sẽ tự mở bài ôn theo lịch, kể cả khi app đang đóng.',
+      AppLanguage.en: 'Pick words to learn, set a reminder interval, choose Quiz or Writing — the app opens a review on schedule, even while it\'s closed.',
     },
     'onboarding_page4_title': {
       AppLanguage.vi: 'Trò chuyện với AI bằng giọng nói',

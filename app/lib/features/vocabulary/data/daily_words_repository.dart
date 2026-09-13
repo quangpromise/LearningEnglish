@@ -22,7 +22,12 @@ class DailyWordEntry {
   );
 }
 
-/// Lưu danh sách "10 từ học hôm nay" + cấu hình nhắc quiz định kỳ trên máy
+/// Cach on tap moi lan nhac: trac nghiem chon 1 trong 4 (quiz) hoac tu go
+/// tu tieng Anh theo nghia + cham diem (writing, cung cach cham voi tinh
+/// nang Luyen viet - xem writing_scoring.dart).
+enum DailyStudyMode { quiz, writing }
+
+/// Lưu danh sách "từ học hôm nay" + cấu hình nhắc ôn định kỳ trên máy
 /// (SharedPreferences) - cùng khuôn mẫu với CryptoWatchlistRepository.
 class DailyWordsRepository {
   DailyWordsRepository._();
@@ -32,8 +37,8 @@ class DailyWordsRepository {
   static const _intervalKey = 'daily_words_interval_minutes_v1';
   static const _activeKey = 'daily_words_active_v1';
   static const _learnedTodayKey = 'daily_words_learned_today_v1';
-
-  static const defaultIntervalMinutes = 60;
+  static const _modeKey = 'daily_words_mode_v1';
+  static const _expiredKey = 'daily_words_expired_v1';
 
   static Future<List<DailyWordEntry>> loadWords() async {
     final prefs = await SharedPreferences.getInstance();
@@ -65,14 +70,47 @@ class DailyWordsRepository {
     await prefs.setString(_dateKey, isoDate);
   }
 
-  static Future<int> loadIntervalMinutes() async {
+  /// null = nguoi dung CHUA chon so phut cho phien hoc nay (khong con gia
+  /// tri mac dinh - bat buoc tu chon, xem _DailyWordsSection).
+  static Future<int?> loadIntervalMinutes() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getInt(_intervalKey) ?? defaultIntervalMinutes;
+    return prefs.getInt(_intervalKey);
   }
 
-  static Future<void> saveIntervalMinutes(int minutes) async {
+  static Future<void> saveIntervalMinutes(int? minutes) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(_intervalKey, minutes);
+    if (minutes == null) {
+      await prefs.remove(_intervalKey);
+    } else {
+      await prefs.setInt(_intervalKey, minutes);
+    }
+  }
+
+  static Future<DailyStudyMode?> loadMode() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_modeKey);
+    return DailyStudyMode.values.where((m) => m.name == raw).firstOrNull;
+  }
+
+  static Future<void> saveMode(DailyStudyMode? mode) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mode == null) {
+      await prefs.remove(_modeKey);
+    } else {
+      await prefs.setString(_modeKey, mode.name);
+    }
+  }
+
+  /// true = danh sach tu con lai tu 1 ngay TRUOC (da qua nua dem VN) - chi
+  /// con 2 lua chon "Ket thuc hoc"/"Hoc lai", xem DailyWordsController.
+  static Future<bool> loadExpired() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_expiredKey) ?? false;
+  }
+
+  static Future<void> saveExpired(bool expired) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_expiredKey, expired);
   }
 
   static Future<bool> loadActive() async {

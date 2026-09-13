@@ -39,13 +39,13 @@ class HomeScreen extends ConsumerWidget {
     // Persona nguoi dung da chon o khao sat "Goi y lo trinh hoc" (null = chua
     // chon/chua dang nhap) - dung de highlight tile lien quan ben duoi, VAN
     // HIEN DU MOI TILE NHU CU (khong an/khoa tile nao) theo dung yeu cau.
-    final persona = ref.watch(learningPathChoiceProvider).valueOrNull;
-    // Chua tung tuong tac voi khao sat (chua chon persona nao LAN chua bam
-    // "Tu hoc") - hien goi y ban tay + chu tro vao nut khao sat de nguoi
-    // dung moi biet no ton tai; mac dinh true (an) trong luc dang tai de
-    // tranh loe hien ra roi tat ngay sau 1 frame.
-    final surveyInteracted =
-        ref.watch(learningPathInteractedProvider).valueOrNull ?? true;
+    final personaAsync = ref.watch(learningPathChoiceProvider);
+    final persona = personaAsync.valueOrNull;
+    // Dang o trang thai "Tu hoc" (chua chon/da tat goi y lo trinh) - LUON
+    // hien ban tay + chu goi y tro vao nut la ban moi lan mo app, cho toi khi
+    // nguoi dung chon 1 lo trinh. An trong luc dang tai de tranh loe hien ra
+    // roi tat ngay sau 1 frame.
+    final showSurveyHint = personaAsync.hasValue && persona == null;
     final recommended = persona != null
         ? kPersonaRecommendations[persona]!
         : const <HomeFeature>[];
@@ -90,7 +90,7 @@ class HomeScreen extends ConsumerWidget {
                               icon: Icons.explore_rounded,
                             ),
                           ),
-                          if (!surveyInteracted)
+                          if (showSurveyHint)
                             Positioned(
                               top: 46,
                               right: -74,
@@ -401,11 +401,9 @@ class _CategoryItem extends StatelessWidget {
   }
 }
 
-/// Ban tay tro + dong chu goi y nguoi dung CHUA TUNG mo khao sat "Goi y lo
-/// trinh hoc" bam vao nut do (xem [PointingHandBadge], tai su dung nguyen
-/// con vat nay - cung 1 ngon ngu hinh anh voi tile goi y o luoi Home) - tu
-/// an ngay sau khi ho chon 1 gia tri BAT KY trong khao sat, ke ca "Tu hoc"
-/// (xem learningPathInteractedProvider).
+/// Ban tay tro + dong chu goi y nguoi dung dang "Tu hoc" bam vao nut khao
+/// sat "Goi y lo trinh hoc" (xem [PointingHandBadge], cung 1 ngon ngu hinh
+/// anh voi tile goi y o luoi Home) - chi an khi da chon 1 lo trinh.
 class _SuggestHint extends ConsumerWidget {
   const _SuggestHint({required this.color});
   final Color color;

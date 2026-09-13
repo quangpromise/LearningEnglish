@@ -14,14 +14,11 @@ import '../data/vocab_level_filter.dart';
 import '../data/vocabulary_data.dart';
 import 'daily_words_controller.dart';
 
-const _maxWordsPerSession = 10;
-
 class VocabularyTopicDetailScreen extends ConsumerStatefulWidget {
   const VocabularyTopicDetailScreen({
     super.key,
     required this.topic,
     required this.onBack,
-    required this.onStartQuiz,
   });
 
   final VocabTopic topic;
@@ -30,10 +27,6 @@ class VocabularyTopicDetailScreen extends ConsumerStatefulWidget {
   /// NGAY TRONG CUNG 1 popup (xem VocabularyTopicsScreen._step), khong mo/
   /// dong route/popup nao.
   final VoidCallback onBack;
-
-  /// Chuyen sang buoc quiz voi danh sach tu da chon - cung nguyen tac voi
-  /// [onBack], khong dung Navigator/openAppPopup.
-  final void Function(List<VocabWord> words) onStartQuiz;
 
   @override
   ConsumerState<VocabularyTopicDetailScreen> createState() =>
@@ -51,11 +44,7 @@ class _VocabularyTopicDetailScreenState
 
   void _toggle(VocabWord word) {
     setState(() {
-      if (_selected.contains(word)) {
-        _selected.remove(word);
-      } else if (_selected.length < _maxWordsPerSession) {
-        _selected.add(word);
-      }
+      if (!_selected.remove(word)) _selected.add(word);
     });
   }
 
@@ -177,9 +166,7 @@ class _VocabularyTopicDetailScreenState
                         style: AppTextStyles.heading(size: 17),
                       ),
                       Text(
-                        ref
-                            .tr('vocab_select_hint')
-                            .replaceFirst('{max}', '$_maxWordsPerSession'),
+                        ref.tr('vocab_select_hint'),
                         style: AppTextStyles.muted(size: 11),
                       ),
                     ],
@@ -195,7 +182,7 @@ class _VocabularyTopicDetailScreenState
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(
-                    '${_selected.length}/$_maxWordsPerSession',
+                    '${_selected.length}',
                     style: AppTextStyles.body(
                       size: 12,
                       weight: FontWeight.w800,
@@ -363,27 +350,16 @@ class _VocabularyTopicDetailScreenState
                     ),
             ),
             const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: PillButton(
-                    label: ref.tr('vocab_start_learning'),
-                    onTap: _selected.isEmpty
-                        ? null
-                        : () => widget.onStartQuiz(_selected.toList()),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: PillButton(
-                    label: ref.tr('vocab_add_to_daily'),
-                    filled: false,
-                    onTap: _selected.isEmpty
-                        ? null
-                        : () => _saveToDailyList(context),
-                  ),
-                ),
-              ],
+            SizedBox(
+              width: double.infinity,
+              child: PillButton(
+                label: ref
+                    .tr('vocab_add_to_daily')
+                    .replaceFirst('{n}', '${_selected.length}'),
+                onTap: _selected.isEmpty
+                    ? null
+                    : () => _saveToDailyList(context),
+              ),
             ),
           ],
         ),

@@ -137,9 +137,51 @@ void main() {
         ),
       ];
       final result = computeExpenseByCategory(transactions, DateTime(2026, 3));
-      expect(result[WealthExpenseCategory.food], 150);
-      expect(result[WealthExpenseCategory.transport], 200);
-      expect(result.containsKey(WealthExpenseCategory.housing), false);
+      expect(result[WealthExpenseCategory.food.code], 150);
+      expect(result[WealthExpenseCategory.transport.code], 200);
+      expect(result.containsKey(WealthExpenseCategory.housing.code), false);
+    });
+
+    test('danh muc tuy chinh la muc RIENG, khong bi gop vao Khac', () {
+      final transactions = [
+        _tx(
+          type: WealthTransactionType.expense,
+          amount: 70,
+          category: 'CUSTOM:pets',
+          occurredAt: DateTime(2026, 3, 1),
+        ),
+        _tx(
+          type: WealthTransactionType.expense,
+          amount: 30,
+          category: 'OTHER',
+          occurredAt: DateTime(2026, 3, 2),
+        ),
+      ];
+      final result = computeExpenseByCategory(
+        transactions,
+        DateTime(2026, 3),
+        customCategoryIds: {'pets'},
+      );
+      expect(result['CUSTOM:pets'], 70);
+      expect(result[WealthExpenseCategory.other.code], 30);
+    });
+
+    test('danh muc tuy chinh da bi xoa moi roi ve Khac', () {
+      final transactions = [
+        _tx(
+          type: WealthTransactionType.expense,
+          amount: 70,
+          category: 'CUSTOM:deleted',
+          occurredAt: DateTime(2026, 3, 1),
+        ),
+      ];
+      final result = computeExpenseByCategory(
+        transactions,
+        DateTime(2026, 3),
+        customCategoryIds: {'pets'},
+      );
+      expect(result.containsKey('CUSTOM:deleted'), false);
+      expect(result[WealthExpenseCategory.other.code], 70);
     });
   });
 

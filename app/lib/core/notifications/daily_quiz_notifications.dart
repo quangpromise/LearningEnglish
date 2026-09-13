@@ -151,7 +151,7 @@ class DailyQuizNotifications {
     NotificationDetails details,
   ) async {
     const title = 'Đến giờ ôn từ vựng!';
-    const body = 'Chạm để làm quiz nhanh cho các từ bạn đang học hôm nay';
+    const body = 'Chạm để ôn lại các từ bạn đang học hôm nay';
     try {
       await _plugin.zonedSchedule(
         id: id,

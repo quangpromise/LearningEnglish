@@ -5,6 +5,7 @@
 import 'recurring_service_model.dart';
 import 'wealth_balance_entry_model.dart';
 import 'wealth_category.dart';
+import 'wealth_custom_category_model.dart';
 import 'wealth_transaction_model.dart';
 
 bool _sameMonth(DateTime a, DateTime month) =>
@@ -62,18 +63,45 @@ double computeMonthlyWalletInflow(
   return total;
 }
 
-Map<WealthExpenseCategory, double> computeExpenseByCategory(
+/// Ma danh muc dung de GOM trong bao cao: danh muc tuy chinh (`CUSTOM:<id>`)
+/// giu nguyen ma rieng cua no - chi roi vao "Khac" khi danh muc do da bi xoa
+/// (id khong con trong [customCategoryIds]; null = khong kiem tra). Danh muc
+/// co dinh chuan hoa qua [WealthExpenseCategory] (ma la -> OTHER).
+String _reportCategoryCode(String code, Set<String>? customCategoryIds) {
+  final customId = customCategoryIdFromCode(code);
+  if (customId != null) {
+    return customCategoryIds == null || customCategoryIds.contains(customId)
+        ? code
+        : WealthExpenseCategory.other.code;
+  }
+  return WealthExpenseCategory.fromCode(code).code;
+}
+
+/// Gop chi tieu trong [month] theo ma danh muc (xem [_reportCategoryCode]) -
+/// danh muc tuy chinh hien thanh muc RIENG trong bao cao thay vi bi gop het
+/// vao "Khac".
+Map<String, double> computeExpenseByCategory(
   List<WealthTransaction> transactions,
   DateTime month, {
   double? usdVnd,
+  Set<String>? customCategoryIds,
+}) => _expenseByCategory(
+  transactions.where((t) => _sameMonth(t.occurredAt, month)),
+  usdVnd: usdVnd,
+  customCategoryIds: customCategoryIds,
+);
+
+Map<String, double> _expenseByCategory(
+  Iterable<WealthTransaction> transactions, {
+  double? usdVnd,
+  Set<String>? customCategoryIds,
 }) {
-  final result = <WealthExpenseCategory, double>{};
+  final result = <String, double>{};
   for (final t in transactions) {
     if (t.type != WealthTransactionType.expense) continue;
-    if (!_sameMonth(t.occurredAt, month)) continue;
-    final category = WealthExpenseCategory.fromCode(t.categoryCode);
+    final code = _reportCategoryCode(t.categoryCode, customCategoryIds);
     final vnd = _toVnd(t.amount, t.currency, usdVnd);
-    result[category] = (result[category] ?? 0) + vnd;
+    result[code] = (result[code] ?? 0) + vnd;
   }
   return result;
 }
@@ -140,19 +168,15 @@ double computeAllTimeWalletInflow(
 
 /// Ban all-time cua computeExpenseByCategory - gop chi tieu theo danh muc
 /// tu TRUOC GIO, khong loc theo thang.
-Map<WealthExpenseCategory, double> computeAllTimeExpenseByCategory(
+Map<String, double> computeAllTimeExpenseByCategory(
   List<WealthTransaction> transactions, {
   double? usdVnd,
-}) {
-  final result = <WealthExpenseCategory, double>{};
-  for (final t in transactions) {
-    if (t.type != WealthTransactionType.expense) continue;
-    final category = WealthExpenseCategory.fromCode(t.categoryCode);
-    final vnd = _toVnd(t.amount, t.currency, usdVnd);
-    result[category] = (result[category] ?? 0) + vnd;
-  }
-  return result;
-}
+  Set<String>? customCategoryIds,
+}) => _expenseByCategory(
+  transactions,
+  usdVnd: usdVnd,
+  customCategoryIds: customCategoryIds,
+);
 
 /// Ban all-time cua computeMonthlyServiceRenewalTotal - tong tien dich vu
 /// dinh ky da renew tu TRUOC GIO, khong loc theo thang.

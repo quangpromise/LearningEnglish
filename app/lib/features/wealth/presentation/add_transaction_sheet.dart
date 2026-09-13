@@ -87,10 +87,13 @@ class _WealthTransactionFormState extends ConsumerState<WealthTransactionForm> {
   late final _noteController = TextEditingController(
     text: widget.existing?.note ?? '',
   );
-  late String _categoryCode =
+  // Chi tieu moi KHONG chon san danh muc nao (truoc day mac dinh "Khac",
+  // khien khoan nao quen chon danh muc deu bi tinh vao "Khac" o Bao cao) -
+  // chi vao "Khac" khi nguoi dung chu dong chon; nut Luu khoa toi khi chon.
+  late String? _categoryCode =
       widget.existing?.categoryCode ??
       (widget.type == WealthTransactionType.expense
-          ? WealthExpenseCategory.other.code
+          ? null
           : WealthIncomeCategory.salary.code);
   bool _saving = false;
   // Chi dung khi type=expense - cho phep tach nhieu hinh thuc thanh toan
@@ -259,11 +262,14 @@ class _WealthTransactionFormState extends ConsumerState<WealthTransactionForm> {
       _amount = 0;
       _splits = const [PaymentSplit(accountType: 'cash', amount: 0)];
       _selectedServiceId = null;
+      if (_isExpense) _categoryCode = null;
     });
     onSaved();
   }
 
   Future<void> _save() async {
+    final categoryCode = _categoryCode;
+    if (categoryCode == null) return;
     if (_amount <= 0) return;
     if (!_splitsValid) return;
     setState(() => _saving = true);
@@ -280,7 +286,7 @@ class _WealthTransactionFormState extends ConsumerState<WealthTransactionForm> {
       }
     }
     final incomeKind = widget.type == WealthTransactionType.income
-        ? (WealthIncomeCategory.fromCode(_categoryCode).isPassive
+        ? (WealthIncomeCategory.fromCode(categoryCode).isPassive
               ? 'passive'
               : 'active')
         : null;
@@ -291,7 +297,7 @@ class _WealthTransactionFormState extends ConsumerState<WealthTransactionForm> {
     final tx = WealthTransaction(
       id: widget.existing?.id ?? '',
       type: widget.type,
-      categoryCode: _categoryCode,
+      categoryCode: categoryCode,
       amount: _amount,
       currency: 'VND',
       occurredAt: _occurredAt,
@@ -478,7 +484,9 @@ class _WealthTransactionFormState extends ConsumerState<WealthTransactionForm> {
             label: _saveButtonLabel,
             accentGradient: AppColors.wealthAccentGradient,
             accentColor: AppColors.wealthAccent,
-            onTap: _saving || !_splitsValid ? null : _save,
+            onTap: _saving || !_splitsValid || _categoryCode == null
+                ? null
+                : _save,
           ),
         ),
       ],

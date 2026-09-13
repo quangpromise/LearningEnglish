@@ -9,7 +9,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_format.dart';
 import '../data/recurring_service_model.dart';
 import '../data/wealth_balance_entry_model.dart';
-import '../data/wealth_category.dart';
+import '../data/wealth_custom_category_model.dart';
 import '../data/wealth_report_data.dart';
 import '../data/wealth_transaction_model.dart';
 
@@ -51,8 +51,9 @@ String _fullMonthLabel(DateTime d, AppLanguage lang) => lang == AppLanguage.en
     ? '${_monthNamesEn[d.month - 1]} ${d.year}'
     : '${_monthNamesVi[d.month - 1]}, ${d.year}';
 
-/// Mau co dinh cho 8 danh muc chi tieu (WealthExpenseCategory) - du 8 mau
-/// khac biet ro rang cho bieu do tron, khong trung mau nao.
+/// Mau cho cac muc trong bieu do tron chi tieu theo danh muc (theo thu tu
+/// so tien giam dan) - them mau cho danh muc tuy chinh, chi lap lai khi co
+/// hon 12 danh muc.
 const _kCategoryColors = [
   Color(0xFFFF6B9D), // pink
   Color(0xFF5B8CFF), // blue
@@ -61,6 +62,10 @@ const _kCategoryColors = [
   Color(0xFF9B6BFF), // purple
   Color(0xFFD4AF37), // gold
   Color(0xFFF0883D), // orange
+  Color(0xFF7ED957), // green
+  Color(0xFFE05BD0), // magenta
+  Color(0xFF4FC3F7), // sky
+  Color(0xFFC0835A), // brown
   Color(0xFF8B93A7), // gray
 ];
 
@@ -316,9 +321,26 @@ class _ReportBody extends ConsumerWidget {
     final prevIncome = allTime
         ? 0.0
         : computeMonthlyWalletInflow(balanceEntries, prevMonth, usdVnd: usdVnd);
+    final customCategories =
+        ref.watch(wealthCustomCategoriesProvider).valueOrNull ??
+        const <WealthCustomCategory>[];
+    // Chua tai xong danh sach danh muc tuy chinh -> khong kiem tra (null),
+    // tranh lo gop tam cac danh muc do vao "Khac" roi nhay lai.
+    final customIds = ref.watch(wealthCustomCategoriesProvider).hasValue
+        ? customCategories.map((c) => c.id).toSet()
+        : null;
     final categoryTotals = allTime
-        ? computeAllTimeExpenseByCategory(transactions, usdVnd: usdVnd)
-        : computeExpenseByCategory(transactions, month, usdVnd: usdVnd);
+        ? computeAllTimeExpenseByCategory(
+            transactions,
+            usdVnd: usdVnd,
+            customCategoryIds: customIds,
+          )
+        : computeExpenseByCategory(
+            transactions,
+            month,
+            usdVnd: usdVnd,
+            customCategoryIds: customIds,
+          );
     final thisRenewalTotal = allTime
         ? computeAllTimeServiceRenewalTotal(renewals, usdVnd: usdVnd)
         : computeMonthlyServiceRenewalTotal(renewals, month, usdVnd: usdVnd);
@@ -370,7 +392,10 @@ class _ReportBody extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Expanded(
-                  child: _CategoryBreakdownCard(categoryTotals: categoryTotals),
+                  child: _CategoryBreakdownCard(
+                    categoryTotals: categoryTotals,
+                    customCategories: customCategories,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -646,8 +671,15 @@ class _IncomeExpenseCard extends ConsumerWidget {
 }
 
 class _CategoryBreakdownCard extends ConsumerWidget {
-  const _CategoryBreakdownCard({required this.categoryTotals});
-  final Map<WealthExpenseCategory, double> categoryTotals;
+  const _CategoryBreakdownCard({
+    required this.categoryTotals,
+    required this.customCategories,
+  });
+
+  /// Ma danh muc -> tong tien (xem computeExpenseByCategory) - gom ca danh
+  /// muc tuy chinh thanh muc rieng.
+  final Map<String, double> categoryTotals;
+  final List<WealthCustomCategory> customCategories;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -724,7 +756,11 @@ class _CategoryBreakdownCard extends ConsumerWidget {
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
-                        ref.tr(sortedEntries[i].key.labelKey),
+                        resolveExpenseCategoryDisplay(
+                          ref,
+                          sortedEntries[i].key,
+                          customCategories,
+                        ).$2,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: AppTextStyles.body(

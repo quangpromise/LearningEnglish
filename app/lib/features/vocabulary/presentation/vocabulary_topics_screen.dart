@@ -7,14 +7,13 @@ import '../../../core/theme/app_theme.dart';
 import '../../learning_path/presentation/learner_level_banner.dart';
 import '../data/vocab_level_filter.dart';
 import '../data/vocabulary_data.dart';
-import 'vocabulary_quiz_screen.dart';
 import 'vocabulary_topic_detail_screen.dart';
 
-enum _VocabStep { topics, detail, quiz }
+enum _VocabStep { topics, detail }
 
 /// Man goc cua tinh nang Tu vung theo chu de - dong thoi la "khung" duy
-/// nhat cho CA luong (chon chu de -> xem/chon tu -> lam quiz), KHONG mo
-/// them bat ky popup/route nao khac cho 2 buoc sau (xem [_step]) - chi 1
+/// nhat cho CA luong (chon chu de -> xem/chon tu), KHONG mo them bat ky
+/// popup/route nao khac cho buoc sau (xem [_step]) - chi 1
 /// showModalBottomSheet duy nhat (openAppPopup goi tu home_screen.dart) ton
 /// tai tu dau den cuoi. Ly do: vuot xuong/tap ra ngoai la gesture CO SAN
 /// cua CHINH sheet do - neu tung mo THEM 1 sheet/route khac chong len (thu
@@ -38,7 +37,6 @@ class _VocabularyTopicsScreenState
 
   _VocabStep _step = _VocabStep.topics;
   VocabTopic? _activeTopic;
-  List<VocabWord> _quizWords = const [];
 
   @override
   void dispose() {
@@ -55,40 +53,15 @@ class _VocabularyTopicsScreenState
 
   void _backToTopics() => setState(() => _step = _VocabStep.topics);
 
-  void _startQuiz(List<VocabWord> words) {
-    setState(() {
-      _quizWords = words;
-      _step = _VocabStep.quiz;
-    });
-  }
-
-  void _backToDetail() => setState(() => _step = _VocabStep.detail);
-
   @override
   Widget build(BuildContext context) {
     switch (_step) {
       case _VocabStep.detail:
-        final topic = _activeTopic;
-        if (topic == null) {
-          // Khong the xay ra qua luong _openTopic binh thuong - phong ho
-          // trong truong hop hot-reload/state la giua chung, tranh crash.
-          return VocabularyTopicDetailScreen(
-            topic: kVocabTopics.first,
-            onBack: _backToTopics,
-            onStartQuiz: _startQuiz,
-          );
-        }
+        // _activeTopic null khong the xay ra qua luong _openTopic binh thuong
+        // - phong ho truong hop hot-reload/state la giua chung, tranh crash.
         return VocabularyTopicDetailScreen(
-          topic: topic,
-          onBack: _backToTopics,
-          onStartQuiz: _startQuiz,
-        );
-      case _VocabStep.quiz:
-        return VocabularyQuizScreen(
           topic: _activeTopic ?? kVocabTopics.first,
-          words: _quizWords,
-          onClose: _backToDetail,
-          onFinishToTopics: _backToTopics,
+          onBack: _backToTopics,
         );
       case _VocabStep.topics:
         return _buildTopicsGrid(context);

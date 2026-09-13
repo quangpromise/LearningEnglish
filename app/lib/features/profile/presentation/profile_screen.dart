@@ -14,6 +14,7 @@ import '../../settings/presentation/change_password_sheet.dart';
 import '../../settings/presentation/voice_settings_sheet.dart';
 import '../../stats/data/stats_repository.dart';
 import '../../update/data/update_checker.dart';
+import '../../vocabulary/data/daily_words_repository.dart';
 import '../../vocabulary/presentation/daily_quiz_popup_screen.dart';
 import '../../vocabulary/presentation/daily_words_controller.dart';
 import '../../vocabulary/presentation/learned_words_popup.dart';
@@ -35,9 +36,9 @@ class ProfileScreen extends ConsumerStatefulWidget {
   /// mac dinh.
   final int initialTab;
 
-  /// true = vua bam "Hoc hom nay" xong, can TU DONG cuon toi
-  /// [_DailyWordsSection] VA hien huong dan ngon tay tung buoc (tro vao
-  /// khoang chon phut nhac lai, roi tro vao nut "Bat dau hoc") - xem
+  /// true = vua bam "Hoc (x) tu hom nay" xong, can TU DONG cuon toi
+  /// [_DailyWordsSection] VA hien huong dan ngon tay tung buoc (so phut
+  /// nhac lai -> Quiz/Writing -> nut "Bat dau hoc") - xem
   /// _DailyWordsSectionState.
   final bool highlightDailyWords;
 
@@ -403,44 +404,40 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ),
                 ),
                 const SizedBox(width: 14),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      profileAsync.valueOrNull?.nameLabel ?? '...',
-                      style: AppTextStyles.heading(size: 18),
-                    ),
-                    Container(
-                      margin: const EdgeInsets.only(top: 4),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 5,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        profileAsync.valueOrNull?.nameLabel ?? '...',
+                        style: AppTextStyles.heading(size: 18),
                       ),
-                      decoration: BoxDecoration(
-                        color: AppColors.amber.withValues(alpha: 0.16),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
+                      const SizedBox(height: 4),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
                         children: [
-                          const Icon(
-                            Icons.local_fire_department_rounded,
-                            size: 14,
+                          _HeaderPill(
+                            icon: Icons.local_fire_department_rounded,
                             color: AppColors.amber,
+                            label:
+                                '${statsAsync.valueOrNull?.streakDays ?? 0} ${ref.tr('profile_streak_suffix')}',
                           ),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${statsAsync.valueOrNull?.streakDays ?? 0} ${ref.tr('profile_streak_suffix')}',
-                            style: const TextStyle(
-                              color: AppColors.amber,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 12,
+                          // "Dich vu phi" gon thanh 1 nut nho canh day streak
+                          // (truoc la ca 1 khung lon dau tab Cai dat) - bam mo
+                          // bottom sheet chua danh sach day du.
+                          if (showTabs)
+                            _HeaderPill(
+                              icon: Icons.workspace_premium_rounded,
+                              color: AppColors.wealthAccent,
+                              label: ref.tr('profile_fee_services_title'),
+                              onTap: () =>
+                                  _showFeeServicesSheet(context, section),
                             ),
-                          ),
                         ],
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -455,12 +452,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ],
             Expanded(
               child: !showTabs
-                  ? _buildSettingsTab(isEnglishContext: false, feeSection: null)
+                  ? _buildSettingsTab(isEnglishContext: false)
                   : (_tab == 0
-                        ? _buildSettingsTab(
-                            isEnglishContext: isEnglishContext,
-                            feeSection: section,
-                          )
+                        ? _buildSettingsTab(isEnglishContext: isEnglishContext)
                         : _buildActivityTab(
                             isEnglishContext: isEnglishContext,
                             isFitness: isFitness,
@@ -600,16 +594,28 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  Widget _buildSettingsTab({
-    required bool isEnglishContext,
-    required AppSection? feeSection,
-  }) {
+  /// Danh sach "Dich vu phi" day du, mo tu nut nho canh day streak.
+  void _showFeeServicesSheet(BuildContext context, AppSection section) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Container(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
+        decoration: const BoxDecoration(
+          color: Color(0xFF12172E),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        child: SingleChildScrollView(
+          child: _FeeServicesSection(section: section),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSettingsTab({required bool isEnglishContext}) {
     return ListView(
       children: [
-        if (feeSection != null) ...[
-          _FeeServicesSection(section: feeSection),
-          const SizedBox(height: 14),
-        ],
         if (isEnglishContext) ...[
           GestureDetector(
             onTap: () => showVoiceSettingsSheet(context),
@@ -744,44 +750,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
         ),
         const SizedBox(height: 14),
-        if (isEnglishContext) ...[
-          GestureDetector(
-            onTap: () => openAppPopup(context, const AttributionScreen()),
-            child: GlowBox(
-              borderRadius: 20,
-              child: Row(
-                children: [
-                  Container(
-                    width: 34,
-                    height: 34,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: AppColors.amber.withValues(alpha: 0.18),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.copyright_rounded,
-                      size: 16,
-                      color: AppColors.amber,
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Text(
-                      ref.tr('attribution_menu_title'),
-                      style: AppTextStyles.body(weight: FontWeight.w800),
-                    ),
-                  ),
-                  const Icon(
-                    Icons.chevron_right_rounded,
-                    color: AppColors.textMuted,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 14),
-        ],
         GestureDetector(
           onTap: () => _checkForUpdateNow(context),
           child: GlowBox(
@@ -861,6 +829,42 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
         ),
         const SizedBox(height: 14),
+        // "Ghi cong" - nut chu nho gon ngay tren dong version (truoc la ca 1
+        // khung lon trong danh sach cai dat).
+        if (isEnglishContext) ...[
+          Center(
+            child: GestureDetector(
+              onTap: () => openAppPopup(context, const AttributionScreen()),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.glassFill,
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(color: AppColors.glassBorder),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.copyright_rounded,
+                      size: 11,
+                      color: AppColors.textMuted,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      ref.tr('attribution_menu_title'),
+                      style: AppTextStyles.muted(size: 10.5),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 6),
+        ],
         Center(
           child: Consumer(
             builder: (context, innerRef, _) {
@@ -896,6 +900,55 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ),
       ],
     );
+  }
+}
+
+/// Nhan tron nho o header Ho so (day streak, nut "Dich vu phi").
+class _HeaderPill extends StatelessWidget {
+  const _HeaderPill({
+    required this.icon,
+    required this.color,
+    required this.label,
+    this.onTap,
+  });
+  final IconData icon;
+  final Color color;
+  final String label;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final pill = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.16),
+        borderRadius: BorderRadius.circular(999),
+        border: onTap != null
+            ? Border.all(color: color.withValues(alpha: 0.4))
+            : null,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.w800,
+              fontSize: 12,
+            ),
+          ),
+          if (onTap != null) ...[
+            const SizedBox(width: 2),
+            Icon(Icons.chevron_right_rounded, size: 14, color: color),
+          ],
+        ],
+      ),
+    );
+    if (onTap == null) return pill;
+    return GestureDetector(onTap: onTap, child: pill);
   }
 }
 
@@ -1345,16 +1398,18 @@ class _TutorialFingerPointerState extends State<_TutorialFingerPointer>
 const _kIntervalChoicesMinutes = [15, 30, 60, 90, 120];
 const _kMinCustomIntervalMinutes = 1;
 
-/// "Học 10 từ hôm nay" - hien danh sach tu da chon (o Vocabulary hoac luu
-/// tu khi tra cuu), cho phep dat khoang thoi gian nhac quiz + bat/tat.
+/// "Học {n} từ hôm nay" - hien danh sach tu da chon (o Vocabulary hoac luu
+/// tu khi tra cuu, khong gioi han so tu), cho chon so phut nhac lai + cach
+/// on (Quiz/Writing) roi bat/tat nhac. Sang ngay moi (DailyWordsState.
+/// expired) chi con 2 nut "Ket thuc hoc"/"Hoc lai".
 class _DailyWordsSection extends ConsumerStatefulWidget {
   const _DailyWordsSection({super.key, this.showTutorial = false});
 
-  /// true = vua duoc mo TU nut "Hoc hom nay" (xem ProfileScreen.
-  /// highlightDailyWords) - hien huong dan ngon tay tung buoc: tro vao
-  /// khoang chon phut nhac lai TRUOC, sau khi nguoi dung cham 1 moc phut
-  /// (xem _pickedInterval) doi sang tro vao nut "Bat dau hoc". Tu an hoan
-  /// toan khi da bat nhac (state.active).
+  /// true = vua duoc mo TU nut "Hoc (x) tu hom nay" (xem ProfileScreen.
+  /// highlightDailyWords) - hien huong dan ngon tay tung buoc theo dung
+  /// thu tu con thieu: so phut nhac lai -> Quiz/Writing -> "Bat dau hoc".
+  /// Moi ban tay tu bien mat ngay khi buoc do da chon xong; an het khi da
+  /// bat nhac.
   final bool showTutorial;
 
   @override
@@ -1362,8 +1417,6 @@ class _DailyWordsSection extends ConsumerStatefulWidget {
 }
 
 class _DailyWordsSectionState extends ConsumerState<_DailyWordsSection> {
-  bool _pickedInterval = false;
-
   /// Hop thoai nhap so phut nhac lai TUY Y (toi thieu
   /// _kMinCustomIntervalMinutes) - dung cho cac moc khong co san trong danh
   /// sach chip dinh san (vd de test nhanh chi 1 phut). [currentValue] khac
@@ -1375,10 +1428,8 @@ class _DailyWordsSectionState extends ConsumerState<_DailyWordsSection> {
     final controller = TextEditingController(
       text: currentValue == null ? '' : '$currentValue',
     );
-    // "error" phai nam O NGOAI builder cua StatefulBuilder (khong phai bien
-    // local KHAI BAO LAI moi lan builder chay) - neu khong, moi lan
-    // setDialogState() goi lai builder se tu XOA error vua gan (khai bao lai
-    // = null tu dau), khien thong bao loi chop nhoang roi bien mat ngay.
+    // "error" phai nam O NGOAI builder cua StatefulBuilder - neu khong, moi
+    // lan setDialogState() goi lai builder se tu XOA error vua gan.
     String? error;
     final result = await showDialog<int>(
       context: context,
@@ -1434,9 +1485,61 @@ class _DailyWordsSectionState extends ConsumerState<_DailyWordsSection> {
     await ref
         .read(dailyWordsControllerProvider.notifier)
         .setIntervalMinutes(result);
-    if (widget.showTutorial && !_pickedInterval) {
-      setState(() => _pickedInterval = true);
+  }
+
+  /// "Ket thuc hoc" - ghi TOAN BO cac tu cua phien vao thong ke "Tu da hoc"
+  /// (popup Words Learned, an khoi man Tu vung theo chu de) roi xoa danh
+  /// sach + tat nhac.
+  Future<void> _endLearning(DailyWordsState state) async {
+    final repo = ref.read(statsRepositoryProvider);
+    try {
+      for (final w in state.words) {
+        await repo.recordWordLearned(w.en);
+      }
+      ref.invalidate(myStatsProvider);
+      ref.invalidate(learnedWordsProvider);
+    } catch (_) {
+      // Mang loi tam thoi - khong chan viec ket thuc phien, chi la cac tu do
+      // chua kip ghi vao thong ke toan cuc lan nay.
     }
+    await ref.read(dailyWordsControllerProvider.notifier).stop();
+  }
+
+  Future<void> _relearn(BuildContext context) async {
+    final started = await ref
+        .read(dailyWordsControllerProvider.notifier)
+        .relearn();
+    if (!started || !context.mounted) return;
+    openAppPopup(context, const DailyQuizPopupScreen());
+  }
+
+  Future<void> _start(BuildContext context) async {
+    await ref.read(dailyWordsControllerProvider.notifier).start();
+    if (!context.mounted) return;
+    openAppPopup(context, const DailyQuizPopupScreen());
+  }
+
+  /// Dat ban tay huong dan NGAY TREN [child] (khong chiem cho trong bo cuc).
+  Widget _withPointer({
+    required bool show,
+    required String labelKey,
+    required Widget child,
+  }) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        child,
+        if (show)
+          Positioned(
+            top: -34,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: _TutorialFingerPointer(label: ref.tr(labelKey)),
+            ),
+          ),
+      ],
+    );
   }
 
   @override
@@ -1445,12 +1548,13 @@ class _DailyWordsSectionState extends ConsumerState<_DailyWordsSection> {
     final notifier = ref.read(dailyWordsControllerProvider.notifier);
     final total = state.words.length;
     final learned = total - state.pending.length;
-    // Huong dan ngon tay 2 buoc (xem widget.showTutorial): buoc 1 tro vao
-    // khoang chon phut nhac lai, buoc 2 (sau khi da cham 1 moc phut) tro
-    // vao nut "Bat dau hoc" - tu an het khi da bat nhac (state.active).
-    final tutorialActive = widget.showTutorial && !state.active;
-    final showIntervalPointer = tutorialActive && !_pickedInterval;
-    final showStartPointer = tutorialActive && _pickedInterval;
+    // Huong dan ngon tay tung buoc (xem widget.showTutorial) - suy thang tu
+    // state: buoc nao chua chon thi ban tay tro vao buoc do.
+    final tutorial = widget.showTutorial && !state.active && !state.expired;
+    final showIntervalPointer = tutorial && state.intervalMinutes == null;
+    final showModePointer =
+        tutorial && state.intervalMinutes != null && state.mode == null;
+    final showStartPointer = tutorial && state.canStart;
 
     return GlowBox(
       borderRadius: 22,
@@ -1475,7 +1579,9 @@ class _DailyWordsSectionState extends ConsumerState<_DailyWordsSection> {
               const SizedBox(width: 14),
               Expanded(
                 child: Text(
-                  ref.tr('profile_daily_words_title'),
+                  ref
+                      .tr('profile_daily_words_title')
+                      .replaceFirst('{n}', '$total'),
                   style: AppTextStyles.body(weight: FontWeight.w800),
                 ),
               ),
@@ -1497,14 +1603,16 @@ class _DailyWordsSectionState extends ConsumerState<_DailyWordsSection> {
               ),
             ),
           ] else ...[
-            Text(
-              ref
-                  .tr('profile_daily_words_progress')
-                  .replaceFirst('{learned}', '$learned')
-                  .replaceFirst('{total}', '$total'),
-              style: AppTextStyles.muted(size: 12),
-            ),
-            const SizedBox(height: 10),
+            if (!state.expired) ...[
+              Text(
+                ref
+                    .tr('profile_daily_words_progress')
+                    .replaceFirst('{learned}', '$learned')
+                    .replaceFirst('{total}', '$total'),
+                style: AppTextStyles.muted(size: 12),
+              ),
+              const SizedBox(height: 10),
+            ],
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -1534,215 +1642,200 @@ class _DailyWordsSectionState extends ConsumerState<_DailyWordsSection> {
               ],
             ),
             const SizedBox(height: 14),
-            Text(
-              ref.tr('profile_daily_words_interval_label'),
-              style: AppTextStyles.muted(size: 11).copyWith(letterSpacing: 0.4),
-            ),
-            const SizedBox(height: 8),
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Wrap(
+            if (state.expired) ...[
+              Text(
+                ref.tr('profile_daily_words_expired_hint'),
+                style: AppTextStyles.muted(size: 11.5),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: PillButton(
+                      label: ref.tr('profile_daily_words_stop'),
+                      filled: false,
+                      onTap: () => _endLearning(state),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: PillButton(
+                      label: ref.tr('profile_daily_words_relearn'),
+                      onTap: () => _relearn(context),
+                    ),
+                  ),
+                ],
+              ),
+            ] else ...[
+              _sectionLabel('profile_daily_words_interval_label'),
+              const SizedBox(height: 8),
+              _withPointer(
+                show: showIntervalPointer,
+                labelKey: 'profile_daily_words_tutorial_pick_minutes',
+                child: Wrap(
                   spacing: 8,
                   runSpacing: 8,
                   children: [
                     for (final m in _kIntervalChoicesMinutes)
-                      GestureDetector(
-                        onTap: () {
-                          notifier.setIntervalMinutes(m);
-                          if (widget.showTutorial && !_pickedInterval) {
-                            setState(() => _pickedInterval = true);
-                          }
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: state.intervalMinutes == m
-                                ? AppColors.blue.withValues(alpha: 0.22)
-                                : AppColors.glassFill,
-                            borderRadius: BorderRadius.circular(999),
-                            border: Border.all(
-                              color: state.intervalMinutes == m
-                                  ? AppColors.blue.withValues(alpha: 0.6)
-                                  : AppColors.glassBorder,
-                            ),
-                          ),
-                          child: Text(
+                      _ChoiceChip(
+                        label:
                             '$m ${ref.tr('profile_daily_words_minutes_suffix')}',
-                            style: AppTextStyles.body(
-                              size: 12,
-                              weight: FontWeight.w700,
-                              color: state.intervalMinutes == m
-                                  ? AppColors.blue
-                                  : AppColors.textPrimary,
-                            ),
-                          ),
-                        ),
+                        selected: state.intervalMinutes == m,
+                        onTap: () => notifier.setIntervalMinutes(m),
                       ),
-                    // Chip "Khac" - mo dialog nhap so phut TUY Y (toi thieu
-                    // _kMinCustomIntervalMinutes), cho cac moc khong co san
-                    // trong danh sach dinh san o tren (vd de test nhanh).
-                    // Neu gia tri dang chon khong trung moc nao co san, chip
-                    // nay TU hien chinh gia tri do (thay vi chu "Khac" chung
-                    // chung) va duoc to sang nhu da chon.
+                    // Chip "Khac" - mo dialog nhap so phut TUY Y. Neu gia tri
+                    // dang chon khong trung moc nao co san, chip nay TU hien
+                    // chinh gia tri do va duoc to sang nhu da chon.
                     Builder(
                       builder: (context) {
-                        final isCustom = !_kIntervalChoicesMinutes.contains(
-                          state.intervalMinutes,
-                        );
-                        return GestureDetector(
+                        final interval = state.intervalMinutes;
+                        final isCustom =
+                            interval != null &&
+                            !_kIntervalChoicesMinutes.contains(interval);
+                        return _ChoiceChip(
+                          icon: Icons.edit_rounded,
+                          label: isCustom
+                              ? '$interval ${ref.tr('profile_daily_words_minutes_suffix')}'
+                              : ref.tr('profile_daily_words_custom_interval'),
+                          selected: isCustom,
                           onTap: () => _pickCustomInterval(
                             context,
-                            isCustom ? state.intervalMinutes : null,
-                          ),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isCustom
-                                  ? AppColors.blue.withValues(alpha: 0.22)
-                                  : AppColors.glassFill,
-                              borderRadius: BorderRadius.circular(999),
-                              border: Border.all(
-                                color: isCustom
-                                    ? AppColors.blue.withValues(alpha: 0.6)
-                                    : AppColors.glassBorder,
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.edit_rounded,
-                                  size: 12,
-                                  color: isCustom
-                                      ? AppColors.blue
-                                      : AppColors.textMuted,
-                                ),
-                                const SizedBox(width: 5),
-                                Text(
-                                  isCustom
-                                      ? '${state.intervalMinutes} ${ref.tr('profile_daily_words_minutes_suffix')}'
-                                      : ref.tr(
-                                          'profile_daily_words_custom_interval',
-                                        ),
-                                  style: AppTextStyles.body(
-                                    size: 12,
-                                    weight: FontWeight.w700,
-                                    color: isCustom
-                                        ? AppColors.blue
-                                        : AppColors.textPrimary,
-                                  ),
-                                ),
-                              ],
-                            ),
+                            isCustom ? interval : null,
                           ),
                         );
                       },
                     ),
                   ],
                 ),
-                if (showIntervalPointer)
-                  Positioned(
-                    top: -34,
-                    left: 0,
-                    right: 0,
-                    child: Center(
-                      child: _TutorialFingerPointer(
-                        label: ref.tr(
-                          'profile_daily_words_tutorial_pick_minutes',
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 14),
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                SizedBox(
-                  width: double.infinity,
-                  child: PillButton(
-                    label: ref.tr(
-                      state.active
-                          ? 'profile_daily_words_stop'
-                          : 'profile_daily_words_start',
-                    ),
-                    filled: !state.active,
-                    // CHI vo hieu hoa khi khong con tu nao trong danh sach
-                    // (thuc te khong xay ra o day vi nhanh nay chi hien khi
-                    // total > 0 - xem "if (total == 0)" o tren) - TRUOC DAY
-                    // dung state.pending.isEmpty (tu CHUA tung tra loi dung)
-                    // lam dieu kien, khien nut "Bat dau hoc" bi khoa VINH
-                    // VIEN ngay sau khi da tra loi dung het 10/10 tu (pending
-                    // rong) + da bam "Ket thuc hoc" (active=false), khong the
-                    // bam lai duoc nua du danh sach tu van con nguyen.
-                    onTap: state.words.isEmpty && !state.active
-                        ? null
-                        : () async {
-                            if (state.active) {
-                              // Chi THUC SU ghi vao thong ke "Tu da hoc"
-                              // TOAN CUC (popup Words Learned, xem
-                              // recordWordLearned) O DAY - luc nguoi dung tu
-                              // quyet dinh KET THUC phien hoc - thay vi ghi
-                              // ngay moi lan tra loi dung trong quiz (xem
-                              // DailyQuizPopupScreen._pick), vi tra loi dung
-                              // trong luc dang on tap (co the qua nhieu lan
-                              // nhac trong ngay) chi la LUYEN TAP, chua chac
-                              // da "thuoc" that su. notifier.stop() ben duoi
-                              // se XOA state.learnedTodayEnLower ngay sau day
-                              // nen phai doc no TRUOC.
-                              final learned = state.learnedTodayEnLower;
-                              if (learned.isNotEmpty) {
-                                final repo = ref.read(statsRepositoryProvider);
-                                try {
-                                  for (final en in learned) {
-                                    await repo.recordWordLearned(en);
-                                  }
-                                  ref.invalidate(myStatsProvider);
-                                } catch (_) {
-                                  // Mang loi tam thoi - khong chan viec ket
-                                  // thuc phien, chi la cac tu do chua kip
-                                  // ghi vao thong ke toan cuc lan nay.
-                                }
-                              }
-                              await notifier.stop();
-                              return;
-                            }
-                            await notifier.start();
-                            if (!context.mounted) return;
-                            openAppPopup(context, const DailyQuizPopupScreen());
-                          },
-                  ),
-                ),
-                if (showStartPointer)
-                  Positioned(
-                    top: -34,
-                    left: 0,
-                    right: 0,
-                    child: Center(
-                      child: _TutorialFingerPointer(
-                        label: ref.tr('profile_daily_words_tutorial_start'),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            if (state.active) ...[
-              const SizedBox(height: 8),
-              Text(
-                ref.tr('profile_daily_words_active_hint'),
-                style: AppTextStyles.muted(size: 10.5),
               ),
+              const SizedBox(height: 14),
+              _sectionLabel('profile_daily_words_mode_label'),
+              const SizedBox(height: 8),
+              _withPointer(
+                show: showModePointer,
+                labelKey: 'profile_daily_words_tutorial_pick_mode',
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _ChoiceChip(
+                        icon: Icons.quiz_rounded,
+                        label: ref.tr('profile_daily_words_mode_quiz'),
+                        selected: state.mode == DailyStudyMode.quiz,
+                        expand: true,
+                        onTap: () => notifier.setMode(DailyStudyMode.quiz),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _ChoiceChip(
+                        icon: Icons.edit_note_rounded,
+                        label: ref.tr('profile_daily_words_mode_writing'),
+                        selected: state.mode == DailyStudyMode.writing,
+                        expand: true,
+                        onTap: () => notifier.setMode(DailyStudyMode.writing),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 14),
+              _withPointer(
+                show: showStartPointer,
+                labelKey: 'profile_daily_words_tutorial_start',
+                child: SizedBox(
+                  width: double.infinity,
+                  child: state.active
+                      ? PillButton(
+                          label: ref.tr('profile_daily_words_stop'),
+                          filled: false,
+                          onTap: () => _endLearning(state),
+                        )
+                      : PillButton(
+                          label: ref.tr('profile_daily_words_start'),
+                          // Chi bam duoc khi da chon DU so phut + cach on
+                          // (khong con gia tri mac dinh).
+                          onTap: state.canStart ? () => _start(context) : null,
+                        ),
+                ),
+              ),
+              if (state.active) ...[
+                const SizedBox(height: 8),
+                Text(
+                  ref.tr('profile_daily_words_active_hint'),
+                  style: AppTextStyles.muted(size: 10.5),
+                ),
+              ],
             ],
           ],
         ],
+      ),
+    );
+  }
+
+  Widget _sectionLabel(String key) => Text(
+    ref.tr(key),
+    style: AppTextStyles.muted(size: 11).copyWith(letterSpacing: 0.4),
+  );
+}
+
+/// Chip chon 1 gia tri (so phut nhac lai / cach on) - to sang khi dang chon.
+class _ChoiceChip extends StatelessWidget {
+  const _ChoiceChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+    this.icon,
+    this.expand = false,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  final IconData? icon;
+
+  /// true = noi dung can giua (dung khi chip chiem het 1 o Expanded).
+  final bool expand;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = selected ? AppColors.blue : AppColors.textPrimary;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected
+              ? AppColors.blue.withValues(alpha: 0.22)
+              : AppColors.glassFill,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(
+            color: selected
+                ? AppColors.blue.withValues(alpha: 0.6)
+                : AppColors.glassBorder,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: expand ? MainAxisSize.max : MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (icon != null) ...[
+              Icon(
+                icon,
+                size: 13,
+                color: selected ? AppColors.blue : AppColors.textMuted,
+              ),
+              const SizedBox(width: 5),
+            ],
+            Text(
+              label,
+              style: AppTextStyles.body(
+                size: 12,
+                weight: FontWeight.w700,
+                color: color,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
