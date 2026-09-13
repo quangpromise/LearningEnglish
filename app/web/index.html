@@ -19,106 +19,24 @@
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="Học tiếng Anh qua âm nhạc - nghe nhạc, tra từ, luyện phát âm.">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
-  <script>
-    // VA cho 1 bug that su cua ENGINE Flutter Web (khong phai loi code app -
-    // xem flutter/flutter#175074 va #179438, anh huong TAT CA man hinh co
-    // TextField tren trinh duyet mobile, dac biet Android Chrome): sau khi
-    // mo ban phim roi dong lai, man hinh bi "ket" o kich thuoc da co lai
-    // theo ban phim, khong tu gian lai du ban phim da bien mat that su - vi
-    // CanvasKit/Skwasm renderer chi tinh lai layout khi nhan duoc 1 su kien
-    // 'resize' MOI cua window, ma trinh duyet khong luon tu ban resize do
-    // lai dung luc ban phim dong. Rieng truong hop dong ban phim bang CU CHI
-    // BACK cua he thong (khac voi cham ra ngoai/nut Done) con bi NANG hon
-    // (xem #179438) vi visualViewport bao chieu cao thay doi tre/khong on
-    // dinh - nen ngoai theo doi visualViewport, con nghe them su kien
-    // 'focusout' toan cuc (input DOM mat focus NGAY LAP TUC bat ke dong ban
-    // phim bang cach nao) lam tin hieu kich hoat thu 2, dang tin cay hon.
-    //
-    // Fix, khi phat hien ban phim vua dong that su:
-    //  1. Dua scroll cua trang ve (0,0) - trinh duyet đôi khi giu nguyen vi
-    //     tri scroll da nhay len luc ban phim mo, khien Flutter lech toa do.
-    //  2. "Rung" nhe khung ve chinh (flt-glass-pane) 1px roi tra ve ngay +
-    //     tu ban 1 su kien 'resize' - ep renderer tinh lai layout dung kich
-    //     thuoc thuc te, thay vi cho 1 tuong tac ngau nhien khac cua nguoi
-    //     dung (cham/cuon) tinh co kich hoat lai.
-    //
-    // CHU Y quan trong (rut kinh nghiem tu 2 lan sua truoc lam hong ban
-    // phim o man Dich/Writing): CHI dung 1 hen gio DUY NHAT, doi ON DINH
-    // [_settleDelay] KHONG co gi thay doi them roi moi thuc su dong vao DOM,
-    // VA kiem tra LAI dieu kien (con focus khong/chieu cao co dung khong)
-    // NGAY BEN TRONG forceRecalc() truoc khi lam bat cu gi - neu nguoi dung
-    // da go tiep (focus lai) hoac ban phim da mo lai trong luc cho, HUY BO
-    // ngay lap tuc. Ban truoc lam lai 6 lan lien tiep trong 1 giay MA KHONG
-    // kiem tra lai dieu kien o moi lan, nen neu nguoi dung go/cham nhanh
-    // trong khoang do se bi "rung" khung ve giua chung, ngat ban phim.
-    (function () {
-      if (!window.visualViewport) return;
-      var vv = window.visualViewport;
-      var fullHeight = window.innerHeight;
-      var settleTimer = null;
-      var _settleDelay = 400;
-
-      function isInputFocused() {
-        var active = document.activeElement;
-        return !!(
-          active &&
-          (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')
-        );
-      }
-
-      function forceRecalc() {
-        // Kiem tra LAI ngay truoc khi dong vao gi - dieu kien co the da
-        // khac di trong luc cho ON DINH.
-        if (isInputFocused() || vv.height < fullHeight - 60) return;
-        var glassPane = document.querySelector('flt-glass-pane');
-        if (glassPane) {
-          glassPane.style.width = 'calc(100% - 1px)';
-          glassPane.style.height = 'calc(100% - 1px)';
-          void glassPane.offsetHeight; // Ep reflow ngay lap tuc.
-          window.dispatchEvent(new Event('resize'));
-          requestAnimationFrame(function () {
-            glassPane.style.width = '100%';
-            glassPane.style.height = '100%';
-            window.dispatchEvent(new Event('resize'));
-          });
-        }
-        window.scrollTo(0, 0);
-      }
-
-      function scheduleRecalc() {
-        if (settleTimer) clearTimeout(settleTimer);
-        settleTimer = setTimeout(forceRecalc, _settleDelay);
-      }
-
-      function maybeRecalc() {
-        // Chi coi la "ban phim da dong" khi CA 2 dieu kien: (a) chieu cao
-        // hien tai gan bang chieu cao day du ghi nhan luc dau, VA (b) hien
-        // KHONG co o INPUT/TEXTAREA nao dang giu focus.
-        if (!isInputFocused() && vv.height >= fullHeight - 60) {
-          scheduleRecalc();
-        } else if (settleTimer) {
-          // Dieu kien khong con dung (vd nguoi dung vua focus lai 1 o khac)
-          // - huy lich cho dang cho, tranh forceRecalc chay tre vao dung
-          // luc dang go.
-          clearTimeout(settleTimer);
-          settleTimer = null;
-        }
-      }
-
-      vv.addEventListener('resize', maybeRecalc);
-      // focusout: bat duoc NGAY thoi diem 1 o nhap mat focus (ca khi dong
-      // ban phim bang cu chi back cua he thong, xem flutter/flutter#179438),
-      // khong can doi visualViewport bao ve sau (co the tre/khong on dinh).
-      window.addEventListener(
-        'focusout',
-        function () {
-          setTimeout(maybeRecalc, 300);
-        },
-        true
-      );
-    })();
-  </script>
+  <!--
+    Sau 3 lan va (o day tung co 1 <script> dung window.visualViewport +
+    "rung" flt-glass-pane de vam viec ban phim dong xong man hinh bi ket kich
+    thuoc nho tren web mobile - xem flutter/flutter#175074/#179438) MA lan
+    nao cung keo theo it nhat 1 loi moi (khong mo duoc ban phim, ngat ban
+    phim khi go nhanh) roi van khong het han duoc trieu chung goc, doi huong
+    hoan toan: bo het script vam do, VA doi "interactive-widget" tu
+    "resizes-content" (chinh gia tri nay - CHINH LOP MO O DAY LAN DAU - lam
+    TRINH DUYET tu co RESIZE LUON CA LOP LAYOUT, khong chi lop hien thi, khi
+    ban phim mo, day moi la nguon goc that su khien no de "ket" khi dong lai)
+    sang "resizes-visual" (mac dinh cua da so trinh duyet, CHI lop hien thi
+    (visualViewport) thay doi, lop layout giu nguyen kich thuoc goc xuyen
+    suot) - Flutter engine ban 3.47+ (xem flutter/flutter#179581, da vao
+    stable tu thang 1/2026) DA TU SUA dung phan viewInsets tu chinh lech
+    layout/visual nay, KHONG can them script rieng nua trong che do
+    resizes-visual.
+  -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-visual">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">

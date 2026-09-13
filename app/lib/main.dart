@@ -54,6 +54,17 @@ Future<void> main() async {
       () => Supabase.initialize(
         url: Env.supabaseUrl,
         publishableKey: Env.supabaseAnonKey,
+        // Truyen THANG pkceAsyncStorage thay vi de supabase_flutter tu dat
+        // mac dinh - tren web, luong dang nhap Google MOI them (signInWithOAuth,
+        // xem auth_repository.dart) bi crash "Null check operator used on a
+        // null value" ngay khi bam nut (loi tu goi noi bo _asyncStorage!
+        // trong package gotrue) vi khong ro ly do field nay van null tren
+        // web du code nguon supabase_flutter cho thay no TU DONG duoc dien
+        // SharedPreferencesGotrueAsyncStorage() neu khong truyen gi - tu tay
+        // truyen ro rang o day de loai bo hoan toan kha nang do.
+        authOptions: FlutterAuthClientOptions(
+          pkceAsyncStorage: SharedPreferencesGotrueAsyncStorage(),
+        ),
       ),
       timeout: const Duration(seconds: 10),
     );
