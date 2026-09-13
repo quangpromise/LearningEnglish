@@ -2,19 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
-import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/exercise_model.dart';
 import '../data/program_model.dart';
-import 'workout_preview_screen.dart';
 
 /// Lich tuan cua 1 chuong trinh - port tu man "2b" cua FitViet (Gate 15 -
 /// lich tuan THAT theo tung ngay, khac ban demo tinh cua Gate 3). Neu day la
 /// giao an dang theo VA hom nay la ngay tap, hien nut "Bat dau tap hom nay".
 class ProgramDetailScreen extends ConsumerWidget {
-  const ProgramDetailScreen({super.key, required this.program});
+  const ProgramDetailScreen({
+    super.key,
+    required this.program,
+    required this.onBack,
+    required this.onStartWorkout,
+  });
   final Program program;
+
+  /// Quay ve danh sach chuong trinh - doi noi dung NGAY TRONG CUNG 1 popup,
+  /// khong dung Navigator.
+  final VoidCallback onBack;
+  final void Function(ProgramDay day) onStartWorkout;
 
   Future<void> _setActive(WidgetRef ref) async {
     final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
@@ -53,7 +61,7 @@ class ProgramDetailScreen extends ConsumerWidget {
             Row(
               children: [
                 GestureDetector(
-                  onTap: () => Navigator.of(context).maybePop(),
+                  onTap: onBack,
                   child: const _IconCircle(icon: Icons.chevron_left_rounded),
                 ),
                 const SizedBox(width: 12),
@@ -104,10 +112,7 @@ class ProgramDetailScreen extends ConsumerWidget {
                         day: day,
                         exercisesById: byId,
                         showStartButton: isActive && isToday && !day.isRestDay,
-                        onStart: () => openAppPopup(
-                          context,
-                          WorkoutPreviewScreen(program: program, day: day),
-                        ),
+                        onStart: () => onStartWorkout(day),
                       );
                     },
                   );

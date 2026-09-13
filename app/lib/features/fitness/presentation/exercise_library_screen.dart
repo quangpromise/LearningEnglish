@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
-import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/exercise_model.dart';
@@ -11,12 +10,16 @@ import 'exercise_detail_screen.dart';
 /// Thu vien bai tap (Fitness Phase 1) - xem/tim theo nhom co, bam vao xem
 /// chi tiet + danh dau yeu thich. Port tu man "1c" cua FitViet, rut gon cho
 /// lat cat dau tien (khong co anh GIF minh hoa - FitViet ban goc cung moi la
-/// placeholder filename, chua co anh that).
+/// placeholder filename, chua co anh that). Dong thoi la khung cho ca luong
+/// (danh sach -> chi tiet 1 bai tap), KHONG mo them popup - xem giai thich
+/// chi tiet trong VocabularyTopicsScreen (cung nguyen tac). [onBack] la nut
+/// back CUA CHINH man nay (quay ve MuscleGroupCategoriesScreen).
 class ExerciseLibraryScreen extends ConsumerStatefulWidget {
   const ExerciseLibraryScreen({
     super.key,
     this.initialGroup,
     this.initialQuery = '',
+    required this.onBack,
   });
 
   /// Nhom co duoc chon san khi mo tu 1 the trong
@@ -25,6 +28,10 @@ class ExerciseLibraryScreen extends ConsumerStatefulWidget {
 
   /// Tu khoa go san khi mo tu o tim kiem cua man danh muc.
   final String initialQuery;
+
+  /// Quay ve MuscleGroupCategoriesScreen - doi noi dung NGAY TRONG CUNG 1
+  /// popup, khong dung Navigator.
+  final VoidCallback onBack;
 
   @override
   ConsumerState<ExerciseLibraryScreen> createState() =>
@@ -37,6 +44,7 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
   );
   late String _query = widget.initialQuery;
   late MuscleGroup? _selectedGroup = widget.initialGroup;
+  Exercise? _activeExercise;
 
   @override
   void dispose() {
@@ -46,6 +54,13 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final exercise = _activeExercise;
+    if (exercise != null) {
+      return ExerciseDetailScreen(
+        exercise: exercise,
+        onBack: () => setState(() => _activeExercise = null),
+      );
+    }
     final exercisesAsync = ref.watch(exerciseListProvider);
     final favoritesAsync = ref.watch(favoriteExerciseIdsProvider);
     final favoriteIds = favoritesAsync.valueOrNull ?? <int>{};
@@ -60,7 +75,7 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
             Row(
               children: [
                 GestureDetector(
-                  onTap: () => Navigator.of(context).maybePop(),
+                  onTap: widget.onBack,
                   child: const _IconCircle(icon: Icons.chevron_left_rounded),
                 ),
                 const SizedBox(width: 12),
@@ -178,10 +193,7 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
                       return _ExerciseTile(
                         exercise: exercise,
                         isFavorite: favoriteIds.contains(exercise.id),
-                        onTap: () => openAppPopup(
-                          context,
-                          ExerciseDetailScreen(exercise: exercise),
-                        ),
+                        onTap: () => setState(() => _activeExercise = exercise),
                       );
                     },
                   );

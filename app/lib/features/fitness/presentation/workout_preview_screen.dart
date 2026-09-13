@@ -18,9 +18,16 @@ class WorkoutPreviewScreen extends ConsumerStatefulWidget {
     super.key,
     required this.program,
     required this.day,
+    required this.onBack,
   });
   final Program program;
   final ProgramDay day;
+
+  /// Quay ve ProgramDetailScreen - doi noi dung NGAY TRONG CUNG 1 popup,
+  /// khong dung Navigator (khac voi nut "Bat dau" ben duoi van dung
+  /// Navigator.pushReplacement de sang WorkoutSessionScreen - hop do KHONG
+  /// mo them popup nao ca nen giu nguyen, xem doc comment tai onTap do).
+  final VoidCallback onBack;
 
   @override
   ConsumerState<WorkoutPreviewScreen> createState() =>
@@ -73,7 +80,7 @@ class _WorkoutPreviewScreenState extends ConsumerState<WorkoutPreviewScreen> {
             Row(
               children: [
                 GestureDetector(
-                  onTap: () => Navigator.of(context).maybePop(),
+                  onTap: widget.onBack,
                   child: const _IconCircle(icon: Icons.chevron_left_rounded),
                 ),
                 const SizedBox(width: 12),

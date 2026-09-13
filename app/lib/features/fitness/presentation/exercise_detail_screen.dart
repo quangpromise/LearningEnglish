@@ -12,8 +12,13 @@ import 'exercise_photo_animator.dart';
 /// "an the nay" tu du lieu goc FitViet, khong phai thieu du lieu, xem
 /// exercise_model.dart).
 class ExerciseDetailScreen extends ConsumerWidget {
-  const ExerciseDetailScreen({super.key, required this.exercise});
+  const ExerciseDetailScreen({
+    super.key,
+    required this.exercise,
+    required this.onBack,
+  });
   final Exercise exercise;
+  final VoidCallback onBack;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -33,10 +38,7 @@ class ExerciseDetailScreen extends ConsumerWidget {
           children: [
             Row(
               children: [
-                _CircleBtn(
-                  icon: Icons.chevron_left_rounded,
-                  onTap: () => Navigator.of(context).pop(),
-                ),
+                _CircleBtn(icon: Icons.chevron_left_rounded, onTap: onBack),
                 const Spacer(),
                 _CircleBtn(
                   icon: isFavorite

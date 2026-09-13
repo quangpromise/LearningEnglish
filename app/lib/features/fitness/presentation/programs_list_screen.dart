@@ -2,20 +2,70 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
-import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/program_model.dart';
 import 'program_detail_screen.dart';
+import 'workout_preview_screen.dart';
+
+enum _ProgramsStep { list, detail, workout }
 
 /// Danh sach chuong trinh tap (giao an) - port tu man "1c" cua FitViet (Gate
 /// 2/3), rut gon khong co o tim kiem/chip loc (chi 3 chuong trinh o Phase
-/// 2, chua can loc).
-class ProgramsListScreen extends ConsumerWidget {
+/// 2, chua can loc). Dong thoi la khung cho ca luong (danh sach -> lich
+/// tuan -> xem truoc bai tap hom nay), KHONG mo them popup - xem giai
+/// thich chi tiet trong VocabularyTopicsScreen (cung nguyen tac).
+class ProgramsListScreen extends ConsumerStatefulWidget {
   const ProgramsListScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProgramsListScreen> createState() => _ProgramsListScreenState();
+}
+
+class _ProgramsListScreenState extends ConsumerState<ProgramsListScreen> {
+  _ProgramsStep _step = _ProgramsStep.list;
+  Program? _activeProgram;
+  ProgramDay? _activeDay;
+
+  void _openProgram(Program program) {
+    setState(() {
+      _activeProgram = program;
+      _step = _ProgramsStep.detail;
+    });
+  }
+
+  void _backToList() => setState(() => _step = _ProgramsStep.list);
+
+  void _startWorkout(ProgramDay day) {
+    setState(() {
+      _activeDay = day;
+      _step = _ProgramsStep.workout;
+    });
+  }
+
+  void _backToDetail() => setState(() => _step = _ProgramsStep.detail);
+
+  @override
+  Widget build(BuildContext context) {
+    switch (_step) {
+      case _ProgramsStep.detail:
+        return ProgramDetailScreen(
+          program: _activeProgram!,
+          onBack: _backToList,
+          onStartWorkout: _startWorkout,
+        );
+      case _ProgramsStep.workout:
+        return WorkoutPreviewScreen(
+          program: _activeProgram!,
+          day: _activeDay!,
+          onBack: _backToDetail,
+        );
+      case _ProgramsStep.list:
+        return _buildList(context);
+    }
+  }
+
+  Widget _buildList(BuildContext context) {
     final programsAsync = ref.watch(programListProvider);
     final activeIdAsync = ref.watch(activeProgramIdProvider);
     final activeId = activeIdAsync.valueOrNull;
@@ -63,10 +113,7 @@ class ProgramsListScreen extends ConsumerWidget {
                     return _ProgramCard(
                       program: program,
                       isActive: program.id == activeId,
-                      onTap: () => openAppPopup(
-                        context,
-                        ProgramDetailScreen(program: program),
-                      ),
+                      onTap: () => _openProgram(program),
                     );
                   },
                 ),

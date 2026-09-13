@@ -11,7 +11,9 @@ import 'exercise_library_screen.dart';
 /// mau tham khao dang "the ngang, ten ben trai, anh giai phau co bleed sang
 /// phai" (nguoi dung cung cap anh, da xac nhan co ban quyen su dung, xem
 /// [MuscleGroup.imageAsset]). Bam vao 1 the se mo [ExerciseLibraryScreen] da
-/// loc san theo nhom co do.
+/// loc san theo nhom co do. Dong thoi la khung cho ca luong (danh muc ->
+/// thu vien -> chi tiet bai tap), KHONG mo them popup - xem giai thich chi
+/// tiet trong VocabularyTopicsScreen (cung nguyen tac).
 class MuscleGroupCategoriesScreen extends ConsumerStatefulWidget {
   const MuscleGroupCategoriesScreen({super.key});
 
@@ -22,12 +24,24 @@ class MuscleGroupCategoriesScreen extends ConsumerStatefulWidget {
 
 class _MuscleGroupCategoriesScreenState
     extends ConsumerState<MuscleGroupCategoriesScreen> {
+  bool _showLibrary = false;
+  MuscleGroup? _libraryGroup;
+
   void _openLibrary({MuscleGroup? group}) {
-    openAppPopup(context, ExerciseLibraryScreen(initialGroup: group));
+    setState(() {
+      _libraryGroup = group;
+      _showLibrary = true;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_showLibrary) {
+      return ExerciseLibraryScreen(
+        initialGroup: _libraryGroup,
+        onBack: () => setState(() => _showLibrary = false),
+      );
+    }
     return ScreenBackground(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
