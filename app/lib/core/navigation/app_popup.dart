@@ -77,7 +77,9 @@ Future<T?> pushWithinPopup<T>(BuildContext context, Widget child) {
       ),
       transitionsBuilder: (_, animation, _, pageChild) => SlideTransition(
         position: Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero)
-            .animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
+            .animate(
+              CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+            ),
         child: pageChild,
       ),
     ),

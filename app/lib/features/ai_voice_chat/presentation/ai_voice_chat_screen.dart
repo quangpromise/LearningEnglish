@@ -499,10 +499,12 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
     // dung, khien _player phat THEM 1 lan qua loa dien thoai du Spatius da
     // tu phat dong bo roi (nguoi dung bao cao: "avatar noi xong, tieng lai
     // vang len lan 2 nhung avatar khong map may").
-    final activeAvatarHandlesAudio = kUseAnamAvatar && switch (_avatarProvider) {
-      AvatarProvider.anam => _anamReady,
-      AvatarProvider.spatius => _spatiusReady,
-    };
+    final activeAvatarHandlesAudio =
+        kUseAnamAvatar &&
+        switch (_avatarProvider) {
+          AvatarProvider.anam => _anamReady,
+          AvatarProvider.spatius => _spatiusReady,
+        };
     if (activeAvatarHandlesAudio) return;
     try {
       await _ensurePlaybackSession();
