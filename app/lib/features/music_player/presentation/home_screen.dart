@@ -19,7 +19,6 @@ import '../../reading/presentation/reading_library_screen.dart';
 import '../../ielts/presentation/ielts_home_screen.dart';
 import '../../story/presentation/story_list_screen.dart';
 import '../../toeic/presentation/toeic_home_screen.dart';
-import '../../translation/presentation/dictionary_popup.dart';
 import '../../vocabulary/presentation/vocabulary_topics_screen.dart';
 import '../../wealth/presentation/service_expiry_banner.dart';
 import '../../writing/presentation/writing_home_screen.dart';
@@ -100,22 +99,6 @@ class HomeScreen extends ConsumerWidget {
                               ),
                             ),
                         ],
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    GestureDetector(
-                      onTap: () => showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true,
-                        backgroundColor: Colors.transparent,
-                        builder: (_) => const DictionaryPopup(),
-                      ),
-                      child: Tooltip(
-                        message: ref.tr('home_dictionary_tooltip'),
-                        // Doi tu menu_book_rounded (trung voi icon Ngu phap
-                        // trong nhom "Doc viet" ben duoi, de nham lan) sang
-                        // translate_rounded - dac trung hon cho "tra tu dien".
-                        child: const _IconCircle(icon: Icons.translate_rounded),
                       ),
                     ),
                   ],
