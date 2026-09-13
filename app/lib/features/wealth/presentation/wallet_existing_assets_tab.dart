@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
-import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_format.dart';
@@ -12,12 +11,22 @@ import '../data/wealth_transaction_model.dart';
 import 'add_balance_entry_sheet.dart';
 import 'add_transaction_sheet.dart';
 import 'confirm_delete.dart';
-import 'wallet_account_history_screen.dart';
+
+/// Cac tham so de man cha (WalletScreen) mo [WalletAccountHistoryScreen]
+/// INLINE thay vi tu mo openAppPopup rieng chong len - xem [onOpenHistory].
+typedef OpenWalletHistory = void Function({
+  required String title,
+  required String accountType,
+  String? bankCode,
+  String? bankName,
+});
 
 /// Tab "Tai san hien co" trong man Vi - 2 muc: Tien mat va Tien ngan hang
 /// (tach rieng theo tung ngan hang, dung quyet dinh nguoi dung da chon).
 class WalletExistingAssetsTab extends ConsumerWidget {
-  const WalletExistingAssetsTab({super.key});
+  const WalletExistingAssetsTab({super.key, required this.onOpenHistory});
+
+  final OpenWalletHistory onOpenHistory;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -85,7 +94,7 @@ class WalletExistingAssetsTab extends ConsumerWidget {
               style: AppTextStyles.heading(size: 14),
             ),
             const SizedBox(height: 10),
-            _CashCard(entries: cashEntries),
+            _CashCard(entries: cashEntries, onOpenHistory: onOpenHistory),
             const SizedBox(height: 20),
             Text(
               ref.tr('wallet_section_bank'),
@@ -104,7 +113,11 @@ class WalletExistingAssetsTab extends ConsumerWidget {
               ..._groupByBank(bankEntries).entries.map(
                 (group) => Padding(
                   padding: const EdgeInsets.only(bottom: 10),
-                  child: _BankCard(label: group.key, entries: group.value),
+                  child: _BankCard(
+                    label: group.key,
+                    entries: group.value,
+                    onOpenHistory: onOpenHistory,
+                  ),
                 ),
               ),
           ],
@@ -126,8 +139,9 @@ class WalletExistingAssetsTab extends ConsumerWidget {
 }
 
 class _CashCard extends ConsumerWidget {
-  const _CashCard({required this.entries});
+  const _CashCard({required this.entries, required this.onOpenHistory});
   final List<WealthBalanceEntry> entries;
+  final OpenWalletHistory onOpenHistory;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -137,12 +151,9 @@ class _CashCard extends ConsumerWidget {
     final totalUsd = entries
         .where((e) => e.currency == 'USD')
         .fold<double>(0, (s, e) => s + e.amount);
-    void openHistory() => openAppPopup(
-      context,
-      WalletAccountHistoryScreen(
-        title: ref.tr('wallet_section_cash'),
-        accountType: 'cash',
-      ),
+    void openHistory() => onOpenHistory(
+      title: ref.tr('wallet_section_cash'),
+      accountType: 'cash',
     );
     return GlowBox(
       padding: const EdgeInsets.all(16),
@@ -208,9 +219,14 @@ class _CashCard extends ConsumerWidget {
 }
 
 class _BankCard extends ConsumerWidget {
-  const _BankCard({required this.label, required this.entries});
+  const _BankCard({
+    required this.label,
+    required this.entries,
+    required this.onOpenHistory,
+  });
   final String label;
   final List<WealthBalanceEntry> entries;
+  final OpenWalletHistory onOpenHistory;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -221,14 +237,11 @@ class _BankCard extends ConsumerWidget {
         .where((e) => e.currency == 'USD')
         .fold<double>(0, (s, e) => s + e.amount);
     final bankCode = entries.isEmpty ? null : entries.first.bankCode;
-    void openHistory() => openAppPopup(
-      context,
-      WalletAccountHistoryScreen(
-        title: label,
-        accountType: 'bank',
-        bankCode: bankCode,
-        bankName: label,
-      ),
+    void openHistory() => onOpenHistory(
+      title: label,
+      accountType: 'bank',
+      bankCode: bankCode,
+      bankName: label,
     );
     return GestureDetector(
       onTap: openHistory,

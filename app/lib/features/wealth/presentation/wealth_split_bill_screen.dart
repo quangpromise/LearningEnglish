@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_language.dart';
 import '../../../core/i18n/app_strings.dart';
-import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_format.dart';
@@ -34,6 +33,7 @@ class WealthSplitBillScreen extends ConsumerStatefulWidget {
     super.key,
     this.editingBill,
     this.editingShares,
+    this.onBack,
   });
 
   // Khac null = mo man nay o CHE DO SUA 1 bill da co san trong lich su (xem
@@ -44,6 +44,7 @@ class WealthSplitBillScreen extends ConsumerStatefulWidget {
   // thay vi doi chieu tung phan thay doi.
   final WealthSplitBill? editingBill;
   final List<WealthSplitBillShare>? editingShares;
+  final VoidCallback? onBack;
 
   @override
   ConsumerState<WealthSplitBillScreen> createState() =>
@@ -91,6 +92,8 @@ class _PaymentSource {
 
 class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
   _SplitPhase _phase = _SplitPhase.setup;
+  bool _showHistory = false;
+  _PreviewArgs? _previewArgs;
   final _totalController = TextEditingController();
   final _countController = TextEditingController();
   final _noteController = TextEditingController();
@@ -509,85 +512,105 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
     return ScreenBackground(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: _showHistory
+            ? WealthSplitBillHistoryScreen(
+                onBack: () => setState(() => _showHistory = false),
+              )
+            : _previewArgs != null
+            ? _SplitBillPreviewScreen(
+                totalAmount: _previewArgs!.totalAmount,
+                paymentLabel: _previewArgs!.paymentLabel,
+                note: _previewArgs!.note,
+                qr: _previewArgs!.qr,
+                people: _previewArgs!.people,
+                onBack: () => setState(() => _previewArgs = null),
+              )
+            : _buildMain(context),
+      ),
+    );
+  }
+
+  Widget _buildMain(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
           children: [
-            Row(
-              children: [
-                GestureDetector(
-                  onTap: () => Navigator.of(context).maybePop(),
-                  child: Container(
-                    width: 34,
-                    height: 34,
-                    decoration: BoxDecoration(
-                      color: AppColors.glassFill,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.glassBorder),
-                    ),
-                    child: const Icon(
-                      Icons.chevron_left_rounded,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    ref.tr(
-                      _isEditing
-                          ? 'wealth_split_bill_edit_title'
-                          : 'wealth_split_bill_title',
-                    ),
-                    style: AppTextStyles.heading(size: 20),
-                  ),
-                ),
-                // O phase settle (dang xem lai bien lai vua Pay), hien nut
-                // doi ngon ngu bien lai thay cho nut Lich su - dat o goc phai
-                // header (BEN NGOAI the bien lai) de noi dung the (tien
-                // tong) khong bi day xuong.
-                if (_phase == _SplitPhase.settle)
-                  SplitBillLangToggle(
-                    lang:
-                        _receiptLang ??
-                        ref.watch<AppLanguage>(appLanguageProvider),
-                    onChanged: (v) => setState(() => _receiptLang = v),
-                  )
-                // An nut Lich su khi dang o che do SUA (mo tu chinh man Lich
-                // su ra) - khong can mo lai chinh no tu ben trong.
-                else if (!_isEditing)
-                  GestureDetector(
-                    onTap: () => openAppPopup(
-                      context,
-                      const WealthSplitBillHistoryScreen(),
-                    ),
-                    child: Container(
-                      width: 34,
-                      height: 34,
-                      decoration: BoxDecoration(
-                        color: AppColors.glassFill,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: AppColors.glassBorder),
-                      ),
-                      child: const Icon(
-                        Icons.history_rounded,
-                        size: 16,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 18),
-            Expanded(
-              child: switch (_phase) {
-                _SplitPhase.setup => _buildSetup(),
-                _SplitPhase.allocate => _buildAllocate(),
-                _SplitPhase.settle => _buildSettle(),
+            GestureDetector(
+              onTap: () {
+                final back = widget.onBack;
+                if (back != null) {
+                  back();
+                } else {
+                  Navigator.of(context).maybePop();
+                }
               },
+              child: Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: AppColors.glassFill,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.glassBorder),
+                ),
+                child: const Icon(
+                  Icons.chevron_left_rounded,
+                  color: AppColors.textPrimary,
+                ),
+              ),
             ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                ref.tr(
+                  _isEditing
+                      ? 'wealth_split_bill_edit_title'
+                      : 'wealth_split_bill_title',
+                ),
+                style: AppTextStyles.heading(size: 20),
+              ),
+            ),
+            // O phase settle (dang xem lai bien lai vua Pay), hien nut
+            // doi ngon ngu bien lai thay cho nut Lich su - dat o goc phai
+            // header (BEN NGOAI the bien lai) de noi dung the (tien
+            // tong) khong bi day xuong.
+            if (_phase == _SplitPhase.settle)
+              SplitBillLangToggle(
+                lang:
+                    _receiptLang ?? ref.watch<AppLanguage>(appLanguageProvider),
+                onChanged: (v) => setState(() => _receiptLang = v),
+              )
+            // An nut Lich su khi dang o che do SUA (mo tu chinh man Lich
+            // su ra) - khong can mo lai chinh no tu ben trong.
+            else if (!_isEditing)
+              GestureDetector(
+                onTap: () => setState(() => _showHistory = true),
+                child: Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: AppColors.glassFill,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppColors.glassBorder),
+                  ),
+                  child: const Icon(
+                    Icons.history_rounded,
+                    size: 16,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ),
           ],
         ),
-      ),
+        const SizedBox(height: 18),
+        Expanded(
+          child: switch (_phase) {
+            _SplitPhase.setup => _buildSetup(),
+            _SplitPhase.allocate => _buildAllocate(),
+            _SplitPhase.settle => _buildSettle(),
+          },
+        ),
+      ],
     );
   }
 
@@ -675,9 +698,8 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
     // Preview van trong vi doc gia tri qua som).
     final qr = await ref.read(wealthPaymentQrProvider.future);
     if (!mounted) return;
-    openAppPopup(
-      context,
-      _SplitBillPreviewScreen(
+    setState(() {
+      _previewArgs = _PreviewArgs(
         totalAmount: _total,
         paymentLabel: source.isCash
             ? ref.tr('wallet_section_cash')
@@ -695,8 +717,8 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
               status: p.status,
             ),
         ],
-      ),
-    );
+      );
+    });
   }
 
   Widget _buildAllocate() {
@@ -1068,6 +1090,21 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
 /// ngu VI/EN cua rieng no) NHUNG CHUA luu gi vao DB - chi de nguoi dung kiem
 /// tra lai truoc khi thuc su bam Pay, dong popup nay khong anh huong gi den
 /// luong Pay ben duoi.
+class _PreviewArgs {
+  const _PreviewArgs({
+    required this.totalAmount,
+    required this.paymentLabel,
+    required this.note,
+    required this.qr,
+    required this.people,
+  });
+  final double totalAmount;
+  final String paymentLabel;
+  final String? note;
+  final WealthPaymentQr? qr;
+  final List<ReceiptPersonView> people;
+}
+
 class _SplitBillPreviewScreen extends ConsumerStatefulWidget {
   const _SplitBillPreviewScreen({
     required this.totalAmount,
@@ -1075,6 +1112,7 @@ class _SplitBillPreviewScreen extends ConsumerStatefulWidget {
     required this.note,
     required this.qr,
     required this.people,
+    required this.onBack,
   });
 
   final double totalAmount;
@@ -1082,6 +1120,7 @@ class _SplitBillPreviewScreen extends ConsumerStatefulWidget {
   final String? note;
   final WealthPaymentQr? qr;
   final List<ReceiptPersonView> people;
+  final VoidCallback onBack;
 
   @override
   ConsumerState<_SplitBillPreviewScreen> createState() =>
@@ -1108,7 +1147,7 @@ class _SplitBillPreviewScreenState
             Row(
               children: [
                 GestureDetector(
-                  onTap: () => Navigator.of(context).maybePop(),
+                  onTap: widget.onBack,
                   child: Container(
                     width: 34,
                     height: 34,

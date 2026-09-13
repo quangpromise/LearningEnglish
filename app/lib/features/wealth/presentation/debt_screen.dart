@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
-import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_format.dart';
@@ -26,6 +25,8 @@ class DebtScreen extends StatefulWidget {
 class _DebtScreenState extends State<DebtScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
+  String? _historyPersonId;
+  String? _historyPersonName;
 
   @override
   void initState() {
@@ -41,57 +42,81 @@ class _DebtScreenState extends State<DebtScreen>
 
   @override
   Widget build(BuildContext context) {
+    final personId = _historyPersonId;
+    final personName = _historyPersonName;
     return ScreenBackground(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Consumer(
-              builder: (context, ref, _) => Row(
+        child: personId != null && personName != null
+            ? DebtPersonHistoryScreen(
+                personId: personId,
+                personName: personName,
+                onBack: () => setState(() {
+                  _historyPersonId = null;
+                  _historyPersonName = null;
+                }),
+              )
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  GestureDetector(
-                    onTap: () => Navigator.of(context).maybePop(),
-                    child: Container(
-                      width: 34,
-                      height: 34,
-                      decoration: BoxDecoration(
-                        color: AppColors.glassFill,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: AppColors.glassBorder),
-                      ),
-                      child: const Icon(
-                        Icons.chevron_left_rounded,
-                        color: AppColors.textPrimary,
-                      ),
+                  Consumer(
+                    builder: (context, ref, _) => Row(
+                      children: [
+                        GestureDetector(
+                          onTap: () => Navigator.of(context).maybePop(),
+                          child: Container(
+                            width: 34,
+                            height: 34,
+                            decoration: BoxDecoration(
+                              color: AppColors.glassFill,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: AppColors.glassBorder),
+                            ),
+                            child: const Icon(
+                              Icons.chevron_left_rounded,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            ref.tr('wealth_debt_title'),
+                            style: AppTextStyles.heading(size: 20),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(height: 14),
+                  _DebtSummaryCard(tabController: _tabController),
+                  const SizedBox(height: 14),
                   Expanded(
-                    child: Text(
-                      ref.tr('wealth_debt_title'),
-                      style: AppTextStyles.heading(size: 20),
+                    child: TabBarView(
+                      controller: _tabController,
+                      children: [
+                        _DebtList(
+                          direction: 'i_owe',
+                          onOpenPerson: _openPersonHistory,
+                        ),
+                        _DebtList(
+                          direction: 'owed_to_me',
+                          onOpenPerson: _openPersonHistory,
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
-            ),
-            const SizedBox(height: 14),
-            _DebtSummaryCard(tabController: _tabController),
-            const SizedBox(height: 14),
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: const [
-                  _DebtList(direction: 'i_owe'),
-                  _DebtList(direction: 'owed_to_me'),
-                ],
-              ),
-            ),
-          ],
-        ),
       ),
     );
+  }
+
+  void _openPersonHistory(String personId, String personName) {
+    setState(() {
+      _historyPersonId = personId;
+      _historyPersonName = personName;
+    });
   }
 }
 
@@ -192,8 +217,9 @@ class _SummaryTile extends StatelessWidget {
 }
 
 class _DebtList extends ConsumerStatefulWidget {
-  const _DebtList({required this.direction});
+  const _DebtList({required this.direction, required this.onOpenPerson});
   final String direction;
+  final void Function(String personId, String personName) onOpenPerson;
 
   @override
   ConsumerState<_DebtList> createState() => _DebtListState();
@@ -286,6 +312,7 @@ class _DebtListState extends ConsumerState<_DebtList> {
                   ),
                   onToggleSelect: () =>
                       _toggleSelected(groupList[i].first.personId),
+                  onOpenPerson: widget.onOpenPerson,
                 ),
               );
             },
@@ -364,11 +391,13 @@ class _PersonGroupTile extends ConsumerWidget {
     required this.selecting,
     required this.selected,
     required this.onToggleSelect,
+    required this.onOpenPerson,
   });
   final List<WealthDebt> debts;
   final bool selecting;
   final bool selected;
   final VoidCallback onToggleSelect;
+  final void Function(String personId, String personName) onOpenPerson;
 
   Map<String, double> _totalsByCurrency() {
     final map = <String, double>{};
@@ -414,13 +443,7 @@ class _PersonGroupTile extends ConsumerWidget {
       child: GestureDetector(
         onTap: selecting
             ? onToggleSelect
-            : () => openAppPopup(
-                context,
-                DebtPersonHistoryScreen(
-                  personId: first.personId,
-                  personName: first.personName,
-                ),
-              ),
+            : () => onOpenPerson(first.personId, first.personName),
         child: GlowBox(
           borderRadius: 16,
           border: selecting && selected

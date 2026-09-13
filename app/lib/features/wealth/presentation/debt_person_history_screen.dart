@@ -19,9 +19,11 @@ class DebtPersonHistoryScreen extends ConsumerWidget {
     super.key,
     required this.personId,
     required this.personName,
+    this.onBack,
   });
   final String personId;
   final String personName;
+  final VoidCallback? onBack;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -35,7 +37,14 @@ class DebtPersonHistoryScreen extends ConsumerWidget {
             Row(
               children: [
                 GestureDetector(
-                  onTap: () => Navigator.of(context).maybePop(),
+                  onTap: () {
+                    final back = onBack;
+                    if (back != null) {
+                      back();
+                    } else {
+                      Navigator.of(context).maybePop();
+                    }
+                  },
                   child: Container(
                     width: 34,
                     height: 34,

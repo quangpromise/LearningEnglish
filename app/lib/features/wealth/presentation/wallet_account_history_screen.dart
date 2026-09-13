@@ -23,11 +23,13 @@ class WalletAccountHistoryScreen extends ConsumerStatefulWidget {
     required this.accountType,
     this.bankCode,
     this.bankName,
+    this.onBack,
   });
   final String title;
   final String accountType; // 'cash' | 'bank'
   final String? bankCode;
   final String? bankName;
+  final VoidCallback? onBack;
 
   @override
   ConsumerState<WalletAccountHistoryScreen> createState() =>
@@ -54,7 +56,14 @@ class _WalletAccountHistoryScreenState
             Row(
               children: [
                 GestureDetector(
-                  onTap: () => Navigator.of(context).maybePop(),
+                  onTap: () {
+                    final back = widget.onBack;
+                    if (back != null) {
+                      back();
+                    } else {
+                      Navigator.of(context).maybePop();
+                    }
+                  },
                   child: Container(
                     width: 34,
                     height: 34,

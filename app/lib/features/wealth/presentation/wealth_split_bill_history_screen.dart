@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_language.dart';
 import '../../../core/i18n/app_strings.dart';
-import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_format.dart';
@@ -54,11 +53,60 @@ Future<void> deleteSplitBillCascade(WidgetRef ref, WealthSplitBill bill) async {
 /// - bam vao 1 dong de xem lai hoa don day du, van co the bam "Ghi no"/"Da
 /// tra" tiep cho nguoi con 'pending' (vd luc chia bill nguoi dung thoat man
 /// giua chung chua xu ly het).
-class WealthSplitBillHistoryScreen extends ConsumerWidget {
-  const WealthSplitBillHistoryScreen({super.key});
+class WealthSplitBillHistoryScreen extends ConsumerStatefulWidget {
+  const WealthSplitBillHistoryScreen({super.key, this.onBack});
+  final VoidCallback? onBack;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<WealthSplitBillHistoryScreen> createState() =>
+      _WealthSplitBillHistoryScreenState();
+}
+
+class _WealthSplitBillHistoryScreenState
+    extends ConsumerState<WealthSplitBillHistoryScreen> {
+  WealthSplitBill? _detailBill;
+  WealthSplitBill? _editingBill;
+  List<WealthSplitBillShare>? _editingShares;
+
+  /// Mo lai man Chia tien bill o CHE DO SUA - xoa het ban ghi CU (Chi
+  /// tieu/No cua bill nay) roi tao lai TU DAU theo du lieu nguoi dung sua
+  /// khi bam "Cap nhat" (xem WealthSplitBillScreen.editingBill va
+  /// _confirmPay o do) - don gian va chac chan dung hon so voi doi chieu
+  /// tung phan thay doi (nguoi them/bot, doi Ghi no <-> Da tra...).
+  Future<void> _editBill(WealthSplitBill bill) async {
+    final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
+    if (userId == null) return;
+    final shares = await ref
+        .read(wealthSplitBillRepositoryProvider)
+        .fetchShares(userId, bill.id);
+    if (!mounted) return;
+    setState(() {
+      _editingBill = bill;
+      _editingShares = shares;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final editingBill = _editingBill;
+    final editingShares = _editingShares;
+    if (editingBill != null && editingShares != null) {
+      return WealthSplitBillScreen(
+        editingBill: editingBill,
+        editingShares: editingShares,
+        onBack: () => setState(() {
+          _editingBill = null;
+          _editingShares = null;
+        }),
+      );
+    }
+    final detailBill = _detailBill;
+    if (detailBill != null) {
+      return WealthSplitBillDetailScreen(
+        bill: detailBill,
+        onBack: () => setState(() => _detailBill = null),
+      );
+    }
     final billsAsync = ref.watch(wealthSplitBillsProvider);
     return ScreenBackground(
       child: Padding(
@@ -69,7 +117,14 @@ class WealthSplitBillHistoryScreen extends ConsumerWidget {
             Row(
               children: [
                 GestureDetector(
-                  onTap: () => Navigator.of(context).maybePop(),
+                  onTap: () {
+                    final back = widget.onBack;
+                    if (back != null) {
+                      back();
+                    } else {
+                      Navigator.of(context).maybePop();
+                    }
+                  },
                   child: Container(
                     width: 34,
                     height: 34,
@@ -113,7 +168,12 @@ class WealthSplitBillHistoryScreen extends ConsumerWidget {
                     : ListView.separated(
                         itemCount: bills.length,
                         separatorBuilder: (_, _) => const SizedBox(height: 10),
-                        itemBuilder: (context, i) => _BillRow(bill: bills[i]),
+                        itemBuilder: (context, i) => _BillRow(
+                          bill: bills[i],
+                          onEdit: () => _editBill(bills[i]),
+                          onOpenDetail: () =>
+                              setState(() => _detailBill = bills[i]),
+                        ),
                       ),
               ),
             ),
@@ -125,26 +185,14 @@ class WealthSplitBillHistoryScreen extends ConsumerWidget {
 }
 
 class _BillRow extends ConsumerWidget {
-  const _BillRow({required this.bill});
+  const _BillRow({
+    required this.bill,
+    required this.onEdit,
+    required this.onOpenDetail,
+  });
   final WealthSplitBill bill;
-
-  /// Mo lai man Chia tien bill o CHE DO SUA - xoa het ban ghi CU (Chi
-  /// tieu/No cua bill nay) roi tao lai TU DAU theo du lieu nguoi dung sua
-  /// khi bam "Cap nhat" (xem WealthSplitBillScreen.editingBill va
-  /// _confirmPay o do) - don gian va chac chan dung hon so voi doi chieu
-  /// tung phan thay doi (nguoi them/bot, doi Ghi no <-> Da tra...).
-  Future<void> _editBill(BuildContext context, WidgetRef ref) async {
-    final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
-    if (userId == null) return;
-    final shares = await ref
-        .read(wealthSplitBillRepositoryProvider)
-        .fetchShares(userId, bill.id);
-    if (!context.mounted) return;
-    openAppPopup(
-      context,
-      WealthSplitBillScreen(editingBill: bill, editingShares: shares),
-    );
-  }
+  final VoidCallback onEdit;
+  final VoidCallback onOpenDetail;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -176,8 +224,7 @@ class _BillRow extends ConsumerWidget {
         child: const Icon(Icons.delete_outline_rounded, color: AppColors.pink),
       ),
       child: GestureDetector(
-        onTap: () =>
-            openAppPopup(context, WealthSplitBillDetailScreen(bill: bill)),
+        onTap: onOpenDetail,
         child: GlowBox(
           borderRadius: 16,
           child: Row(
@@ -215,7 +262,7 @@ class _BillRow extends ConsumerWidget {
                 ),
               ),
               GestureDetector(
-                onTap: () => _editBill(context, ref),
+                onTap: onEdit,
                 child: const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 6),
                   child: Icon(
@@ -241,8 +288,13 @@ class _BillRow extends ConsumerWidget {
 /// ([wealthSplitBillSharesProvider]) thay vi trang thai trong bo nho, nen
 /// van dung duoc du mo lai o phien app khac.
 class WealthSplitBillDetailScreen extends ConsumerStatefulWidget {
-  const WealthSplitBillDetailScreen({super.key, required this.bill});
+  const WealthSplitBillDetailScreen({
+    super.key,
+    required this.bill,
+    this.onBack,
+  });
   final WealthSplitBill bill;
+  final VoidCallback? onBack;
 
   @override
   ConsumerState<WealthSplitBillDetailScreen> createState() =>
@@ -323,7 +375,14 @@ class _WealthSplitBillDetailScreenState
             Row(
               children: [
                 GestureDetector(
-                  onTap: () => Navigator.of(context).maybePop(),
+                  onTap: () {
+                    final back = widget.onBack;
+                    if (back != null) {
+                      back();
+                    } else {
+                      Navigator.of(context).maybePop();
+                    }
+                  },
                   child: Container(
                     width: 34,
                     height: 34,
