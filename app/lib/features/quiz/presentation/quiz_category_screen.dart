@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
-import '../../../core/navigation/app_popup.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/quiz_data.dart';
+import 'leaderboard_screen.dart';
 import 'quiz_question_screen.dart';
+import 'quiz_result_screen.dart';
 
 // Danh sach icon/mau CO DINH theo dung thu tu [kCategories] trong
 // quiz_data.dart. QUAN TRONG: 2 danh sach nay phai co it nhat bang so luong
@@ -41,11 +42,77 @@ const _catColors = [
   AppColors.blue,
 ];
 
-class QuizCategoryScreen extends ConsumerWidget {
+enum _QuizStep { categories, question, result, leaderboard }
+
+/// Khung duy nhat cho ca tinh nang Do vui (chon chu de -> tra loi cau hoi ->
+/// ket qua -> bang xep hang) - KHONG mo them popup/route nao, chuyen "man
+/// hinh" bang setState doi noi dung - xem giai thich chi tiet trong
+/// VocabularyTopicsScreen (cung nguyen tac, dung lam mau).
+class QuizCategoryScreen extends ConsumerStatefulWidget {
   const QuizCategoryScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<QuizCategoryScreen> createState() => _QuizCategoryScreenState();
+}
+
+class _QuizCategoryScreenState extends ConsumerState<QuizCategoryScreen> {
+  _QuizStep _step = _QuizStep.categories;
+  String _activeCategory = '';
+  List<Riddle> _activeRiddles = const [];
+  List<bool> _results = const [];
+  int _xp = 0;
+
+  void _openCategory(String cat, List<Riddle> riddles) {
+    setState(() {
+      _activeCategory = cat;
+      _activeRiddles = riddles;
+      _step = _QuizStep.question;
+    });
+  }
+
+  void _backToCategories() => setState(() => _step = _QuizStep.categories);
+
+  void _finishQuestions(List<bool> results) {
+    setState(() {
+      _results = results;
+      _step = _QuizStep.result;
+    });
+  }
+
+  void _openLeaderboard(int xp) {
+    setState(() {
+      _xp = xp;
+      _step = _QuizStep.leaderboard;
+    });
+  }
+
+  void _backToResult() => setState(() => _step = _QuizStep.result);
+
+  @override
+  Widget build(BuildContext context) {
+    switch (_step) {
+      case _QuizStep.question:
+        return QuizQuestionScreen(
+          category: _activeCategory,
+          riddles: _activeRiddles,
+          onBack: _backToCategories,
+          onFinished: _finishQuestions,
+        );
+      case _QuizStep.result:
+        return QuizResultScreen(
+          riddles: _activeRiddles,
+          results: _results,
+          onRetry: _backToCategories,
+          onOpenLeaderboard: _openLeaderboard,
+        );
+      case _QuizStep.leaderboard:
+        return LeaderboardScreen(myXp: _xp, onBack: _backToResult);
+      case _QuizStep.categories:
+        return _buildCategories(context);
+    }
+  }
+
+  Widget _buildCategories(BuildContext context) {
     return ScreenBackground(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
@@ -106,13 +173,7 @@ class QuizCategoryScreen extends ConsumerWidget {
                       final riddles = kRiddles
                           .where((r) => r.category == cat)
                           .toList();
-                      openAppPopup(
-                        context,
-                        QuizQuestionScreen(
-                          category: cat,
-                          riddles: riddles.isEmpty ? kRiddles : riddles,
-                        ),
-                      );
+                      _openCategory(cat, riddles.isEmpty ? kRiddles : riddles);
                     },
                     child: GlowBox(
                       borderRadius: 22,

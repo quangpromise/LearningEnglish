@@ -6,16 +6,24 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/quiz_data.dart';
-import 'quiz_result_screen.dart';
 
 class QuizQuestionScreen extends ConsumerStatefulWidget {
   const QuizQuestionScreen({
     super.key,
     required this.category,
     required this.riddles,
+    required this.onBack,
+    required this.onFinished,
   });
   final String category;
   final List<Riddle> riddles;
+
+  /// Nut back o header - quay ve luoi chu de.
+  final VoidCallback onBack;
+
+  /// Da tra loi het cau cuoi - chuyen sang man ket qua voi danh sach dung/
+  /// sai tuong ung tung cau.
+  final void Function(List<bool> results) onFinished;
 
   @override
   ConsumerState<QuizQuestionScreen> createState() => _QuizQuestionScreenState();
@@ -52,12 +60,7 @@ class _QuizQuestionScreenState extends ConsumerState<QuizQuestionScreen> {
           _picked = null;
         });
       } else {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (_) =>
-                QuizResultScreen(riddles: widget.riddles, results: _results),
-          ),
-        );
+        widget.onFinished(_results);
       }
     });
   }
@@ -74,7 +77,7 @@ class _QuizQuestionScreenState extends ConsumerState<QuizQuestionScreen> {
             Row(
               children: [
                 GestureDetector(
-                  onTap: () => Navigator.of(context).maybePop(),
+                  onTap: widget.onBack,
                   child: Container(
                     width: 34,
                     height: 34,

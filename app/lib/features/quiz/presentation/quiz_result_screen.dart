@@ -2,20 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
-import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/quiz_data.dart';
-import 'leaderboard_screen.dart';
 
 class QuizResultScreen extends ConsumerStatefulWidget {
   const QuizResultScreen({
     super.key,
     required this.riddles,
     required this.results,
+    required this.onRetry,
+    required this.onOpenLeaderboard,
   });
   final List<Riddle> riddles;
   final List<bool> results;
+
+  /// "Lam lai" - quay ve luoi chu de.
+  final VoidCallback onRetry;
+  final void Function(int xp) onOpenLeaderboard;
 
   @override
   ConsumerState<QuizResultScreen> createState() => _QuizResultScreenState();
@@ -175,15 +179,14 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
                   child: PillButton(
                     label: ref.tr('quiz_retry'),
                     filled: false,
-                    onTap: () => Navigator.of(context).pop(),
+                    onTap: widget.onRetry,
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: PillButton(
                     label: ref.tr('quiz_leaderboard_button'),
-                    onTap: () =>
-                        openAppPopup(context, LeaderboardScreen(myXp: xp)),
+                    onTap: () => widget.onOpenLeaderboard(xp),
                   ),
                 ),
               ],

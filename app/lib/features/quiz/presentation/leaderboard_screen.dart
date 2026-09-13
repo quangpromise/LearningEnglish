@@ -16,8 +16,9 @@ final _myRankProvider = FutureProvider(
 /// từ 1 lượt đố vui (invalidate provider trong initState) — số liệu hiển thị
 /// luôn lấy từ server, không phải số truyền tay.
 class LeaderboardScreen extends ConsumerStatefulWidget {
-  const LeaderboardScreen({super.key, this.myXp = 0});
+  const LeaderboardScreen({super.key, this.myXp = 0, required this.onBack});
   final int myXp;
+  final VoidCallback onBack;
 
   @override
   ConsumerState<LeaderboardScreen> createState() => _LeaderboardScreenState();
@@ -47,7 +48,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 GestureDetector(
-                  onTap: () => Navigator.of(context).maybePop(),
+                  onTap: widget.onBack,
                   child: Container(
                     width: 36,
                     height: 36,
