@@ -37,12 +37,12 @@
     //
     // Fix, khi phat hien ban phim vua dong that su (chieu cao hien tai gan
     // bang chieu cao day du ghi nhan 1 LAN DUY NHAT luc trang vua tai, truoc
-    // khi ban phim tung mo):
+    // khi ban phim tung mo, VA hien khong con o INPUT/TEXTAREA nao dang giu
+    // focus - xem guard trong maybeRecalc(), BAT BUOC de tranh interupt luc
+    // 1 o vua duoc autofocus dang cho ban phim mo len):
     //  1. Dua scroll cua trang ve (0,0) - trinh duyet đôi khi giu nguyen vi
     //     tri scroll da nhay len luc ban phim mo, khien Flutter lech toa do.
-    //  2. Bo focus khoi input DOM dang giu (neu con) - bao Flutter biet
-    //     khong con can cho ban phim nua.
-    //  3. "Rung" nhe khung ve chinh (flt-glass-pane) 1px roi tra ve ngay +
+    //  2. "Rung" nhe khung ve chinh (flt-glass-pane) 1px roi tra ve ngay +
     //     tu ban 1 su kien 'resize' - ep renderer tinh lai layout dung kich
     //     thuoc thuc te, thay vi cho 1 tuong tac ngau nhien khac cua nguoi
     //     dung (cham/cuon) tinh co kich hoat lai.
@@ -68,10 +68,15 @@
           });
         }
         window.scrollTo(0, 0);
-        var active = document.activeElement;
-        if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) {
-          active.blur();
-        }
+        // KHONG con tu blur() o dang focus o day nua - day chinh la nguyen
+        // nhan gay bug MOI "khong mo duoc ban phim" o man Dich/Writing >
+        // Doan van (ca 2 deu autofocus:true): ngay luc autofocus vua chiem
+        // focus, trinh duyet phat sinh 1 su kien 'focusout' "gia" tu phan tu
+        // truoc do trong luc ban phim CHUA KIP mo (vv.height con gan full),
+        // khien maybeRecalc() tuong nham "ban phim vua dong" va tu blur()
+        // luon o VUA MOI duoc autofocus, ban phim khong bao gio hien ra
+        // duoc. Xem guard o maybeRecalc() thay the: chi chay khi THAT SU
+        // khong con o nao dang focus.
       }
 
       // Lam lai nhieu lan voi do tre tang dan (thay vi chi 3 moc co dinh
@@ -89,10 +94,17 @@
       }
 
       function maybeRecalc() {
-        // Chi coi la "ban phim da dong" khi chieu cao hien tai gan bang
-        // chieu cao day du ghi nhan luc dau (con ban phim dang mo thi
-        // vv.height se nho hon fullHeight kha nhieu).
-        if (vv.height >= fullHeight - 60) scheduleRecalc();
+        // Chi coi la "ban phim da dong" khi CA 2 dieu kien: (a) chieu cao
+        // hien tai gan bang chieu cao day du ghi nhan luc dau, VA (b) hien
+        // KHONG co o INPUT/TEXTAREA nao dang giu focus - neu con 1 o dang
+        // focus (vd vua duoc autofocus, ban phim co the dang tren duong mo
+        // len nhung trinh duyet chua kip thu nho vv.height) thi TUYET DOI
+        // khong dong vao gi ca, tranh interupt luc nguoi dung/app dang can
+        // mo ban phim that su.
+        var active = document.activeElement;
+        var stillFocused =
+          active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA');
+        if (!stillFocused && vv.height >= fullHeight - 60) scheduleRecalc();
       }
 
       vv.addEventListener('resize', maybeRecalc);
