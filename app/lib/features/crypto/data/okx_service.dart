@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
+
+import 'package:http/http.dart' as http;
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 /// Gia + % thay doi 24h REAL-TIME qua OKX WebSocket - mien phi, khong can
 /// API key, day du lieu ngay khi co thay doi (khac voi CoinGecko REST phai
@@ -78,55 +80,47 @@ class OkxService {
   /// thi truong that - token nay khong co khai niem von hoa chinh thuc, chi
   /// dung thanh khoan 24h de uoc luong tuong doi ma nao "lon" hon).
   static Future<List<OkxTokenizedStock>> fetchTokenizedStocks() async {
-    final client = HttpClient();
-    try {
-      final req = await client.getUrl(
-        Uri.parse('https://www.okx.com/api/v5/market/tickers?instType=SPOT'),
-      );
-      final res = await req.close();
-      final body = await res.transform(utf8.decoder).join();
-      final data = jsonDecode(body) as Map<String, dynamic>;
-      final list = data['data'] as List;
-      final pattern = RegExp(r'^X([A-Z0-9]+)-USDT$');
-      final result = list
-          .cast<Map<String, dynamic>>()
-          .map((r) {
-            final instId = r['instId'] as String? ?? '';
-            final match = pattern.firstMatch(instId);
-            if (match == null) return null;
-            final ticker = match.group(1)!;
-            // LUU Y: `ticker` la phan SAU chu X (regex da bo X di), nen phai
-            // noi lai 'X$ticker' truoc khi so voi danh sach loai tru - truoc
-            // day so truc tiep voi `ticker` (vd "RP") trong khi danh sach
-            // loai tru luu ca chu X (vd "XRP") nen KHONG BAO GIO khop, khien
-            // XRP/XAUT/XLM/XPL... lot vao danh sach "co phieu" duoi ten gia
-            // "RP"/"AUT"/"LM"/"PL".
-            if (_kOkxRealCryptoXPrefixed.contains('X$ticker')) return null;
-            if (ticker.contains('TEST')) return null;
-            final last = double.tryParse(r['last']?.toString() ?? '') ?? 0;
-            final open24h =
-                double.tryParse(r['open24h']?.toString() ?? '') ?? 0;
-            final volCcy24h =
-                double.tryParse(r['volCcy24h']?.toString() ?? '') ?? 0;
-            if (last <= 0) return null;
-            final changePercent = open24h == 0
-                ? 0.0
-                : (last - open24h) / open24h * 100;
-            return OkxTokenizedStock(
-              symbol: ticker,
-              okxSymbol: 'X$ticker',
-              price: last,
-              changePercent24h: changePercent,
-              volume24hUsd: volCcy24h,
-            );
-          })
-          .whereType<OkxTokenizedStock>()
-          .toList();
-      result.sort((a, b) => b.volume24hUsd.compareTo(a.volume24hUsd));
-      return result;
-    } finally {
-      client.close();
-    }
+    final res = await http.get(
+      Uri.parse('https://www.okx.com/api/v5/market/tickers?instType=SPOT'),
+    );
+    final data = jsonDecode(res.body) as Map<String, dynamic>;
+    final list = data['data'] as List;
+    final pattern = RegExp(r'^X([A-Z0-9]+)-USDT$');
+    final result = list
+        .cast<Map<String, dynamic>>()
+        .map((r) {
+          final instId = r['instId'] as String? ?? '';
+          final match = pattern.firstMatch(instId);
+          if (match == null) return null;
+          final ticker = match.group(1)!;
+          // LUU Y: `ticker` la phan SAU chu X (regex da bo X di), nen phai
+          // noi lai 'X$ticker' truoc khi so voi danh sach loai tru - truoc
+          // day so truc tiep voi `ticker` (vd "RP") trong khi danh sach
+          // loai tru luu ca chu X (vd "XRP") nen KHONG BAO GIO khop, khien
+          // XRP/XAUT/XLM/XPL... lot vao danh sach "co phieu" duoi ten gia
+          // "RP"/"AUT"/"LM"/"PL".
+          if (_kOkxRealCryptoXPrefixed.contains('X$ticker')) return null;
+          if (ticker.contains('TEST')) return null;
+          final last = double.tryParse(r['last']?.toString() ?? '') ?? 0;
+          final open24h = double.tryParse(r['open24h']?.toString() ?? '') ?? 0;
+          final volCcy24h =
+              double.tryParse(r['volCcy24h']?.toString() ?? '') ?? 0;
+          if (last <= 0) return null;
+          final changePercent = open24h == 0
+              ? 0.0
+              : (last - open24h) / open24h * 100;
+          return OkxTokenizedStock(
+            symbol: ticker,
+            okxSymbol: 'X$ticker',
+            price: last,
+            changePercent24h: changePercent,
+            volume24hUsd: volCcy24h,
+          );
+        })
+        .whereType<OkxTokenizedStock>()
+        .toList();
+    result.sort((a, b) => b.volume24hUsd.compareTo(a.volume24hUsd));
+    return result;
   }
 
   /// Gia hien tai cua 1 cap giao dich CU THE tren OKX (vd "XAUT-USDT" cho
@@ -137,14 +131,11 @@ class OkxService {
   /// boi gioi han goi mien phi cua Twelve Data (KHONG co Bac/Dong tren OKX,
   /// da kiem tra truc tiep danh sach instrument, chi co vang XAUT).
   static Future<OkxTicker?> fetchSingleTicker(String instId) async {
-    final client = HttpClient();
     try {
-      final req = await client.getUrl(
+      final res = await http.get(
         Uri.parse('https://www.okx.com/api/v5/market/ticker?instId=$instId'),
       );
-      final res = await req.close();
-      final body = await res.transform(utf8.decoder).join();
-      final data = jsonDecode(body) as Map<String, dynamic>;
+      final data = jsonDecode(res.body) as Map<String, dynamic>;
       final list = data['data'] as List?;
       if (list == null || list.isEmpty) return null;
       final row = list.first as Map<String, dynamic>;
@@ -157,8 +148,6 @@ class OkxService {
       return OkxTicker(price: last, changePercent24h: changePercent);
     } catch (_) {
       return null;
-    } finally {
-      client.close();
     }
   }
 
@@ -166,38 +155,30 @@ class OkxService {
   /// 1 lan goi REST duy nhat (khong phan trang), dung de tim kiem coin ngoai
   /// pham vi top 100 von hoa cua CoinGecko.
   static Future<List<OkxTickerRow>> fetchAllUsdtTickers() async {
-    final client = HttpClient();
-    try {
-      final req = await client.getUrl(
-        Uri.parse('https://www.okx.com/api/v5/market/tickers?instType=SPOT'),
-      );
-      final res = await req.close();
-      final body = await res.transform(utf8.decoder).join();
-      final data = jsonDecode(body) as Map<String, dynamic>;
-      final list = data['data'] as List;
-      return list
-          .cast<Map<String, dynamic>>()
-          .where((r) => (r['instId'] as String? ?? '').endsWith('-USDT'))
-          .map((r) {
-            final instId = r['instId'] as String;
-            final symbol = instId.substring(0, instId.length - 5);
-            final last = double.tryParse(r['last']?.toString() ?? '') ?? 0;
-            final open24h =
-                double.tryParse(r['open24h']?.toString() ?? '') ?? 0;
-            final changePercent = open24h == 0
-                ? 0.0
-                : (last - open24h) / open24h * 100;
-            return OkxTickerRow(
-              symbol: symbol,
-              price: last,
-              changePercent24h: changePercent,
-            );
-          })
-          .where((r) => r.price > 0)
-          .toList();
-    } finally {
-      client.close();
-    }
+    final res = await http.get(
+      Uri.parse('https://www.okx.com/api/v5/market/tickers?instType=SPOT'),
+    );
+    final data = jsonDecode(res.body) as Map<String, dynamic>;
+    final list = data['data'] as List;
+    return list
+        .cast<Map<String, dynamic>>()
+        .where((r) => (r['instId'] as String? ?? '').endsWith('-USDT'))
+        .map((r) {
+          final instId = r['instId'] as String;
+          final symbol = instId.substring(0, instId.length - 5);
+          final last = double.tryParse(r['last']?.toString() ?? '') ?? 0;
+          final open24h = double.tryParse(r['open24h']?.toString() ?? '') ?? 0;
+          final changePercent = open24h == 0
+              ? 0.0
+              : (last - open24h) / open24h * 100;
+          return OkxTickerRow(
+            symbol: symbol,
+            price: last,
+            changePercent24h: changePercent,
+          );
+        })
+        .where((r) => r.price > 0)
+        .toList();
   }
 
   /// Lich su nen (candlestick) cho 1 ky hieu - dung ve chart. `bar` la don vi
@@ -208,39 +189,32 @@ class OkxService {
     required String bar,
     int limit = 100,
   }) async {
-    final client = HttpClient();
-    try {
-      final req = await client.getUrl(
-        Uri.parse(
-          'https://www.okx.com/api/v5/market/candles'
-          '?instId=$symbol-USDT&bar=$bar&limit=$limit',
-        ),
-      );
-      final res = await req.close();
-      final body = await res.transform(utf8.decoder).join();
-      final data = jsonDecode(body) as Map<String, dynamic>;
-      final rows = (data['data'] as List?) ?? [];
-      // OKX tra ve moi nen [ts, o, h, l, c, ...] theo thu tu MOI NHAT truoc -
-      // dao lai de ve chart theo thoi gian tang dan (trai -> phai).
-      return rows
-          .cast<List<dynamic>>()
-          .map(
-            (r) => OkxCandle(
-              time: DateTime.fromMillisecondsSinceEpoch(
-                int.parse(r[0] as String),
-              ),
-              open: double.parse(r[1] as String),
-              high: double.parse(r[2] as String),
-              low: double.parse(r[3] as String),
-              close: double.parse(r[4] as String),
+    final res = await http.get(
+      Uri.parse(
+        'https://www.okx.com/api/v5/market/candles'
+        '?instId=$symbol-USDT&bar=$bar&limit=$limit',
+      ),
+    );
+    final data = jsonDecode(res.body) as Map<String, dynamic>;
+    final rows = (data['data'] as List?) ?? [];
+    // OKX tra ve moi nen [ts, o, h, l, c, ...] theo thu tu MOI NHAT truoc -
+    // dao lai de ve chart theo thoi gian tang dan (trai -> phai).
+    return rows
+        .cast<List<dynamic>>()
+        .map(
+          (r) => OkxCandle(
+            time: DateTime.fromMillisecondsSinceEpoch(
+              int.parse(r[0] as String),
             ),
-          )
-          .toList()
-          .reversed
-          .toList();
-    } finally {
-      client.close();
-    }
+            open: double.parse(r[1] as String),
+            high: double.parse(r[2] as String),
+            low: double.parse(r[3] as String),
+            close: double.parse(r[4] as String),
+          ),
+        )
+        .toList()
+        .reversed
+        .toList();
   }
 
   /// Nen CU HON 1 moc thoi gian cho truoc - dung endpoint rieng
@@ -255,41 +229,34 @@ class OkxService {
     required DateTime before,
     int limit = 100,
   }) async {
-    final client = HttpClient();
-    try {
-      final beforeMs = before.millisecondsSinceEpoch;
-      final req = await client.getUrl(
-        Uri.parse(
-          'https://www.okx.com/api/v5/market/history-candles'
-          '?instId=$symbol-USDT&bar=$bar&limit=$limit&after=$beforeMs',
-        ),
-      );
-      final res = await req.close();
-      final body = await res.transform(utf8.decoder).join();
-      final data = jsonDecode(body) as Map<String, dynamic>;
-      final rows = (data['data'] as List?) ?? [];
-      return rows
-          .cast<List<dynamic>>()
-          .map(
-            (r) => OkxCandle(
-              time: DateTime.fromMillisecondsSinceEpoch(
-                int.parse(r[0] as String),
-              ),
-              open: double.parse(r[1] as String),
-              high: double.parse(r[2] as String),
-              low: double.parse(r[3] as String),
-              close: double.parse(r[4] as String),
+    final beforeMs = before.millisecondsSinceEpoch;
+    final res = await http.get(
+      Uri.parse(
+        'https://www.okx.com/api/v5/market/history-candles'
+        '?instId=$symbol-USDT&bar=$bar&limit=$limit&after=$beforeMs',
+      ),
+    );
+    final data = jsonDecode(res.body) as Map<String, dynamic>;
+    final rows = (data['data'] as List?) ?? [];
+    return rows
+        .cast<List<dynamic>>()
+        .map(
+          (r) => OkxCandle(
+            time: DateTime.fromMillisecondsSinceEpoch(
+              int.parse(r[0] as String),
             ),
-          )
-          .toList()
-          .reversed
-          .toList();
-    } finally {
-      client.close();
-    }
+            open: double.parse(r[1] as String),
+            high: double.parse(r[2] as String),
+            low: double.parse(r[3] as String),
+            close: double.parse(r[4] as String),
+          ),
+        )
+        .toList()
+        .reversed
+        .toList();
   }
 
-  WebSocket? _socket;
+  WebSocketChannel? _socket;
   Timer? _pingTimer;
   StreamController<Map<String, OkxTicker>>? _controller;
   final Map<String, OkxTicker> _latest = {};
@@ -297,25 +264,16 @@ class OkxService {
   /// Danh sach ky hieu (vd "BTC", "PI") dang co cap giao dich USDT dang
   /// hoat dong (state "live") tren OKX.
   static Future<Set<String>> fetchUsdtSymbols() async {
-    final client = HttpClient();
-    try {
-      final req = await client.getUrl(
-        Uri.parse(
-          'https://www.okx.com/api/v5/public/instruments?instType=SPOT',
-        ),
-      );
-      final res = await req.close();
-      final body = await res.transform(utf8.decoder).join();
-      final data = jsonDecode(body) as Map<String, dynamic>;
-      final list = data['data'] as List;
-      return list
-          .cast<Map<String, dynamic>>()
-          .where((s) => s['quoteCcy'] == 'USDT' && s['state'] == 'live')
-          .map((s) => (s['baseCcy'] as String).toUpperCase())
-          .toSet();
-    } finally {
-      client.close();
-    }
+    final res = await http.get(
+      Uri.parse('https://www.okx.com/api/v5/public/instruments?instType=SPOT'),
+    );
+    final data = jsonDecode(res.body) as Map<String, dynamic>;
+    final list = data['data'] as List;
+    return list
+        .cast<Map<String, dynamic>>()
+        .where((s) => s['quoteCcy'] == 'USDT' && s['state'] == 'live')
+        .map((s) => (s['baseCcy'] as String).toUpperCase())
+        .toSet();
   }
 
   /// Mo 1 WebSocket cong khai cua OKX, dang ky kenh "tickers" cho tung ky
@@ -325,60 +283,64 @@ class OkxService {
   Stream<Map<String, OkxTicker>> watch(List<String> symbols) {
     final controller = StreamController<Map<String, OkxTicker>>.broadcast();
     _controller = controller;
-    WebSocket.connect('wss://ws.okx.com:8443/ws/v5/public')
-        .then((socket) {
-          _socket = socket;
-          final args = symbols
-              .map((s) => {'channel': 'tickers', 'instId': '$s-USDT'})
-              .toList();
-          socket.add(jsonEncode({'op': 'subscribe', 'args': args}));
-          _pingTimer = Timer.periodic(const Duration(seconds: 20), (_) {
-            try {
-              socket.add('ping');
-            } catch (_) {}
-          });
-          socket.listen(
-            (event) {
-              try {
-                if (event == 'pong') return;
-                final msg = jsonDecode(event as String) as Map<String, dynamic>;
-                final arg = msg['arg'] as Map<String, dynamic>?;
-                if (arg == null || arg['channel'] != 'tickers') return;
-                final rows = msg['data'] as List?;
-                if (rows == null || rows.isEmpty) return;
-                for (final row in rows.cast<Map<String, dynamic>>()) {
-                  final instId = (row['instId'] as String?) ?? '';
-                  if (!instId.endsWith('-USDT')) continue;
-                  final base = instId.substring(0, instId.length - 5);
-                  final last = double.tryParse(row['last']?.toString() ?? '');
-                  final open24h = double.tryParse(
-                    row['open24h']?.toString() ?? '',
-                  );
-                  if (last == null || open24h == null || open24h == 0) {
-                    continue;
-                  }
-                  final changePercent = (last - open24h) / open24h * 100;
-                  _latest[base] = OkxTicker(
-                    price: last,
-                    changePercent24h: changePercent,
-                  );
-                }
-                controller.add(Map.of(_latest));
-              } catch (_) {
-                // Bo qua 1 message loi dinh dang - khong lam sap ca stream.
+    try {
+      final socket = WebSocketChannel.connect(
+        Uri.parse('wss://ws.okx.com:8443/ws/v5/public'),
+      );
+      _socket = socket;
+      final args = symbols
+          .map((s) => {'channel': 'tickers', 'instId': '$s-USDT'})
+          .toList();
+      socket.sink.add(jsonEncode({'op': 'subscribe', 'args': args}));
+      _pingTimer = Timer.periodic(const Duration(seconds: 20), (_) {
+        try {
+          socket.sink.add('ping');
+        } catch (_) {}
+      });
+      socket.stream.listen(
+        (event) {
+          try {
+            if (event == 'pong') return;
+            final msg = jsonDecode(event as String) as Map<String, dynamic>;
+            final arg = msg['arg'] as Map<String, dynamic>?;
+            if (arg == null || arg['channel'] != 'tickers') return;
+            final rows = msg['data'] as List?;
+            if (rows == null || rows.isEmpty) return;
+            for (final row in rows.cast<Map<String, dynamic>>()) {
+              final instId = (row['instId'] as String?) ?? '';
+              if (!instId.endsWith('-USDT')) continue;
+              final base = instId.substring(0, instId.length - 5);
+              final last = double.tryParse(row['last']?.toString() ?? '');
+              final open24h = double.tryParse(row['open24h']?.toString() ?? '');
+              if (last == null || open24h == null || open24h == 0) {
+                continue;
               }
-            },
-            onError: (_) {},
-            cancelOnError: false,
-          );
-        })
-        .catchError((_) {});
+              final changePercent = (last - open24h) / open24h * 100;
+              _latest[base] = OkxTicker(
+                price: last,
+                changePercent24h: changePercent,
+              );
+            }
+            controller.add(Map.of(_latest));
+          } catch (_) {
+            // Bo qua 1 message loi dinh dang - khong lam sap ca stream.
+          }
+        },
+        onError: (_) {},
+        cancelOnError: false,
+      );
+    } catch (_) {
+      // Loi mo ket noi (mang, CORS tren web...) - bo qua, man chi don gian
+      // khong nhan duoc gia live, KHONG duoc de loi nay lam sap widget dang
+      // goi watch() trong initState (day chinh la nguyen nhan man hinh
+      // trang tren web truoc khi sua).
+    }
     return controller.stream;
   }
 
   void dispose() {
     _pingTimer?.cancel();
-    _socket?.close();
+    _socket?.sink.close();
     _controller?.close();
   }
 }

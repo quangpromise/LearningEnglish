@@ -101,6 +101,10 @@ class AppStrings {
       AppLanguage.vi: 'Trang chủ',
       AppLanguage.en: 'Home',
     },
+    'assistive_menu_translate': {
+      AppLanguage.vi: 'Dịch',
+      AppLanguage.en: 'Translate',
+    },
     'voice_chat_quick_subtitle': {
       AppLanguage.vi: 'Trò chuyện tự do bằng giọng nói với AI',
       AppLanguage.en: 'Free-form voice conversation with AI',

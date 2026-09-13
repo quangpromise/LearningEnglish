@@ -16,14 +16,22 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 class AnamLiveAvatar extends StatefulWidget {
   const AnamLiveAvatar({
     super.key,
+    required this.avatarId,
     required this.sessionTokenProvider,
     this.onReady,
     this.onError,
     this.staticPreviewAsset,
   });
 
-  /// Ham tra ve 1 session token MOI moi lan widget can (re)connect
-  final Future<String> Function() sessionTokenProvider;
+  /// ID avatar Anam MUON dung hien tai - doi theo GeminiGender (xem
+  /// AiVoiceChatScreen._currentAnamAvatarId). Widget tu phat hien thay doi
+  /// (didUpdateWidget) va goi lai restartAnamSession voi token moi cho dung
+  /// avatarId nay - xem _onAvatarIdChanged.
+  final String avatarId;
+
+  /// Ham tra ve 1 session token MOI cho [avatarId] duoc truyen vao - goi
+  /// lai moi lan widget can (re)connect hoac doi avatar.
+  final Future<String> Function(String avatarId) sessionTokenProvider;
 
   final VoidCallback? onReady;
   final void Function(String message)? onError;
@@ -81,10 +89,24 @@ class AnamLiveAvatarState extends State<AnamLiveAvatar> {
     final controller = _controller;
     if (controller == null) return;
     try {
-      final token = await widget.sessionTokenProvider();
-      await controller.evaluateJavascript(source: "initAnam('$token');");
+      final token = await widget.sessionTokenProvider(widget.avatarId);
+      await controller.evaluateJavascript(
+        source: "initAnam('$token', '${widget.avatarId}');",
+      );
     } catch (e) {
       widget.onError?.call('Khong lay duoc Anam session token: $e');
+    }
+  }
+
+  /// Goi khi [AnamLiveAvatar.avatarId] doi (vd nguoi dung doi giong Gemini
+  /// Live sang gioi tinh khac, xem AiVoiceChatScreen._onVoiceChanged) - xin
+  /// token MOI cho avatarId moi roi restart toan bo phien WebRTC, vi Anam
+  /// khong co API doi avatar giua chung 1 phien dang mo.
+  @override
+  void didUpdateWidget(covariant AnamLiveAvatar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.avatarId != widget.avatarId) {
+      unawaited(_onSessionExpired());
     }
   }
 
@@ -99,9 +121,9 @@ class AnamLiveAvatarState extends State<AnamLiveAvatar> {
     if (controller == null) return;
     _ready = false;
     try {
-      final token = await widget.sessionTokenProvider();
+      final token = await widget.sessionTokenProvider(widget.avatarId);
       await controller.evaluateJavascript(
-        source: "restartAnamSession('$token');",
+        source: "restartAnamSession('$token', '${widget.avatarId}');",
       );
     } catch (e) {
       widget.onError?.call('Khong xin duoc token moi de noi lai Anam: $e');

@@ -18,13 +18,17 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/tts/app_tts.dart';
 import '../../../core/widgets/speaker_button.dart';
 import '../data/anam_session_api.dart';
+import '../data/avatar_provider.dart';
+import '../data/gemini_gender.dart';
 import '../data/gemini_live_direct_client.dart';
 import '../data/gemini_voices.dart';
+import '../data/spatius_session_api.dart';
 import '../data/voice_chat_client.dart';
 import '../data/voice_chat_config.dart';
 import '../../translation/presentation/word_popup_sheet.dart';
 import 'anam_live_avatar.dart';
 import 'gemini_voice_picker_sheet.dart';
+import 'spatius_live_avatar.dart';
 
 /// AI Voice Chat: tro chuyen tu do bang giong noi voi AI qua backend
 /// gemini-proxy (xem backend/README.md ve kien truc + cach deploy). BAT
@@ -52,6 +56,16 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
   // Chi duoc dung khi kUseAnamAvatar = true - xem build()/_toggle().
   final _anamKey = GlobalKey<AnamLiveAvatarState>();
   bool _anamReady = false;
+
+  // Du phong (failover) sang Spatius AI - chi duoc dung khi
+  // kUseSpatiusFailover = true, xem _onAnamUnrecoverable ben duoi. Spatius
+  // duoc "hoi am" (khoi tao + ket noi) NGAM tu luc Anam vua san sang, du chua
+  // hien len man hinh - de luc thuc su can chuyen mach chi con la doi UI
+  // (AnimatedOpacity) + doi huong audio, khong phai cho ket noi moi tu dau
+  // (von mat vai giay do round-trip mang), giup thoi gian chuyen mach < 1s.
+  final _spatiusKey = GlobalKey<SpatiusLiveAvatarState>();
+  AvatarProvider _avatarProvider = AvatarProvider.anam;
+  bool _spatiusWarmed = false;
   // Dung `audioplayers` (KHONG dung just_audio) - xem giai thich chi tiet
   // trong pubspec.yaml/app_tts.dart: just_audio_background chi ho tro DUY
   // NHAT 1 AudioPlayer trong toan app (NowPlayingService.player), 1
@@ -68,11 +82,26 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
   VoiceChatState _state = VoiceChatState.idle;
   String? _error;
   String _voiceName = kDefaultGeminiVoiceName;
+  // Gioi tinh avatar hien tai, suy ra tu _voiceName - xem
+  // GeminiGenderRouter/_currentAnamAvatarId/_currentSpatiusAvatarId. Doi
+  // ngay khi nguoi dung doi giong (xem _onVoiceChanged), lam AnamLiveAvatar/
+  // SpatiusLiveAvatar tu restart voi avatarId tuong ung qua didUpdateWidget.
+  GeminiGender _gender = GeminiGenderRouter.fromVoiceName(
+    kDefaultGeminiVoiceName,
+  );
+
+  String get _currentAnamAvatarId =>
+      _gender == GeminiGender.male ? kAnamAvatarIdMale : kAnamAvatarIdFemale;
+
+  String get _currentSpatiusAvatarId => _gender == GeminiGender.male
+      ? kSpatiusAvatarIdMale
+      : kSpatiusAvatarIdFemale;
 
   @override
   void initState() {
     super.initState();
     _voiceName = GeminiVoiceSelection.instance.value;
+    _gender = GeminiGenderRouter.fromVoiceName(_voiceName);
     GeminiVoiceSelection.instance.addListener(_onVoiceChanged);
     _ensurePlaybackSession();
   }
@@ -81,7 +110,10 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
     if (!mounted) return;
     final newVoice = GeminiVoiceSelection.instance.value;
     if (newVoice == _voiceName) return;
-    setState(() => _voiceName = newVoice);
+    setState(() {
+      _voiceName = newVoice;
+      _gender = GeminiGenderRouter.fromVoiceName(newVoice);
+    });
     if (_state == VoiceChatState.idle && _client != null) {
       _client!.dispose();
       _client = null;
@@ -130,10 +162,21 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
     }
   }
 
+  void _interruptActiveAvatar() {
+    switch (_avatarProvider) {
+      case AvatarProvider.anam:
+        _anamKey.currentState?.interruptPersona();
+        break;
+      case AvatarProvider.spatius:
+        _spatiusKey.currentState?.interruptPersona();
+        break;
+    }
+  }
+
   Future<void> _toggle() async {
     // Neu dang phat/dang nghe va nguoi dung bam ngat loi (barge-in):
     if (kUseAnamAvatar) {
-      _anamKey.currentState?.interruptPersona();
+      _interruptActiveAvatar();
     }
 
     // Dang noi - bam lai nghia la "toi noi xong roi", ket thuc luot nay va
@@ -193,7 +236,7 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
           } else if (s == VoiceChatState.listening) {
             // Khi nguoi dung bat dau noi (barge-in): dung ngay lap tuc avatar va loa
             if (kUseAnamAvatar) {
-              _anamKey.currentState?.interruptPersona();
+              _interruptActiveAvatar();
             }
           }
         });
@@ -203,17 +246,16 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
       _transcriptSub?.cancel();
       _transcriptSub = client.transcriptStream.listen(_onTranscript);
 
-      // Nap tung chunk audio ngay khi Gemini tra ve vao mieng avatar Anam de
-      // lipsync realtime, do tre thap nhat (<500ms) non-blocking.
+      // Nap tung chunk audio ngay khi Gemini tra ve vao mieng avatar dang
+      // ACTIVE (Anam hoac Spatius, xem _avatarProvider) de lipsync realtime,
+      // do tre thap nhat (<500ms) non-blocking. Websocket Gemini Live KHONG
+      // bi dong/khoi dong lai khi chuyen mach avatar - chi doi huong noi
+      // 2 stream nay tro toi widget nao dang hien.
       if (kUseAnamAvatar) {
         _liveAudioSub?.cancel();
-        _liveAudioSub = client.liveAudioChunks.listen(
-          (chunk) => _anamKey.currentState?.sendAudioChunk(chunk),
-        );
+        _liveAudioSub = client.liveAudioChunks.listen(_forwardAudioChunk);
         _turnAudioEndSub?.cancel();
-        _turnAudioEndSub = client.turnAudioEnd.listen(
-          (_) => _anamKey.currentState?.endTurn(),
-        );
+        _turnAudioEndSub = client.turnAudioEnd.listen((_) => _forwardEndTurn());
       }
     }
 
@@ -234,6 +276,57 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
         });
       }
     }
+  }
+
+  void _forwardAudioChunk(Uint8List chunk) {
+    switch (_avatarProvider) {
+      case AvatarProvider.anam:
+        _anamKey.currentState?.sendAudioChunk(chunk);
+        break;
+      case AvatarProvider.spatius:
+        _spatiusKey.currentState?.sendAudioChunk(chunk);
+        break;
+    }
+  }
+
+  void _forwardEndTurn() {
+    switch (_avatarProvider) {
+      case AvatarProvider.anam:
+        _anamKey.currentState?.endTurn();
+        break;
+      case AvatarProvider.spatius:
+        _spatiusKey.currentState?.endTurn();
+        break;
+    }
+  }
+
+  /// Goi khi AnamLiveAvatar bao loi KHONG the tu phuc hoi - hoac loi WebView
+  /// that su, hoac (thuong gap hon) do xin token moi that bai sau khi phien
+  /// 3 phut cua goi Free bi dong vi da het quota 30 phut/thang (xem
+  /// AnamLiveAvatar._onSessionExpired). Chi doi UI + huong audio sang
+  /// Spatius (da duoc "hoi am" san tu _warmSpatiusIfNeeded) - KHONG dong
+  /// GeminiLiveDirectClient, cuoc tro chuyen tiep tuc lien tuc.
+  void _onAnamUnrecoverable(String msg) {
+    if (!mounted) return;
+    if (!kUseSpatiusFailover) {
+      setState(() => _anamReady = false);
+      return;
+    }
+    setState(() {
+      _anamReady = false;
+      _avatarProvider = AvatarProvider.spatius;
+    });
+  }
+
+  /// Khoi tao truoc (ngam, khong hien UI) ket noi Spatius ngay khi Anam vua
+  /// san sang - de neu sau nay Anam loi, chuyen mach chi con la doi
+  /// AnimatedOpacity + doi huong 2 stream audio (xem _forwardAudioChunk),
+  /// khong phai cho round-trip mang xin token + tai avatar tu dau (~vai
+  /// giay) - dat duoc yeu cau chuyen mach duoi 1 giay.
+  void _warmSpatiusIfNeeded() {
+    if (!kUseSpatiusFailover || _spatiusWarmed) return;
+    _spatiusWarmed = true;
+    if (mounted) setState(() {});
   }
 
   /// Khi AI bao co loi (kem [TranscriptEvent.correction]), boi do luon tin
@@ -513,27 +606,84 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
                 child: SizedBox(
                   height: 220,
                   width: double.infinity,
-                  child: AnamLiveAvatar(
-                    key: _anamKey,
-                    // Uu tien qua Vercel proxy (xem anam_vercel_server/) neu
-                    // da deploy - API key that CHI nam tren server, khong
-                    // con bi nhung vao APK. Chua deploy (kAnamVercelProxyUrl
-                    // rong) thi tam dung cach cu goi thang API key trong app.
-                    sessionTokenProvider: () => kAnamVercelProxyUrl.isNotEmpty
-                        ? AnamSessionApi.fetchSessionTokenFromProxy(
-                            kAnamVercelProxyUrl,
-                          )
-                        : AnamSessionApi.fetchSessionToken(
-                            apiKey: Env.anamApiKeyDirect,
-                            avatarId: kAnamAvatarId,
-                            avatarModel: kAnamAvatarModel,
+                  child: Stack(
+                    children: [
+                      // Lop Anam - luon ton tai, an di (opacity 0) sau khi da
+                      // chuyen sang Spatius thay vi unmount, vi AnamLiveAvatar
+                      // khong con nhan audio nua (_forwardAudioChunk da doi
+                      // huong) nen khong ton chi phi chay ngam dang ke.
+                      AnimatedOpacity(
+                        opacity: _avatarProvider == AvatarProvider.anam
+                            ? 1.0
+                            : 0.0,
+                        duration: const Duration(milliseconds: 250),
+                        child: IgnorePointer(
+                          ignoring: _avatarProvider != AvatarProvider.anam,
+                          child: AnamLiveAvatar(
+                            key: _anamKey,
+                            avatarId: _currentAnamAvatarId,
+                            // Uu tien qua Vercel proxy (xem anam_vercel_server/)
+                            // neu da deploy - API key that CHI nam tren server,
+                            // khong con bi nhung vao APK. Chua deploy
+                            // (kAnamVercelProxyUrl rong) thi tam dung cach cu
+                            // goi thang API key trong app. [avatarId] o day la
+                            // gia tri MOI NHAT (_currentAnamAvatarId) - luon
+                            // dung theo GeminiGender hien tai.
+                            sessionTokenProvider: (avatarId) =>
+                                kAnamVercelProxyUrl.isNotEmpty
+                                ? AnamSessionApi.fetchSessionTokenFromProxy(
+                                    kAnamVercelProxyUrl,
+                                    avatarId: avatarId,
+                                  )
+                                : AnamSessionApi.fetchSessionToken(
+                                    apiKey: Env.anamApiKeyDirect,
+                                    avatarId: avatarId,
+                                    avatarModel: kAnamAvatarModel,
+                                  ),
+                            onReady: () {
+                              if (!mounted) return;
+                              setState(() => _anamReady = true);
+                              // Hoi am Spatius ngam ngay khi Anam vua ket noi
+                              // duoc, de san sang chuyen mach < 1s neu sau
+                              // nay Anam loi (xem _warmSpatiusIfNeeded).
+                              _warmSpatiusIfNeeded();
+                            },
+                            onError: (msg) => _onAnamUnrecoverable(msg),
                           ),
-                    onReady: () {
-                      if (mounted) setState(() => _anamReady = true);
-                    },
-                    onError: (msg) {
-                      if (mounted) setState(() => _anamReady = false);
-                    },
+                        ),
+                      ),
+                      // Lop Spatius - chi duoc mount (bat dau ket noi ngam)
+                      // sau khi Anam da san sang lan dau, xem
+                      // _warmSpatiusIfNeeded. AnimatedOpacity dao nguoc voi
+                      // lop Anam o tren de tao hieu ung crossfade khi
+                      // _avatarProvider doi tu anam sang spatius.
+                      if (_spatiusWarmed)
+                        AnimatedOpacity(
+                          opacity: _avatarProvider == AvatarProvider.spatius
+                              ? 1.0
+                              : 0.0,
+                          duration: const Duration(milliseconds: 250),
+                          child: IgnorePointer(
+                            ignoring: _avatarProvider != AvatarProvider.spatius,
+                            child: SpatiusLiveAvatar(
+                              key: _spatiusKey,
+                              appId: kSpatiusAppId,
+                              avatarId: _currentSpatiusAvatarId,
+                              sessionTokenProvider: () =>
+                                  SpatiusSessionApi.fetchSessionTokenFromProxy(
+                                    kSpatiusVercelProxyUrl,
+                                  ),
+                              onReady: () {},
+                              onError: (msg) {
+                                // Ca 2 nha cung cap deu loi - khong con noi
+                                // nao de du phong, chi tat hien thi avatar.
+                                if (!mounted) return;
+                                setState(() => _spatiusWarmed = false);
+                              },
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
               ),

@@ -83,16 +83,26 @@
       }
     }
 
+    // ID avatar dang active - CHI de bookkeeping/log ben JS, KHONG duoc
+    // dung de chon avatar: danh tinh avatar Anam da duoc "khoa" san trong
+    // sessionToken tu luc mint o server (personaConfig.avatarId khi goi
+    // AnamSessionApi.fetchSessionToken/fetchSessionTokenFromProxy), createClient()
+    // ben duoi KHONG nhan avatarId rieng. Tham so [avatarId] o day ton tai
+    // de code Dart goi initAnam/restartAnamSession doi xung voi Spatius
+    // (initSpatiusAvatarSession) - xem AnamLiveAvatar._connect.
+    let activeAvatarId = null;
+
     /** Flutter goi ham nay 1 lan sau khi doi duoc sessionToken tu
      *  AnamSessionApi.fetchSessionToken (xem anam_session_api.dart) - KHONG
      *  bao gio truyen API key that vao day, chi truyen session token ngan
-     *  han. */
-    window.initAnam = async function initAnam(sessionToken) {
+     *  han. [avatarId] chi de log - xem khai bao activeAvatarId o tren. */
+    window.initAnam = async function initAnam(sessionToken, avatarId) {
       try {
         if (anamClient) {
           await window.stopAnam();
         }
         intentionalStop = false;
+        activeAvatarId = avatarId ?? null;
 
         anamClient = createClient(sessionToken, {
           // Tat mic cua chinh WebView - nguoi dung da noi qua mic that o
@@ -244,10 +254,12 @@
       }
     };
 
-    /** Ten goi tu Flutter khi can noi lai sau khi phien cu bi Anam tu dong
-     *  dong (CONNECTION_CLOSED, xem tren) - thuc chat CHINH LA initAnam(),
-     *  vi SDK Anam KHONG co API "resume/reconnect" rieng, cach dung dung la
-     *  tao lai client hoan toan tu 1 session token moi (xem docs.anam.ai/
+    /** Ten goi tu Flutter khi can noi lai - hoac sau khi phien cu bi Anam tu
+     *  dong dong (CONNECTION_CLOSED, xem tren), hoac khi nguoi dung doi giong
+     *  Gemini Live sang gioi tinh khac (xem AiVoiceChatScreen._onVoiceChanged)
+     *  - thuc chat CHINH LA initAnam(sessionToken, avatarId), vi SDK Anam
+     *  KHONG co API "resume/reconnect" rieng, cach dung dung la tao lai
+     *  client hoan toan tu 1 session token moi (xem docs.anam.ai/
      *  sdk-reference/events - khong co client.start()/reconnect() nao duoc
      *  cong bo). Dat alias rieng ten de code Dart goi cho ro nghia, khong
      *  phai vi hanh vi khac initAnam. */

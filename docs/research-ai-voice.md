@@ -38,6 +38,14 @@ Backend proxy nhỏ (tự host, vd Oracle Cloud Free Tier VM)
 
 Lý do bắt buộc phải có backend (không gọi Gemini Live thẳng từ Flutter app): API key Gemini nhúng trong client APK có thể bị trích xuất/lạm dụng khi APK phát tán qua sideload — đây là yêu cầu bảo mật, không phải tùy chọn.
 
+## Failover avatar: Anam.ai → Spatius AI
+
+Ngoài fallback ở tầng audio/LLM (Gemini → pipeline tự host) ở trên, tầng **hiển thị avatar** cũng có 1 lớp du phòng riêng: khi Anam.ai lỗi không thể phục hồi (hết quota ~30 phút/tháng của gói Free, hoặc phiên 3 phút bị đóng và xin token mới thất bại), app tự chuyển sang render avatar bằng **Spatius AI** (`spatius_avatarkit`, pub.dev) — 1 SDK render avatar NATIVE trên GPU máy (3D Gaussian Splatting) thay vì WebView/WebRTC như Anam. Cả 2 nhà cung cấp đều nhận CÙNG audio PCM16 24kHz từ `GeminiLiveDirectClient.liveAudioChunks` — chỉ đổi widget hiển thị + đích gửi audio, không đụng tới WebSocket Gemini Live đang chạy.
+
+- **License/chi phí**: MIT (gói SDK), có gói Free — cần tự kiểm tra giới hạn phút/tháng hiện tại tại app.spatius.ai trước khi bật `kUseSpatiusFailover` cho production.
+- **Giới hạn đã biết khi viết code này (2026-09)**: Spatius **chưa công khai REST endpoint** để đổi session token trực tiếp từ client — `SPATIUS_API_KEY` bắt buộc giữ server-side (giống nguyên tắc với Anam). Phải tự viết 1 serverless proxy riêng (tương tự `anam_vercel_server/`) trước khi bật tính năng, xem `kSpatiusVercelProxyUrl` trong `voice_chat_config.dart`.
+- Chi tiết code: `app/lib/features/ai_voice_chat/presentation/spatius_live_avatar.dart`, `.../ai_voice_chat_screen.dart` (`_onAnamUnrecoverable`, `_warmSpatiusIfNeeded`).
+
 Xem khung code khởi tạo tại [`backend/`](../backend/README.md).
 
 ## Nguồn tham khảo

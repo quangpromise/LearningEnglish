@@ -53,13 +53,32 @@ class LearnerLevelBanner extends ConsumerWidget {
                 ),
               ),
             ),
-            Text(
-              ' · ${ref.tr('learner_level_change')}',
-              style: AppTextStyles.body(
-                size: 11.5,
-                weight: FontWeight.w800,
-                color: color,
-              ).copyWith(decoration: TextDecoration.underline),
+            const SizedBox(width: 6),
+            // The nen dam hon + icon chevron thay cho gach chan - bao hieu
+            // "co the bam" ro hon ma khong can gach chan (yeu cau nguoi
+            // dung: bo gach chan o tat ca man dung banner nay, thiet ke lai
+            // sao van biet duoc la nut bam duoc).
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.24),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    ref.tr('learner_level_change'),
+                    style: AppTextStyles.body(
+                      size: 11.5,
+                      weight: FontWeight.w800,
+                      color: color,
+                    ),
+                  ),
+                  const SizedBox(width: 2),
+                  Icon(Icons.chevron_right_rounded, size: 13, color: color),
+                ],
+              ),
             ),
           ],
         ),

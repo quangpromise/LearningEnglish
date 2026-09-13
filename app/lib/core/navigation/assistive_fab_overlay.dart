@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -7,26 +6,29 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/ai_voice_chat/presentation/ai_voice_chat_screen.dart';
 import '../../features/planner/presentation/planner_accent.dart';
 import '../../features/planner/presentation/planner_screen.dart';
+import '../../features/translation/presentation/dictionary_popup.dart';
 import '../../features/wealth/presentation/calculator_screen.dart';
 import '../i18n/app_strings.dart';
 import '../providers/app_providers.dart';
+import '../theme/app_theme.dart';
 import 'app_popup.dart';
 import 'nav_keys.dart';
 
 const _kFabSize = 56.0;
-const _kRadialRadius = 150.0;
-// Khoang cach doc GIUA TAM 2 bubble lien tiep - phai > chieu cao 1 muc
-// (bubble 48px + SizedBox 4px + 1 dong nhan ~11px = ~63px) de khong chong
-// len nhau; du de thoang mot chut.
-const _kItemSpacing = 78.0;
 
-enum _RadialAction { goHome, openPlanner, openAiVoiceChat, openCalculator }
+enum _RadialAction {
+  goHome,
+  openPlanner,
+  openAiVoiceChat,
+  openCalculator,
+  openTranslate,
+}
 
-/// 4 loi tat hien co (truoc day chi co 2 - Planner/AI Voice Chat - vi 5 loi
-/// tat ban dau bi trung chuc nang; gio bo sung "Ve trang chu" va "May tinh"
-/// theo yeu cau nguoi dung, van la nhung chuc nang THAT SU khac nhau).
-const _kRadialItems = [
-  (_RadialAction.goHome, Icons.home_rounded, 'assistive_menu_home'),
+/// Cac loi tat hien co TRU "Ve trang chu" - rieng Home duoc xep thanh 1 nut
+/// LON, doc lap o duoi cung cua bang menu (xem _buildMenuPanel), giong bo
+/// cuc menu AssistiveTouch that cua iOS (luoi cac muc phia tren + Home rieng
+/// phia duoi) thay vi xep tat ca thanh 1 cung tron nhu truoc.
+const _kGridItems = [
   (_RadialAction.openPlanner, Icons.calendar_month_rounded, 'planner_title'),
   (
     _RadialAction.openAiVoiceChat,
@@ -38,6 +40,11 @@ const _kRadialItems = [
     Icons.calculate_rounded,
     'wealth_calculator_title',
   ),
+  (
+    _RadialAction.openTranslate,
+    Icons.translate_rounded,
+    'assistive_menu_translate',
+  ),
 ];
 
 /// Nut noi kieu AssistiveTouch DUY NHAT cho toan app - gop 2 nut noi TRUNG
@@ -46,10 +53,10 @@ const _kRadialItems = [
 /// choi lan/de chong len nhau. DINH CHET vao canh phai man hinh (chi hien 1
 /// NUA hinh tron), chi keo duoc theo truc DOC doc canh phai.
 ///
-/// Cham nhanh (khong keo) bung/thu radial menu - xem [_kRadialItems]. BUG DA
-/// SUA: ban dau 5 loi tat xep qua sat nhau (chi 25 do/25px ban kinh giua 2
-/// tam) nen chong len nhau ro tren may that - gio 4 loi tat, xep cach xa
-/// nhau (100 do tong cung, ban kinh 100) nen khong con cham nhau.
+/// Cham nhanh (khong keo) bung/thu 1 bang menu kinh mo (frosted glass) noi
+/// giua man hinh - luoi 2x2 cac loi tat ([_kGridItems]) + rieng nut "Ve
+/// trang chu" to hon o duoi cung, dung bo cuc menu AssistiveTouch that cua
+/// iOS - xem [_buildMenuPanel].
 ///
 /// Hien o TAT CA man hinh (truoc day chi hien o 3 man Home chinh, an o moi
 /// man hinh khac - doi theo yeu cau nguoi dung de dung duoc loi tat "Ve
@@ -155,6 +162,22 @@ class _AssistiveFabOverlayState extends ConsumerState<AssistiveFabOverlay> {
     openCalculatorPopup(navContext);
   }
 
+  /// Cung popup tra tu dien 2 chieu Anh<->Viet dang mo tu icon o man Home
+  /// (xem home_screen.dart/DictionaryPopup) - gio mo them duoc tu bat ky dau
+  /// qua menu AssistiveTouch.
+  void _openTranslate() {
+    setState(() => _expanded = false);
+    final navContext = rootNavigatorKey.currentContext;
+    if (navContext == null) return;
+    showModalBottomSheet(
+      context: navContext,
+      useRootNavigator: true,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => const DictionaryPopup(),
+    );
+  }
+
   void _handleAction(_RadialAction action) {
     switch (action) {
       case _RadialAction.goHome:
@@ -165,6 +188,8 @@ class _AssistiveFabOverlayState extends ConsumerState<AssistiveFabOverlay> {
         _openAiVoiceChat();
       case _RadialAction.openCalculator:
         _openCalculator();
+      case _RadialAction.openTranslate:
+        _openTranslate();
     }
   }
 
@@ -204,11 +229,7 @@ class _AssistiveFabOverlayState extends ConsumerState<AssistiveFabOverlay> {
                 ),
               ),
             if (_expanded)
-              ..._buildRadialItems(
-                centerY: y + _kFabSize / 2,
-                mq: mq,
-                gradient: gradient,
-              ),
+              _buildMenuPanel(gradient: gradient, glowColor: glowColor),
             Positioned(
               right: -_kFabSize / 2,
               top: y,
@@ -260,86 +281,162 @@ class _AssistiveFabOverlayState extends ConsumerState<AssistiveFabOverlay> {
     );
   }
 
-  /// Xep [_kRadialItems] tren 1 CUNG TRON deu theo KHOANG CACH DOC CO DINH
-  /// ([_kItemSpacing]) giua tam cac bubble, roi suy nguoc ra do lech ngang
-  /// tu phuong trinh duong tron ban kinh [_kRadialRadius] (x = R*cos, voi
-  /// cos suy tu sin = dy/R) - dam bao KHOANG CACH DOC luon du lon hon chieu
-  /// cao 1 muc (bubble 48px + nhan chu ~18px = ~66px) bat ke co bao nhieu
-  /// muc, thay vi chia deu theo GOC nhu truoc (bug da gap tren may that: 4
-  /// muc chia deu trong cung 100 do voi ban kinh 100px chi cho ~51px giua 2
-  /// tam, nho hon 66px nen luon chong len nhau).
-  List<Widget> _buildRadialItems({
-    required double centerY,
-    required MediaQueryData mq,
+  /// Bang menu kieu AssistiveTouch that cua iOS: 1 the kinh mo (frosted
+  /// glass) noi giua man hinh, chua luoi 2x2 cac loi tat ([_kGridItems]) +
+  /// rieng nut "Ve trang chu" to hon nam DOC LAP o duoi cung - dung layout
+  /// co dinh (khong bam theo vi tri FAB nhu ban cu) de khong bao gio bi tran
+  /// man hinh du FAB dang o dau tren canh phai.
+  Widget _buildMenuPanel({
     required Gradient gradient,
+    required Color glowColor,
   }) {
-    final centerX = mq.size.width - _kFabSize / 2;
-    final items = <Widget>[];
-    final n = _kRadialItems.length;
-    final totalSpan = _kItemSpacing * (n - 1);
-    for (var i = 0; i < n; i++) {
-      final dy = n == 1 ? 0.0 : -totalSpan / 2 + i * _kItemSpacing;
-      final dx = -math.sqrt(
-        math.max(0.0, _kRadialRadius * _kRadialRadius - dy * dy),
-      );
-      final (action, icon, labelKey) = _kRadialItems[i];
-      items.add(
-        Positioned(
-          left: centerX + dx - 26,
-          top: centerY + dy - 30,
-          child: GestureDetector(
-            onTap: () => _handleAction(action),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    // Hinh tron, giong het nut Menu chinh dinh canh phai
-                    // (truoc day bo goc vuong kieu icon app - doi theo yeu
-                    // cau nguoi dung de dong bo hinh dang voi nut Menu).
-                    shape: BoxShape.circle,
-                    // Ca 4 nut deu dung CUNG 1 gradient theo app dang mo
-                    // (bug da thay tren may that: nut phu bi hardcode mau
-                    // xanh-tim cua English du dang mo tu Fitness) - khong
-                    // con phan biet rieng mau cho nut "primary".
-                    gradient: gradient,
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.16),
-                    ),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Colors.black38,
-                        blurRadius: 14,
-                        offset: Offset(0, 6),
-                      ),
-                    ],
+    const panelWidth = 260.0;
+    return Positioned.fill(
+      child: Align(
+        alignment: const Alignment(0, -0.15),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(28),
+          child: BackdropFilter(
+            filter: ui.ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+            child: Container(
+              width: panelWidth,
+              padding: const EdgeInsets.fromLTRB(18, 22, 18, 20),
+              decoration: BoxDecoration(
+                color: AppColors.glassFill,
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(color: AppColors.glassBorder, width: 1.2),
+                boxShadow: [
+                  BoxShadow(
+                    color: glowColor.withValues(alpha: 0.25),
+                    blurRadius: 40,
+                    spreadRadius: 2,
                   ),
-                  child: Icon(icon, size: 20, color: Colors.white),
-                ),
-                const SizedBox(height: 4),
-                SizedBox(
-                  width: 64,
-                  child: Text(
-                    ref.tr(labelKey),
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 9,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white70,
-                      decoration: TextDecoration.none,
-                    ),
-                  ),
-                ),
-              ],
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildGridRow(_kGridItems.sublist(0, 2), gradient),
+                  const SizedBox(height: 20),
+                  _buildGridRow(_kGridItems.sublist(2, 4), gradient),
+                  const SizedBox(height: 20),
+                  Container(height: 1, color: AppColors.glassBorder),
+                  const SizedBox(height: 16),
+                  _buildHomeButton(gradient, glowColor),
+                ],
+              ),
             ),
           ),
         ),
-      );
-    }
-    return items;
+      ),
+    );
+  }
+
+  Widget _buildGridRow(
+    List<(_RadialAction, IconData, String)> items,
+    Gradient gradient,
+  ) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: items
+          .map((item) => _buildMenuItem(item.$1, item.$2, item.$3, gradient))
+          .toList(),
+    );
+  }
+
+  Widget _buildMenuItem(
+    _RadialAction action,
+    IconData icon,
+    String labelKey,
+    Gradient gradient,
+  ) {
+    return GestureDetector(
+      onTap: () => _handleAction(action),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              // Ca cac nut deu dung CUNG 1 gradient theo app dang mo (bug da
+              // thay tren may that: nut phu bi hardcode mau xanh-tim cua
+              // English du dang mo tu Fitness) - khong con phan biet rieng
+              // mau cho nut "primary".
+              gradient: gradient,
+              border: Border.all(color: Colors.white.withValues(alpha: 0.16)),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black38,
+                  blurRadius: 14,
+                  offset: Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Icon(icon, size: 22, color: Colors.white),
+          ),
+          const SizedBox(height: 6),
+          SizedBox(
+            width: 74,
+            child: Text(
+              ref.tr(labelKey),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 10.5,
+                fontWeight: FontWeight.w700,
+                color: Colors.white70,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Nut "Ve trang chu" - xep rieng, TO HON cac muc luoi phia tren va nam o
+  /// duoi cung cua bang menu, dung bo cuc voi anh man hinh AssistiveTouch
+  /// that cua iOS nguoi dung gui lam mau.
+  Widget _buildHomeButton(Gradient gradient, Color glowColor) {
+    return GestureDetector(
+      onTap: () => _handleAction(_RadialAction.goHome),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: gradient,
+              border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+              boxShadow: [
+                BoxShadow(
+                  color: glowColor.withValues(alpha: 0.5),
+                  blurRadius: 20,
+                  spreadRadius: 1,
+                ),
+              ],
+            ),
+            child: const Icon(
+              Icons.home_rounded,
+              size: 28,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            ref.tr('assistive_menu_home'),
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

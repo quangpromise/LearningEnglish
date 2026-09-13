@@ -56,10 +56,23 @@ class AnamSessionApi {
   /// day la cach dung nen sau khi da deploy (xem kAnamVercelProxyUrl trong
   /// voice_chat_config.dart), vi API key that CHI nam tren Vercel, khong
   /// con bi nhung vao APK nua.
-  static Future<String> fetchSessionTokenFromProxy(String proxyUrl) async {
-    final res = await http
-        .get(Uri.parse(proxyUrl))
-        .timeout(const Duration(seconds: 10));
+  ///
+  /// [avatarId] (dung de tu dong doi avatar Nam/Nu theo giong Gemini dang
+  /// chon - xem GeminiGenderRouter) duoc gui qua query param cho proxy -
+  /// PHAI tu cap nhat anam_vercel_server/api/main.py de doc query param nay
+  /// va dua vao personaConfig.avatarId khi goi Anam that, proxy hien tai (neu
+  /// chua sua) se bo qua va luon dung avatarId co dinh cau hinh san server-side.
+  static Future<String> fetchSessionTokenFromProxy(
+    String proxyUrl, {
+    String? avatarId,
+  }) async {
+    var uri = Uri.parse(proxyUrl);
+    if (avatarId != null && avatarId.isNotEmpty) {
+      uri = uri.replace(
+        queryParameters: {...uri.queryParameters, 'avatarId': avatarId},
+      );
+    }
+    final res = await http.get(uri).timeout(const Duration(seconds: 10));
 
     if (res.statusCode != 200) {
       throw Exception(

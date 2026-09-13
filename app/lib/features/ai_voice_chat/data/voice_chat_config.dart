@@ -24,7 +24,21 @@ const kUseDirectGeminiConnection = true;
 const kUseAnamAvatar = true;
 
 /// ID avatar da tao san tren Anam.ai (xem anam.ai/dashboard).
+///
+/// TAM THOI dung CHUNG 1 avatar cho ca 2 gioi (Anam.ai moi chi co 1 avatar
+/// da tao) - [kAnamAvatarIdMale]/[kAnamAvatarIdFemale] ben duoi deu tro ve
+/// gia tri nay cho toi khi co ID avatar Nam/Nu rieng that tren Anam.ai. Doi
+/// giong Gemini Live luc do se KHONG lam avatar Anam doi gioi (van avatar
+/// cu), chi Spatius (da co du 2 ID that, xem kSpatiusAvatarIdMale/Female)
+/// moi doi gioi ngay duoc.
 const kAnamAvatarId = '68b4b44d-874b-4343-a1c9-b97d3c4a4d6e';
+
+/// TODO: thay bang ID avatar NAM rieng tren Anam.ai khi co.
+const kAnamAvatarIdMale = kAnamAvatarId;
+
+/// TODO: thay bang ID avatar NU rieng tren Anam.ai khi co (co the chinh la
+/// [kAnamAvatarId] hien tai neu avatar dang dung la Nu).
+const kAnamAvatarIdFemale = kAnamAvatarId;
 
 /// Model render avatar - "cara-4" la model moi nhat Anam ho tro audio
 /// passthrough luc viet code nay (2026-09), doi lai neu Anam doi ten model
@@ -43,3 +57,30 @@ const kAnamAvatarModel = 'cara-4';
 /// phut (gioi han goi Free) bi dong dot ngot - xem
 /// AnamLiveAvatar._onSessionExpired trong anam_live_avatar.dart.
 const kAnamVercelProxyUrl = 'https://anam-session-proxy.vercel.app';
+
+/// Bat/tat co che du phong (failover) sang Spatius AI (goi
+/// spatius_avatarkit, render avatar NATIVE tren GPU may - khac Anam dung
+/// WebView/WebRTC) khi Anam bi loi khong the phuc hoi (het quota
+/// 30 phut/thang cua goi Free, hoac loi WebView khac). Xem
+/// SpatiusLiveAvatar + AiVoiceChatScreen._onAnamUnrecoverable.
+const kUseSpatiusFailover = true;
+
+/// App ID cua du an tren Spatius Studio (app.spatius.ai) - can de goi
+/// AvatarSDK.initialize. Khac voi API key (chi nam server-side), App ID
+/// khong bi coi la bi mat nen dua thang vao app duoc.
+const kSpatiusAppId = 'app_mtz9is0f_1ok6yyo';
+
+/// ID avatar Nam/Nu da tao rieng tren Spatius Studio - KHONG dung chung ID
+/// voi Anam ([kAnamAvatarId]) vi 2 nen tang co kho avatar rieng. Chon avatar
+/// nao dua vao GeminiGender hien tai - xem
+/// AiVoiceChatScreen._currentSpatiusAvatarId.
+const kSpatiusAvatarIdFemale = 'd51ab422-3db7-47cc-afa8-7273b02bc70b';
+const kSpatiusAvatarIdMale = '566981dd-1d95-4844-953e-d67e18b2fde8';
+
+/// URL serverless function tu viet (repo rieng
+/// github.com/quangpromise/spatius-session-proxy, xem README trong do) giu
+/// SPATIUS_API_KEY that server-side va tra ve {"sessionToken": "..."} cho
+/// SpatiusSessionApi.fetchSessionTokenFromProxy - xem api/session_token.py
+/// trong repo do de biet endpoint that cua Spatius dang duoc goi.
+const kSpatiusVercelProxyUrl =
+    'https://spatius-session-proxy.vercel.app/api/session_token';
