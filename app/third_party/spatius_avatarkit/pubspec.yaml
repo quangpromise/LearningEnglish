@@ -1,0 +1,30 @@
+name: spatius_avatarkit
+description: "AvatarKit — real-time, audio-driven avatar rendering SDK for Flutter."
+version: 1.3.6
+# 只填公开可达的地址：avatarkit-flutter 仓是 PRIVATE，填它等于给所有外部用户
+# 一个 404（pub.dev 页面上正是如此）。repository 因此留空——官网首页有文档站入口。
+homepage: https://spatius.ai/
+issue_tracker: https://docs.spatius.ai/
+
+environment:
+  sdk: ^3.0.0
+  flutter: '>=3.10.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  plugin_platform_interface: ^2.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  plugin:
+    platforms:
+      ios:
+        pluginClass: AvatarKitPlugin
+      android:
+        package: ai.spatius.avatarkit
+        pluginClass: AvatarKitPlugin

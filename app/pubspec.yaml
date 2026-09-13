@@ -235,6 +235,19 @@ flutter_launcher_icons:
 # thay vi cho pub tu tai ban goc tren pub.dev. XOA override nay + thu muc
 # third_party/flutter_inappwebview_android/ ngay khi upstream phat hanh ban
 # vá that su (kiem tra CHANGELOG.md tai pub.dev/packages/flutter_inappwebview_android).
+#
+# VA cho spatius_avatarkit (2026-09): ban pub.dev 1.3.6 dat namespace module
+# wrapper Flutter (android/build.gradle) TRUNG HET voi AAR native no phu
+# thuoc (ai.spatius:avatarkit:1.3.4, xem dependencies{} trong file do) - AGP
+# 8+/9 bao "Namespace ... is used in multiple modules and/or libraries",
+# lam build APK release that bai (chi lo ra o buoc build native tren CI,
+# flutter analyze khong bat duoc). Da vendor 1 ban sua (doi namespace wrapper
+# thanh "ai.spatius.avatarkit.flutterplugin", KHONG dung code Kotlin ben
+# trong vi AGP namespace chi sinh R/BuildConfig, khong doi package .kt) vao
+# third_party/. XOA override nay khi Spatius phat hanh ban vá that (kiem tra
+# pub.dev/packages/spatius_avatarkit/changelog).
 dependency_overrides:
   flutter_inappwebview_android:
     path: third_party/flutter_inappwebview_android
+  spatius_avatarkit:
+    path: third_party/spatius_avatarkit

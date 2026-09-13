@@ -1,0 +1,83 @@
+group = "ai.spatius.avatarkit"
+version = "1.0-SNAPSHOT"
+
+buildscript {
+    ext.kotlin_version = "2.1.0"
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath("com.android.tools.build:gradle:8.9.1")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+apply plugin: "com.android.library"
+apply plugin: "kotlin-android"
+
+android {
+    // VA: doi namespace cua module WRAPPER Flutter nay (khac voi AAR native
+    // "ai.spatius:avatarkit:1.3.4" no phu thuoc ben duoi, dependencies{} o
+    // duoi) - ban goc pub.dev 1.3.6 dat CUNG 1 namespace "ai.spatius.avatarkit"
+    // cho ca 2, khien AGP 8+/9 bao loi "Namespace ... is used in multiple
+    // modules and/or libraries" (build that tren CI, khong bat duoc bang
+    // flutter analyze vi day la loi merge AndroidManifest luc build native,
+    // khong phai loi Dart). Doi ten wrapper thanh hau to ".flutterplugin" -
+    // KHONG anh huong code Kotlin trong src/ (namespace AGP chi dung de sinh
+    // R/BuildConfig, khong doi package khai bao trong file .kt).
+    namespace = "ai.spatius.avatarkit.flutterplugin"
+
+    compileSdk = 36
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_11
+    }
+
+    sourceSets {
+        main.java.srcDirs += "src/main/kotlin"
+        test.java.srcDirs += "src/test/kotlin"
+    }
+
+    defaultConfig {
+        minSdk = 24
+        ndk {
+            abiFilters "arm64-v8a"
+        }
+    }
+
+    dependencies {
+        // SPAvatarKit SDK (published to mavenLocal or mavenCentral)
+        implementation("ai.spatius:avatarkit:1.3.4")
+
+        // Coroutines
+        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
+        testImplementation("org.jetbrains.kotlin:kotlin-test")
+        testImplementation("org.mockito:mockito-core:5.0.0")
+    }
+
+    testOptions {
+        unitTests.all {
+            useJUnitPlatform()
+
+            testLogging {
+               events "passed", "skipped", "failed", "standardOut", "standardError"
+               outputs.upToDateWhen {false}
+               showStandardStreams = true
+            }
+        }
+    }
+}
