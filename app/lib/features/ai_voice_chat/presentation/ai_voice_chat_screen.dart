@@ -66,6 +66,11 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
   final _spatiusKey = GlobalKey<SpatiusLiveAvatarState>();
   AvatarProvider _avatarProvider = AvatarProvider.anam;
   bool _spatiusWarmed = false;
+  // Rieng voi _spatiusWarmed (chi bao "da mount, dang ket noi") - true CHI
+  // khi Spatius that su san sang tu phat am thanh dong bo (onReady) - dung
+  // trong _playResponse de biet co can phat lai qua loa dien thoai (_player)
+  // hay khong, y het vai tro cua _anamReady ben tren cho Anam.
+  bool _spatiusReady = false;
   // Dung `audioplayers` (KHONG dung just_audio) - xem giai thich chi tiet
   // trong pubspec.yaml/app_tts.dart: just_audio_background chi ho tro DUY
   // NHAT 1 AudioPlayer trong toan app (NowPlayingService.player), 1
@@ -484,10 +489,21 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
     final path = await future;
     if (path == null) return;
     // Van luu file de nut "nghe lai" tren bong chat dung duoc (xem
-    // _replayAudio) - chi bo qua phat NGAY luc nay, vi Anam da tu phat tieng
-    // dong bo voi video qua WebRTC roi (xem AnamLiveAvatar), phat them lan
+    // _replayAudio) - chi bo qua phat NGAY luc nay, vi avatar dang ACTIVE
+    // (Anam hoac Spatius) da tu phat am thanh dong bo roi, phat them lan
     // nua o day se bi vang/lech dong bo 2 nguon tieng.
-    if (kUseAnamAvatar && _anamReady) return;
+    //
+    // BUG DA SUA: truoc day chi kiem tra _anamReady (goc code chi tinh
+    // truong hop Anam), khong xet _avatarProvider - khi dang failover sang
+    // Spatius, _anamReady luon la false nen dieu kien nay khong bao gio
+    // dung, khien _player phat THEM 1 lan qua loa dien thoai du Spatius da
+    // tu phat dong bo roi (nguoi dung bao cao: "avatar noi xong, tieng lai
+    // vang len lan 2 nhung avatar khong map may").
+    final activeAvatarHandlesAudio = kUseAnamAvatar && switch (_avatarProvider) {
+      AvatarProvider.anam => _anamReady,
+      AvatarProvider.spatius => _spatiusReady,
+    };
+    if (activeAvatarHandlesAudio) return;
     try {
       await _ensurePlaybackSession();
       await _player.play(ap.DeviceFileSource(path));
@@ -690,12 +706,18 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
                                   SpatiusSessionApi.fetchSessionTokenFromProxy(
                                     kSpatiusVercelProxyUrl,
                                   ),
-                              onReady: () {},
+                              onReady: () {
+                                if (!mounted) return;
+                                setState(() => _spatiusReady = true);
+                              },
                               onError: (msg) {
                                 // Ca 2 nha cung cap deu loi - khong con noi
                                 // nao de du phong, chi tat hien thi avatar.
                                 if (!mounted) return;
-                                setState(() => _spatiusWarmed = false);
+                                setState(() {
+                                  _spatiusWarmed = false;
+                                  _spatiusReady = false;
+                                });
                               },
                             ),
                           ),

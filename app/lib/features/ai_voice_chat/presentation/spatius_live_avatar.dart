@@ -170,7 +170,16 @@ class SpatiusLiveAvatarState extends State<SpatiusLiveAvatar> {
         child: Center(child: CircularProgressIndicator(color: Colors.white54)),
       );
     }
+    // BUG DA SUA: PlatformView (AndroidView/UiKitView ben trong AvatarWidget)
+    // CHI dung creationParams (avatar.toJson()) o LAN DAU tao view - doi
+    // `avatar` sang 1 object khac (avatarId khac) o lan build sau ma KHONG
+    // doi key se KHONG lam Flutter tao lai native view, avatar cu van hien
+    // nguyen (day la nguyen nhan that su cua bug "Spatius khong tu doi
+    // gioi tinh"). key: ValueKey(avatar.id) buoc Flutter coi day la 1
+    // widget HOAN TOAN KHAC moi khi avatarId doi, huy Element/view cu va
+    // tao view moi tu dau (kich hoat lai onPlatformViewCreated).
     return AvatarWidget(
+      key: ValueKey(avatar.id),
       avatar: avatar,
       onPlatformViewCreated: _onAvatarViewCreated,
     );
