@@ -9,7 +9,11 @@ import '../data/irregular_verbs_data.dart';
 /// GrammarTopicsScreen, tim kiem theo bat ky cot nao (khong phan biet hoa
 /// thuong).
 class IrregularVerbsScreen extends ConsumerStatefulWidget {
-  const IrregularVerbsScreen({super.key});
+  const IrregularVerbsScreen({super.key, required this.onBack});
+
+  /// Quay ve luoi chu diem ngu phap - doi noi dung NGAY TRONG CUNG 1 popup
+  /// (xem GrammarTopicsScreen._step), khong dung Navigator.
+  final VoidCallback onBack;
 
   @override
   ConsumerState<IrregularVerbsScreen> createState() =>
@@ -45,7 +49,7 @@ class _IrregularVerbsScreenState extends ConsumerState<IrregularVerbsScreen> {
             Row(
               children: [
                 GestureDetector(
-                  onTap: () => Navigator.of(context).maybePop(),
+                  onTap: widget.onBack,
                   child: Container(
                     width: 34,
                     height: 34,

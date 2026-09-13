@@ -10,8 +10,20 @@ import '../data/grammar_data.dart';
 /// distractor). Het cau cuoi hien bang ket qua ngay tren man nay va dung
 /// lai, giong quy uoc cua VocabularyQuizScreen.
 class GrammarQuizScreen extends ConsumerStatefulWidget {
-  const GrammarQuizScreen({super.key, required this.topic});
+  const GrammarQuizScreen({
+    super.key,
+    required this.topic,
+    required this.onClose,
+    required this.onFinishToTopics,
+  });
   final GrammarTopic topic;
+
+  /// Nut dong (X) - quay ve man chi tiet chu diem (buoc TRUOC quiz).
+  final VoidCallback onClose;
+
+  /// Bam "Done" sau khi lam xong quiz - quay THANG ve luoi chu diem, bo qua
+  /// man chi tiet.
+  final VoidCallback onFinishToTopics;
 
   @override
   ConsumerState<GrammarQuizScreen> createState() => _GrammarQuizScreenState();
@@ -57,7 +69,7 @@ class _GrammarQuizScreenState extends ConsumerState<GrammarQuizScreen> {
             Row(
               children: [
                 GestureDetector(
-                  onTap: () => Navigator.of(context).maybePop(),
+                  onTap: widget.onClose,
                   child: Container(
                     width: 34,
                     height: 34,
@@ -297,11 +309,7 @@ class _GrammarQuizScreenState extends ConsumerState<GrammarQuizScreen> {
               width: double.infinity,
               child: PillButton(
                 label: ref.tr('vocab_done'),
-                onTap: () {
-                  final nav = Navigator.of(context);
-                  nav.pop();
-                  nav.pop();
-                },
+                onTap: widget.onFinishToTopics,
               ),
             ),
           ],

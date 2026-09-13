@@ -2,16 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
-import '../../../core/navigation/app_popup.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/grammar_data.dart';
-import 'grammar_quiz_screen.dart';
 
 /// Giai thich 1 chu diem ngu phap: cong thuc + giai thich ngan + vi du
 /// song ngu, cuoi trang co nut vao lam 5 cau trac nghiem luyen tap.
 class GrammarTopicDetailScreen extends ConsumerWidget {
-  const GrammarTopicDetailScreen({super.key, required this.topic});
+  const GrammarTopicDetailScreen({
+    super.key,
+    required this.topic,
+    required this.onBack,
+    required this.onStartQuiz,
+  });
   final GrammarTopic topic;
+
+  /// Quay ve luoi chu diem - doi noi dung NGAY TRONG CUNG 1 popup (xem
+  /// GrammarTopicsScreen._step), khong dung Navigator.
+  final VoidCallback onBack;
+
+  /// Chuyen sang buoc quiz cua CHINH chu diem nay.
+  final VoidCallback onStartQuiz;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -23,7 +33,7 @@ class GrammarTopicDetailScreen extends ConsumerWidget {
             Row(
               children: [
                 GestureDetector(
-                  onTap: () => Navigator.of(context).maybePop(),
+                  onTap: onBack,
                   child: Container(
                     width: 34,
                     height: 34,
@@ -115,8 +125,7 @@ class GrammarTopicDetailScreen extends ConsumerWidget {
               width: double.infinity,
               child: PillButton(
                 label: ref.tr('grammar_topics_start_practice'),
-                onTap: () =>
-                    openAppPopup(context, GrammarQuizScreen(topic: topic)),
+                onTap: onStartQuiz,
               ),
             ),
           ],

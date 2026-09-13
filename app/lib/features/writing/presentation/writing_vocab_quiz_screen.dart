@@ -18,9 +18,22 @@ import '../data/writing_scoring.dart';
 /// tu dong chuyen cau sau 900ms roi hien ket qua cuoi vong (mirror timing +
 /// bo cuc man ket qua cua VocabularyQuizScreen).
 class WritingVocabQuizScreen extends ConsumerStatefulWidget {
-  const WritingVocabQuizScreen({super.key, required this.topic});
+  const WritingVocabQuizScreen({
+    super.key,
+    required this.topic,
+    required this.onClose,
+    required this.onFinishToTopics,
+  });
 
   final VocabTopic topic;
+
+  /// Nut dong (X) - quay ve luoi chu de.
+  final VoidCallback onClose;
+
+  /// Bam "Done" sau khi lam xong - thoat het luong Tu vung, ve man chon
+  /// che do Luyen viet (giu dung hanh vi cu: pop 2 lan tu Quiz se vuot qua
+  /// ca man chon chu de, khong dung lai o do).
+  final VoidCallback onFinishToTopics;
 
   @override
   ConsumerState<WritingVocabQuizScreen> createState() =>
@@ -142,7 +155,7 @@ class _WritingVocabQuizScreenState
             Row(
               children: [
                 GestureDetector(
-                  onTap: () => Navigator.of(context).maybePop(),
+                  onTap: widget.onClose,
                   child: Container(
                     width: 34,
                     height: 34,
@@ -387,11 +400,7 @@ class _WritingVocabQuizScreenState
               width: double.infinity,
               child: PillButton(
                 label: ref.tr('vocab_done'),
-                onTap: () {
-                  final nav = Navigator.of(context);
-                  nav.pop();
-                  nav.pop();
-                },
+                onTap: widget.onFinishToTopics,
               ),
             ),
           ],

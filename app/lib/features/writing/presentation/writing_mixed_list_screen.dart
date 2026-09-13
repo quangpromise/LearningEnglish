@@ -3,18 +3,23 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_language.dart';
 import '../../../core/i18n/app_strings.dart';
-import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/writing_paragraph_data.dart';
-import 'writing_paragraph_screen.dart';
 
 /// Bo 24 doan "Tong hop 12 thi" cu (kWritingParagraphs, moi doan tron nhieu
 /// thi) - nay la 1 muc rieng trong man chon chu de Doan van (xem
 /// WritingParagraphListScreen), chi hien khi Tu hoc hoac cap Nang cao vi
 /// doan nao cung co thi kho (hoan thanh tiep dien...).
 class WritingMixedParagraphListScreen extends ConsumerWidget {
-  const WritingMixedParagraphListScreen({super.key});
+  const WritingMixedParagraphListScreen({
+    super.key,
+    required this.onBack,
+    required this.onOpenParagraph,
+  });
+
+  final VoidCallback onBack;
+  final void Function(WritingParagraph paragraph) onOpenParagraph;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -28,7 +33,7 @@ class WritingMixedParagraphListScreen extends ConsumerWidget {
             Row(
               children: [
                 GestureDetector(
-                  onTap: () => Navigator.of(context).maybePop(),
+                  onTap: onBack,
                   child: Container(
                     width: 34,
                     height: 34,
@@ -70,10 +75,7 @@ class WritingMixedParagraphListScreen extends ConsumerWidget {
                   final p = kWritingParagraphs[i];
                   final title = lang == AppLanguage.en ? p.titleEn : p.titleVi;
                   return GestureDetector(
-                    onTap: () => openAppPopup(
-                      context,
-                      WritingParagraphScreen(paragraph: p),
-                    ),
+                    onTap: () => onOpenParagraph(p),
                     child: GlowBox(
                       borderRadius: 18,
                       child: Row(

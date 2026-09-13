@@ -3,15 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_language.dart';
 import '../../../core/i18n/app_strings.dart';
-import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../learning_path/data/learning_path_models.dart';
 import '../../learning_path/presentation/learner_level_banner.dart';
 import '../data/writing_bank.dart';
 import '../data/writing_progress.dart';
-import 'writing_mixed_list_screen.dart';
-import 'writing_topic_paragraphs_screen.dart';
 
 /// Man chon chu de Doan van - ngan hang bai theo cap (kWritingTopics, moi chu
 /// de 8 bai/cap). Da chon goi y lo trinh -> moi the chi dem bai cua cap do,
@@ -19,7 +16,17 @@ import 'writing_topic_paragraphs_screen.dart';
 /// 24 bai/chu de, khong ban tay. Muc "On tong hop 12 thi" (bo 24 doan cu)
 /// chi hien cho Tu hoc/Nang cao - xem docs/research-level-based-content.md.
 class WritingParagraphListScreen extends ConsumerWidget {
-  const WritingParagraphListScreen({super.key});
+  const WritingParagraphListScreen({
+    super.key,
+    required this.onBack,
+    required this.onOpenTopic,
+    required this.onOpenMixed,
+  });
+
+  /// Thoat het che do Doan van, quay ve man chon che do Luyen viet.
+  final VoidCallback onBack;
+  final void Function(WritingTopic topic) onOpenTopic;
+  final VoidCallback onOpenMixed;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -40,7 +47,7 @@ class WritingParagraphListScreen extends ConsumerWidget {
             Row(
               children: [
                 GestureDetector(
-                  onTap: () => Navigator.of(context).maybePop(),
+                  onTap: onBack,
                   child: Container(
                     width: 34,
                     height: 34,
@@ -91,10 +98,7 @@ class WritingParagraphListScreen extends ConsumerWidget {
                           ' · ${ref.tr('writing_done_count').replaceFirst('{done}', '${doneCount(t)}').replaceFirst('{total}', '${t.paragraphsFor(level).length}')}',
                       icon: t.icon,
                       color: t.color,
-                      onTap: () => openAppPopup(
-                        context,
-                        WritingTopicParagraphsScreen(topic: t),
-                      ),
+                      onTap: () => onOpenTopic(t),
                     ),
                     const SizedBox(height: 10),
                   ],
@@ -104,10 +108,7 @@ class WritingParagraphListScreen extends ConsumerWidget {
                       subtitle: ref.tr('writing_mixed_desc'),
                       icon: Icons.layers_rounded,
                       color: AppColors.teal,
-                      onTap: () => openAppPopup(
-                        context,
-                        const WritingMixedParagraphListScreen(),
-                      ),
+                      onTap: onOpenMixed,
                     ),
                 ],
               ),

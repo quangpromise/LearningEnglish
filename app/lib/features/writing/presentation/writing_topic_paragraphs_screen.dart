@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_language.dart';
 import '../../../core/i18n/app_strings.dart';
-import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../learning_path/data/learning_path_models.dart';
@@ -11,15 +10,21 @@ import '../../learning_path/presentation/learner_level_banner.dart';
 import '../data/writing_bank.dart';
 import '../data/writing_paragraph_data.dart';
 import '../data/writing_progress.dart';
-import 'writing_paragraph_screen.dart';
 
 /// Danh sach bai Doan van cua 1 chu de. Da chon goi y -> chi 8 bai cua cap
 /// do, ban tay LUON chi vao bai chua lam dau tien. Tu hoc -> du 24 bai, chia
 /// 3 nhom Co ban/Trung cap/Nang cao, khong ban tay.
 class WritingTopicParagraphsScreen extends ConsumerWidget {
-  const WritingTopicParagraphsScreen({super.key, required this.topic});
+  const WritingTopicParagraphsScreen({
+    super.key,
+    required this.topic,
+    required this.onBack,
+    required this.onOpenParagraph,
+  });
 
   final WritingTopic topic;
+  final VoidCallback onBack;
+  final void Function(WritingParagraph paragraph) onOpenParagraph;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -34,7 +39,7 @@ class WritingTopicParagraphsScreen extends ConsumerWidget {
       subtitle: '${p.sentences.length} ${ref.tr('writing_sentence_count')}',
       color: topic.color,
       done: done.contains(p.id),
-      onTap: () => openAppPopup(context, WritingParagraphScreen(paragraph: p)),
+      onTap: () => onOpenParagraph(p),
     );
 
     return ScreenBackground(
@@ -46,7 +51,7 @@ class WritingTopicParagraphsScreen extends ConsumerWidget {
             Row(
               children: [
                 GestureDetector(
-                  onTap: () => Navigator.of(context).maybePop(),
+                  onTap: onBack,
                   child: Container(
                     width: 34,
                     height: 34,

@@ -2,13 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
-import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../learning_path/presentation/learner_level_banner.dart';
 import '../../vocabulary/data/vocab_level_filter.dart';
 import '../../vocabulary/data/vocabulary_data.dart';
-import 'writing_vocab_quiz_screen.dart';
 
 /// Luoi chon chu de tu vung cho che do "Go tu tieng Anh" - mirror
 /// vocabulary_topics_screen.dart (khong co o tim kiem rieng vi so chu de it
@@ -16,7 +14,15 @@ import 'writing_vocab_quiz_screen.dart';
 /// WritingVocabQuizScreen (go tu) thay vi VocabularyTopicDetailScreen (xem
 /// tu dien).
 class WritingVocabTopicScreen extends ConsumerWidget {
-  const WritingVocabTopicScreen({super.key});
+  const WritingVocabTopicScreen({
+    super.key,
+    required this.onBack,
+    required this.onOpenTopic,
+  });
+
+  /// Thoat het che do Tu vung, quay ve man chon che do Luyen viet.
+  final VoidCallback onBack;
+  final void Function(VocabTopic topic) onOpenTopic;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -33,7 +39,7 @@ class WritingVocabTopicScreen extends ConsumerWidget {
             Row(
               children: [
                 GestureDetector(
-                  onTap: () => Navigator.of(context).maybePop(),
+                  onTap: onBack,
                   child: Container(
                     width: 34,
                     height: 34,
@@ -83,10 +89,7 @@ class WritingVocabTopicScreen extends ConsumerWidget {
                 itemBuilder: (context, i) {
                   final topic = topics[i];
                   return GestureDetector(
-                    onTap: () => openAppPopup(
-                      context,
-                      WritingVocabQuizScreen(topic: topic),
-                    ),
+                    onTap: () => onOpenTopic(topic),
                     child: GlowBox(
                       borderRadius: 22,
                       child: Column(

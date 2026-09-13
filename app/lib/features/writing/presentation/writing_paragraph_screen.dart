@@ -15,9 +15,23 @@ import '../data/writing_scoring.dart';
 /// chuyen cau sau khi cham). Het cau cuoi -> man ket qua tong % + danh sach
 /// tung cau.
 class WritingParagraphScreen extends ConsumerStatefulWidget {
-  const WritingParagraphScreen({super.key, required this.paragraph});
+  const WritingParagraphScreen({
+    super.key,
+    required this.paragraph,
+    required this.onClose,
+    required this.onDone,
+  });
 
   final WritingParagraph paragraph;
+
+  /// Nut dong (X)/back - quay ve man vua mo bai nay (chi tiet chu de hoac
+  /// danh sach "On tong hop", tuy noi vao).
+  final VoidCallback onClose;
+
+  /// Bam "Done" sau khi lam xong doan van - ve thang man chon chu de Doan
+  /// van (giu dung hanh vi cu: pop 2 lan tu day se vuot qua ca man chi
+  /// tiet/danh sach vua mo bai, khong dung lai o do).
+  final VoidCallback onDone;
 
   @override
   ConsumerState<WritingParagraphScreen> createState() =>
@@ -102,7 +116,7 @@ class _WritingParagraphScreenState
             Row(
               children: [
                 GestureDetector(
-                  onTap: () => Navigator.of(context).maybePop(),
+                  onTap: widget.onClose,
                   child: Container(
                     width: 34,
                     height: 34,
@@ -371,11 +385,7 @@ class _WritingParagraphScreenState
                   ],
                 ),
                 accentColor: AppColors.teal,
-                onTap: () {
-                  final nav = Navigator.of(context);
-                  nav.pop();
-                  nav.pop();
-                },
+                onTap: widget.onDone,
               ),
             ),
           ],

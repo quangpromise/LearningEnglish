@@ -2,15 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
-import '../../../core/navigation/app_popup.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/grammar_data.dart';
+import 'grammar_quiz_screen.dart';
 import 'grammar_topic_detail_screen.dart';
 import 'irregular_verbs_screen.dart';
 
+enum _GrammarStep { topics, irregularVerbs, detail, quiz }
+
 /// Danh sach 31 chu diem ngu phap co ban - vao tu 1 the rieng trong man
 /// Vocabulary (khong phai tu tab rieng), moi chu diem co giai thich +
-/// vi du + 5 cau trac nghiem luyen tap.
+/// vi du + 5 cau trac nghiem luyen tap. Cung la "khung" duy nhat cho CA
+/// luong (chon chu diem/bang dong tu bat quy tac -> chi tiet -> quiz),
+/// KHONG mo them popup/route nao khac - xem giai thich chi tiet trong
+/// VocabularyTopicsScreen (cung nguyen tac, dung lam mau).
 class GrammarTopicsScreen extends ConsumerStatefulWidget {
   const GrammarTopicsScreen({super.key});
 
@@ -23,14 +28,55 @@ class _GrammarTopicsScreenState extends ConsumerState<GrammarTopicsScreen> {
   final _searchController = TextEditingController();
   String _query = '';
 
+  _GrammarStep _step = _GrammarStep.topics;
+  GrammarTopic? _activeTopic;
+
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
   }
 
+  void _openIrregularVerbs() =>
+      setState(() => _step = _GrammarStep.irregularVerbs);
+
+  void _openTopic(GrammarTopic topic) {
+    setState(() {
+      _activeTopic = topic;
+      _step = _GrammarStep.detail;
+    });
+  }
+
+  void _backToTopics() => setState(() => _step = _GrammarStep.topics);
+
+  void _startQuiz() => setState(() => _step = _GrammarStep.quiz);
+
+  void _backToDetail() => setState(() => _step = _GrammarStep.detail);
+
   @override
   Widget build(BuildContext context) {
+    switch (_step) {
+      case _GrammarStep.irregularVerbs:
+        return IrregularVerbsScreen(onBack: _backToTopics);
+      case _GrammarStep.detail:
+        final topic = _activeTopic ?? kGrammarTopics.first;
+        return GrammarTopicDetailScreen(
+          topic: topic,
+          onBack: _backToTopics,
+          onStartQuiz: _startQuiz,
+        );
+      case _GrammarStep.quiz:
+        return GrammarQuizScreen(
+          topic: _activeTopic ?? kGrammarTopics.first,
+          onClose: _backToDetail,
+          onFinishToTopics: _backToTopics,
+        );
+      case _GrammarStep.topics:
+        return _buildTopicsList(context);
+    }
+  }
+
+  Widget _buildTopicsList(BuildContext context) {
     final topics = kGrammarTopics.where((t) {
       if (_query.isEmpty) return true;
       return t.name.toLowerCase().contains(_query) ||
@@ -124,7 +170,7 @@ class _GrammarTopicsScreenState extends ConsumerState<GrammarTopicsScreen> {
             ),
             const SizedBox(height: 12),
             GestureDetector(
-              onTap: () => openAppPopup(context, const IrregularVerbsScreen()),
+              onTap: _openIrregularVerbs,
               child: GlowBox(
                 borderRadius: 16,
                 padding: const EdgeInsets.symmetric(
@@ -176,10 +222,7 @@ class _GrammarTopicsScreenState extends ConsumerState<GrammarTopicsScreen> {
                       itemBuilder: (context, i) {
                         final topic = topics[i];
                         return GestureDetector(
-                          onTap: () => openAppPopup(
-                            context,
-                            GrammarTopicDetailScreen(topic: topic),
-                          ),
+                          onTap: () => _openTopic(topic),
                           child: GlowBox(
                             borderRadius: 18,
                             padding: const EdgeInsets.symmetric(
