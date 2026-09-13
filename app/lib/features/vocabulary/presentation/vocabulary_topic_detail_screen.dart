@@ -357,7 +357,7 @@ class _VocabularyTopicDetailScreenState
                     label: ref.tr('vocab_start_learning'),
                     onTap: _selected.isEmpty
                         ? null
-                        : () => openAppPopup(
+                        : () => pushWithinPopup(
                             context,
                             VocabularyQuizScreen(
                               topic: widget.topic,

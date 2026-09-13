@@ -160,7 +160,7 @@ class _VocabularyTopicsScreenState
                       itemBuilder: (context, i) {
                         final topic = topics[i];
                         return GestureDetector(
-                          onTap: () => openAppPopup(
+                          onTap: () => pushWithinPopup(
                             context,
                             VocabularyTopicDetailScreen(topic: topic),
                           ),
