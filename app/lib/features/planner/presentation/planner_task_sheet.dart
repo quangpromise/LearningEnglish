@@ -8,6 +8,7 @@ import '../data/planner_models.dart';
 import '../data/planner_notification_service.dart';
 import 'planner_accent.dart';
 import 'planner_links.dart';
+import 'planner_pull_to_dismiss.dart';
 import 'planner_providers.dart';
 import 'planner_undo.dart';
 
@@ -28,11 +29,13 @@ Future<void> showPlannerTaskSheet(
     context: context,
     backgroundColor: Colors.transparent,
     isScrollControlled: true,
-    builder: (_) => _PlannerTaskSheet(
-      initialStart: initialStart,
-      editing: editing,
-      occurrence: occurrence,
-      messenger: messenger,
+    builder: (_) => PlannerPullToDismiss(
+      child: _PlannerTaskSheet(
+        initialStart: initialStart,
+        editing: editing,
+        occurrence: occurrence,
+        messenger: messenger,
+      ),
     ),
   );
 }
@@ -381,6 +384,7 @@ class _PlannerTaskSheetState extends ConsumerState<_PlannerTaskSheet> {
           borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
         ),
         child: SingleChildScrollView(
+          physics: const ClampingScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(22, 14, 22, 26),
           child: Column(
             mainAxisSize: MainAxisSize.min,

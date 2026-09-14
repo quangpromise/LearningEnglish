@@ -6,6 +6,7 @@ import '../../../core/theme/app_theme.dart';
 import '../data/device_alarm_sounds.dart';
 import '../data/planner_models.dart';
 import '../data/planner_notification_service.dart';
+import 'planner_pull_to_dismiss.dart';
 import 'planner_providers.dart';
 
 Future<void> showPlannerSettingsSheet(BuildContext context) {
@@ -13,7 +14,7 @@ Future<void> showPlannerSettingsSheet(BuildContext context) {
     context: context,
     backgroundColor: Colors.transparent,
     isScrollControlled: true,
-    builder: (_) => const _PlannerSettingsSheet(),
+    builder: (_) => const PlannerPullToDismiss(child: _PlannerSettingsSheet()),
   );
 }
 
@@ -34,6 +35,7 @@ class _PlannerSettingsSheet extends ConsumerWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
       child: SingleChildScrollView(
+        physics: const ClampingScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(22, 14, 22, 28),
         child: Column(
           mainAxisSize: MainAxisSize.min,

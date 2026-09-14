@@ -5,6 +5,7 @@ import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/planner_models.dart';
 import 'planner_accent.dart';
+import 'planner_pull_to_dismiss.dart';
 import 'planner_providers.dart';
 import 'planner_undo.dart';
 
@@ -21,7 +22,8 @@ Future<void> showPlannerOverdueSheet(
     context: context,
     backgroundColor: Colors.transparent,
     isScrollControlled: true,
-    builder: (_) => _OverdueSheet(messenger: messenger),
+    builder: (_) =>
+        PlannerPullToDismiss(child: _OverdueSheet(messenger: messenger)),
   );
 }
 
@@ -110,6 +112,7 @@ class _OverdueSheet extends ConsumerWidget {
             Flexible(
               child: ListView.separated(
                 shrinkWrap: true,
+                physics: const ClampingScrollPhysics(),
                 itemCount: items.length,
                 separatorBuilder: (_, _) => const SizedBox(height: 8),
                 itemBuilder: (context, i) {
