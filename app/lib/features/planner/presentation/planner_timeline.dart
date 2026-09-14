@@ -867,6 +867,17 @@ class _OccurrenceCard extends StatelessWidget {
                             ),
                           ),
                         ),
+                        if (task.subtasks.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 2),
+                            child: Text(
+                              '${occ.checkedCount}/${task.subtasks.length}',
+                              style: AppTextStyles.muted(
+                                size: 8.5,
+                                weight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
                         if (task.isRecurring)
                           const Icon(
                             Icons.repeat_rounded,

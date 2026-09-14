@@ -77,6 +77,21 @@ class PlannerTaskSource {
       other != null && other.kind == kind && other.refId == refId;
 }
 
+/// 1 buoc nho trong checklist cua 1 viec. Trang thai tick KHONG nam o day
+/// ma o [PlannerTask.subtaskDone] theo tung ngay - viec lap lai moi ngay co
+/// checklist rieng (vd "On 10 tu" hom nay tick khong anh huong ngay mai).
+class PlannerSubtask {
+  const PlannerSubtask({required this.id, required this.title});
+
+  final String id;
+  final String title;
+
+  Map<String, dynamic> toJson() => {'id': id, 'title': title};
+
+  factory PlannerSubtask.fromJson(Map<String, dynamic> json) =>
+      PlannerSubtask(id: json['id'] as String, title: json['title'] as String);
+}
+
 /// 1 viec trong tinh nang "Lap ke hoach" - dung chung cho ca 3 mini-app,
 /// phan biet qua [appSection] (icon + mau rieng trong timeline, xem
 /// planner_timeline.dart).
@@ -104,6 +119,9 @@ class PlannerTask {
     this.reminderOffsets,
     this.inbox = false,
     this.source,
+    this.subtasks = const [],
+    this.subtaskDone = const {},
+    this.updatedAt,
   });
 
   final String id;
@@ -148,6 +166,15 @@ class PlannerTask {
   final bool inbox;
 
   final PlannerTaskSource? source;
+
+  final List<PlannerSubtask> subtasks;
+
+  /// Khoa [plannerDayKey] -> id cac buoc da tick trong ngay do.
+  final Map<String, Set<String>> subtaskDone;
+
+  /// Lan sua cuoi (UTC) - dung de gop du lieu khi dong bo Supabase (ban sua
+  /// sau cung thang). null = du lieu cu tu truoc khi co dong bo.
+  final DateTime? updatedAt;
 
   bool get isRecurring => recurrence != null;
   Duration get duration => end.difference(start);
@@ -198,6 +225,9 @@ class PlannerTask {
     bool clearReminderOffsets = false,
     bool? inbox,
     PlannerTaskSource? source,
+    List<PlannerSubtask>? subtasks,
+    Map<String, Set<String>>? subtaskDone,
+    DateTime? updatedAt,
   }) => PlannerTask(
     id: id ?? this.id,
     title: title ?? this.title,
@@ -217,6 +247,9 @@ class PlannerTask {
         : (reminderOffsets ?? this.reminderOffsets),
     inbox: inbox ?? this.inbox,
     source: source ?? this.source,
+    subtasks: subtasks ?? this.subtasks,
+    subtaskDone: subtaskDone ?? this.subtaskDone,
+    updatedAt: updatedAt ?? this.updatedAt,
   );
 
   Map<String, dynamic> toJson() => {
@@ -239,6 +272,14 @@ class PlannerTask {
     if (reminderOffsets != null) 'reminderOffsets': reminderOffsets,
     if (inbox) 'inbox': true,
     if (source != null) 'source': source!.toJson(),
+    if (subtasks.isNotEmpty)
+      'subtasks': subtasks.map((s) => s.toJson()).toList(),
+    if (subtaskDone.isNotEmpty)
+      'subtaskDone': {
+        for (final e in subtaskDone.entries)
+          if (e.value.isNotEmpty) e.key: e.value.toList(),
+      },
+    if (updatedAt != null) 'updatedAt': updatedAt!.toUtc().toIso8601String(),
   };
 
   static Set<String> _stringSet(dynamic raw) =>
@@ -271,6 +312,19 @@ class PlannerTask {
     source: json['source'] == null
         ? null
         : PlannerTaskSource.fromJson(json['source'] as Map<String, dynamic>),
+    subtasks:
+        (json['subtasks'] as List<dynamic>?)
+            ?.map((e) => PlannerSubtask.fromJson(e as Map<String, dynamic>))
+            .toList() ??
+        const [],
+    subtaskDone:
+        (json['subtaskDone'] as Map<String, dynamic>?)?.map(
+          (k, v) => MapEntry(k, _stringSet(v)),
+        ) ??
+        const {},
+    updatedAt: json['updatedAt'] == null
+        ? null
+        : DateTime.parse(json['updatedAt'] as String),
   );
 }
 
@@ -304,6 +358,12 @@ class PlannerOccurrence {
   }
 
   bool get isDone => settledStatus == PlannerTaskStatus.completed;
+
+  Set<String> get checkedSubtasks => task.subtaskDone[dayKey] ?? const {};
+
+  /// So buoc da tick / tong so buoc (chi tinh buoc con ton tai).
+  int get checkedCount =>
+      task.subtasks.where((s) => checkedSubtasks.contains(s.id)).length;
 
   /// Trang thai HIEN THI: da chot thi giu, chua chot thi suy theo gio hien
   /// tai - Sap toi / Dang chay / Qua han (khong con phai nhap tay).

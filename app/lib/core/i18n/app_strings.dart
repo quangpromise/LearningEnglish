@@ -3930,6 +3930,14 @@ class AppStrings {
       AppLanguage.vi: 'Đã có trong kế hoạch ✓',
       AppLanguage.en: 'In your planner ✓',
     },
+    'planner_checklist_label': {
+      AppLanguage.vi: 'Checklist',
+      AppLanguage.en: 'Checklist',
+    },
+    'planner_checklist_hint': {
+      AppLanguage.vi: 'Thêm bước nhỏ…',
+      AppLanguage.en: 'Add a step…',
+    },
     'planner_status_auto': {AppLanguage.vi: 'Tự động', AppLanguage.en: 'Auto'},
   };
 

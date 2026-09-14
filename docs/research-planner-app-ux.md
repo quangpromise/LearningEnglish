@@ -281,4 +281,13 @@ Nguồn (truy cập 2026-09):
 | §7.5 mục 7 | Tách màu icon "Thư giãn"/"Khác" khỏi màu trạng thái | Có unit test chặn trùng lại |
 | Lỗi phát hiện thêm | Mở app từ thông báo khi app đang tắt hẳn trước đây LUÔN mở Quiz với mọi loại thông báo → giờ chuyển đúng payload cho dispatcher chung | `daily_quiz_notifications.dart` |
 
-Chưa làm: H (card theo thời lượng, kéo giãn), J (nhập bằng câu tự nhiên), K (mẫu/routine), checklist con, M (Pomodoro), N (thống kê), O (streak), P (ưu tiên/hạn chót), T (đồng bộ Supabase), U/V/W/X/Y.
+### Đợt 2 (2026-09-14)
+
+| Mục | Đã làm | Ghi chú |
+|---|---|---|
+| T. Đồng bộ Supabase | Bảng `planner_tasks` (migration `0063_planner_tasks.sql`, RLS theo user). Máy vẫn là nguồn đọc chính; mỗi thay đổi tự đồng bộ sau 2 giây và mỗi lần mở màn Lập kế hoạch | Gộp theo `updatedAt` (bản sửa sau cùng thắng); xoá = `deleted = true`. Dữ liệu cũ trên máy được nhận cho tài khoản đang đăng nhập ở lần đồng bộ đầu; đổi tài khoản thì bỏ dữ liệu của tài khoản cũ trên máy. Cài đặt chuông KHÔNG đồng bộ (mỗi máy chuông khác nhau). **Cần chạy migration 0063 trong SQL Editor** — chưa chạy thì app vẫn chỉ lưu trên máy |
+| I. Lưới tháng | Bấm tên tháng → lịch cả tháng, tối đa 3 chấm/ngày (xanh = đã xong) | `planner_month_sheet.dart` |
+| G. Nút "Mở" | Nút "Mở" trong sheet sửa việc do mini-app tạo: chương trình tập → chi tiết chương trình; ôn từ → Quiz ôn từ hôm nay; gia hạn → danh sách dịch vụ | Mini-app đăng ký ở `core/navigation/planner_source_openers.dart`, planner không import ngược feature nào |
+| L. Checklist con | Thêm/xoá bước trong form, tick theo từng ngày (việc lặp mỗi ngày checklist riêng), card hiện "2/5" | |
+
+Chưa làm: H (card theo thời lượng, kéo giãn), J (nhập bằng câu tự nhiên), K (mẫu/routine), M (Pomodoro), N (thống kê), O (streak), P (ưu tiên/hạn chót), U/V/W/X/Y.

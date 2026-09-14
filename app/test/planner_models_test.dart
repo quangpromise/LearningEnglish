@@ -238,4 +238,31 @@ void main() {
       expect(r.alarmSoundTitle, 'Morning');
     });
   });
+
+  group('Checklist + dong bo', () {
+    test('subtasks, tick theo ngay, updatedAt roundtrip qua JSON', () {
+      final t = PlannerTask(
+        id: 'c1',
+        title: 'On tu',
+        appSection: AppSection.learnEnglish,
+        start: DateTime(2026, 9, 14, 20),
+        end: DateTime(2026, 9, 14, 20, 20),
+        recurrence: const PlannerRecurrence(freq: PlannerRepeatFreq.daily),
+        subtasks: const [
+          PlannerSubtask(id: 'a', title: 'Nghe'),
+          PlannerSubtask(id: 'b', title: 'Viet'),
+        ],
+        subtaskDone: const {
+          '2026-09-15': {'a'},
+        },
+        updatedAt: DateTime.utc(2026, 9, 14, 12),
+      );
+      final r = PlannerTask.fromJson(t.toJson());
+      expect(r.subtasks.map((s) => s.title), ['Nghe', 'Viet']);
+      expect(r.updatedAt, DateTime.utc(2026, 9, 14, 12));
+      expect(r.occurrenceOn(DateTime(2026, 9, 15)).checkedCount, 1);
+      // Moi ngay checklist rieng.
+      expect(r.occurrenceOn(DateTime(2026, 9, 16)).checkedCount, 0);
+    });
+  });
 }

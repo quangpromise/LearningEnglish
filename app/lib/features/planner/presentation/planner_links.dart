@@ -21,6 +21,21 @@ abstract final class PlannerSourceKinds {
   static const wealthServiceRenewal = 'wealth_service_renewal';
 }
 
+/// Cach mo MAN GOC cua 1 viec do mini-app tao (nut "Mo" trong sheet sua
+/// viec) - moi mini-app tu dang ky qua [registerPlannerSourceOpener] luc app
+/// khoi dong (xem core/navigation/planner_source_openers.dart), planner chi
+/// tra cuu theo `source.kind`, khong can biet toi man hinh cua mini-app.
+typedef PlannerSourceOpener = void Function(PlannerTaskSource source);
+
+final _openers = <String, PlannerSourceOpener>{};
+
+void registerPlannerSourceOpener(String kind, PlannerSourceOpener opener) =>
+    _openers[kind] = opener;
+
+/// null = viec tu tao hoac mini-app chua dang ky cach mo.
+PlannerSourceOpener? plannerSourceOpenerFor(PlannerTaskSource? source) =>
+    source == null ? null : _openers[source.kind];
+
 String _newId() => '${DateTime.now().microsecondsSinceEpoch}';
 
 DateTime _at(DateTime day, TimeOfDay time) =>

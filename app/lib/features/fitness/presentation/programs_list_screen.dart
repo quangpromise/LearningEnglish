@@ -16,7 +16,11 @@ enum _ProgramsStep { list, detail, workout }
 /// tuan -> xem truoc bai tap hom nay), KHONG mo them popup - xem giai
 /// thich chi tiet trong VocabularyTopicsScreen (cung nguyen tac).
 class ProgramsListScreen extends ConsumerStatefulWidget {
-  const ProgramsListScreen({super.key});
+  const ProgramsListScreen({super.key, this.initialProgramId});
+
+  /// Mo thang chi tiet 1 chuong trinh (nut "Mo" tren viec tap trong Lap ke
+  /// hoach) thay vi danh sach.
+  final int? initialProgramId;
 
   @override
   ConsumerState<ProgramsListScreen> createState() => _ProgramsListScreenState();
@@ -26,6 +30,23 @@ class _ProgramsListScreenState extends ConsumerState<ProgramsListScreen> {
   _ProgramsStep _step = _ProgramsStep.list;
   Program? _activeProgram;
   ProgramDay? _activeDay;
+
+  @override
+  void initState() {
+    super.initState();
+    final id = widget.initialProgramId;
+    if (id != null) {
+      ref.read(programListProvider.future).then((programs) {
+        if (!mounted) return;
+        for (final p in programs) {
+          if (p.id == id) {
+            _openProgram(p);
+            break;
+          }
+        }
+      });
+    }
+  }
 
   void _openProgram(Program program) {
     setState(() {

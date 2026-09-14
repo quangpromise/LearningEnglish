@@ -7,6 +7,7 @@ import '../../../core/theme/app_theme.dart';
 import '../data/planner_models.dart';
 import '../data/planner_notification_service.dart';
 import 'planner_accent.dart';
+import 'planner_links.dart';
 import 'planner_providers.dart';
 import 'planner_undo.dart';
 
@@ -58,6 +59,11 @@ class _PlannerTaskSheet extends ConsumerStatefulWidget {
 class _PlannerTaskSheetState extends ConsumerState<_PlannerTaskSheet> {
   late final TextEditingController _titleCtrl;
   late final TextEditingController _notesCtrl;
+  final _subtaskCtrl = TextEditingController();
+  late List<PlannerSubtask> _subtasks;
+
+  /// Cac buoc da tick cua lan xuat hien dang sua.
+  late Set<String> _checked;
   late AppSection _section;
   late DateTime _date;
   late TimeOfDay _start;
@@ -104,12 +110,46 @@ class _PlannerTaskSheetState extends ConsumerState<_PlannerTaskSheet> {
             ? e.occurrenceOn(e.start).settledStatus
             : null);
     _settled = _initialSettled;
+    _subtasks = [...?e?.subtasks];
+    final dayKey =
+        widget.occurrence?.dayKey ??
+        (e == null ? null : plannerDayKey(e.start));
+    _checked = {...?e?.subtaskDone[dayKey]};
+  }
+
+  void _addSubtask() {
+    final title = _subtaskCtrl.text.trim();
+    if (title.isEmpty) return;
+    setState(() {
+      _subtasks.add(
+        PlannerSubtask(
+          id: '${DateTime.now().microsecondsSinceEpoch}',
+          title: title,
+        ),
+      );
+      _subtaskCtrl.clear();
+    });
+  }
+
+  /// Luu trang thai tick cua checklist vao dung ngay cua lan xuat hien.
+  Map<String, Set<String>> _subtaskDoneFor(DateTime start) {
+    final key = widget.occurrence?.dayKey ?? plannerDayKey(start);
+    final ids = _subtasks.map((s) => s.id).toSet();
+    final all = {...?widget.editing?.subtaskDone};
+    final checked = _checked.intersection(ids);
+    if (checked.isEmpty) {
+      all.remove(key);
+    } else {
+      all[key] = checked;
+    }
+    return all;
   }
 
   @override
   void dispose() {
     _titleCtrl.dispose();
     _notesCtrl.dispose();
+    _subtaskCtrl.dispose();
     super.dispose();
   }
 
@@ -187,6 +227,8 @@ class _PlannerTaskSheetState extends ConsumerState<_PlannerTaskSheet> {
         reminderOffsets: _offsets,
         clearReminderOffsets: _offsets == null,
         inbox: _inbox,
+        subtasks: _subtasks,
+        subtaskDone: _subtaskDoneFor(start),
       );
       if (!updated.isRecurring) {
         updated = updated.copyWith(
@@ -218,6 +260,8 @@ class _PlannerTaskSheetState extends ConsumerState<_PlannerTaskSheet> {
           recurrence: recurrence,
           reminderOffsets: _offsets,
           inbox: _inbox,
+          subtasks: _subtasks,
+          subtaskDone: _subtaskDoneFor(start),
         ),
       );
     }
@@ -353,9 +397,40 @@ class _PlannerTaskSheetState extends ConsumerState<_PlannerTaskSheet> {
                 ),
               ),
               const SizedBox(height: 16),
-              Text(
-                ref.tr(isEditing ? 'planner_edit_title' : 'planner_add_title'),
-                style: AppTextStyles.heading(size: 18),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      ref.tr(
+                        isEditing ? 'planner_edit_title' : 'planner_add_title',
+                      ),
+                      style: AppTextStyles.heading(size: 18),
+                    ),
+                  ),
+                  // Viec do mini-app tao -> mo thang man goc (buoi tap, on
+                  // tu, gia han dich vu) - xem planner_links.dart.
+                  if (plannerSourceOpenerFor(widget.editing?.source)
+                      case final open?)
+                    TextButton.icon(
+                      onPressed: () {
+                        final source = widget.editing!.source!;
+                        Navigator.of(context).maybePop();
+                        open(source);
+                      },
+                      icon: Icon(
+                        Icons.open_in_new_rounded,
+                        size: 16,
+                        color: glow,
+                      ),
+                      label: Text(
+                        ref.tr('planner_open_source'),
+                        style: TextStyle(
+                          color: glow,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                ],
               ),
               const SizedBox(height: 16),
               TextField(
@@ -605,6 +680,74 @@ class _PlannerTaskSheetState extends ConsumerState<_PlannerTaskSheet> {
                   ),
                 ],
               ],
+              const SizedBox(height: 14),
+              _label('planner_checklist_label'),
+              for (final st in _subtasks)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () => setState(() {
+                          if (!_checked.remove(st.id)) _checked.add(st.id);
+                        }),
+                        child: Icon(
+                          _checked.contains(st.id)
+                              ? Icons.check_box_rounded
+                              : Icons.check_box_outline_blank_rounded,
+                          size: 22,
+                          color: _checked.contains(st.id)
+                              ? PlannerTaskStatus.completed.color
+                              : AppColors.textMuted,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          st.title,
+                          style: AppTextStyles.body(size: 13).copyWith(
+                            decoration: _checked.contains(st.id)
+                                ? TextDecoration.lineThrough
+                                : TextDecoration.none,
+                          ),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () => setState(() {
+                          _subtasks.remove(st);
+                          _checked.remove(st.id);
+                        }),
+                        child: const Padding(
+                          padding: EdgeInsets.all(4),
+                          child: Icon(
+                            Icons.close_rounded,
+                            size: 16,
+                            color: AppColors.textMuted,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _subtaskCtrl,
+                      style: AppTextStyles.body(size: 13),
+                      textInputAction: TextInputAction.done,
+                      onSubmitted: (_) => _addSubtask(),
+                      decoration: _inputDecoration(
+                        ref.tr('planner_checklist_hint'),
+                      ).copyWith(isDense: true),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: _addSubtask,
+                    icon: Icon(Icons.add_circle_rounded, color: glow),
+                  ),
+                ],
+              ),
               const SizedBox(height: 14),
               TextField(
                 controller: _notesCtrl,

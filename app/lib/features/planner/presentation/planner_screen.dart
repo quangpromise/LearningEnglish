@@ -10,6 +10,7 @@ import '../../../core/theme/app_theme.dart';
 import '../data/planner_models.dart';
 import '../data/planner_notification_service.dart';
 import 'planner_accent.dart';
+import 'planner_month_sheet.dart';
 import 'planner_overdue_sheet.dart';
 import 'planner_providers.dart';
 import 'planner_settings_sheet.dart';
@@ -126,6 +127,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     WidgetsBinding.instance.addPostFrameCallback(
       (_) => _centerDateStrip(animate: false),
     );
+    // Moi lan mo man: keo ke hoach moi nhat tu server (vd vua sua tren may
+    // khac) - loi/offline thi bo qua, van hien du lieu tren may.
+    ref.read(plannerTasksProvider.notifier).syncNow();
   }
 
   @override
@@ -301,11 +305,36 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                       onTap: () => _selectDate(_addMonths(selectedDate, -1)),
                     ),
                     const SizedBox(width: 8),
-                    Text(
-                      _monthLabel(selectedDate, lang),
-                      style: AppTextStyles.body(
-                        size: 14,
-                        weight: FontWeight.w700,
+                    // Bam ten thang -> luoi ca thang de nhay nhanh toi 1 ngay.
+                    GestureDetector(
+                      onTap: () => showPlannerMonthSheet(
+                        context,
+                        selected: selectedDate,
+                        gradient: gradient,
+                        glow: glow,
+                        monthLabel: (d) => _monthLabel(d, lang),
+                        weekdayLabels: lang == AppLanguage.vi
+                            ? _weekdaysVi
+                            : _weekdaysEn,
+                        onPick: _selectDate,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            _monthLabel(selectedDate, lang),
+                            style: AppTextStyles.body(
+                              size: 14,
+                              weight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(width: 3),
+                          const Icon(
+                            Icons.calendar_month_rounded,
+                            size: 14,
+                            color: AppColors.textMuted,
+                          ),
+                        ],
                       ),
                     ),
                     const SizedBox(width: 8),

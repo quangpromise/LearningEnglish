@@ -25,6 +25,7 @@ import 'features/auth/presentation/sign_in_screen.dart';
 import 'features/fitness/presentation/fitness_shell.dart';
 import 'features/onboarding/data/onboarding_repository.dart';
 import 'features/onboarding/presentation/onboarding_screen.dart';
+import 'core/navigation/planner_source_openers.dart';
 import 'features/planner/data/planner_notification_service.dart';
 import 'features/social/data/social_repository.dart';
 import 'features/social/presentation/incoming_message_banner.dart';
@@ -99,6 +100,7 @@ Future<void> main() async {
     );
     await _runStartupStep(() => DailyQuizNotifications.instance.init());
     await _runStartupStep(() => PlannerNotificationService.instance.init());
+    registerPlannerSourceOpeners();
     // KHONG await/timeout ngan o day: ChatPush.init() (Firebase.initializeApp
     // + tao notification channel + dang ky FCM background handler) co the
     // mat vai chuc giay tren mang cham, va viec gan 1 timeout ngan (vd 8s) se
