@@ -1267,17 +1267,15 @@ class _FeeServiceRow extends ConsumerWidget {
 /// TREN 1 muc tieu can chi dan (khoang chon phut / nut "Bat dau hoc") qua
 /// Positioned(top: -34...) boc no - xem _DailyWordsSectionState.build().
 class _TutorialFingerPointer extends StatefulWidget {
-  const _TutorialFingerPointer({required this.label, this.pointDown = false});
+  const _TutorialFingerPointer({required this.label});
   final String label;
-
-  /// true = nhan ben TRAI, ngon tay CHI XUONG ben phai (dung khi tro vao 1
-  /// khung lua chon nam ngay ben duoi, xem [_withFramePointer]).
-  final bool pointDown;
 
   @override
   State<_TutorialFingerPointer> createState() => _TutorialFingerPointerState();
 }
 
+/// Nhan ben TRAI + ngon tay CHI XUONG ben phai, cham mep tren khung/nut dang
+/// can bam (xem _withFramePointer).
 class _TutorialFingerPointerState extends State<_TutorialFingerPointer>
     with SingleTickerProviderStateMixin {
   late final _ctrl = AnimationController(
@@ -1293,51 +1291,26 @@ class _TutorialFingerPointerState extends State<_TutorialFingerPointer>
 
   @override
   Widget build(BuildContext context) {
-    if (widget.pointDown) {
-      return IgnorePointer(
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(bottom: 14),
-              child: _bubble(),
-            ),
-            AnimatedBuilder(
-              animation: _ctrl,
-              builder: (context, child) => Transform.translate(
-                offset: Offset(0, _ctrl.value * 5),
-                child: child,
-              ),
-              // touch_app xoay 180 do = ngon tay chi xuong khung ben duoi.
-              child: const RotatedBox(
-                quarterTurns: 2,
-                child: Icon(
-                  Icons.touch_app_rounded,
-                  color: AppColors.blue,
-                  size: 28,
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
     return IgnorePointer(
-      child: Column(
+      child: Row(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          _bubble(),
+          Padding(padding: const EdgeInsets.only(bottom: 14), child: _bubble()),
           AnimatedBuilder(
             animation: _ctrl,
             builder: (context, child) => Transform.translate(
-              offset: Offset(0, _ctrl.value * 6),
+              offset: Offset(0, _ctrl.value * 5),
               child: child,
             ),
-            child: const Icon(
-              Icons.touch_app_rounded,
-              color: AppColors.blue,
-              size: 28,
+            // touch_app xoay 180 do = ngon tay chi xuong.
+            child: const RotatedBox(
+              quarterTurns: 2,
+              child: Icon(
+                Icons.touch_app_rounded,
+                color: AppColors.blue,
+                size: 28,
+              ),
             ),
           ),
         ],
@@ -1497,6 +1470,7 @@ class _DailyWordsSectionState extends ConsumerState<_DailyWordsSection> {
     required bool show,
     required String labelKey,
     required Widget child,
+    double borderRadius = 20,
   }) {
     return Stack(
       clipBehavior: Clip.none,
@@ -1510,15 +1484,11 @@ class _DailyWordsSectionState extends ConsumerState<_DailyWordsSection> {
             bottom: -5,
             child: IgnorePointer(
               child: Container(
+                // CHI vien - khong boxShadow: bong cua 1 khung trong suot
+                // se phu mau xanh len ca ben trong o.
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(borderRadius),
                   border: Border.all(color: AppColors.blue, width: 1.6),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.blue.withValues(alpha: 0.35),
-                      blurRadius: 12,
-                    ),
-                  ],
                 ),
               ),
             ),
@@ -1526,35 +1496,9 @@ class _DailyWordsSectionState extends ConsumerState<_DailyWordsSection> {
           Positioned(
             top: -44,
             right: 24,
-            child: _TutorialFingerPointer(
-              label: ref.tr(labelKey),
-              pointDown: true,
-            ),
+            child: _TutorialFingerPointer(label: ref.tr(labelKey)),
           ),
         ],
-      ],
-    );
-  }
-
-  /// Dat ban tay huong dan NGAY TREN [child] (khong chiem cho trong bo cuc).
-  Widget _withPointer({
-    required bool show,
-    required String labelKey,
-    required Widget child,
-  }) {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        child,
-        if (show)
-          Positioned(
-            top: -34,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: _TutorialFingerPointer(label: ref.tr(labelKey)),
-            ),
-          ),
       ],
     );
   }
@@ -1805,10 +1749,14 @@ class _DailyWordsSectionState extends ConsumerState<_DailyWordsSection> {
                   ],
                 ),
               ),
-              const SizedBox(height: 14),
-              _withPointer(
+              // Luc dang huong dan buoc "Bat dau": noi rong khe de nhan +
+              // ngon tay chi xuong nam GIUA khung cach on va nut, khong de len
+              // khung cach on phia tren.
+              SizedBox(height: showStartPointer ? 44 : 14),
+              _withFramePointer(
                 show: showStartPointer,
                 labelKey: 'profile_daily_words_tutorial_start',
+                borderRadius: 999,
                 child: SizedBox(
                   width: double.infinity,
                   child: state.active

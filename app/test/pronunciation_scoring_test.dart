@@ -83,4 +83,37 @@ void main() {
       expect(result.score, 0);
     });
   });
+
+  group('Cham diem tung phan (khong con chi 0% / 100%)', () {
+    test('1 tu doc gan dung -> diem giua 0 va 100', () {
+      final r = scorePronunciation(targetEn: 'nephew', recognized: 'nefew');
+      expect(r.score, greaterThan(0));
+      expect(r.score, lessThan(100));
+    });
+
+    test('may tach 1 tu thanh 2 van ghep lai de cham', () {
+      final r = scorePronunciation(
+        targetEn: 'sibling',
+        recognized: 'see bling',
+      );
+      expect(r.score, greaterThanOrEqualTo(60));
+    });
+
+    test('tu khac han -> 0 diem, khong co diem an ui', () {
+      final r = scorePronunciation(targetEn: 'spouse', recognized: 'table');
+      expect(r.score, 0);
+    });
+
+    test('doc dung 100% van la 100 va to xanh', () {
+      final r = scorePronunciation(targetEn: 'twins', recognized: 'twins');
+      expect(r.score, 100);
+      expect(r.wordResults, [true]);
+    });
+
+    test('cau thieu 1 tu -> diem theo ty le, tu thieu to do', () {
+      final r = scorePronunciation(targetEn: 'a b c d', recognized: 'a b d');
+      expect(r.score, 75);
+      expect(r.wordResults, [true, true, false, true]);
+    });
+  });
 }
