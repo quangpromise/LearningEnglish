@@ -517,9 +517,10 @@ class _WritingQuestionState extends ConsumerState<_WritingQuestion> {
 
 /// Dang Speaking: hien nghia tieng Viet, nguoi dung noi to tu tieng Anh qua
 /// mic, cham bang scorePronunciation (cung cach cham voi Luyen phat am).
-/// Nut "Nghe phat am mau" doc tu bang TTS va hien luon tu + IPA de nguoi
-/// dung doc theo; tu cung tu hien sau lan noi dau tien. Duoc thu lai nhieu
-/// lan - cau tinh la dung neu CO IT NHAT 1 lan dat [_kSpeakingPassScore].
+/// Nut "Nghe phat am mau" CHI doc tu bang TTS, KHONG hien chu - truoc khi noi
+/// man chi hien tieng Viet de nguoi dung tu nho tu tieng Anh; tu + IPA chi
+/// hien SAU khi da cham diem xong 1 lan noi (de doi chieu). Duoc thu lai
+/// nhieu lan - cau tinh la dung neu CO IT NHAT 1 lan dat [_kSpeakingPassScore].
 class _SpeakingQuestion extends ConsumerStatefulWidget {
   const _SpeakingQuestion({
     required this.word,
@@ -544,12 +545,20 @@ class _SpeakingQuestionState extends ConsumerState<_SpeakingQuestion> {
   bool? _available;
   bool _listening = false;
   bool _scoring = false;
-  bool _revealed = false;
   bool _passed = false;
   String _recognized = '';
   PronunciationScore? _result;
-  Completer<void>? _finalResultCompleter;
   String? _error;
+
+  /// Chu da nhan dien XONG cua cac phien truoc trong CUNG 1 luot ghi am -
+  /// Android/Safari tu dong phien nhan dien sau vai giay im lang, app tu mo
+  /// phien moi va noi tiep chu cho toi khi nguoi dung bam dung.
+  String _committed = '';
+
+  /// Dang co 1 phien speech.listen() chay (khac [_listening] = trang thai
+  /// nguoi dung thay: da bam ghi am va CHUA bam dung).
+  bool _sessionActive = false;
+  Completer<void>? _sessionDone;
 
   @override
   void initState() {
@@ -569,28 +578,51 @@ class _SpeakingQuestionState extends ConsumerState<_SpeakingQuestion> {
     if (widget.speech.statusListener == _handleSttStatus) {
       widget.speech.statusListener = null;
     }
-    if (_listening) widget.speech.stop();
+    // Tat co truoc de _onSessionEnded khong mo lai phien moi.
+    _listening = false;
+    if (_sessionActive) widget.speech.stop();
     super.dispose();
   }
 
-  void _completeListening() {
-    if (!(_finalResultCompleter?.isCompleted ?? true)) {
-      _finalResultCompleter!.complete();
+  /// Loi "khong nghe thay gi"/"het gio im lang" = chi la phien ket thuc tu
+  /// nhien -> mo phien moi (neu nguoi dung chua bam dung). Loi khac (mat
+  /// quyen mic, may ban...) -> dung han va bao loi, tranh vong lap mo lai.
+  void _handleSttError(SpeechRecognitionError error) {
+    const benign = {
+      'error_speech_timeout',
+      'error_no_match',
+      'no-speech',
+      'aborted',
+    };
+    if (!benign.contains(error.errorMsg) && _listening && mounted) {
+      setState(() {
+        _listening = false;
+        _error = '${ref.tr('pron_record_failed')} ${error.errorMsg}';
+      });
+    }
+    _onSessionEnded();
+  }
+
+  void _handleSttStatus(String status) {
+    if (status == stt.SpeechToText.doneStatus) _onSessionEnded();
+  }
+
+  /// 1 phien nhan dien vua ket thuc (tu nen tang hoac do bam dung). CHUA bam
+  /// dung -> tu mo phien moi, KHONG cham diem (chi cham khi nguoi dung bam
+  /// dung ghi am - xem [_stopAndScore]).
+  void _onSessionEnded() {
+    if (!_sessionActive) return;
+    _sessionActive = false;
+    _committed = _recognized;
+    if (!(_sessionDone?.isCompleted ?? true)) _sessionDone!.complete();
+    if (_listening && mounted) {
+      Future.delayed(const Duration(milliseconds: 250), () {
+        if (mounted && _listening && !_sessionActive) _listenSession();
+      });
     }
   }
 
-  void _handleSttError(SpeechRecognitionError error) => _completeListening();
-
-  /// Mot so nen tang (vd web/Safari) khong tra ve finalResult khi het gio
-  /// hoac khong nghe thay gi - dua vao trang thai "done" de khong treo mic.
-  void _handleSttStatus(String status) {
-    if (status == stt.SpeechToText.doneStatus) _completeListening();
-  }
-
-  void _listenSample() {
-    AppTts.instance.speak(widget.word.en);
-    setState(() => _revealed = true);
-  }
+  void _listenSample() => AppTts.instance.speak(widget.word.en);
 
   Future<void> _startListening() async {
     if (_available != true || _listening || _scoring) return;
@@ -598,54 +630,63 @@ class _SpeakingQuestionState extends ConsumerState<_SpeakingQuestion> {
       _listening = true;
       _result = null;
       _recognized = '';
+      _committed = '';
       _error = null;
     });
-    final completer = Completer<void>();
-    _finalResultCompleter = completer;
+    await _listenSession();
+  }
+
+  Future<void> _listenSession() async {
+    _sessionActive = true;
+    _sessionDone = Completer<void>();
     try {
       await widget.speech.listen(
         onResult: (result) {
-          if (!mounted) return;
-          setState(() => _recognized = result.recognizedWords);
-          if (result.finalResult && !completer.isCompleted) {
-            completer.complete();
-          }
+          if (!mounted || !_sessionActive) return;
+          setState(
+            () => _recognized = '$_committed ${result.recognizedWords}'.trim(),
+          );
+          if (result.finalResult) _onSessionEnded();
         },
         listenOptions: stt.SpeechListenOptions(
           localeId: 'en_US',
-          listenFor: const Duration(seconds: 10),
-          pauseFor: const Duration(seconds: 3),
+          // Dat dai toi da - thuc te nen tang van tu dong phien khi im lang,
+          // [_onSessionEnded] se tu mo lai cho toi khi nguoi dung bam dung.
+          listenFor: const Duration(minutes: 2),
+          pauseFor: const Duration(seconds: 30),
+          listenMode: stt.ListenMode.dictation,
         ),
       );
     } catch (e) {
+      _sessionActive = false;
       if (mounted) {
         setState(() {
           _listening = false;
           _error = '${ref.tr('pron_record_failed')} $e';
         });
       }
-      return;
     }
-    // Tu ket thuc khi nguoi dung ngung noi (pauseFor) hoac het listenFor -
-    // khong bat buoc phai bam dung, voi 1 tu don cach nay tu nhien hon.
-    await completer.future;
-    if (mounted && _listening) await _stopAndScore();
   }
 
+  /// CHI chay khi nguoi dung bam dung ghi am - khong con tu cham sau vai giay
+  /// im lang nhu truoc.
   Future<void> _stopAndScore() async {
     if (!_listening) return;
     setState(() {
       _listening = false;
       _scoring = true;
     });
-    final completer = _finalResultCompleter;
-    await widget.speech.stop();
-    if (completer != null && !completer.isCompleted) {
-      await completer.future.timeout(
-        const Duration(milliseconds: 1500),
-        onTimeout: () {},
-      );
+    final done = _sessionDone;
+    if (_sessionActive) {
+      await widget.speech.stop();
+      if (done != null && !done.isCompleted) {
+        await done.future.timeout(
+          const Duration(milliseconds: 1500),
+          onTimeout: () {},
+        );
+      }
     }
+    _sessionActive = false;
     if (!mounted) return;
     final result = scorePronunciation(
       targetEn: widget.word.en,
@@ -656,7 +697,6 @@ class _SpeakingQuestionState extends ConsumerState<_SpeakingQuestion> {
     setState(() {
       _scoring = false;
       _result = result;
-      _revealed = true;
       _passed = _passed || pass;
     });
     ref
@@ -679,7 +719,7 @@ class _SpeakingQuestionState extends ConsumerState<_SpeakingQuestion> {
         _MeaningBox(
           label: ref.tr('daily_speaking_say_for'),
           vi: word.vi,
-          footer: _revealed
+          footer: result != null
               ? Padding(
                   padding: const EdgeInsets.only(top: 10),
                   child: Text.rich(
