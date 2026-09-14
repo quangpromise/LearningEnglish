@@ -1,5 +1,7 @@
 package com.learnenglishmusic.learn_english_music
 
+import android.app.ActivityManager
+import android.app.ApplicationExitInfo
 import android.app.KeyguardManager
 import android.app.NotificationManager
 import android.content.Context
@@ -10,7 +12,10 @@ import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
+import android.provider.Settings
 import android.view.WindowManager
+import java.io.File
 import com.ryanheise.audioservice.AudioServiceActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -50,6 +55,14 @@ class MainActivity : AudioServiceActivity() {
         // cho cai dat nhac nho Lap ke hoach - xem device_alarm_sounds.dart.
         private const val ALARM_SOUNDS_CHANNEL = "planner/alarm_sounds"
 
+        // Doc nhat ky crash + ly do tien trinh bi tat gan day (xem
+        // CrashLogApplication.kt, crash_diagnostics.dart).
+        private const val CRASH_LOG_CHANNEL = "app/crash_log"
+
+        // Kiem tra / xin bo toi uu pin cho app (xem background_run_button trong
+        // crash_diagnostics.dart).
+        private const val BATTERY_CHANNEL = "app/battery"
+
         // Khop voi FlutterLocalNotificationsPlugin (flutter_local_notifications
         // 22.x): thong bao dung CHUNG 1 PendingIntent cho ca luc bam lan
         // fullScreenIntent, voi action/extra ben duoi.
@@ -79,6 +92,46 @@ class MainActivity : AudioServiceActivity() {
     }
 
     private var previewRingtone: Ringtone? = null
+
+    private fun exitReasonName(reason: Int): String = when (reason) {
+        ApplicationExitInfo.REASON_CRASH -> "CRASH (Java/Kotlin)"
+        ApplicationExitInfo.REASON_CRASH_NATIVE -> "CRASH_NATIVE (Flutter/C++)"
+        ApplicationExitInfo.REASON_ANR -> "ANR (treo, khong phan hoi)"
+        ApplicationExitInfo.REASON_LOW_MEMORY -> "LOW_MEMORY (he thong thieu RAM)"
+        ApplicationExitInfo.REASON_EXCESSIVE_RESOURCE_USAGE -> "EXCESSIVE_RESOURCE_USAGE (dung qua nhieu CPU/pin)"
+        ApplicationExitInfo.REASON_FREEZER -> "FREEZER (he thong dong bang app nen)"
+        ApplicationExitInfo.REASON_SIGNALED -> "SIGNALED (bi he thong/OEM kill)"
+        ApplicationExitInfo.REASON_USER_REQUESTED -> "USER_REQUESTED (buoc dung / vuot tat)"
+        ApplicationExitInfo.REASON_USER_STOPPED -> "USER_STOPPED"
+        ApplicationExitInfo.REASON_PERMISSION_CHANGE -> "PERMISSION_CHANGE"
+        ApplicationExitInfo.REASON_DEPENDENCY_DIED -> "DEPENDENCY_DIED"
+        ApplicationExitInfo.REASON_INITIALIZATION_FAILURE -> "INITIALIZATION_FAILURE"
+        ApplicationExitInfo.REASON_EXIT_SELF -> "EXIT_SELF"
+        ApplicationExitInfo.REASON_OTHER -> "OTHER"
+        else -> "UNKNOWN($reason)"
+    }
+
+    /// 5 lan tien trinh app bi ket thuc gan nhat (Android 11+), kem vai dong
+    /// dau cua trace neu la ANR.
+    private fun readExitReasons(): List<Map<String, String>> {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return emptyList()
+        val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        return am.getHistoricalProcessExitReasons(packageName, 0, 5).map { info ->
+            val trace = if (info.reason == ApplicationExitInfo.REASON_ANR) {
+                try {
+                    info.traceInputStream?.bufferedReader()?.use { it.readText().take(4000) } ?: ""
+                } catch (_: Throwable) { "" }
+            } else ""
+            mapOf(
+                "time" to java.util.Date(info.timestamp).toString(),
+                "reason" to exitReasonName(info.reason),
+                "description" to (info.description ?: ""),
+                "importance" to info.importance.toString(),
+                "process" to info.processName,
+                "trace" to trace,
+            )
+        }
+    }
 
     private fun listAlarmSounds(): List<Map<String, String>> {
         val result = mutableListOf<Map<String, String>>()
@@ -125,6 +178,51 @@ class MainActivity : AudioServiceActivity() {
                 when (call.method) {
                     "clearShowWhenLocked" -> {
                         setShowOverLockScreen(false)
+                        result.success(null)
+                    }
+                    else -> result.notImplemented()
+                }
+            }
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, BATTERY_CHANNEL)
+            .setMethodCallHandler { call, result ->
+                val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
+                when (call.method) {
+                    "isIgnoring" -> result.success(pm.isIgnoringBatteryOptimizations(packageName))
+                    "request" -> {
+                        try {
+                            startActivity(
+                                Intent(
+                                    Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+                                    Uri.parse("package:$packageName"),
+                                )
+                            )
+                        } catch (_: Exception) {
+                            // 1 so ROM chan hop thoai truc tiep - mo danh sach toi uu pin.
+                            try {
+                                startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+                            } catch (_: Exception) {}
+                        }
+                        result.success(null)
+                    }
+                    else -> result.notImplemented()
+                }
+            }
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CRASH_LOG_CHANNEL)
+            .setMethodCallHandler { call, result ->
+                val crashFile = File(filesDir, CrashLogApplication.CRASH_FILE)
+                when (call.method) {
+                    "read" -> try {
+                        result.success(
+                            mapOf(
+                                "crash" to (if (crashFile.exists()) crashFile.readText() else null),
+                                "exits" to readExitReasons(),
+                            )
+                        )
+                    } catch (e: Exception) {
+                        result.error("READ_FAILED", e.message, null)
+                    }
+                    "clear" -> {
+                        crashFile.delete()
                         result.success(null)
                     }
                     else -> result.notImplemented()

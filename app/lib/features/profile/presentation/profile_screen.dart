@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../core/audio/audio_service_diagnostics.dart';
 import '../../../core/config/env.dart';
+import '../../../core/diagnostics/crash_diagnostics.dart';
 import '../../../core/i18n/app_language.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/navigation/app_popup.dart';
@@ -832,6 +833,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
           ),
         ),
+        // Chan doan loi "Ung dung da dung" khi app o nen/khoa man hinh.
+        const CrashLogButton(),
+        const BackgroundRunButton(),
       ],
     );
   }

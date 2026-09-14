@@ -6,6 +6,10 @@
          foreground service phat nhac o nen + thong bao/man hinh khoa - xem
          now_playing_service.dart. -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- Nut "Cho phep chay nen" o man Ho so: hop thoai chuan Android bo toi uu
+         pin cho app (may Nubia/ZTE... tat app nen rat manh tay). App sideload,
+         khong qua Google Play nen khong bi gioi han chinh sach cua quyen nay. -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <!-- Can de mo trinh cai dat Android ngay sau khi tai xong APK cap nhat
@@ -28,7 +32,7 @@
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
     <application
         android:label="GymTalk"
-        android:name="${applicationName}"
+        android:name=".CrashLogApplication"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
