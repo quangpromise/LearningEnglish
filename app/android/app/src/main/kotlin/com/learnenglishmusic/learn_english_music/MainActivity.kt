@@ -140,7 +140,15 @@ class MainActivity : AudioServiceActivity() {
                 val title = RingtoneManager.getRingtone(this, uri)?.getTitle(this) ?: ""
                 result.add(mapOf("uri" to uri.toString(), "title" to title, "isDefault" to "1"))
             }
-        val manager = RingtoneManager(this)
+        // PHAI truyen applicationContext, KHONG truyen `this`: `this` la Activity
+        // nen Kotlin chon constructor RingtoneManager(Activity) - ban nay lay
+        // cursor qua Activity.managedQuery(), tuc Activity tu "quan ly" cursor
+        // va requery() lai no moi lan quay lai app (Activity.performRestart).
+        // Ma ta close() cursor ngay ben duoi -> lan mo lai app sau khi da vao
+        // chon chuong bao thuc bi crash StaleDataException ("Attempted to
+        // access a cursor after it has been closed"). Constructor Context thi
+        // cursor khong bi Activity quan ly, tu close() la dung.
+        val manager = RingtoneManager(applicationContext)
         manager.setType(RingtoneManager.TYPE_ALARM)
         val cursor = manager.cursor
         try {
