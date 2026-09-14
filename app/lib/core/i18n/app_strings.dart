@@ -605,6 +605,35 @@ class AppStrings {
       AppLanguage.vi: 'Luyện viết từ',
       AppLanguage.en: 'Word writing',
     },
+    'daily_speaking_title': {
+      AppLanguage.vi: 'Luyện nói từ',
+      AppLanguage.en: 'Word speaking',
+    },
+    'daily_speaking_say_for': {
+      AppLanguage.vi: 'NÓI TỪ TIẾNG ANH CHO',
+      AppLanguage.en: 'SAY THE ENGLISH WORD FOR',
+    },
+    'daily_speaking_listen': {
+      AppLanguage.vi: 'Nghe phát âm mẫu',
+      AppLanguage.en: 'Hear pronunciation',
+    },
+    'daily_speaking_you_said': {
+      AppLanguage.vi: 'Bạn nói:',
+      AppLanguage.en: 'You said:',
+    },
+    'daily_speaking_nothing_heard': {
+      AppLanguage.vi: '(không nghe rõ)',
+      AppLanguage.en: '(nothing heard)',
+    },
+    'daily_speaking_pass': {
+      AppLanguage.vi: 'Phát âm tốt!',
+      AppLanguage.en: 'Well pronounced!',
+    },
+    'daily_speaking_fail': {
+      AppLanguage.vi: 'Chưa đúng — nghe mẫu rồi thử lại nhé',
+      AppLanguage.en: 'Not quite — listen and try again',
+    },
+    'daily_skip_button': {AppLanguage.vi: 'Bỏ qua', AppLanguage.en: 'Skip'},
 
     // Profile - "Học {n} từ hôm nay" (chon o Vocabulary hoac khi luu tu tra
     // cuu, nhac hoc bang thong bao dinh ky)
@@ -623,6 +652,14 @@ class AppStrings {
     'profile_daily_words_mode_writing': {
       AppLanguage.vi: 'Writing',
       AppLanguage.en: 'Writing',
+    },
+    'profile_daily_words_mode_speaking': {
+      AppLanguage.vi: 'Speaking',
+      AppLanguage.en: 'Speaking',
+    },
+    'profile_daily_words_mode_random': {
+      AppLanguage.vi: 'Ngẫu nhiên',
+      AppLanguage.en: 'Random',
     },
     'profile_daily_words_tutorial_pick_mode': {
       AppLanguage.vi: 'Chọn Quiz hay Writing',

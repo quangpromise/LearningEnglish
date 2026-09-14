@@ -1688,26 +1688,40 @@ class _DailyWordsSectionState extends ConsumerState<_DailyWordsSection> {
               _withPointer(
                 show: showModePointer,
                 labelKey: 'profile_daily_words_tutorial_pick_mode',
-                child: Row(
+                // Luoi 2x2: Quiz/Writing o hang tren, Speaking/Random o hang
+                // duoi - 4 chip tren 1 hang se bi chat chu o man hinh hep.
+                child: Column(
                   children: [
-                    Expanded(
-                      child: _ChoiceChip(
-                        icon: Icons.quiz_rounded,
-                        label: ref.tr('profile_daily_words_mode_quiz'),
-                        selected: state.mode == DailyStudyMode.quiz,
-                        expand: true,
-                        onTap: () => notifier.setMode(DailyStudyMode.quiz),
-                      ),
+                    Row(
+                      children: [
+                        _modeChip(
+                          DailyStudyMode.quiz,
+                          Icons.quiz_rounded,
+                          'profile_daily_words_mode_quiz',
+                        ),
+                        const SizedBox(width: 8),
+                        _modeChip(
+                          DailyStudyMode.writing,
+                          Icons.edit_note_rounded,
+                          'profile_daily_words_mode_writing',
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: _ChoiceChip(
-                        icon: Icons.edit_note_rounded,
-                        label: ref.tr('profile_daily_words_mode_writing'),
-                        selected: state.mode == DailyStudyMode.writing,
-                        expand: true,
-                        onTap: () => notifier.setMode(DailyStudyMode.writing),
-                      ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        _modeChip(
+                          DailyStudyMode.speaking,
+                          Icons.mic_rounded,
+                          'profile_daily_words_mode_speaking',
+                        ),
+                        const SizedBox(width: 8),
+                        _modeChip(
+                          DailyStudyMode.random,
+                          Icons.shuffle_rounded,
+                          'profile_daily_words_mode_random',
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -1750,6 +1764,23 @@ class _DailyWordsSectionState extends ConsumerState<_DailyWordsSection> {
     ref.tr(key),
     style: AppTextStyles.muted(size: 11).copyWith(letterSpacing: 0.4),
   );
+
+  /// 1 o chon cach on (chiem nua hang trong luoi 2x2).
+  Widget _modeChip(DailyStudyMode mode, IconData icon, String labelKey) {
+    final selected = ref.watch(
+      dailyWordsControllerProvider.select((s) => s.mode == mode),
+    );
+    return Expanded(
+      child: _ChoiceChip(
+        icon: icon,
+        label: ref.tr(labelKey),
+        selected: selected,
+        expand: true,
+        onTap: () =>
+            ref.read(dailyWordsControllerProvider.notifier).setMode(mode),
+      ),
+    );
+  }
 }
 
 /// Chip chon 1 gia tri (so phut nhac lai / cach on) - to sang khi dang chon.

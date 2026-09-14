@@ -22,10 +22,12 @@ class DailyWordEntry {
   );
 }
 
-/// Cach on tap moi lan nhac: trac nghiem chon 1 trong 4 (quiz) hoac tu go
-/// tu tieng Anh theo nghia + cham diem (writing, cung cach cham voi tinh
-/// nang Luyen viet - xem writing_scoring.dart).
-enum DailyStudyMode { quiz, writing }
+/// Cach on tap moi lan nhac: trac nghiem chon 1 trong 4 (quiz), tu go tu
+/// tieng Anh theo nghia + cham diem (writing, cung cach cham voi tinh nang
+/// Luyen viet - xem writing_scoring.dart), doc to tu theo nghia tieng Viet +
+/// cham phat am qua mic (speaking), hoac tron ngau nhien ca 3 dang trong
+/// cung 1 luot on (random).
+enum DailyStudyMode { quiz, writing, speaking, random }
 
 /// Lưu danh sách "từ học hôm nay" + cấu hình nhắc ôn định kỳ trên máy
 /// (SharedPreferences) - cùng khuôn mẫu với CryptoWatchlistRepository.
