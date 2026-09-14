@@ -462,8 +462,8 @@ class AppStrings {
       AppLanguage.en: 'Suggest a learning path',
     },
     'learning_path_hint_text': {
-      AppLanguage.vi: 'Bấm vào đây để chọn gợi ý học phù hợp với bạn!',
-      AppLanguage.en: 'Tap here to get a learning path suggestion for you!',
+      AppLanguage.vi: 'Bấm để nhận gợi ý lộ trình học',
+      AppLanguage.en: 'Tap for a learning path tip',
     },
     'learning_path_survey_title': {
       AppLanguage.vi: 'Gợi ý lộ trình học',

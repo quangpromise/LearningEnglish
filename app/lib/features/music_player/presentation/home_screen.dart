@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/navigation/app_popup.dart';
@@ -45,7 +46,10 @@ class HomeScreen extends ConsumerWidget {
     // hien ban tay + chu goi y tro vao nut la ban moi lan mo app, cho toi khi
     // nguoi dung chon 1 lo trinh. An trong luc dang tai de tranh loe hien ra
     // roi tat ngay sau 1 frame.
-    final showSurveyHint = personaAsync.hasValue && persona == null;
+    final showSurveyHint =
+        personaAsync.hasValue &&
+        persona == null &&
+        !ref.watch(_surveyHintDismissedProvider);
     final recommended = persona != null
         ? kPersonaRecommendations[persona]!
         : const <HomeFeature>[];
@@ -237,9 +241,7 @@ class HomeScreen extends ConsumerWidget {
                     targetAnchor: Alignment.bottomRight,
                     followerAnchor: Alignment.topRight,
                     offset: const Offset(0, 4),
-                    child: const IgnorePointer(
-                      child: _SuggestHint(color: AppColors.teal),
-                    ),
+                    child: const _SuggestHint(color: AppColors.teal),
                   ),
                 ),
             ],
@@ -434,6 +436,10 @@ class _CategoryItem extends StatelessWidget {
 /// Ban tay tro + dong chu goi y nguoi dung dang "Tu hoc" bam vao nut khao
 /// sat "Goi y lo trinh hoc" (xem [PointingHandBadge], cung 1 ngon ngu hinh
 /// anh voi tile goi y o luoi Home) - chi an khi da chon 1 lo trinh.
+///
+/// Nut X tren bong bong = tat HAN goi y nay (luu SharedPreferences, khong
+/// hien lai o lan mo app sau). Bong bong duoc thu nho (chu 9.5, rong toi da
+/// 120) de khong de len hang icon trong box ben duoi.
 class _SuggestHint extends ConsumerWidget {
   const _SuggestHint({required this.color});
   final Color color;
@@ -445,32 +451,106 @@ class _SuggestHint extends ConsumerWidget {
       children: [
         // Canh giua ban tay voi nut la ban (rong 42) - bong bong chu ben
         // duoi canh phai theo mep nut, luon nam trong man hinh.
-        Padding(
-          padding: const EdgeInsets.only(right: 8),
-          child: PointingHandBadge(color: color),
+        IgnorePointer(
+          child: Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: PointingHandBadge(color: color),
+          ),
         ),
-        const SizedBox(height: 6),
-        Container(
-          constraints: const BoxConstraints(maxWidth: 150),
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: const [BoxShadow(color: Colors.black38, blurRadius: 8)],
-          ),
-          child: Text(
-            ref.tr('learning_path_hint_text'),
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 10.5,
-              fontWeight: FontWeight.w700,
-              decoration: TextDecoration.none,
+        const SizedBox(height: 4),
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            // Chua cho 10px tren/trai de nut X (goc tren-trai) nam TRONG
+            // khung Stack - Flutter khong nhan cham o phan tran ra ngoai.
+            Padding(
+              padding: const EdgeInsets.only(top: 10, left: 10),
+              child: IgnorePointer(
+                child: Container(
+                  constraints: const BoxConstraints(maxWidth: 120),
+                  padding: const EdgeInsets.fromLTRB(8, 5, 12, 5),
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: const [
+                      BoxShadow(color: Colors.black38, blurRadius: 8),
+                    ],
+                  ),
+                  child: Text(
+                    ref.tr('learning_path_hint_text'),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 9.5,
+                      height: 1.25,
+                      fontWeight: FontWeight.w700,
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                ),
+              ),
             ),
-          ),
+            // Nut X: nen toi + vien trang de noi bat tren nen xanh ngoc,
+            // vung bam 32x32 (hinh ve 20) cho de trung ngon tay.
+            Positioned(
+              top: -6,
+              left: -6,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () =>
+                    ref.read(_surveyHintDismissedProvider.notifier).dismiss(),
+                child: SizedBox(
+                  width: 32,
+                  height: 32,
+                  child: Center(
+                    child: Container(
+                      width: 20,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1B2033),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 1.5),
+                      ),
+                      child: const Icon(
+                        Icons.close_rounded,
+                        size: 12,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ],
     );
+  }
+}
+
+/// true = nguoi dung da bam X tat goi y lo trinh hoc. Khoi tao = true (an)
+/// cho toi khi doc xong SharedPreferences, tranh goi y loe len roi tat.
+final _surveyHintDismissedProvider =
+    StateNotifierProvider<_SurveyHintDismissed, bool>(
+      (ref) => _SurveyHintDismissed(),
+    );
+
+class _SurveyHintDismissed extends StateNotifier<bool> {
+  _SurveyHintDismissed() : super(true) {
+    _load();
+  }
+
+  static const _key = 'learning_path_hint_dismissed_v1';
+
+  Future<void> _load() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) state = prefs.getBool(_key) ?? false;
+  }
+
+  Future<void> dismiss() async {
+    state = true;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_key, true);
   }
 }
 
