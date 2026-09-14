@@ -6,6 +6,7 @@ import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_format.dart';
 import '../../../core/utils/date_format.dart';
+import '../../planner/presentation/planner_links.dart';
 import '../data/recurring_service_model.dart';
 import 'add_service_sheet.dart';
 import 'confirm_delete.dart';
@@ -269,6 +270,37 @@ class _ServiceCardState extends ConsumerState<_ServiceCard> {
                 Text(
                   formatByCurrency(service.defaultAmount, service.currency),
                   style: AppTextStyles.body(weight: FontWeight.w700, size: 12),
+                ),
+                // Them viec "Gia han <ten>" vao Lap ke hoach (truoc han
+                // reminderLeadDays ngay) - icon sang khi da co trong ke hoach.
+                GestureDetector(
+                  onTap: () => addServiceRenewalToPlanner(
+                    ref,
+                    serviceId: service.id,
+                    serviceName: service.name,
+                    expiryDate: service.expiryDate,
+                    reminderLeadDays: service.reminderLeadDays,
+                    section: switch (service.appSection) {
+                      kServiceAppSectionFitness => AppSection.fitness,
+                      null => AppSection.wealth,
+                      _ => AppSection.learnEnglish,
+                    },
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: Icon(
+                      Icons.event_available_rounded,
+                      size: 16,
+                      color:
+                          plannerHasSource(
+                            ref,
+                            PlannerSourceKinds.wealthServiceRenewal,
+                            service.id,
+                          )
+                          ? AppColors.wealthAccent
+                          : AppColors.textMuted,
+                    ),
+                  ),
                 ),
                 GestureDetector(
                   onTap: () => _showAssignSheet(context, ref, service),

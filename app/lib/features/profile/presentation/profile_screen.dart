@@ -12,6 +12,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../attribution/presentation/attribution_screen.dart';
 import '../../settings/presentation/change_password_sheet.dart';
 import '../../settings/presentation/voice_settings_sheet.dart';
+import '../../planner/presentation/planner_links.dart';
 import '../../stats/data/stats_repository.dart';
 import '../../update/data/update_checker.dart';
 import '../../vocabulary/data/daily_words_repository.dart';
@@ -1520,6 +1521,42 @@ class _DailyWordsSectionState extends ConsumerState<_DailyWordsSection> {
               ),
             ],
           ),
+          // Dua "On tu vung hom nay" vao Lap ke hoach (viec lap hang ngay,
+          // tu tick Hoan thanh khi on het tu - xem planner_links.dart).
+          if (total > 0) ...[
+            const SizedBox(height: 8),
+            GestureDetector(
+              onTap: () => addVocabReviewToPlanner(ref),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.event_available_rounded,
+                    size: 14,
+                    color: AppColors.purple,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    ref.tr(
+                      plannerHasSource(
+                            ref,
+                            PlannerSourceKinds.englishVocabReview,
+                            'daily',
+                          )
+                          ? 'planner_in_plan'
+                          : 'planner_add_to_plan',
+                    ),
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.purple,
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           const SizedBox(height: 12),
           if (total == 0) ...[
             Text(

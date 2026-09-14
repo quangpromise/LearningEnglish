@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
@@ -12,32 +13,60 @@ import 'planner_models.dart';
 /// kenh + dai id rieng de khong dam vao lich nhac hoc tu vung. Hoat dong ca
 /// khi app da dong/khoa may (AlarmManager giu lich, khong phu thuoc tien
 /// trinh app con song).
+///
+/// Ban web: plugin khong dat lich duoc - [isSupported] = false de UI bao ro
+/// cho nguoi dung thay vi im lang (docs/research-planner-app-ux.md §7.5).
 class PlannerNotificationService {
   PlannerNotificationService._();
   static final instance = PlannerNotificationService._();
 
+  static bool get isSupported =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+
+  /// Tien to payload - xem handleNotificationAction trong chat_push.dart.
+  /// Dang day du: `planner:<taskId>|<yyyy-MM-dd>`.
+  static const payloadPrefix = 'planner:';
+
   static const _channelDesc = 'Thông báo khi đến giờ 1 việc trong Lập kế hoạch';
 
-  // QUAN TRONG: tren Android, am thanh cua 1 notification channel bi "dong
-  // cung" ngay LAN DAU channel duoc tao - goi lai voi AndroidNotificationDetails
-  // co `sound` KHAC DI sau do KHONG lam doi am thanh (gioi han cua he dieu
-  // hanh, khong phai loi cua plugin). Vi vay moi loai chuong PHAI co 1
-  // channel ID rieng biet co dinh (khong dung chung 1 channel roi doi
-  // `sound` moi lan) - neu khong, doi cai dat "Loai chuong" trong
-  // planner_settings_sheet.dart se KHONG co tac dung thuc te len thong bao
-  // that, va nut "Nghe thu" se luon phat dung 1 am da tao truoc do.
-  static const _channelIdDefault = 'planner_reminder_default';
-  static const _channelIdCheerful = 'planner_reminder_cheerful';
+  /// Viec lap lai chi dat lich cho cac lan trong [_recurringWindowDays] ngay
+  /// toi (dat lai moi lan mo app, xem PlannerTasksNotifier._restore) - tranh
+  /// vuot gioi han so thong bao cho cua he dieu hanh.
+  static const _recurringWindowDays = 7;
+  static const _maxOffsets = 3;
+  static const _slotsPerTask = _recurringWindowDays * _maxOffsets;
 
-  String _channelIdFor(RingtoneChoice ringtone) => switch (ringtone) {
-    RingtoneChoice.defaultSound => _channelIdDefault,
-    RingtoneChoice.cheerfulTone => _channelIdCheerful,
-  };
+  // QUAN TRONG: tren Android, am thanh + rung cua 1 notification channel bi
+  // "dong cung" ngay LAN DAU channel duoc tao - goi lai voi
+  // AndroidNotificationDetails co `sound`/`enableVibration` KHAC DI sau do
+  // KHONG lam doi gi (gioi han cua he dieu hanh, khong phai loi plugin). Vi
+  // vay channel ID phai GHEP tu (loai chuong + kieu nhac): moi to hop 1
+  // channel rieng co dinh - neu khong, doi "Loai chuong"/"Kieu nhac" trong
+  // planner_settings_sheet.dart se KHONG co tac dung thuc te.
+  String _channelIdFor(PlannerReminderSettings s) {
+    final sound = switch (s.ringtone) {
+      RingtoneChoice.defaultSound => 'default',
+      RingtoneChoice.cheerfulTone => 'cheerful',
+      RingtoneChoice.deviceAlarm =>
+        'alarm_${_stableHash(s.alarmSoundUri ?? '')}',
+    };
+    // Giu nguyen id cu cho to hop mac dinh (ca hai) de khong sinh kenh thua
+    // tren may da cai ban truoc.
+    if (s.mode == ReminderMode.both &&
+        s.ringtone != RingtoneChoice.deviceAlarm) {
+      return 'planner_reminder_$sound';
+    }
+    return 'planner_reminder_${sound}_${s.mode.name}';
+  }
 
-  String _channelNameFor(RingtoneChoice ringtone) => switch (ringtone) {
-    RingtoneChoice.defaultSound => 'Nhắc việc Lập kế hoạch (Mặc định)',
-    RingtoneChoice.cheerfulTone => 'Nhắc việc Lập kế hoạch (Giai điệu vui)',
-  };
+  String _channelNameFor(PlannerReminderSettings s) {
+    final sound = switch (s.ringtone) {
+      RingtoneChoice.defaultSound => 'Mặc định',
+      RingtoneChoice.cheerfulTone => 'Giai điệu vui',
+      RingtoneChoice.deviceAlarm => 'Báo thức: ${s.alarmSoundTitle ?? ''}',
+    };
+    return 'Nhắc việc Lập kế hoạch ($sound)';
+  }
 
   // Alias toi instance CHUNG (xem local_notifications_core.dart) - KHONG
   // con tu tao FlutterLocalNotificationsPlugin() rieng o day nua. Truoc day
@@ -69,56 +98,125 @@ class PlannerNotificationService {
     _initialized = true;
   }
 
-  /// Id thong bao on dinh suy tu id viec (khong can tu luu 1 counter rieng) -
-  /// xac suat trung giua 2 viec khac nhau trong thuc te bang 0, & voi so
-  /// duong 31-bit de tuong thich gioi han int cua plugin tren Android.
-  int _notificationId(String taskId) => taskId.hashCode & 0x7fffffff;
+  /// FNV-1a 31-bit - ON DINH giua cac phien ban Dart (khac String.hashCode,
+  /// Dart khong cam ket gia tri hashCode giu nguyen sau khi nang SDK -> co the
+  /// khong huy duoc thong bao cu, xem §7.6).
+  static int _stableHash(String s) {
+    var h = 0x811c9dc5;
+    for (final c in s.codeUnits) {
+      h ^= c;
+      h = (h * 0x01000193) & 0xffffffff;
+    }
+    return h & 0x7fffffff;
+  }
+
+  int _slotId(String taskId, int slot) => _stableHash('$taskId#$slot');
+
+  /// Id cu (ban truoc dung String.hashCode) - van huy de khong con thong bao
+  /// "mo coi" tu ban cu sau khi cap nhat app.
+  int _legacyId(String taskId) => taskId.hashCode & 0x7fffffff;
 
   AndroidNotificationDetails _detailsFor(PlannerReminderSettings settings) {
+    final alarmUri = settings.ringtone == RingtoneChoice.deviceAlarm
+        ? settings.alarmSoundUri
+        : null;
     return AndroidNotificationDetails(
-      _channelIdFor(settings.ringtone),
-      _channelNameFor(settings.ringtone),
+      _channelIdFor(settings),
+      _channelNameFor(settings),
       channelDescription: _channelDesc,
-      importance: Importance.high,
+      importance: Importance.max,
       priority: Priority.high,
       playSound: settings.mode != ReminderMode.vibrateOnly,
       enableVibration: settings.mode != ReminderMode.soundOnly,
-      sound: settings.ringtone == RingtoneChoice.cheerfulTone
+      sound: alarmUri != null
+          ? UriAndroidNotificationSound(alarmUri)
+          : settings.ringtone == RingtoneChoice.cheerfulTone
           ? const RawResourceAndroidNotificationSound('notification_tone')
           : null,
+      // Chuong bao thuc phat qua luong am thanh BAO THUC (theo am luong bao
+      // thuc cua may) giong app Dong ho, khong phai am luong thong bao.
+      audioAttributesUsage: alarmUri != null
+          ? AudioAttributesUsage.alarm
+          : AudioAttributesUsage.notification,
+      category: alarmUri != null
+          ? AndroidNotificationCategory.alarm
+          : AndroidNotificationCategory.reminder,
     );
+  }
+
+  List<int> _offsetsFor(PlannerTask task, PlannerReminderSettings settings) {
+    if (!task.reminderEnabled) return const [];
+    final offsets =
+        task.reminderOffsets ?? [settings.leadTime.leadDuration.inMinutes];
+    return offsets.take(_maxOffsets).toList();
+  }
+
+  String _bodyFor(PlannerTask task, int offsetMinutes) {
+    if (offsetMinutes == 0) return 'Đến giờ: ${task.title}';
+    if (offsetMinutes >= 1440) return 'Ngày mai: ${task.title}';
+    if (offsetMinutes >= 60) {
+      return '${offsetMinutes ~/ 60} giờ nữa: ${task.title}';
+    }
+    return '$offsetMinutes phút nữa: ${task.title}';
   }
 
   Future<void> schedule(
     PlannerTask task,
     PlannerReminderSettings settings,
   ) async {
-    final id = _notificationId(task.id);
-    await _plugin.cancel(id: id);
-    if (!task.reminderEnabled || settings.mode == ReminderMode.off) return;
+    if (!isSupported) return;
+    await cancel(task.id);
+    if (task.inbox || settings.mode == ReminderMode.off) return;
+    final offsets = _offsetsFor(task, settings);
+    if (offsets.isEmpty) return;
 
-    final fireAt = task.start.subtract(settings.leadTime.leadDuration);
-    if (fireAt.isBefore(DateTime.now())) return;
+    final now = DateTime.now();
+    final occurrences = <PlannerOccurrence>[];
+    if (task.isRecurring) {
+      final today = plannerDateOnly(now);
+      for (var i = 0; i < _recurringWindowDays; i++) {
+        final day = today.add(Duration(days: i));
+        if (!task.occursOn(day)) continue;
+        final occ = task.occurrenceOn(day);
+        if (occ.settledStatus == null) occurrences.add(occ);
+      }
+    } else if (task.occurrenceOn(task.start).settledStatus == null) {
+      occurrences.add(task.occurrenceOn(task.start));
+    }
 
     final details = NotificationDetails(android: _detailsFor(settings));
+    var slot = 0;
+    for (final occ in occurrences) {
+      for (final offset in offsets) {
+        final id = _slotId(task.id, slot++);
+        final fireAt = occ.start.subtract(Duration(minutes: offset));
+        if (fireAt.isBefore(now)) continue;
+        await _zonedSchedule(
+          id: id,
+          body: _bodyFor(task, offset),
+          fireAt: fireAt,
+          details: details,
+          payload: '$payloadPrefix${task.id}|${occ.dayKey}',
+        );
+      }
+    }
+  }
+
+  Future<void> _zonedSchedule({
+    required int id,
+    required String body,
+    required DateTime fireAt,
+    required NotificationDetails details,
+    required String payload,
+  }) async {
     // TZDateTime.from doi theo THOI DIEM tuyet doi cua DateTime goc, nen
     // dung tz.UTC lam Location khong lam sai gio bao thuc te - cung cach lam
     // voi DailyQuizNotifications, khong can cau hinh tz.setLocalLocation.
     final scheduled = tz.TZDateTime.from(fireAt, tz.UTC);
-    final body = settings.leadTime == ReminderLeadTime.onTime
-        ? 'Đến giờ: ${task.title}'
-        : 'Sắp đến giờ: ${task.title}';
-
-    try {
-      await _plugin.zonedSchedule(
-        id: id,
-        title: 'Lập kế hoạch',
-        body: body,
-        scheduledDate: scheduled,
-        notificationDetails: details,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      );
-    } catch (_) {
+    for (final mode in [
+      AndroidScheduleMode.exactAllowWhileIdle,
+      AndroidScheduleMode.inexactAllowWhileIdle,
+    ]) {
       try {
         await _plugin.zonedSchedule(
           id: id,
@@ -126,32 +224,32 @@ class PlannerNotificationService {
           body: body,
           scheduledDate: scheduled,
           notificationDetails: details,
-          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          androidScheduleMode: mode,
+          payload: payload,
         );
+        return;
       } catch (_) {}
     }
   }
 
   Future<void> cancel(String taskId) async {
-    await _plugin.cancel(id: _notificationId(taskId));
+    if (!isSupported) return;
+    await _plugin.cancel(id: _legacyId(taskId));
+    for (var slot = 0; slot < _slotsPerTask; slot++) {
+      await _plugin.cancel(id: _slotId(taskId, slot));
+    }
   }
 
   /// Id rieng cho thong bao "Nghe thu" - co dinh, khong dam vao dai id cua
-  /// viec that (xem [_notificationId]) vi id viec suy tu hashCode nen ve ly
-  /// thuyet co the (du cuc hiem) trung voi so am.
+  /// viec that.
   static const _previewId = -1001;
 
   /// Ban 1 thong bao NGAY LAP TUC (khong dat lich) chi de nguoi dung nghe
-  /// thu am thanh cua [ringtone] + [mode] TRUOC khi luu cai dat - dung dung
-  /// channel se dung that (xem [_channelIdFor]) nen nghe dung 100% giong luc
-  /// thong bao that su bat len, khong phai phat lai file audio roi (am
-  /// luong/kenh am thanh cua notification khac voi phat nhac thong thuong).
-  Future<void> preview({
-    required RingtoneChoice ringtone,
-    required ReminderMode mode,
-  }) async {
-    if (mode == ReminderMode.off) return;
-    final settings = PlannerReminderSettings(ringtone: ringtone, mode: mode);
+  /// thu am thanh + kieu nhac TRUOC khi luu cai dat - dung dung channel se
+  /// dung that (xem [_channelIdFor]) nen nghe dung 100% giong luc thong bao
+  /// that su bat len.
+  Future<void> preview(PlannerReminderSettings settings) async {
+    if (!isSupported || settings.mode == ReminderMode.off) return;
     await _plugin.show(
       id: _previewId,
       title: 'Lập kế hoạch',

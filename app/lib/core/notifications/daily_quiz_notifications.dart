@@ -9,6 +9,7 @@ import 'package:timezone/timezone.dart' as tz;
 import '../../features/vocabulary/presentation/daily_quiz_popup_screen.dart';
 import '../navigation/nav_keys.dart';
 import '../utils/vn_time.dart';
+import 'chat_push.dart';
 import 'local_notifications_core.dart';
 
 /// Nhac hoc "10 tu hom nay" bang thong bao he thong dat lich truoc - hoat
@@ -80,6 +81,21 @@ class DailyQuizNotifications {
     // runApp() trong main.dart), rootNavigatorKey chua gan voi Navigator
     // nao ca - phai doi frame dau tien duoc ve xong.
     final launchDetails = await _plugin.getNotificationAppLaunchDetails();
+    final launchResponse = launchDetails?.notificationResponse;
+    final launchPayload = launchResponse?.payload ?? '';
+    if (launchDetails?.didNotificationLaunchApp == true &&
+        launchResponse != null &&
+        !launchPayload.startsWith(_payload)) {
+      // App bi dong han va duoc mo boi thong bao KHAC (Lap ke hoach, gia
+      // han dich vu, canh bao gia...) - truoc day nhanh ben duoi mo Quiz cho
+      // MOI thong bao. Gio chuyen dung payload do cho dispatcher chung.
+      if (launchPayload.isNotEmpty) {
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => handleNotificationAction(launchResponse),
+        );
+      }
+      return;
+    }
     if (launchDetails?.didNotificationLaunchApp == true) {
       // Truyen kem id cua CHINH thong bao vua khoi dong app (vd fullScreenIntent
       // tu dong bat len tren man hinh khoa) de _pushQuiz tu huy no ngay - neu

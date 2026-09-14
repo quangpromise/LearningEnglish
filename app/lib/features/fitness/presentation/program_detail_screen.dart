@@ -5,6 +5,7 @@ import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/exercise_model.dart';
+import '../../planner/presentation/planner_links.dart';
 import '../data/program_model.dart';
 
 /// Lich tuan cua 1 chuong trinh - port tu man "2b" cua FitViet (Gate 15 -
@@ -83,6 +84,30 @@ class ProgramDetailScreen extends ConsumerWidget {
               accentColor: AppColors.fitnessAccent,
               filled: !isActive,
               onTap: isActive ? null : () => _setActive(ref),
+            ),
+            const SizedBox(height: 8),
+            // Dua lich tuan cua chuong trinh vao Lap ke hoach (1 viec lap
+            // hang tuan vao cac thu co tap) - bam lai = cap nhat, khong trung.
+            PillButton(
+              label:
+                  plannerHasSource(
+                    ref,
+                    PlannerSourceKinds.fitnessProgram,
+                    '${program.id}',
+                  )
+                  ? ref.tr('planner_in_plan')
+                  : ref.tr('planner_add_to_plan'),
+              accentColor: AppColors.fitnessAccent,
+              filled: false,
+              onTap: () => addFitnessProgramToPlanner(
+                ref,
+                programId: program.id,
+                programTitle: program.titleVi,
+                trainingWeekdays: [
+                  for (final d in program.days)
+                    if (!d.isRestDay) d.dayOfWeek,
+                ],
+              ),
             ),
             const SizedBox(height: 16),
             Expanded(

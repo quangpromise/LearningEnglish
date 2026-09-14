@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../planner/presentation/planner_links.dart';
 import '../data/workout_model.dart';
 
 /// Man tong ket sau khi hoan thanh buoi tap - port tu SessionFinishedContent
@@ -22,6 +23,19 @@ class WorkoutFinishedScreen extends ConsumerStatefulWidget {
 class _WorkoutFinishedScreenState extends ConsumerState<WorkoutFinishedScreen> {
   bool _shared = false;
   bool _sharing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Xong buoi tap -> tu tick "Hoan thanh" lan tap hom nay trong Lap ke
+    // hoach (neu chuong trinh da duoc them vao ke hoach).
+    final programId = widget.controller.programId;
+    if (programId != null) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => completeFitnessProgramToday(ref, programId),
+      );
+    }
+  }
 
   Future<void> _share() async {
     if (_shared || _sharing) return;

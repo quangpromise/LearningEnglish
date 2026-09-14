@@ -3721,6 +3721,216 @@ class AppStrings {
       AppLanguage.vi: 'Quản lý tài sản',
       AppLanguage.en: 'Wealth',
     },
+
+    // Planner v2 - timeline 3 cot, lap lai, Inbox, xu ly qua han, chuong bao
+    // thuc cua may (docs/research-planner-app-ux.md §7).
+    'planner_status_overdue': {
+      AppLanguage.vi: 'Quá hạn',
+      AppLanguage.en: 'Overdue',
+    },
+    'planner_reminder_web_notice': {
+      AppLanguage.vi: 'Bản web chưa gửi được nhắc nhở. Hãy dùng app Android để nhận thông báo đúng giờ.',
+      AppLanguage.en: 'Reminders are not available on the web version. Use the Android app to get notified on time.',
+    },
+    'planner_alarm_sound_label': {
+      AppLanguage.vi: 'CHUÔNG BÁO THỨC (CÓ SẴN TRÊN MÁY)',
+      AppLanguage.en: 'ALARM SOUND (FROM THIS DEVICE)',
+    },
+    'planner_alarm_sound_android_only': {
+      AppLanguage.vi: 'Danh sách chuông báo thức chỉ có trên app Android.',
+      AppLanguage.en:
+          'The device alarm list is only available in the Android app.',
+    },
+    'planner_alarm_sound_empty': {
+      AppLanguage.vi: 'Không đọc được chuông báo thức trên máy này.',
+      AppLanguage.en: 'Could not read alarm sounds on this device.',
+    },
+    'planner_alarm_sound_device_default': {
+      AppLanguage.vi: 'Chuông báo thức mặc định của máy',
+      AppLanguage.en: 'Device default alarm',
+    },
+    'planner_test_notification': {
+      AppLanguage.vi: 'Thử thông báo',
+      AppLanguage.en: 'Test notification',
+    },
+    'planner_undo': {AppLanguage.vi: 'Hoàn tác', AppLanguage.en: 'Undo'},
+    'planner_done_toast': {
+      AppLanguage.vi: 'Đã hoàn thành',
+      AppLanguage.en: 'Marked as done',
+    },
+    'planner_undone_toast': {
+      AppLanguage.vi: 'Đã bỏ đánh dấu hoàn thành',
+      AppLanguage.en: 'Marked as not done',
+    },
+    'planner_deleted_toast': {
+      AppLanguage.vi: 'Đã xoá việc',
+      AppLanguage.en: 'Task deleted',
+    },
+    'planner_moved_toast': {
+      AppLanguage.vi: 'Đã đổi giờ',
+      AppLanguage.en: 'Task moved',
+    },
+    'planner_inbox_toast': {
+      AppLanguage.vi: 'Đã chuyển vào Chưa xếp giờ',
+      AppLanguage.en: 'Moved to Unscheduled',
+    },
+    'planner_postponed_toast': {
+      AppLanguage.vi: 'Đã dời sang hôm sau',
+      AppLanguage.en: 'Moved to the next day',
+    },
+    'planner_skipped_toast': {
+      AppLanguage.vi: 'Đã bỏ qua',
+      AppLanguage.en: 'Skipped',
+    },
+    'planner_scheduled_toast': {
+      AppLanguage.vi: 'Đã xếp vào lịch',
+      AppLanguage.en: 'Scheduled',
+    },
+    'planner_inbox_title': {
+      AppLanguage.vi: 'Chưa xếp giờ',
+      AppLanguage.en: 'Unscheduled',
+    },
+    'planner_inbox_hint': {
+      AppLanguage.vi: 'Nhấn giữ rồi kéo vào timeline',
+      AppLanguage.en: 'Long-press and drag onto the timeline',
+    },
+    'planner_overdue_banner': {
+      AppLanguage.vi: '{n} việc ở các ngày trước chưa xong',
+      AppLanguage.en: '{n} unfinished tasks from previous days',
+    },
+    'planner_overdue_title': {
+      AppLanguage.vi: 'Việc chưa xong',
+      AppLanguage.en: 'Unfinished tasks',
+    },
+    'planner_overdue_subtitle': {
+      AppLanguage.vi: 'Chọn cách xử lý từng việc',
+      AppLanguage.en: 'Choose what to do with each task',
+    },
+    'planner_overdue_empty': {
+      AppLanguage.vi: 'Đã xử lý hết!',
+      AppLanguage.en: 'All caught up!',
+    },
+    'planner_action_done': {AppLanguage.vi: 'Xong', AppLanguage.en: 'Done'},
+    'planner_action_today': {
+      AppLanguage.vi: 'Làm hôm nay',
+      AppLanguage.en: 'Do today',
+    },
+    'planner_action_inbox': {
+      AppLanguage.vi: 'Chưa xếp giờ',
+      AppLanguage.en: 'Unschedule',
+    },
+    'planner_action_skip': {AppLanguage.vi: 'Bỏ qua', AppLanguage.en: 'Skip'},
+    'planner_date': {AppLanguage.vi: 'Ngày', AppLanguage.en: 'Date'},
+    'planner_repeat_label': {
+      AppLanguage.vi: 'Lặp lại',
+      AppLanguage.en: 'Repeat',
+    },
+    'planner_repeat_none': {AppLanguage.vi: 'Không', AppLanguage.en: 'Never'},
+    'planner_repeat_daily': {
+      AppLanguage.vi: 'Hằng ngày',
+      AppLanguage.en: 'Daily',
+    },
+    'planner_repeat_weekly': {
+      AppLanguage.vi: 'Theo thứ',
+      AppLanguage.en: 'Weekly',
+    },
+    'planner_repeat_monthly': {
+      AppLanguage.vi: 'Hằng tháng',
+      AppLanguage.en: 'Monthly',
+    },
+    'planner_repeat_until': {
+      AppLanguage.vi: 'Đến ngày',
+      AppLanguage.en: 'Until',
+    },
+    'planner_repeat_forever': {
+      AppLanguage.vi: 'Không kết thúc',
+      AppLanguage.en: 'Forever',
+    },
+    'planner_notes_hint': {
+      AppLanguage.vi: 'Ghi chú (không bắt buộc)',
+      AppLanguage.en: 'Notes (optional)',
+    },
+    'planner_reminder_offset_label': {
+      AppLanguage.vi: 'Nhắc trước',
+      AppLanguage.en: 'Remind me',
+    },
+    'planner_reminder_follow_settings': {
+      AppLanguage.vi: 'Theo cài đặt',
+      AppLanguage.en: 'Default',
+    },
+    'planner_offset_on_time': {
+      AppLanguage.vi: 'Đúng giờ',
+      AppLanguage.en: 'On time',
+    },
+    'planner_offset_minutes': {
+      AppLanguage.vi: '{n} phút',
+      AppLanguage.en: '{n} min',
+    },
+    'planner_offset_hour': {AppLanguage.vi: '1 giờ', AppLanguage.en: '1 hour'},
+    'planner_offset_day': {AppLanguage.vi: '1 ngày', AppLanguage.en: '1 day'},
+    'planner_save_to_inbox': {
+      AppLanguage.vi: 'Chưa chọn giờ (lưu vào Chưa xếp giờ)',
+      AppLanguage.en: 'No time yet (save to Unscheduled)',
+    },
+    'planner_duplicate': {
+      AppLanguage.vi: 'Nhân bản',
+      AppLanguage.en: 'Duplicate',
+    },
+    'planner_delete_recurring_title': {
+      AppLanguage.vi: 'Xoá việc lặp lại',
+      AppLanguage.en: 'Delete repeating task',
+    },
+    'planner_delete_this': {
+      AppLanguage.vi: 'Chỉ lần này',
+      AppLanguage.en: 'This one only',
+    },
+    'planner_delete_all': {
+      AppLanguage.vi: 'Tất cả các lần',
+      AppLanguage.en: 'All occurrences',
+    },
+    'planner_cancel': {AppLanguage.vi: 'Huỷ', AppLanguage.en: 'Cancel'},
+    'planner_edit_series_note': {
+      AppLanguage.vi: 'Thay đổi sẽ áp dụng cho mọi lần lặp. Trạng thái bên dưới chỉ áp dụng cho ngày {d}.',
+      AppLanguage.en: 'Changes apply to every occurrence. The status below only applies to {d}.',
+    },
+    'planner_overnight_hint': {
+      AppLanguage.vi: 'Kết thúc vào hôm sau',
+      AppLanguage.en: 'Ends the next day',
+    },
+    'planner_open_source': {AppLanguage.vi: 'Mở', AppLanguage.en: 'Open'},
+    'planner_add_to_plan': {
+      AppLanguage.vi: 'Thêm vào kế hoạch',
+      AppLanguage.en: 'Add to planner',
+    },
+    'planner_added_to_plan': {
+      AppLanguage.vi: 'Đã thêm vào Lập kế hoạch',
+      AppLanguage.en: 'Added to Planner',
+    },
+    'planner_src_vocab_title': {
+      AppLanguage.vi: 'Ôn từ vựng hôm nay',
+      AppLanguage.en: "Review today's words",
+    },
+    'planner_src_workout_title': {
+      AppLanguage.vi: 'Tập: {name}',
+      AppLanguage.en: 'Workout: {name}',
+    },
+    'planner_src_renew_title': {
+      AppLanguage.vi: 'Gia hạn: {name}',
+      AppLanguage.en: 'Renew: {name}',
+    },
+    'planner_status_label': {
+      AppLanguage.vi: 'Trạng thái',
+      AppLanguage.en: 'Status',
+    },
+    'planner_duplicated_toast': {
+      AppLanguage.vi: 'Đã nhân bản việc',
+      AppLanguage.en: 'Task duplicated',
+    },
+    'planner_in_plan': {
+      AppLanguage.vi: 'Đã có trong kế hoạch ✓',
+      AppLanguage.en: 'In your planner ✓',
+    },
+    'planner_status_auto': {AppLanguage.vi: 'Tự động', AppLanguage.en: 'Auto'},
   };
 
   static String t(String key, AppLanguage lang) =>

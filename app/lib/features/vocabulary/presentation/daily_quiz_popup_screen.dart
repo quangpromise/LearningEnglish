@@ -8,9 +8,20 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/tts/app_tts.dart';
 import '../../../core/widgets/speaker_button.dart';
 import '../../writing/data/writing_scoring.dart';
+import '../../planner/presentation/planner_links.dart';
 import '../data/daily_words_repository.dart';
 import '../data/vocabulary_data.dart';
 import 'daily_words_controller.dart';
+
+/// Danh dau 1 tu da tra loi dung hom nay; neu da on HET tu cua hom nay thi tu
+/// tick "Hoan thanh" viec "On tu vung hom nay" trong Lap ke hoach (neu nguoi
+/// dung da them viec do vao ke hoach - xem planner_links.dart).
+Future<void> _markDailyWordLearned(WidgetRef ref, String en) async {
+  await ref.read(dailyWordsControllerProvider.notifier).markLearned(en);
+  if (ref.read(dailyWordsControllerProvider).pending.isEmpty) {
+    await completeVocabReviewToday(ref);
+  }
+}
 
 /// Man on tap "hoc hom nay", mo khi bam vao thong bao nhac (hoac bam "Bat
 /// dau hoc" o Ho so) - hoi LAN LUOT TAT CA cac tu DA CHON theo cach on nguoi
@@ -85,7 +96,7 @@ class _DailyQuizViewState extends ConsumerState<_DailyQuizView> {
       // _DailyWordsSection trong profile_screen.dart) de tra loi dung trong
       // luc dang LUYEN TAP (co the qua nhieu lan nhac trong ngay) khong bi
       // tinh la "da hoc that su" cho toi khi nguoi dung tu ket thuc phien.
-      ref.read(dailyWordsControllerProvider.notifier).markLearned(_current.en);
+      _markDailyWordLearned(ref, _current.en);
     }
     Future.delayed(const Duration(milliseconds: 700), () {
       if (!mounted) return;
@@ -284,7 +295,7 @@ class _DailyWritingViewState extends ConsumerState<_DailyWritingView> {
     // cua Luyen viet, day la on tap nhanh chu khong phai bai kiem tra.
     final ok = result != VocabAnswerResult.wrong;
     if (ok) {
-      ref.read(dailyWordsControllerProvider.notifier).markLearned(_current.en);
+      _markDailyWordLearned(ref, _current.en);
     }
     setState(() {
       _result = result;

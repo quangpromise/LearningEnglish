@@ -6,6 +6,7 @@ import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/date_format.dart';
 import '../../../core/utils/thousands_input_formatter.dart';
+import '../../planner/presentation/planner_links.dart';
 import '../data/recurring_service_model.dart';
 import '../data/recurring_service_repository.dart';
 import 'debt_person_picker_field.dart';
@@ -123,6 +124,8 @@ class _RenewServiceSheetState extends ConsumerState<_RenewServiceSheet> {
           );
       ref.invalidate(recurringServicesProvider);
       ref.invalidate(serviceRenewalsProvider);
+      // Da gia han -> tu tick "Hoan thanh" viec gia han trong Lap ke hoach.
+      await completeServiceRenewal(ref, widget.service.id);
       if (_viaDebt) {
         // Chua tru Vi/ghi chi tieu gi luc nay (xem RecurringServiceRepository
         // .renew(viaDebt:)) - chi tao 1 khoan "Dang no", chi tieu thuc su chi

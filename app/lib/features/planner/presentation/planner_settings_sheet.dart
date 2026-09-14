@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
+import '../data/device_alarm_sounds.dart';
 import '../data/planner_models.dart';
 import '../data/planner_notification_service.dart';
 import 'planner_providers.dart';
@@ -25,174 +26,320 @@ class _PlannerSettingsSheet extends ConsumerWidget {
     final notifier = ref.read(plannerReminderSettingsProvider.notifier);
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(22, 14, 22, 28),
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.88,
+      ),
       decoration: const BoxDecoration(
         color: Color(0xEB0F1326),
         borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Container(
-              width: 40,
-              height: 5,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(999),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(22, 14, 22, 28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(999),
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            ref.tr('planner_settings_title'),
-            style: AppTextStyles.heading(size: 18),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            ref.tr('planner_settings_subtitle'),
-            style: AppTextStyles.muted(),
-          ),
-          const SizedBox(height: 18),
+            const SizedBox(height: 16),
+            Text(
+              ref.tr('planner_settings_title'),
+              style: AppTextStyles.heading(size: 18),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              ref.tr('planner_settings_subtitle'),
+              style: AppTextStyles.muted(),
+            ),
+            // Ban web khong dat lich thong bao duoc - noi ro thay vi de nguoi
+            // dung tuong da bat nhac (docs/research-planner-app-ux.md §7.5).
+            if (!PlannerNotificationService.isSupported) ...[
+              const SizedBox(height: 12),
+              _Notice(text: ref.tr('planner_reminder_web_notice')),
+            ],
+            const SizedBox(height: 18),
 
-          Text(
-            ref.tr('planner_ringtone_label'),
-            style: AppTextStyles.muted(size: 11, weight: FontWeight.w800),
-          ),
-          const SizedBox(height: 8),
-          GlowBox(
-            padding: EdgeInsets.zero,
-            child: Column(
+            Text(
+              ref.tr('planner_alarm_sound_label'),
+              style: AppTextStyles.muted(size: 11, weight: FontWeight.w800),
+            ),
+            const SizedBox(height: 8),
+            _AlarmSoundList(
+              settings: settings,
+              onSelect: (sound) => notifier.update(
+                settings.copyWith(
+                  ringtone: RingtoneChoice.deviceAlarm,
+                  alarmSoundUri: sound.uri,
+                  alarmSoundTitle: sound.title,
+                ),
+              ),
+            ),
+            const SizedBox(height: 18),
+
+            Text(
+              ref.tr('planner_lead_time_label'),
+              style: AppTextStyles.muted(size: 11, weight: FontWeight.w800),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
               children: [
-                for (final r in RingtoneChoice.values)
-                  _RingtoneRow(
-                    choice: r,
-                    selected: settings.ringtone == r,
-                    previewMode: settings.mode,
+                for (final l in ReminderLeadTime.values)
+                  _LeadPill(
+                    lead: l,
+                    selected: settings.leadTime == l,
                     onTap: () =>
-                        notifier.update(settings.copyWith(ringtone: r)),
+                        notifier.update(settings.copyWith(leadTime: l)),
                   ),
               ],
             ),
-          ),
-          const SizedBox(height: 18),
+            const SizedBox(height: 18),
 
-          Text(
-            ref.tr('planner_lead_time_label'),
-            style: AppTextStyles.muted(size: 11, weight: FontWeight.w800),
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (final l in ReminderLeadTime.values)
-                _LeadPill(
-                  lead: l,
-                  selected: settings.leadTime == l,
-                  onTap: () => notifier.update(settings.copyWith(leadTime: l)),
+            Text(
+              ref.tr('planner_mode_label'),
+              style: AppTextStyles.muted(size: 11, weight: FontWeight.w800),
+            ),
+            const SizedBox(height: 8),
+            GridView.count(
+              crossAxisCount: 2,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              mainAxisSpacing: 10,
+              crossAxisSpacing: 10,
+              childAspectRatio: 1.7,
+              children: [
+                for (final m in ReminderMode.values)
+                  _ModeCard(
+                    mode: m,
+                    selected: settings.mode == m,
+                    onTap: () => notifier.update(settings.copyWith(mode: m)),
+                  ),
+              ],
+            ),
+            if (PlannerNotificationService.isSupported) ...[
+              const SizedBox(height: 14),
+              Center(
+                child: TextButton.icon(
+                  onPressed: () {
+                    if (settings.mode == ReminderMode.off) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(ref.tr('planner_preview_mode_off')),
+                        ),
+                      );
+                      return;
+                    }
+                    PlannerNotificationService.instance.preview(settings);
+                  },
+                  icon: const Icon(
+                    Icons.notifications_active_rounded,
+                    size: 16,
+                    color: Color(0xFF8FB0FF),
+                  ),
+                  label: Text(
+                    ref.tr('planner_test_notification'),
+                    style: AppTextStyles.body(
+                      size: 12.5,
+                      weight: FontWeight.w700,
+                    ),
+                  ),
                 ),
+              ),
             ],
-          ),
-          const SizedBox(height: 18),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
-          Text(
-            ref.tr('planner_mode_label'),
-            style: AppTextStyles.muted(size: 11, weight: FontWeight.w800),
+class _Notice extends StatelessWidget {
+  const _Notice({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0x22FFB547),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0x55FFB547)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(
+            Icons.info_outline_rounded,
+            size: 16,
+            color: Color(0xFFFFB547),
           ),
-          const SizedBox(height: 8),
-          GridView.count(
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: 10,
-            crossAxisSpacing: 10,
-            childAspectRatio: 1.7,
-            children: [
-              for (final m in ReminderMode.values)
-                _ModeCard(
-                  mode: m,
-                  selected: settings.mode == m,
-                  onTap: () => notifier.update(settings.copyWith(mode: m)),
-                ),
-            ],
-          ),
+          const SizedBox(width: 8),
+          Expanded(child: Text(text, style: AppTextStyles.body(size: 11.5))),
         ],
       ),
     );
   }
 }
 
-class _RingtoneRow extends ConsumerWidget {
-  const _RingtoneRow({
-    required this.choice,
+/// Danh sach chuong BAO THUC co san tren may (doc qua kenh native, xem
+/// device_alarm_sounds.dart) - thay 2 lua chon chuong co dinh truoc day.
+/// Nut play phat thu ngay bang luong am thanh bao thuc; roi man thi tu tat.
+class _AlarmSoundList extends ConsumerStatefulWidget {
+  const _AlarmSoundList({required this.settings, required this.onSelect});
+
+  final PlannerReminderSettings settings;
+  final ValueChanged<DeviceAlarmSound> onSelect;
+
+  @override
+  ConsumerState<_AlarmSoundList> createState() => _AlarmSoundListState();
+}
+
+class _AlarmSoundListState extends ConsumerState<_AlarmSoundList> {
+  late final Future<List<DeviceAlarmSound>> _sounds = DeviceAlarmSounds.list();
+  String? _playingUri;
+
+  @override
+  void dispose() {
+    if (_playingUri != null) DeviceAlarmSounds.stop();
+    super.dispose();
+  }
+
+  void _togglePreview(DeviceAlarmSound sound) {
+    if (_playingUri == sound.uri) {
+      DeviceAlarmSounds.stop();
+      setState(() => _playingUri = null);
+    } else {
+      DeviceAlarmSounds.play(sound.uri);
+      setState(() => _playingUri = sound.uri);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!DeviceAlarmSounds.isSupported) {
+      return _Notice(text: ref.tr('planner_alarm_sound_android_only'));
+    }
+    return FutureBuilder<List<DeviceAlarmSound>>(
+      future: _sounds,
+      builder: (context, snap) {
+        if (snap.connectionState != ConnectionState.done) {
+          return const Padding(
+            padding: EdgeInsets.all(16),
+            child: Center(
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+          );
+        }
+        final sounds = snap.data ?? const <DeviceAlarmSound>[];
+        if (sounds.isEmpty) {
+          return _Notice(text: ref.tr('planner_alarm_sound_empty'));
+        }
+        final s = widget.settings;
+        return GlowBox(
+          padding: EdgeInsets.zero,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 280),
+            child: ListView.builder(
+              shrinkWrap: true,
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              itemCount: sounds.length,
+              itemBuilder: (context, i) {
+                final sound = sounds[i];
+                final selected =
+                    s.ringtone == RingtoneChoice.deviceAlarm &&
+                    s.alarmSoundUri == sound.uri;
+                return _AlarmSoundRow(
+                  sound: sound,
+                  selected: selected,
+                  playing: _playingUri == sound.uri,
+                  onTap: () => widget.onSelect(sound),
+                  onPreview: () => _togglePreview(sound),
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _AlarmSoundRow extends ConsumerWidget {
+  const _AlarmSoundRow({
+    required this.sound,
     required this.selected,
+    required this.playing,
     required this.onTap,
-    required this.previewMode,
+    required this.onPreview,
   });
 
-  final RingtoneChoice choice;
+  final DeviceAlarmSound sound;
   final bool selected;
+  final bool playing;
   final VoidCallback onTap;
-
-  /// Kieu nhac (rung/chuong/ca hai/tat) DANG chon trong cai dat - truyen
-  /// vao de nut "Nghe thu" phat DUNG nhu se nghe that (vd dang chon "Chi
-  /// rung" thi bam nghe thu se khong phat am thanh, chi rung).
-  final ReminderMode previewMode;
-
-  String get _key => switch (choice) {
-    RingtoneChoice.defaultSound => 'planner_ringtone_default',
-    RingtoneChoice.cheerfulTone => 'planner_ringtone_cheerful',
-  };
+  final VoidCallback onPreview;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
         child: Row(
           children: [
-            Icon(
-              choice == RingtoneChoice.cheerfulTone
-                  ? Icons.music_note_rounded
-                  : Icons.notifications_rounded,
-              size: 18,
-              color: const Color(0xFF8FB0FF),
-            ),
+            const Icon(Icons.alarm_rounded, size: 18, color: Color(0xFF8FB0FF)),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(
-                ref.tr(_key),
-                style: AppTextStyles.body(size: 13.5, weight: FontWeight.w700),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    sound.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.body(
+                      size: 13.5,
+                      weight: FontWeight.w700,
+                    ),
+                  ),
+                  if (sound.isDefault)
+                    Text(
+                      ref.tr('planner_alarm_sound_device_default'),
+                      style: AppTextStyles.muted(size: 10),
+                    ),
+                ],
               ),
             ),
             GestureDetector(
-              onTap: () {
-                if (previewMode == ReminderMode.off) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(ref.tr('planner_preview_mode_off'))),
-                  );
-                  return;
-                }
-                PlannerNotificationService.instance.preview(
-                  ringtone: choice,
-                  mode: previewMode,
-                );
-              },
+              onTap: onPreview,
               child: Container(
                 width: 30,
                 height: 30,
                 margin: const EdgeInsets.only(right: 10),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.06),
+                  color: Colors.white.withValues(alpha: playing ? 0.16 : 0.06),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.play_arrow_rounded,
+                child: Icon(
+                  playing ? Icons.stop_rounded : Icons.play_arrow_rounded,
                   size: 17,
-                  color: AppColors.textMuted,
+                  color: playing ? Colors.white : AppColors.textMuted,
                 ),
               ),
             ),

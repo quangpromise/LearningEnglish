@@ -4,6 +4,10 @@ import android.app.KeyguardManager
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
+import android.media.AudioAttributes
+import android.media.Ringtone
+import android.media.RingtoneManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
@@ -42,6 +46,10 @@ class MainActivity : AudioServiceActivity() {
     companion object {
         private const val LOCK_CHANNEL = "gymtalk/lock_screen"
 
+        // Danh sach chuong BAO THUC co san tren may (RingtoneManager.TYPE_ALARM)
+        // cho cai dat nhac nho Lap ke hoach - xem device_alarm_sounds.dart.
+        private const val ALARM_SOUNDS_CHANNEL = "planner/alarm_sounds"
+
         // Khop voi FlutterLocalNotificationsPlugin (flutter_local_notifications
         // 22.x): thong bao dung CHUNG 1 PendingIntent cho ca luc bam lan
         // fullScreenIntent, voi action/extra ben duoi.
@@ -67,6 +75,47 @@ class MainActivity : AudioServiceActivity() {
     override fun onStop() {
         super.onStop()
         setShowOverLockScreen(false)
+        stopAlarmPreview()
+    }
+
+    private var previewRingtone: Ringtone? = null
+
+    private fun listAlarmSounds(): List<Map<String, String>> {
+        val result = mutableListOf<Map<String, String>>()
+        RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_ALARM)
+            ?.let { uri ->
+                val title = RingtoneManager.getRingtone(this, uri)?.getTitle(this) ?: ""
+                result.add(mapOf("uri" to uri.toString(), "title" to title, "isDefault" to "1"))
+            }
+        val manager = RingtoneManager(this)
+        manager.setType(RingtoneManager.TYPE_ALARM)
+        val cursor = manager.cursor
+        try {
+            while (cursor.moveToNext()) {
+                val title = cursor.getString(RingtoneManager.TITLE_COLUMN_INDEX) ?: continue
+                val uri = manager.getRingtoneUri(cursor.position).toString()
+                result.add(mapOf("uri" to uri, "title" to title, "isDefault" to "0"))
+            }
+        } finally {
+            cursor.close()
+        }
+        return result
+    }
+
+    private fun playAlarmPreview(uri: String) {
+        stopAlarmPreview()
+        val ringtone = RingtoneManager.getRingtone(this, Uri.parse(uri)) ?: return
+        ringtone.audioAttributes = AudioAttributes.Builder()
+            .setUsage(AudioAttributes.USAGE_ALARM)
+            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+            .build()
+        ringtone.play()
+        previewRingtone = ringtone
+    }
+
+    private fun stopAlarmPreview() {
+        previewRingtone?.stop()
+        previewRingtone = null
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -76,6 +125,26 @@ class MainActivity : AudioServiceActivity() {
                 when (call.method) {
                     "clearShowWhenLocked" -> {
                         setShowOverLockScreen(false)
+                        result.success(null)
+                    }
+                    else -> result.notImplemented()
+                }
+            }
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, ALARM_SOUNDS_CHANNEL)
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "list" -> try {
+                        result.success(listAlarmSounds())
+                    } catch (e: Exception) {
+                        result.error("LIST_FAILED", e.message, null)
+                    }
+                    "play" -> {
+                        val uri = call.argument<String>("uri")
+                        if (uri != null) playAlarmPreview(uri)
+                        result.success(null)
+                    }
+                    "stop" -> {
+                        stopAlarmPreview()
                         result.success(null)
                     }
                     else -> result.notImplemented()

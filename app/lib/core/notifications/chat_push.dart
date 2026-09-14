@@ -10,6 +10,8 @@ import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../features/crypto/presentation/crypto_coin_detail_screen.dart';
+import '../../features/planner/data/planner_notification_service.dart';
+import '../../features/planner/presentation/planner_screen.dart';
 import '../../features/social/data/device_token_repository.dart';
 import '../../features/social/data/social_repository.dart';
 import '../../features/social/presentation/chat_screen.dart';
@@ -263,6 +265,12 @@ void handleNotificationAction(NotificationResponse response) {
   // trang thai sau khi da mo Quiz.
   if (payload.startsWith('quiz:')) {
     DailyQuizNotifications.instance.openQuiz(notificationId: response.id);
+    return;
+  }
+  // "planner:<taskId>|<yyyy-MM-dd>" - nhac viec cua Lap ke hoach (xem
+  // PlannerNotificationService) -> mo man Lap ke hoach dung ngay cua viec.
+  if (payload.startsWith(PlannerNotificationService.payloadPrefix)) {
+    openPlannerFromNotification(payload);
     return;
   }
   if (payload.startsWith('service:')) {
