@@ -662,8 +662,8 @@ class AppStrings {
       AppLanguage.en: 'Random',
     },
     'profile_daily_words_tutorial_pick_mode': {
-      AppLanguage.vi: 'Chọn Quiz hay Writing',
-      AppLanguage.en: 'Pick Quiz or Writing',
+      AppLanguage.vi: 'Chọn 1 cách ôn tập bên dưới',
+      AppLanguage.en: 'Pick a study mode below',
     },
     'profile_daily_words_relearn': {
       AppLanguage.vi: 'Học lại',
@@ -721,8 +721,8 @@ class AppStrings {
     // Huong dan ngon tay 2 buoc khi vua bam "Hoc hom nay" tu Vocabulary -
     // xem ProfileScreen.highlightDailyWords / _TutorialFingerPointer.
     'profile_daily_words_tutorial_pick_minutes': {
-      AppLanguage.vi: 'Chọn số phút nhắc lại',
-      AppLanguage.en: 'Pick a reminder interval',
+      AppLanguage.vi: 'Chọn thời gian nhắc bên dưới',
+      AppLanguage.en: 'Pick a reminder interval below',
     },
     'profile_daily_words_tutorial_start': {
       AppLanguage.vi: 'Bấm để bắt đầu học',

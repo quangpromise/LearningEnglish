@@ -1267,8 +1267,12 @@ class _FeeServiceRow extends ConsumerWidget {
 /// TREN 1 muc tieu can chi dan (khoang chon phut / nut "Bat dau hoc") qua
 /// Positioned(top: -34...) boc no - xem _DailyWordsSectionState.build().
 class _TutorialFingerPointer extends StatefulWidget {
-  const _TutorialFingerPointer({required this.label});
+  const _TutorialFingerPointer({required this.label, this.pointDown = false});
   final String label;
+
+  /// true = nhan ben TRAI, ngon tay CHI XUONG ben phai (dung khi tro vao 1
+  /// khung lua chon nam ngay ben duoi, xem [_withFramePointer]).
+  final bool pointDown;
 
   @override
   State<_TutorialFingerPointer> createState() => _TutorialFingerPointerState();
@@ -1289,32 +1293,41 @@ class _TutorialFingerPointerState extends State<_TutorialFingerPointer>
 
   @override
   Widget build(BuildContext context) {
+    if (widget.pointDown) {
+      return IgnorePointer(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(bottom: 14),
+              child: _bubble(),
+            ),
+            AnimatedBuilder(
+              animation: _ctrl,
+              builder: (context, child) => Transform.translate(
+                offset: Offset(0, _ctrl.value * 5),
+                child: child,
+              ),
+              // touch_app xoay 180 do = ngon tay chi xuong khung ben duoi.
+              child: const RotatedBox(
+                quarterTurns: 2,
+                child: Icon(
+                  Icons.touch_app_rounded,
+                  color: AppColors.blue,
+                  size: 28,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
     return IgnorePointer(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: AppColors.blue,
-              borderRadius: BorderRadius.circular(999),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.blue.withValues(alpha: 0.5),
-                  blurRadius: 10,
-                ),
-              ],
-            ),
-            child: Text(
-              widget.label,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 11,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ),
+          _bubble(),
           AnimatedBuilder(
             animation: _ctrl,
             builder: (context, child) => Transform.translate(
@@ -1331,6 +1344,26 @@ class _TutorialFingerPointerState extends State<_TutorialFingerPointer>
       ),
     );
   }
+
+  Widget _bubble() => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+    decoration: BoxDecoration(
+      color: AppColors.blue,
+      borderRadius: BorderRadius.circular(999),
+      boxShadow: [
+        BoxShadow(color: AppColors.blue.withValues(alpha: 0.5), blurRadius: 10),
+      ],
+    ),
+    child: Text(
+      widget.label,
+      textAlign: TextAlign.center,
+      style: const TextStyle(
+        color: Colors.white,
+        fontSize: 11,
+        fontWeight: FontWeight.w800,
+      ),
+    ),
+  );
 }
 
 const _kIntervalChoicesMinutes = [15, 30, 60, 90, 120];
@@ -1455,6 +1488,52 @@ class _DailyWordsSectionState extends ConsumerState<_DailyWordsSection> {
     await ref.read(dailyWordsControllerProvider.notifier).start();
     if (!context.mounted) return;
     openAppPopup(context, const DailyQuizPopupScreen());
+  }
+
+  /// Huong dan cho 1 KHUNG nhieu lua chon (vd luoi 4 cach on tap): vien sang
+  /// bao quanh ca khung + ngon tay CHI XUONG cham mep tren khung, nhan dat ben
+  /// phai (khong che tieu de muc ben trai). Khong chiem cho trong bo cuc.
+  Widget _withFramePointer({
+    required bool show,
+    required String labelKey,
+    required Widget child,
+  }) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        child,
+        if (show) ...[
+          Positioned(
+            left: -5,
+            right: -5,
+            top: -5,
+            bottom: -5,
+            child: IgnorePointer(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppColors.blue, width: 1.6),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.blue.withValues(alpha: 0.35),
+                      blurRadius: 12,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            top: -44,
+            right: 24,
+            child: _TutorialFingerPointer(
+              label: ref.tr(labelKey),
+              pointDown: true,
+            ),
+          ),
+        ],
+      ],
+    );
   }
 
   /// Dat ban tay huong dan NGAY TREN [child] (khong chiem cho trong bo cuc).
@@ -1643,7 +1722,7 @@ class _DailyWordsSectionState extends ConsumerState<_DailyWordsSection> {
             ] else ...[
               _sectionLabel('profile_daily_words_interval_label'),
               const SizedBox(height: 8),
-              _withPointer(
+              _withFramePointer(
                 show: showIntervalPointer,
                 labelKey: 'profile_daily_words_tutorial_pick_minutes',
                 child: Wrap(
@@ -1685,7 +1764,7 @@ class _DailyWordsSectionState extends ConsumerState<_DailyWordsSection> {
               const SizedBox(height: 14),
               _sectionLabel('profile_daily_words_mode_label'),
               const SizedBox(height: 8),
-              _withPointer(
+              _withFramePointer(
                 show: showModePointer,
                 labelKey: 'profile_daily_words_tutorial_pick_mode',
                 // Luoi 2x2: Quiz/Writing o hang tren, Speaking/Random o hang
