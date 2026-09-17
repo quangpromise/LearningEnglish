@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/navigation/mini_app_bottom_nav.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import 'wealth_home_screen.dart';
@@ -33,12 +32,13 @@ class _WealthShellState extends ConsumerState<WealthShell> {
 
   @override
   Widget build(BuildContext context) {
+    // Da BO thanh Menu duoi theo ban thiet ke lai: thanh do truoc day chi
+    // chua pill nhac, gio pill nhac nam ngay trong than trang (cuoi man
+    // Home, xem wealth_home_screen.dart) nen man hinh ket thuc tu nhien sau
+    // widget nhac thay vi co 1 thanh co dinh che mat noi dung.
     return const Scaffold(
       backgroundColor: AppColors.bgTop,
       body: WealthHomeScreen(),
-      bottomNavigationBar: MiniAppBottomNav(
-        accentColor: AppColors.wealthAccent,
-      ),
     );
   }
 }

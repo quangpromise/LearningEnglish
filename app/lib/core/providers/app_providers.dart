@@ -23,6 +23,7 @@ import '../../features/profile/data/profile_repository.dart';
 import '../../features/quiz/data/leaderboard_repository.dart';
 import '../../features/rewards/data/rewards_repository.dart';
 import '../../features/social/data/social_repository.dart';
+import '../../features/stats/data/learning_xp_repository.dart';
 import '../../features/stats/data/stats_repository.dart';
 import '../../features/ielts/data/ielts_attempt_repository.dart';
 import '../../features/learning_path/data/learning_path_models.dart';
@@ -109,6 +110,18 @@ final statsRepositoryProvider = Provider<StatsRepository>(
 /// reset để làm mới lại số liệu trên UI.
 final myStatsProvider = FutureProvider.autoDispose(
   (ref) => ref.watch(statsRepositoryProvider).fetchMyStats(),
+);
+
+final learningXpRepositoryProvider = Provider<LearningXpRepository>(
+  (ref) => LearningXpRepository(ref.watch(supabaseClientProvider)),
+);
+
+/// Cấp độ + XP của người học, hiện ở thẻ tiến độ màn Home (vòng tròn "Lv 8").
+/// Tính từ hoạt động thật ở server nên KHÔNG cần cộng XP thủ công ở từng màn;
+/// chỉ cần `ref.invalidate(myLearningXpProvider)` cùng chỗ đang invalidate
+/// [myStatsProvider] là số liệu tự khớp.
+final myLearningXpProvider = FutureProvider.autoDispose(
+  (ref) => ref.watch(learningXpRepositoryProvider).fetchMyXp(),
 );
 
 /// Danh sach tu (lowercase) da danh dau "Da hoc" o Tu vung theo chu de -
@@ -306,6 +319,7 @@ final incomingMessagesProvider = StreamProvider(
 void invalidateUserScopedProviders(WidgetRef ref) {
   ref.invalidate(myProfileProvider);
   ref.invalidate(myStatsProvider);
+  ref.invalidate(myLearningXpProvider);
   ref.invalidate(myRewardsProvider);
   ref.invalidate(myFriendsProvider);
   ref.invalidate(myPendingRequestsProvider);

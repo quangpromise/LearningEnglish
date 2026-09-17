@@ -57,6 +57,7 @@ class LearnedWordsPopup extends ConsumerWidget {
     ref.invalidate(learnedWordsProvider);
     ref.invalidate(learnedVocabWordsProvider);
     ref.invalidate(myStatsProvider);
+    ref.invalidate(myLearningXpProvider);
   }
 
   @override

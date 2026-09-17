@@ -2338,6 +2338,157 @@ class AppStrings {
 
     // Home screen
     'home_greeting': {AppLanguage.vi: 'Xin chào', AppLanguage.en: 'Hello'},
+    // Loi chao doi theo gio tren may (xem greetingKeyForNow() trong
+    // home_screen.dart) - thay cho 'home_greeting' co dinh o man Home moi.
+    'home_greeting_morning': {
+      AppLanguage.vi: 'Chào buổi sáng',
+      AppLanguage.en: 'Good morning',
+    },
+    'home_greeting_afternoon': {
+      AppLanguage.vi: 'Chào buổi chiều',
+      AppLanguage.en: 'Good afternoon',
+    },
+    'home_greeting_evening': {
+      AppLanguage.vi: 'Chào buổi tối',
+      AppLanguage.en: 'Good evening',
+    },
+    'home_greeting_night': {
+      AppLanguage.vi: 'Chào buổi khuya',
+      AppLanguage.en: 'Good night',
+    },
+    // Ten cap do - server (my_learning_xp) chi tra ve KHOA, app tu dich.
+    'level_beginner': {
+      AppLanguage.vi: 'Mới bắt đầu',
+      AppLanguage.en: 'Beginner',
+    },
+    'level_elementary': {
+      AppLanguage.vi: 'Sơ cấp',
+      AppLanguage.en: 'Elementary',
+    },
+    'level_intermediate': {
+      AppLanguage.vi: 'Trung cấp',
+      AppLanguage.en: 'Intermediate',
+    },
+    'level_upper': {
+      AppLanguage.vi: 'Trung cao cấp',
+      AppLanguage.en: 'Upper-Intermediate',
+    },
+    'level_advanced': {AppLanguage.vi: 'Nâng cao', AppLanguage.en: 'Advanced'},
+    'home_xp_to_next': {
+      AppLanguage.vi: 'Còn {n} XP nữa',
+      AppLanguage.en: 'Next level in {n} XP',
+    },
+    'home_day_streak': {
+      AppLanguage.vi: 'Ngày liên tiếp',
+      AppLanguage.en: 'Day streak',
+    },
+    'home_main_skill': {
+      AppLanguage.vi: 'KỸ NĂNG CHÍNH',
+      AppLanguage.en: 'MAIN SKILL',
+    },
+    'home_continue': {AppLanguage.vi: 'Tiếp tục', AppLanguage.en: 'Continue'},
+    'home_practice_label': {
+      AppLanguage.vi: 'LUYỆN TẬP',
+      AppLanguage.en: 'PRACTICE',
+    },
+    'home_achieve_label': {
+      AppLanguage.vi: 'CHINH PHỤC',
+      AppLanguage.en: 'ACHIEVE',
+    },
+    'home_listening_speaking': {
+      AppLanguage.vi: 'Nghe nói',
+      AppLanguage.en: 'Listening & Speaking',
+    },
+    'home_listening_speaking_sub': {
+      AppLanguage.vi: 'Nghe kỹ. Nói lại. Tự tin hơn.',
+      AppLanguage.en: 'Hear it. Say it. Be confident.',
+    },
+    'home_test_prep_sub': {
+      AppLanguage.vi: 'Luyện tập. Tiến bộ. Đạt mục tiêu.',
+      AppLanguage.en: 'Practice. Improve. Achieve.',
+    },
+    'home_sub_vocabulary': {
+      AppLanguage.vi: 'Học từ mới',
+      AppLanguage.en: 'Learn smarter',
+    },
+    'home_sub_grammar': {
+      AppLanguage.vi: 'Dùng đúng',
+      AppLanguage.en: 'Use naturally',
+    },
+    'home_sub_reading': {
+      AppLanguage.vi: 'Hiểu sâu',
+      AppLanguage.en: 'Understand deeper',
+    },
+    'home_sub_writing': {
+      AppLanguage.vi: 'Tự diễn đạt',
+      AppLanguage.en: 'Express yourself',
+    },
+    'home_sub_phonics': {
+      AppLanguage.vi: 'Phát âm chuẩn',
+      AppLanguage.en: 'Sound natural',
+    },
+    'home_sub_pronunciation': {
+      AppLanguage.vi: 'Có chấm điểm',
+      AppLanguage.en: 'Real-life practice',
+    },
+    'home_sub_story': {
+      AppLanguage.vi: 'Nghe + đọc',
+      AppLanguage.en: 'Learn with stories',
+    },
+    'home_sub_ai_chat': {
+      AppLanguage.vi: 'Nói mọi lúc',
+      AppLanguage.en: 'Chat anytime',
+    },
+    'home_sub_toeic': {
+      AppLanguage.vi: 'Đề chuẩn',
+      AppLanguage.en: 'Official format',
+    },
+    'home_sub_ielts': {
+      AppLanguage.vi: 'Nâng band',
+      AppLanguage.en: 'Score higher',
+    },
+    'home_sub_quiz': {
+      AppLanguage.vi: 'Thử thách nhanh',
+      AppLanguage.en: 'Think & learn',
+    },
+    'home_badge_new': {AppLanguage.vi: 'MỚI', AppLanguage.en: 'New'},
+    // --- Man Home Quan ly tai san (thiet ke lai) ---
+    'wealth_home_sub_expense': {
+      AppLanguage.vi: 'Quản lý chi tiêu',
+      AppLanguage.en: 'Manage spending',
+    },
+    'wealth_home_sub_debt': {
+      AppLanguage.vi: 'Các khoản đang nợ',
+      AppLanguage.en: 'Debts you owe',
+    },
+    'wealth_home_sub_service': {
+      AppLanguage.vi: 'Đăng ký định kỳ',
+      AppLanguage.en: 'Recurring payments',
+    },
+    'wealth_home_sub_split': {
+      AppLanguage.vi: 'Chia hóa đơn',
+      AppLanguage.en: 'Split a bill',
+    },
+    'wealth_home_report_sub': {
+      AppLanguage.vi: 'Phân tích thông minh · Định hướng tương lai',
+      AppLanguage.en: 'Smart analysis · Plan ahead',
+    },
+    'wealth_home_messages_title': {
+      AppLanguage.vi: 'Tin nhắn',
+      AppLanguage.en: 'Messages',
+    },
+    'wealth_home_messages_unread': {
+      AppLanguage.vi: 'Bạn có {n} tin nhắn chưa đọc',
+      AppLanguage.en: 'You have {n} unread messages',
+    },
+    'wealth_home_messages_none': {
+      AppLanguage.vi: 'Chưa có tin nhắn mới',
+      AppLanguage.en: 'No new messages',
+    },
+    'wealth_home_messages_badge': {
+      AppLanguage.vi: '{n} mới',
+      AppLanguage.en: '{n} new',
+    },
     'home_dictionary_tooltip': {
       AppLanguage.vi: 'Từ điển',
       AppLanguage.en: 'Dictionary',

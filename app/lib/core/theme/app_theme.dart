@@ -47,6 +47,24 @@ class AppColors {
   static const textPrimary = Color(0xFFEEF1FB);
   static const textMuted = Color(0x8DEEF1FB);
 
+  // Bo mau do TRUC TIEP tu anh thiet ke cua chu du an (lay trung binh 2%
+  // pixel sang nhat trong o chua chu) - dung cho 2 man Home thiet ke lai.
+  // Chu phu truoc day la textMuted (trang mo 55%) nen ra xam bech; ban thiet
+  // ke dung xanh-sang dac nen chu "trong" va ro hon han.
+  /// Chu phu ("Con 420 XP nua", "Ngay lien tiep").
+  static const textSecondary = Color(0xFF9BB9DA);
+
+  /// Nhan nho in hoa ("KY NANG CHINH", "LUYEN TAP").
+  static const textLabel = Color(0xFF9EB4CC);
+
+  /// Mat kinh cua the o man Home thiet ke lai - do duoc long the #0D1622 tren
+  /// nen #02070F, tuong duong lop phu nay. The PHANG, khong gradient: cho nao
+  /// sang hon la do anh sang NEN hat qua chu khong phai tung the tu sang.
+  static const homeCardFill = Color(0x1682B2F0);
+
+  /// Vien the o man Home thiet ke lai.
+  static const homeCardBorder = Color(0x24C8E0FF);
+
   // Den (khong phai trang) va do dam cao hon truoc (0x0D -> 0x59) - man hinh
   // co anh nen (Home/Fitness) truoc do qua trong suot, thay ro anh xuyen qua
   // GlowBox lam chu kho doc; nen den lam diu anh nen ngay ben trong box ma

@@ -20,7 +20,13 @@ class AppTopBar extends ConsumerWidget {
     this.accentColor = AppColors.blue,
     this.onMessagesTap,
     this.unreadCount = 0,
+    this.greeting,
   });
+
+  /// Loi chao hien thanh DONG RIENG phia tren ten (vd "Chao buoi sang,").
+  /// Null = giu bo cuc cu 1 dong `Xin chao + ten` - cac man chua doi sang
+  /// thiet ke moi van hien y nhu truoc.
+  final String? greeting;
 
   /// true cho man duoc mo qua Navigator.push (Fitness/Wealth) de co duong
   /// quay lai; false cho man la tab goc (Home) khong can nut back.
@@ -126,11 +132,26 @@ class AppTopBar extends ConsumerWidget {
             ],
           ),
         ),
-        const SizedBox(width: 14),
+        const SizedBox(width: 13),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Loi chao tach thanh DONG RIENG phia tren ten (ban thiet ke
+              // lai): dong nho mo o tren, ten to dam o duoi. Truoc day ca hai
+              // nam chung 1 dong "Xin chao + ten" nen ten bi ep nho lai va
+              // de bi cat khi ten dai.
+              if (greeting != null)
+                Text(
+                  greeting!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.body(
+                    size: 12.5,
+                    weight: FontWeight.w500,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
               // Loi (khong phai dang tai) - cho bam vao TEN de tu tai lai,
               // vi FutureProvider.autoDispose se KET LUON o trang thai loi
               // (khong tu retry) neu khong ai invalidate no - truoc day
@@ -144,15 +165,23 @@ class AppTopBar extends ConsumerWidget {
                           ? () => ref.invalidate(myProfileProvider)
                           : null,
                       child: Text(
-                        '${ref.tr('home_greeting')}, $displayName'
-                        '${profileAsync.hasError ? ' ↻' : ''}',
+                        greeting == null
+                            ? '${ref.tr('home_greeting')}, $displayName'
+                                  '${profileAsync.hasError ? ' ↻' : ''}'
+                            : '$displayName'
+                                  '${profileAsync.hasError ? ' ↻' : ''}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.heading(size: 17),
+                        style: AppTextStyles.heading(
+                          size: greeting == null ? 17 : 21,
+                        ),
                       ),
                     ),
                   ),
-                  if (onMessagesTap != null) ...[
+                  // Khi CO loi chao (bo cuc 2 dong moi), nut Tin nhan chuyen
+                  // sang cum nut tron ben phai cung [trailing] cho gon; giu
+                  // cach cu (icon ngay sau ten) cho cac man chua doi bo cuc.
+                  if (onMessagesTap != null && greeting == null) ...[
                     const SizedBox(width: 8),
                     _MessagesIconButton(
                       unreadCount: unreadCount,
@@ -167,7 +196,86 @@ class AppTopBar extends ConsumerWidget {
           ),
         ),
         ?trailing,
+        if (onMessagesTap != null && greeting != null) ...[
+          const SizedBox(width: 8),
+          GestureDetector(
+            onTap: onMessagesTap,
+            child: TopBarIconChip(
+              icon: Icons.chat_bubble_outline_rounded,
+              // Cham bao tin nhan nam NGAY TREN duong vien nut (do tu ban
+              // thiet ke: tam cham cach tam nut dung bang ban kinh), khong
+              // phai lo han ra ngoai goc nhu truoc.
+              badge: unreadCount > 0,
+            ),
+          ),
+        ],
       ],
+    );
+  }
+}
+
+/// Nut tron dung trong thanh dau man (la ban, tin nhan, cai dat...) - nen la
+/// quang sang tron mo dan ra bien, KHONG co vien cung, theo ban thiet ke lai.
+class TopBarIconChip extends StatelessWidget {
+  const TopBarIconChip({
+    super.key,
+    required this.icon,
+    this.badge = false,
+    this.size = 40,
+  });
+
+  final IconData icon;
+  final bool badge;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final dot = size / 2 - (size / 2) / 1.4142;
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            width: size,
+            height: size,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                center: Alignment(-0.2, -0.3),
+                radius: 0.75,
+                colors: [
+                  Color(0x2EBED6FF),
+                  Color(0x14A0C4F8),
+                  Color(0x00A0C4F8),
+                ],
+                stops: [0.0, 0.62, 1.0],
+              ),
+            ),
+            child: Icon(icon, size: size * 0.45, color: AppColors.textPrimary),
+          ),
+          if (badge)
+            Positioned(
+              right: dot,
+              top: dot,
+              child: Container(
+                width: 7,
+                height: 7,
+                decoration: BoxDecoration(
+                  color: AppColors.blue,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.blue.withValues(alpha: 0.75),
+                      blurRadius: 6,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

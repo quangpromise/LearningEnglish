@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
-import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/tts/app_tts.dart';
@@ -90,6 +89,7 @@ class _VocabularyTopicDetailScreenState
     _selected.remove(word);
     ref.invalidate(learnedWordsProvider);
     ref.invalidate(myStatsProvider);
+    ref.invalidate(myLearningXpProvider);
   }
 
   Future<void> _saveToDailyList(BuildContext context) async {
@@ -99,15 +99,14 @@ class _VocabularyTopicDetailScreenState
     await ref.read(dailyWordsControllerProvider.notifier).setWords(entries);
     if (!context.mounted) return;
     // Thay vi chi bao "da them" bang SnackBar roi de nguoi dung TU di tim
-    // cho chon phut nhac lai + bam "Bat dau hoc", dua thang toi man Ho so >
-    // tab Hoat dong, tu cuon toi dung khung "Hoc hom nay" VA hien huong dan
-    // ngon tay tung buoc (xem ProfileScreen.highlightDailyWords) - giup
-    // nguoi dung hoan tat ca luong trong 1 lan bam thay vi phai tu doan
-    // buoc tiep theo.
-    await openAppPopup(
-      context,
-      const ProfileScreen(initialTab: 1, highlightDailyWords: true),
-    );
+    // cho chon phut nhac lai + bam "Bat dau hoc", mo THANG popup "Hoc {n} tu
+    // hom nay" VA hien huong dan ngon tay tung buoc - giup nguoi dung hoan
+    // tat ca luong trong 1 lan bam thay vi phai tu doan buoc tiep theo.
+    //
+    // Truoc day popup nay la man Ho so > tab Hoat dong (khoi "Hoc hom nay"
+    // nam trong do); tu ban thiet ke lai man Home, khoi do da thanh the "Ky
+    // nang chinh" o Home nen mo thang popup rieng (xem openDailyWordsPopup).
+    await openDailyWordsPopup(context, showTutorial: true);
   }
 
   @override

@@ -5,32 +5,52 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/navigation/app_popup.dart';
 import '../../../core/navigation/app_top_bar.dart';
+import '../../../core/navigation/nav_keys.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/pointing_hand_badge.dart';
+import '../../ai_voice_chat/presentation/ai_voice_chat_screen.dart';
 import '../../social/presentation/conversations_screen.dart';
 import '../../grammar/presentation/grammar_topics_screen.dart';
 import '../../learning_path/data/learning_path_models.dart';
 import '../../learning_path/presentation/learning_path_accent.dart';
 import '../../learning_path/presentation/learning_path_survey_screen.dart';
+import '../../profile/presentation/profile_screen.dart';
 import '../../pronunciation/presentation/phonics_lessons_screen.dart';
 import '../../pronunciation/presentation/pronunciation_screen.dart';
 import '../../quiz/presentation/quiz_category_screen.dart';
 import '../../reading/presentation/reading_library_screen.dart';
 import '../../ielts/presentation/ielts_home_screen.dart';
+import '../../stats/data/learning_xp_repository.dart';
 import '../../story/presentation/story_list_screen.dart';
 import '../../toeic/presentation/toeic_home_screen.dart';
+import '../../vocabulary/presentation/daily_words_controller.dart';
 import '../../vocabulary/presentation/vocabulary_topics_screen.dart';
 import '../../wealth/presentation/service_expiry_banner.dart';
 import '../../writing/presentation/writing_home_screen.dart';
 
-/// Man Home - da bo han tab Menu rieng (xem root_shell.dart): moi tinh nang
-/// (ke ca nhung thu truoc gom trong Menu: Doc sach, Do vui, Fitness, Crypto,
-/// Ghi cong) gio vao thang tu day, phan nhom theo the loai (Nghe noi/Doc
-/// viet/Khac) trong 1 khung vien rieng cho tung nhom - giong cach cac app
-/// smart-home nhom "Quick Actions" theo phong/loai thiet bi. Dung thang
-/// AppColors/GlowBox chuan (khong con bang mau rieng) vi toan app da doi
-/// sang cung 1 bang mau nen-den + cam (xem app_theme.dart).
+/// Khoa loi chao theo GIO TREN MAY - sang/chieu/toi/khuya.
+String greetingKeyForNow([DateTime? now]) {
+  final h = (now ?? DateTime.now()).hour;
+  if (h >= 5 && h < 12) return 'home_greeting_morning';
+  if (h >= 12 && h < 18) return 'home_greeting_afternoon';
+  if (h >= 18 && h < 22) return 'home_greeting_evening';
+  return 'home_greeting_night';
+}
+
+/// Man Home cua khu vuc "Hoc Tieng Anh".
+///
+/// Bo cuc theo ban thiet ke da duyet (xem docs/design/english-redesign/):
+///   1. Thanh dau man - loi chao theo gio + ten + nut La ban/Tin nhan
+///   2. The tien do  - vong tron Level/XP + chuoi ngay lien tiep
+///   3. The "Ky nang chinh" - "Hoc {n} tu hom nay", bam mo danh sach tu
+///   4. 4 the Doc viet - Tu vung / Ngu phap / Doc sach / Luyen viet
+///   5. Khung Nghe noi - 4 muc Phat am / Luyen phat am / Chuyen ngan / AI
+///   6. Khung Luyen thi - TOEIC / IELTS / Do vui
+///
+/// MOI tinh nang van mo len dang popup tu day y nhu truoc (khong doi luong),
+/// chi doi cach trinh bay. Goi y lo trinh theo persona van giu: the duoc goi
+/// y doi mau vien + the goi y CHINH co them hinh ban tay.
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
@@ -38,14 +58,10 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final unread = ref.watch(unreadMessageCountProvider).valueOrNull ?? 0;
     // Persona nguoi dung da chon o khao sat "Goi y lo trinh hoc" (null = chua
-    // chon/chua dang nhap) - dung de highlight tile lien quan ben duoi, VAN
-    // HIEN DU MOI TILE NHU CU (khong an/khoa tile nao) theo dung yeu cau.
+    // chon/chua dang nhap) - dung de highlight the lien quan ben duoi, VAN
+    // HIEN DU MOI THE NHU CU (khong an/khoa the nao) theo dung yeu cau.
     final personaAsync = ref.watch(learningPathChoiceProvider);
     final persona = personaAsync.valueOrNull;
-    // Dang o trang thai "Tu hoc" (chua chon/da tat goi y lo trinh) - LUON
-    // hien ban tay + chu goi y tro vao nut la ban moi lan mo app, cho toi khi
-    // nguoi dung chon 1 lo trinh. An trong luc dang tai de tranh loe hien ra
-    // roi tat ngay sau 1 frame.
     final showSurveyHint =
         personaAsync.hasValue &&
         persona == null &&
@@ -54,20 +70,11 @@ class HomeScreen extends ConsumerWidget {
         ? kPersonaRecommendations[persona]!
         : const <HomeFeature>[];
     final topPick = recommended.isNotEmpty ? recommended.first : null;
-    // Mau highlight doi theo TUNG persona (thay vi 1 mau teal co dinh cho
-    // moi nguoi) - dung chung 1 mau voi chip da chon o man khao sat de 2
-    // man "noi" duoc voi nhau (xem learning_path_accent.dart).
     final accent = persona != null ? personaColor(persona) : AppColors.teal;
-    // Neo goi y ban tay vao dung nut la ban - goi y ve o LOP TREN CUNG cua
-    // man (xem Stack ben duoi) thay vi trong thanh tren cung, de khong bi
-    // khung "Doc viet" ve de len lam mo, va canh phai theo nut nen khong tran
-    // ra ngoai mep man hinh.
     final compassLink = LayerLink();
+
     return ScreenBackground(
       child: Padding(
-        // Le ngang giam tu 24 -> 14 de khung the loai sat 2 canh man hinh
-        // hon (van deu 2 ben), du khong gian de icon ben trong dan deu ro
-        // hon thay vi bi ep vao giua khung qua hep.
         padding: const EdgeInsets.fromLTRB(14, 12, 14, 16),
         child: SingleChildScrollView(
           child: Stack(
@@ -77,157 +84,53 @@ class HomeScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   AppTopBar(
+                    greeting: '${ref.tr(greetingKeyForNow())},',
                     unreadCount: unread,
                     onMessagesTap: () =>
                         openAppPopup(context, const ConversationsScreen()),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        GestureDetector(
-                          // Bam icon compass luon mo lai khao sat (chon/doi/tat
-                          // goi y lo trinh) - da bo man "Lo trinh hoc" day du
-                          // rieng theo yeu cau.
-                          onTap: () => showModalBottomSheet(
-                            context: context,
-                            isScrollControlled: true,
-                            backgroundColor: Colors.transparent,
-                            builder: (_) => const LearningPathSurveyScreen(),
-                          ),
-                          child: CompositedTransformTarget(
-                            link: compassLink,
-                            child: Tooltip(
-                              message: ref.tr('learning_path_tooltip'),
-                              child: const _IconCircle(
-                                icon: Icons.explore_rounded,
-                              ),
-                            ),
+                    trailing: GestureDetector(
+                      // Bam icon la ban luon mo lai khao sat (chon/doi/tat
+                      // goi y lo trinh) - da bo man "Lo trinh hoc" day du
+                      // rieng theo yeu cau.
+                      onTap: () => showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (_) => const LearningPathSurveyScreen(),
+                      ),
+                      child: CompositedTransformTarget(
+                        link: compassLink,
+                        child: Tooltip(
+                          message: ref.tr('learning_path_tooltip'),
+                          child: const TopBarIconChip(
+                            icon: Icons.explore_outlined,
                           ),
                         ),
-                      ],
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 22),
+                  const SizedBox(height: 16),
                   const ServiceExpiryBanner(section: AppSection.learnEnglish),
-                  _CategorySection(
-                    title: ref.tr('home_category_reading'),
-                    accentColor: accent,
-                    items: [
-                      _CategoryItemData(
-                        icon: Icons.style_rounded,
-                        label: ref.tr('home_vocabulary_quick_title'),
-                        onTap: () => openAppPopup(
-                          context,
-                          const VocabularyTopicsScreen(),
-                        ),
-                        isRecommended: recommended.contains(
-                          HomeFeature.vocabulary,
-                        ),
-                        isTopPick: topPick == HomeFeature.vocabulary,
-                      ),
-                      _CategoryItemData(
-                        icon: Icons.menu_book_rounded,
-                        label: ref.tr('grammar_topics_title'),
-                        onTap: () =>
-                            openAppPopup(context, const GrammarTopicsScreen()),
-                        isRecommended: recommended.contains(
-                          HomeFeature.grammar,
-                        ),
-                        isTopPick: topPick == HomeFeature.grammar,
-                      ),
-                      _CategoryItemData(
-                        icon: Icons.local_library_rounded,
-                        label: ref.tr('reading_title'),
-                        onTap: () =>
-                            openAppPopup(context, const ReadingLibraryScreen()),
-                        isRecommended: recommended.contains(
-                          HomeFeature.reading,
-                        ),
-                        isTopPick: topPick == HomeFeature.reading,
-                      ),
-                      _CategoryItemData(
-                        icon: Icons.edit_note_rounded,
-                        label: ref.tr('writing_title'),
-                        onTap: () =>
-                            openAppPopup(context, const WritingHomeScreen()),
-                        isRecommended: recommended.contains(
-                          HomeFeature.writing,
-                        ),
-                        isTopPick: topPick == HomeFeature.writing,
-                      ),
-                    ],
+                  const _ProgressCard(),
+                  const SizedBox(height: 12),
+                  const _DailyWordsHeroCard(),
+                  const SizedBox(height: 12),
+                  _SkillGrid(
+                    accent: accent,
+                    recommended: recommended,
+                    topPick: topPick,
                   ),
-                  const SizedBox(height: 16),
-                  _CategorySection(
-                    title: ref.tr('home_category_listening'),
-                    accentColor: accent,
-                    items: [
-                      _CategoryItemData(
-                        icon: Icons.graphic_eq_rounded,
-                        label: ref.tr('phonics_title'),
-                        onTap: () =>
-                            openAppPopup(context, const PhonicsLessonsScreen()),
-                        isRecommended: recommended.contains(
-                          HomeFeature.phonics,
-                        ),
-                        isTopPick: topPick == HomeFeature.phonics,
-                      ),
-                      _CategoryItemData(
-                        // "Luyen phat am" - truoc day 1 tab rieng o thanh Menu,
-                        // gio la 1 the trong nhom Nghe noi (giai phong cho thanh
-                        // nhac dai chiem giua thanh Menu, xem root_shell.dart).
-                        icon: Icons.mic_rounded,
-                        label: ref.tr('pron_title'),
-                        onTap: () =>
-                            openAppPopup(context, const PronunciationScreen()),
-                        isRecommended: recommended.contains(
-                          HomeFeature.pronunciation,
-                        ),
-                        isTopPick: topPick == HomeFeature.pronunciation,
-                      ),
-                      _CategoryItemData(
-                        icon: Icons.auto_stories_rounded,
-                        label: ref.tr('home_story_quick_title'),
-                        onTap: () =>
-                            openAppPopup(context, const StoryListScreen()),
-                        isRecommended: recommended.contains(HomeFeature.story),
-                        isTopPick: topPick == HomeFeature.story,
-                      ),
-                    ],
+                  const SizedBox(height: 12),
+                  _PracticePanel(
+                    accent: accent,
+                    recommended: recommended,
+                    topPick: topPick,
                   ),
-                  const SizedBox(height: 16),
-                  _CategorySection(
-                    title: ref.tr('home_category_test_prep'),
-                    accentColor: accent,
-                    items: [
-                      _CategoryItemData(
-                        icon: Icons.assignment_rounded,
-                        label: ref.tr('toeic_title'),
-                        onTap: () =>
-                            openAppPopup(context, const ToeicHomeScreen()),
-                        isRecommended: recommended.contains(HomeFeature.toeic),
-                        isTopPick: topPick == HomeFeature.toeic,
-                      ),
-                      _CategoryItemData(
-                        icon: Icons.public_rounded,
-                        label: ref.tr('ielts_title'),
-                        onTap: () =>
-                            openAppPopup(context, const IeltsHomeScreen()),
-                        isRecommended: recommended.contains(HomeFeature.ielts),
-                        isTopPick: topPick == HomeFeature.ielts,
-                      ),
-                      _CategoryItemData(
-                        // "Do vui" chuyen tu nhom "Doc viet" sang chung box voi
-                        // Luyen thi TOEIC/IELTS theo yeu cau - cung la dang bai
-                        // tap trac nghiem tu cham diem, hop nhom hon la o nhom
-                        // tu vung/ngu phap/doc sach thuan tuy.
-                        icon: Icons.extension_rounded,
-                        label: ref.tr('quiz_title'),
-                        onTap: () =>
-                            openAppPopup(context, const QuizCategoryScreen()),
-                        isRecommended: recommended.contains(HomeFeature.quiz),
-                        isTopPick: topPick == HomeFeature.quiz,
-                      ),
-                    ],
+                  const SizedBox(height: 12),
+                  _TestPrepPanel(
+                    accent: accent,
+                    recommended: recommended,
+                    topPick: topPick,
                   ),
                 ],
               ),
@@ -252,194 +155,1008 @@ class HomeScreen extends ConsumerWidget {
   }
 }
 
-/// 1 khung vien (border) rieng cho 1 nhom the loai - ben trong la luoi icon,
-/// moi icon kem ten nho ben duoi, dung theo yeu cau thiet ke ("nghe noi 1
-/// border chung, doc viet 1 border chung, moi tinh nang 1 icon + ten nho").
-class _CategorySection extends StatelessWidget {
-  const _CategorySection({
-    required this.title,
-    required this.items,
-    required this.accentColor,
-  });
-  final String title;
-  final List<_CategoryItemData> items;
+// ===========================================================================
+// Khung nen chung cho moi the o man Home
+// ===========================================================================
 
-  /// Mau highlight cho tile duoc goi y trong nhom nay - theo persona dang
-  /// chon (xem HomeScreen.build).
-  final Color accentColor;
+/// The kinh o man Home - nen PHANG + vien mong deu 4 canh, theo dung so do
+/// duoc tu ban thiet ke. Khac [GlowBox] (dung o cac man con) o cho nen nhat
+/// hon va vien sang hon.
+class _HomeCard extends StatelessWidget {
+  const _HomeCard({
+    required this.child,
+    this.padding = const EdgeInsets.all(14),
+    this.radius = 18,
+    this.borderColor,
+    this.onTap,
+  });
+
+  final Widget child;
+  final EdgeInsetsGeometry padding;
+  final double radius;
+
+  /// Vien doi mau khi the nay nam trong danh sach goi y cua persona.
+  final Color? borderColor;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    // SizedBox(width: double.infinity) BAT BUOC o day: Column cha (Home)
-    // dung crossAxisAlignment.start nen GlowBox mac dinh chi rong bang noi
-    // dung ben trong (Wrap co the), khien khung the loai bi hep lai va lech
-    // sang trai thay vi keo dai het chieu rong man hinh nhu cac khung khac.
-    const spacing = 12.0;
-    const columns = 4;
-    return SizedBox(
-      width: double.infinity,
-      child: GlowBox(
-        padding: const EdgeInsets.all(16),
-        borderRadius: 22,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: AppTextStyles.heading(size: 14)),
-            const SizedBox(height: 14),
-            // LayoutBuilder tinh RIENG be rong 1 the theo cong thuc "vua du 4
-            // the/hang" - Wrap+spaceBetween truoc day dua vao SizedBox(width:
-            // 86) CO DINH, chi vua khop khi 1 hang co DUNG so luong the lap
-            // day het chieu rong (khien hang le - vd 3 the "English riddles"
-            // mot minh - bi dan sat mep thay vi dung cong thuc chia deu, va
-            // khong dam bao luon vua dung 4 the/hang tren moi kich thuoc man
-            // hinh nhu yeu cau).
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final itemWidth =
-                    (constraints.maxWidth - spacing * (columns - 1)) / columns;
-                return Wrap(
-                  spacing: spacing,
-                  runSpacing: 14,
-                  children: items
-                      .map(
-                        (item) => _CategoryItem(
-                          data: item,
-                          width: itemWidth,
-                          accentColor: accentColor,
-                        ),
-                      )
-                      .toList(),
-                );
-              },
-            ),
+    final highlighted = borderColor != null;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: padding,
+        decoration: BoxDecoration(
+          color: highlighted
+              ? borderColor!.withValues(alpha: 0.10)
+              : AppColors.homeCardFill,
+          borderRadius: BorderRadius.circular(radius),
+          border: Border.all(
+            color: borderColor ?? AppColors.homeCardBorder,
+            width: highlighted ? 1.4 : 1,
+          ),
+          boxShadow: highlighted
+              ? [
+                  BoxShadow(
+                    color: borderColor!.withValues(alpha: 0.28),
+                    blurRadius: 14,
+                  ),
+                ]
+              : null,
+        ),
+        child: child,
+      ),
+    );
+  }
+}
+
+/// Dem sang tron sau moi icon tinh nang. Do tu ban thiet ke: sang deu toi
+/// ~78% ban kinh roi tat gon o bien (khong tan dan tu tam) - nho vay no doc
+/// ra la "1 lop dem" chu khong phai vet sang mo.
+class _IconPad extends StatelessWidget {
+  const _IconPad({required this.icon, this.size = 32, this.color});
+
+  final IconData icon;
+  final double size;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: RadialGradient(
+          center: const Alignment(0, -0.06),
+          colors: [
+            (color ?? const Color(0xFFC2DEFF)).withValues(alpha: 0.185),
+            (color ?? const Color(0xFFB8D4FC)).withValues(alpha: 0.165),
+            (color ?? const Color(0xFFA8CAF8)).withValues(alpha: 0.125),
+            (color ?? const Color(0xFF96BCF0)).withValues(alpha: 0.0),
           ],
+          stops: const [0.0, 0.56, 0.76, 1.0],
+        ),
+        border: Border.all(color: const Color(0x1AC8E0FF)),
+      ),
+      child: Icon(
+        icon,
+        size: size * 0.5,
+        color: color ?? AppColors.textPrimary,
+      ),
+    );
+  }
+}
+
+/// Nhan nho in hoa dau moi khung ("KY NANG CHINH", "LUYEN TAP").
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel(this.text);
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Text(
+    text.toUpperCase(),
+    style: AppTextStyles.body(
+      size: 9,
+      weight: FontWeight.w700,
+      color: AppColors.textLabel,
+    ).copyWith(letterSpacing: 1.5),
+  );
+}
+
+// ===========================================================================
+// 2. The tien do - Level/XP + chuoi ngay
+// ===========================================================================
+
+class _ProgressCard extends ConsumerWidget {
+  const _ProgressCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final xp = ref.watch(myLearningXpProvider).valueOrNull ?? LearningXp.empty;
+    final streak = ref.watch(myStatsProvider).valueOrNull?.streakDays ?? 0;
+
+    return _HomeCard(
+      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 11),
+      onTap: () => openAppPopup(context, const ProfileScreen(initialTab: 1)),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 50,
+            height: 50,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                SizedBox(
+                  width: 50,
+                  height: 50,
+                  child: CircularProgressIndicator(
+                    value: xp.levelProgress,
+                    strokeWidth: 4.2,
+                    strokeCap: StrokeCap.round,
+                    backgroundColor: Colors.white.withValues(alpha: 0.09),
+                    valueColor: const AlwaysStoppedAnimation(Color(0xFF5B9CFF)),
+                  ),
+                ),
+                // line-height 1 + can giua theo baseline trong 1 lop rieng:
+                // dat baseline thang tren khung can giua se bi day lech
+                // xuong vi hop baseline cao hon chu.
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    Text(
+                      'Lv',
+                      style: AppTextStyles.body(
+                        size: 8.5,
+                        weight: FontWeight.w500,
+                        color: AppColors.textSecondary,
+                      ).copyWith(height: 1),
+                    ),
+                    const SizedBox(width: 1.5),
+                    Text(
+                      '${xp.level}',
+                      style: AppTextStyles.heading(size: 15.5)
+                          .copyWith(height: 1),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 13),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        ref.tr('level_${xp.levelKey}'),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.heading(size: 14.5),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Icon(
+                      Icons.chevron_right_rounded,
+                      size: 15,
+                      color: AppColors.textSecondary,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  ref
+                      .tr('home_xp_to_next')
+                      .replaceFirst('{n}', '${xp.xpToNext}'),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.body(
+                    size: 10.5,
+                    weight: FontWeight.w500,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            width: 1,
+            height: 32,
+            color: Colors.white.withValues(alpha: 0.09),
+            margin: const EdgeInsets.symmetric(horizontal: 12),
+          ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.local_fire_department_outlined,
+                size: 16,
+                color: AppColors.textPrimary,
+              ),
+              const SizedBox(width: 7),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '$streak',
+                    style: AppTextStyles.heading(size: 15.5)
+                        .copyWith(height: 1),
+                  ),
+                  const SizedBox(height: 1),
+                  Text(
+                    ref.tr('home_day_streak'),
+                    style: AppTextStyles.body(
+                      size: 9,
+                      weight: FontWeight.w500,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ===========================================================================
+// 3. The "Ky nang chinh" - Hoc {n} tu hom nay
+// ===========================================================================
+
+class _DailyWordsHeroCard extends ConsumerWidget {
+  const _DailyWordsHeroCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final total = ref.watch(dailyWordsControllerProvider).words.length;
+
+    return GestureDetector(
+      onTap: () => openDailyWordsPopup(context),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(18),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: AppColors.homeCardBorder),
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF16202F), Color(0xFF0B1522), Color(0xFF040A13)],
+              stops: [0, 0.46, 1],
+            ),
+          ),
+          child: Stack(
+            children: [
+              // Hinh hanh tinh + doi cat - cat tu chinh anh thiet ke cua chu
+              // du an nen khop 100%, khong the ve lai bang gradient cho giong.
+              Positioned(
+                right: 0,
+                top: 0,
+                bottom: 0,
+                child: ShaderMask(
+                  blendMode: BlendMode.dstIn,
+                  shaderCallback: (rect) => const LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [Colors.transparent, Colors.white],
+                    stops: [0, 0.26],
+                  ).createShader(rect),
+                  child: Image.asset(
+                    'assets/home/hero_daily_words.jpg',
+                    fit: BoxFit.cover,
+                    // Anh hong/thieu khong duoc lam vo ca man Home.
+                    errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(15, 14, 15, 15),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _SectionLabel(ref.tr('home_main_skill')),
+                    const SizedBox(height: 5),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 170),
+                      child: Text(
+                        ref
+                            .tr('profile_daily_words_title')
+                            .replaceFirst('{n}', '$total'),
+                        style: AppTextStyles.heading(size: 18.5)
+                            .copyWith(height: 1.14),
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 170),
+                      child: Text(
+                        ref.tr('home_vocabulary_quick_subtitle'),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.body(
+                          size: 10.5,
+                          weight: FontWeight.w500,
+                          color: AppColors.textSecondary,
+                        ).copyWith(height: 1.42),
+                      ),
+                    ),
+                    const SizedBox(height: 13),
+                    Row(
+                      children: [
+                        Container(
+                          height: 38,
+                          padding: const EdgeInsets.fromLTRB(16, 0, 19, 0),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFAFCFF),
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.play_arrow_rounded,
+                                size: 16,
+                                color: Color(0xFF07090F),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                ref.tr('home_continue'),
+                                style: AppTextStyles.heading(size: 12.5)
+                                    .copyWith(color: const Color(0xFF07090F)),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Spacer(),
+                        Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: const Color(0xEE1C2A3E),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: const Color(0x29C8DEFF)),
+                          ),
+                          child: const Icon(
+                            Icons.chevron_right_rounded,
+                            size: 18,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _CategoryItemData {
-  const _CategoryItemData({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-    this.isRecommended = false,
-    this.isTopPick = false,
+// ===========================================================================
+// 4. 4 the Doc viet
+// ===========================================================================
+
+class _SkillGrid extends ConsumerWidget {
+  const _SkillGrid({
+    required this.accent,
+    required this.recommended,
+    required this.topPick,
   });
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
 
-  /// Tile nam trong danh sach goi y cua persona dang chon - vien/glow doi
-  /// mau accent, KHONG an/khoa tile (van bam duoc binh thuong nhu moi tile
-  /// khac) - xem docs/research-learning-path.md.
-  final bool isRecommended;
+  final Color accent;
+  final List<HomeFeature> recommended;
+  final HomeFeature? topPick;
 
-  /// Tile GOI Y CHINH (phan tu dau tien trong danh sach goi y cua persona)
-  /// - duoc gan them 1 hinh ban tay dong o goc de de nhan biet ngay.
-  final bool isTopPick;
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final items = <_FeatureEntry>[
+      _FeatureEntry(
+        feature: HomeFeature.vocabulary,
+        icon: Icons.menu_book_outlined,
+        title: ref.tr('home_vocabulary_quick_title'),
+        subtitle: ref.tr('home_sub_vocabulary'),
+        open: () => openAppPopup(context, const VocabularyTopicsScreen()),
+      ),
+      _FeatureEntry(
+        feature: HomeFeature.grammar,
+        icon: Icons.article_outlined,
+        title: ref.tr('grammar_topics_title'),
+        subtitle: ref.tr('home_sub_grammar'),
+        open: () => openAppPopup(context, const GrammarTopicsScreen()),
+      ),
+      _FeatureEntry(
+        feature: HomeFeature.reading,
+        icon: Icons.chrome_reader_mode_outlined,
+        title: ref.tr('reading_title'),
+        subtitle: ref.tr('home_sub_reading'),
+        open: () => openAppPopup(context, const ReadingLibraryScreen()),
+      ),
+      _FeatureEntry(
+        feature: HomeFeature.writing,
+        icon: Icons.edit_outlined,
+        title: ref.tr('writing_title'),
+        subtitle: ref.tr('home_sub_writing'),
+        open: () => openAppPopup(context, const WritingHomeScreen()),
+      ),
+    ];
+
+    return Row(
+      children: [
+        for (var i = 0; i < items.length; i++) ...[
+          if (i > 0) const SizedBox(width: 8),
+          Expanded(
+            child: _SkillCard(
+              entry: items[i],
+              accent: accent,
+              isRecommended: recommended.contains(items[i].feature),
+              isTopPick: topPick == items[i].feature,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
 }
 
-class _CategoryItem extends StatelessWidget {
-  const _CategoryItem({
-    required this.data,
-    required this.width,
-    required this.accentColor,
+class _FeatureEntry {
+  const _FeatureEntry({
+    required this.feature,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.open,
   });
-  final _CategoryItemData data;
-  final double width;
-  final Color accentColor;
+  final HomeFeature feature;
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback open;
+}
+
+class _SkillCard extends StatelessWidget {
+  const _SkillCard({
+    required this.entry,
+    required this.accent,
+    required this.isRecommended,
+    required this.isTopPick,
+  });
+
+  final _FeatureEntry entry;
+  final Color accent;
+  final bool isRecommended;
+  final bool isTopPick;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        _HomeCard(
+          onTap: entry.open,
+          radius: 15,
+          padding: const EdgeInsets.fromLTRB(9, 10, 9, 8),
+          borderColor: isRecommended ? accent : null,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _IconPad(
+                icon: entry.icon,
+                size: 30,
+                color: isRecommended ? accent : null,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                entry.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.body(
+                  size: 10.5,
+                  weight: FontWeight.w700,
+                ).copyWith(height: 1.2),
+              ),
+              const SizedBox(height: 1),
+              Text(
+                entry.subtitle,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.body(
+                  size: 8.5,
+                  weight: FontWeight.w500,
+                  color: AppColors.textSecondary,
+                ).copyWith(height: 1.2),
+              ),
+              const SizedBox(height: 6),
+              const Icon(
+                Icons.arrow_forward_rounded,
+                size: 12,
+                color: AppColors.textSecondary,
+              ),
+            ],
+          ),
+        ),
+        if (isTopPick)
+          Positioned(
+            right: -8,
+            bottom: -8,
+            child: PointingHandBadge(color: accent),
+          ),
+      ],
+    );
+  }
+}
+
+// ===========================================================================
+// 5. Khung Nghe noi
+// ===========================================================================
+
+class _PracticePanel extends ConsumerWidget {
+  const _PracticePanel({
+    required this.accent,
+    required this.recommended,
+    required this.topPick,
+  });
+
+  final Color accent;
+  final List<HomeFeature> recommended;
+  final HomeFeature? topPick;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final items = <_FeatureEntry>[
+      _FeatureEntry(
+        feature: HomeFeature.phonics,
+        icon: Icons.graphic_eq_rounded,
+        title: ref.tr('phonics_title'),
+        subtitle: ref.tr('home_sub_phonics'),
+        open: () => openAppPopup(context, const PhonicsLessonsScreen()),
+      ),
+      _FeatureEntry(
+        feature: HomeFeature.pronunciation,
+        icon: Icons.record_voice_over_outlined,
+        title: ref.tr('pron_title'),
+        subtitle: ref.tr('home_sub_pronunciation'),
+        open: () => openAppPopup(context, const PronunciationScreen()),
+      ),
+      _FeatureEntry(
+        feature: HomeFeature.story,
+        icon: Icons.headphones_outlined,
+        title: ref.tr('home_story_quick_title'),
+        subtitle: ref.tr('home_sub_story'),
+        open: () => openAppPopup(context, const StoryListScreen()),
+      ),
+    ];
+
+    return _HomeCard(
+      padding: const EdgeInsets.fromLTRB(13, 14, 13, 13),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _SectionLabel(ref.tr('home_practice_label')),
+                    const SizedBox(height: 3),
+                    Text(
+                      ref.tr('home_listening_speaking'),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.heading(size: 16.5),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      ref.tr('home_listening_speaking_sub'),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.body(
+                        size: 10.5,
+                        weight: FontWeight.w500,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              GestureDetector(
+                onTap: () => openAppPopup(context, const PronunciationScreen()),
+                child: Container(
+                  width: 54,
+                  height: 54,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: const Color(0x29AAD4FF)),
+                  ),
+                  child: Container(
+                    margin: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppColors.blue.withValues(alpha: 0.14),
+                      border: Border.all(
+                        color: AppColors.blue.withValues(alpha: 0.5),
+                        width: 1.3,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.blue.withValues(alpha: 0.22),
+                          blurRadius: 20,
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.mic_none_rounded,
+                      size: 20,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(height: 1, color: Colors.white.withValues(alpha: 0.09)),
+          const SizedBox(height: 12),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (var i = 0; i < items.length; i++) ...[
+                if (i > 0)
+                  Container(
+                    width: 1,
+                    height: 46,
+                    margin: const EdgeInsets.symmetric(horizontal: 6),
+                    color: Colors.white.withValues(alpha: 0.085),
+                  ),
+                Expanded(
+                  child: _PracticeItem(
+                    entry: items[i],
+                    accent: accent,
+                    isRecommended: recommended.contains(items[i].feature),
+                    isTopPick: topPick == items[i].feature,
+                  ),
+                ),
+              ],
+              Container(
+                width: 1,
+                height: 46,
+                margin: const EdgeInsets.symmetric(horizontal: 6),
+                color: Colors.white.withValues(alpha: 0.085),
+              ),
+              // Tro chuyen AI - truoc day chi mo duoc tu nut noi
+              // (AssistiveTouch); ban thiet ke dua no thanh 1 muc o Home cho
+              // de thay. Van mo dung man AiVoiceChatScreen do, cung ten route
+              // nen nut noi van nhan biet duoc dang o trong man nay.
+              Expanded(
+                child: _PracticeItem(
+                  entry: _FeatureEntry(
+                    feature: HomeFeature.story,
+                    icon: Icons.memory_rounded,
+                    title: ref.tr('voice_chat_title'),
+                    subtitle: ref.tr('home_sub_ai_chat'),
+                    open: () => showModalBottomSheet(
+                      context: context,
+                      useRootNavigator: true,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      routeSettings: const RouteSettings(
+                        name: kAiVoiceChatRouteName,
+                      ),
+                      builder: (_) => const FractionallySizedBox(
+                        heightFactor: 0.94,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(28),
+                          ),
+                          child: AiVoiceChatScreen(),
+                        ),
+                      ),
+                    ),
+                  ),
+                  accent: accent,
+                  isRecommended: false,
+                  isTopPick: false,
+                  badge: ref.tr('home_badge_new'),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PracticeItem extends StatelessWidget {
+  const _PracticeItem({
+    required this.entry,
+    required this.accent,
+    required this.isRecommended,
+    required this.isTopPick,
+    this.badge,
+  });
+
+  final _FeatureEntry entry;
+  final Color accent;
+  final bool isRecommended;
+  final bool isTopPick;
+  final String? badge;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: data.onTap,
-      child: SizedBox(
-        width: width,
-        child: Column(
-          children: [
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: data.isRecommended
-                        ? accentColor.withValues(alpha: 0.18)
-                        : AppColors.glassFill,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: data.isRecommended
-                          ? accentColor
-                          : AppColors.glassBorder,
-                      width: data.isRecommended ? 2 : 1,
-                    ),
-                    boxShadow: data.isRecommended
-                        ? [
-                            BoxShadow(
-                              color: accentColor.withValues(alpha: 0.45),
-                              blurRadius: 16,
-                              spreadRadius: 1.5,
-                            ),
-                          ]
-                        : null,
-                  ),
-                  child: Icon(
-                    data.icon,
-                    color: data.isRecommended ? accentColor : AppColors.blue,
-                    size: 24,
-                  ),
+      onTap: entry.open,
+      behavior: HitTestBehavior.opaque,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _IconPad(
+                icon: entry.icon,
+                size: 28,
+                color: isRecommended ? accent : null,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                entry.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.body(
+                  size: 9,
+                  weight: FontWeight.w700,
+                ).copyWith(height: 1.22),
+              ),
+              const SizedBox(height: 1),
+              Text(
+                entry.subtitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.body(
+                  size: 8,
+                  weight: FontWeight.w500,
+                  color: AppColors.textSecondary,
+                ).copyWith(height: 1.2),
+              ),
+            ],
+          ),
+          if (badge != null)
+            Positioned(
+              top: -4,
+              right: 0,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.11),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(color: const Color(0x29C8DEFF)),
                 ),
-                if (data.isTopPick)
-                  Positioned(
-                    right: -10,
-                    bottom: -8,
-                    child: PointingHandBadge(color: accentColor),
-                  )
-                else if (data.isRecommended)
-                  Positioned(
-                    right: -4,
-                    top: -4,
-                    child: Container(
-                      width: 18,
-                      height: 18,
-                      decoration: BoxDecoration(
-                        color: accentColor,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.6),
-                        ),
-                      ),
-                      child: const Icon(
-                        Icons.star_rounded,
-                        size: 11,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-              ],
+                child: Text(
+                  badge!,
+                  style: AppTextStyles.body(
+                    size: 7.5,
+                    weight: FontWeight.w800,
+                  ).copyWith(letterSpacing: 0.4),
+                ),
+              ),
             ),
-            const SizedBox(height: 6),
-            SizedBox(
-              height: 28,
-              child: TileLabelText(label: data.label, maxWidth: width),
+          if (isTopPick)
+            Positioned(
+              left: 14,
+              top: 14,
+              child: PointingHandBadge(color: accent),
             ),
-          ],
-        ),
+        ],
       ),
     );
   }
 }
 
+// ===========================================================================
+// 6. Khung Luyen thi
+// ===========================================================================
+
+class _TestPrepPanel extends ConsumerWidget {
+  const _TestPrepPanel({
+    required this.accent,
+    required this.recommended,
+    required this.topPick,
+  });
+
+  final Color accent;
+  final List<HomeFeature> recommended;
+  final HomeFeature? topPick;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final items = <_FeatureEntry>[
+      _FeatureEntry(
+        feature: HomeFeature.toeic,
+        icon: Icons.assignment_outlined,
+        title: ref.tr('toeic_title'),
+        subtitle: ref.tr('home_sub_toeic'),
+        open: () => openAppPopup(context, const ToeicHomeScreen()),
+      ),
+      _FeatureEntry(
+        feature: HomeFeature.ielts,
+        icon: Icons.bar_chart_rounded,
+        title: ref.tr('ielts_title'),
+        subtitle: ref.tr('home_sub_ielts'),
+        open: () => openAppPopup(context, const IeltsHomeScreen()),
+      ),
+      _FeatureEntry(
+        feature: HomeFeature.quiz,
+        icon: Icons.extension_outlined,
+        title: ref.tr('quiz_title'),
+        subtitle: ref.tr('home_sub_quiz'),
+        open: () => openAppPopup(context, const QuizCategoryScreen()),
+      ),
+    ];
+
+    return _HomeCard(
+      padding: const EdgeInsets.all(13),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const _IconPad(icon: Icons.timer_outlined, size: 40),
+              const SizedBox(width: 11),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _SectionLabel(ref.tr('home_achieve_label')),
+                    const SizedBox(height: 1),
+                    Text(
+                      ref.tr('home_category_test_prep'),
+                      style: AppTextStyles.heading(size: 14.5),
+                    ),
+                    const SizedBox(height: 1),
+                    Text(
+                      ref.tr('home_test_prep_sub'),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.body(
+                        size: 10,
+                        weight: FontWeight.w500,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.chevron_right_rounded,
+                size: 18,
+                color: AppColors.textSecondary,
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              for (var i = 0; i < items.length; i++) ...[
+                if (i > 0) const SizedBox(width: 8),
+                Expanded(
+                  child: _TestPrepTile(
+                    entry: items[i],
+                    accent: accent,
+                    isRecommended: recommended.contains(items[i].feature),
+                    isTopPick: topPick == items[i].feature,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TestPrepTile extends StatelessWidget {
+  const _TestPrepTile({
+    required this.entry,
+    required this.accent,
+    required this.isRecommended,
+    required this.isTopPick,
+  });
+
+  final _FeatureEntry entry;
+  final Color accent;
+  final bool isRecommended;
+  final bool isTopPick;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        _HomeCard(
+          onTap: entry.open,
+          radius: 13,
+          padding: const EdgeInsets.all(8),
+          borderColor: isRecommended ? accent : null,
+          child: Row(
+            children: [
+              _IconPad(
+                icon: entry.icon,
+                size: 24,
+                color: isRecommended ? accent : null,
+              ),
+              const SizedBox(width: 7),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      entry.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.body(
+                        size: 9.5,
+                        weight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 1),
+                    Text(
+                      entry.subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.body(
+                        size: 7.5,
+                        weight: FontWeight.w500,
+                        color: AppColors.textSecondary,
+                      ).copyWith(height: 1.2),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (isTopPick)
+          Positioned(
+            right: -8,
+            bottom: -8,
+            child: PointingHandBadge(color: accent),
+          ),
+      ],
+    );
+  }
+}
+
+// ===========================================================================
+// Goi y "chon lo trinh hoc" - giu nguyen nhu ban cu
+// ===========================================================================
+
 /// Ban tay tro + dong chu goi y nguoi dung dang "Tu hoc" bam vao nut khao
 /// sat "Goi y lo trinh hoc" (xem [PointingHandBadge], cung 1 ngon ngu hinh
-/// anh voi tile goi y o luoi Home) - chi an khi da chon 1 lo trinh.
+/// anh voi the goi y o luoi Home) - chi an khi da chon 1 lo trinh.
 ///
 /// Nut X tren bong bong = tat HAN goi y nay (luu SharedPreferences, khong
-/// hien lai o lan mo app sau). Bong bong duoc thu nho (chu 9.5, rong toi da
-/// 120) de khong de len hang icon trong box ben duoi.
+/// hien lai o lan mo app sau).
 class _SuggestHint extends ConsumerWidget {
   const _SuggestHint({required this.color});
   final Color color;
@@ -449,8 +1166,6 @@ class _SuggestHint extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        // Canh giua ban tay voi nut la ban (rong 42) - bong bong chu ben
-        // duoi canh phai theo mep nut, luon nam trong man hinh.
         IgnorePointer(
           child: Padding(
             padding: const EdgeInsets.only(right: 8),
@@ -490,8 +1205,6 @@ class _SuggestHint extends ConsumerWidget {
                 ),
               ),
             ),
-            // Nut X: nen toi + vien trang de noi bat tren nen xanh ngoc,
-            // vung bam 32x32 (hinh ve 20) cho de trung ngon tay.
             Positioned(
               top: -6,
               left: -6,
@@ -551,24 +1264,5 @@ class _SurveyHintDismissed extends StateNotifier<bool> {
     state = true;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_key, true);
-  }
-}
-
-class _IconCircle extends StatelessWidget {
-  const _IconCircle({required this.icon});
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 42,
-      height: 42,
-      decoration: BoxDecoration(
-        color: AppColors.glassFill,
-        shape: BoxShape.circle,
-        border: Border.all(color: AppColors.glassBorder),
-      ),
-      child: Icon(icon, size: 18, color: AppColors.textPrimary),
-    );
   }
 }

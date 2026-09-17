@@ -39,9 +39,9 @@ class ProfileScreen extends ConsumerStatefulWidget {
   final int initialTab;
 
   /// true = vua bam "Hoc (x) tu hom nay" xong, can TU DONG cuon toi
-  /// [_DailyWordsSection] VA hien huong dan ngon tay tung buoc (so phut
+  /// [DailyWordsSection] VA hien huong dan ngon tay tung buoc (so phut
   /// nhac lai -> Quiz/Writing -> nut "Bat dau hoc") - xem
-  /// _DailyWordsSectionState.
+  /// DailyWordsSectionState.
   final bool highlightDailyWords;
 
   @override
@@ -54,7 +54,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   // widget.initialTab).
   late int _tab = widget.initialTab;
 
-  // Gan vao _DailyWordsSection de tu dong cuon toi dung vi tri cua no khi
+  // Gan vao DailyWordsSection de tu dong cuon toi dung vi tri cua no khi
   // widget.highlightDailyWords (xem initState) - Scrollable.ensureVisible
   // hoat dong voi BAT KY Scrollable to nao boc no (ListView cua
   // _buildActivityTab), khong can tu quan ly ScrollController rieng.
@@ -512,11 +512,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
               ],
             ),
-          ),
-          const SizedBox(height: 14),
-          _DailyWordsSection(
-            key: _dailyWordsKey,
-            showTutorial: widget.highlightDailyWords,
           ),
           const SizedBox(height: 14),
         ],
@@ -1265,7 +1260,7 @@ class _FeeServiceRow extends ConsumerWidget {
 
 /// Ngon tay nhap nhay (bounce len xuong) + bong bong chu ngan, dat NGAY
 /// TREN 1 muc tieu can chi dan (khoang chon phut / nut "Bat dau hoc") qua
-/// Positioned(top: -34...) boc no - xem _DailyWordsSectionState.build().
+/// Positioned(top: -34...) boc no - xem DailyWordsSectionState.build().
 class _TutorialFingerPointer extends StatefulWidget {
   const _TutorialFingerPointer({required this.label});
   final String label;
@@ -1346,8 +1341,8 @@ const _kMinCustomIntervalMinutes = 1;
 /// tu khi tra cuu, khong gioi han so tu), cho chon so phut nhac lai + cach
 /// on (Quiz/Writing) roi bat/tat nhac. Sang ngay moi (DailyWordsState.
 /// expired) chi con 2 nut "Ket thuc hoc"/"Hoc lai".
-class _DailyWordsSection extends ConsumerStatefulWidget {
-  const _DailyWordsSection({super.key, this.showTutorial = false});
+class DailyWordsSection extends ConsumerStatefulWidget {
+  const DailyWordsSection({super.key, this.showTutorial = false});
 
   /// true = vua duoc mo TU nut "Hoc (x) tu hom nay" (xem ProfileScreen.
   /// highlightDailyWords) - hien huong dan ngon tay tung buoc theo dung
@@ -1357,10 +1352,10 @@ class _DailyWordsSection extends ConsumerStatefulWidget {
   final bool showTutorial;
 
   @override
-  ConsumerState<_DailyWordsSection> createState() => _DailyWordsSectionState();
+  ConsumerState<DailyWordsSection> createState() => DailyWordsSectionState();
 }
 
-class _DailyWordsSectionState extends ConsumerState<_DailyWordsSection> {
+class DailyWordsSectionState extends ConsumerState<DailyWordsSection> {
   /// Hop thoai nhap so phut nhac lai TUY Y (toi thieu
   /// _kMinCustomIntervalMinutes) - dung cho cac moc khong co san trong danh
   /// sach chip dinh san (vd de test nhanh chi 1 phut). [currentValue] khac
@@ -1867,6 +1862,53 @@ class _ChoiceChip extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Mo popup "Hoc {n} tu hom nay".
+///
+/// Khoi nay TRUOC DAY nam trong than man Ho so; tu ban thiet ke lai man Home
+/// no thanh the "Ky nang chinh" o Home va mo len dang popup tu day (xem
+/// home_screen.dart). Giu ham o cung file voi [DailyWordsSection] vi khoi do
+/// dung chung vai widget rieng tu cua man Ho so (_ChoiceChip,
+/// _TutorialFingerPointer) nen khong tach ra file khac duoc.
+Future<void> openDailyWordsPopup(
+  BuildContext context, {
+  bool showTutorial = false,
+}) {
+  return openAppPopup(context, _DailyWordsPopup(showTutorial: showTutorial));
+}
+
+class _DailyWordsPopup extends ConsumerWidget {
+  const _DailyWordsPopup({this.showTutorial = false});
+  final bool showTutorial;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final total = ref.watch(dailyWordsControllerProvider).words.length;
+    return ScreenBackground(
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              PopupHeader(
+                title: ref
+                    .tr('profile_daily_words_title')
+                    .replaceFirst('{n}', '$total'),
+              ),
+              const SizedBox(height: 12),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: DailyWordsSection(showTutorial: showTutorial),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

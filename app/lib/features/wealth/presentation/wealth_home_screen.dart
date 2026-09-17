@@ -7,6 +7,9 @@ import '../../../core/navigation/app_top_bar.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_format.dart';
+import '../../music_player/presentation/center_media_button.dart';
+import '../../music_player/presentation/home_screen.dart'
+    show greetingKeyForNow;
 import '../../social/presentation/conversations_screen.dart';
 import 'debt_screen.dart';
 import 'market_screen.dart';
@@ -72,238 +75,376 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
     return ScreenBackground(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(14, 12, 14, 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            AppTopBar(
-              accentColor: AppColors.wealthAccent,
-              unreadCount: unread,
-              onMessagesTap: () =>
-                  openAppPopup(context, const ConversationsScreen()),
-              trailing: GestureDetector(
-                onTap: () =>
-                    openAppPopup(context, const WealthSettingsScreen()),
-                child: Container(
-                  width: 42,
-                  height: 42,
-                  decoration: const BoxDecoration(
-                    color: AppColors.glassFill,
-                    shape: BoxShape.circle,
-                    border: Border.fromBorderSide(
-                      BorderSide(color: AppColors.glassBorder),
-                    ),
-                  ),
-                  child: const Icon(
-                    Icons.settings_rounded,
-                    size: 18,
-                    color: AppColors.textPrimary,
-                  ),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AppTopBar(
+                greeting: '${ref.tr(greetingKeyForNow())},',
+                accentColor: AppColors.wealthAccent,
+                unreadCount: unread,
+                onMessagesTap: () =>
+                    openAppPopup(context, const ConversationsScreen()),
+                trailing: GestureDetector(
+                  onTap: () =>
+                      openAppPopup(context, const WealthSettingsScreen()),
+                  child: const TopBarIconChip(icon: Icons.settings_outlined),
                 ),
               ),
-            ),
-            const SizedBox(height: 18),
-            SizedBox(
-              height: 146,
-              child: PageView(
-                controller: _pageController,
-                // padEnds:false - mac dinh PageView TU THEM le dau/cuoi de
-                // trang dau/cuoi "can doi" nhu cac trang giua (padEnds:true),
-                // khien the Tong Vi (trang 0) bi day vao giua thay vi ap sat
-                // le trai nhu mong muon - day la nguyen nhan gay khoang
-                // trong ben trai nguoi dung bao, KHONG phai loi tinh toan
-                // viewportFraction.
-                padEnds: false,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(right: 10),
-                    child: _TotalCard(
-                      title: ref.tr('wallet_total_assets'),
-                      value: netWorth,
-                      hidden: hidden,
-                      showValue: _pageIndex == 0,
-                      placeholderIcon: Icons.account_balance_wallet_rounded,
-                      onTap: () => openAppPopup(context, const WalletScreen()),
-                      onToggleHidden: () =>
-                          ref.read(wealthPrivacyModeProvider.notifier).toggle(),
+              const SizedBox(height: 14),
+              _MessagesCard(unread: unread),
+              const SizedBox(height: 14),
+              SizedBox(
+                height: 146,
+                child: PageView(
+                  controller: _pageController,
+                  // padEnds:false - mac dinh PageView TU THEM le dau/cuoi de
+                  // trang dau/cuoi "can doi" nhu cac trang giua (padEnds:true),
+                  // khien the Tong Vi (trang 0) bi day vao giua thay vi ap sat
+                  // le trai nhu mong muon - day la nguyen nhan gay khoang
+                  // trong ben trai nguoi dung bao, KHONG phai loi tinh toan
+                  // viewportFraction.
+                  padEnds: false,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(right: 10),
+                      child: _TotalCard(
+                        title: ref.tr('wallet_total_assets'),
+                        value: netWorth,
+                        hidden: hidden,
+                        showValue: _pageIndex == 0,
+                        placeholderIcon: Icons.account_balance_wallet_rounded,
+                        onTap: () =>
+                            openAppPopup(context, const WalletScreen()),
+                        onToggleHidden: () => ref
+                            .read(wealthPrivacyModeProvider.notifier)
+                            .toggle(),
+                        footer: _CardFooterRow(
+                          items: [
+                            (
+                              Icons.payments_rounded,
+                              ref.tr('wealth_home_pay_receive'),
+                              () => openAppPopup(
+                                context,
+                                const WealthPayScreen(),
+                              ),
+                            ),
+                            (
+                              Icons.qr_code_rounded,
+                              ref.tr('wealth_home_qr_code'),
+                              () =>
+                                  openAppPopup(context, const WealthQrScreen()),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    _TotalCard(
+                      title: ref.tr('wealth_investments_total'),
+                      value: investmentTotal,
+                      hidden: investmentHidden,
+                      pnl: investmentPnl,
+                      pnlPercent: investmentPnlPercent,
+                      showValue: _pageIndex == 1,
+                      placeholderIcon: Icons.trending_up_rounded,
+                      onTap: () =>
+                          openAppPopup(context, const WealthInvestmentScreen()),
+                      onToggleHidden: () => ref
+                          .read(investmentPrivacyModeProvider.notifier)
+                          .toggle(),
                       footer: _CardFooterRow(
                         items: [
                           (
-                            Icons.payments_rounded,
-                            ref.tr('wealth_home_pay_receive'),
-                            () =>
-                                openAppPopup(context, const WealthPayScreen()),
+                            Icons.show_chart_rounded,
+                            ref.tr('wealth_market_title'),
+                            () => openAppPopup(context, const MarketScreen()),
                           ),
                           (
-                            Icons.qr_code_rounded,
-                            ref.tr('wealth_home_qr_code'),
-                            () => openAppPopup(context, const WealthQrScreen()),
+                            Icons.star_rounded,
+                            ref.tr('crypto_tab_watchlist'),
+                            () => openAppPopup(
+                              context,
+                              const MarketScreen(initialTabIndex: 1),
+                            ),
                           ),
                         ],
                       ),
                     ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  for (var i = 0; i < 2; i++)
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      margin: const EdgeInsets.symmetric(horizontal: 3),
+                      width: _pageIndex == i ? 16 : 6,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: _pageIndex == i
+                            ? AppColors.wealthAccent
+                            : AppColors.glassBorder,
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              // 4 the quan ly xep 2x2 (truoc day 4 icon nho 1 hang trong 1
+              // khung chung): the to hon nen co cho cho phu de noi ro tung muc
+              // lam gi, va chu tieng Viet co dau khong con bi ep xuong dong.
+              Row(
+                children: [
+                  Expanded(
+                    child: _WealthTile(
+                      icon: Icons.account_balance_wallet_outlined,
+                      label: ref.tr('wealth_tab_expense'),
+                      subtitle: ref.tr('wealth_home_sub_expense'),
+                      onTap: () => _open(
+                        context,
+                        ref.tr('wealth_tab_expense'),
+                        const WealthExpenseTab(),
+                      ),
+                    ),
                   ),
-                  _TotalCard(
-                    title: ref.tr('wealth_investments_total'),
-                    value: investmentTotal,
-                    hidden: investmentHidden,
-                    pnl: investmentPnl,
-                    pnlPercent: investmentPnlPercent,
-                    showValue: _pageIndex == 1,
-                    placeholderIcon: Icons.trending_up_rounded,
-                    onTap: () =>
-                        openAppPopup(context, const WealthInvestmentScreen()),
-                    onToggleHidden: () => ref
-                        .read(investmentPrivacyModeProvider.notifier)
-                        .toggle(),
-                    footer: _CardFooterRow(
-                      items: [
-                        (
-                          Icons.show_chart_rounded,
-                          ref.tr('wealth_market_title'),
-                          () => openAppPopup(context, const MarketScreen()),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _WealthTile(
+                      icon: Icons.credit_card_outlined,
+                      label: ref.tr('wealth_debt_title'),
+                      subtitle: ref.tr('wealth_home_sub_debt'),
+                      onTap: () => openAppPopup(context, const DebtScreen()),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: _WealthTile(
+                      icon: Icons.autorenew_rounded,
+                      label: ref.tr('wealth_service_title'),
+                      subtitle: ref.tr('wealth_home_sub_service'),
+                      onTap: () => openAppPopup(
+                        context,
+                        const RecurringServicesScreen(),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _WealthTile(
+                      icon: Icons.groups_outlined,
+                      label: ref.tr('wealth_split_bill_title'),
+                      subtitle: ref.tr('wealth_home_sub_split'),
+                      onTap: () =>
+                          openAppPopup(context, const WealthSplitBillScreen()),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              // Bao cao tach rieng khoi luoi "Quan ly" (khac ban chat - day la
+              // man TONG HOP/phan tich, khong phai 1 hanh dong quan ly nhu Vi/
+              // Chi tieu/No...) - theo yeu cau nguoi dung, cung giup tile noi
+              // bat hon thay vi lan trong luoi icon nho.
+              GestureDetector(
+                onTap: () => openAppPopup(context, const WealthReportScreen()),
+                child: _GoldCard(
+                  child: Row(
+                    children: [
+                      const _GoldIconPad(icon: Icons.description_outlined),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              ref.tr('wealth_report_title'),
+                              style: AppTextStyles.heading(size: 14.5),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              ref.tr('wealth_home_report_sub'),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTextStyles.body(
+                                size: 9.5,
+                                weight: FontWeight.w500,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
                         ),
-                        (
-                          Icons.star_rounded,
-                          ref.tr('crypto_tab_watchlist'),
-                          () => openAppPopup(
-                            context,
-                            const MarketScreen(initialTabIndex: 1),
+                      ),
+                      const Icon(
+                        Icons.chevron_right_rounded,
+                        size: 18,
+                        color: AppColors.wealthAccent,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              // Thanh nhac chuyen tu thanh Menu duoi VAO THAN TRANG (xem
+              // wealth_shell.dart): man hinh ket thuc tu nhien sau widget nay,
+              // khong con thanh co dinh che noi dung.
+              const CenterMediaButton(accentColor: AppColors.wealthAccent),
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The kinh tong vang cua man Quan ly tai san - vien vang mong, nen toi trong.
+class _GoldCard extends StatelessWidget {
+  const _GoldCard({
+    required this.child,
+    this.padding = const EdgeInsets.all(13),
+  });
+
+  final Widget child;
+  final EdgeInsetsGeometry padding;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: padding,
+      decoration: BoxDecoration(
+        color: AppColors.homeCardFill,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: AppColors.wealthAccent.withValues(alpha: 0.30),
+        ),
+      ),
+      child: child,
+    );
+  }
+}
+
+/// Dem sang tron sau icon - cung ngon ngu voi man Home Hoc Tieng Anh nhung
+/// am mau vang thay vi xanh.
+class _GoldIconPad extends StatelessWidget {
+  const _GoldIconPad({required this.icon, this.size = 40});
+  final IconData icon;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: RadialGradient(
+          center: const Alignment(0, -0.06),
+          colors: [
+            AppColors.wealthAccent.withValues(alpha: 0.26),
+            AppColors.wealthAccent.withValues(alpha: 0.20),
+            AppColors.wealthAccent.withValues(alpha: 0.12),
+            AppColors.wealthAccent.withValues(alpha: 0),
+          ],
+          stops: const [0, 0.56, 0.76, 1],
+        ),
+        border: Border.all(
+          color: AppColors.wealthAccent.withValues(alpha: 0.24),
+        ),
+      ),
+      child: Icon(icon, size: size * 0.5, color: AppColors.wealthAccent),
+    );
+  }
+}
+
+/// The "Tin nhan" - dua so tin chua doc co san (unreadMessageCountProvider)
+/// len thanh 1 khoi rieng thay vi chi 1 cham do tren nut. KHONG tao nguon tin
+/// nhan moi nao: bam vao van mo dung man ConversationsScreen nhu truoc.
+class _MessagesCard extends ConsumerWidget {
+  const _MessagesCard({required this.unread});
+  final int unread;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return GestureDetector(
+      onTap: () => openAppPopup(context, const ConversationsScreen()),
+      child: _GoldCard(
+        child: Row(
+          children: [
+            const _GoldIconPad(icon: Icons.chat_bubble_outline_rounded),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        ref.tr('wealth_home_messages_title'),
+                        style: AppTextStyles.heading(size: 14.5),
+                      ),
+                      if (unread > 0) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.wealthAccent.withValues(
+                              alpha: 0.18,
+                            ),
+                            borderRadius: BorderRadius.circular(999),
+                            border: Border.all(
+                              color: AppColors.wealthAccent.withValues(
+                                alpha: 0.45,
+                              ),
+                            ),
+                          ),
+                          child: Text(
+                            ref
+                                .tr('wealth_home_messages_badge')
+                                .replaceFirst('{n}', '$unread'),
+                            style: AppTextStyles.body(
+                              size: 9,
+                              weight: FontWeight.w800,
+                              color: AppColors.wealthAccent,
+                            ),
                           ),
                         ),
                       ],
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    unread > 0
+                        ? ref
+                              .tr('wealth_home_messages_unread')
+                              .replaceFirst('{n}', '$unread')
+                        : ref.tr('wealth_home_messages_none'),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.body(
+                      size: 9.5,
+                      weight: FontWeight.w500,
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                for (var i = 0; i < 2; i++)
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    margin: const EdgeInsets.symmetric(horizontal: 3),
-                    width: _pageIndex == i ? 16 : 6,
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: _pageIndex == i
-                          ? AppColors.wealthAccent
-                          : AppColors.glassBorder,
-                      borderRadius: BorderRadius.circular(3),
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: GlowBox(
-                padding: const EdgeInsets.all(16),
-                borderRadius: 22,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      ref.tr('wealth_home_category_manage'),
-                      style: AppTextStyles.heading(size: 14),
-                    ),
-                    const SizedBox(height: 14),
-                    // LayoutBuilder tinh be rong 1 the theo cong thuc "vua du
-                    // 4 the/hang" - xem giai thich chi tiet trong
-                    // home_screen.dart._CategorySection (Wrap+spaceBetween +
-                    // width co dinh truoc day khong dam bao dung 4 the/hang).
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        const spacing = 12.0;
-                        const columns = 4;
-                        final itemWidth =
-                            (constraints.maxWidth - spacing * (columns - 1)) /
-                            columns;
-                        return Wrap(
-                          spacing: spacing,
-                          runSpacing: 14,
-                          children: [
-                            _WealthTile(
-                              width: itemWidth,
-                              icon: Icons.receipt_long_rounded,
-                              label: ref.tr('wealth_tab_expense'),
-                              onTap: () => _open(
-                                context,
-                                ref.tr('wealth_tab_expense'),
-                                const WealthExpenseTab(),
-                              ),
-                            ),
-                            _WealthTile(
-                              width: itemWidth,
-                              icon: Icons.handshake_rounded,
-                              label: ref.tr('wealth_debt_title'),
-                              onTap: () =>
-                                  openAppPopup(context, const DebtScreen()),
-                            ),
-                            _WealthTile(
-                              width: itemWidth,
-                              icon: Icons.event_repeat_rounded,
-                              label: ref.tr('wealth_service_title'),
-                              onTap: () => openAppPopup(
-                                context,
-                                const RecurringServicesScreen(),
-                              ),
-                            ),
-                            _WealthTile(
-                              width: itemWidth,
-                              icon: Icons.call_split_rounded,
-                              label: ref.tr('wealth_split_bill_title'),
-                              onTap: () => openAppPopup(
-                                context,
-                                const WealthSplitBillScreen(),
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            // Bao cao tach rieng khoi luoi "Quan ly" (khac ban chat - day la
-            // man TONG HOP/phan tich, khong phai 1 hanh dong quan ly nhu Vi/
-            // Chi tieu/No...) - theo yeu cau nguoi dung, cung giup tile noi
-            // bat hon thay vi lan trong luoi icon nho.
-            GestureDetector(
-              onTap: () => openAppPopup(context, const WealthReportScreen()),
-              child: GlowBox(
-                borderRadius: 22,
-                child: Row(
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: AppColors.wealthAccent.withValues(alpha: 0.18),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: const Icon(
-                        Icons.bar_chart_rounded,
-                        color: AppColors.wealthAccent,
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Text(
-                        ref.tr('wealth_report_title'),
-                        style: AppTextStyles.body(weight: FontWeight.w800),
-                      ),
-                    ),
-                    const Icon(
-                      Icons.chevron_right_rounded,
-                      color: AppColors.textMuted,
-                    ),
-                  ],
-                ),
-              ),
+            const Icon(
+              Icons.chevron_right_rounded,
+              size: 18,
+              color: AppColors.wealthAccent,
             ),
           ],
         ),
@@ -316,36 +457,60 @@ class _WealthTile extends StatelessWidget {
   const _WealthTile({
     required this.icon,
     required this.label,
+    required this.subtitle,
     required this.onTap,
-    required this.width,
   });
   final IconData icon;
   final String label;
+  final String subtitle;
   final VoidCallback onTap;
-  final double width;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: SizedBox(
-        width: width,
+      child: _GoldCard(
+        padding: const EdgeInsets.fromLTRB(12, 12, 10, 11),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: AppColors.glassFill,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.glassBorder),
-              ),
-              child: Icon(icon, color: AppColors.wealthAccent, size: 24),
-            ),
-            const SizedBox(height: 6),
-            SizedBox(
-              height: 28,
-              child: TileLabelText(label: label, maxWidth: width),
+            const SizedBox(height: 2),
+            _GoldIconPad(icon: icon, size: 38),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.heading(size: 13),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.body(
+                          size: 9,
+                          weight: FontWeight.w500,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  size: 15,
+                  color: AppColors.wealthAccent,
+                ),
+              ],
             ),
           ],
         ),

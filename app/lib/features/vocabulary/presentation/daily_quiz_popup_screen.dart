@@ -702,7 +702,10 @@ class _SpeakingQuestionState extends ConsumerState<_SpeakingQuestion> {
     ref
         .read(statsRepositoryProvider)
         .recordPronunciationScore(result.score, source: 'daily_words')
-        .then((_) => ref.invalidate(myStatsProvider))
+        .then((_) {
+          ref.invalidate(myStatsProvider);
+          ref.invalidate(myLearningXpProvider);
+        })
         .catchError((_) {});
   }
 

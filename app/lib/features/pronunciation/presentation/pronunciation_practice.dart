@@ -139,7 +139,10 @@ class _PronunciationPracticeState extends ConsumerState<PronunciationPractice> {
     ref
         .read(statsRepositoryProvider)
         .recordPronunciationScore(result.score, source: widget.source)
-        .then((_) => ref.invalidate(myStatsProvider))
+        .then((_) {
+          ref.invalidate(myStatsProvider);
+          ref.invalidate(myLearningXpProvider);
+        })
         .catchError((_) {});
   }
 
