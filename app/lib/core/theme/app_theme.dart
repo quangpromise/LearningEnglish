@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -448,4 +450,132 @@ class TileLabelText extends StatelessWidget {
       ],
     );
   }
+}
+
+/// Nen rieng cho 2 man Home da thiet ke lai (Hoc Tieng Anh / Quan ly tai san).
+///
+/// KHONG dung [ScreenBackground]: nen do phu anh chup that (toa nha, van da...)
+/// cua tung khu vuc, ma toan bo bang mau cua ban thiet ke moi duoc do tren NEN
+/// GAN DEN - the la kinh mo alpha ~0.085, chi ra dung mau #0D1622 khi nam tren
+/// nen den. Dat cung bang mau do len anh chup thi anh xuyen qua the, mau bi
+/// bech va man hinh khong con giong thiet ke.
+///
+/// Nen nay gom 3 lop dung nhu file thiet ke:
+///   1. Doc gan den, hoi xanh o tren, tat han o day
+///   2. Quang sang mo o goc tren-phai
+///   3. Vanh sang hanh tinh - cung tron tam (452, 434) ban kinh 379 tren khung
+///      390px, do bang cach do vet diem sang nhat theo tung cot tren anh goc
+class HomeDesignBackground extends StatelessWidget {
+  const HomeDesignBackground({
+    super.key,
+    required this.child,
+    this.glow = const Color(0xFF68A6FF),
+  });
+
+  final Widget child;
+
+  /// Mau quang sang + vanh sang. Xanh cho Hoc Tieng Anh, vang cho Tai san.
+  final Color glow;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        const Positioned.fill(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFF070C18),
+                  Color(0xFF040B15),
+                  Color(0xFF02070F),
+                  Color(0xFF01050C),
+                  Color(0xFF000206),
+                ],
+                stops: [0, 0.18, 0.5, 0.78, 1],
+              ),
+            ),
+          ),
+        ),
+        Positioned.fill(
+          child: IgnorePointer(
+            child: CustomPaint(painter: _PlanetLimbPainter(glow)),
+          ),
+        ),
+        Positioned.fill(child: child),
+      ],
+    );
+  }
+}
+
+/// Ve quang sang + vanh sang hanh tinh o goc tren-phai.
+class _PlanetLimbPainter extends CustomPainter {
+  const _PlanetLimbPainter(this.glow);
+  final Color glow;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Moi toa do do tren khung rong 390 -> nhan he so cho vua be rong that.
+    final k = size.width / 390;
+    final center = Offset(452 * k, 434 * k);
+    final radius = 379 * k;
+
+    // 1. Quang sang mo goc tren-phai
+    final hazeCenter = Offset(352 * k, 74 * k);
+    final hazeRadius = 300 * k;
+    canvas.drawCircle(
+      hazeCenter,
+      hazeRadius,
+      Paint()
+        ..shader = RadialGradient(
+          colors: [
+            glow.withValues(alpha: 0.26),
+            glow.withValues(alpha: 0.10),
+            glow.withValues(alpha: 0),
+          ],
+          stops: const [0, 0.44, 1],
+        ).createShader(Rect.fromCircle(center: hazeCenter, radius: hazeRadius)),
+    );
+
+    // 2. Vanh sang - 3 lop nhoe chong nhau nen doc ra la 1 DAI SANG DAM LEN,
+    // khong phai 1 duong ke. Gradient doc theo cung lam duoi cung tat han va
+    // sang nhat o khoang 80% - dung nhu tren anh thiet ke.
+    final rect = Rect.fromCircle(center: center, radius: radius);
+    Shader shaderFor(double opacity) => ui.Gradient.linear(
+      Offset(120 * k, 240 * k),
+      Offset(392 * k, 52 * k),
+      [
+        glow.withValues(alpha: 0),
+        glow.withValues(alpha: 0.05 * opacity),
+        Color.lerp(glow, Colors.white, 0.55)!.withValues(alpha: 0.55 * opacity),
+        Colors.white.withValues(alpha: opacity),
+        Color.lerp(glow, Colors.white, 0.45)!.withValues(alpha: 0.42 * opacity),
+      ],
+      const [0, 0.34, 0.6, 0.8, 1],
+    );
+
+    for (final (width, blur, opacity) in [
+      (34.0 * k, 9.0 * k, 0.26),
+      (10.0 * k, 3.4 * k, 0.48),
+      (2.2 * k, 1.0 * k, 0.95),
+    ]) {
+      canvas.drawCircle(
+        center,
+        radius,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = width
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, blur)
+          ..shader = shaderFor(opacity),
+      );
+    }
+    // rect chi dung de doc ro y do; shader da tu dat theo toa do tuyet doi.
+    assert(rect.width > 0);
+  }
+
+  @override
+  bool shouldRepaint(_PlanetLimbPainter oldDelegate) =>
+      oldDelegate.glow != glow;
 }

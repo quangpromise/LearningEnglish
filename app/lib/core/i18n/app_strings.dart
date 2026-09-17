@@ -2452,6 +2452,12 @@ class AppStrings {
       AppLanguage.en: 'Think & learn',
     },
     'home_badge_new': {AppLanguage.vi: 'MỚI', AppLanguage.en: 'New'},
+    // Ten NGAN cho the o luoi Home - the chi rong ~1/4 man nen dung ten day
+    // du ('Tu vung theo chu de') se bi cat giua chung.
+    'home_skill_vocabulary': {
+      AppLanguage.vi: 'Từ vựng',
+      AppLanguage.en: 'Vocabulary',
+    },
     // --- Man Home Quan ly tai san (thiet ke lai) ---
     'wealth_home_sub_expense': {
       AppLanguage.vi: 'Quản lý chi tiêu',

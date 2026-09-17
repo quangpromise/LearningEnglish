@@ -73,7 +73,8 @@ class HomeScreen extends ConsumerWidget {
     final accent = persona != null ? personaColor(persona) : AppColors.teal;
     final compassLink = LayerLink();
 
-    return ScreenBackground(
+    return HomeDesignBackground(
+      glow: const Color(0xFF68A6FF),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(14, 12, 14, 16),
         child: SingleChildScrollView(
@@ -566,7 +567,7 @@ class _SkillGrid extends ConsumerWidget {
       _FeatureEntry(
         feature: HomeFeature.vocabulary,
         icon: Icons.menu_book_outlined,
-        title: ref.tr('home_vocabulary_quick_title'),
+        title: ref.tr('home_skill_vocabulary'),
         subtitle: ref.tr('home_sub_vocabulary'),
         open: () => openAppPopup(context, const VocabularyTopicsScreen()),
       ),

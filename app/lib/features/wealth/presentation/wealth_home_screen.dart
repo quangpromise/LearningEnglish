@@ -72,7 +72,8 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
     final (investmentPnl, investmentPnlPercent) = ref.watch(
       investmentPnlProvider,
     );
-    return ScreenBackground(
+    return HomeDesignBackground(
+      glow: AppColors.wealthAccent,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(14, 12, 14, 16),
         child: SingleChildScrollView(
