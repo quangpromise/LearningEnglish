@@ -72,8 +72,7 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
     final (investmentPnl, investmentPnlPercent) = ref.watch(
       investmentPnlProvider,
     );
-    return HomeDesignBackground(
-      glow: AppColors.wealthAccent,
+    return WealthDesignBackground(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(14, 12, 14, 16),
         child: SingleChildScrollView(
@@ -93,10 +92,10 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
                 ),
               ),
               const SizedBox(height: 14),
-              _MessagesCard(unread: unread),
-              const SizedBox(height: 14),
+              // The "Tin nhan" rieng da BO theo yeu cau - tin nhan van vao
+              // duoc bang nut chat tren thanh dau man (co cham bao chua doc).
               SizedBox(
-                height: 146,
+                height: 178,
                 child: PageView(
                   controller: _pageController,
                   // padEnds:false - mac dinh PageView TU THEM le dau/cuoi de
@@ -283,10 +282,40 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
                           ],
                         ),
                       ),
-                      const Icon(
-                        Icons.chevron_right_rounded,
-                        size: 18,
-                        color: AppColors.wealthAccent,
+                      // Nut "Xem tat ca" dang vien vang bo tron - ban thiet ke
+                      // chot dung nut nay thay cho moi dau mui ten nho.
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 11,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(999),
+                          border: Border.all(
+                            color: AppColors.wealthAccent.withValues(
+                              alpha: 0.55,
+                            ),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              ref.tr('wealth_home_report_all'),
+                              style: AppTextStyles.body(
+                                size: 10,
+                                weight: FontWeight.w800,
+                                color: AppColors.wealthAccent,
+                              ),
+                            ),
+                            const SizedBox(width: 3),
+                            const Icon(
+                              Icons.chevron_right_rounded,
+                              size: 14,
+                              color: AppColors.wealthAccent,
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -365,95 +394,6 @@ class _GoldIconPad extends StatelessWidget {
   }
 }
 
-/// The "Tin nhan" - dua so tin chua doc co san (unreadMessageCountProvider)
-/// len thanh 1 khoi rieng thay vi chi 1 cham do tren nut. KHONG tao nguon tin
-/// nhan moi nao: bam vao van mo dung man ConversationsScreen nhu truoc.
-class _MessagesCard extends ConsumerWidget {
-  const _MessagesCard({required this.unread});
-  final int unread;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return GestureDetector(
-      onTap: () => openAppPopup(context, const ConversationsScreen()),
-      child: _GoldCard(
-        child: Row(
-          children: [
-            const _GoldIconPad(icon: Icons.chat_bubble_outline_rounded),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        ref.tr('wealth_home_messages_title'),
-                        style: AppTextStyles.heading(size: 14.5),
-                      ),
-                      if (unread > 0) ...[
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.wealthAccent.withValues(
-                              alpha: 0.18,
-                            ),
-                            borderRadius: BorderRadius.circular(999),
-                            border: Border.all(
-                              color: AppColors.wealthAccent.withValues(
-                                alpha: 0.45,
-                              ),
-                            ),
-                          ),
-                          child: Text(
-                            ref
-                                .tr('wealth_home_messages_badge')
-                                .replaceFirst('{n}', '$unread'),
-                            style: AppTextStyles.body(
-                              size: 9,
-                              weight: FontWeight.w800,
-                              color: AppColors.wealthAccent,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    unread > 0
-                        ? ref
-                              .tr('wealth_home_messages_unread')
-                              .replaceFirst('{n}', '$unread')
-                        : ref.tr('wealth_home_messages_none'),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.body(
-                      size: 9.5,
-                      weight: FontWeight.w500,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(
-              Icons.chevron_right_rounded,
-              size: 18,
-              color: AppColors.wealthAccent,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _WealthTile extends StatelessWidget {
   const _WealthTile({
     required this.icon,
@@ -486,11 +426,14 @@ class _WealthTile extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      // Ten muc mau VANG (ban thiet ke chot) - truoc day de
+                      // trang nen luoi 4 the nhin giong man Hoc Tieng Anh.
                       Text(
                         label,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.heading(size: 13),
+                        style: AppTextStyles.heading(size: 13)
+                            .copyWith(color: AppColors.wealthAccent),
                       ),
                       const SizedBox(height: 2),
                       Text(
@@ -575,92 +518,157 @@ class _TotalCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(22),
       child: Container(
         decoration: BoxDecoration(
-          // Nen toi pha vang dam (thay glassFill trung tinh truoc day) - lam
-          // 2 the Tong Vi/Tong Dau tu noi bat theo mau chu dao vang cua muc
-          // Quan ly tai san, van giu chu trang/heading de doc vi lop den lam
-          // nen chinh, vang chi la sac phu.
-          gradient: LinearGradient(
+          // Ban thiet ke chot: the la nen DEN SAU voi vien vang mong, KHONG
+          // phai khoi vang dac - anh dong xu vang o nua phai va con so mau
+          // vang moi la diem nhan. Truoc day to gradient vang len ca the lam
+          // man hinh bi "chay vang" khac han thiet ke.
+          gradient: const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              const Color(0xCC000000),
-              AppColors.wealthAccent.withValues(alpha: 0.4),
-            ],
+            colors: [Color(0xFF0D0B06), Color(0xFF060505)],
           ),
           border: Border.all(
             color: AppColors.wealthAccent.withValues(alpha: 0.45),
           ),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        child: Stack(
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(18, 16, 18, 14),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Vung bam mo man Vi/Dau tu CHI boc tieu de+so tien+PNL
-                  // (KHONG boc ca icon mat) - de tranh 2 GestureDetector long
-                  // nhau cung nhan 1 lan cham (Flutter kich hoat CA HAI onTap
-                  // khi chong nhau truc tiep), khien bam vao mat vua an/hien
-                  // so tien VUA mo luon man chi tiet ngoai y muon.
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: onTap,
-                      behavior: HitTestBehavior.opaque,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.muted(size: 12),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            hidden
-                                ? '•••••••'
-                                : (value == null ? '...' : formatVnd(value!)),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.heading(size: 21),
-                          ),
-                          if (!hidden && pnl != null && pnl != 0) ...[
-                            const SizedBox(height: 4),
-                            Text(
-                              '${pnl! >= 0 ? '+' : ''}${formatVnd(pnl!)}'
-                              '${pnlPercent == null ? '' : ' (${pnlPercent! >= 0 ? '+' : ''}${pnlPercent!.toStringAsFixed(1)}%)'}',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: AppTextStyles.body(
-                                size: 11.5,
-                                weight: FontWeight.w700,
-                                color: pnl! >= 0
-                                    ? AppColors.teal
-                                    : AppColors.pink,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
+            // Anh dong xu vang neo o canh phai, mo dan ve trai de khong cat
+            // ngang chu - dung ShaderMask thay vi de anh vuong goc nhu cu.
+            Positioned(
+              right: 0,
+              top: 0,
+              bottom: 0,
+              width: 168,
+              child: IgnorePointer(
+                child: ShaderMask(
+                  blendMode: BlendMode.dstIn,
+                  shaderCallback: (rect) => const LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [Color(0x00000000), Color(0xFF000000)],
+                    stops: [0.0, 0.45],
+                  ).createShader(rect),
+                  child: Image.asset(
+                    'assets/wealth/home_coins.jpg',
+                    fit: BoxFit.cover,
+                    alignment: Alignment.centerRight,
                   ),
-                  GestureDetector(
-                    onTap: onToggleHidden,
-                    child: Icon(
-                      hidden
-                          ? Icons.visibility_off_rounded
-                          : Icons.visibility_rounded,
-                      color: AppColors.wealthAccent,
-                      size: 18,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
-            footer,
+            // max + Spacer: dai hanh dong luon dinh SAT DAY the du so tien
+            // dai ngan the nao - truoc day the cao co dinh 146 con noi dung
+            // tu do nen bi tran (vach soc vang-den) o cuoi.
+            Column(
+              mainAxisSize: MainAxisSize.max,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Chua chu hep lai (le phai 150) de khong chay de len anh
+                // dong xu ben phai - dai hanh dong ben duoi van full-width.
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(18, 16, 150, 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Icon con mat nam NGAY CANH tieu de nhu ban thiet ke,
+                      // nhung van la GestureDetector RIENG nam ngoai vung bam
+                      // mo man chi tiet - neu long nhau thi 1 lan cham se kich
+                      // hoat CA HAI (an/hien so tien VA mo man), loi cu da gap.
+                      Row(
+                        children: [
+                          Flexible(
+                            child: GestureDetector(
+                              onTap: onTap,
+                              behavior: HitTestBehavior.opaque,
+                              child: Text(
+                                title,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTextStyles.muted(size: 12),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 7),
+                          GestureDetector(
+                            onTap: onToggleHidden,
+                            child: Icon(
+                              hidden
+                                  ? Icons.visibility_off_rounded
+                                  : Icons.visibility_rounded,
+                              color: AppColors.wealthAccent,
+                              size: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      GestureDetector(
+                        onTap: onTap,
+                        behavior: HitTestBehavior.opaque,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // So tien mau VANG - diem nhan chinh cua ban
+                            // thiet ke (truoc day de trang nen the trong nhat).
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                hidden
+                                    ? '•••••••'
+                                    : (value == null
+                                          ? '...'
+                                          : formatVnd(value!)),
+                                maxLines: 1,
+                                style: AppTextStyles.heading(size: 25)
+                                    .copyWith(color: AppColors.wealthAccent),
+                              ),
+                            ),
+                            if (!hidden && pnl != null && pnl != 0) ...[
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  Icon(
+                                    pnl! >= 0
+                                        ? Icons.trending_up_rounded
+                                        : Icons.trending_down_rounded,
+                                    size: 14,
+                                    color: pnl! >= 0
+                                        ? AppColors.teal
+                                        : AppColors.pink,
+                                  ),
+                                  const SizedBox(width: 5),
+                                  Flexible(
+                                    child: Text(
+                                      '${pnl! >= 0 ? '+' : ''}${formatVnd(pnl!)}'
+                                      '${pnlPercent == null ? '' : ' (${pnlPercent! >= 0 ? '+' : ''}${pnlPercent!.toStringAsFixed(1)}%)'}',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: AppTextStyles.body(
+                                        size: 11.5,
+                                        weight: FontWeight.w700,
+                                        color: pnl! >= 0
+                                            ? AppColors.teal
+                                            : AppColors.pink,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Spacer(),
+                footer,
+              ],
+            ),
           ],
         ),
       ),

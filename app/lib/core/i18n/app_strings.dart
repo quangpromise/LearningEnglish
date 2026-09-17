@@ -2458,6 +2458,15 @@ class AppStrings {
       AppLanguage.vi: 'Từ vựng',
       AppLanguage.en: 'Vocabulary',
     },
+    // Ba o luyen thi nam canh icon nen chi con ~1/3 be ngang the: ten day du
+    // ('Luyen Thi TOEIC' / 'TOEIC Practice') bi cat thanh 'TOEIC P...'.
+    'home_skill_toeic': {AppLanguage.vi: 'TOEIC', AppLanguage.en: 'TOEIC'},
+    'home_skill_ielts': {AppLanguage.vi: 'IELTS', AppLanguage.en: 'IELTS'},
+    'home_skill_quiz': {AppLanguage.vi: 'Đố vui', AppLanguage.en: 'Quiz'},
+    'wealth_home_report_all': {
+      AppLanguage.vi: 'Xem tất cả',
+      AppLanguage.en: 'View all',
+    },
     // --- Man Home Quan ly tai san (thiet ke lai) ---
     'wealth_home_sub_expense': {
       AppLanguage.vi: 'Quản lý chi tiêu',

@@ -510,6 +510,62 @@ class HomeDesignBackground extends StatelessWidget {
   }
 }
 
+/// Nen man Quan ly tai san - KHAC [HomeDesignBackground]: ban thiet ke vang
+/// khong co vanh hanh tinh, chi la nen den sau voi 2 quang vang rat nhe (goc
+/// tren-phai manh hon, day man rat mo) de cac the vien vang noi len. Dung
+/// chung HomeDesignBackground voi glow vang tung lam man nay bi am xanh navy
+/// vi doc nen va vanh sang deu nga xanh.
+class WealthDesignBackground extends StatelessWidget {
+  const WealthDesignBackground({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        const Positioned.fill(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFF0B0A07),
+                  Color(0xFF07070A),
+                  Color(0xFF040406),
+                  Color(0xFF020203),
+                  Color(0xFF000000),
+                ],
+                stops: [0, 0.2, 0.52, 0.8, 1],
+              ),
+            ),
+          ),
+        ),
+        Positioned.fill(
+          child: IgnorePointer(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  center: const Alignment(0.85, -0.92),
+                  radius: 1.15,
+                  colors: [
+                    AppColors.wealthAccent.withValues(alpha: 0.16),
+                    AppColors.wealthAccent.withValues(alpha: 0.05),
+                    AppColors.wealthAccent.withValues(alpha: 0),
+                  ],
+                  stops: const [0, 0.42, 1],
+                ),
+              ),
+            ),
+          ),
+        ),
+        Positioned.fill(child: child),
+      ],
+    );
+  }
+}
+
 /// Ve quang sang + vanh sang hanh tinh o goc tren-phai.
 class _PlanetLimbPainter extends CustomPainter {
   const _PlanetLimbPainter(this.glow);

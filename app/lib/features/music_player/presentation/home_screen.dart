@@ -612,6 +612,52 @@ class _SkillGrid extends ConsumerWidget {
   }
 }
 
+/// Khoi chu chiem DUNG [lines] dong, du chu ngan hay dai.
+///
+/// Ly do co widget nay: cac the o Home nam trong Row + Expanded nen be ngang
+/// bang nhau nhung chu thi khong - "Vocabulary" xuong 2 dong con "Grammar"
+/// chi 1 dong, lam the do CAO HON han cac the ben canh va dong phu bi lech
+/// hang. Dat truoc chieu cao theo so dong toi da thi moi the cao bang nhau
+/// bat ke ngon ngu hay do dai chu.
+class _FixedLines extends StatelessWidget {
+  const _FixedLines(
+    this.text, {
+    required this.lines,
+    required this.style,
+    this.shrinkToFit = false,
+  });
+
+  final String text;
+  final int lines;
+  final TextStyle style;
+
+  /// true = thu nho chu vua khung thay vi cat bang dau "..." - dung cho ten
+  /// 1 dong (vd "Vocabulary" dai hon han "Grammar") de khong bi ngat giua tu.
+  final bool shrinkToFit;
+
+  @override
+  Widget build(BuildContext context) {
+    final height = (style.fontSize ?? 12) * (style.height ?? 1.2) * lines;
+    final text_ = Text(
+      text,
+      maxLines: lines,
+      overflow: TextOverflow.ellipsis,
+      style: style,
+    );
+    return SizedBox(
+      height: height,
+      width: double.infinity,
+      child: shrinkToFit
+          ? FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: text_,
+            )
+          : text_,
+    );
+  }
+}
+
 class _FeatureEntry {
   const _FeatureEntry({
     required this.feature,
@@ -660,20 +706,19 @@ class _SkillCard extends StatelessWidget {
                 color: isRecommended ? accent : null,
               ),
               const SizedBox(height: 6),
-              Text(
+              _FixedLines(
                 entry.title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+                lines: 1,
+                shrinkToFit: true,
                 style: AppTextStyles.body(
                   size: 10.5,
                   weight: FontWeight.w700,
                 ).copyWith(height: 1.2),
               ),
               const SizedBox(height: 1),
-              Text(
+              _FixedLines(
                 entry.subtitle,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+                lines: 2,
                 style: AppTextStyles.body(
                   size: 8.5,
                   weight: FontWeight.w500,
@@ -814,69 +859,72 @@ class _PracticePanel extends ConsumerWidget {
           const SizedBox(height: 12),
           Container(height: 1, color: Colors.white.withValues(alpha: 0.09)),
           const SizedBox(height: 12),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              for (var i = 0; i < items.length; i++) ...[
-                if (i > 0)
-                  Container(
-                    width: 1,
-                    height: 46,
-                    margin: const EdgeInsets.symmetric(horizontal: 6),
-                    color: Colors.white.withValues(alpha: 0.085),
+          // IntrinsicHeight + stretch: 4 muc luyen tap gio cao bang nhau (ten
+          // luon chiem 2 dong, xem _FixedLines) va cac vach ngan doc keo het
+          // chieu cao hang thay vi co dinh 46px ngan hon noi dung.
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (var i = 0; i < items.length; i++) ...[
+                  if (i > 0)
+                    Container(
+                      width: 1,
+                      margin: const EdgeInsets.symmetric(horizontal: 6),
+                      color: Colors.white.withValues(alpha: 0.085),
+                    ),
+                  Expanded(
+                    child: _PracticeItem(
+                      entry: items[i],
+                      accent: accent,
+                      isRecommended: recommended.contains(items[i].feature),
+                      isTopPick: topPick == items[i].feature,
+                    ),
                   ),
+                ],
+                Container(
+                  width: 1,
+                  margin: const EdgeInsets.symmetric(horizontal: 6),
+                  color: Colors.white.withValues(alpha: 0.085),
+                ),
+                // Tro chuyen AI - truoc day chi mo duoc tu nut noi
+                // (AssistiveTouch); ban thiet ke dua no thanh 1 muc o Home cho
+                // de thay. Van mo dung man AiVoiceChatScreen do, cung ten route
+                // nen nut noi van nhan biet duoc dang o trong man nay.
                 Expanded(
                   child: _PracticeItem(
-                    entry: items[i],
-                    accent: accent,
-                    isRecommended: recommended.contains(items[i].feature),
-                    isTopPick: topPick == items[i].feature,
-                  ),
-                ),
-              ],
-              Container(
-                width: 1,
-                height: 46,
-                margin: const EdgeInsets.symmetric(horizontal: 6),
-                color: Colors.white.withValues(alpha: 0.085),
-              ),
-              // Tro chuyen AI - truoc day chi mo duoc tu nut noi
-              // (AssistiveTouch); ban thiet ke dua no thanh 1 muc o Home cho
-              // de thay. Van mo dung man AiVoiceChatScreen do, cung ten route
-              // nen nut noi van nhan biet duoc dang o trong man nay.
-              Expanded(
-                child: _PracticeItem(
-                  entry: _FeatureEntry(
-                    feature: HomeFeature.story,
-                    icon: Icons.memory_rounded,
-                    title: ref.tr('voice_chat_title'),
-                    subtitle: ref.tr('home_sub_ai_chat'),
-                    open: () => showModalBottomSheet(
-                      context: context,
-                      useRootNavigator: true,
-                      isScrollControlled: true,
-                      backgroundColor: Colors.transparent,
-                      routeSettings: const RouteSettings(
-                        name: kAiVoiceChatRouteName,
-                      ),
-                      builder: (_) => const FractionallySizedBox(
-                        heightFactor: 0.94,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.vertical(
-                            top: Radius.circular(28),
+                    entry: _FeatureEntry(
+                      feature: HomeFeature.story,
+                      icon: Icons.memory_rounded,
+                      title: ref.tr('voice_chat_title'),
+                      subtitle: ref.tr('home_sub_ai_chat'),
+                      open: () => showModalBottomSheet(
+                        context: context,
+                        useRootNavigator: true,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        routeSettings: const RouteSettings(
+                          name: kAiVoiceChatRouteName,
+                        ),
+                        builder: (_) => const FractionallySizedBox(
+                          heightFactor: 0.94,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(28),
+                            ),
+                            child: AiVoiceChatScreen(),
                           ),
-                          child: AiVoiceChatScreen(),
                         ),
                       ),
                     ),
+                    accent: accent,
+                    isRecommended: false,
+                    isTopPick: false,
+                    badge: ref.tr('home_badge_new'),
                   ),
-                  accent: accent,
-                  isRecommended: false,
-                  isTopPick: false,
-                  badge: ref.tr('home_badge_new'),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
@@ -917,20 +965,18 @@ class _PracticeItem extends StatelessWidget {
                 color: isRecommended ? accent : null,
               ),
               const SizedBox(height: 6),
-              Text(
+              _FixedLines(
                 entry.title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+                lines: 2,
                 style: AppTextStyles.body(
                   size: 9,
                   weight: FontWeight.w700,
                 ).copyWith(height: 1.22),
               ),
               const SizedBox(height: 1),
-              Text(
+              _FixedLines(
                 entry.subtitle,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+                lines: 1,
                 style: AppTextStyles.body(
                   size: 8,
                   weight: FontWeight.w500,
@@ -992,21 +1038,21 @@ class _TestPrepPanel extends ConsumerWidget {
       _FeatureEntry(
         feature: HomeFeature.toeic,
         icon: Icons.assignment_outlined,
-        title: ref.tr('toeic_title'),
+        title: ref.tr('home_skill_toeic'),
         subtitle: ref.tr('home_sub_toeic'),
         open: () => openAppPopup(context, const ToeicHomeScreen()),
       ),
       _FeatureEntry(
         feature: HomeFeature.ielts,
         icon: Icons.bar_chart_rounded,
-        title: ref.tr('ielts_title'),
+        title: ref.tr('home_skill_ielts'),
         subtitle: ref.tr('home_sub_ielts'),
         open: () => openAppPopup(context, const IeltsHomeScreen()),
       ),
       _FeatureEntry(
         feature: HomeFeature.quiz,
         icon: Icons.extension_outlined,
-        title: ref.tr('quiz_title'),
+        title: ref.tr('home_skill_quiz'),
         subtitle: ref.tr('home_sub_quiz'),
         open: () => openAppPopup(context, const QuizCategoryScreen()),
       ),
@@ -1111,20 +1157,19 @@ class _TestPrepTile extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
+                    _FixedLines(
                       entry.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                      lines: 1,
+                      shrinkToFit: true,
                       style: AppTextStyles.body(
                         size: 9.5,
                         weight: FontWeight.w700,
-                      ),
+                      ).copyWith(height: 1.2),
                     ),
                     const SizedBox(height: 1),
-                    Text(
+                    _FixedLines(
                       entry.subtitle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                      lines: 1,
                       style: AppTextStyles.body(
                         size: 7.5,
                         weight: FontWeight.w500,
