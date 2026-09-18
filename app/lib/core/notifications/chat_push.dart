@@ -391,7 +391,39 @@ class ChatPush {
   /// KHONG can cho gia that bien dong >=5% hay goi Edge Function tren server
   /// (xem nut "Gui thu" trong Cai dat Quan ly tai san). KHONG di qua FCM/
   /// server - chi goi thang plugin local notification tren chinh may nay.
-  Future<void> sendTestPriceAlert() async {
+  /// Tra ve null = da hien thong bao. Tra ve chuoi = LY DO that bai, de man
+  /// Cai dat hien len cho nguoi dung thay.
+  ///
+  /// Truoc day ham nay tra ve void va nut bam goi kieu "ban roi" (khong
+  /// await, khong catch): may dang TAT thong bao cua app (rat hay gap tren
+  /// Xiaomi/HyperOS voi app cai ngoai Store) hay plugin nem loi thi deu bi
+  /// nuot im - nguoi dung bam ma khong co bat ky phan hoi nao, khong biet
+  /// hong o dau. Day dung la loi da bao: "bam gui thu khong duoc".
+  Future<String?> sendTestPriceAlert() async {
+    final androidImpl = _localNotifications
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    if (androidImpl != null) {
+      // areNotificationsEnabled kiem tra CONG TAC TONG cua app trong Cai dat
+      // he thong - khac voi quyen POST_NOTIFICATIONS: nguoi dung (hoac chinh
+      // may) co the tat cong tac nay du quyen van con, luc do show() chay
+      // "thanh cong" nhung khong co gi hien ra ca.
+      var enabled = await androidImpl.areNotificationsEnabled() ?? true;
+      if (!enabled) {
+        enabled = await androidImpl.requestNotificationsPermission() ?? false;
+      }
+      if (!enabled) return 'blocked';
+    }
+    try {
+      await _showTestPriceAlert();
+    } catch (e) {
+      return e.toString();
+    }
+    return null;
+  }
+
+  Future<void> _showTestPriceAlert() async {
     await _showPriceAlertLocal(
       assetType: 'crypto',
       symbol: 'BTC',

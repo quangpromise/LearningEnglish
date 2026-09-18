@@ -2210,6 +2210,18 @@ class AppStrings {
       AppLanguage.vi: 'Gửi thử 1 thông báo',
       AppLanguage.en: 'Send a test notification',
     },
+    'wealth_settings_price_alerts_test_sent': {
+      AppLanguage.vi: 'Đã gửi - kéo thanh trạng thái xuống để xem',
+      AppLanguage.en: 'Sent - pull down the status bar to see it',
+    },
+    'wealth_settings_price_alerts_test_blocked': {
+      AppLanguage.vi: 'Máy đang chặn thông báo của app. Vào Cài đặt điện thoại > Ứng dụng > app này > Thông báo và bật lên.',
+      AppLanguage.en: 'Your phone is blocking this app\'s notifications. Go to system Settings > Apps > this app > Notifications and turn them on.',
+    },
+    'wealth_settings_price_alerts_test_failed': {
+      AppLanguage.vi: 'Không gửi được thông báo thử: ',
+      AppLanguage.en: 'Could not send the test notification: ',
+    },
     'wealth_settings_categories_title': {
       AppLanguage.vi: 'Danh mục chi tiêu',
       AppLanguage.en: 'Expense categories',

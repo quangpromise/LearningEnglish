@@ -577,10 +577,12 @@ class WealthDesignBackground extends StatelessWidget {
             ),
           ),
         ),
-        // Anh nen chu de thi truong (bo vang + nen nen + qua dia cau) phu ca
-        // man, DUOI 1 lop den day 0.62 - de nguyen anh thi cac the vien vang
-        // va chu o tren chim han vao nen. Chua co file anh thi chi mat rieng
-        // lop nay, man hinh ve lai dung nen den nhu truoc (errorBuilder).
+        // Anh nen chu de thi truong (qua dia cau vang o dinh, cot nen vang 2
+        // ben, giua man de trong) phu ca man, duoi 1 lop den 0.45. Ban than
+        // file anh DA de giua man gan nhu den san nen khong can to den day
+        // nhu ban dau (0.62) - to dam qua thi vang o dinh/day mat gan het,
+        // khac han anh mau. Chua co file anh thi chi mat rieng lop nay, man
+        // hinh ve lai dung nen den nhu truoc (errorBuilder).
         Positioned.fill(
           child: IgnorePointer(
             child: Image.asset(
@@ -589,7 +591,7 @@ class WealthDesignBackground extends StatelessWidget {
               // To lop den NGAY TREN anh (srcATop) thay vi them 1 lop phu
               // rieng de len ca Stack: neu thieu file anh thi khong con gi bi
               // to den ca, nen mau nen den goc giu nguyen tuyet doi.
-              color: AppColors.bgTop.withValues(alpha: 0.62),
+              color: AppColors.bgTop.withValues(alpha: 0.45),
               colorBlendMode: BlendMode.srcATop,
               errorBuilder: (_, _, _) => const SizedBox.shrink(),
             ),

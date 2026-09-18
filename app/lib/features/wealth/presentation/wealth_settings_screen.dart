@@ -352,7 +352,7 @@ class _WealthSettingsScreenState extends ConsumerState<WealthSettingsScreen>
           // bien dong >=5% hay dung server) - dung de kiem tra nhanh giao
           // dien/kenh thong bao that (xem ChatPush.sendTestPriceAlert).
           GestureDetector(
-            onTap: () => ChatPush.instance.sendTestPriceAlert(),
+            onTap: _sendTestPriceAlert,
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -374,6 +374,27 @@ class _WealthSettingsScreenState extends ConsumerState<WealthSettingsScreen>
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Bam "Gui thu 1 thong bao" - LUON phan hoi bang 1 SnackBar, ke ca khi
+  /// that bai. Truoc day chi goi ChatPush.sendTestPriceAlert() kieu ban roi:
+  /// may dang tat thong bao cua app (hay gap voi app cai ngoai Store) thi
+  /// khong co gi hien ra va cung khong co loi nao bao ve, nguoi dung tuong
+  /// nut hong.
+  Future<void> _sendTestPriceAlert() async {
+    final error = await ChatPush.instance.sendTestPriceAlert();
+    if (!mounted) return;
+    final message = switch (error) {
+      null => ref.tr('wealth_settings_price_alerts_test_sent'),
+      'blocked' => ref.tr('wealth_settings_price_alerts_test_blocked'),
+      _ => '${ref.tr('wealth_settings_price_alerts_test_failed')}$error',
+    };
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: Duration(seconds: error == null ? 2 : 6),
       ),
     );
   }
