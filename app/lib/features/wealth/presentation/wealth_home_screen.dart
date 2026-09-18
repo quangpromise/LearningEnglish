@@ -518,6 +518,7 @@ class _OverviewCard extends ConsumerWidget {
                               label: ref.tr('wealth_tab_income'),
                               value: income,
                               previous: prevIncome,
+                              valueColor: AppColors.wealthUp,
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -526,6 +527,7 @@ class _OverviewCard extends ConsumerWidget {
                               label: ref.tr('wealth_tab_expense'),
                               value: expense,
                               previous: prevExpense,
+                              valueColor: AppColors.pink,
                             ),
                           ),
                         ],
@@ -605,10 +607,17 @@ class _StatChip extends ConsumerWidget {
     required this.label,
     required this.value,
     required this.previous,
+    required this.valueColor,
   });
   final String label;
   final double value;
   final double previous;
+
+  /// Mau CON SO: xanh cho Thu nhap, do cho Chi tieu - doc luot la biet ngay
+  /// o nao la tien vao, o nao la tien ra. KHONG dung chung mau voi mui ten %
+  /// ben duoi: mui ten do so voi THANG TRUOC nen chi tieu giam thi mui ten
+  /// xanh, hai thu khac nghia nhau.
+  final Color valueColor;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -649,7 +658,8 @@ class _StatChip extends ConsumerWidget {
             child: Text(
               formatVnd(value),
               maxLines: 1,
-              style: AppTextStyles.heading(size: 14),
+              style: AppTextStyles.heading(size: 14)
+                  .copyWith(color: valueColor),
             ),
           ),
           if (percent != null) ...[

@@ -597,6 +597,28 @@ class WealthDesignBackground extends StatelessWidget {
             ),
           ),
         ),
+        // Vet toi vuot dan o DINH man: qua dia cau trong anh nen sang nhat
+        // dung ngay sau loi chao + ten + pill chuyen app, lam chu chim han
+        // vao cac net ban do vang. Chi to dam 1/4 tren cung roi tat han nen
+        // phan con lai cua anh nen khong bi anh huong.
+        const Positioned.fill(
+          child: IgnorePointer(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xE6000306),
+                    Color(0xB3000306),
+                    Color(0x00000306),
+                  ],
+                  stops: [0, 0.12, 0.30],
+                ),
+              ),
+            ),
+          ),
+        ),
         // Nhu [HomeDesignBackground]: nen trai het man, rieng noi dung duoc
         // day xuong duoi thanh trang thai. O day GIU ca le duoi vi thanh nhac
         // cua man Tai san nam TRONG than trang (xem wealth_home_screen.dart)

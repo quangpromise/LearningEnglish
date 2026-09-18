@@ -89,8 +89,8 @@ class HomeScreen extends ConsumerWidget {
         // Noi dung CHIEM TRON chieu cao con lai (khong con SingleChildScrollView
         // khoa cuon): bo cuc duoc do theo 1 man mau ~670pt, tren may cao hon
         // (ty le 20:9) thua ra ca tram pt bi don het xuong day thanh 1 mang
-        // trong. Nay phan thua do don HET vao the MAIN SKILL (Expanded trong
-        // _buildBody) cho no to len, nen man nao cung day kin.
+        // trong. Nay phan thua do duoc chia cho ca 4 khoi theo ti le thiet ke
+        // (xem cac Expanded trong _buildBody), nen man nao cung day kin.
         child: ClipRect(
           child: _buildBody(
             context,
@@ -151,28 +151,41 @@ class HomeScreen extends ConsumerWidget {
             const ServiceExpiryBanner(section: AppSection.learnEnglish),
             // The tien do (Lv/XP/chuoi ngay) da BO theo yeu cau.
             //
-            // Expanded: TOAN BO chieu cao thua cua may (may cao 20:9 du ra ca
-            // tram pt so voi ban thiet ke ~670pt) don vao the MAIN SKILL nay
-            // cho no to len, thay vi chia deu thanh nhung khe trong giua cac
-            // khoi nhu ban truoc - trong ma khong dung viec gi.
-            const Expanded(child: _DailyWordsHeroCard()),
+            // CA 4 khoi deu Expanded, flex = chieu cao THIET KE cua tung khoi
+            // (do tren ban mau ~670pt: 29/19/30/25) - nho vay chieu cao thua
+            // cua may cao duoc chia cho ca 4 theo DUNG TI LE ban thiet ke,
+            // khoi nao cung cao len mot chut va van giu dung tuong quan to
+            // nho voi nhau.
+            //
+            // Ban truoc don HET phan thua cho rieng the MAIN SKILL: the do
+            // phinh gan gap doi, day khung Luyen thi tut han xuong day man.
+            const Expanded(flex: 29, child: _DailyWordsHeroCard()),
             const SizedBox(height: 5),
-            _SkillGrid(
-              accent: accent,
-              recommended: recommended,
-              topPick: topPick,
+            Expanded(
+              flex: 19,
+              child: _SkillGrid(
+                accent: accent,
+                recommended: recommended,
+                topPick: topPick,
+              ),
             ),
             const SizedBox(height: 5),
-            _PracticePanel(
-              accent: accent,
-              recommended: recommended,
-              topPick: topPick,
+            Expanded(
+              flex: 30,
+              child: _PracticePanel(
+                accent: accent,
+                recommended: recommended,
+                topPick: topPick,
+              ),
             ),
             const SizedBox(height: 5),
-            _TestPrepPanel(
-              accent: accent,
-              recommended: recommended,
-              topPick: topPick,
+            Expanded(
+              flex: 25,
+              child: _TestPrepPanel(
+                accent: accent,
+                recommended: recommended,
+                topPick: topPick,
+              ),
             ),
           ],
         ),
@@ -507,6 +520,10 @@ class _SkillGrid extends ConsumerWidget {
     ];
 
     return Row(
+      // stretch: hang nay nam trong 1 Expanded o man Home nen co chieu cao co
+      // dinh - de mac dinh (center) thi 4 the giu chieu cao tu nhien va noi
+      // lung lung giua o trong.
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         for (var i = 0; i < items.length; i++) ...[
           if (i > 0) const SizedBox(width: 8),
@@ -603,47 +620,62 @@ class _SkillCard extends StatelessWidget {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        _HomeCard(
-          onTap: entry.open,
-          radius: 15,
-          padding: const EdgeInsets.fromLTRB(8, 7, 8, 6),
-          borderColor: isRecommended ? accent : null,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _IconPad(
-                icon: entry.icon,
-                size: 24,
-                color: isRecommended ? accent : null,
-              ),
-              const SizedBox(height: 5),
-              _FixedLines(
-                entry.title,
-                lines: 1,
-                shrinkToFit: true,
-                style: AppTextStyles.body(
-                  size: 10.5,
-                  weight: FontWeight.w700,
-                ).copyWith(height: 1.2),
-              ),
-              const SizedBox(height: 1),
-              _FixedLines(
-                entry.subtitle,
-                lines: 2,
-                style: AppTextStyles.body(
-                  size: 8.5,
-                  weight: FontWeight.w500,
+        // Positioned.fill: Stack truyen rang buoc LONG xuong con khong duoc
+        // Positioned, nen neu de _HomeCard la con thuong thi the van cao tu
+        // nhien du o trong da duoc cap du cho - phai ep no lap day.
+        Positioned.fill(
+          child: _HomeCard(
+            onTap: entry.open,
+            radius: 15,
+            padding: const EdgeInsets.fromLTRB(8, 7, 8, 6),
+            borderColor: isRecommended ? accent : null,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              // spaceBetween: the cao len thi mui ten tut xuong day the thay
+              // vi de 1 mang trong duoi cung.
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Icon + 2 dong chu gom lam 1 KHOI de spaceBetween chi tach
+                // khoi nay voi mui ten - de roi tung dong thi chu bi keo gian
+                // ra khap the khi the cao len.
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _IconPad(
+                      icon: entry.icon,
+                      size: 24,
+                      color: isRecommended ? accent : null,
+                    ),
+                    const SizedBox(height: 5),
+                    _FixedLines(
+                      entry.title,
+                      lines: 1,
+                      shrinkToFit: true,
+                      style: AppTextStyles.body(
+                        size: 10.5,
+                        weight: FontWeight.w700,
+                      ).copyWith(height: 1.2),
+                    ),
+                    const SizedBox(height: 1),
+                    _FixedLines(
+                      entry.subtitle,
+                      lines: 2,
+                      style: AppTextStyles.body(
+                        size: 8.5,
+                        weight: FontWeight.w500,
+                        color: AppColors.textSecondary,
+                      ).copyWith(height: 1.2),
+                    ),
+                  ],
+                ),
+                const Icon(
+                  Icons.arrow_forward_rounded,
+                  size: 12,
                   color: AppColors.textSecondary,
-                ).copyWith(height: 1.2),
-              ),
-              const SizedBox(height: 4),
-              const Icon(
-                Icons.arrow_forward_rounded,
-                size: 12,
-                color: AppColors.textSecondary,
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
         ),
         if (isTopPick)
@@ -702,75 +734,88 @@ class _PracticePanel extends ConsumerWidget {
       padding: const EdgeInsets.fromLTRB(11, 7, 11, 6),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        // spaceBetween: khung nay nam trong Expanded o man Home nen cao hon
+        // chieu cao tu nhien - hang 4 muc tut xuong day khung thay vi de 1
+        // mang trong o duoi.
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
+          // Tieu de + duong ke gom lam 1 KHOI: spaceBetween chia khoang trong
+          // cho TUNG khe, de roi tung phan thi duong ke se bi tha troi giua
+          // khung thay vi nam sat duoi tieu de.
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _SectionLabel(ref.tr('home_practice_label')),
-                    const SizedBox(height: 3),
-                    Text(
-                      ref.tr('home_listening_speaking'),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.heading(size: 15.5),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      ref.tr('home_listening_speaking_sub'),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.body(
-                        size: 10.5,
-                        weight: FontWeight.w500,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 10),
-              GestureDetector(
-                onTap: () => openAppPopup(context, const PronunciationScreen()),
-                child: Container(
-                  width: 54,
-                  height: 42,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0x29AAD4FF)),
-                  ),
-                  child: Container(
-                    margin: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppColors.blue.withValues(alpha: 0.14),
-                      border: Border.all(
-                        color: AppColors.blue.withValues(alpha: 0.5),
-                        width: 1.3,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.blue.withValues(alpha: 0.22),
-                          blurRadius: 20,
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _SectionLabel(ref.tr('home_practice_label')),
+                        const SizedBox(height: 3),
+                        Text(
+                          ref.tr('home_listening_speaking'),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.heading(size: 15.5),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          ref.tr('home_listening_speaking_sub'),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.body(
+                            size: 10.5,
+                            weight: FontWeight.w500,
+                            color: AppColors.textSecondary,
+                          ),
                         ),
                       ],
                     ),
-                    child: const Icon(
-                      Icons.mic_none_rounded,
-                      size: 20,
-                      color: AppColors.textPrimary,
+                  ),
+                  const SizedBox(width: 10),
+                  GestureDetector(
+                    onTap: () =>
+                        openAppPopup(context, const PronunciationScreen()),
+                    child: Container(
+                      width: 54,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: const Color(0x29AAD4FF)),
+                      ),
+                      child: Container(
+                        margin: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppColors.blue.withValues(alpha: 0.14),
+                          border: Border.all(
+                            color: AppColors.blue.withValues(alpha: 0.5),
+                            width: 1.3,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.blue.withValues(alpha: 0.22),
+                              blurRadius: 20,
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.mic_none_rounded,
+                          size: 20,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                ],
               ),
+              const SizedBox(height: 7),
+              Container(height: 1, color: Colors.white.withValues(alpha: 0.09)),
             ],
           ),
-          const SizedBox(height: 7),
-          Container(height: 1, color: Colors.white.withValues(alpha: 0.09)),
-          const SizedBox(height: 7),
           // IntrinsicHeight + stretch: 4 muc luyen tap gio cao bang nhau (ten
           // luon chiem 2 dong, xem _FixedLines) va cac vach ngan doc keo het
           // chieu cao hang thay vi co dinh 46px ngan hon noi dung.
@@ -976,6 +1021,10 @@ class _TestPrepPanel extends ConsumerWidget {
       padding: const EdgeInsets.all(8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        // spaceBetween + bo SizedBox ngan cach: khung nam trong Expanded o man
+        // Home nen cao hon chieu cao tu nhien - 3 o TOEIC/IELTS/Quiz tut
+        // xuong day khung, tieu de bam tren.
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
             children: [
@@ -1013,7 +1062,6 @@ class _TestPrepPanel extends ConsumerWidget {
               ),
             ],
           ),
-          const SizedBox(height: 6),
           Row(
             children: [
               for (var i = 0; i < items.length; i++) ...[
