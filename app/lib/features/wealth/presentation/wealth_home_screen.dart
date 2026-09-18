@@ -219,6 +219,7 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
                   for (final t in [
                     (
                       'assets/wealth/ic_wallet.png',
+                      null,
                       ref.tr('wealth_tab_expense'),
                       ref.tr('wealth_home_sub_expense'),
                       () => _open(
@@ -229,12 +230,14 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
                     ),
                     (
                       'assets/wealth/ic_card.png',
+                      null,
                       ref.tr('wealth_debt_title'),
                       ref.tr('wealth_home_sub_debt'),
                       () => openAppPopup(context, const DebtScreen()),
                     ),
                     (
                       'assets/wealth/ic_arrows.png',
+                      null,
                       ref.tr('wealth_service_title'),
                       ref.tr('wealth_home_sub_service'),
                       () => openAppPopup(
@@ -243,7 +246,11 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
                       ),
                     ),
                     (
-                      'assets/wealth/ic_doc.png',
+                      // Mui ten re lam doi nhanh - icon nguoi dung chon, tach
+                      // nen trong suot roi dat vao dung dem tron vang nhu 3 o
+                      // con lai de khong lech kieu ve.
+                      null,
+                      null,
                       ref.tr('wealth_home_tile_split'),
                       ref.tr('wealth_home_sub_split'),
                       () =>
@@ -255,9 +262,13 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
                         padding: EdgeInsets.only(left: t.$1 == 0 ? 0 : 7),
                         child: _WealthTile(
                           asset: t.$2.$1,
-                          label: t.$2.$2,
-                          subtitle: t.$2.$3,
-                          onTap: t.$2.$4,
+                          fallbackIcon: t.$2.$2,
+                          glyph: t.$1 == 3
+                              ? 'assets/wealth/ic_split.png'
+                              : null,
+                          label: t.$2.$3,
+                          subtitle: t.$2.$4,
+                          onTap: t.$2.$5,
                         ),
                       ),
                     ),
@@ -274,7 +285,10 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
               // Thanh nhac chuyen tu thanh Menu duoi VAO THAN TRANG (xem
               // wealth_shell.dart): man hinh ket thuc tu nhien sau widget nay,
               // khong con thanh co dinh che noi dung.
-              const CenterMediaButton(accentColor: AppColors.wealthAccent),
+              const CenterMediaButton(
+                accentColor: AppColors.wealthAccent,
+                discAsset: 'assets/home/ic_vinyl.png',
+              ),
             ],
           ),
         ),
@@ -800,8 +814,13 @@ class _GoldCard extends StatelessWidget {
 /// Dem sang tron sau icon - cung ngon ngu voi man Home Hoc Tieng Anh nhung
 /// am mau vang thay vi xanh.
 class _GoldIconPad extends StatelessWidget {
-  const _GoldIconPad({this.icon, this.asset, this.size = 40})
-    : assert(icon != null || asset != null);
+  const _GoldIconPad({this.icon, this.asset, this.glyph, this.size = 40})
+    : assert(icon != null || asset != null || glyph != null);
+
+  /// Anh glyph NEN TRONG SUOT ve o giua dem tron vang - dung khi ban thiet ke
+  /// khong co san icon 3D cho muc do (vd mui ten re nhanh cho "Chia bill").
+  /// Khac [asset] o cho [asset] la anh da gom SAN ca dem tron.
+  final String? glyph;
 
   final IconData? icon;
 
@@ -844,7 +863,12 @@ class _GoldIconPad extends StatelessWidget {
           color: AppColors.wealthAccent.withValues(alpha: 0.24),
         ),
       ),
-      child: Icon(icon, size: size * 0.5, color: AppColors.wealthAccent),
+      child: glyph != null
+          ? Padding(
+              padding: EdgeInsets.all(size * 0.22),
+              child: Image.asset(glyph!, filterQuality: FilterQuality.medium),
+            )
+          : Icon(icon, size: size * 0.5, color: AppColors.wealthAccent),
     );
   }
 }
@@ -852,11 +876,17 @@ class _GoldIconPad extends StatelessWidget {
 class _WealthTile extends StatelessWidget {
   const _WealthTile({
     required this.asset,
+    required this.fallbackIcon,
+    this.glyph,
     required this.label,
     required this.subtitle,
     required this.onTap,
   });
-  final String asset;
+
+  /// Anh icon vang 3D cat tu ban thiet ke; null thi ve [fallbackIcon].
+  final String? asset;
+  final IconData? fallbackIcon;
+  final String? glyph;
   final String label;
   final String subtitle;
   final VoidCallback onTap;
@@ -871,7 +901,12 @@ class _WealthTile extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            _GoldIconPad(asset: asset, size: 34),
+            _GoldIconPad(
+              asset: asset,
+              icon: fallbackIcon,
+              glyph: glyph,
+              size: 34,
+            ),
             const SizedBox(height: 8),
             // The chi con ~1/4 be ngang nen ten dung FittedBox thu nho vua
             // khung thay vi cat bang "..." - "Dich vu dinh ky" dai hon han

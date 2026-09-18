@@ -17,8 +17,16 @@ import 'player_screen.dart';
 /// cham vao se tu phat bai dau tien). Mau vien/icon nhan theo [accentColor]
 /// cua tung "app" (Hoc Tieng Anh/Fitness/Wealth).
 class CenterMediaButton extends StatelessWidget {
-  const CenterMediaButton({super.key, required this.accentColor});
+  const CenterMediaButton({
+    super.key,
+    required this.accentColor,
+    this.discAsset = 'assets/home/ic_vinyl_blue.png',
+  });
   final Color accentColor;
+
+  /// Anh dia than o trang thai chua phat nhac - moi khu vuc dung ban mau
+  /// rieng cho dong bo: xanh cho Hoc Tieng Anh, vang cho Quan ly tai san.
+  final String discAsset;
 
   static String _fmt(Duration d) {
     final m = d.inMinutes;
@@ -106,7 +114,10 @@ class CenterMediaButton extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 10),
                     child: queue.isEmpty
-                        ? _IdleBar(accentColor: accentColor)
+                        ? _IdleBar(
+                            accentColor: accentColor,
+                            discAsset: discAsset,
+                          )
                         : _PlayingBar(accentColor: accentColor, queue: queue),
                   ),
                 ],
@@ -123,7 +134,8 @@ class CenterMediaButton extends StatelessWidget {
 /// mat) de thanh Menu khong bi "nhay" khi bat dau phat nhac; cham vao tu
 /// phat luon bai dau tien roi mo popup Dang phat.
 class _IdleBar extends ConsumerWidget {
-  const _IdleBar({required this.accentColor});
+  const _IdleBar({required this.accentColor, required this.discAsset});
+  final String discAsset;
   final Color accentColor;
 
   @override
@@ -141,7 +153,7 @@ class _IdleBar extends ConsumerWidget {
         children: [
           ClipOval(
             child: Image.asset(
-              'assets/home/ic_vinyl.png',
+              discAsset,
               width: 38,
               height: 38,
               fit: BoxFit.cover,

@@ -21,7 +21,6 @@ import '../../pronunciation/presentation/pronunciation_screen.dart';
 import '../../quiz/presentation/quiz_category_screen.dart';
 import '../../reading/presentation/reading_library_screen.dart';
 import '../../ielts/presentation/ielts_home_screen.dart';
-import '../../stats/data/learning_xp_repository.dart';
 import '../../story/presentation/story_list_screen.dart';
 import '../../toeic/presentation/toeic_home_screen.dart';
 import '../../vocabulary/presentation/daily_words_controller.dart';
@@ -144,8 +143,7 @@ class HomeScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 8),
             const ServiceExpiryBanner(section: AppSection.learnEnglish),
-            const _ProgressCard(),
-            const SizedBox(height: 8),
+            // The tien do (Lv/XP/chuoi ngay) da BO theo yeu cau.
             const _DailyWordsHeroCard(),
             const SizedBox(height: 8),
             _SkillGrid(
@@ -296,152 +294,6 @@ class _SectionLabel extends StatelessWidget {
 
 // ===========================================================================
 // 2. The tien do - Level/XP + chuoi ngay
-// ===========================================================================
-
-class _ProgressCard extends ConsumerWidget {
-  const _ProgressCard();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final xp = ref.watch(myLearningXpProvider).valueOrNull ?? LearningXp.empty;
-    final streak = ref.watch(myStatsProvider).valueOrNull?.streakDays ?? 0;
-
-    return _HomeCard(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-      onTap: () => openAppPopup(context, const ProfileScreen(initialTab: 1)),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 50,
-            height: 44,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                SizedBox(
-                  width: 50,
-                  height: 44,
-                  child: CircularProgressIndicator(
-                    value: xp.levelProgress,
-                    strokeWidth: 4.2,
-                    strokeCap: StrokeCap.round,
-                    backgroundColor: Colors.white.withValues(alpha: 0.09),
-                    valueColor: const AlwaysStoppedAnimation(Color(0xFF5B9CFF)),
-                  ),
-                ),
-                // line-height 1 + can giua theo baseline trong 1 lop rieng:
-                // dat baseline thang tren khung can giua se bi day lech
-                // xuong vi hop baseline cao hon chu.
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.baseline,
-                  textBaseline: TextBaseline.alphabetic,
-                  children: [
-                    Text(
-                      'Lv',
-                      style: AppTextStyles.body(
-                        size: 8.5,
-                        weight: FontWeight.w500,
-                        color: AppColors.textSecondary,
-                      ).copyWith(height: 1),
-                    ),
-                    const SizedBox(width: 1.5),
-                    Text(
-                      '${xp.level}',
-                      style: AppTextStyles.heading(size: 15.5)
-                          .copyWith(height: 1),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 13),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  children: [
-                    Flexible(
-                      child: Text(
-                        ref.tr('level_${xp.levelKey}'),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.heading(size: 14.5),
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    const Icon(
-                      Icons.chevron_right_rounded,
-                      size: 15,
-                      color: AppColors.textSecondary,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  ref
-                      .tr('home_xp_to_next')
-                      .replaceFirst('{n}', '${xp.xpToNext}'),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.body(
-                    size: 10.5,
-                    weight: FontWeight.w500,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            width: 1,
-            height: 32,
-            color: Colors.white.withValues(alpha: 0.09),
-            margin: const EdgeInsets.symmetric(horizontal: 12),
-          ),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.local_fire_department_outlined,
-                size: 16,
-                color: AppColors.textPrimary,
-              ),
-              const SizedBox(width: 7),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    '$streak',
-                    style: AppTextStyles.heading(size: 15.5)
-                        .copyWith(height: 1),
-                  ),
-                  const SizedBox(height: 1),
-                  Text(
-                    ref.tr('home_day_streak'),
-                    style: AppTextStyles.body(
-                      size: 9,
-                      weight: FontWeight.w500,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ===========================================================================
-// 3. The "Ky nang chinh" - Hoc {n} tu hom nay
-// ===========================================================================
-
 class _DailyWordsHeroCard extends ConsumerWidget {
   const _DailyWordsHeroCard();
 
@@ -1066,7 +918,9 @@ class _TestPrepPanel extends ConsumerWidget {
     final items = <_FeatureEntry>[
       _FeatureEntry(
         feature: HomeFeature.toeic,
-        icon: Icons.assignment_outlined,
+        // fact_check (bang kiem co dau tick) thay cho assignment - assignment
+        // gan giong het article_outlined cua Ngu phap nen 2 muc bi lan.
+        icon: Icons.fact_check_outlined,
         title: ref.tr('home_skill_toeic'),
         subtitle: ref.tr('home_sub_toeic'),
         open: () => openAppPopup(context, const ToeicHomeScreen()),
