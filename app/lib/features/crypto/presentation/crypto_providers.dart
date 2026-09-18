@@ -165,6 +165,37 @@ class CryptoPortfolioController extends StateNotifier<List<CryptoHolding>> {
     state = await _repo.load(userId);
   }
 
+  /// Xoa 1 dong lich su mua/ban va hoan tac dung phan no da gay ra cho so
+  /// luong dang giu: `buy` thi tru lai, `sell` thi cong tra lai. Het sach thi
+  /// bo han khoan nam giu thay vi de lai dong quantity = 0.
+  ///
+  /// Neu dong nay sinh ra tu 1 khoan chi tieu "Dau tu" ben Vi thi KHONG xoa
+  /// khoan do o day - noi goi (man Lich su) lo phan do, vi controller nay
+  /// khong biet gi ve bang wealth_transactions.
+  Future<void> deleteTransaction(CryptoTransaction tx) async {
+    final userId = _userId;
+    final id = tx.id;
+    if (userId == null || id == null) return;
+
+    final i = state.indexWhere((h) => h.coinId == tx.coinId);
+    if (i != -1) {
+      final delta = tx.type == CryptoTransactionType.buy
+          ? -tx.quantity
+          : tx.quantity;
+      final remaining = state[i].quantity + delta;
+      if (remaining <= 0.0000001) {
+        await _repo.remove(userId, tx.coinId);
+        state = [...state]..removeAt(i);
+      } else {
+        final updated = [...state];
+        updated[i] = updated[i].copyWith(quantity: remaining);
+        state = updated;
+        await _repo.upsert(userId, updated[i]);
+      }
+    }
+    await _txRepo.deleteById(userId, id);
+  }
+
   /// Nap lai tu DB - dung khi CHO KHAC sua bang wealth_holdings truc tiep (vd
   /// xoa khoan chi tieu "Dau tu" ben Vi/Chi tieu, xem
   /// revertInvestmentPortfolio). Khong co ham nay thi state trong bo nho van

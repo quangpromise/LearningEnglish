@@ -113,11 +113,6 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
   _SplitPersonEntry? _payer;
   bool _meDebt = false;
   double _total = 0;
-  // Tong tien danh cho "nhung nguoi khac" (khong tinh "Toi") ngay luc vua
-  // bam Tiep tuc - dung lam MOC CO DINH de chia lai cho nhung nguoi CHUA
-  // sua tay (unlocked) moi khi co 1 nguoi bi sua tien, thay vi de "Toi" hung
-  // tron het phan chenh lech (xem _redistributeUnlocked()).
-  double _othersPoolTotal = 0;
   bool _saving = false;
   // Ngon ngu rieng cua bien lai o phase settle - xem giai thich o
   // _SplitBillPreviewScreenState._lang.
@@ -162,7 +157,6 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
       ),
     };
     final others = shares.where((s) => !s.isMe).toList();
-    _othersPoolTotal = others.fold<double>(0, (s, sh) => s + sh.amount);
     _people = [
       _SplitPersonEntry(isMe: true),
       for (final s in others) _entryFromShare(s),
@@ -248,7 +242,6 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
     final shares = _computeShares(total, count);
     setState(() {
       _total = total;
-      _othersPoolTotal = total - shares[0];
       _people = [
         _SplitPersonEntry(isMe: true),
         for (var i = 1; i < shares.length; i++)
@@ -276,17 +269,24 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
       final lockedSum = others
           .where((p) => p.locked)
           .fold<double>(0, (s, p) => s + p.enteredAmount);
-      final remaining = _othersPoolTotal - lockedSum;
+      final remaining = _total - lockedSum;
+      // Chia cho so nguoi chua khoa CONG THEM 1 ("Toi").
+      //
+      // TRUOC DAY chia `_othersPoolTotal - lockedSum` cho RIENG nhung nguoi
+      // khac, tuc "Toi" bi giu nguyen o muc goi y ban dau va khong tham gia
+      // chia lai - ket qua la sau khi giam tien 1 nguoi thi "Toi" mot gia,
+      // nhung nguoi con lai mot gia khac (vd Toi 267,000 trong khi 3 nguoi
+      // kia 311,000), khong con la "chia deu cho nhung nguoi con lai".
+      final headCount = unlocked.length + 1;
       var share = remaining <= 0
           ? 0.0
-          : (remaining / unlocked.length / _roundUnit).ceilToDouble() *
-                _roundUnit;
+          : (remaining / headCount / _roundUnit).ceilToDouble() * _roundUnit;
       // Neu tron len 1,000d khien "Toi" con lai <= 0 (quy con lai qua nho so
       // voi so nguoi chua khoa) - fallback ve tron toi thieu (1d), giong
       // _computeShares o tren.
-      final wouldBeMeAmount = _total - lockedSum - share * unlocked.length;
+      final wouldBeMeAmount = remaining - share * unlocked.length;
       if (remaining > 0 && wouldBeMeAmount <= 0) {
-        share = (remaining / unlocked.length).ceilToDouble();
+        share = (remaining / headCount).ceilToDouble();
       }
       for (final p in unlocked) {
         p.amountController.text = groupThousands(share);
@@ -840,6 +840,11 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
     // _showPreview/_buildSettle/wealth_split_bill_history_screen.dart), chi
     // bo o BUOC NHAP LIEU nay, khong phai bo hang.
     return SingleChildScrollView(
+      // Chua dung chieu cao ban phim o duoi: man nay nam trong bottom sheet
+      // co chieu cao co dinh (0.94 man hinh) nen khi ban phim mo len, sheet
+      // KHONG tu co lai - khong co khoang nay thi o nhap tien cua nhung
+      // nguoi cuoi danh sach bi ban phim che, cuon xuong cung khong toi.
+      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

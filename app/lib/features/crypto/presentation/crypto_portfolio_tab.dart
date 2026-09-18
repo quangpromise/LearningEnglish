@@ -441,7 +441,57 @@ class CryptoHistoryView extends ConsumerWidget {
             AsyncData(:final value) => ListView.separated(
               itemCount: value.length,
               separatorBuilder: (_, _) => const SizedBox(height: 10),
-              itemBuilder: (context, i) => _HistoryRow(transaction: value[i]),
+              // Vuot de xoa 1 lan mua/ban ghi nham - truoc day man Lich su
+              // chi de XEM. Dong nao chua co `id` (du lieu cu tu ban truoc
+              // khi doc id ve) thi khong xoa duoc, hien binh thuong.
+              itemBuilder: (context, i) {
+                final tx = value[i];
+                final row = _HistoryRow(transaction: tx);
+                if (tx.id == null) return row;
+                return Dismissible(
+                  key: ValueKey(tx.id),
+                  direction: DismissDirection.endToStart,
+                  confirmDismiss: (_) => confirmDelete(context, ref),
+                  background: Container(
+                    alignment: Alignment.centerRight,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    decoration: BoxDecoration(
+                      color: AppColors.pink.withValues(alpha: 0.18),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Icon(
+                      Icons.delete_outline_rounded,
+                      color: AppColors.pink,
+                    ),
+                  ),
+                  onDismissed: (_) async {
+                    await ref
+                        .read(cryptoPortfolioProvider.notifier)
+                        .deleteTransaction(tx);
+                    // Dong sinh ra tu 1 khoan chi tieu "Dau tu" ben Vi thi
+                    // xoa luon khoan do, neu khong tien van bi tru khoi Vi
+                    // ma khong con dau vet mua gi.
+                    final sourceId = tx.sourceTransactionId;
+                    final userId = ref
+                        .read(supabaseClientProvider)
+                        .auth
+                        .currentUser
+                        ?.id;
+                    if (sourceId != null && userId != null) {
+                      await ref
+                          .read(wealthTransactionRepositoryProvider)
+                          .deleteTransaction(userId, sourceId);
+                      ref.invalidate(wealthTransactionsProvider);
+                      ref.invalidate(walletBalanceEntriesProvider);
+                    }
+                    ref.invalidate(cryptoTransactionHistoryProvider);
+                    if (context.mounted) {
+                      showSuccessToast(context, ref.tr('toast_deleted'));
+                    }
+                  },
+                  child: row,
+                );
+              },
             ),
             _ => const Center(child: CircularProgressIndicator()),
           },

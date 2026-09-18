@@ -84,6 +84,14 @@ class CryptoTransactionRepository {
         .toList();
   }
 
+  Future<void> deleteById(String userId, String id) async {
+    await _supabase
+        .from('wealth_investment_transactions')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', userId);
+  }
+
   Future<void> record(String userId, CryptoTransaction transaction) async {
     await _supabase
         .from('wealth_investment_transactions')
