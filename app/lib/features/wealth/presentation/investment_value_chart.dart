@@ -235,12 +235,13 @@ class _InvestmentValueChartState extends ConsumerState<InvestmentValueChart> {
     final values = points.map((p) => p.$2);
     final rawMin = values.reduce((a, b) => a < b ? a : b);
     final rawMax = values.reduce((a, b) => a > b ? a : b);
-    // Khoang gia tri phang lì (moi do 1-2 moc gan bang nhau) se lam duong
-    // dinh sat day/dinh khung - nong them 1 chut cho de nhin.
-    final pad = ((rawMax - rawMin) * 0.12).clamp(
-      rawMax * 0.002,
-      double.infinity,
-    );
+    // Le tren/duoi chi 8% cua chinh BIEN DO dang co, KHONG con san 0.2% gia
+    // tri tuyet doi nhu truoc: danh muc ~130 trieu thi san do = 260k, lon hon
+    // ca bien dong thuc trong ngay, ep duong ve gan nhu mot vach thang - dung
+    // hien tuong "len xuong khong ro" nguoi dung bao. Bien do bang 0 (moi do
+    // duoc 2 diem y het nhau) moi can 1 epsilon nho de khong chia cho 0.
+    final span = rawMax - rawMin;
+    final pad = span > 0 ? span * 0.08 : (rawMax.abs() * 0.0005 + 1);
 
     final chart = LineChart(
       LineChartData(
@@ -258,11 +259,25 @@ class _InvestmentValueChartState extends ConsumerState<InvestmentValueChart> {
               for (final p in points)
                 FlSpot(p.$1.millisecondsSinceEpoch.toDouble(), p.$2),
             ],
+            // curveSmoothness thap: lam muot nhieu se "bao mon" cac dinh/day
+            // nho - dung thu can nhin thay nhat o bieu do nay.
             isCurved: true,
-            curveSmoothness: 0.2,
+            curveSmoothness: 0.08,
             color: lineColor,
-            barWidth: widget.compact ? 1.6 : 2,
-            dotData: const FlDotData(show: false),
+            barWidth: widget.compact ? 2 : 2.4,
+            // Cham sang o DIEM CUOI (gia tri hien tai) - moc mat de biet dau
+            // la "bay gio", va lam bieu do bot tinh.
+            dotData: FlDotData(
+              show: true,
+              checkToShowDot: (spot, _) =>
+                  spot.x == points.last.$1.millisecondsSinceEpoch.toDouble(),
+              getDotPainter: (spot, _, _, _) => FlDotCirclePainter(
+                radius: widget.compact ? 2.6 : 3.4,
+                color: lineColor,
+                strokeWidth: widget.compact ? 1.4 : 2,
+                strokeColor: lineColor.withValues(alpha: 0.35),
+              ),
+            ),
             belowBarData: BarAreaData(
               show: true,
               gradient: LinearGradient(
