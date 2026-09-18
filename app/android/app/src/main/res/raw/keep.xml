@@ -22,6 +22,13 @@
   tren man hinh khoa ma khong co nut play/tam dung/bai truoc/sau - truoc day
   tung ket luan nham la "gioi han rendering cua OS", trong khi that ra la
   icon bi thieu tu phia app.
+
+  @drawable/ic_stat_arrow_up + _down - icon nho cho thong bao gia tang/giam
+  (chat_push.dart truyen ten duoi dang chuoi 'ic_stat_arrow_up'). THEM SAU
+  nen truoc day bi bo sot o day: ban release bi rut gon xoa mat 2 file nay,
+  khien MOI thong bao gia (ke ca nut "Gui thu 1 thong bao" o Cai dat) nem
+  PlatformException(invalid_icon, ... could not be found) - ban debug thi
+  van chay binh thuong vi debug khong rut gon resource.
 -->
 <resources xmlns:tools="http://schemas.android.com/tools"
-    tools:keep="@drawable/ic_stat_notify,@raw/notification_tone,@drawable/audio_service_*" />
+    tools:keep="@drawable/ic_stat_notify,@drawable/ic_stat_arrow_up,@drawable/ic_stat_arrow_down,@raw/notification_tone,@drawable/audio_service_*" />

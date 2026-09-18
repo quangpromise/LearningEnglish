@@ -734,10 +734,6 @@ class _PracticePanel extends ConsumerWidget {
       padding: const EdgeInsets.fromLTRB(11, 7, 11, 6),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        // spaceBetween: khung nay nam trong Expanded o man Home nen cao hon
-        // chieu cao tu nhien - hang 4 muc tut xuong day khung thay vi de 1
-        // mang trong o duoi.
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           // Tieu de + duong ke gom lam 1 KHOI: spaceBetween chia khoang trong
           // cho TUNG khe, de roi tung phan thi duong ke se bi tha troi giua
@@ -816,10 +812,12 @@ class _PracticePanel extends ConsumerWidget {
               Container(height: 1, color: Colors.white.withValues(alpha: 0.09)),
             ],
           ),
-          // IntrinsicHeight + stretch: 4 muc luyen tap gio cao bang nhau (ten
-          // luon chiem 2 dong, xem _FixedLines) va cac vach ngan doc keo het
-          // chieu cao hang thay vi co dinh 46px ngan hon noi dung.
-          IntrinsicHeight(
+          const SizedBox(height: 7),
+          // Expanded thay cho IntrinsicHeight: 4 muc luyen tap CAO LEN lap
+          // het cho trong con lai cua khung (khung duoc cap them chieu cao o
+          // man Home), cac vach ngan doc cung keo het chieu cao hang. Van giu
+          // stretch nen 4 muc luon cao bang nhau.
+          Expanded(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -1021,10 +1019,6 @@ class _TestPrepPanel extends ConsumerWidget {
       padding: const EdgeInsets.all(8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        // spaceBetween + bo SizedBox ngan cach: khung nam trong Expanded o man
-        // Home nen cao hon chieu cao tu nhien - 3 o TOEIC/IELTS/Quiz tut
-        // xuong day khung, tieu de bam tren.
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
             children: [
@@ -1062,20 +1056,27 @@ class _TestPrepPanel extends ConsumerWidget {
               ),
             ],
           ),
-          Row(
-            children: [
-              for (var i = 0; i < items.length; i++) ...[
-                if (i > 0) const SizedBox(width: 7),
-                Expanded(
-                  child: _TestPrepTile(
-                    entry: items[i],
-                    accent: accent,
-                    isRecommended: recommended.contains(items[i].feature),
-                    isTopPick: topPick == items[i].feature,
+          const SizedBox(height: 6),
+          // Expanded + stretch: 3 o TOEIC/IELTS/Quiz CAO LEN lap het cho
+          // trong con lai cua khung, thay vi giu chieu cao toi thieu va de
+          // 1 mang trong giua tieu de voi chung (bo cuc spaceBetween cu).
+          Expanded(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (var i = 0; i < items.length; i++) ...[
+                  if (i > 0) const SizedBox(width: 7),
+                  Expanded(
+                    child: _TestPrepTile(
+                      entry: items[i],
+                      accent: accent,
+                      isRecommended: recommended.contains(items[i].feature),
+                      isTopPick: topPick == items[i].feature,
+                    ),
                   ),
-                ),
+                ],
               ],
-            ],
+            ),
           ),
         ],
       ),
@@ -1101,47 +1102,52 @@ class _TestPrepTile extends StatelessWidget {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        _HomeCard(
-          onTap: entry.open,
-          radius: 13,
-          padding: const EdgeInsets.all(6),
-          borderColor: isRecommended ? accent : null,
-          child: Row(
-            children: [
-              _IconPad(
-                icon: entry.icon,
-                size: 22,
-                color: isRecommended ? accent : null,
-              ),
-              const SizedBox(width: 7),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _FixedLines(
-                      entry.title,
-                      lines: 1,
-                      shrinkToFit: true,
-                      style: AppTextStyles.body(
-                        size: 9.5,
-                        weight: FontWeight.w700,
-                      ).copyWith(height: 1.2),
-                    ),
-                    const SizedBox(height: 1),
-                    _FixedLines(
-                      entry.subtitle,
-                      lines: 1,
-                      style: AppTextStyles.body(
-                        size: 7.5,
-                        weight: FontWeight.w500,
-                        color: AppColors.textSecondary,
-                      ).copyWith(height: 1.2),
-                    ),
-                  ],
+        // Positioned.fill: hang cha da cap du chieu cao (stretch), nhung con
+        // KHONG Positioned cua Stack chi nhan rang buoc long nen the se van
+        // cao tu nhien neu khong ep lap day.
+        Positioned.fill(
+          child: _HomeCard(
+            onTap: entry.open,
+            radius: 13,
+            padding: const EdgeInsets.all(6),
+            borderColor: isRecommended ? accent : null,
+            child: Row(
+              children: [
+                _IconPad(
+                  icon: entry.icon,
+                  size: 22,
+                  color: isRecommended ? accent : null,
                 ),
-              ),
-            ],
+                const SizedBox(width: 7),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _FixedLines(
+                        entry.title,
+                        lines: 1,
+                        shrinkToFit: true,
+                        style: AppTextStyles.body(
+                          size: 9.5,
+                          weight: FontWeight.w700,
+                        ).copyWith(height: 1.2),
+                      ),
+                      const SizedBox(height: 1),
+                      _FixedLines(
+                        entry.subtitle,
+                        lines: 1,
+                        style: AppTextStyles.body(
+                          size: 7.5,
+                          weight: FontWeight.w500,
+                          color: AppColors.textSecondary,
+                        ).copyWith(height: 1.2),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
         if (isTopPick)

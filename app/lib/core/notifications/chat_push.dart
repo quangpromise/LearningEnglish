@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show PlatformException;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -209,7 +210,7 @@ Future<void> _showPriceAlertLocal({
   final arrow = isUp ? '▲' : '▼';
   final color = isUp ? const Color(0xFF2ECC71) : const Color(0xFFFF6B6B);
 
-  await _localNotifications.show(
+  Future<void> show(String? iconName) => _localNotifications.show(
     id: '$assetType:$symbol'.hashCode,
     title: '$arrow $symbol',
     body: body,
@@ -221,12 +222,24 @@ Future<void> _showPriceAlertLocal({
             'Thông báo khi giá coin/cổ phiếu trong watchlist tăng/giảm hơn 5%',
         importance: Importance.high,
         priority: Priority.high,
-        icon: icon,
+        icon: iconName,
         color: color,
       ),
     ),
     payload: _priceAlertPayload(assetType, symbol),
   );
+
+  try {
+    await show(icon);
+  } on PlatformException catch (e) {
+    // invalid_icon: 2 file ic_stat_arrow_* bi trinh rut gon resource cua ban
+    // release xoa mat (da khai bao trong res/raw/keep.xml, nhung neu sau nay
+    // lai sot lan nua thi hong y het). Tha hien thong bao bang icon mac dinh
+    // cua app con hon MAT HAN thong bao gia - nguoi dung mat tien that neu
+    // khong duoc bao gia bien dong.
+    if (e.code != 'invalid_icon') rethrow;
+    await show(null);
+  }
 }
 
 /// Dispatch theo `type` trong data payload - PHAI kiem tra truoc khi doc cac

@@ -704,13 +704,14 @@ class _IncomeExpenseCard extends ConsumerWidget {
   }
 }
 
-/// So danh muc hien san trong chu giai the Chi tieu theo danh muc - con lai
-/// gom vao 1 dong "+N muc khac" bam de xem day du (giu 3 the vua 1 man).
-const _kCategoryPreviewCount = 4;
-
 /// The Chi tieu theo danh muc - bo cuc NGANG: bieu do tron ben trai, chu
 /// giai (ten + so tien + %) ben phai.
-class _CategoryBreakdownCard extends ConsumerStatefulWidget {
+///
+/// LUON liet ke DAY DU moi danh muc. Truoc day chi hien 4 muc lon nhat roi
+/// gom phan con lai vao 1 dong "+N muc khac" bam de mo - man Bao cao von da
+/// cuon duoc, nen viec gap lai chi bat nguoi dung bam them 1 nhat de xem
+/// chinh so lieu ho vao day de xem.
+class _CategoryBreakdownCard extends ConsumerWidget {
   const _CategoryBreakdownCard({
     required this.categoryTotals,
     required this.customCategories,
@@ -722,23 +723,10 @@ class _CategoryBreakdownCard extends ConsumerStatefulWidget {
   final List<WealthCustomCategory> customCategories;
 
   @override
-  ConsumerState<_CategoryBreakdownCard> createState() =>
-      _CategoryBreakdownCardState();
-}
-
-class _CategoryBreakdownCardState
-    extends ConsumerState<_CategoryBreakdownCard> {
-  bool _expanded = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final total = widget.categoryTotals.values.fold<double>(0, (s, v) => s + v);
-    final sortedEntries = widget.categoryTotals.entries.toList()
+  Widget build(BuildContext context, WidgetRef ref) {
+    final total = categoryTotals.values.fold<double>(0, (s, v) => s + v);
+    final sortedEntries = categoryTotals.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
-    final hidden = sortedEntries.length - _kCategoryPreviewCount;
-    final visibleCount = _expanded || hidden <= 0
-        ? sortedEntries.length
-        : _kCategoryPreviewCount;
 
     return GlowBox(
       padding: _kCardPadding,
@@ -786,32 +774,8 @@ class _CategoryBreakdownCardState
                 Expanded(
                   child: Column(
                     children: [
-                      for (var i = 0; i < visibleCount; i++)
-                        _legendRow(i, sortedEntries[i], total),
-                      if (hidden > 0)
-                        GestureDetector(
-                          onTap: () => setState(() => _expanded = !_expanded),
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Padding(
-                              padding: const EdgeInsets.only(top: 2),
-                              child: Text(
-                                _expanded
-                                    ? ref.tr('wealth_report_show_less')
-                                    : ref
-                                          .tr(
-                                            'wealth_report_renewal_history_more',
-                                          )
-                                          .replaceFirst('{n}', '$hidden'),
-                                style: AppTextStyles.body(
-                                  size: 10.5,
-                                  weight: FontWeight.w700,
-                                  color: AppColors.wealthAccent,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
+                      for (var i = 0; i < sortedEntries.length; i++)
+                        _legendRow(ref, i, sortedEntries[i], total),
                     ],
                   ),
                 ),
@@ -822,7 +786,12 @@ class _CategoryBreakdownCardState
     );
   }
 
-  Widget _legendRow(int i, MapEntry<String, double> entry, double total) {
+  Widget _legendRow(
+    WidgetRef ref,
+    int i,
+    MapEntry<String, double> entry,
+    double total,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 5),
       child: Row(
@@ -841,7 +810,7 @@ class _CategoryBreakdownCardState
               resolveExpenseCategoryDisplay(
                 ref,
                 entry.key,
-                widget.customCategories,
+                customCategories,
               ).$2,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

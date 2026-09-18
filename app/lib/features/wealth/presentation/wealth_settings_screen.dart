@@ -378,11 +378,14 @@ class _WealthSettingsScreenState extends ConsumerState<WealthSettingsScreen>
     );
   }
 
-  /// Bam "Gui thu 1 thong bao" - LUON phan hoi bang 1 SnackBar, ke ca khi
-  /// that bai. Truoc day chi goi ChatPush.sendTestPriceAlert() kieu ban roi:
-  /// may dang tat thong bao cua app (hay gap voi app cai ngoai Store) thi
-  /// khong co gi hien ra va cung khong co loi nao bao ve, nguoi dung tuong
-  /// nut hong.
+  /// Bam "Gui thu 1 thong bao" - LUON phan hoi, ke ca khi that bai.
+  ///
+  /// Dung HOP THOAI chu KHONG dung SnackBar: man Cai dat nay duoc mo bang
+  /// openAppPopup, tuc 1 modal bottom sheet phu 94% man hinh.
+  /// ScaffoldMessenger.of(context) tro toi Scaffold GOC nam DUOI tam sheet
+  /// do, nen SnackBar van duoc hien nhung bi chinh popup che kin - bam vao
+  /// nut trong nhu khong co gi xay ra (dung loi da bao lan 2). Hop thoai mo
+  /// bang useRootNavigator thi luon nam TREN CUNG.
   Future<void> _sendTestPriceAlert() async {
     final error = await ChatPush.instance.sendTestPriceAlert();
     if (!mounted) return;
@@ -391,10 +394,25 @@ class _WealthSettingsScreenState extends ConsumerState<WealthSettingsScreen>
       'blocked' => ref.tr('wealth_settings_price_alerts_test_blocked'),
       _ => '${ref.tr('wealth_settings_price_alerts_test_failed')}$error',
     };
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        duration: Duration(seconds: error == null ? 2 : 6),
+    await showDialog<void>(
+      context: context,
+      useRootNavigator: true,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.bgTop,
+        content: Text(message, style: AppTextStyles.body(size: 13)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(
+              'OK',
+              style: AppTextStyles.body(
+                size: 13,
+                weight: FontWeight.w700,
+                color: AppColors.wealthAccent,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
