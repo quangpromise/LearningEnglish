@@ -55,6 +55,11 @@ class AppColors {
   /// khac deu la vien xam mong.
   static const wealthCardBorder = Color(0x29FFFFFF);
 
+  /// Duong bieu do tang truong: vang KEM SANG - do doc theo tung cot tren ca
+  /// 2 bieu do trong anh goc, dai #E4C966..#FFFFC7, trung binh ~#F8E98E.
+  /// Dung wealthAccent (#D4AF37) thi duong ra toi va chim han.
+  static const wealthChartLine = Color(0xFFF8E98E);
+
   /// Xanh la cua cac chi so tang trong anh goc (#46FFCF / #32FFEC) - sang va
   /// ngA xanh ngoc hon AppColors.teal.
   static const wealthUp = Color(0xFF3BFFC9);

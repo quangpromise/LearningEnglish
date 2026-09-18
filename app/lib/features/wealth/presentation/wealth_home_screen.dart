@@ -48,7 +48,7 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
   // KHONG active chi ho 1 goc nho ra ("khung" de goi y co the vuot toi) va
   // AN HAN so tien/ten (xem _TotalCard.showValue) - theo yeu cau nguoi dung:
   // the Tong Vi to hon, the Dau tu khi peek chi thay khung, khong thay so.
-  late final _pageController = PageController(viewportFraction: 0.86)
+  late final _pageController = PageController(viewportFraction: 0.95)
     ..addListener(_onPageScroll);
   int _pageIndex = 0;
 
@@ -548,8 +548,8 @@ class _SparklinePainter extends CustomPainter {
       fill,
       Paint()
         ..shader = ui.Gradient.linear(Offset(0, 0), Offset(0, size.height), [
-          AppColors.wealthAccent.withValues(alpha: 0.22),
-          AppColors.wealthAccent.withValues(alpha: 0),
+          AppColors.wealthChartLine.withValues(alpha: 0.22),
+          AppColors.wealthChartLine.withValues(alpha: 0),
         ]),
     );
 
@@ -559,10 +559,10 @@ class _SparklinePainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.8
         ..strokeJoin = StrokeJoin.round
-        ..color = AppColors.wealthAccent,
+        ..color = AppColors.wealthChartLine,
     );
     for (final p in points) {
-      canvas.drawCircle(p, 2.2, Paint()..color = AppColors.wealthAccent);
+      canvas.drawCircle(p, 2.2, Paint()..color = AppColors.wealthChartLine);
     }
   }
 
@@ -786,7 +786,13 @@ class _TotalCard extends StatelessWidget {
           // net vien trong anh goc. Ban cu dung wealthAccent@45% ra net toi xin.
           border: Border.all(color: AppColors.wealthHeroBorder),
         ),
+        // StackFit.expand + cac con deu Positioned: KHONG dung flex
+        // (Spacer/Expanded) trong Stack nua. Ban truoc dung Column
+        // mainAxisSize.max + Spacer o day va bi tran 99922px - Stack truyen
+        // rang buoc LONG (loose) xuong con, nen Spacer khong co chieu cao huu
+        // han de an theo va Column phinh ra vo han.
         child: Stack(
+          fit: StackFit.expand,
           children: [
             // Anh dong xu vang neo o canh phai, mo dan ve trai de khong cat
             // ngang chu - dung ShaderMask thay vi de anh vuong goc nhu cu.
@@ -794,7 +800,7 @@ class _TotalCard extends StatelessWidget {
               right: 0,
               top: 0,
               bottom: 0,
-              width: 168,
+              width: 196,
               child: IgnorePointer(
                 child: ShaderMask(
                   blendMode: BlendMode.dstIn,
@@ -812,118 +818,111 @@ class _TotalCard extends StatelessWidget {
                 ),
               ),
             ),
-            // max + Spacer: dai hanh dong luon dinh SAT DAY the du so tien
-            // dai ngan the nao - truoc day the cao co dinh 146 con noi dung
-            // tu do nen bi tran (vach soc vang-den) o cuoi.
-            Column(
-              mainAxisSize: MainAxisSize.max,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Chua chu hep lai (le phai 150) de khong chay de len anh
-                // dong xu ben phai - dai hanh dong ben duoi van full-width.
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 13, 145, 10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Icon con mat nam NGAY CANH tieu de nhu ban thiet ke,
-                      // nhung van la GestureDetector RIENG nam ngoai vung bam
-                      // mo man chi tiet - neu long nhau thi 1 lan cham se kich
-                      // hoat CA HAI (an/hien so tien VA mo man), loi cu da gap.
-                      Row(
+            // Khoi chu neo tren, dai hanh dong neo day - moi cai 1 Positioned
+            // rieng thay vi 1 Column co Spacer.
+            Positioned(
+              left: 0,
+              right: 0,
+              top: 0,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 13, 168, 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Icon con mat nam NGAY CANH tieu de nhu ban thiet ke,
+                    // nhung van la GestureDetector RIENG nam ngoai vung bam
+                    // mo man chi tiet - neu long nhau thi 1 lan cham se kich
+                    // hoat CA HAI (an/hien so tien VA mo man), loi cu da gap.
+                    Row(
+                      children: [
+                        Flexible(
+                          child: GestureDetector(
+                            onTap: onTap,
+                            behavior: HitTestBehavior.opaque,
+                            child: Text(
+                              title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTextStyles.muted(size: 12),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 7),
+                        GestureDetector(
+                          onTap: onToggleHidden,
+                          child: Icon(
+                            hidden
+                                ? Icons.visibility_off_rounded
+                                : Icons.visibility_rounded,
+                            color: AppColors.wealthAccent,
+                            size: 16,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    GestureDetector(
+                      onTap: onTap,
+                      behavior: HitTestBehavior.opaque,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Flexible(
-                            child: GestureDetector(
-                              onTap: onTap,
-                              behavior: HitTestBehavior.opaque,
-                              child: Text(
-                                title,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: AppTextStyles.muted(size: 12),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 7),
-                          GestureDetector(
-                            onTap: onToggleHidden,
-                            child: Icon(
+                          // So tien mau VANG - diem nhan chinh cua ban
+                          // thiet ke (truoc day de trang nen the trong nhat).
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
                               hidden
-                                  ? Icons.visibility_off_rounded
-                                  : Icons.visibility_rounded,
-                              color: AppColors.wealthAccent,
-                              size: 16,
+                                  ? '•••••••'
+                                  : (value == null ? '...' : formatVnd(value!)),
+                              maxLines: 1,
+                              style: AppTextStyles.heading(size: 25)
+                                  .copyWith(color: AppColors.wealthAmount),
                             ),
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      GestureDetector(
-                        onTap: onTap,
-                        behavior: HitTestBehavior.opaque,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            // So tien mau VANG - diem nhan chinh cua ban
-                            // thiet ke (truoc day de trang nen the trong nhat).
-                            FittedBox(
-                              fit: BoxFit.scaleDown,
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                hidden
-                                    ? '•••••••'
-                                    : (value == null
-                                          ? '...'
-                                          : formatVnd(value!)),
-                                maxLines: 1,
-                                style: AppTextStyles.heading(size: 25)
-                                    .copyWith(color: AppColors.wealthAmount),
-                              ),
-                            ),
-                            if (!hidden && pnl != null && pnl != 0) ...[
-                              const SizedBox(height: 4),
-                              Row(
-                                children: [
-                                  Icon(
-                                    pnl! >= 0
-                                        ? Icons.trending_up_rounded
-                                        : Icons.trending_down_rounded,
-                                    size: 14,
-                                    color: pnl! >= 0
-                                        ? AppColors.wealthUp
-                                        : AppColors.pink,
-                                  ),
-                                  const SizedBox(width: 5),
-                                  Flexible(
-                                    child: Text(
-                                      '${pnl! >= 0 ? '+' : ''}${formatVnd(pnl!)}'
-                                      '${pnlPercent == null ? '' : ' (${pnlPercent! >= 0 ? '+' : ''}${pnlPercent!.toStringAsFixed(1)}%)'}',
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: AppTextStyles.body(
-                                        size: 11.5,
-                                        weight: FontWeight.w700,
-                                        color: pnl! >= 0
-                                            ? AppColors.teal
-                                            : AppColors.pink,
-                                      ),
+                          if (!hidden && pnl != null && pnl != 0) ...[
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                Icon(
+                                  pnl! >= 0
+                                      ? Icons.trending_up_rounded
+                                      : Icons.trending_down_rounded,
+                                  size: 14,
+                                  color: pnl! >= 0
+                                      ? AppColors.wealthUp
+                                      : AppColors.pink,
+                                ),
+                                const SizedBox(width: 5),
+                                Flexible(
+                                  child: Text(
+                                    '${pnl! >= 0 ? '+' : ''}${formatVnd(pnl!)}'
+                                    '${pnlPercent == null ? '' : ' (${pnlPercent! >= 0 ? '+' : ''}${pnlPercent!.toStringAsFixed(1)}%)'}',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: AppTextStyles.body(
+                                      size: 11.5,
+                                      weight: FontWeight.w700,
+                                      color: pnl! >= 0
+                                          ? AppColors.wealthUp
+                                          : AppColors.pink,
                                     ),
                                   ),
-                                ],
-                              ),
-                            ],
+                                ),
+                              ],
+                            ),
                           ],
-                        ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                const Spacer(),
-                footer,
-              ],
+              ),
             ),
+            Positioned(left: 0, right: 0, bottom: 0, child: footer),
           ],
         ),
       ),

@@ -42,14 +42,58 @@ Future<void> _loadFonts() async {
   }
 }
 
-/// Doc file anh that trong assets/ thay vi tra ve o trong - neu khong thi
-/// anh minh hoa (hero, dong xu vang) se bien mat khoi anh chup va ta lai
-/// ket luan sai ve thiet ke (da tung mac dung loi nay o ban mockup web).
+/// Doc file anh that trong assets/ thay vi tra ve o trong.
+///
+/// NGUYEN NHAN moi anh tung hong trong bo chup nay: `Image.asset` khong doc
+/// thang file - no goi `AssetManifest.loadFromAssetBundle()` de chon bien the
+/// theo do phan giai, tuc la phai co 'AssetManifest.bin'. File do do Flutter
+/// SINH RA luc build nen khong ton tai trong cay nguon; handler cu tra null
+/// -> AssetImage nem loi -> anh ve thanh khoi hong. Gio ta TU SINH manifest
+/// (moi asset 1 bien the dpr 1.0) bang dung StandardMessageCodec ma Flutter
+/// dung de doc lai.
+ByteData _buildAssetManifest() {
+  final assets = <String>[];
+  for (final dir in ['assets']) {
+    final d = Directory(dir);
+    if (!d.existsSync()) continue;
+    for (final f in d.listSync(recursive: true)) {
+      if (f is File) assets.add(f.path.replaceAll(r'\', '/'));
+    }
+  }
+  final manifest = <Object?, Object?>{
+    for (final a in assets)
+      a: <Object?>[
+        <Object?, Object?>{'asset': a, 'dpr': 1.0},
+      ],
+  };
+  return const StandardMessageCodec().encodeMessage(manifest)!;
+}
+
+/// Supabase.initialize doc SharedPreferences ngay khi khoi tao. Trong test
+/// khong co plugin that nen phai mock CHANNEL (khong dung
+/// SharedPreferences.setMockInitialValues - ham do chi duoc phep goi trong
+/// test/ nen analyzer cua CI se bao loi).
+void _mockSharedPrefs() {
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+      .setMockMethodCallHandler(
+        const MethodChannel('plugins.flutter.io/shared_preferences'),
+        (call) async => call.method == 'getAll' ? <String, Object>{} : null,
+      );
+}
+
 void _serveRealAssets() {
+  final manifest = _buildAssetManifest();
   TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
       .setMockMessageHandler('flutter/assets', (ByteData? message) async {
         final key = utf8Decode(message!);
+        if (key == 'AssetManifest.bin' || key == 'AssetManifest.bin.json') {
+          // ignore: avoid_print
+          print('ASSET-REQ manifest: $key');
+          return manifest;
+        }
         final file = File(key);
+        // ignore: avoid_print
+        print('ASSET-REQ $key -> ${file.existsSync() ? 'OK' : 'THIEU'}');
         if (!file.existsSync()) return null;
         final bytes = await file.readAsBytes();
         return ByteData.view(bytes.buffer);
@@ -92,11 +136,18 @@ Future<void> _shoot(WidgetTester tester, String name, Widget screen) async {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: _appTheme(),
-        home: RepaintBoundary(
-          key: key,
-          child: MediaQuery(
-            data: const MediaQueryData(size: _size, devicePixelRatio: 3),
-            child: screen,
+        // Scaffold la BAT BUOC: cac man that luon nam trong Scaffold, va
+        // InkWell (vd dai Nap/Rut) doi 1 Material to tien - thieu no thi
+        // Flutter thay bang ErrorWidget to DO KIN ca the, de tuong nham la
+        // loi thiet ke cua app.
+        home: Scaffold(
+          backgroundColor: Colors.black,
+          body: RepaintBoundary(
+            key: key,
+            child: MediaQuery(
+              data: const MediaQueryData(size: _size, devicePixelRatio: 3),
+              child: screen,
+            ),
           ),
         ),
       ),
@@ -120,6 +171,7 @@ Future<void> _shoot(WidgetTester tester, String name, Widget screen) async {
 
 void main() {
   setUpAll(() async {
+    _mockSharedPrefs();
     await _loadFonts();
     // Cac provider o Home doc Supabase.instance.client ngay khi dung => chua
     // initialize thi man hinh nem loi va anh chup chi ra khung do. Khoi tao

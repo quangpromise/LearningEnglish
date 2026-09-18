@@ -201,7 +201,10 @@ class AppTopBar extends ConsumerWidget {
           GestureDetector(
             onTap: onMessagesTap,
             child: TopBarIconChip(
-              icon: Icons.chat_bubble_outline_rounded,
+              // Anh goc: bong bong chat co DUOI o goc duoi-trai va co cac vach
+              // noi dung ben trong - chat_bubble_outline_rounded truoc day la
+              // bong bong RONG nen nhin khac han.
+              icon: Icons.sms_outlined,
               dotColor: accentColor,
               // Cham bao tin nhan nam NGAY TREN duong vien nut (do tu ban
               // thiet ke: tam cham cach tam nut dung bang ban kinh), khong
@@ -215,14 +218,20 @@ class AppTopBar extends ConsumerWidget {
   }
 }
 
-/// Nut tron dung trong thanh dau man (la ban, tin nhan, cai dat...) - nen la
-/// quang sang tron mo dan ra bien, KHONG co vien cung, theo ban thiet ke lai.
+/// Nut tron dung trong thanh dau man (tim kiem, tin nhan, cai dat...).
+///
+/// Moi thong so do TRUC TIEP tu 2 anh thiet ke goc (quet ngang qua tam nut):
+///  - duong kinh 92px tren anh 1080 rong  -> ~34pt
+///  - vanh vien sang len rgb(59,74,95) tren nen rgb(17,29,45) -> trang ~22%
+///  - ben trong CO 1 lop nen rat nhe (long nut #16253A vs ngoai #111D2D)
+///  - cham bao duong kinh 17px (~18% duong kinh nut), tam nam DUNG TREN vanh
+///    o goc 45 do (lech tam 32,-34 so voi ban kinh 46)
 class TopBarIconChip extends StatelessWidget {
   const TopBarIconChip({
     super.key,
     required this.icon,
     this.badge = false,
-    this.size = 38,
+    this.size = 34,
     this.dotColor = AppColors.blue,
   });
 
@@ -236,7 +245,11 @@ class TopBarIconChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dot = size / 2 - (size / 2) / 1.4142;
+    final dotSize = size * 0.185;
+    // Tam cham nam tren vanh o 45 do => cach mep phai/tren cua khung dung
+    // r - r/sqrt(2); tru tiep nua duong kinh cham de canh theo TAM chu khong
+    // phai theo canh cham (ban cu canh theo canh nen cham bi thut vao trong).
+    final dotInset = size / 2 - (size / 2) / 1.4142 - dotSize / 2;
     return SizedBox(
       width: size,
       height: size,
@@ -248,24 +261,23 @@ class TopBarIconChip extends StatelessWidget {
             height: size,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              // Do tu anh thiet ke goc: nut la 1 VONG VIEN xam mong tren nen
-              // TRONG SUOT - ben trong KHONG co nen/quang sang nao. Vien sang
-              // len rgb(73,78,83) tren nen rgb(4,9,14), tuc trang khoang 27%.
-              // Ban truoc co them 1 lop quang sang ben trong nen nut nhin day
-              // va duc hon han anh goc.
               border: Border.fromBorderSide(
-                BorderSide(color: Colors.white.withValues(alpha: 0.27)),
+                BorderSide(color: Colors.white.withValues(alpha: 0.22)),
               ),
+              // Lop nen rat nhe ben trong - anh goc do duoc long nut sang hon
+              // nen ngoai chut it (delta khoang rgb(5,8,13)), khong phai trong
+              // suot hoan toan cung khong phai quang sang day nhu ban truoc.
+              color: const Color(0x0E82B2F0),
             ),
-            child: Icon(icon, size: size * 0.46, color: AppColors.textPrimary),
+            child: Icon(icon, size: size * 0.5, color: AppColors.textPrimary),
           ),
           if (badge)
             Positioned(
-              right: dot,
-              top: dot,
+              right: dotInset,
+              top: dotInset,
               child: Container(
-                width: 7,
-                height: 7,
+                width: dotSize,
+                height: dotSize,
                 decoration: BoxDecoration(
                   color: dotColor,
                   shape: BoxShape.circle,
