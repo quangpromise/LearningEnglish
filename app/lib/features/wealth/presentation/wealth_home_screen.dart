@@ -1001,92 +1001,99 @@ class _TotalCard extends StatelessWidget {
     // that chi day 1px (~0.46pt o mat do 2.156) nen dung 0.7 thay vi 1.
     // Flutter khong cho Border.all nhan gradient => dung 1 lop ngoai to
     // gradient + padding mong, lop trong la than the.
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(22),
-        gradient: const LinearGradient(
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-          colors: [
-            Color(0xFFF2E8AE),
-            Color(0xFFE3D393),
-            Color(0xFF3A4046),
-            Color(0xFF2F353B),
-          ],
-          stops: [0.0, 0.05, 0.22, 1.0],
-        ),
-      ),
-      padding: const EdgeInsets.all(0.7),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(21.3),
-        child: Container(
-          decoration: const BoxDecoration(
-            // Nen DEN SAU - anh dong xu vang o nua phai va con so mau vang moi
-            // la diem nhan, than the khong phai khoi vang dac.
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF0D0B06), Color(0xFF060505)],
-            ),
+    //
+    // CA THE la 1 vung bam mo man chi tiet (Vi/Dau tu): truoc day chi co
+    // DUNG chu tieu de va cum so tien nhan cham, bam vao khoang trong hay
+    // anh dong xu thi khong an gi - nguoi dung phai nham dung con so. Cac
+    // nut CON co san ben trong (icon con mat, 2 muc o dai duoi) van giu
+    // hanh dong rieng: GestureDetector long ben trong luon THANG dau truong
+    // cu chi truoc cai boc ngoai, nen 1 cham chi kich hoat dung 1 cai.
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(22),
+          gradient: const LinearGradient(
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+            colors: [
+              Color(0xFFF2E8AE),
+              Color(0xFFE3D393),
+              Color(0xFF3A4046),
+              Color(0xFF2F353B),
+            ],
+            stops: [0.0, 0.05, 0.22, 1.0],
           ),
-          // StackFit.expand + cac con deu Positioned: KHONG dung flex
-          // (Spacer/Expanded) trong Stack nua. Ban truoc dung Column
-          // mainAxisSize.max + Spacer o day va bi tran 99922px - Stack truyen
-          // rang buoc LONG (loose) xuong con, nen Spacer khong co chieu cao huu
-          // han de an theo va Column phinh ra vo han.
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              // Anh dong xu vang neo o canh phai, mo dan ve trai de khong cat
-              // ngang chu - dung ShaderMask thay vi de anh vuong goc nhu cu.
-              // bottom: 46 - anh dong xu DUNG NGAY TREN dai hanh dong, dung
-              // nhu anh goc (anh ket thuc truoc dai "Nap/Rut | Ma QR"). Truoc
-              // day anh phu het chieu cao the nen nam ngay sau chu, lam 2 nut
-              // do rat kho doc.
-              Positioned(
-                right: 0,
-                top: 0,
-                bottom: 66,
-                width: 196,
-                child: IgnorePointer(
-                  child: ShaderMask(
-                    blendMode: BlendMode.dstIn,
-                    shaderCallback: (rect) => const LinearGradient(
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                      colors: [Color(0x00000000), Color(0xFF000000)],
-                      stops: [0.0, 0.45],
-                    ).createShader(rect),
-                    child: Image.asset(
-                      'assets/wealth/home_coins.jpg',
-                      fit: BoxFit.cover,
-                      alignment: Alignment.centerRight,
+        ),
+        padding: const EdgeInsets.all(0.7),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(21.3),
+          child: Container(
+            decoration: const BoxDecoration(
+              // Nen DEN SAU - anh dong xu vang o nua phai va con so mau vang moi
+              // la diem nhan, than the khong phai khoi vang dac.
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF0D0B06), Color(0xFF060505)],
+              ),
+            ),
+            // StackFit.expand + cac con deu Positioned: KHONG dung flex
+            // (Spacer/Expanded) trong Stack nua. Ban truoc dung Column
+            // mainAxisSize.max + Spacer o day va bi tran 99922px - Stack truyen
+            // rang buoc LONG (loose) xuong con, nen Spacer khong co chieu cao huu
+            // han de an theo va Column phinh ra vo han.
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                // Anh dong xu vang neo o canh phai, mo dan ve trai de khong cat
+                // ngang chu - dung ShaderMask thay vi de anh vuong goc nhu cu.
+                // bottom: 46 - anh dong xu DUNG NGAY TREN dai hanh dong, dung
+                // nhu anh goc (anh ket thuc truoc dai "Nap/Rut | Ma QR"). Truoc
+                // day anh phu het chieu cao the nen nam ngay sau chu, lam 2 nut
+                // do rat kho doc.
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  bottom: 66,
+                  width: 196,
+                  child: IgnorePointer(
+                    child: ShaderMask(
+                      blendMode: BlendMode.dstIn,
+                      shaderCallback: (rect) => const LinearGradient(
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                        colors: [Color(0x00000000), Color(0xFF000000)],
+                        stops: [0.0, 0.45],
+                      ).createShader(rect),
+                      child: Image.asset(
+                        'assets/wealth/home_coins.jpg',
+                        fit: BoxFit.cover,
+                        alignment: Alignment.centerRight,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              // Khoi chu neo tren, dai hanh dong neo day - moi cai 1 Positioned
-              // rieng thay vi 1 Column co Spacer.
-              Positioned(
-                left: 0,
-                right: 0,
-                top: 0,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 13, 168, 10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Icon con mat nam NGAY CANH tieu de nhu ban thiet ke,
-                      // nhung van la GestureDetector RIENG nam ngoai vung bam
-                      // mo man chi tiet - neu long nhau thi 1 lan cham se kich
-                      // hoat CA HAI (an/hien so tien VA mo man), loi cu da gap.
-                      Row(
-                        children: [
-                          Flexible(
-                            child: GestureDetector(
-                              onTap: onTap,
-                              behavior: HitTestBehavior.opaque,
+                // Khoi chu neo tren, dai hanh dong neo day - moi cai 1 Positioned
+                // rieng thay vi 1 Column co Spacer.
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 13, 168, 10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Icon con mat nam NGAY CANH tieu de nhu ban thiet ke.
+                        // No van phai la GestureDetector RIENG (long ben trong
+                        // vung bam cua ca the): cham vao mat chi an/hien so
+                        // tien, KHONG mo man chi tiet.
+                        Row(
+                          children: [
+                            Flexible(
                               child: Text(
                                 title,
                                 maxLines: 1,
@@ -1094,25 +1101,29 @@ class _TotalCard extends StatelessWidget {
                                 style: AppTextStyles.muted(size: 12),
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 7),
-                          GestureDetector(
-                            onTap: onToggleHidden,
-                            child: Icon(
-                              hidden
-                                  ? Icons.visibility_off_rounded
-                                  : Icons.visibility_rounded,
-                              color: AppColors.wealthAccent,
-                              size: 16,
+                            const SizedBox(width: 7),
+                            GestureDetector(
+                              onTap: onToggleHidden,
+                              // opaque + vien dem quanh icon: ca the gio la 1
+                              // vung bam mo Vi, neu icon nay chi nhan cham
+                              // DUNG net ve (deferToChild) thi cham lech vai
+                              // pixel se mo Vi thay vi an/hien so tien.
+                              behavior: HitTestBehavior.opaque,
+                              child: Padding(
+                                padding: const EdgeInsets.all(4),
+                                child: Icon(
+                                  hidden
+                                      ? Icons.visibility_off_rounded
+                                      : Icons.visibility_rounded,
+                                  color: AppColors.wealthAccent,
+                                  size: 16,
+                                ),
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      GestureDetector(
-                        onTap: onTap,
-                        behavior: HitTestBehavior.opaque,
-                        child: Column(
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -1166,13 +1177,13 @@ class _TotalCard extends StatelessWidget {
                             ],
                           ],
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              Positioned(left: 10, right: 10, bottom: 10, child: footer),
-            ],
+                Positioned(left: 10, right: 10, bottom: 10, child: footer),
+              ],
+            ),
           ),
         ),
       ),
