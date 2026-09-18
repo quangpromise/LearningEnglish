@@ -79,7 +79,7 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
     );
     return WealthDesignBackground(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
+        padding: const EdgeInsets.fromLTRB(14, 5, 14, 2),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -96,11 +96,11 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
                   child: const TopBarIconChip(icon: Icons.settings_outlined),
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 7),
               // The "Tin nhan" rieng da BO theo yeu cau - tin nhan van vao
               // duoc bang nut chat tren thanh dau man (co cham bao chua doc).
               SizedBox(
-                height: 158,
+                height: 142,
                 child: PageView(
                   controller: _pageController,
                   // padEnds:false - mac dinh PageView TU THEM le dau/cuoi de
@@ -186,7 +186,7 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 7),
+              const SizedBox(height: 5),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -205,7 +205,7 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
                     ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               // 4 muc xep 1 HANG nhu anh thiet ke (truoc day 2x2): ngoai
               // viec giong ban chot, xep 1 hang cat bot ~105pt chieu cao -
               // day la thay doi chinh giup ca man vua DUNG 1 MAN HINH, khong
@@ -270,14 +270,14 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
                     ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               _OverviewCard(
                 onTap: () => openAppPopup(context, const WealthReportScreen()),
               ),
               // The "Bao cao" rieng da BO: bam vao no mo dung man Bao cao
               // ma the "Tong quan tai chinh" ben tren da mo, lai trung ca
               // noi dung hien thi - de ca hai la thua.
-              const SizedBox(height: 11),
+              const SizedBox(height: 8),
               // Thanh nhac chuyen tu thanh Menu duoi VAO THAN TRANG (xem
               // wealth_shell.dart): man hinh ket thuc tu nhien sau widget nay,
               // khong con thanh co dinh che noi dung.
@@ -372,7 +372,7 @@ class _OverviewCard extends ConsumerWidget {
     return GestureDetector(
       onTap: onTap,
       child: _GoldCard(
-        padding: const EdgeInsets.fromLTRB(12, 12, 12, 11),
+        padding: const EdgeInsets.fromLTRB(12, 10, 12, 9),
         child: LayoutBuilder(
           builder: (context, c) {
             // Anh goc: bieu do + cac o so lieu chi chiem khoang 62% be ngang
@@ -445,7 +445,7 @@ class _OverviewCard extends ConsumerWidget {
                           _TrendBadge(percent: netPercent),
                       ],
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 8),
                     if (!hasData)
                       SizedBox(
                         width: leftWidth,
@@ -463,11 +463,11 @@ class _OverviewCard extends ConsumerWidget {
                       )
                     else
                       SizedBox(
-                        height: 58,
+                        height: 50,
                         width: leftWidth,
                         child: CustomPaint(painter: _SparklinePainter(nets)),
                       ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 8),
                     SizedBox(
                       width: leftWidth,
                       child: Row(
@@ -866,7 +866,7 @@ class _WealthTile extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: _GoldCard(
-        padding: const EdgeInsets.fromLTRB(9, 10, 7, 9),
+        padding: const EdgeInsets.fromLTRB(9, 8, 7, 7),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,

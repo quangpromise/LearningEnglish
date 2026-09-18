@@ -318,10 +318,7 @@ class _AssistiveRail extends ConsumerStatefulWidget {
 }
 
 class _AssistiveRailState extends ConsumerState<_AssistiveRail> {
-  static const _itemExtent = 84.0;
-
-  /// So muc hien cung luc trong khung; con lai cuon toi.
-  static const _visible = 4;
+  static const _itemExtent = 80.0;
 
   late final ScrollController _controller = ScrollController()
     ..addListener(_onScroll);
@@ -359,8 +356,15 @@ class _AssistiveRailState extends ConsumerState<_AssistiveRail> {
 
   @override
   Widget build(BuildContext context) {
-    const railWidth = 132.0;
-    final railHeight = _itemExtent * _visible;
+    // Hep lai (132 -> 104) cho de nhin, va DAI ra vua du chua het cac muc
+    // nen binh thuong khong phai cuon; chi khi man qua thap moi phai cuon.
+    const railWidth = 104.0;
+    final maxHeight = MediaQuery.sizeOf(context).height - 180;
+    final railHeight = (_itemExtent * _items.length).clamp(
+      _itemExtent * 2,
+      maxHeight,
+    );
+    final scrollable = _itemExtent * _items.length > railHeight + 0.5;
     // Muc nam gan TAM thanh nhat se duoc lam noi.
     final centred = ((_offset + railHeight / 2) / _itemExtent - 0.5)
         .round()
@@ -369,8 +373,10 @@ class _AssistiveRailState extends ConsumerState<_AssistiveRail> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _chevron(Icons.keyboard_arrow_up_rounded, () => _nudge(-1)),
-        const SizedBox(height: 6),
+        if (scrollable) ...[
+          _chevron(Icons.keyboard_arrow_up_rounded, () => _nudge(-1)),
+          const SizedBox(height: 6),
+        ],
         ClipRRect(
           borderRadius: BorderRadius.circular(railWidth / 2),
           child: BackdropFilter(
@@ -395,6 +401,9 @@ class _AssistiveRailState extends ConsumerState<_AssistiveRail> {
               ),
               child: ListView.builder(
                 controller: _controller,
+                physics: scrollable
+                    ? const BouncingScrollPhysics()
+                    : const NeverScrollableScrollPhysics(),
                 padding: EdgeInsets.zero,
                 itemExtent: _itemExtent,
                 itemCount: _items.length,
@@ -404,8 +413,10 @@ class _AssistiveRailState extends ConsumerState<_AssistiveRail> {
             ),
           ),
         ),
-        const SizedBox(height: 6),
-        _chevron(Icons.keyboard_arrow_down_rounded, () => _nudge(1)),
+        if (scrollable) ...[
+          const SizedBox(height: 6),
+          _chevron(Icons.keyboard_arrow_down_rounded, () => _nudge(1)),
+        ],
       ],
     );
   }
@@ -462,14 +473,14 @@ class _AssistiveRailState extends ConsumerState<_AssistiveRail> {
           ),
           const SizedBox(height: 5),
           SizedBox(
-            width: 118,
+            width: 96,
             child: Text(
               ref.tr(labelKey),
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: selected ? 11.5 : 10.5,
+                fontSize: selected ? 10.5 : 9.5,
                 fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
                 color: selected
                     ? Colors.white
