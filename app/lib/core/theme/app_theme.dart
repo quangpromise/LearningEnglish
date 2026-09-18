@@ -527,7 +527,14 @@ class HomeDesignBackground extends StatelessWidget {
             child: CustomPaint(painter: _PlanetLimbPainter(glow)),
           ),
         ),
-        Positioned.fill(child: child),
+        // SafeArea CHI boc noi dung, KHONG boc 2 lop nen phia tren: nen van
+        // trai het man (chay ca duoi thanh trang thai/notch) nhu thiet ke,
+        // nhung chu + the khong con bi thanh trang thai cua may che mat.
+        // [ScreenBackground] da lam dung viec nay, 2 nen Home moi thi quen -
+        // do la ly do man Home bi "de" o tren con cac man khac thi khong.
+        // bottom: false - thanh nhac o day do Scaffold.bottomNavigationBar
+        // dam nhiem (Scaffold tu cong le an toan duoi cho no).
+        Positioned.fill(child: SafeArea(bottom: false, child: child)),
       ],
     );
   }
@@ -570,7 +577,11 @@ class WealthDesignBackground extends StatelessWidget {
             ),
           ),
         ),
-        Positioned.fill(child: child),
+        // Nhu [HomeDesignBackground]: nen trai het man, rieng noi dung duoc
+        // day xuong duoi thanh trang thai. O day GIU ca le duoi vi thanh nhac
+        // cua man Tai san nam TRONG than trang (xem wealth_home_screen.dart)
+        // chu khong phai bottomNavigationBar, nen phai tu tranh vach cu chi.
+        Positioned.fill(child: SafeArea(child: child)),
       ],
     );
   }

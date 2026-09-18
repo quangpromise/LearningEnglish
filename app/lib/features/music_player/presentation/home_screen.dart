@@ -85,12 +85,13 @@ class HomeScreen extends ConsumerWidget {
         // chu khong doi kich thuoc luc DO, nen scroll view van danh du cho cho
         // chieu cao goc - sinh ra 1 khoang trong du o duoi va van cuon duoc,
         // dong thoi noi dung bi thu hep lech vao giua. Da thu va phai bo.
-        child: SingleChildScrollView(
-          // Khoa cuon: noi dung da duoc cat vua han than man (do bang bo chup,
-          // xem tool/render) nen khong duoc phep truot nua. Van giu
-          // SingleChildScrollView de neu 1 may nao do co vung hien thi thap
-          // bat thuong thi noi dung bi cat gon thay vi bao loi tran do.
-          physics: const NeverScrollableScrollPhysics(),
+        //
+        // Noi dung CHIEM TRON chieu cao con lai (khong con SingleChildScrollView
+        // khoa cuon): bo cuc duoc do theo 1 man mau ~670pt, tren may cao hon
+        // (ty le 20:9) thua ra ca tram pt bi don het xuong day thanh 1 mang
+        // trong. Nay cac khoang cach giua cac khoi tu chia deu phan thua do
+        // (xem cac Spacer trong _buildBody) nen man nao cung day kin.
+        child: ClipRect(
           child: _buildBody(
             context,
             ref,
@@ -148,21 +149,28 @@ class HomeScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 5),
             const ServiceExpiryBanner(section: AppSection.learnEnglish),
+            // Spacer sau moi khoi: khoang trong THUA cua man (neu co) duoc
+            // chia DEU cho cac khe nay thay vi don het xuong day man. Tren
+            // may vua khit thi Spacer nhan 0pt -> bo cuc y het truoc day.
+            const Spacer(),
             // The tien do (Lv/XP/chuoi ngay) da BO theo yeu cau.
             const _DailyWordsHeroCard(),
             const SizedBox(height: 5),
+            const Spacer(),
             _SkillGrid(
               accent: accent,
               recommended: recommended,
               topPick: topPick,
             ),
             const SizedBox(height: 5),
+            const Spacer(),
             _PracticePanel(
               accent: accent,
               recommended: recommended,
               topPick: topPick,
             ),
             const SizedBox(height: 5),
+            const Spacer(),
             _TestPrepPanel(
               accent: accent,
               recommended: recommended,

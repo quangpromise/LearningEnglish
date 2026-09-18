@@ -94,8 +94,11 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
               142.0,
               240.0,
             );
-            return SingleChildScrollView(
-              physics: const NeverScrollableScrollPhysics(),
+            // ClipRect + Column chiem TRON chieu cao (truoc day la
+            // SingleChildScrollView khoa cuon): trong scroll view chieu cao la
+            // VO HAN nen Spacer khong hoat dong, phan thua cua may man cao bi
+            // don het xuong day thanh 1 mang trong duoi thanh nhac.
+            return ClipRect(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -229,6 +232,10 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
                     ],
                   ),
                   const SizedBox(height: 8),
+                  // Spacer: chia DEU phan chieu cao thua cho cac khe giua cac
+                  // khoi (thay vi de dom lai 1 cuc o day man). May vua khit
+                  // thi Spacer = 0pt, bo cuc giu nguyen nhu truoc.
+                  const Spacer(),
                   // 4 muc xep 1 HANG nhu anh thiet ke (truoc day 2x2): ngoai
                   // viec giong ban chot, xep 1 hang cat bot ~105pt chieu cao -
                   // day la thay doi chinh giup ca man vua DUNG 1 MAN HINH, khong
@@ -294,6 +301,7 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
                     ],
                   ),
                   const SizedBox(height: 8),
+                  const Spacer(),
                   _OverviewCard(
                     onTap: () =>
                         openAppPopup(context, const WealthReportScreen()),
@@ -302,6 +310,7 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
                   // ma the "Tong quan tai chinh" ben tren da mo, lai trung ca
                   // noi dung hien thi - de ca hai la thua.
                   const SizedBox(height: 8),
+                  const Spacer(),
                   // Thanh nhac chuyen tu thanh Menu duoi VAO THAN TRANG (xem
                   // wealth_shell.dart): man hinh ket thuc tu nhien sau widget nay,
                   // khong con thanh co dinh che noi dung.
