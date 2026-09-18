@@ -1,28 +1,23 @@
+// VA: BO khoi buildscript{} rieng cua plugin nay (ban goc keo
+// com.android.tools.build:gradle:8.9.1 + kotlin-gradle-plugin 2.1.0). Project
+// goc dung AGP 9.1.0 / Kotlin 2.4.0 tren Gradle 9.3.1; nap them 1 classpath
+// AGP 8.9.1 vao cung 1 build lam Gradle 9 nem
+//   "java.lang.NullPointerException (no error message)" ngay khi giai
+// phu thuoc kotlin-stdlib 2.1.0 -> BUILD FAILED o task assembleRelease (loi
+// CI 2026-09-19, khong bat duoc bang flutter analyze vi day la tang Gradle).
+//
+// Cach dung hien nay: khai bao qua plugins{} KHONG kem version - version lay
+// tu pluginManagement trong app/android/settings.gradle.kts, nho vay module
+// nay luon di cung phien ban AGP/Kotlin cua project goc thay vi ghim rieng 1
+// bo cu hon. Repositories cung do settings.gradle.kts khai bao chung.
+plugins {
+    id "com.android.library"
+    id "org.jetbrains.kotlin.android"
+}
+
 group = "ai.spatius.avatarkit"
 version = "1.0-SNAPSHOT"
 
-buildscript {
-    ext.kotlin_version = "2.1.0"
-    repositories {
-        google()
-        mavenCentral()
-    }
-
-    dependencies {
-        classpath("com.android.tools.build:gradle:8.9.1")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
-    }
-}
-
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-    }
-}
-
-apply plugin: "com.android.library"
-apply plugin: "kotlin-android"
 
 android {
     // VA: doi namespace cua module WRAPPER Flutter nay (khac voi AAR native
@@ -43,9 +38,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11
-    }
 
     sourceSets {
         main.java.srcDirs += "src/main/kotlin"
@@ -79,5 +71,14 @@ android {
                showStandardStreams = true
             }
         }
+    }
+}
+
+// jvmTarget khai bao o cap goc qua kotlin{} - khoi kotlinOptions{} ben trong
+// android{} da bi go o Kotlin 2.x/AGP 9 (chinh la cach app/build.gradle.kts
+// cua project goc dang lam).
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11
     }
 }
