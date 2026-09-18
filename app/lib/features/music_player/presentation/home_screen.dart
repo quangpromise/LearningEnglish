@@ -89,8 +89,8 @@ class HomeScreen extends ConsumerWidget {
         // Noi dung CHIEM TRON chieu cao con lai (khong con SingleChildScrollView
         // khoa cuon): bo cuc duoc do theo 1 man mau ~670pt, tren may cao hon
         // (ty le 20:9) thua ra ca tram pt bi don het xuong day thanh 1 mang
-        // trong. Nay cac khoang cach giua cac khoi tu chia deu phan thua do
-        // (xem cac Spacer trong _buildBody) nen man nao cung day kin.
+        // trong. Nay phan thua do don HET vao the MAIN SKILL (Expanded trong
+        // _buildBody) cho no to len, nen man nao cung day kin.
         child: ClipRect(
           child: _buildBody(
             context,
@@ -149,28 +149,26 @@ class HomeScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 5),
             const ServiceExpiryBanner(section: AppSection.learnEnglish),
-            // Spacer sau moi khoi: khoang trong THUA cua man (neu co) duoc
-            // chia DEU cho cac khe nay thay vi don het xuong day man. Tren
-            // may vua khit thi Spacer nhan 0pt -> bo cuc y het truoc day.
-            const Spacer(),
             // The tien do (Lv/XP/chuoi ngay) da BO theo yeu cau.
-            const _DailyWordsHeroCard(),
+            //
+            // Expanded: TOAN BO chieu cao thua cua may (may cao 20:9 du ra ca
+            // tram pt so voi ban thiet ke ~670pt) don vao the MAIN SKILL nay
+            // cho no to len, thay vi chia deu thanh nhung khe trong giua cac
+            // khoi nhu ban truoc - trong ma khong dung viec gi.
+            const Expanded(child: _DailyWordsHeroCard()),
             const SizedBox(height: 5),
-            const Spacer(),
             _SkillGrid(
               accent: accent,
               recommended: recommended,
               topPick: topPick,
             ),
             const SizedBox(height: 5),
-            const Spacer(),
             _PracticePanel(
               accent: accent,
               recommended: recommended,
               topPick: topPick,
             ),
             const SizedBox(height: 5),
-            const Spacer(),
             _TestPrepPanel(
               accent: accent,
               recommended: recommended,
@@ -353,83 +351,103 @@ class _DailyWordsHeroCard extends ConsumerWidget {
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(13, 7, 13, 7),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _SectionLabel(ref.tr('home_main_skill')),
-                    const SizedBox(height: 4),
-                    ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 170),
-                      child: Text(
-                        ref
-                            .tr('profile_daily_words_title')
-                            .replaceFirst('{n}', '$total'),
-                        style: AppTextStyles.heading(size: 15.5)
-                            .copyWith(height: 1.12),
+              // Positioned.fill + spaceBetween: the nay duoc [Expanded] o man
+              // Home keo cao them bao nhieu thi nhan chu bam TREN cung con nut
+              // "Tiep tuc" tut xuong DAY the, khong de mot mang trong duoi
+              // nut nhu khi de Column co chieu cao tu nhien.
+              Positioned.fill(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(13, 7, 13, 7),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Cum chu gom lai lam 1 KHOI: spaceBetween chi tach
+                      // khoi chu (tren) voi hang nut (duoi), neu de cac dong
+                      // chu la con truc tiep thi moi dong se bi keo roi xa
+                      // nhau khi the cao len.
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _SectionLabel(ref.tr('home_main_skill')),
+                          const SizedBox(height: 4),
+                          ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 170),
+                            child: Text(
+                              ref
+                                  .tr('profile_daily_words_title')
+                                  .replaceFirst('{n}', '$total'),
+                              style: AppTextStyles.heading(size: 15.5)
+                                  .copyWith(height: 1.12),
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 170),
+                            child: Text(
+                              ref.tr('home_vocabulary_quick_subtitle'),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTextStyles.body(
+                                size: 10.5,
+                                weight: FontWeight.w500,
+                                color: AppColors.textSecondary,
+                              ).copyWith(height: 1.3),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 3),
-                    ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 170),
-                      child: Text(
-                        ref.tr('home_vocabulary_quick_subtitle'),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.body(
-                          size: 10.5,
-                          weight: FontWeight.w500,
-                          color: AppColors.textSecondary,
-                        ).copyWith(height: 1.3),
+                      // Khong con SizedBox ngan cach o day: spaceBetween chia
+                      // khoang trong cho TUNG khe giua cac con, them 1 con
+                      // SizedBox o giua se bi tha troi lung lo giua the.
+                      Row(
+                        children: [
+                          Container(
+                            height: 30,
+                            padding: const EdgeInsets.fromLTRB(14, 0, 17, 0),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFAFCFF),
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.play_arrow_rounded,
+                                  size: 16,
+                                  color: Color(0xFF07090F),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  ref.tr('home_continue'),
+                                  style: AppTextStyles.heading(size: 12.5)
+                                      .copyWith(color: const Color(0xFF07090F)),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Spacer(),
+                          Container(
+                            width: 29,
+                            height: 29,
+                            decoration: BoxDecoration(
+                              color: const Color(0xEE1C2A3E),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: const Color(0x29C8DEFF),
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.chevron_right_rounded,
+                              size: 18,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 7),
-                    Row(
-                      children: [
-                        Container(
-                          height: 30,
-                          padding: const EdgeInsets.fromLTRB(14, 0, 17, 0),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFAFCFF),
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.play_arrow_rounded,
-                                size: 16,
-                                color: Color(0xFF07090F),
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                ref.tr('home_continue'),
-                                style: AppTextStyles.heading(size: 12.5)
-                                    .copyWith(color: const Color(0xFF07090F)),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const Spacer(),
-                        Container(
-                          width: 29,
-                          height: 29,
-                          decoration: BoxDecoration(
-                            color: const Color(0xEE1C2A3E),
-                            shape: BoxShape.circle,
-                            border: Border.all(color: const Color(0x29C8DEFF)),
-                          ),
-                          child: const Icon(
-                            Icons.chevron_right_rounded,
-                            size: 18,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ],

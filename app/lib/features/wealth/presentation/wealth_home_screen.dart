@@ -135,6 +135,7 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
                           padding: const EdgeInsets.only(right: 10),
                           child: _TotalCard(
                             title: ref.tr('wallet_total_assets'),
+                            backgroundAsset: 'assets/wealth/home_coins.jpg',
                             value: netWorth,
                             hidden: hidden,
                             showValue: _pageIndex == 0,
@@ -173,6 +174,11 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
                         ),
                         _TotalCard(
                           title: ref.tr('wealth_investments_total'),
+                          // File anh nay nguoi dung se tu bo vao (tranh bo
+                          // vang + nen nen + qua dia cau, khong co chu/khung
+                          // the ve san trong anh). Chua co file thi the chi
+                          // hien nen den + vien vang, khong loi.
+                          backgroundAsset: 'assets/wealth/home_investment.jpg',
                           value: investmentTotal,
                           hidden: investmentHidden,
                           pnl: investmentPnl,
@@ -956,9 +962,20 @@ class _TotalCard extends StatelessWidget {
     required this.onTap,
     required this.showValue,
     required this.placeholderIcon,
+    required this.backgroundAsset,
     this.pnl,
     this.pnlPercent,
   });
+
+  /// Anh nen RIENG cua tung the trong carousel (Vi = dong xu vang, Dau tu =
+  /// tranh thi truong). Anh phu KIN the (full-bleed) roi mo dan ve trai de
+  /// nua trai van du toi cho chu doc duoc - truoc day ca 2 the dung chung 1
+  /// anh dong xu neo o canh phai.
+  ///
+  /// Thieu file thi chi mat rieng anh (errorBuilder), the van hien binh
+  /// thuong - khong lam vo ca man Home.
+  final String backgroundAsset;
+
   final String title;
   final double? value;
   final bool hidden;
@@ -1014,19 +1031,30 @@ class _TotalCard extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(22),
+          // Vien VANG DEU ca 4 canh + quang vang hat ra ngoai, theo anh mau
+          // 2026-09-19. Ban truoc chi sang vang o canh trai roi tat dan sang
+          // xam o canh phai (do tu 1 anh thiet ke cu hon) nen nua phai cua
+          // the trong nhu bi cut vien khi anh nen phu kin ca the.
           gradient: const LinearGradient(
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
             colors: [
-              Color(0xFFF2E8AE),
-              Color(0xFFE3D393),
-              Color(0xFF3A4046),
-              Color(0xFF2F353B),
+              Color(0xFFF6E3A4),
+              Color(0xFFE0B94F),
+              Color(0xFFF3DC96),
+              Color(0xFFC9A03C),
             ],
-            stops: [0.0, 0.05, 0.22, 1.0],
+            stops: [0.0, 0.35, 0.7, 1.0],
           ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFE8C25A).withValues(alpha: 0.22),
+              blurRadius: 18,
+              spreadRadius: -2,
+            ),
+          ],
         ),
-        padding: const EdgeInsets.all(0.7),
+        padding: const EdgeInsets.all(0.9),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(21.3),
           child: Container(
@@ -1047,30 +1075,36 @@ class _TotalCard extends StatelessWidget {
             child: Stack(
               fit: StackFit.expand,
               children: [
-                // Anh dong xu vang neo o canh phai, mo dan ve trai de khong cat
-                // ngang chu - dung ShaderMask thay vi de anh vuong goc nhu cu.
-                // bottom: 46 - anh dong xu DUNG NGAY TREN dai hanh dong, dung
-                // nhu anh goc (anh ket thuc truoc dai "Nap/Rut | Ma QR"). Truoc
-                // day anh phu het chieu cao the nen nam ngay sau chu, lam 2 nut
-                // do rat kho doc.
-                Positioned(
-                  right: 0,
-                  top: 0,
-                  bottom: 66,
-                  width: 196,
+                // Anh nen PHU KIN the (full-bleed), mo dan ve trai de nua trai
+                // con du toi cho chu/so tien doc duoc - dung mau anh nguoi
+                // dung chot 2026-09-19. Truoc day anh chi la 1 mieng rong
+                // 196pt neo canh phai va dung tren dai hanh dong, nhin ro la
+                // "mieng anh dan vao" chu khong lien mach nhu ban thiet ke.
+                //
+                // 3 diem dung (0 / 0.30 / 0.60) thay vi 2: doan giua giu lai
+                // ~40% do mo nen ranh gioi anh khong hien thanh 1 vet cheo
+                // thang tap giua the.
+                Positioned.fill(
                   child: IgnorePointer(
                     child: ShaderMask(
                       blendMode: BlendMode.dstIn,
                       shaderCallback: (rect) => const LinearGradient(
                         begin: Alignment.centerLeft,
                         end: Alignment.centerRight,
-                        colors: [Color(0x00000000), Color(0xFF000000)],
-                        stops: [0.0, 0.45],
+                        colors: [
+                          Color(0x00000000),
+                          Color(0x66000000),
+                          Color(0xFF000000),
+                        ],
+                        stops: [0.0, 0.30, 0.60],
                       ).createShader(rect),
                       child: Image.asset(
-                        'assets/wealth/home_coins.jpg',
+                        backgroundAsset,
                         fit: BoxFit.cover,
                         alignment: Alignment.centerRight,
+                        // Thieu/hong file anh thi the van hien (nen den +
+                        // vien vang), khong lam vo ca man Home.
+                        errorBuilder: (_, _, _) => const SizedBox.shrink(),
                       ),
                     ),
                   ),
@@ -1205,7 +1239,10 @@ class _CardFooterRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.035),
+        // Nen DEN MO DAY (truoc day la trang 3.5%, gan nhu trong suot): anh
+        // nen gio phu KIN ca the va chay ca sau dai nay, de trong suot thi
+        // chu "Market/Watchlist" nam de len than con bo, khong doc noi.
+        color: const Color(0xC4050608),
         borderRadius: BorderRadius.circular(15),
         border: Border.all(color: AppColors.wealthCardBorder),
       ),
