@@ -2469,6 +2469,23 @@ class AppStrings {
       AppLanguage.vi: 'Chia bill',
       AppLanguage.en: 'Split bill',
     },
+    // Dong mo ta duoi ten trong dai hanh dong cua the Tong tai san.
+    'wealth_home_pay_receive_sub': {
+      AppLanguage.vi: 'Nhanh chóng · An toàn',
+      AppLanguage.en: 'Fast & secure',
+    },
+    'wealth_home_qr_code_sub': {
+      AppLanguage.vi: 'Thanh toán tiện lợi',
+      AppLanguage.en: 'Easy payments',
+    },
+    'wealth_home_market_sub': {
+      AppLanguage.vi: 'Giá thị trường',
+      AppLanguage.en: 'Market prices',
+    },
+    'wealth_home_watchlist_sub': {
+      AppLanguage.vi: 'Mã đang theo dõi',
+      AppLanguage.en: 'Your watchlist',
+    },
     'wealth_home_overview_title': {
       AppLanguage.vi: 'Tổng quan tài chính',
       AppLanguage.en: 'Financial overview',

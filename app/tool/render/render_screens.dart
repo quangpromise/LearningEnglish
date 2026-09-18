@@ -153,7 +153,29 @@ Future<void> _shoot(WidgetTester tester, String name, Widget screen) async {
       ),
     ),
   );
-  // Vai nhip co dinh cho anh/gradient ve xong, KHONG pumpAndSettle.
+  // Giai ma anh la viec BAT DONG BO THAT (ui.instantiateImageCodec), khong
+  // chay duoc duoi dong ho gia cua widget test - day la ly do moi Image.asset
+  // truoc gio deu ve ra khoang trong du bytes da nap OK. Phai nap san trong
+  // runAsync de anh nam san trong ImageCache, sau do widget ve duoc ngay.
+  await tester.runAsync(() async {
+    final ctx = key.currentContext!;
+    // Chi nap thu muc 2 man nay dung - nap ca cay assets/ (co toan bo anh
+    // fitness) lam moi lan chup cham gap nhieu lan ma khong duoc gi.
+    for (final dir in ['assets/wealth', 'assets/home']) {
+      final d = Directory(dir);
+      if (!d.existsSync()) continue;
+      for (final f in d.listSync(recursive: true)) {
+        if (f is! File) continue;
+        final path = f.path.replaceAll(r'\', '/');
+        if (!RegExp(r'\.(png|jpg|jpeg|webp|gif)$').hasMatch(path)) continue;
+        try {
+          await precacheImage(AssetImage(path), ctx);
+        } catch (_) {
+          // Anh hong/khong dung dinh dang - bo qua, cac anh khac van nap.
+        }
+      }
+    }
+  });
   for (var i = 0; i < 6; i++) {
     await tester.pump(const Duration(milliseconds: 120));
   }

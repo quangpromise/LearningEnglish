@@ -77,6 +77,9 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
     final (investmentPnl, investmentPnlPercent) = ref.watch(
       investmentPnlProvider,
     );
+    // Chuoi (thu - chi) 6 thang gan nhat de ve bieu do nho tren the Tong tai
+    // san - anh thiet ke goc co duong nay ngay tren dai hanh dong.
+    final overviewTrend = _monthlyNetSeries(ref);
     return WealthDesignBackground(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
@@ -124,19 +127,24 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
                         onToggleHidden: () => ref
                             .read(wealthPrivacyModeProvider.notifier)
                             .toggle(),
+                        trend: overviewTrend,
                         footer: _CardFooterRow(
                           items: [
                             (
+                              'assets/wealth/ic_wallet_sm.png',
                               Icons.payments_rounded,
                               ref.tr('wealth_home_pay_receive'),
+                              ref.tr('wealth_home_pay_receive_sub'),
                               () => openAppPopup(
                                 context,
                                 const WealthPayScreen(),
                               ),
                             ),
                             (
+                              'assets/wealth/ic_qr.png',
                               Icons.qr_code_rounded,
                               ref.tr('wealth_home_qr_code'),
+                              ref.tr('wealth_home_qr_code_sub'),
                               () =>
                                   openAppPopup(context, const WealthQrScreen()),
                             ),
@@ -160,13 +168,17 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
                       footer: _CardFooterRow(
                         items: [
                           (
+                            null,
                             Icons.show_chart_rounded,
                             ref.tr('wealth_market_title'),
+                            ref.tr('wealth_home_market_sub'),
                             () => openAppPopup(context, const MarketScreen()),
                           ),
                           (
+                            null,
                             Icons.star_rounded,
                             ref.tr('crypto_tab_watchlist'),
+                            ref.tr('wealth_home_watchlist_sub'),
                             () => openAppPopup(
                               context,
                               const MarketScreen(initialTabIndex: 1),
@@ -271,6 +283,32 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
   }
 }
 
+/// Chuoi (tien that vao Vi - chi tieu) cua 6 thang gan nhat.
+///
+/// Dung CHUNG cho bieu do nho tren the Tong tai san va bieu do trong the Tong
+/// quan tai chinh, nen 2 bieu do khong bao gio le nhau. Tinh tu dung cac
+/// provider + ham thuan ma man Bao cao dang dung.
+List<double> _monthlyNetSeries(WidgetRef ref) {
+  final transactions =
+      ref.watch(wealthTransactionsProvider).valueOrNull ??
+      const <WealthTransaction>[];
+  final entries =
+      ref.watch(walletBalanceEntriesProvider).valueOrNull ??
+      const <WealthBalanceEntry>[];
+  final hasUsd =
+      transactions.any((t) => t.currency == 'USD') ||
+      entries.any((e) => e.currency == 'USD');
+  final usdVnd = hasUsd
+      ? ref.watch(wealthVnAssetsProvider).valueOrNull?.usdVnd
+      : null;
+  final now = DateTime.now();
+  return [
+    for (final m in lastNMonths(DateTime(now.year, now.month, 1), 6))
+      computeMonthlyWalletInflow(entries, m, usdVnd: usdVnd) -
+          computeMonthlyTotals(transactions, m, usdVnd: usdVnd).expense,
+  ];
+}
+
 /// The "Tong quan tai chinh" theo ban thiet ke chot - duong bieu dien 6 thang
 /// gan nhat + 2 o Thu nhap/Chi tieu cua thang nay.
 ///
@@ -339,89 +377,196 @@ class _OverviewCard extends ConsumerWidget {
 
     final hasData = nets.any((n) => n != 0);
 
+    // % tong the = lech cua (thu - chi) thang nay so voi thang truoc - dung
+    // cho badge o goc phai header nhu anh goc.
+    final thisNet = nets.last;
+    final prevNet = nets[nets.length - 2];
+    final netPercent = prevNet == 0
+        ? null
+        : (thisNet - prevNet) / prevNet.abs() * 100;
+
     return GestureDetector(
       onTap: onTap,
       child: _GoldCard(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
+        padding: const EdgeInsets.fromLTRB(12, 12, 12, 11),
+        child: LayoutBuilder(
+          builder: (context, c) {
+            // Anh goc: bieu do + cac o so lieu chi chiem khoang 62% be ngang
+            // ben TRAI, phan con lai danh cho khoi 3D cot vang. Truoc day ta
+            // keo bieu do full-width va bo han khoi 3D nen nhin khac han.
+            final leftWidth = c.maxWidth * 0.62;
+            return Stack(
+              clipBehavior: Clip.none,
               children: [
-                const _GoldIconPad(
-                  asset: 'assets/wealth/ic_bars.png',
-                  size: 38,
-                ),
-                const SizedBox(width: 11),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        ref.tr('wealth_home_overview_title'),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.heading(size: 14),
+                // Khoi 3D cot vang neo goc duoi-phai, mo dan sang trai de
+                // khong lo canh anh vuong tren nen the.
+                Positioned(
+                  right: -4,
+                  bottom: -6,
+                  width: c.maxWidth * 0.36,
+                  child: IgnorePointer(
+                    child: ShaderMask(
+                      blendMode: BlendMode.dstIn,
+                      shaderCallback: (rect) => const LinearGradient(
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                        colors: [Color(0x00000000), Color(0xFF000000)],
+                        stops: [0.0, 0.35],
+                      ).createShader(rect),
+                      child: Image.asset(
+                        'assets/wealth/overview_bars.jpg',
+                        fit: BoxFit.contain,
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        ref.tr('wealth_home_overview_sub'),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.body(
-                          size: 9.5,
-                          weight: FontWeight.w500,
-                          color: AppColors.textSecondary,
+                    ),
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const _GoldIconPad(
+                          asset: 'assets/wealth/ic_bars.png',
+                          size: 38,
                         ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                ref.tr('wealth_home_overview_title'),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTextStyles.heading(size: 14),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                ref.tr('wealth_home_overview_sub'),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTextStyles.body(
+                                  size: 9.5,
+                                  weight: FontWeight.w500,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (netPercent != null)
+                          _TrendBadge(percent: netPercent),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    if (!hasData)
+                      SizedBox(
+                        width: leftWidth,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          child: Text(
+                            ref.tr('wealth_home_overview_empty'),
+                            style: AppTextStyles.body(
+                              size: 10,
+                              weight: FontWeight.w500,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ),
+                      )
+                    else
+                      SizedBox(
+                        height: 58,
+                        width: leftWidth,
+                        child: CustomPaint(painter: _SparklinePainter(nets)),
                       ),
-                    ],
-                  ),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      width: leftWidth,
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: _StatChip(
+                              label: ref.tr('wealth_tab_income'),
+                              value: income,
+                              previous: prevIncome,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _StatChip(
+                              label: ref.tr('wealth_tab_expense'),
+                              value: expense,
+                              previous: prevExpense,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ],
-            ),
-            const SizedBox(height: 12),
-            if (!hasData)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                child: Text(
-                  ref.tr('wealth_home_overview_empty'),
-                  style: AppTextStyles.body(
-                    size: 10.5,
-                    weight: FontWeight.w500,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              )
-            else ...[
-              SizedBox(
-                height: 46,
-                width: double.infinity,
-                child: CustomPaint(painter: _SparklinePainter(nets)),
-              ),
-              const SizedBox(height: 12),
-            ],
-            Row(
-              children: [
-                Expanded(
-                  child: _StatChip(
-                    label: ref.tr('wealth_tab_income'),
-                    value: income,
-                    previous: prevIncome,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: _StatChip(
-                    label: ref.tr('wealth_tab_expense'),
-                    value: expense,
-                    previous: prevExpense,
-                  ),
-                ),
-              ],
-            ),
-          ],
+            );
+          },
         ),
+      ),
+    );
+  }
+}
+
+/// Badge "% so voi thang truoc" o goc phai header the Tong quan - vien bo
+/// tron, mui ten + phan tram mau xanh (do tu anh goc: #45DFAD), dong phu xam
+/// sang ben duoi.
+class _TrendBadge extends ConsumerWidget {
+  const _TrendBadge({required this.percent});
+  final double percent;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final up = percent >= 0;
+    final color = up ? AppColors.wealthUp : AppColors.pink;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(9, 6, 10, 6),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.03),
+        borderRadius: BorderRadius.circular(13),
+        border: Border.all(color: AppColors.wealthCardBorder),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                up ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
+                size: 13,
+                color: color,
+              ),
+              const SizedBox(width: 3),
+              Text(
+                '${up ? '+' : ''}${percent.toStringAsFixed(1)}%',
+                style: AppTextStyles.body(
+                  size: 12,
+                  weight: FontWeight.w800,
+                  color: color,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 1),
+          Text(
+            ref.tr('wealth_report_vs_last_month'),
+            style: AppTextStyles.body(
+              size: 8,
+              weight: FontWeight.w500,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -734,6 +879,7 @@ class _TotalCard extends StatelessWidget {
     required this.placeholderIcon,
     this.pnl,
     this.pnlPercent,
+    this.trend,
   });
   final String title;
   final double? value;
@@ -749,6 +895,11 @@ class _TotalCard extends StatelessWidget {
   // dung "chi thay khung de slide qua, khong thay so tien".
   final bool showValue;
   final IconData placeholderIcon;
+
+  /// Chuoi so de ve bieu do nho duoi dong phan tram - anh thiet ke goc co 1
+  /// duong bieu dien ngay tren dai hanh dong. Null = khong ve (vd the Dau tu
+  /// chua co chuoi lich su).
+  final List<double>? trend;
 
   @override
   Widget build(BuildContext context) {
@@ -796,10 +947,14 @@ class _TotalCard extends StatelessWidget {
           children: [
             // Anh dong xu vang neo o canh phai, mo dan ve trai de khong cat
             // ngang chu - dung ShaderMask thay vi de anh vuong goc nhu cu.
+            // bottom: 46 - anh dong xu DUNG NGAY TREN dai hanh dong, dung
+            // nhu anh goc (anh ket thuc truoc dai "Nap/Rut | Ma QR"). Truoc
+            // day anh phu het chieu cao the nen nam ngay sau chu, lam 2 nut
+            // do rat kho doc.
             Positioned(
               right: 0,
               top: 0,
-              bottom: 0,
+              bottom: 66,
               width: 196,
               child: IgnorePointer(
                 child: ShaderMask(
@@ -918,11 +1073,18 @@ class _TotalCard extends StatelessWidget {
                         ],
                       ),
                     ),
+                    if (trend != null && trend!.length > 1) ...[
+                      const SizedBox(height: 6),
+                      SizedBox(
+                        height: 34,
+                        child: CustomPaint(painter: _SparklinePainter(trend!)),
+                      ),
+                    ],
                   ],
                 ),
               ),
             ),
-            Positioned(left: 0, right: 0, bottom: 0, child: footer),
+            Positioned(left: 10, right: 10, bottom: 10, child: footer),
           ],
         ),
       ),
@@ -930,55 +1092,91 @@ class _TotalCard extends StatelessWidget {
   }
 }
 
-/// Dai hanh dong dinh o day 1 [_TotalCard] - 1 muc (vd "Xem chi tiet Vi") de
-/// full-width, hoac 2 muc (vd "Market" | "Theo doi") chia doi bang 1 duong
-/// ke doc o giua - moi muc co nhan + chevron, giong dai "SINH LỜI MỖI NGÀY >"
-/// trong anh tham khao nguoi dung gui.
+/// Dai hanh dong o day [_TotalCard] - theo anh thiet ke goc day la 1 PANEL
+/// BO TRON THUT VAO trong the (khong phai 1 dai full-bleed sat mep nhu ban
+/// truoc), moi muc gom icon vang + ten (chu TRANG) + mo ta + mui ten, hai muc
+/// ngan cach bang 1 duong ke doc.
 class _CardFooterRow extends StatelessWidget {
   const _CardFooterRow({required this.items});
-  final List<(IconData, String, VoidCallback)> items;
+
+  /// (duong dan icon vang hoac null, icon du phong, ten, mo ta, hanh dong)
+  final List<(String?, IconData, String, String, VoidCallback)> items;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      // Anh goc: dai nay KHONG co nen sang rieng, chi duoc tach ra bang 1
-      // duong ke xam #1D2228 o canh tren.
-      decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: Color(0xFF1D2228))),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.035),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: AppColors.wealthCardBorder),
       ),
       child: Row(
         children: [
           for (var i = 0; i < items.length; i++) ...[
             if (i > 0)
-              Container(width: 1, height: 18, color: AppColors.glassBorder),
+              Container(
+                width: 1,
+                height: 26,
+                color: AppColors.wealthCardBorder,
+              ),
             Expanded(
-              child: InkWell(
-                onTap: items[i].$3,
+              child: GestureDetector(
+                onTap: items[i].$5,
+                behavior: HitTestBehavior.opaque,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 12,
-                    horizontal: 10,
-                  ),
+                  padding: const EdgeInsets.fromLTRB(9, 8, 7, 8),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        items[i].$1,
-                        size: 14,
-                        color: AppColors.wealthAccent,
-                      ),
-                      const SizedBox(width: 5),
-                      Flexible(
-                        child: Text(
-                          items[i].$2,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.body(
-                            size: 12,
-                            weight: FontWeight.w800,
-                            color: AppColors.wealthAccent,
+                      if (items[i].$1 != null)
+                        ClipOval(
+                          child: Image.asset(
+                            items[i].$1!,
+                            width: 24,
+                            height: 24,
+                            fit: BoxFit.cover,
+                            filterQuality: FilterQuality.medium,
                           ),
+                        )
+                      else
+                        Icon(
+                          items[i].$2,
+                          size: 18,
+                          color: AppColors.wealthAccent,
                         ),
+                      const SizedBox(width: 7),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Chu TRANG - do tu anh goc (#FFFFFF). De mau vang
+                            // thi nam de len anh dong xu vang, doc khong ra.
+                            Text(
+                              items[i].$3,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTextStyles.body(
+                                size: 11.5,
+                                weight: FontWeight.w800,
+                              ),
+                            ),
+                            Text(
+                              items[i].$4,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTextStyles.body(
+                                size: 8,
+                                weight: FontWeight.w500,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(
+                        Icons.chevron_right_rounded,
+                        size: 15,
+                        color: AppColors.textSecondary,
                       ),
                     ],
                   ),
