@@ -76,7 +76,7 @@ class HomeScreen extends ConsumerWidget {
     return HomeDesignBackground(
       glow: const Color(0xFF68A6FF),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 12, 14, 16),
+        padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
         child: SingleChildScrollView(
           child: Stack(
             clipBehavior: Clip.none,
@@ -110,24 +110,24 @@ class HomeScreen extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 10),
                   const ServiceExpiryBanner(section: AppSection.learnEnglish),
                   const _ProgressCard(),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
                   const _DailyWordsHeroCard(),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
                   _SkillGrid(
                     accent: accent,
                     recommended: recommended,
                     topPick: topPick,
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
                   _PracticePanel(
                     accent: accent,
                     recommended: recommended,
                     topPick: topPick,
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
                   _TestPrepPanel(
                     accent: accent,
                     recommended: recommended,
@@ -278,19 +278,19 @@ class _ProgressCard extends ConsumerWidget {
     final streak = ref.watch(myStatsProvider).valueOrNull?.streakDays ?? 0;
 
     return _HomeCard(
-      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 11),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
       onTap: () => openAppPopup(context, const ProfileScreen(initialTab: 1)),
       child: Row(
         children: [
           SizedBox(
             width: 50,
-            height: 50,
+            height: 44,
             child: Stack(
               alignment: Alignment.center,
               children: [
                 SizedBox(
                   width: 50,
-                  height: 50,
+                  height: 44,
                   child: CircularProgressIndicator(
                     value: xp.levelProgress,
                     strokeWidth: 4.2,
@@ -460,24 +460,24 @@ class _DailyWordsHeroCard extends ConsumerWidget {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(15, 14, 15, 15),
+                padding: const EdgeInsets.fromLTRB(14, 11, 14, 11),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     _SectionLabel(ref.tr('home_main_skill')),
-                    const SizedBox(height: 5),
+                    const SizedBox(height: 4),
                     ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 170),
                       child: Text(
                         ref
                             .tr('profile_daily_words_title')
                             .replaceFirst('{n}', '$total'),
-                        style: AppTextStyles.heading(size: 18.5)
-                            .copyWith(height: 1.14),
+                        style: AppTextStyles.heading(size: 16.5)
+                            .copyWith(height: 1.12),
                       ),
                     ),
-                    const SizedBox(height: 5),
+                    const SizedBox(height: 3),
                     ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 170),
                       child: Text(
@@ -488,15 +488,15 @@ class _DailyWordsHeroCard extends ConsumerWidget {
                           size: 10.5,
                           weight: FontWeight.w500,
                           color: AppColors.textSecondary,
-                        ).copyWith(height: 1.42),
+                        ).copyWith(height: 1.3),
                       ),
                     ),
-                    const SizedBox(height: 13),
+                    const SizedBox(height: 9),
                     Row(
                       children: [
                         Container(
-                          height: 38,
-                          padding: const EdgeInsets.fromLTRB(16, 0, 19, 0),
+                          height: 33,
+                          padding: const EdgeInsets.fromLTRB(14, 0, 17, 0),
                           decoration: BoxDecoration(
                             color: const Color(0xFFFAFCFF),
                             borderRadius: BorderRadius.circular(999),
@@ -520,8 +520,8 @@ class _DailyWordsHeroCard extends ConsumerWidget {
                         ),
                         const Spacer(),
                         Container(
-                          width: 32,
-                          height: 32,
+                          width: 29,
+                          height: 29,
                           decoration: BoxDecoration(
                             color: const Color(0xEE1C2A3E),
                             shape: BoxShape.circle,
@@ -694,7 +694,7 @@ class _SkillCard extends StatelessWidget {
         _HomeCard(
           onTap: entry.open,
           radius: 15,
-          padding: const EdgeInsets.fromLTRB(9, 10, 9, 8),
+          padding: const EdgeInsets.fromLTRB(9, 8, 9, 7),
           borderColor: isRecommended ? accent : null,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -702,10 +702,10 @@ class _SkillCard extends StatelessWidget {
             children: [
               _IconPad(
                 icon: entry.icon,
-                size: 30,
+                size: 26,
                 color: isRecommended ? accent : null,
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 5),
               _FixedLines(
                 entry.title,
                 lines: 1,
@@ -725,7 +725,7 @@ class _SkillCard extends StatelessWidget {
                   color: AppColors.textSecondary,
                 ).copyWith(height: 1.2),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 4),
               const Icon(
                 Icons.arrow_forward_rounded,
                 size: 12,
@@ -787,7 +787,7 @@ class _PracticePanel extends ConsumerWidget {
     ];
 
     return _HomeCard(
-      padding: const EdgeInsets.fromLTRB(13, 14, 13, 13),
+      padding: const EdgeInsets.fromLTRB(12, 11, 12, 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -825,7 +825,7 @@ class _PracticePanel extends ConsumerWidget {
                 onTap: () => openAppPopup(context, const PronunciationScreen()),
                 child: Container(
                   width: 54,
-                  height: 54,
+                  height: 46,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(color: const Color(0x29AAD4FF)),
@@ -856,9 +856,9 @@ class _PracticePanel extends ConsumerWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 9),
           Container(height: 1, color: Colors.white.withValues(alpha: 0.09)),
-          const SizedBox(height: 12),
+          const SizedBox(height: 9),
           // IntrinsicHeight + stretch: 4 muc luyen tap gio cao bang nhau (ten
           // luon chiem 2 dong, xem _FixedLines) va cac vach ngan doc keo het
           // chieu cao hang thay vi co dinh 46px ngan hon noi dung.
@@ -961,7 +961,7 @@ class _PracticeItem extends StatelessWidget {
             children: [
               _IconPad(
                 icon: entry.icon,
-                size: 28,
+                size: 25,
                 color: isRecommended ? accent : null,
               ),
               const SizedBox(height: 6),
@@ -1059,13 +1059,13 @@ class _TestPrepPanel extends ConsumerWidget {
     ];
 
     return _HomeCard(
-      padding: const EdgeInsets.all(13),
+      padding: const EdgeInsets.all(11),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const _IconPad(icon: Icons.timer_outlined, size: 40),
+              const _IconPad(icon: Icons.timer_outlined, size: 34),
               const SizedBox(width: 11),
               Expanded(
                 child: Column(
@@ -1099,11 +1099,11 @@ class _TestPrepPanel extends ConsumerWidget {
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           Row(
             children: [
               for (var i = 0; i < items.length; i++) ...[
-                if (i > 0) const SizedBox(width: 8),
+                if (i > 0) const SizedBox(width: 7),
                 Expanded(
                   child: _TestPrepTile(
                     entry: items[i],
@@ -1142,13 +1142,13 @@ class _TestPrepTile extends StatelessWidget {
         _HomeCard(
           onTap: entry.open,
           radius: 13,
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(7),
           borderColor: isRecommended ? accent : null,
           child: Row(
             children: [
               _IconPad(
                 icon: entry.icon,
-                size: 24,
+                size: 22,
                 color: isRecommended ? accent : null,
               ),
               const SizedBox(width: 7),

@@ -1073,7 +1073,9 @@ class _TotalCard extends StatelessWidget {
                         ],
                       ),
                     ),
-                    if (trend != null && trend!.length > 1) ...[
+                    if (trend != null &&
+                        trend!.length > 1 &&
+                        trend!.any((v) => v != 0)) ...[
                       const SizedBox(height: 6),
                       SizedBox(
                         height: 34,

@@ -153,31 +153,14 @@ Future<void> _shoot(WidgetTester tester, String name, Widget screen) async {
       ),
     ),
   );
-  // Giai ma anh la viec BAT DONG BO THAT (ui.instantiateImageCodec), khong
-  // chay duoc duoi dong ho gia cua widget test - day la ly do moi Image.asset
-  // truoc gio deu ve ra khoang trong du bytes da nap OK. Phai nap san trong
-  // runAsync de anh nam san trong ImageCache, sau do widget ve duoc ngay.
-  await tester.runAsync(() async {
-    final ctx = key.currentContext!;
-    // Chi nap thu muc 2 man nay dung - nap ca cay assets/ (co toan bo anh
-    // fitness) lam moi lan chup cham gap nhieu lan ma khong duoc gi.
-    for (final dir in ['assets/wealth', 'assets/home']) {
-      final d = Directory(dir);
-      if (!d.existsSync()) continue;
-      for (final f in d.listSync(recursive: true)) {
-        if (f is! File) continue;
-        final path = f.path.replaceAll(r'\', '/');
-        if (!RegExp(r'\.(png|jpg|jpeg|webp|gif)$').hasMatch(path)) continue;
-        try {
-          await precacheImage(AssetImage(path), ctx);
-        } catch (_) {
-          // Anh hong/khong dung dinh dang - bo qua, cac anh khac van nap.
-        }
-      }
-    }
-  });
-  for (var i = 0; i < 6; i++) {
-    await tester.pump(const Duration(milliseconds: 120));
+  // Giai ma anh la viec BAT DONG BO THAT, khong chay duoc duoi dong ho gia
+  // cua widget test - day la ly do Image.asset ve ra khoang trong du bytes da
+  // nap OK. Cho dong ho THAT chay 1 nhip trong runAsync de cac codec hoan tat.
+  for (var i = 0; i < 4; i++) {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 220)),
+    );
+    await tester.pump(const Duration(milliseconds: 60));
   }
 
   final boundary =
@@ -189,6 +172,15 @@ Future<void> _shoot(WidgetTester tester, String name, Widget screen) async {
   out.writeAsBytesSync(png!.buffer.asUint8List());
   // ignore: avoid_print
   print('WROTE ${out.path} (${png.lengthInBytes} bytes)');
+  // Chieu cao THAT cua noi dung - de doi chieu voi so do tu anh thiet ke goc
+  // ma khong phai uoc luong bang mat.
+  final scroll = find.byType(SingleChildScrollView);
+  if (scroll.evaluate().isNotEmpty) {
+    final box = tester.renderObject<RenderBox>(scroll.first);
+    final inner = box.getMaxIntrinsicHeight(box.size.width);
+    // ignore: avoid_print
+    print('CHIEU-CAO $name: khung=${box.size.height} noi-dung=$inner');
+  }
 }
 
 void main() {
