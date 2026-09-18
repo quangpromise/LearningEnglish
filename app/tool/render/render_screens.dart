@@ -6,10 +6,8 @@
 // Luu y quan trong: TUYET DOI khong dung pumpAndSettle o day - man Home co
 // hieu ung song am nhap nhay chay mai mai nen pumpAndSettle se treo vinh vien
 // (da tung lam treo CI). Chi pump theo tung khoang thoi gian co dinh.
-import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -17,7 +15,6 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:learn_english_music/core/theme/app_theme.dart';
@@ -128,9 +125,9 @@ void main() {
     // initialize thi man hinh nem loi va anh chup chi ra khung do. Khoi tao
     // voi URL gia: client khong ket noi cho den khi co truy van that, du de
     // dung bo cuc; cac o du lieu se rong/dang tai - dung cho viec soi thiet ke.
-    SharedPreferences.setMockInitialValues({});
     await Supabase.initialize(
       url: 'http://127.0.0.1:1',
+      // ignore: deprecated_member_use
       anonKey: 'render-harness',
     );
   });
