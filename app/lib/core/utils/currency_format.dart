@@ -40,3 +40,16 @@ String formatUsd(num value) {
 String formatByCurrency(num value, String currency) {
   return currency == 'USD' ? formatUsd(value) : formatVnd(value);
 }
+
+/// Dinh dang 1 so tien LUU BANG VND theo tien te nguoi dung dang chon o man
+/// Tai san dau tu (investmentDisplayCurrencyProvider).
+///
+/// Moi gia tri trong tinh nang Wealth deu duoc tinh/luu bang VND; chon xem
+/// theo USD chi la doi cach HIEN THI - chia lai cho ty gia. Ty gia chua tai
+/// duoc thi hien tam VND con hon hien so USD sai.
+String formatInvestmentValue(num vnd, String currency, double? usdVnd) {
+  if (currency == 'USD' && usdVnd != null && usdVnd > 0) {
+    return formatUsd(vnd / usdVnd);
+  }
+  return formatVnd(vnd);
+}

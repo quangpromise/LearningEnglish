@@ -78,6 +78,8 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
     final (investmentPnl, investmentPnlPercent) = ref.watch(
       investmentPnlProvider,
     );
+    final investmentCurrency = ref.watch(investmentDisplayCurrencyProvider);
+    final usdVnd = ref.watch(wealthVnAssetsProvider).valueOrNull?.usdVnd;
     // Boc recorder: moc gia tri danh muc duoc ghi (toi da 1 lan/gio) ngay ca
     // khi nguoi dung chi luot qua man Home - neu chi ghi luc mo bieu do thi
     // bieu do se mai mai gan nhu trong.
@@ -179,6 +181,11 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
                           ),
                           _TotalCard(
                             title: ref.tr('wealth_investments_total'),
+                            formatMoney: (v) => formatInvestmentValue(
+                              v,
+                              investmentCurrency,
+                              usdVnd,
+                            ),
                             sparkline: const InvestmentValueChart(
                               compact: true,
                             ),
@@ -988,7 +995,15 @@ class _TotalCard extends StatelessWidget {
     this.pnl,
     this.pnlPercent,
     this.sparkline,
+    this.formatMoney,
   });
+
+  /// Cach dinh dang so tien cua RIENG the nay. The Dau tu truyen vao ham quy
+  /// doi theo lua chon VND/USD o man Tai san dau tu
+  /// (investmentDisplayCurrencyProvider) - truoc day the o Home luon hien
+  /// VND nen doi sang USD ben trong ma ra Home van thay VND, nhin nhu 2 con
+  /// so khac nhau. Null = giu formatVnd nhu cu (the Vi).
+  final String Function(num)? formatMoney;
 
   /// Duong gia tri danh muc thu nho ve DE LEN anh nen (chi the Dau tu truyen
   /// vao) - xem InvestmentValueChart(compact: true). Anh con bo van giu
@@ -1199,7 +1214,7 @@ class _TotalCard extends StatelessWidget {
                                     ? '•••••••'
                                     : (value == null
                                           ? '...'
-                                          : formatVnd(value!)),
+                                          : (formatMoney ?? formatVnd)(value!)),
                                 maxLines: 1,
                                 style: AppTextStyles.heading(size: 25)
                                     .copyWith(color: AppColors.wealthAmount),
@@ -1221,7 +1236,7 @@ class _TotalCard extends StatelessWidget {
                                   const SizedBox(width: 5),
                                   Flexible(
                                     child: Text(
-                                      '${pnl! >= 0 ? '+' : ''}${formatVnd(pnl!)}'
+                                      '${pnl! >= 0 ? '+' : ''}${(formatMoney ?? formatVnd)(pnl!)}'
                                       '${pnlPercent == null ? '' : ' (${pnlPercent! >= 0 ? '+' : ''}${pnlPercent!.toStringAsFixed(1)}%)'}',
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,

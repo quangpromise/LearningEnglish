@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
@@ -12,10 +13,12 @@ import '../data/wealth_investment_snapshot_repository.dart';
 
 /// Khoang thoi gian xem cua bieu do gia tri danh muc - dat ten/thu tu giong
 /// cac nut o chart coin (crypto_coin_detail_screen) cho quen tay.
-enum InvestmentChartRange { d1, w1, m1, m3, y1 }
+enum InvestmentChartRange { h1, h4, d1, w1, m1, m3, y1 }
 
 extension on InvestmentChartRange {
   Duration get window => switch (this) {
+    InvestmentChartRange.h1 => const Duration(hours: 1),
+    InvestmentChartRange.h4 => const Duration(hours: 4),
     InvestmentChartRange.d1 => const Duration(days: 1),
     InvestmentChartRange.w1 => const Duration(days: 7),
     InvestmentChartRange.m1 => const Duration(days: 30),
@@ -24,6 +27,8 @@ extension on InvestmentChartRange {
   };
 
   String get label => switch (this) {
+    InvestmentChartRange.h1 => '1H',
+    InvestmentChartRange.h4 => '4H',
     InvestmentChartRange.d1 => '1D',
     InvestmentChartRange.w1 => '1W',
     InvestmentChartRange.m1 => '1M',
@@ -43,6 +48,40 @@ final investmentSnapshotsProvider = FutureProvider.autoDispose
         since: DateTime.now().subtract(range.window),
       );
     });
+
+const _investmentChartRangeKey = 'wealth_investment_chart_range_v1';
+
+/// Khung thoi gian dang chon cua bieu do - LUU LAI (SharedPreferences) de mo
+/// lai man khong bi reset ve mac dinh, giong cach
+/// investmentDisplayCurrencyProvider giu lua chon VND/USD.
+class _ChartRangeController extends StateNotifier<InvestmentChartRange> {
+  _ChartRangeController() : super(InvestmentChartRange.d1) {
+    _load();
+  }
+
+  Future<void> _load() async {
+    final prefs = await SharedPreferences.getInstance();
+    final name = prefs.getString(_investmentChartRangeKey);
+    if (name == null) return;
+    for (final r in InvestmentChartRange.values) {
+      if (r.name == name) {
+        state = r;
+        return;
+      }
+    }
+  }
+
+  Future<void> set(InvestmentChartRange range) async {
+    state = range;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_investmentChartRangeKey, range.name);
+  }
+}
+
+final investmentChartRangeProvider =
+    StateNotifierProvider<_ChartRangeController, InvestmentChartRange>(
+      (ref) => _ChartRangeController(),
+    );
 
 /// Cac diem gia tri thu thap NGAY TRONG PHIEN dang chay (bo nho, khong qua
 /// server) - de bieu do co duong ve NGAY LAP TUC thay vi doi bang snapshot
@@ -124,7 +163,6 @@ class InvestmentValueChart extends ConsumerStatefulWidget {
 }
 
 class _InvestmentValueChartState extends ConsumerState<InvestmentValueChart> {
-  InvestmentChartRange _range = InvestmentChartRange.m1;
   Timer? _tick;
 
   @override
@@ -147,7 +185,9 @@ class _InvestmentValueChartState extends ConsumerState<InvestmentValueChart> {
 
   @override
   Widget build(BuildContext context) {
-    final range = widget.compact ? InvestmentChartRange.m1 : _range;
+    final range = widget.compact
+        ? InvestmentChartRange.d1
+        : ref.watch(investmentChartRangeProvider);
     final snapsAsync = ref.watch(investmentSnapshotsProvider(range));
     final liveTotal = ref.watch(totalInvestmentValueVndProvider);
 
@@ -172,10 +212,23 @@ class _InvestmentValueChartState extends ConsumerState<InvestmentValueChart> {
 
     final first = points.first.$2;
     final last = points.last.$2;
-    final diff = last - first;
-    final percent = first == 0 ? null : diff / first * 100;
-    final up = diff >= 0;
-    final lineColor = up ? AppColors.wealthUp : AppColors.pink;
+    // So tien + % lai/lo lay DUNG tu investmentPnlProvider - cung nguon voi
+    // the o man Home nen 2 man khong bao gio lech nhau. KHONG tu tinh
+    // (last - first) tren khoang dang xem nua: cach do ra con so khac han the
+    // o Home, nguoi dung khong biet tin cai nao.
+    final (pnl, pnlPercent) = ref.watch(investmentPnlProvider);
+    final up = pnl >= 0;
+    // Mau DUONG van theo chieu len/xuong cua chinh doan dang xem.
+    final lineColor = last >= first ? AppColors.wealthUp : AppColors.pink;
+    final pnlColor = up ? AppColors.wealthUp : AppColors.pink;
+    // Con mat "an" o man Tai san dau tu thi CHE luon so o day - truoc day
+    // tong ben duoi da an ma so tren bieu do van hien nguyen, an nhu khong.
+    final hidden = ref.watch(investmentPrivacyModeProvider);
+    // Theo dung lua chon VND/USD o man Tai san dau tu - truoc day bieu do
+    // luon hien VND nen doi sang USD ben duoi ma so tren bieu do van la VND.
+    final currency = ref.watch(investmentDisplayCurrencyProvider);
+    final usdVnd = ref.watch(wealthVnAssetsProvider).valueOrNull?.usdVnd;
+    String money(num vnd) => formatInvestmentValue(vnd, currency, usdVnd);
 
     final minX = points.first.$1.millisecondsSinceEpoch.toDouble();
     final maxX = points.last.$1.millisecondsSinceEpoch.toDouble();
@@ -235,21 +288,21 @@ class _InvestmentValueChartState extends ConsumerState<InvestmentValueChart> {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
-              formatVnd(last),
+              hidden ? '•••••••' : money(last),
               style: AppTextStyles.heading(size: 22)
                   .copyWith(color: AppColors.wealthAmount),
             ),
             const SizedBox(width: 8),
-            if (percent != null)
+            if (!hidden && pnl != 0)
               Padding(
                 padding: const EdgeInsets.only(bottom: 3),
                 child: Text(
-                  '${up ? '+' : ''}${formatVnd(diff)} '
-                  '(${up ? '+' : ''}${percent.toStringAsFixed(1)}%)',
+                  '${up ? '+' : ''}${money(pnl)}'
+                  '${pnlPercent == null ? '' : ' (${up ? '+' : ''}${pnlPercent.toStringAsFixed(1)}%)'}',
                   style: AppTextStyles.body(
                     size: 12,
                     weight: FontWeight.w700,
-                    color: lineColor,
+                    color: pnlColor,
                   ),
                 ),
               ),
@@ -258,43 +311,47 @@ class _InvestmentValueChartState extends ConsumerState<InvestmentValueChart> {
         const SizedBox(height: 10),
         SizedBox(height: 150, child: chart),
         const SizedBox(height: 10),
-        Row(
-          children: [
-            for (final r in InvestmentChartRange.values)
-              Padding(
-                padding: const EdgeInsets.only(right: 7),
-                child: GestureDetector(
-                  onTap: () => setState(() => _range = r),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _range == r
-                          ? AppColors.wealthAccent.withValues(alpha: 0.22)
-                          : AppColors.glassFill,
-                      borderRadius: BorderRadius.circular(999),
-                      border: Border.all(
-                        color: _range == r
-                            ? AppColors.wealthAccent
-                            : AppColors.glassBorder,
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              for (final r in InvestmentChartRange.values)
+                Padding(
+                  padding: const EdgeInsets.only(right: 7),
+                  child: GestureDetector(
+                    onTap: () =>
+                        ref.read(investmentChartRangeProvider.notifier).set(r),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
                       ),
-                    ),
-                    child: Text(
-                      r.label,
-                      style: AppTextStyles.body(
-                        size: 11.5,
-                        weight: FontWeight.w700,
-                        color: _range == r
-                            ? AppColors.wealthAccent
-                            : AppColors.textMuted,
+                      decoration: BoxDecoration(
+                        color: range == r
+                            ? AppColors.wealthAccent.withValues(alpha: 0.22)
+                            : AppColors.glassFill,
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(
+                          color: range == r
+                              ? AppColors.wealthAccent
+                              : AppColors.glassBorder,
+                        ),
+                      ),
+                      child: Text(
+                        r.label,
+                        style: AppTextStyles.body(
+                          size: 11.5,
+                          weight: FontWeight.w700,
+                          color: range == r
+                              ? AppColors.wealthAccent
+                              : AppColors.textMuted,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ],
     );

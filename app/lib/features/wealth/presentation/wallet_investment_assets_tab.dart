@@ -165,12 +165,8 @@ class WalletInvestmentAssetsTab extends ConsumerWidget {
     // Moi gia tri duoc luu ben trong bang VND - khi nguoi dung chon xem
     // theo USD thi chia lai cho ty gia (usdVnd), bo qua neu ty gia chua
     // tai duoc (hien thi tam VND).
-    String display(double vnd) {
-      if (displayCurrency == 'USD' && usdVnd != null && usdVnd > 0) {
-        return formatUsd(vnd / usdVnd);
-      }
-      return formatVnd(vnd);
-    }
+    String display(double vnd) =>
+        formatInvestmentValue(vnd, displayCurrency, usdVnd);
 
     return ListView(
       children: [
