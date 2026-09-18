@@ -182,9 +182,16 @@ Future<void> _shoot(WidgetTester tester, String name, Widget screen) async {
   final scroll = find.byType(SingleChildScrollView);
   if (scroll.evaluate().isNotEmpty) {
     final box = tester.renderObject<RenderBox>(scroll.first);
-    final inner = box.getMaxIntrinsicHeight(box.size.width);
+    // Chieu cao THUC TE sau khi bo tri, khong phai getMaxIntrinsicHeight -
+    // intrinsic la chieu cao LY THUYET, co the lech voi thuc te (chu xuong
+    // dong khac di) va da tung lam toi ket luan "vua roi" trong khi thuc te
+    // van tran.
+    final actual = tester
+        .renderObject<RenderBox>(find.byType(Column).first)
+        .size
+        .height;
     // ignore: avoid_print
-    print('CHIEU-CAO $name: khung=${box.size.height} noi-dung=$inner');
+    print('CHIEU-CAO $name: khung=${box.size.height} noi-dung-thuc-te=$actual');
   }
 }
 

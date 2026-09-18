@@ -87,8 +87,10 @@ class _RootShellState extends ConsumerState<RootShell>
       // Menu CHI CON thanh nhac, boc 2 lop pill long nhau tao khoang trong
       // thua/lech kich thuoc so voi Menu cu. CenterMediaButton tu ve pill
       // day du (full size nhu Menu cu) o day, chi con Padding le ngoai.
+      // Le duoi 20 -> 8: khoang trong den duoi thanh nhac truoc day qua day,
+      // vua thua nhin thay ro vua an mat 12pt chieu cao cua than man.
       bottomNavigationBar: const Padding(
-        padding: EdgeInsets.fromLTRB(16, 0, 16, 20),
+        padding: EdgeInsets.fromLTRB(16, 0, 16, 8),
         child: CenterMediaButton(accentColor: AppColors.blue),
       ),
     );

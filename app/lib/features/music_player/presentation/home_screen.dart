@@ -75,7 +75,7 @@ class HomeScreen extends ConsumerWidget {
     return HomeDesignBackground(
       glow: const Color(0xFF68A6FF),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 6, 14, 4),
+        padding: const EdgeInsets.fromLTRB(14, 5, 14, 2),
         // Noi dung duoc thu gon vua DUNG chieu cao than man (do bang bo chup:
         // ~670pt) nen binh thuong KHONG phai cuon. Van giu
         // SingleChildScrollView de tren nhung may co vung hien thi thap hon
@@ -141,23 +141,23 @@ class HomeScreen extends ConsumerWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             const ServiceExpiryBanner(section: AppSection.learnEnglish),
             // The tien do (Lv/XP/chuoi ngay) da BO theo yeu cau.
             const _DailyWordsHeroCard(),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             _SkillGrid(
               accent: accent,
               recommended: recommended,
               topPick: topPick,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             _PracticePanel(
               accent: accent,
               recommended: recommended,
               topPick: topPick,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             _TestPrepPanel(
               accent: accent,
               recommended: recommended,
@@ -737,9 +737,9 @@ class _PracticePanel extends ConsumerWidget {
               ),
             ],
           ),
-          const SizedBox(height: 9),
+          const SizedBox(height: 7),
           Container(height: 1, color: Colors.white.withValues(alpha: 0.09)),
-          const SizedBox(height: 9),
+          const SizedBox(height: 7),
           // IntrinsicHeight + stretch: 4 muc luyen tap gio cao bang nhau (ten
           // luon chiem 2 dong, xem _FixedLines) va cac vach ngan doc keo het
           // chieu cao hang thay vi co dinh 46px ngan hon noi dung.
@@ -982,7 +982,7 @@ class _TestPrepPanel extends ConsumerWidget {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Row(
             children: [
               for (var i = 0; i < items.length; i++) ...[

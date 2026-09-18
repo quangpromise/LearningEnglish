@@ -10,7 +10,6 @@ import '../../features/translation/presentation/dictionary_popup.dart';
 import '../../features/wealth/presentation/calculator_screen.dart';
 import '../i18n/app_strings.dart';
 import '../providers/app_providers.dart';
-import '../theme/app_theme.dart';
 import 'app_popup.dart';
 import 'nav_keys.dart';
 
@@ -278,167 +277,205 @@ class _AssistiveFabOverlayState extends ConsumerState<AssistiveFabOverlay> {
     );
   }
 
-  /// Bang menu HINH VUONG kieu AssistiveTouch that cua iOS: 1 the kinh mo
-  /// (frosted glass) vuong noi giua man hinh, chia luoi 3x3 - nut "Ve trang
-  /// chu" o CHINH GIUA, 4 loi tat ([_kGridItems]) xep tren/trai/phai/duoi
-  /// quanh no, moi muc la 1 o vuong bo goc de nhin. Layout co dinh (khong bam
-  /// theo vi tri FAB) de khong bao gio bi tran man hinh.
+  /// Bang menu dang THANH DOC (thay cho luoi vuong 3x3 truoc day) - theo anh
+  /// thiet ke nguoi dung gui: 1 vien nang doc bo tron het co, ben trong la
+  /// cac nut tron xep doc kem nhan, muc dang o GIUA thanh duoc lam noi (to
+  /// hon, to mau nhan, co quang sang), tren/duoi co mui ten cuon.
+  ///
+  /// Mau nhan lay theo tung app (gradient/glowColor truyen tu ngoai) nen mo
+  /// tu Hoc Tieng Anh ra xanh, tu Quan ly tai san ra vang, tu Fitness ra cam.
   Widget _buildMenuPanel({
     required Gradient gradient,
     required Color glowColor,
   }) {
-    Widget item(int i) {
-      final (action, icon, labelKey) = _kGridItems[i];
-      return _buildMenuItem(action, icon, labelKey, gradient);
-    }
-
-    const empty = SizedBox.shrink();
-    final cells = [
-      [empty, item(0), empty],
-      [item(1), _buildHomeButton(gradient, glowColor), item(2)],
-      [empty, item(3), empty],
-    ];
     return Positioned.fill(
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final side = (constraints.maxWidth - 48).clamp(220.0, 300.0);
-          return Align(
-            alignment: const Alignment(0, -0.15),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(32),
-              child: BackdropFilter(
-                filter: ui.ImageFilter.blur(sigmaX: 24, sigmaY: 24),
-                child: Container(
-                  width: side,
-                  height: side,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xCC12172E),
-                    borderRadius: BorderRadius.circular(32),
-                    border: Border.all(
-                      color: AppColors.glassBorder,
-                      width: 1.2,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: glowColor.withValues(alpha: 0.25),
-                        blurRadius: 40,
-                        spreadRadius: 2,
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      for (final row in cells)
-                        Expanded(
-                          child: Row(
-                            children: [
-                              for (final cell in row)
-                                Expanded(child: Center(child: cell)),
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
+      child: Center(
+        child: _AssistiveRail(
+          glowColor: glowColor,
+          gradient: gradient,
+          onAction: _handleAction,
+        ),
+      ),
+    );
+  }
+}
+
+/// Thanh doc chua cac loi tat - tach thanh widget rieng vi no can tu quan ly
+/// ScrollController (de biet muc nao dang o giua ma lam noi len).
+class _AssistiveRail extends ConsumerStatefulWidget {
+  const _AssistiveRail({
+    required this.glowColor,
+    required this.gradient,
+    required this.onAction,
+  });
+
+  final Color glowColor;
+  final Gradient gradient;
+  final void Function(_RadialAction) onAction;
+
+  @override
+  ConsumerState<_AssistiveRail> createState() => _AssistiveRailState();
+}
+
+class _AssistiveRailState extends ConsumerState<_AssistiveRail> {
+  static const _itemExtent = 84.0;
+
+  /// So muc hien cung luc trong khung; con lai cuon toi.
+  static const _visible = 4;
+
+  late final ScrollController _controller = ScrollController()
+    ..addListener(_onScroll);
+  double _offset = 0;
+
+  /// Home dung dau, roi den cac loi tat - truoc day Home la 1 nut rieng o
+  /// giua luoi, gio la 1 muc nhu cac muc khac trong thanh.
+  static const _items = <(_RadialAction, IconData, String)>[
+    (_RadialAction.goHome, Icons.home_rounded, 'assistive_menu_home'),
+    ..._kGridItems,
+  ];
+
+  void _onScroll() {
+    if (!mounted) return;
+    setState(() => _offset = _controller.position.pixels);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _nudge(int direction) {
+    final target = (_offset + direction * _itemExtent).clamp(
+      0.0,
+      _controller.position.maxScrollExtent,
+    );
+    _controller.animateTo(
+      target,
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOut,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const railWidth = 132.0;
+    final railHeight = _itemExtent * _visible;
+    // Muc nam gan TAM thanh nhat se duoc lam noi.
+    final centred = ((_offset + railHeight / 2) / _itemExtent - 0.5)
+        .round()
+        .clamp(0, _items.length - 1);
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _chevron(Icons.keyboard_arrow_up_rounded, () => _nudge(-1)),
+        const SizedBox(height: 6),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(railWidth / 2),
+          child: BackdropFilter(
+            filter: ui.ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+            child: Container(
+              width: railWidth,
+              height: railHeight,
+              decoration: BoxDecoration(
+                color: const Color(0xE6070A12),
+                borderRadius: BorderRadius.circular(railWidth / 2),
+                border: Border.all(
+                  color: widget.glowColor.withValues(alpha: 0.55),
+                  width: 1.4,
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: widget.glowColor.withValues(alpha: 0.35),
+                    blurRadius: 34,
+                    spreadRadius: 1,
+                  ),
+                ],
+              ),
+              child: ListView.builder(
+                controller: _controller,
+                padding: EdgeInsets.zero,
+                itemExtent: _itemExtent,
+                itemCount: _items.length,
+                itemBuilder: (context, i) =>
+                    _item(_items[i], selected: i == centred),
               ),
             ),
-          );
-        },
+          ),
+        ),
+        const SizedBox(height: 6),
+        _chevron(Icons.keyboard_arrow_down_rounded, () => _nudge(1)),
+      ],
+    );
+  }
+
+  Widget _chevron(IconData icon, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 2),
+        child: Icon(icon, size: 30, color: widget.glowColor),
       ),
     );
   }
 
-  Widget _buildMenuItem(
-    _RadialAction action,
-    IconData icon,
-    String labelKey,
-    Gradient gradient,
-  ) {
+  Widget _item(
+    (_RadialAction, IconData, String) entry, {
+    required bool selected,
+  }) {
+    final (action, icon, labelKey) = entry;
+    final size = selected ? 58.0 : 48.0;
     return GestureDetector(
-      onTap: () => _handleAction(action),
+      onTap: () => widget.onAction(action),
+      behavior: HitTestBehavior.opaque,
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            width: 52,
-            height: 52,
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            width: size,
+            height: size,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              // Ca cac nut deu dung CUNG 1 gradient theo app dang mo (bug da
-              // thay tren may that: nut phu bi hardcode mau xanh-tim cua
-              // English du dang mo tu Fitness) - khong con phan biet rieng
-              // mau cho nut "primary".
-              gradient: gradient,
-              border: Border.all(color: Colors.white.withValues(alpha: 0.16)),
-              boxShadow: const [
-                BoxShadow(
-                  color: Colors.black38,
-                  blurRadius: 12,
-                  offset: Offset(0, 5),
-                ),
-              ],
+              shape: BoxShape.circle,
+              gradient: selected ? widget.gradient : null,
+              color: selected ? null : const Color(0xFF1B2029),
+              border: Border.all(
+                color: selected
+                    ? Colors.white.withValues(alpha: 0.85)
+                    : Colors.white.withValues(alpha: 0.10),
+                width: selected ? 2 : 1,
+              ),
+              boxShadow: selected
+                  ? [
+                      BoxShadow(
+                        color: widget.glowColor.withValues(alpha: 0.65),
+                        blurRadius: 22,
+                        spreadRadius: 1,
+                      ),
+                    ]
+                  : null,
             ),
-            child: Icon(icon, size: 24, color: Colors.white),
+            child: Icon(icon, size: selected ? 27 : 23, color: Colors.white),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 5),
           SizedBox(
-            width: 80,
+            width: 118,
             child: Text(
               ref.tr(labelKey),
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
+              style: TextStyle(
+                fontSize: selected ? 11.5 : 10.5,
+                fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+                color: selected
+                    ? Colors.white
+                    : Colors.white.withValues(alpha: 0.62),
                 decoration: TextDecoration.none,
               ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Nut "Ve trang chu" - o CHINH GIUA bang menu vuong, to hon + phat sang
-  /// hon cac muc xung quanh.
-  Widget _buildHomeButton(Gradient gradient, Color glowColor) {
-    return GestureDetector(
-      onTap: () => _handleAction(_RadialAction.goHome),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(18),
-              gradient: gradient,
-              border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
-              boxShadow: [
-                BoxShadow(
-                  color: glowColor.withValues(alpha: 0.5),
-                  blurRadius: 20,
-                  spreadRadius: 1,
-                ),
-              ],
-            ),
-            child: const Icon(
-              Icons.home_rounded,
-              size: 28,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            ref.tr('assistive_menu_home'),
-            style: const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-              color: Colors.white,
-              decoration: TextDecoration.none,
             ),
           ),
         ],

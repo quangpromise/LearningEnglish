@@ -77,9 +77,6 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
     final (investmentPnl, investmentPnlPercent) = ref.watch(
       investmentPnlProvider,
     );
-    // Chuoi (thu - chi) 6 thang gan nhat de ve bieu do nho tren the Tong tai
-    // san - anh thiet ke goc co duong nay ngay tren dai hanh dong.
-    final overviewTrend = _monthlyNetSeries(ref);
     return WealthDesignBackground(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
@@ -127,7 +124,6 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
                         onToggleHidden: () => ref
                             .read(wealthPrivacyModeProvider.notifier)
                             .toggle(),
-                        trend: overviewTrend,
                         footer: _CardFooterRow(
                           items: [
                             (
@@ -295,32 +291,6 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
       ),
     );
   }
-}
-
-/// Chuoi (tien that vao Vi - chi tieu) cua 6 thang gan nhat.
-///
-/// Dung CHUNG cho bieu do nho tren the Tong tai san va bieu do trong the Tong
-/// quan tai chinh, nen 2 bieu do khong bao gio le nhau. Tinh tu dung cac
-/// provider + ham thuan ma man Bao cao dang dung.
-List<double> _monthlyNetSeries(WidgetRef ref) {
-  final transactions =
-      ref.watch(wealthTransactionsProvider).valueOrNull ??
-      const <WealthTransaction>[];
-  final entries =
-      ref.watch(walletBalanceEntriesProvider).valueOrNull ??
-      const <WealthBalanceEntry>[];
-  final hasUsd =
-      transactions.any((t) => t.currency == 'USD') ||
-      entries.any((e) => e.currency == 'USD');
-  final usdVnd = hasUsd
-      ? ref.watch(wealthVnAssetsProvider).valueOrNull?.usdVnd
-      : null;
-  final now = DateTime.now();
-  return [
-    for (final m in lastNMonths(DateTime(now.year, now.month, 1), 6))
-      computeMonthlyWalletInflow(entries, m, usdVnd: usdVnd) -
-          computeMonthlyTotals(transactions, m, usdVnd: usdVnd).expense,
-  ];
 }
 
 /// The "Tong quan tai chinh" theo ban thiet ke chot - duong bieu dien 6 thang
@@ -970,7 +940,6 @@ class _TotalCard extends StatelessWidget {
     required this.placeholderIcon,
     this.pnl,
     this.pnlPercent,
-    this.trend,
   });
   final String title;
   final double? value;
@@ -986,11 +955,6 @@ class _TotalCard extends StatelessWidget {
   // dung "chi thay khung de slide qua, khong thay so tien".
   final bool showValue;
   final IconData placeholderIcon;
-
-  /// Chuoi so de ve bieu do nho duoi dong phan tram - anh thiet ke goc co 1
-  /// duong bieu dien ngay tren dai hanh dong. Null = khong ve (vd the Dau tu
-  /// chua co chuoi lich su).
-  final List<double>? trend;
 
   @override
   Widget build(BuildContext context) {
@@ -1185,22 +1149,6 @@ class _TotalCard extends StatelessWidget {
                           ],
                         ),
                       ),
-                      if (trend != null &&
-                          trend!.length > 1 &&
-                          trend!.any((v) => v != 0)) ...[
-                        const SizedBox(height: 6),
-                        // width: double.infinity - trong Column canh start,
-                        // CustomPaint khong co be rong noi tai nen bi co ve 0 va
-                        // duong bieu dien dong lai thanh 1 VACH DOC la lam (loi
-                        // "duong du thua" nguoi dung bao).
-                        SizedBox(
-                          height: 34,
-                          width: double.infinity,
-                          child: CustomPaint(
-                            painter: _SparklinePainter(trend!),
-                          ),
-                        ),
-                      ],
                     ],
                   ),
                 ),
