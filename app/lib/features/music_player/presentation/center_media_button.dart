@@ -74,7 +74,7 @@ class CenterMediaButton extends StatelessWidget {
           // vien bo tron cua pill.
           child: DecoratedBox(
             decoration: const BoxDecoration(
-              color: Color(0xF2020911),
+              color: Color(0xFF020911),
               borderRadius: BorderRadius.all(Radius.circular(999)),
             ),
             child: ClipRRect(

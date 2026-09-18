@@ -76,45 +76,27 @@ class HomeScreen extends ConsumerWidget {
     return HomeDesignBackground(
       glow: const Color(0xFF68A6FF),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
-        // Tu CO theo chieu cao that co de xem het man trong 1 trang.
+        padding: const EdgeInsets.fromLTRB(14, 6, 14, 4),
+        // Noi dung duoc thu gon vua DUNG chieu cao than man (do bang bo chup:
+        // ~670pt) nen binh thuong KHONG phai cuon. Van giu
+        // SingleChildScrollView de tren nhung may co vung hien thi thap hon
+        // (browser co nhieu thanh cong cu) thi cuon duoc thay vi bao loi tran.
         //
-        // Chi thu gon kich co co dinh la KHONG DU: tren web trong browser,
-        // thanh URL tren + thanh dieu huong duoi an mat kha nhieu nen vung
-        // thuc dung chi con khoang 620pt, it hon han 828pt cua man dien thoai.
-        // Noi dung thiet ke cao ~694pt (do bang bo chup, xem tool/render) nen
-        // van tran. Day khung noi dung rong hon ti le nghich roi thu nho lai
-        // => moi thu (ke ca chu) nho deu theo dung ti le ban thiet ke, khong
-        // phai sua tay tung con so cho tung loai man.
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            const designHeight = 694.0;
-            final available = constraints.maxHeight;
-            // Chan duoi 0.74 de chu khong nho den muc kho doc tren nhung vung
-            // hien thi qua thap - luc do thi cho cuon lai nhu truoc.
-            final scale = (!available.isFinite || available >= designHeight)
-                ? 1.0
-                : (available / designHeight).clamp(0.74, 1.0);
-            return SingleChildScrollView(
-              child: Transform.scale(
-                scale: scale,
-                alignment: Alignment.topCenter,
-                child: SizedBox(
-                  width: constraints.maxWidth / scale,
-                  child: _buildBody(
-                    context,
-                    ref,
-                    unread: unread,
-                    accent: accent,
-                    recommended: recommended,
-                    topPick: topPick,
-                    compassLink: compassLink,
-                    showSurveyHint: showSurveyHint,
-                  ),
-                ),
-              ),
-            );
-          },
+        // KHONG dung Transform.scale de "co cho vua": Transform chi doi luc VE
+        // chu khong doi kich thuoc luc DO, nen scroll view van danh du cho cho
+        // chieu cao goc - sinh ra 1 khoang trong du o duoi va van cuon duoc,
+        // dong thoi noi dung bi thu hep lech vao giua. Da thu va phai bo.
+        child: SingleChildScrollView(
+          child: _buildBody(
+            context,
+            ref,
+            unread: unread,
+            accent: accent,
+            recommended: recommended,
+            topPick: topPick,
+            compassLink: compassLink,
+            showSurveyHint: showSurveyHint,
+          ),
         ),
       ),
     );
@@ -160,24 +142,24 @@ class HomeScreen extends ConsumerWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             const ServiceExpiryBanner(section: AppSection.learnEnglish),
             const _ProgressCard(),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             const _DailyWordsHeroCard(),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             _SkillGrid(
               accent: accent,
               recommended: recommended,
               topPick: topPick,
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             _PracticePanel(
               accent: accent,
               recommended: recommended,
               topPick: topPick,
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             _TestPrepPanel(
               accent: accent,
               recommended: recommended,
@@ -325,7 +307,7 @@ class _ProgressCard extends ConsumerWidget {
     final streak = ref.watch(myStatsProvider).valueOrNull?.streakDays ?? 0;
 
     return _HomeCard(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
       onTap: () => openAppPopup(context, const ProfileScreen(initialTab: 1)),
       child: Row(
         children: [
@@ -507,7 +489,7 @@ class _DailyWordsHeroCard extends ConsumerWidget {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(14, 11, 14, 11),
+                padding: const EdgeInsets.fromLTRB(14, 9, 14, 9),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
@@ -834,7 +816,7 @@ class _PracticePanel extends ConsumerWidget {
     ];
 
     return _HomeCard(
-      padding: const EdgeInsets.fromLTRB(12, 11, 12, 10),
+      padding: const EdgeInsets.fromLTRB(12, 9, 12, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1106,7 +1088,7 @@ class _TestPrepPanel extends ConsumerWidget {
     ];
 
     return _HomeCard(
-      padding: const EdgeInsets.all(11),
+      padding: const EdgeInsets.all(9),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

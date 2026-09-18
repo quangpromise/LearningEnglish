@@ -77,7 +77,12 @@ void _mockSharedPrefs() {
   TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
       .setMockMethodCallHandler(
         const MethodChannel('plugins.flutter.io/shared_preferences'),
-        (call) async => call.method == 'getAll' ? <String, Object>{} : null,
+        (call) async => switch (call.method) {
+          'getAll' => <String, Object>{},
+          // Cac ham ghi phai tra true - tra null lam cho code goi chung
+          // (vd DailyWordsRepository.saveDate) nem "Null check operator".
+          _ => true,
+        },
       );
 }
 

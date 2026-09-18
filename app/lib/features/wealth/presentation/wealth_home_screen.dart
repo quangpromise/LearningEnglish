@@ -783,7 +783,12 @@ class _GoldCard extends StatelessWidget {
       padding: const EdgeInsets.all(0.7),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: AppColors.homeCardFill,
+          // PHAI la mau DUC. Lop ngoai to gradient trang phu KIN the (do la
+          // cach lam vien gradient), neu lop trong con trong suot thi gradient
+          // do xuyen qua va ca the xam sang len - dung loi da gap.
+          // #050C12 = trung binh long the do tu anh thiet ke goc
+          // (#040B11 / #05090E / #060D13 / #050D15).
+          color: const Color(0xFF050C12),
           borderRadius: BorderRadius.circular(17.3),
         ),
         child: Padding(padding: padding, child: child),
