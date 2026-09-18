@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/confirm_action.dart';
 import '../../../core/widgets/app_toast.dart';
 import '../../../core/utils/thousands_input_formatter.dart';
 import 'debt_person_picker_field.dart';
@@ -126,6 +127,8 @@ class _AddDebtSheetState extends ConsumerState<_AddDebtSheet> {
     final name = _personController.text.trim();
     final amount = _totalAmount;
     if (name.isEmpty || amount <= 0) return;
+    if (!await confirmSave(context, ref)) return;
+    if (!mounted) return;
     setState(() => _saving = true);
     final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
     if (userId == null) {
@@ -168,6 +171,8 @@ class _AddDebtSheetState extends ConsumerState<_AddDebtSheet> {
   /// ngay/currency, chi khac nguoi + so tien phan chia cua ho.
   Future<void> _saveSplit() async {
     if (!_splitValid) return;
+    if (!await confirmSave(context, ref)) return;
+    if (!mounted) return;
     setState(() => _saving = true);
     final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
     if (userId == null) {

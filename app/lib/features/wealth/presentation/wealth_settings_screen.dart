@@ -6,6 +6,7 @@ import '../../../core/notifications/chat_push.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/navigation/app_popup.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_toast.dart';
 import '../data/price_alert_prefs_repository.dart';
 import '../data/vn_bank_model.dart';
 import '../data/wealth_category.dart';
@@ -581,6 +582,11 @@ class _WealthSettingsScreenState extends ConsumerState<WealthSettingsScreen>
                 }
                 ref.invalidate(wealthCustomCategoriesProvider);
                 if (dialogContext.mounted) Navigator.of(dialogContext).pop();
+                // Bao da ghi xong. KHONG them hop thoai xac nhan truoc khi
+                // luu o day: chinh o nay DA la 1 hop thoai, nut "Luu" cua no
+                // vua dung la buoc xac nhan - hoi them 1 lan nua thanh hop
+                // thoai chong hop thoai.
+                if (mounted) showSuccessToast(context, ref.tr('toast_saved'));
               },
               child: Text(
                 ref.tr('wealth_save'),

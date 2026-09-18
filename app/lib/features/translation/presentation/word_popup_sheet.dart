@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/dictionary/free_dictionary_api.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/confirm_action.dart';
 import '../../../core/translation/app_translator.dart';
 import '../../../core/tts/app_tts.dart';
 import '../../vocabulary/data/daily_words_repository.dart';
@@ -88,6 +89,8 @@ class _WordPopupSheetState extends ConsumerState<WordPopupSheet> {
   Future<void> _saveToDaily() async {
     final info = _result;
     if (info == null) return;
+    if (!await confirmSave(context, ref)) return;
+    if (!mounted) return;
     await ref
         .read(dailyWordsControllerProvider.notifier)
         .addWord(

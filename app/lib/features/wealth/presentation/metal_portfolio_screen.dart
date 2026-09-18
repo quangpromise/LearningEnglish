@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/confirm_action.dart';
 import '../../../core/widgets/app_toast.dart';
 import '../../../core/utils/currency_format.dart';
 import '../../../core/utils/thousands_input_formatter.dart';
@@ -428,6 +429,8 @@ class _AddMetalLotSheetState extends ConsumerState<_AddMetalLotSheet> {
     final quantity = double.tryParse(_quantityController.text.trim());
     final cost = parseThousandsFormatted(_costController.text);
     if (quantity == null || quantity <= 0 || cost == null || cost < 0) return;
+    if (!await confirmSave(context, ref)) return;
+    if (!mounted) return;
     setState(() => _saving = true);
     final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
     if (userId == null) {

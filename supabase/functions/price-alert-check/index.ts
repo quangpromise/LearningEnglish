@@ -239,20 +239,38 @@ Deno.serve(async (req: Request) => {
     const key = `${info.assetType}:${info.symbol}`;
     const previousTier = stateByKey.get(key) ?? null;
 
-    // Luon ghi de state moi nhat (ke ca khi tier ve 0) - de lan vuot moc
-    // TIEP THEO (hoac vuot lai TU DAU sau khi da tut ve duoi 5%) duoc tinh
-    // la 1 su kien moi, khong bi coi la "da bao roi".
-    await admin.from('price_alert_state').upsert({
-      asset_type: info.assetType,
-      symbol: info.symbol,
-      tier,
-      change_percent: info.changePercent,
-      alerted_at: new Date().toISOString(),
-    });
+    // Ghi state. QUAN TRONG: tier moi CHI duoc ghi khi da that su GUI DUOC
+    // push, nguoc lai giu nguyen tier cu de lan quet sau (15 phut/lan) con
+    // thu lai.
+    //
+    // Ban dau ham nay ghi tier moi NGAY TRUOC moi buoc gui, nen bat ky
+    // truong hop nao ben duoi bo qua bang `continue` - chua cau hinh
+    // Firebase, coin chua kip dong bo len price_alert_watchlist, user chua
+    // co device token, FCM tra loi loi - deu AN LUON lan vuot moc do vinh
+    // vien: state da ghi "da bao", may nguoi dung thi khong nhan duoc gi, va
+    // phai doi vuot tiep moc 5% ke tiep moi co thong bao. Day dung la loi
+    // nguoi dung bao 2026-09-19 (BTC +5.9%, SOL +12.7% ma khong co thong bao
+    // nao).
+    const saveState = (tierToStore: number | null) =>
+      admin.from('price_alert_state').upsert({
+        asset_type: info.assetType,
+        symbol: info.symbol,
+        tier: tierToStore,
+        change_percent: info.changePercent,
+        alerted_at: new Date().toISOString(),
+      });
 
-    if (tier === 0 || tier === previousTier) continue;
+    // Chua cham moc nao / da bao dung moc nay roi: khong co gi de gui, ghi
+    // thang state (tier 0 la de lan vuot moc sau duoc tinh tu dau).
+    if (tier === 0 || tier === previousTier) {
+      await saveState(tier);
+      continue;
+    }
 
-    if (!serviceAccountRaw || !projectId) continue; // chua cau hinh Firebase - bo qua gui push, van cap nhat state
+    if (!serviceAccountRaw || !projectId) {
+      await saveState(previousTier); // chua cau hinh Firebase - thu lai lan sau
+      continue;
+    }
     if (!accessToken) {
       const serviceAccount = JSON.parse(serviceAccountRaw);
       accessToken = await getAccessToken(serviceAccount.client_email, serviceAccount.private_key);
@@ -268,7 +286,10 @@ Deno.serve(async (req: Request) => {
       .eq('asset_type', info.assetType)
       .eq('symbol', info.symbol);
     const watcherIds = [...new Set((watchers ?? []).map((w: { user_id: string }) => w.user_id))];
-    if (watcherIds.length === 0) continue;
+    if (watcherIds.length === 0) {
+      await saveState(previousTier);
+      continue;
+    }
 
     const { data: optedInProfiles } = await admin
       .from('profiles')
@@ -276,14 +297,20 @@ Deno.serve(async (req: Request) => {
       .in('id', watcherIds)
       .eq('price_alerts_enabled', true);
     const optedInIds = (optedInProfiles ?? []).map((p: { id: string }) => p.id);
-    if (optedInIds.length === 0) continue;
+    if (optedInIds.length === 0) {
+      await saveState(previousTier);
+      continue;
+    }
 
     const { data: tokenRows } = await admin
       .from('device_tokens')
       .select('fcm_token')
       .in('user_id', optedInIds);
     const tokens = new Set((tokenRows ?? []).map((t: { fcm_token: string }) => t.fcm_token));
-    if (tokens.size === 0) continue;
+    if (tokens.size === 0) {
+      await saveState(previousTier);
+      continue;
+    }
 
     const milestone = Math.abs(tier) * ALERT_THRESHOLD_PERCENT;
     const priceLabel = formatAlertPrice(info.price, info.assetType);
@@ -292,7 +319,7 @@ Deno.serve(async (req: Request) => {
         ? `${info.symbol} vượt mốc tăng ${milestone}% (hiện +${info.changePercent.toFixed(1)}%, 24h) - giá hiện tại ${priceLabel}`
         : `${info.symbol} vượt mốc giảm ${milestone}% (hiện -${Math.abs(info.changePercent).toFixed(1)}%, 24h) - giá hiện tại ${priceLabel}`;
 
-    await Promise.all(
+    const results = await Promise.all(
       [...tokens].map((fcm_token) =>
         fetch(`https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`, {
           method: 'POST',
@@ -315,10 +342,16 @@ Deno.serve(async (req: Request) => {
               android: { priority: 'high' },
             },
           }),
-        }).catch(() => null),
+        })
+          .then((res) => res.ok)
+          .catch(() => false),
       ),
     );
-    notified++;
+    // Chi coi la DA BAO khi FCM nhan it nhat 1 token thanh cong - neu ca
+    // loat deu loi thi giu tier cu de lan quet sau gui lai.
+    const sent = results.filter(Boolean).length;
+    await saveState(sent > 0 ? tier : previousTier);
+    if (sent > 0) notified++;
   }
 
   return new Response(JSON.stringify({ notified, checked: allPrices.length }), {

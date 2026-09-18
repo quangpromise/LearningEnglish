@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_toast.dart';
+import '../../../core/widgets/confirm_action.dart';
 import '../data/todo_models.dart';
 import 'todo_providers.dart';
 
@@ -61,6 +62,10 @@ class _TodoTaskSheetState extends ConsumerState<_TodoTaskSheet> {
   Future<void> _save() async {
     final title = _title.text.trim();
     if (title.isEmpty || _saving) return;
+    // Hoi truoc khi ghi (yeu cau nguoi dung 2026-09-19) - truoc day bam la
+    // luu thang, khong co buoc nao de dung lai.
+    if (!await confirmSave(context, ref)) return;
+    if (!mounted) return;
     setState(() => _saving = true);
     try {
       final notifier = ref.read(todoTasksProvider.notifier);
@@ -83,6 +88,8 @@ class _TodoTaskSheetState extends ConsumerState<_TodoTaskSheet> {
   Future<void> _delete() async {
     final task = widget.existing;
     if (task == null) return;
+    if (!await confirmDeleteAction(context, ref, message: task.title)) return;
+    if (!mounted) return;
     await ref.read(todoTasksProvider.notifier).remove(task.id);
     if (mounted) {
       showSuccessToast(context, ref.tr('toast_deleted'));

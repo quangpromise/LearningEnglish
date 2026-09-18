@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/confirm_action.dart';
 import '../../../core/widgets/pull_to_dismiss.dart';
 import '../data/planner_models.dart';
 import '../data/planner_notification_service.dart';
@@ -207,6 +208,9 @@ class _PlannerTaskSheetState extends ConsumerState<_PlannerTaskSheet> {
   Future<void> _save() async {
     final title = _titleCtrl.text.trim();
     if (title.isEmpty) return;
+    // Hoi truoc khi ghi (yeu cau nguoi dung 2026-09-19).
+    if (!await confirmSave(context, ref)) return;
+    if (!mounted) return;
     final start = _combine(_date, _start);
     var end = _combine(_date, _end);
     // Gio ket thuc <= gio bat dau = viec qua nua dem (vd Ngu 23:00-06:30).
@@ -276,6 +280,15 @@ class _PlannerTaskSheetState extends ConsumerState<_PlannerTaskSheet> {
     if (editing == null) return;
     final occ = widget.occurrence ?? editing.occurrenceOn(editing.start);
     var wholeSeries = true;
+    // Viec LAP LAI da co hop thoai rieng ngay ben duoi (xoa 1 buoi hay ca
+    // chuoi) nen khong hoi 2 lan; viec THUONG truoc day xoa thang khong hoi
+    // gi - day la cho con thieu ma nguoi dung bao.
+    if (!editing.isRecurring || widget.occurrence == null) {
+      if (!await confirmDeleteAction(context, ref, message: editing.title)) {
+        return;
+      }
+      if (!mounted) return;
+    }
     if (editing.isRecurring && widget.occurrence != null) {
       final choice = await showDialog<bool>(
         context: context,

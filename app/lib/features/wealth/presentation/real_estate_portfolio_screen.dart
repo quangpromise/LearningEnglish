@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/confirm_action.dart';
 import '../../../core/widgets/app_toast.dart';
 import '../../../core/utils/currency_format.dart';
 import '../../../core/utils/thousands_input_formatter.dart';
@@ -337,6 +338,8 @@ class _PropertySheetState extends ConsumerState<_PropertySheet> {
         (purchaseValue == null || purchaseValue < 0)) {
       return;
     }
+    if (!await confirmSave(context, ref)) return;
+    if (!mounted) return;
     setState(() => _saving = true);
     final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
     if (userId == null) {

@@ -8,6 +8,7 @@ import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/navigation/app_popup.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/confirm_action.dart';
 import '../../../core/widgets/app_toast.dart';
 import '../data/wealth_payment_qr_model.dart';
 
@@ -242,6 +243,8 @@ class _QrEditSheetState extends ConsumerState<_QrEditSheet> {
   }
 
   Future<void> _save() async {
+    if (!await confirmSave(context, ref)) return;
+    if (!mounted) return;
     setState(() => _saving = true);
     try {
       final repo = ref.read(wealthPaymentQrRepositoryProvider);

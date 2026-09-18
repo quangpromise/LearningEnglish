@@ -5,6 +5,7 @@ import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/navigation/app_popup.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/confirm_action.dart';
 import '../../../core/tts/app_tts.dart';
 import '../../../core/widgets/speaker_button.dart';
 import '../../learning_path/presentation/learner_level_banner.dart';
@@ -94,6 +95,8 @@ class _VocabularyTopicDetailScreenState
   }
 
   Future<void> _saveToDailyList(BuildContext context) async {
+    if (!await confirmSave(context, ref)) return;
+    if (!context.mounted) return;
     final entries = _selected
         .map((w) => DailyWordEntry(en: w.en, vi: w.vi, ipa: w.ipa))
         .toList();
