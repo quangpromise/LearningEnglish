@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_language.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../learning_path/data/learning_path_models.dart';
 import '../../learning_path/presentation/learner_level_banner.dart';
@@ -46,22 +47,7 @@ class WritingParagraphListScreen extends ConsumerWidget {
           children: [
             Row(
               children: [
-                GestureDetector(
-                  onTap: onBack,
-                  child: Container(
-                    width: 34,
-                    height: 34,
-                    decoration: BoxDecoration(
-                      color: AppColors.glassFill,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.glassBorder),
-                    ),
-                    child: const Icon(
-                      Icons.chevron_left_rounded,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                ),
+                PopupBackButton(onBack: onBack),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(

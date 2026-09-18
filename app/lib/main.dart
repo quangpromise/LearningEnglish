@@ -27,6 +27,7 @@ import 'features/onboarding/data/onboarding_repository.dart';
 import 'features/onboarding/presentation/onboarding_screen.dart';
 import 'core/navigation/planner_source_openers.dart';
 import 'features/planner/data/planner_notification_service.dart';
+import 'features/planner/presentation/planner_accent.dart';
 import 'features/social/data/social_repository.dart';
 import 'features/social/presentation/incoming_message_banner.dart';
 import 'features/wealth/presentation/wealth_shell.dart';
@@ -197,7 +198,12 @@ class LearnEnglishMusicApp extends StatelessWidget {
                 },
               ),
         },
-        child: Stack(children: [?child, const AssistiveFabOverlay()]),
+        child: Stack(
+          children: [
+            _SectionTheme(child: child),
+            const AssistiveFabOverlay(),
+          ],
+        ),
       ),
       theme: ThemeData(
         useMaterial3: true,
@@ -416,6 +422,46 @@ class _MissingConfigScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Ep mau "primary" cua Material theo APP dang mo (xanh Hoc Tieng Anh / cam
+/// Fitness / vang Wealth).
+///
+/// LY DO: ThemeData o tren dat `primary: AppColors.blue` co dinh, nen MOI
+/// widget Material an theo colorScheme - TextButton (nut "Huy" o hop thoai
+/// xac nhan xoa, cac nut phu trong popup), con tro + vung boi den cua
+/// TextField, CircularProgressIndicator... - deu ra XANH ngay ca khi dang o
+/// Vi hay Fitness. Tung man tu sua thi vua sot vua lap; dat 1 lan o day thi
+/// het 93 popup cua ca 3 app tu dong dung dung tone.
+///
+/// Dat trong `MaterialApp.builder` (KHONG phai trong tung shell) vi cac popup
+/// deu mo bang `useRootNavigator: true`/`rootNavigatorKey` nen nam NGOAI cay
+/// widget cua shell - boc o shell se khong chay toi chung.
+class _SectionTheme extends ConsumerWidget {
+  const _SectionTheme({required this.child});
+
+  final Widget? child;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final (_, accent) = plannerAccentFor(ref.watch(currentAppSectionProvider));
+    final base = Theme.of(context);
+    return Theme(
+      data: base.copyWith(
+        colorScheme: base.colorScheme.copyWith(primary: accent),
+        textSelectionTheme: TextSelectionThemeData(
+          cursorColor: accent,
+          selectionColor: accent.withValues(alpha: 0.35),
+          selectionHandleColor: accent,
+        ),
+        progressIndicatorTheme: ProgressIndicatorThemeData(color: accent),
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(foregroundColor: accent),
+        ),
+      ),
+      child: child ?? const SizedBox.shrink(),
     );
   }
 }

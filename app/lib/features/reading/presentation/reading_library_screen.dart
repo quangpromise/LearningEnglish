@@ -22,22 +22,7 @@ class ReadingLibraryScreen extends ConsumerWidget {
           children: [
             Row(
               children: [
-                GestureDetector(
-                  onTap: () => Navigator.of(context).maybePop(),
-                  child: Container(
-                    width: 34,
-                    height: 34,
-                    decoration: BoxDecoration(
-                      color: AppColors.glassFill,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.glassBorder),
-                    ),
-                    child: const Icon(
-                      Icons.chevron_left_rounded,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                ),
+                const PopupBackButton(),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(

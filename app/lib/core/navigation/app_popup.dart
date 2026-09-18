@@ -77,6 +77,62 @@ class PopupCloseButton extends StatelessWidget {
   }
 }
 
+/// Nut quay lai (<) dung chung - 57 man popup dang TU VE lai y het khoi nay
+/// (vong tron 34x34, glassFill, vien glassBorder, icon chevron_left). Gom ve
+/// 1 cho de sau nay doi kich thuoc/mau chi phai sua 1 lan.
+class PopupBackButton extends StatelessWidget {
+  const PopupBackButton({super.key, this.onBack});
+
+  final VoidCallback? onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onBack ?? () => Navigator.of(context).maybePop(),
+      child: Container(
+        width: 34,
+        height: 34,
+        decoration: BoxDecoration(
+          color: AppColors.glassFill,
+          shape: BoxShape.circle,
+          border: Border.all(color: AppColors.glassBorder),
+        ),
+        child: const Icon(
+          Icons.chevron_left_rounded,
+          color: AppColors.textPrimary,
+        ),
+      ),
+    );
+  }
+}
+
+/// Header cho man popup co nut QUAY LAI ben trai (khac [PopupHeader] dung nut
+/// dong X ben phai) - dung cho man mo tu 1 man khac trong cung luong.
+class PopupBackHeader extends StatelessWidget {
+  const PopupBackHeader({
+    super.key,
+    required this.title,
+    this.trailing,
+    this.onBack,
+  });
+
+  final String title;
+  final Widget? trailing;
+  final VoidCallback? onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        PopupBackButton(onBack: onBack),
+        const SizedBox(width: 12),
+        Expanded(child: Text(title, style: AppTextStyles.heading(size: 20))),
+        ?trailing,
+      ],
+    );
+  }
+}
+
 /// Header don gian (tieu de + nut dong) dung cho man popup thay cho
 /// AppTopBar - khong avatar, khong pill chuyen app.
 class PopupHeader extends StatelessWidget {
@@ -96,7 +152,10 @@ class PopupHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(child: Text(title, style: AppTextStyles.heading(size: 18))),
+        // 20 (khong phai 18): phan lon man popup tu ve header rieng deu dung
+        // heading(size: 20) - de PopupHeader o 18 khien 8 man dung no co tieu
+        // de NHO HON han cac man con lai khi xem lien tiep.
+        Expanded(child: Text(title, style: AppTextStyles.heading(size: 20))),
         if (trailing != null) ...[trailing!, const SizedBox(width: 10)],
         PopupCloseButton(onClose: onClose),
       ],

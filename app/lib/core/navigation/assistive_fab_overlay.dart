@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/ai_voice_chat/presentation/ai_voice_chat_screen.dart';
 import '../../features/planner/presentation/planner_accent.dart';
 import '../../features/planner/presentation/planner_screen.dart';
+import '../../features/todo/presentation/todo_screen.dart';
 import '../../features/translation/presentation/dictionary_popup.dart';
 import '../../features/wealth/presentation/calculator_screen.dart';
 import '../i18n/app_strings.dart';
@@ -17,6 +18,7 @@ const _kFabSize = 56.0;
 
 enum _RadialAction {
   goHome,
+  openTodo,
   openPlanner,
   openAiVoiceChat,
   openCalculator,
@@ -26,6 +28,7 @@ enum _RadialAction {
 /// Cac loi tat hien co TRU "Ve trang chu" - theo thu tu tren/trai/phai/duoi
 /// quanh nut Home o giua bang menu vuong (xem _buildMenuPanel).
 const _kGridItems = [
+  (_RadialAction.openTodo, Icons.checklist_rounded, 'todo_title'),
   (_RadialAction.openPlanner, Icons.calendar_month_rounded, 'planner_title'),
   (
     _RadialAction.openAiVoiceChat,
@@ -108,6 +111,15 @@ class _AssistiveFabOverlayState extends ConsumerState<AssistiveFabOverlay> {
   // chinh widget nay) - xem giai thich chi tiet trong ai_fab_overlay.dart
   // (ban cu) - widget nay cung duoc chen NGANG HANG voi Navigator qua
   // MaterialApp.builder nen `context` cua no khong tim thay Navigator/Overlay.
+  /// To do list mo dang POPUP giong moi man khac (openAppPopup) - xem
+  /// features/todo/presentation/todo_screen.dart.
+  void _openTodo() {
+    setState(() => _expanded = false);
+    final navContext = rootNavigatorKey.currentContext;
+    if (navContext == null) return;
+    openAppPopup(navContext, const TodoScreen());
+  }
+
   void _openPlanner() {
     setState(() => _expanded = false);
     final navContext = rootNavigatorKey.currentContext;
@@ -178,6 +190,8 @@ class _AssistiveFabOverlayState extends ConsumerState<AssistiveFabOverlay> {
     switch (action) {
       case _RadialAction.goHome:
         _goHome();
+      case _RadialAction.openTodo:
+        _openTodo();
       case _RadialAction.openPlanner:
         _openPlanner();
       case _RadialAction.openAiVoiceChat:
@@ -288,8 +302,12 @@ class _AssistiveFabOverlayState extends ConsumerState<AssistiveFabOverlay> {
     required Gradient gradient,
     required Color glowColor,
   }) {
+    // Neo vao MEP PHAI (khong phai giua man hinh): banh xe cong phinh ve
+    // phia phai va dau gach trung tam nam sat canh phai, dung ngay canh nut
+    // FAB - dat o giua man se lam cung cong "lo lung" khong dinh vao dau.
     return Positioned.fill(
-      child: Center(
+      child: Align(
+        alignment: Alignment.centerRight,
         child: _AssistiveRail(
           glowColor: glowColor,
           gradient: gradient,
@@ -317,24 +335,27 @@ class _AssistiveRail extends ConsumerStatefulWidget {
   ConsumerState<_AssistiveRail> createState() => _AssistiveRailState();
 }
 
+/// Banh xe CONG (thay cho thanh doc phang truoc day) - theo anh thiet ke
+/// nguoi dung gui: cac muc chay theo 1 cung tron phinh ve phia mep phai, muc
+/// cang xa tam cang bi day sang TRAI + mo dan + nho lai; nhan chu nam ben
+/// TRAI icon; sat mep phai co 1 "dau gach trung tam" danh dau vi tri chon.
+///
+/// Dung [ListWheelScrollView] voi `offAxisFraction` (chinh no tao do cong
+/// ngang) thay vi tu tinh toa do tung muc: co san quan tinh cuon, hieu ung
+/// phoi canh, va `FixedExtentScrollPhysics` tu HIT dung 1 muc vao giua - dung
+/// y "scroll icon den dau gach trung tam thi icon do sang".
 class _AssistiveRailState extends ConsumerState<_AssistiveRail> {
-  static const _itemExtent = 80.0;
+  static const _itemExtent = 76.0;
+  static const _railWidth = 250.0;
 
-  late final ScrollController _controller = ScrollController()
-    ..addListener(_onScroll);
-  double _offset = 0;
+  late final FixedExtentScrollController _controller =
+      FixedExtentScrollController();
+  int _centred = 0;
 
-  /// Home dung dau, roi den cac loi tat - truoc day Home la 1 nut rieng o
-  /// giua luoi, gio la 1 muc nhu cac muc khac trong thanh.
   static const _items = <(_RadialAction, IconData, String)>[
     (_RadialAction.goHome, Icons.home_rounded, 'assistive_menu_home'),
     ..._kGridItems,
   ];
-
-  void _onScroll() {
-    if (!mounted) return;
-    setState(() => _offset = _controller.position.pixels);
-  }
 
   @override
   void dispose() {
@@ -342,155 +363,197 @@ class _AssistiveRailState extends ConsumerState<_AssistiveRail> {
     super.dispose();
   }
 
-  void _nudge(int direction) {
-    final target = (_offset + direction * _itemExtent).clamp(
-      0.0,
-      _controller.position.maxScrollExtent,
-    );
-    _controller.animateTo(
-      target,
-      duration: const Duration(milliseconds: 220),
+  /// Cham vao 1 muc: neu no CHUA o giua thi cuon no vao giua truoc (de nguoi
+  /// dung thay ro minh dang chon gi), dung o giua roi moi chay hanh dong -
+  /// tranh bam nham muc ben canh khi danh sach dang nghieng.
+  void _tap(int index) {
+    if (index == _centred) {
+      widget.onAction(_items[index].$1);
+      return;
+    }
+    _controller.animateToItem(
+      index,
+      duration: const Duration(milliseconds: 260),
       curve: Curves.easeOut,
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    // Hep lai (132 -> 104) cho de nhin, va DAI ra vua du chua het cac muc
-    // nen binh thuong khong phai cuon; chi khi man qua thap moi phai cuon.
-    const railWidth = 104.0;
-    final maxHeight = MediaQuery.sizeOf(context).height - 180;
+    final maxHeight = MediaQuery.sizeOf(context).height - 150;
     final railHeight = (_itemExtent * _items.length).clamp(
-      _itemExtent * 2,
+      _itemExtent * 3,
       maxHeight,
     );
-    final scrollable = _itemExtent * _items.length > railHeight + 0.5;
-    // Muc nam gan TAM thanh nhat se duoc lam noi.
-    final centred = ((_offset + railHeight / 2) / _itemExtent - 0.5)
-        .round()
-        .clamp(0, _items.length - 1);
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (scrollable) ...[
-          _chevron(Icons.keyboard_arrow_up_rounded, () => _nudge(-1)),
-          const SizedBox(height: 6),
-        ],
-        ClipRRect(
-          borderRadius: BorderRadius.circular(railWidth / 2),
-          child: BackdropFilter(
-            filter: ui.ImageFilter.blur(sigmaX: 24, sigmaY: 24),
-            child: Container(
-              width: railWidth,
-              height: railHeight,
-              decoration: BoxDecoration(
-                color: const Color(0xE6070A12),
-                borderRadius: BorderRadius.circular(railWidth / 2),
-                border: Border.all(
-                  color: widget.glowColor.withValues(alpha: 0.55),
-                  width: 1.4,
+    return SizedBox(
+      width: _railWidth,
+      height: railHeight,
+      child: Stack(
+        alignment: Alignment.centerRight,
+        children: [
+          // Duong cung mo lam "ray" cho cac muc chay theo - trong anh goc no
+          // la 1 net xam rat nhat, chi du goi y quy dao chu khong noi bat.
+          Positioned.fill(
+            child: IgnorePointer(
+              child: CustomPaint(
+                painter: _ArcGuidePainter(
+                  color: widget.glowColor.withValues(alpha: 0.22),
                 ),
+              ),
+            ),
+          ),
+          ListWheelScrollView.useDelegate(
+            controller: _controller,
+            itemExtent: _itemExtent,
+            // Am = day cac muc o xa tam sang TRAI (cung phinh sang phai).
+            offAxisFraction: -1.15,
+            diameterRatio: 1.35,
+            perspective: 0.0022,
+            physics: const FixedExtentScrollPhysics(),
+            onSelectedItemChanged: (i) => setState(() => _centred = i),
+            childDelegate: ListWheelChildBuilderDelegate(
+              childCount: _items.length,
+              builder: (context, i) => _item(_items[i], i),
+            ),
+          ),
+          // Dau gach trung tam sat mep phai - moc danh dau "muc nao dang duoc
+          // chon", to mau accent de an khop voi muc dang sang.
+          IgnorePointer(
+            child: Container(
+              width: 34,
+              height: 11,
+              decoration: BoxDecoration(
+                color: widget.glowColor,
+                borderRadius: BorderRadius.circular(999),
                 boxShadow: [
                   BoxShadow(
-                    color: widget.glowColor.withValues(alpha: 0.35),
-                    blurRadius: 34,
-                    spreadRadius: 1,
+                    color: widget.glowColor.withValues(alpha: 0.6),
+                    blurRadius: 16,
                   ),
                 ],
               ),
-              child: ListView.builder(
-                controller: _controller,
-                physics: scrollable
-                    ? const BouncingScrollPhysics()
-                    : const NeverScrollableScrollPhysics(),
-                padding: EdgeInsets.zero,
-                itemExtent: _itemExtent,
-                itemCount: _items.length,
-                itemBuilder: (context, i) =>
-                    _item(_items[i], selected: i == centred),
-              ),
             ),
           ),
-        ),
-        if (scrollable) ...[
-          const SizedBox(height: 6),
-          _chevron(Icons.keyboard_arrow_down_rounded, () => _nudge(1)),
         ],
-      ],
+      ),
     );
   }
 
-  Widget _chevron(IconData icon, VoidCallback onTap) {
+  Widget _item((_RadialAction, IconData, String) entry, int index) {
+    final (_, icon, labelKey) = entry;
+    final selected = index == _centred;
     return GestureDetector(
-      onTap: onTap,
+      onTap: () => _tap(index),
       behavior: HitTestBehavior.opaque,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 2),
-        child: Icon(icon, size: 30, color: widget.glowColor),
+        // Chua cho cho dau gach trung tam o sat mep phai.
+        padding: const EdgeInsets.only(right: 44),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            // Nhan chu ben TRAI icon: muc dang chon co vien bao quanh dang
+            // vien thuoc, cac muc khac chi la chu xam mo.
+            Flexible(
+              child: AnimatedOpacity(
+                duration: const Duration(milliseconds: 180),
+                opacity: selected ? 1 : 0.45,
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: selected ? 12 : 0,
+                    vertical: selected ? 6 : 0,
+                  ),
+                  decoration: selected
+                      ? BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.35),
+                          borderRadius: BorderRadius.circular(999),
+                          border: Border.all(
+                            color: widget.glowColor.withValues(alpha: 0.55),
+                          ),
+                        )
+                      : null,
+                  child: Text(
+                    ref.tr(labelKey),
+                    textAlign: TextAlign.right,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: selected ? 13 : 12,
+                      fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+                      color: selected ? Colors.white : Colors.white70,
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            // O icon bo tron (squircle) - muc dang o dau gach trung tam SANG
+            // theo tone app: nen pha accent, vien accent, icon mau accent,
+            // them quang sang; cac muc khac chim xuong nen kinh xam.
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              width: selected ? 56 : 46,
+              height: selected ? 56 : 46,
+              decoration: BoxDecoration(
+                color: selected
+                    ? Color.alphaBlend(
+                        widget.glowColor.withValues(alpha: 0.22),
+                        const Color(0xCC0B0F16),
+                      )
+                    : const Color(0x730E1219),
+                borderRadius: BorderRadius.circular(selected ? 20 : 16),
+                border: Border.all(
+                  color: selected
+                      ? widget.glowColor
+                      : Colors.white.withValues(alpha: 0.10),
+                  width: selected ? 1.8 : 1,
+                ),
+                boxShadow: selected
+                    ? [
+                        BoxShadow(
+                          color: widget.glowColor.withValues(alpha: 0.55),
+                          blurRadius: 24,
+                          spreadRadius: 1,
+                        ),
+                      ]
+                    : null,
+              ),
+              child: Icon(
+                icon,
+                size: selected ? 27 : 22,
+                color: selected
+                    ? widget.glowColor
+                    : Colors.white.withValues(alpha: 0.55),
+              ),
+            ),
+          ],
+        ),
       ),
     );
+  }
+}
+
+/// Net cung mo chay doc mep phai - cung huong cong voi banh xe nen cac muc
+/// trong nhu dang "truot tren ray".
+class _ArcGuidePainter extends CustomPainter {
+  const _ArcGuidePainter({required this.color});
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2;
+    final h = size.height;
+    final path = Path()
+      ..moveTo(size.width - 6, 0)
+      ..quadraticBezierTo(size.width - 78, h / 2, size.width - 6, h);
+    canvas.drawPath(path, paint);
   }
 
-  Widget _item(
-    (_RadialAction, IconData, String) entry, {
-    required bool selected,
-  }) {
-    final (action, icon, labelKey) = entry;
-    final size = selected ? 58.0 : 48.0;
-    return GestureDetector(
-      onTap: () => widget.onAction(action),
-      behavior: HitTestBehavior.opaque,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 180),
-            width: size,
-            height: size,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: selected ? widget.gradient : null,
-              color: selected ? null : const Color(0xFF1B2029),
-              border: Border.all(
-                color: selected
-                    ? Colors.white.withValues(alpha: 0.85)
-                    : Colors.white.withValues(alpha: 0.10),
-                width: selected ? 2 : 1,
-              ),
-              boxShadow: selected
-                  ? [
-                      BoxShadow(
-                        color: widget.glowColor.withValues(alpha: 0.65),
-                        blurRadius: 22,
-                        spreadRadius: 1,
-                      ),
-                    ]
-                  : null,
-            ),
-            child: Icon(icon, size: selected ? 27 : 23, color: Colors.white),
-          ),
-          const SizedBox(height: 5),
-          SizedBox(
-            width: 96,
-            child: Text(
-              ref.tr(labelKey),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: selected ? 10.5 : 9.5,
-                fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
-                color: selected
-                    ? Colors.white
-                    : Colors.white.withValues(alpha: 0.62),
-                decoration: TextDecoration.none,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  @override
+  bool shouldRepaint(_ArcGuidePainter old) => old.color != color;
 }

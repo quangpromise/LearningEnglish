@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_language.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/phonics_data.dart';
 import 'phonics_lesson_detail_screen.dart';
@@ -51,22 +52,7 @@ class _PhonicsLessonsScreenState extends State<PhonicsLessonsScreen> {
           children: [
             Row(
               children: [
-                GestureDetector(
-                  onTap: () => Navigator.of(context).maybePop(),
-                  child: Container(
-                    width: 34,
-                    height: 34,
-                    decoration: BoxDecoration(
-                      color: AppColors.glassFill,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.glassBorder),
-                    ),
-                    child: const Icon(
-                      Icons.chevron_left_rounded,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                ),
+                const PopupBackButton(),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(

@@ -225,7 +225,6 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     final selectedDate = ref.watch(plannerSelectedDateProvider);
     final reminderMode = ref.watch(plannerReminderSettingsProvider).mode;
     final lang = ref.watch(appLanguageProvider);
-    final filter = ref.watch(plannerSectionFilterProvider);
     final inbox = ref.watch(plannerInboxProvider);
     final overdue = ref.watch(plannerOverdueProvider);
     final notifier = ref.read(plannerTasksProvider.notifier);
@@ -400,11 +399,6 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                   },
                 ),
               ),
-              _FilterRow(
-                filter: filter,
-                onChanged: (f) =>
-                    ref.read(plannerSectionFilterProvider.notifier).state = f,
-              ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 2, 20, 4),
                 child: Wrap(
@@ -479,95 +473,6 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
 
 /// Chip loc theo mini-app (provider loc da co tu truoc nhung chua co UI nao
 /// ghi vao - docs/research-planner-app-ux.md §7.5 muc 8).
-class _FilterRow extends ConsumerWidget {
-  const _FilterRow({required this.filter, required this.onChanged});
-
-  final Set<AppSection>? filter;
-  final ValueChanged<Set<AppSection>?> onChanged;
-
-  String _key(AppSection s) => switch (s) {
-    AppSection.learnEnglish => 'planner_app_english',
-    AppSection.fitness => 'planner_app_fitness',
-    AppSection.wealth => 'planner_app_wealth',
-  };
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    Widget chip({
-      required String label,
-      required bool selected,
-      required Color tint,
-      IconData? icon,
-      required VoidCallback onTap,
-    }) {
-      return GestureDetector(
-        onTap: onTap,
-        child: Container(
-          margin: const EdgeInsets.only(right: 6),
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-          decoration: BoxDecoration(
-            color: selected
-                ? tint.withValues(alpha: 0.18)
-                : AppColors.glassFill,
-            borderRadius: BorderRadius.circular(999),
-            border: Border.all(color: selected ? tint : AppColors.glassBorder),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (icon != null) ...[
-                Icon(
-                  icon,
-                  size: 12,
-                  color: selected ? tint : AppColors.textMuted,
-                ),
-                const SizedBox(width: 4),
-              ],
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w800,
-                  color: selected ? tint : AppColors.textMuted,
-                  decoration: TextDecoration.none,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return SizedBox(
-      height: 34,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.fromLTRB(16, 4, 16, 2),
-        children: [
-          chip(
-            label: ref.tr('planner_filter_all'),
-            selected: filter == null,
-            tint: Colors.white,
-            onTap: () => onChanged(null),
-          ),
-          for (final s in AppSection.values)
-            chip(
-              label: ref.tr(_key(s)),
-              icon: plannerSectionIcon(s),
-              selected: filter?.contains(s) ?? false,
-              tint: plannerSectionTint(s),
-              onTap: () {
-                final next = {...?filter};
-                if (!next.remove(s)) next.add(s);
-                onChanged(next.isEmpty ? null : next);
-              },
-            ),
-        ],
-      ),
-    );
-  }
-}
-
 class _OverdueBanner extends ConsumerWidget {
   const _OverdueBanner({required this.count, required this.onTap});
 

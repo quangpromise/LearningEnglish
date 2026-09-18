@@ -18,12 +18,6 @@ final plannerSelectedDateProvider = StateProvider<DateTime>((ref) {
   return DateTime(now.year, now.month, now.day);
 });
 
-/// null = hien tat ca; khac null = chi hien viec cua cac AppSection co trong
-/// set (chip loc mini-app ngay duoi date-strip trong planner_screen.dart).
-final plannerSectionFilterProvider = StateProvider<Set<AppSection>?>(
-  (ref) => null,
-);
-
 /// "Bay gio", cap nhat moi phut - de trang thai tu suy (Sap toi/Dang chay/
 /// Qua han) va vach gio hien tai tren timeline tu doi ma khong can mo lai.
 final plannerNowProvider = StreamProvider<DateTime>(
@@ -459,14 +453,13 @@ final plannerTasksProvider =
       ),
     );
 
-/// Tat ca viec da loc theo [plannerSectionFilterProvider].
-final plannerFilteredTasksProvider = Provider<List<PlannerTask>>((ref) {
-  final filter = ref.watch(plannerSectionFilterProvider);
-  return ref
-      .watch(plannerTasksProvider)
-      .where((t) => filter == null || filter.contains(t.appSection))
-      .toList();
-});
+/// Tat ca viec. TRUOC DAY co loc theo mini-app (Tat ca/Hoc Tieng Anh/
+/// Fitness/Quan ly tai san) qua plannerSectionFilterProvider - da BO theo yeu
+/// cau nguoi dung: ke hoach trong ngay nen xem lien mach 1 danh sach, viec
+/// phai nho minh dang bat bo loc nao chi lam roi.
+final plannerFilteredTasksProvider = Provider<List<PlannerTask>>(
+  (ref) => ref.watch(plannerTasksProvider),
+);
 
 /// Cac lan xuat hien trong 1 ngay (da loc, bo Inbox), sap theo gio bat dau -
 /// nguon du lieu cua tung cot trong planner_timeline.dart.

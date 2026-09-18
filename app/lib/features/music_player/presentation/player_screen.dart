@@ -11,6 +11,7 @@ import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../grammar/presentation/grammar_screen.dart';
+import '../../planner/presentation/planner_accent.dart';
 import '../../translation/presentation/word_popup_sheet.dart';
 import '../data/songs_data.dart';
 import 'karaoke_lyrics.dart';
@@ -179,6 +180,13 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
 
   @override
   Widget build(BuildContext context) {
+    // Mau nhan theo APP dang mo (xanh Hoc Tieng Anh / cam Fitness /
+    // vang Wealth) thay vi accentGradient+blue co dinh - man Player mo
+    // duoc tu ca 3 app qua thanh nhac chung nen truoc day vao tu Fitness
+    // hay Wealth van ra giao dien xanh, lech tone han voi phan con lai.
+    final (accentGradient, accentColor) = plannerAccentFor(
+      ref.watch(currentAppSectionProvider),
+    );
     final lyrics = _song.lyrics;
     final favoritesAsync = ref.watch(favoriteSongTitlesProvider);
     final isFavorite =
@@ -249,7 +257,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
               child: TabBar(
                 controller: _tabController,
                 indicator: BoxDecoration(
-                  gradient: AppColors.accentGradient,
+                  gradient: accentGradient,
                   borderRadius: BorderRadius.circular(999),
                 ),
                 indicatorSize: TabBarIndicatorSize.tab,
@@ -277,11 +285,11 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
                         width: 170,
                         height: 170,
                         decoration: BoxDecoration(
-                          gradient: AppColors.accentGradient,
+                          gradient: accentGradient,
                           borderRadius: BorderRadius.circular(30),
                           boxShadow: [
                             BoxShadow(
-                              color: AppColors.purple.withValues(alpha: 0.4),
+                              color: accentColor.withValues(alpha: 0.4),
                               blurRadius: 60,
                               offset: const Offset(0, 24),
                             ),
@@ -377,11 +385,11 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
                                   width: 68,
                                   height: 68,
                                   decoration: BoxDecoration(
-                                    gradient: AppColors.accentGradient,
+                                    gradient: accentGradient,
                                     shape: BoxShape.circle,
                                     boxShadow: [
                                       BoxShadow(
-                                        color: AppColors.blue.withValues(
+                                        color: accentColor.withValues(
                                           alpha: 0.5,
                                         ),
                                         blurRadius: 40,

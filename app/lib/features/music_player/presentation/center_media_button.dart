@@ -151,15 +151,24 @@ class _IdleBar extends ConsumerWidget {
       // nho + 1 dong chu can giua nen khac han.
       child: Row(
         children: [
+          // Nhuom dia than theo accent thay vi phai co 1 file PNG cho moi
+          // app: chi co san ban xanh + ban vang, nen Fitness (khong truyen
+          // discAsset) roi ve mac dinh ic_vinyl_blue.png va ra dia XANH giua
+          // giao dien cam. BlendMode.hue chi doi TONE MAU, giu nguyen do
+          // sang/do dam - phan nhua den cua dia (bao hoa 0) khong bi anh
+          // huong, chi rieng nhan giua doi mau theo app.
           ClipOval(
-            child: Image.asset(
-              discAsset,
-              width: 38,
-              height: 38,
-              fit: BoxFit.cover,
-              filterQuality: FilterQuality.medium,
-              errorBuilder: (_, _, _) =>
-                  Icon(Icons.album_rounded, size: 34, color: accentColor),
+            child: ColorFiltered(
+              colorFilter: ColorFilter.mode(accentColor, BlendMode.hue),
+              child: Image.asset(
+                discAsset,
+                width: 38,
+                height: 38,
+                fit: BoxFit.cover,
+                filterQuality: FilterQuality.medium,
+                errorBuilder: (_, _, _) =>
+                    Icon(Icons.album_rounded, size: 34, color: accentColor),
+              ),
             ),
           ),
           const SizedBox(width: 11),

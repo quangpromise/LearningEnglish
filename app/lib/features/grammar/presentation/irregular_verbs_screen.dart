@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/irregular_verbs_data.dart';
 
@@ -48,22 +49,7 @@ class _IrregularVerbsScreenState extends ConsumerState<IrregularVerbsScreen> {
           children: [
             Row(
               children: [
-                GestureDetector(
-                  onTap: widget.onBack,
-                  child: Container(
-                    width: 34,
-                    height: 34,
-                    decoration: BoxDecoration(
-                      color: AppColors.glassFill,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.glassBorder),
-                    ),
-                    child: const Icon(
-                      Icons.chevron_left_rounded,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                ),
+                PopupBackButton(onBack: widget.onBack),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
