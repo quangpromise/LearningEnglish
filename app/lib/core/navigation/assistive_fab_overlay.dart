@@ -11,6 +11,7 @@ import '../../features/translation/presentation/dictionary_popup.dart';
 import '../../features/wealth/presentation/calculator_screen.dart';
 import '../i18n/app_strings.dart';
 import '../providers/app_providers.dart';
+import '../theme/app_theme.dart';
 import 'app_popup.dart';
 import 'nav_keys.dart';
 
@@ -57,11 +58,10 @@ const _kGridItems = [
 /// giua man hinh - bang HINH VUONG, nut "Ve trang chu" o giua, 4 loi tat
 /// ([_kGridItems]) xung quanh - xem [_buildMenuPanel].
 ///
-/// Hien o TAT CA man hinh (truoc day chi hien o 3 man Home chinh, an o moi
-/// man hinh khac - doi theo yeu cau nguoi dung de dung duoc loi tat "Ve
-/// trang chu" tu bat ky dau) - CHI an khi dang ghi am luyen phat am
-/// ([pronunciationTabActiveProvider]) hoac dang o man AI Voice Chat (tranh
-/// noi tren giao dien cuoc goi).
+/// Hien o TAT CA man hinh, KHONG TRU man nao (truoc day con an them o man
+/// Luyen phat am va AI Voice Chat de khoi de len nut mic/giao dien cuoc goi
+/// - bo di theo yeu cau nguoi dung 2026-09-19 vi mo popup len la mat luon
+/// loi tat "Ve trang chu"; nut keo doc duoc nen tu tranh cho vuong).
 class AssistiveFabOverlay extends ConsumerStatefulWidget {
   const AssistiveFabOverlay({super.key});
 
@@ -131,6 +131,37 @@ class _AssistiveFabOverlayState extends ConsumerState<AssistiveFabOverlay> {
     setState(() => _expanded = false);
     final navContext = rootNavigatorKey.currentContext;
     if (navContext == null) return;
+    // Dang o man Luyen phat am: man do dang GIU mic (speech_to_text), mo
+    // tiep AI Voice Chat se tranh mic - 1 trong 2 se im tieng ma khong bao
+    // loi gi. Truoc day chan bang cach an HAN ca nut noi; gio nut van hien
+    // (de con loi tat Ve trang chu/May tinh/Dich) nen phai chan dung cho.
+    //
+    // Bao bang HOP THOAI chu khong phai SnackBar: man Luyen phat am la 1
+    // popup phu gan het man hinh nen SnackBar (bam vao Scaffold goc ben
+    // duoi) se bi chinh popup do che kin.
+    if (ref.read(pronunciationTabActiveProvider)) {
+      showDialog<void>(
+        context: navContext,
+        useRootNavigator: true,
+        builder: (dialogContext) => AlertDialog(
+          backgroundColor: AppColors.bgTop,
+          content: Text(
+            ref.tr('assistive_voice_chat_mic_busy'),
+            style: AppTextStyles.body(size: 13),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(
+                'OK',
+                style: AppTextStyles.body(size: 13, weight: FontWeight.w700),
+              ),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
     showModalBottomSheet(
       context: navContext,
       useRootNavigator: true,
@@ -205,102 +236,102 @@ class _AssistiveFabOverlayState extends ConsumerState<AssistiveFabOverlay> {
 
   @override
   Widget build(BuildContext context) {
-    final pronunciationActive = ref.watch(pronunciationTabActiveProvider);
     final section = ref.watch(currentAppSectionProvider);
     final (gradient, glowColor) = plannerAccentFor(section);
 
-    return ValueListenableBuilder<String?>(
-      valueListenable: topRouteObserver.currentRouteName,
-      builder: (context, routeName, _) {
-        final hidden =
-            pronunciationActive || routeName == kAiVoiceChatRouteName;
-        if (hidden) return const SizedBox.shrink();
+    // Nut hien o MOI man hinh, KE CA man Luyen phat am va AI Voice Chat
+    // (yeu cau nguoi dung 2026-09-19: mo popup len la mat nut, khong con
+    // duong "Ve trang chu" nhanh). Ly do an truoc day - tranh nut noi de
+    // len nut mic / giao dien cuoc goi - da het quan trong vi nut co the
+    // KEO DOC doc canh phai de tranh cho vuong.
+    //
+    // Rieng loi tat AI Voice Chat van bi chan khi dang luyen phat am
+    // (xem _openAiVoiceChat): do la rang buoc CHUC NANG that su - ca hai
+    // deu chiem mic, khong phai chuyen bo cuc.
 
-        final mq = MediaQuery.of(context);
-        final y = _y ?? _defaultY(mq.size);
+    final mq = MediaQuery.of(context);
+    final y = _y ?? _defaultY(mq.size);
 
-        return Stack(
-          children: [
-            if (_expanded)
-              Positioned.fill(
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () => setState(() => _expanded = false),
-                  // Chi lam MO NHE nen phia sau (khong toi den nhu lan dau,
-                  // theo dung phong cach tham khao cua nguoi dung - vd wheel
-                  // picker cua Pinterest: nen mo nhe + phu 1 lop sang mau
-                  // nhat cua accent, khong phai lop den mo mit) - du de tach
-                  // 2 nut radial khoi noi dung phia sau ma khong lam toi ca
-                  // man hinh.
-                  child: BackdropFilter(
-                    filter: ui.ImageFilter.blur(sigmaX: 3, sigmaY: 3),
-                    child: Container(color: glowColor.withValues(alpha: 0.1)),
-                  ),
-                ),
+    return Stack(
+      children: [
+        if (_expanded)
+          Positioned.fill(
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => setState(() => _expanded = false),
+              // Chi lam MO NHE nen phia sau (khong toi den nhu lan dau,
+              // theo dung phong cach tham khao cua nguoi dung - vd wheel
+              // picker cua Pinterest: nen mo nhe + phu 1 lop sang mau
+              // nhat cua accent, khong phai lop den mo mit) - du de tach
+              // 2 nut radial khoi noi dung phia sau ma khong lam toi ca
+              // man hinh.
+              child: BackdropFilter(
+                filter: ui.ImageFilter.blur(sigmaX: 3, sigmaY: 3),
+                child: Container(color: glowColor.withValues(alpha: 0.1)),
               ),
-            if (_expanded)
-              _buildMenuPanel(gradient: gradient, glowColor: glowColor),
-            Positioned(
-              right: -_kFabSize / 2,
-              top: y,
-              // AN HAN nut khi bang menu dang mo - luc do menu da chiem het
-              // canh phai, de nut nam de len tren vua thua vua che mat cac
-              // muc. Dong menu bang cach cham ra ngoai, nut hien lai.
-              // IgnorePointer di kem opacity: chi lam mo thoi thi nut van an
-              // tay cham tuy da khong nhin thay.
-              child: IgnorePointer(
-                ignoring: _expanded,
-                child: AnimatedOpacity(
-                  opacity: _expanded ? 0 : 1,
-                  duration: const Duration(milliseconds: 160),
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onPanStart: (_) => _onPanStart(y),
-                    onPanUpdate: (d) => _onPanUpdate(d, mq.size, mq.padding),
-                    onPanEnd: _onPanEnd,
-                    child: AnimatedScale(
-                      scale: _dragging ? 1.1 : 1.0,
-                      duration: const Duration(milliseconds: 150),
-                      child: Container(
-                        width: _kFabSize,
-                        height: _kFabSize,
-                        decoration: BoxDecoration(
-                          gradient: gradient,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: glowColor.withValues(alpha: 0.45),
-                              blurRadius: 22,
-                              spreadRadius: 2,
-                              offset: const Offset(-6, 0),
-                            ),
-                          ],
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.25),
-                            width: 1.4,
-                          ),
+            ),
+          ),
+        if (_expanded)
+          _buildMenuPanel(gradient: gradient, glowColor: glowColor),
+        Positioned(
+          right: -_kFabSize / 2,
+          top: y,
+          // AN HAN nut khi bang menu dang mo - luc do menu da chiem het
+          // canh phai, de nut nam de len tren vua thua vua che mat cac
+          // muc. Dong menu bang cach cham ra ngoai, nut hien lai.
+          // IgnorePointer di kem opacity: chi lam mo thoi thi nut van an
+          // tay cham tuy da khong nhin thay.
+          child: IgnorePointer(
+            ignoring: _expanded,
+            child: AnimatedOpacity(
+              opacity: _expanded ? 0 : 1,
+              duration: const Duration(milliseconds: 160),
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onPanStart: (_) => _onPanStart(y),
+                onPanUpdate: (d) => _onPanUpdate(d, mq.size, mq.padding),
+                onPanEnd: _onPanEnd,
+                child: AnimatedScale(
+                  scale: _dragging ? 1.1 : 1.0,
+                  duration: const Duration(milliseconds: 150),
+                  child: Container(
+                    width: _kFabSize,
+                    height: _kFabSize,
+                    decoration: BoxDecoration(
+                      gradient: gradient,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: glowColor.withValues(alpha: 0.45),
+                          blurRadius: 22,
+                          spreadRadius: 2,
+                          offset: const Offset(-6, 0),
                         ),
-                        // Le trai de icon nam trong nua hinh tron con hien tren
-                        // man hinh (nua kia bi che boi canh phai).
-                        padding: const EdgeInsets.only(right: 20),
-                        alignment: Alignment.center,
-                        // LUON la tay nam chevron - truoc day doi sang dau X khi
-                        // mo; gio dong menu bang cach cham ra ngoai (hoac cham
-                        // lai chinh nut nay) nen khong can dau X nua.
-                        child: const Icon(
-                          Icons.chevron_left_rounded,
-                          color: Colors.white,
-                          size: 22,
-                        ),
+                      ],
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.25),
+                        width: 1.4,
                       ),
+                    ),
+                    // Le trai de icon nam trong nua hinh tron con hien tren
+                    // man hinh (nua kia bi che boi canh phai).
+                    padding: const EdgeInsets.only(right: 20),
+                    alignment: Alignment.center,
+                    // LUON la tay nam chevron - truoc day doi sang dau X khi
+                    // mo; gio dong menu bang cach cham ra ngoai (hoac cham
+                    // lai chinh nut nay) nen khong can dau X nua.
+                    child: const Icon(
+                      Icons.chevron_left_rounded,
+                      color: Colors.white,
+                      size: 22,
                     ),
                   ),
                 ),
               ),
             ),
-          ],
-        );
-      },
+          ),
+        ),
+      ],
     );
   }
 

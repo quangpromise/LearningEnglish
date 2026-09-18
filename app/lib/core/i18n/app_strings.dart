@@ -2210,6 +2210,10 @@ class AppStrings {
       AppLanguage.vi: 'Gửi thử 1 thông báo',
       AppLanguage.en: 'Send a test notification',
     },
+    'assistive_voice_chat_mic_busy': {
+      AppLanguage.vi: 'Đang luyện phát âm nên mic đang bận. Đóng màn Luyện phát âm rồi mở lại Trò chuyện AI.',
+      AppLanguage.en: 'The mic is busy with pronunciation practice. Close that screen first, then open AI Voice Chat.',
+    },
     'wealth_settings_price_alerts_test_sent': {
       AppLanguage.vi: 'Đã gửi - kéo thanh trạng thái xuống để xem',
       AppLanguage.en: 'Sent - pull down the status bar to see it',
