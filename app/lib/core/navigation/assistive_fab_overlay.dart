@@ -133,13 +133,20 @@ class _AssistiveFabOverlayState extends ConsumerState<AssistiveFabOverlay> {
     if (navContext == null) return;
     // Dang o man Luyen phat am: man do dang GIU mic (speech_to_text), mo
     // tiep AI Voice Chat se tranh mic - 1 trong 2 se im tieng ma khong bao
-    // loi gi. Truoc day chan bang cach an HAN ca nut noi; gio nut van hien
-    // (de con loi tat Ve trang chu/May tinh/Dich) nen phai chan dung cho.
+    // loi gi.
+    //
+    // Hoi ROUTE dang o tren cung, KHONG hoi co Riverpod
+    // pronunciationTabActiveProvider nhu ban truoc: co do bat trong initState
+    // va tat trong dispose cua man Luyen phat am, thuc te no BI KET o trang
+    // thai "dang bat" sau khi dong man (loi nguoi dung bao 2026-09-19: da
+    // tat man luyen am ma van bao mic ban). Route observer tu cap nhat khi
+    // popup bi pop nen khong the lech trang thai - dung dung canh bao da ghi
+    // san trong nav_keys.dart.
     //
     // Bao bang HOP THOAI chu khong phai SnackBar: man Luyen phat am la 1
     // popup phu gan het man hinh nen SnackBar (bam vao Scaffold goc ben
     // duoi) se bi chinh popup do che kin.
-    if (ref.read(pronunciationTabActiveProvider)) {
+    if (topRouteObserver.currentRouteName.value == kPronunciationRouteName) {
       showDialog<void>(
         context: navContext,
         useRootNavigator: true,

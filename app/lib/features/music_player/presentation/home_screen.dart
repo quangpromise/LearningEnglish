@@ -719,7 +719,11 @@ class _PracticePanel extends ConsumerWidget {
         icon: Icons.record_voice_over_outlined,
         title: ref.tr('pron_title'),
         subtitle: ref.tr('home_sub_pronunciation'),
-        open: () => openAppPopup(context, const PronunciationScreen()),
+        open: () => openAppPopup(
+          context,
+          const PronunciationScreen(),
+          routeName: kPronunciationRouteName,
+        ),
       ),
       _FeatureEntry(
         feature: HomeFeature.story,
@@ -773,8 +777,11 @@ class _PracticePanel extends ConsumerWidget {
                   ),
                   const SizedBox(width: 10),
                   GestureDetector(
-                    onTap: () =>
-                        openAppPopup(context, const PronunciationScreen()),
+                    onTap: () => openAppPopup(
+                      context,
+                      const PronunciationScreen(),
+                      routeName: kPronunciationRouteName,
+                    ),
                     child: Container(
                       width: 54,
                       height: 42,

@@ -13,6 +13,13 @@ final rootNavigatorKey = GlobalKey<NavigatorState>();
 /// mong doi).
 const kAiVoiceChatRouteName = '/ai-voice-chat';
 
+/// Ten route cho PronunciationScreen - CUNG LY DO nhu tren: nut AI Voice Chat
+/// can biet man Luyen phat am co dang mo hay khong (ca hai cung chiem mic).
+/// Ban dau viec nay dung 1 co Riverpod bat/tat trong initState/dispose cua
+/// man do va DA HONG dung nhu canh bao o tren: co bi ket "dang bat" sau khi
+/// dong man, khien AI Voice Chat bao "mic dang ban" mai khong mo duoc.
+const kPronunciationRouteName = '/pronunciation';
+
 /// Ten route cho dung "man Home that su" cua tung khu vuc (xem
 /// ai_fab_overlay.dart) - Hoc Tieng Anh dung dung route mac dinh cua
 /// MaterialApp.home ('/'), Fitness/Wealth phai duoc gan ten nay THU CONG

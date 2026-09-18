@@ -46,19 +46,11 @@ class _PronunciationScreenState extends ConsumerState<PronunciationScreen> {
         : _randomLevelSentence(level);
     _targetEn = initial.en;
     _targetVi = initial.vi;
-    // An FAB AI Voice Chat trong luc man nay mo - ca 2 deu dung mic, tranh
-    // xung dot quyen truy cap/xac nhan nham (xem ai_fab_overlay.dart).
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        ref.read(pronunciationTabActiveProvider.notifier).state = true;
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    ref.read(pronunciationTabActiveProvider.notifier).state = false;
-    super.dispose();
+    // KHONG con tu bat/tat 1 co Riverpod bao "man nay dang mo" nua: co do
+    // bi ket o trang thai bat sau khi dong man, khien AI Voice Chat bao
+    // "mic dang ban" mai. Nay man duoc mo kem ten route
+    // kPronunciationRouteName va ben kia hoi topRouteObserver - xem
+    // assistive_fab_overlay.dart va nav_keys.dart.
   }
 
   static _PracticeChoice _randomLevelSentence(LearnerLevel level) {

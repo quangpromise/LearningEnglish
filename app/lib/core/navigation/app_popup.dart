@@ -20,10 +20,15 @@ import '../theme/app_theme.dart';
 /// Tra ve `Future<T?>` (gia tri duoc dua vao khi man con popup pop kem data
 /// qua `Navigator.pop(context, value)`) de giu duoc cac luong dang can lay
 /// ket qua tra ve giong `await Navigator.push<T>(...)` truoc day.
+/// [routeName] dat ten cho route popup de [topRouteObserver] nhan ra man nay
+/// dang mo (mac dinh popup KHONG co ten - xem nav_keys.dart). Chi truyen khi
+/// co cho khac thuc su can biet man nay dang mo hay khong, vd man Luyen phat
+/// am (nut AI Voice Chat phai biet de tranh gianh mic).
 Future<T?> openAppPopup<T>(
   BuildContext context,
   Widget child, {
   bool dismissible = true,
+  String? routeName,
 }) {
   return showModalBottomSheet<T>(
     context: context,
@@ -32,6 +37,7 @@ Future<T?> openAppPopup<T>(
     backgroundColor: Colors.transparent,
     isDismissible: dismissible,
     enableDrag: dismissible,
+    routeSettings: routeName == null ? null : RouteSettings(name: routeName),
     builder: (_) => FractionallySizedBox(
       heightFactor: 0.94,
       child: ClipRRect(
