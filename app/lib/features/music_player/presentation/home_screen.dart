@@ -77,81 +77,128 @@ class HomeScreen extends ConsumerWidget {
       glow: const Color(0xFF68A6FF),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
-        child: SingleChildScrollView(
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AppTopBar(
-                    greeting: '${ref.tr(greetingKeyForNow())},',
-                    unreadCount: unread,
-                    onMessagesTap: () =>
-                        openAppPopup(context, const ConversationsScreen()),
-                    trailing: GestureDetector(
-                      // Bam icon la ban luon mo lai khao sat (chon/doi/tat
-                      // goi y lo trinh) - da bo man "Lo trinh hoc" day du
-                      // rieng theo yeu cau.
-                      onTap: () => showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true,
-                        backgroundColor: Colors.transparent,
-                        builder: (_) => const LearningPathSurveyScreen(),
-                      ),
-                      child: CompositedTransformTarget(
-                        link: compassLink,
-                        child: Tooltip(
-                          message: ref.tr('learning_path_tooltip'),
-                          child: const TopBarIconChip(
-                            icon: Icons.explore_outlined,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  const ServiceExpiryBanner(section: AppSection.learnEnglish),
-                  const _ProgressCard(),
-                  const SizedBox(height: 10),
-                  const _DailyWordsHeroCard(),
-                  const SizedBox(height: 10),
-                  _SkillGrid(
+        // Tu CO theo chieu cao that co de xem het man trong 1 trang.
+        //
+        // Chi thu gon kich co co dinh la KHONG DU: tren web trong browser,
+        // thanh URL tren + thanh dieu huong duoi an mat kha nhieu nen vung
+        // thuc dung chi con khoang 620pt, it hon han 828pt cua man dien thoai.
+        // Noi dung thiet ke cao ~694pt (do bang bo chup, xem tool/render) nen
+        // van tran. Day khung noi dung rong hon ti le nghich roi thu nho lai
+        // => moi thu (ke ca chu) nho deu theo dung ti le ban thiet ke, khong
+        // phai sua tay tung con so cho tung loai man.
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            const designHeight = 694.0;
+            final available = constraints.maxHeight;
+            // Chan duoi 0.74 de chu khong nho den muc kho doc tren nhung vung
+            // hien thi qua thap - luc do thi cho cuon lai nhu truoc.
+            final scale = (!available.isFinite || available >= designHeight)
+                ? 1.0
+                : (available / designHeight).clamp(0.74, 1.0);
+            return SingleChildScrollView(
+              child: Transform.scale(
+                scale: scale,
+                alignment: Alignment.topCenter,
+                child: SizedBox(
+                  width: constraints.maxWidth / scale,
+                  child: _buildBody(
+                    context,
+                    ref,
+                    unread: unread,
                     accent: accent,
                     recommended: recommended,
                     topPick: topPick,
-                  ),
-                  const SizedBox(height: 10),
-                  _PracticePanel(
-                    accent: accent,
-                    recommended: recommended,
-                    topPick: topPick,
-                  ),
-                  const SizedBox(height: 10),
-                  _TestPrepPanel(
-                    accent: accent,
-                    recommended: recommended,
-                    topPick: topPick,
-                  ),
-                ],
-              ),
-              if (showSurveyHint)
-                Positioned(
-                  top: 0,
-                  right: 0,
-                  child: CompositedTransformFollower(
-                    link: compassLink,
-                    showWhenUnlinked: false,
-                    targetAnchor: Alignment.bottomRight,
-                    followerAnchor: Alignment.topRight,
-                    offset: const Offset(0, 4),
-                    child: const _SuggestHint(color: AppColors.teal),
+                    compassLink: compassLink,
+                    showSurveyHint: showSurveyHint,
                   ),
                 ),
-            ],
-          ),
+              ),
+            );
+          },
         ),
       ),
+    );
+  }
+
+  Widget _buildBody(
+    BuildContext context,
+    WidgetRef ref, {
+    required int unread,
+    required Color accent,
+    required List<HomeFeature> recommended,
+    required HomeFeature? topPick,
+    required LayerLink compassLink,
+    required bool showSurveyHint,
+  }) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AppTopBar(
+              greeting: '${ref.tr(greetingKeyForNow())},',
+              unreadCount: unread,
+              onMessagesTap: () =>
+                  openAppPopup(context, const ConversationsScreen()),
+              trailing: GestureDetector(
+                // Bam icon la ban luon mo lai khao sat (chon/doi/tat
+                // goi y lo trinh) - da bo man "Lo trinh hoc" day du
+                // rieng theo yeu cau.
+                onTap: () => showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (_) => const LearningPathSurveyScreen(),
+                ),
+                child: CompositedTransformTarget(
+                  link: compassLink,
+                  child: Tooltip(
+                    message: ref.tr('learning_path_tooltip'),
+                    child: const TopBarIconChip(icon: Icons.explore_outlined),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            const ServiceExpiryBanner(section: AppSection.learnEnglish),
+            const _ProgressCard(),
+            const SizedBox(height: 10),
+            const _DailyWordsHeroCard(),
+            const SizedBox(height: 10),
+            _SkillGrid(
+              accent: accent,
+              recommended: recommended,
+              topPick: topPick,
+            ),
+            const SizedBox(height: 10),
+            _PracticePanel(
+              accent: accent,
+              recommended: recommended,
+              topPick: topPick,
+            ),
+            const SizedBox(height: 10),
+            _TestPrepPanel(
+              accent: accent,
+              recommended: recommended,
+              topPick: topPick,
+            ),
+          ],
+        ),
+        if (showSurveyHint)
+          Positioned(
+            top: 0,
+            right: 0,
+            child: CompositedTransformFollower(
+              link: compassLink,
+              showWhenUnlinked: false,
+              targetAnchor: Alignment.bottomRight,
+              followerAnchor: Alignment.topRight,
+              offset: const Offset(0, 4),
+              child: const _SuggestHint(color: AppColors.teal),
+            ),
+          ),
+      ],
     );
   }
 }

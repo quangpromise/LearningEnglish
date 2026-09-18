@@ -41,11 +41,26 @@ class CenterMediaButton extends StatelessWidget {
           // (khong con bi boc trong 1 Container trang tri khac gay long
           // nhau/lech kich thuoc), nen mang nguyen mau nen kinh + do bong
           // cua pill Menu cu, chi doi vien sang mau accent cua tung app.
-          height: 64,
+          // So do tu anh thiet ke goc (quet ngang/doc qua pill):
+          //   nen  #020911 - TOI HON nen xung quanh (#0A0D12)
+          //   vien XAM gradient: trai #4D4E53 (trang 28%) -> phai #32373D
+          //        (19%) -> tren #25282D (13%); KHONG phai vien vang/accent
+          //        nhu ban truoc (accent 55%) - chi rieng nut Play moi vien
+          //        mau accent.
+          //   cao ~48pt (145px o mat do 3.03); dung 54 de con du vung cham.
+          height: 54,
           decoration: BoxDecoration(
-            color: const Color(0xD90A0E1C),
             borderRadius: BorderRadius.circular(999),
-            border: Border.all(color: accentColor.withValues(alpha: 0.55)),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white.withValues(alpha: 0.28),
+                Colors.white.withValues(alpha: 0.19),
+                Colors.white.withValues(alpha: 0.13),
+              ],
+              stops: const [0.0, 0.45, 1.0],
+            ),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.5),
@@ -54,41 +69,48 @@ class CenterMediaButton extends StatelessWidget {
               ),
             ],
           ),
+          padding: const EdgeInsets.all(0.8),
           // ClipRRect de "song am" (waveform) o duoi khong tran ra ngoai
           // vien bo tron cua pill.
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(999),
-            // alignment: center - BAT BUOC. Stack mac dinh can cac phan tu
-            // KHONG Positioned theo topStart (goc TREN-trai), khong phai
-            // giua. Padding ben duoi (chua het icon+chu) co chieu cao NHO
-            // HON 64 (chi cao bang noi dung, ~46-48px do Row khong duoc ep
-            // gian ra du 64px) nen bi Stack dan LEN SAT TREN, de trong 1
-            // khoang trong CHI o duoi - day chinh la nguyen nhan "lech tren
-            // duoi" nguoi dung bao, KHONG phai do font/leading nhu 2 lan
-            // sua truoc (cac lan do khong giai quyet dung nguyen nhan goc).
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                if (queue.isNotEmpty)
-                  Positioned.fill(
-                    child: StreamBuilder<PlayerState>(
-                      stream: service.player.playerStateStream,
-                      initialData: service.player.playerState,
-                      builder: (context, snap) {
-                        return _WaveformBackground(
-                          color: accentColor,
-                          playing: snap.data?.playing ?? false,
-                        );
-                      },
+          child: DecoratedBox(
+            decoration: const BoxDecoration(
+              color: Color(0xF2020911),
+              borderRadius: BorderRadius.all(Radius.circular(999)),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(999),
+              // alignment: center - BAT BUOC. Stack mac dinh can cac phan tu
+              // KHONG Positioned theo topStart (goc TREN-trai), khong phai
+              // giua. Padding ben duoi (chua het icon+chu) co chieu cao NHO
+              // HON 64 (chi cao bang noi dung, ~46-48px do Row khong duoc ep
+              // gian ra du 64px) nen bi Stack dan LEN SAT TREN, de trong 1
+              // khoang trong CHI o duoi - day chinh la nguyen nhan "lech tren
+              // duoi" nguoi dung bao, KHONG phai do font/leading nhu 2 lan
+              // sua truoc (cac lan do khong giai quyet dung nguyen nhan goc).
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  if (queue.isNotEmpty)
+                    Positioned.fill(
+                      child: StreamBuilder<PlayerState>(
+                        stream: service.player.playerStateStream,
+                        initialData: service.player.playerState,
+                        builder: (context, snap) {
+                          return _WaveformBackground(
+                            color: accentColor,
+                            playing: snap.data?.playing ?? false,
+                          );
+                        },
+                      ),
                     ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: queue.isEmpty
+                        ? _IdleBar(accentColor: accentColor)
+                        : _PlayingBar(accentColor: accentColor, queue: queue),
                   ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: queue.isEmpty
-                      ? _IdleBar(accentColor: accentColor)
-                      : _PlayingBar(accentColor: accentColor, queue: queue),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );
@@ -112,20 +134,65 @@ class _IdleBar extends ConsumerWidget {
         await NowPlayingService.instance.setQueueAndPlay(kSongs, 0);
         if (context.mounted) _openPlayerPopup(context);
       },
-      child: Center(
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.music_note_rounded, size: 16, color: accentColor),
-            const SizedBox(width: 8),
-            Text(
-              ref.tr('media_bar_not_playing'),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.muted(size: 11.5),
+      // Bo cuc theo anh thiet ke goc: dia than ben trai, ten + dong mo ta o
+      // giua, nut Play vien mau accent ben phai. Ban truoc chi la 1 icon note
+      // nho + 1 dong chu can giua nen khac han.
+      child: Row(
+        children: [
+          ClipOval(
+            child: Image.asset(
+              'assets/home/ic_vinyl.png',
+              width: 38,
+              height: 38,
+              fit: BoxFit.cover,
+              filterQuality: FilterQuality.medium,
+              errorBuilder: (_, _, _) =>
+                  Icon(Icons.album_rounded, size: 34, color: accentColor),
             ),
-          ],
-        ),
+          ),
+          const SizedBox(width: 11),
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  ref.tr('media_bar_not_playing'),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.body(
+                    size: 12.5,
+                    weight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 1),
+                Text(
+                  ref.tr('media_bar_not_playing_sub'),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.body(
+                    size: 9.5,
+                    weight: FontWeight.w500,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: accentColor.withValues(alpha: 0.75),
+                width: 1.3,
+              ),
+            ),
+            child: Icon(Icons.play_arrow_rounded, size: 19, color: accentColor),
+          ),
+        ],
       ),
     );
   }

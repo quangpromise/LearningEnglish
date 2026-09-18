@@ -2470,6 +2470,11 @@ class AppStrings {
       AppLanguage.en: 'Split bill',
     },
     // Dong mo ta duoi ten trong dai hanh dong cua the Tong tai san.
+    // Dong mo ta duoi "Chua phat nhac" tren thanh nhac (theo anh thiet ke).
+    'media_bar_not_playing_sub': {
+      AppLanguage.vi: 'Chọn nhạc để tăng năng lượng',
+      AppLanguage.en: 'Pick a song to get going',
+    },
     'wealth_home_pay_receive_sub': {
       AppLanguage.vi: 'Nhanh chóng · An toàn',
       AppLanguage.en: 'Fast & secure',

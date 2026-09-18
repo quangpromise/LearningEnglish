@@ -533,7 +533,8 @@ class _TrendBadge extends ConsumerWidget {
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.03),
         borderRadius: BorderRadius.circular(13),
-        border: Border.all(color: AppColors.wealthCardBorder),
+        // Vien #1A2127 ~ trang 11% (khong phai 16% nhu cac the).
+        border: Border.all(color: Colors.white.withValues(alpha: 0.11)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -595,9 +596,12 @@ class _StatChip extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(10, 9, 10, 9),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.04),
+        // Anh goc: long o TOI HON nen the (#05080D so voi #060D13) va vien
+        // rat mo (#13181E ~ trang 7%). Ban truoc to nen SANG hon the (trang
+        // 4%) va vien trang 16% - sang gap doi, nen cac o bi noi cuc len.
+        color: Colors.black.withValues(alpha: 0.25),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.wealthCardBorder),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -656,35 +660,44 @@ class _StatChip extends ConsumerWidget {
   }
 }
 
-/// Duong bieu dien gon (khong truc, khong nhan) cho 6 thang gan nhat.
+/// Duong bieu dien cho 6 thang gan nhat.
+///
+/// Cach ve do TRUC TIEP tu anh thiet ke goc (quet doc qua duong o nhieu cot):
+///   - loi duong RAT MANH nhung rat sang: chi 3-4px o mat do 3.9 => ~0.9pt
+///   - kem 1 QUANG SANG mo rong 16-27px => ~4-7pt (day la thu tao cam giac
+///     duong "phat sang"; ban truoc ve 1 net day 1.8pt khong quang nen nhin
+///     duc va bet)
+///   - duoi duong co vung to vang am nhat dan: +6px #553E1C, +14px #382916,
+///     +26px gan bang mau nen
 class _SparklinePainter extends CustomPainter {
   const _SparklinePainter(this.values);
   final List<double> values;
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (values.length < 2) return;
+    if (values.length < 2 || size.width <= 0) return;
     var min = values.reduce((a, b) => a < b ? a : b);
     var max = values.reduce((a, b) => a > b ? a : b);
-    // Moi thang bang nhau -> khoang gia tri = 0, chia se ra vo cuc; noi rong
-    // ra 1 chut de duong nam giua khung thay vi dinh sat canh tren.
     if (max - min < 1) {
       min -= 1;
       max += 1;
     }
 
+    // Chua 5px tren/duoi de doan nam ngang khong dan sat mep khung.
+    const pad = 5.0;
+    final h = size.height - pad * 2;
     final dx = size.width / (values.length - 1);
-    double yOf(double v) => size.height - (v - min) / (max - min) * size.height;
+    double yOf(double v) => pad + h - (v - min) / (max - min) * h;
     final points = [
       for (var i = 0; i < values.length; i++) Offset(i * dx, yOf(values[i])),
     ];
 
     final path = Path()..moveTo(points.first.dx, points.first.dy);
-    for (final p in points.skip(1)) {
-      path.lineTo(p.dx, p.dy);
+    for (final q in points.skip(1)) {
+      path.lineTo(q.dx, q.dy);
     }
 
-    // To mo phan duoi duong cho giong ban thiet ke.
+    // 1. Vung to duoi duong - dam ngay duoi net roi tat nhanh.
     final fill = Path.from(path)
       ..lineTo(points.last.dx, size.height)
       ..lineTo(points.first.dx, size.height)
@@ -692,22 +705,44 @@ class _SparklinePainter extends CustomPainter {
     canvas.drawPath(
       fill,
       Paint()
-        ..shader = ui.Gradient.linear(Offset(0, 0), Offset(0, size.height), [
-          AppColors.wealthChartLine.withValues(alpha: 0.22),
-          AppColors.wealthChartLine.withValues(alpha: 0),
-        ]),
+        ..shader = ui.Gradient.linear(
+          const Offset(0, 0),
+          Offset(0, size.height),
+          [
+            AppColors.wealthChartLine.withValues(alpha: 0.34),
+            AppColors.wealthChartLine.withValues(alpha: 0.05),
+            AppColors.wealthChartLine.withValues(alpha: 0),
+          ],
+          [0.0, 0.45, 1.0],
+        ),
     );
 
+    // 2. Hai lop quang sang mo dan, roi 3. loi duong manh gan trang.
+    for (final (width, blur, alpha) in [(3.4, 5.0, 0.30), (2.0, 2.0, 0.55)]) {
+      canvas.drawPath(
+        path,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = width
+          ..strokeJoin = StrokeJoin.round
+          ..strokeCap = StrokeCap.round
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, blur)
+          ..color = AppColors.wealthChartLine.withValues(alpha: alpha),
+      );
+    }
     canvas.drawPath(
       path,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.8
+        ..strokeWidth = 1.2
         ..strokeJoin = StrokeJoin.round
-        ..color = AppColors.wealthChartLine,
+        ..strokeCap = StrokeCap.round
+        ..color = const Color(0xFFFFFBD9),
     );
-    for (final p in points) {
-      canvas.drawCircle(p, 2.2, Paint()..color = AppColors.wealthChartLine);
+
+    // 4. Cham moc - nho va sang, khong to nhu ban truoc (2.2 -> 1.6).
+    for (final q in points) {
+      canvas.drawCircle(q, 1.6, Paint()..color = const Color(0xFFFFFDE8));
     }
   }
 
@@ -728,15 +763,31 @@ class _GoldCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: padding,
       decoration: BoxDecoration(
-        color: AppColors.homeCardFill,
         borderRadius: BorderRadius.circular(18),
-        // Vien XAM (do tu anh goc: cac the phu deu vien xam #1D2229..#3F4249,
-        // chi rieng the Tong tai san moi co vien vang sang).
-        border: Border.all(color: AppColors.wealthCardBorder),
+        // Vien cung la GRADIENT nhu the Tong tai san, chi la xam->xam thay vi
+        // vang->xam: do duoc canh TRAI #414449 (trang 25%) sang hon canh PHAI
+        // #2A2F35 (trang 16%) va canh TREN #1E2126 toi nhat. Ban truoc dung 1
+        // mau deu 4 canh nen canh trai bi thieu do sang.
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white.withValues(alpha: 0.25),
+            Colors.white.withValues(alpha: 0.17),
+            Colors.white.withValues(alpha: 0.13),
+          ],
+          stops: const [0.0, 0.45, 1.0],
+        ),
       ),
-      child: child,
+      padding: const EdgeInsets.all(0.7),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: AppColors.homeCardFill,
+          borderRadius: BorderRadius.circular(17.3),
+        ),
+        child: Padding(padding: padding, child: child),
+      ),
     );
   }
 }
@@ -920,174 +971,203 @@ class _TotalCard extends StatelessWidget {
         ),
       );
     }
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(22),
-      child: Container(
-        decoration: BoxDecoration(
-          // Ban thiet ke chot: the la nen DEN SAU voi vien vang mong, KHONG
-          // phai khoi vang dac - anh dong xu vang o nua phai va con so mau
-          // vang moi la diem nhan. Truoc day to gradient vang len ca the lam
-          // man hinh bi "chay vang" khac han thiet ke.
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFF0D0B06), Color(0xFF060505)],
-          ),
-          // Vien vang champagne SANG - do duoc #E4D49A o diem sang nhat cua
-          // net vien trong anh goc. Ban cu dung wealthAccent@45% ra net toi xin.
-          border: Border.all(color: AppColors.wealthHeroBorder),
+    // Vien la GRADIENT, khong dong mau - do quanh chu vi the trong anh goc:
+    //   canh TRAI  : vang sang #E7DF9B..#F4E5A0 (L ~ 220)
+    //   canh PHAI  : xam toi   #2B2F34          (L ~  47)
+    //   tren/duoi  : xam toi, chi sang vang o phan gan GOC TRAI
+    // Ban truoc to vang sang DEU 4 canh nen 3 canh con lai qua sang. Vien
+    // that chi day 1px (~0.46pt o mat do 2.156) nen dung 0.7 thay vi 1.
+    // Flutter khong cho Border.all nhan gradient => dung 1 lop ngoai to
+    // gradient + padding mong, lop trong la than the.
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        gradient: const LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [
+            Color(0xFFF2E8AE),
+            Color(0xFFE3D393),
+            Color(0xFF3A4046),
+            Color(0xFF2F353B),
+          ],
+          stops: [0.0, 0.05, 0.22, 1.0],
         ),
-        // StackFit.expand + cac con deu Positioned: KHONG dung flex
-        // (Spacer/Expanded) trong Stack nua. Ban truoc dung Column
-        // mainAxisSize.max + Spacer o day va bi tran 99922px - Stack truyen
-        // rang buoc LONG (loose) xuong con, nen Spacer khong co chieu cao huu
-        // han de an theo va Column phinh ra vo han.
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            // Anh dong xu vang neo o canh phai, mo dan ve trai de khong cat
-            // ngang chu - dung ShaderMask thay vi de anh vuong goc nhu cu.
-            // bottom: 46 - anh dong xu DUNG NGAY TREN dai hanh dong, dung
-            // nhu anh goc (anh ket thuc truoc dai "Nap/Rut | Ma QR"). Truoc
-            // day anh phu het chieu cao the nen nam ngay sau chu, lam 2 nut
-            // do rat kho doc.
-            Positioned(
-              right: 0,
-              top: 0,
-              bottom: 66,
-              width: 196,
-              child: IgnorePointer(
-                child: ShaderMask(
-                  blendMode: BlendMode.dstIn,
-                  shaderCallback: (rect) => const LinearGradient(
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                    colors: [Color(0x00000000), Color(0xFF000000)],
-                    stops: [0.0, 0.45],
-                  ).createShader(rect),
-                  child: Image.asset(
-                    'assets/wealth/home_coins.jpg',
-                    fit: BoxFit.cover,
-                    alignment: Alignment.centerRight,
+      ),
+      padding: const EdgeInsets.all(0.7),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(21.3),
+        child: Container(
+          decoration: const BoxDecoration(
+            // Nen DEN SAU - anh dong xu vang o nua phai va con so mau vang moi
+            // la diem nhan, than the khong phai khoi vang dac.
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF0D0B06), Color(0xFF060505)],
+            ),
+          ),
+          // StackFit.expand + cac con deu Positioned: KHONG dung flex
+          // (Spacer/Expanded) trong Stack nua. Ban truoc dung Column
+          // mainAxisSize.max + Spacer o day va bi tran 99922px - Stack truyen
+          // rang buoc LONG (loose) xuong con, nen Spacer khong co chieu cao huu
+          // han de an theo va Column phinh ra vo han.
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              // Anh dong xu vang neo o canh phai, mo dan ve trai de khong cat
+              // ngang chu - dung ShaderMask thay vi de anh vuong goc nhu cu.
+              // bottom: 46 - anh dong xu DUNG NGAY TREN dai hanh dong, dung
+              // nhu anh goc (anh ket thuc truoc dai "Nap/Rut | Ma QR"). Truoc
+              // day anh phu het chieu cao the nen nam ngay sau chu, lam 2 nut
+              // do rat kho doc.
+              Positioned(
+                right: 0,
+                top: 0,
+                bottom: 66,
+                width: 196,
+                child: IgnorePointer(
+                  child: ShaderMask(
+                    blendMode: BlendMode.dstIn,
+                    shaderCallback: (rect) => const LinearGradient(
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      colors: [Color(0x00000000), Color(0xFF000000)],
+                      stops: [0.0, 0.45],
+                    ).createShader(rect),
+                    child: Image.asset(
+                      'assets/wealth/home_coins.jpg',
+                      fit: BoxFit.cover,
+                      alignment: Alignment.centerRight,
+                    ),
                   ),
                 ),
               ),
-            ),
-            // Khoi chu neo tren, dai hanh dong neo day - moi cai 1 Positioned
-            // rieng thay vi 1 Column co Spacer.
-            Positioned(
-              left: 0,
-              right: 0,
-              top: 0,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 13, 168, 10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Icon con mat nam NGAY CANH tieu de nhu ban thiet ke,
-                    // nhung van la GestureDetector RIENG nam ngoai vung bam
-                    // mo man chi tiet - neu long nhau thi 1 lan cham se kich
-                    // hoat CA HAI (an/hien so tien VA mo man), loi cu da gap.
-                    Row(
-                      children: [
-                        Flexible(
-                          child: GestureDetector(
-                            onTap: onTap,
-                            behavior: HitTestBehavior.opaque,
-                            child: Text(
-                              title,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: AppTextStyles.muted(size: 12),
+              // Khoi chu neo tren, dai hanh dong neo day - moi cai 1 Positioned
+              // rieng thay vi 1 Column co Spacer.
+              Positioned(
+                left: 0,
+                right: 0,
+                top: 0,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 13, 168, 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Icon con mat nam NGAY CANH tieu de nhu ban thiet ke,
+                      // nhung van la GestureDetector RIENG nam ngoai vung bam
+                      // mo man chi tiet - neu long nhau thi 1 lan cham se kich
+                      // hoat CA HAI (an/hien so tien VA mo man), loi cu da gap.
+                      Row(
+                        children: [
+                          Flexible(
+                            child: GestureDetector(
+                              onTap: onTap,
+                              behavior: HitTestBehavior.opaque,
+                              child: Text(
+                                title,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTextStyles.muted(size: 12),
+                              ),
                             ),
                           ),
+                          const SizedBox(width: 7),
+                          GestureDetector(
+                            onTap: onToggleHidden,
+                            child: Icon(
+                              hidden
+                                  ? Icons.visibility_off_rounded
+                                  : Icons.visibility_rounded,
+                              color: AppColors.wealthAccent,
+                              size: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      GestureDetector(
+                        onTap: onTap,
+                        behavior: HitTestBehavior.opaque,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // So tien mau VANG - diem nhan chinh cua ban
+                            // thiet ke (truoc day de trang nen the trong nhat).
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                hidden
+                                    ? '•••••••'
+                                    : (value == null
+                                          ? '...'
+                                          : formatVnd(value!)),
+                                maxLines: 1,
+                                style: AppTextStyles.heading(size: 25)
+                                    .copyWith(color: AppColors.wealthAmount),
+                              ),
+                            ),
+                            if (!hidden && pnl != null && pnl != 0) ...[
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  Icon(
+                                    pnl! >= 0
+                                        ? Icons.trending_up_rounded
+                                        : Icons.trending_down_rounded,
+                                    size: 14,
+                                    color: pnl! >= 0
+                                        ? AppColors.wealthUp
+                                        : AppColors.pink,
+                                  ),
+                                  const SizedBox(width: 5),
+                                  Flexible(
+                                    child: Text(
+                                      '${pnl! >= 0 ? '+' : ''}${formatVnd(pnl!)}'
+                                      '${pnlPercent == null ? '' : ' (${pnlPercent! >= 0 ? '+' : ''}${pnlPercent!.toStringAsFixed(1)}%)'}',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: AppTextStyles.body(
+                                        size: 11.5,
+                                        weight: FontWeight.w700,
+                                        color: pnl! >= 0
+                                            ? AppColors.wealthUp
+                                            : AppColors.pink,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ],
                         ),
-                        const SizedBox(width: 7),
-                        GestureDetector(
-                          onTap: onToggleHidden,
-                          child: Icon(
-                            hidden
-                                ? Icons.visibility_off_rounded
-                                : Icons.visibility_rounded,
-                            color: AppColors.wealthAccent,
-                            size: 16,
+                      ),
+                      if (trend != null &&
+                          trend!.length > 1 &&
+                          trend!.any((v) => v != 0)) ...[
+                        const SizedBox(height: 6),
+                        // width: double.infinity - trong Column canh start,
+                        // CustomPaint khong co be rong noi tai nen bi co ve 0 va
+                        // duong bieu dien dong lai thanh 1 VACH DOC la lam (loi
+                        // "duong du thua" nguoi dung bao).
+                        SizedBox(
+                          height: 34,
+                          width: double.infinity,
+                          child: CustomPaint(
+                            painter: _SparklinePainter(trend!),
                           ),
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 6),
-                    GestureDetector(
-                      onTap: onTap,
-                      behavior: HitTestBehavior.opaque,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // So tien mau VANG - diem nhan chinh cua ban
-                          // thiet ke (truoc day de trang nen the trong nhat).
-                          FittedBox(
-                            fit: BoxFit.scaleDown,
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              hidden
-                                  ? '•••••••'
-                                  : (value == null ? '...' : formatVnd(value!)),
-                              maxLines: 1,
-                              style: AppTextStyles.heading(size: 25)
-                                  .copyWith(color: AppColors.wealthAmount),
-                            ),
-                          ),
-                          if (!hidden && pnl != null && pnl != 0) ...[
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                Icon(
-                                  pnl! >= 0
-                                      ? Icons.trending_up_rounded
-                                      : Icons.trending_down_rounded,
-                                  size: 14,
-                                  color: pnl! >= 0
-                                      ? AppColors.wealthUp
-                                      : AppColors.pink,
-                                ),
-                                const SizedBox(width: 5),
-                                Flexible(
-                                  child: Text(
-                                    '${pnl! >= 0 ? '+' : ''}${formatVnd(pnl!)}'
-                                    '${pnlPercent == null ? '' : ' (${pnlPercent! >= 0 ? '+' : ''}${pnlPercent!.toStringAsFixed(1)}%)'}',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: AppTextStyles.body(
-                                      size: 11.5,
-                                      weight: FontWeight.w700,
-                                      color: pnl! >= 0
-                                          ? AppColors.wealthUp
-                                          : AppColors.pink,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                    if (trend != null &&
-                        trend!.length > 1 &&
-                        trend!.any((v) => v != 0)) ...[
-                      const SizedBox(height: 6),
-                      SizedBox(
-                        height: 34,
-                        child: CustomPaint(painter: _SparklinePainter(trend!)),
-                      ),
                     ],
-                  ],
+                  ),
                 ),
               ),
-            ),
-            Positioned(left: 10, right: 10, bottom: 10, child: footer),
-          ],
+              Positioned(left: 10, right: 10, bottom: 10, child: footer),
+            ],
+          ),
         ),
       ),
     );
