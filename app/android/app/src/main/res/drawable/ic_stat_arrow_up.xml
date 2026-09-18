@@ -1,0 +1,15 @@
+<!-- Icon nho cho thong bao gia TANG.
+     Icon nho cua thong bao Android BAT BUOC la hinh don sac tren nen trong
+     suot - he thong tu to lai theo `color` cua NotificationDetails, nen chi
+     can ve mau trang o day; mau xanh/do duoc dat ben Dart (chat_push.dart).
+     Dung VectorDrawable (1 file) thay vi PNG nhieu mat do nhu ic_stat_notify. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
+    android:tint="#FFFFFF">
+  <path
+      android:fillColor="#FFFFFFFF"
+      android:pathData="M4,12l1.41,1.41L11,7.83V20h2V7.83l5.58,5.59L20,12l-8,-8 -8,8z"/>
+</vector>

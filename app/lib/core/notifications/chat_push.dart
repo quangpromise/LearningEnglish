@@ -163,9 +163,9 @@ Future<void> _showServiceExpiryNotification(RemoteMessage message) async {
 /// Bao gia 1 coin/co phieu trong watchlist bien dong >=5% (24h) - data-only
 /// message tu price-alert-check (xem
 /// supabase/functions/price-alert-check/index.ts). Android khong cho tuy
-/// chinh mau CHU cua 1 thong bao he thong chuan, nen dung emoji lam dau hieu
-/// mau xanh/do dung yeu cau (🟢 tang, 🔴 giam) thay vi mau chu that; dat them
-/// AndroidNotificationDetails.color de tint icon nho nhu 1 lop dau hieu phu.
+/// chinh mau CHU cua 1 thong bao he thong chuan - dau hieu mau nam o ICON
+/// NHO: mui ten len/xuong rieng cho tung chieu, duoc he thong to theo
+/// AndroidNotificationDetails.color (xanh khi tang, do khi giam).
 Future<void> _showPriceAlertNotification(RemoteMessage message) async {
   final data = message.data;
   final assetType = data['asset_type'] as String?;
@@ -193,17 +193,25 @@ Future<void> _showPriceAlertLocal({
   required String? direction,
 }) async {
   final isUp = direction == 'up';
-  // Mui ten bieu do kieu crypto (xanh khi tang/do khi giam) thay cho hinh
-  // tron mau don gian truoc day - Android khong cho tuy chinh mau CHU cua 1
-  // thong bao he thong chuan (xem ghi chu tren dau file), nen van phai dung
-  // emoji lam dau hieu truc quan, doi sang 📈/📉 giong bieu do gia tang/giam
-  // pho bien trong cac app crypto/chung khoan.
-  final emoji = isUp ? '📈' : '📉';
+  // MUI TEN len/xuong co MAU - truoc day dung emoji 📈/📉: Noto Color Emoji
+  // (Android) ve 📈 bang net DO va 📉 bang net XANH, tuc nguoc han y nghia
+  // tang/giam, va mau cua emoji thi khong the doi duoc.
+  //
+  // Cach lam dung: dat ICON NHO rieng cho tung chieu. Icon nho cua thong bao
+  // Android la hinh don sac duoc HE THONG TO LAI theo `color` - nen mui ten
+  // len se ra XANH va mui ten xuong ra DO, dung mau that su chu khong phu
+  // thuoc vao bo emoji cua may. Tieu de kem them ▲/▼ (ky tu thuong, khong
+  // phai emoji) de van doc duoc chieu tang/giam o cho chi hien chu.
+  // TEN TRAN, KHONG co tien to "drawable/": plugin tra cuu bang
+  // getIdentifier(name, "drawable", packageName) nen ten chua dau "/" se
+  // khong tim thay resource, va plugin NEM LOI thay vi hien thong bao.
+  final icon = isUp ? 'ic_stat_arrow_up' : 'ic_stat_arrow_down';
+  final arrow = isUp ? '▲' : '▼';
   final color = isUp ? const Color(0xFF2ECC71) : const Color(0xFFFF6B6B);
 
   await _localNotifications.show(
     id: '$assetType:$symbol'.hashCode,
-    title: '$emoji $symbol',
+    title: '$arrow $symbol',
     body: body,
     notificationDetails: NotificationDetails(
       android: AndroidNotificationDetails(
@@ -213,6 +221,7 @@ Future<void> _showPriceAlertLocal({
             'Thông báo khi giá coin/cổ phiếu trong watchlist tăng/giảm hơn 5%',
         importance: Importance.high,
         priority: Priority.high,
+        icon: icon,
         color: color,
       ),
     ),

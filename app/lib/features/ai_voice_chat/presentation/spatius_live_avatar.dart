@@ -10,6 +10,8 @@ import 'package:spatius_avatarkit/spatius_avatarkit.dart'
     as spatius
     show ConnectionState;
 
+import '../data/spatius_session_api.dart';
+
 /// Widget hien avatar Spatius AI - render NATIVE tren GPU may (3D Gaussian
 /// Splatting) qua goi spatius_avatarkit, KHAC voi AnamLiveAvatar (WebView +
 /// WebRTC). Dung lam du phong (failover) khi Anam loi khong the phuc hoi -
@@ -30,8 +32,9 @@ class SpatiusLiveAvatar extends StatefulWidget {
   final String appId;
   final String avatarId;
 
-  /// Ham tra ve 1 session token MOI moi lan widget can (re)connect.
-  final Future<String> Function() sessionTokenProvider;
+  /// Ham tra ve 1 session token MOI moi lan widget can (re)connect HOAC
+  /// gia han. Tra kem han dung de widget tu hen gio lam moi truoc khi het.
+  final Future<SpatiusSessionToken> Function() sessionTokenProvider;
 
   final VoidCallback? onReady;
   final void Function(String message)? onError;
@@ -47,6 +50,19 @@ class SpatiusLiveAvatarState extends State<SpatiusLiveAvatar> {
   bool _initializing = false;
   bool _sdkInitialized = false;
 
+  /// Hen gio lam moi token TRUOC khi het han.
+  Timer? _refreshTimer;
+
+  /// Dang lam moi -> chan goi chong len nhau (SDK co the ban nhieu loi
+  /// sessionTokenExpired lien tiep cho cung 1 lan het han).
+  bool _refreshing = false;
+
+  /// So lan lam moi LIEN TIEP that bai - chan vong lap vo tan khi proxy
+  /// chet hoac API key sai (moi lan that bai lai bi SDK bao loi -> lai
+  /// thu -> lai that bai).
+  int _refreshFailures = 0;
+  static const _maxRefreshFailures = 3;
+
   @override
   void initState() {
     super.initState();
@@ -61,7 +77,7 @@ class SpatiusLiveAvatarState extends State<SpatiusLiveAvatar> {
     _initializing = true;
     try {
       if (!_sdkInitialized) {
-        final token = await widget.sessionTokenProvider();
+        final session = await widget.sessionTokenProvider();
         // Gemini Live tra ve PCM16 24kHz mono (xem
         // GeminiLiveDirectClient.liveAudioChunks) - dat sampleRate = 24000
         // de gui thang khong can resample.
@@ -73,7 +89,8 @@ class SpatiusLiveAvatarState extends State<SpatiusLiveAvatar> {
             logLevel: LogLevel.all,
           ),
         );
-        await AvatarSDK.setSessionToken(token);
+        await AvatarSDK.setSessionToken(session.token);
+        _scheduleTokenRefresh(session.expiresAt);
         _sdkInitialized = true;
       }
       await initSpatiusAvatarSession(widget.avatarId);
@@ -120,6 +137,14 @@ class SpatiusLiveAvatarState extends State<SpatiusLiveAvatar> {
     // onError tra ve enum AvatarError, khong phai String - xem
     // spatius_avatarkit_plugin.dart (sessionTokenExpired, insufficientBalance...).
     controller.onError = (error) {
+      // Het han giua chung: TU XIN token moi roi noi lai, thay vi bao loi
+      // ra ngoai lam rot han sang Anam/tat avatar. Day la duong PHAN UNG
+      // (du phong) - duong chinh la _scheduleTokenRefresh() gia han truoc.
+      if (error == AvatarError.sessionTokenExpired ||
+          error == AvatarError.sessionTokenInvalid) {
+        unawaited(_refreshSessionToken(reconnect: true));
+        return;
+      }
       widget.onError?.call('Spatius loi: ${error.name}');
     };
     unawaited(
@@ -155,8 +180,55 @@ class SpatiusLiveAvatarState extends State<SpatiusLiveAvatar> {
     unawaited(controller.interrupt());
   }
 
+  /// Hen lam moi token truoc khi het han 5 phut (toi thieu 30s ke tu bay
+  /// gio). [expiresAt] null (proxy ban cu) thi khong hen duoc - luc do chi
+  /// con duong phan ung qua onError.
+  void _scheduleTokenRefresh(DateTime? expiresAt) {
+    _refreshTimer?.cancel();
+    if (expiresAt == null) return;
+    final wait =
+        expiresAt.difference(DateTime.now()) - const Duration(minutes: 5);
+    _refreshTimer = Timer(
+      wait < const Duration(seconds: 30) ? const Duration(seconds: 30) : wait,
+      () => unawaited(_refreshSessionToken()),
+    );
+  }
+
+  /// Xin token moi va nap vao SDK. [reconnect] = true khi token DA chet
+  /// (phien hien tai da dut) nen phai tao lai phien avatar; gia han dinh
+  /// ky thi chi can nap token moi, khong dung mach hoi thoai dang chay.
+  Future<void> _refreshSessionToken({bool reconnect = false}) async {
+    if (_refreshing || !mounted) return;
+    _refreshing = true;
+    try {
+      final session = await widget.sessionTokenProvider();
+      await AvatarSDK.setSessionToken(session.token);
+      _refreshFailures = 0;
+      _scheduleTokenRefresh(session.expiresAt);
+      if (reconnect && mounted) {
+        await initSpatiusAvatarSession(widget.avatarId);
+      }
+    } catch (e) {
+      _refreshFailures++;
+      if (_refreshFailures >= _maxRefreshFailures) {
+        widget.onError?.call('Spatius het han token, gia han that bai: $e');
+        return;
+      }
+      // Thu lai sau vai giay (backoff tuyen tinh) - loi mang tam thoi
+      // khong nen lam hong ca phien.
+      _refreshTimer?.cancel();
+      _refreshTimer = Timer(
+        Duration(seconds: 5 * _refreshFailures),
+        () => unawaited(_refreshSessionToken(reconnect: reconnect)),
+      );
+    } finally {
+      _refreshing = false;
+    }
+  }
+
   @override
   void dispose() {
+    _refreshTimer?.cancel();
     _controller?.close();
     super.dispose();
   }
