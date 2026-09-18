@@ -14,6 +14,7 @@ import '../../attribution/presentation/attribution_screen.dart';
 import '../../settings/presentation/change_password_sheet.dart';
 import '../../settings/presentation/voice_settings_sheet.dart';
 import '../../planner/presentation/planner_links.dart';
+import '../../stats/data/learning_xp_repository.dart';
 import '../../stats/data/stats_repository.dart';
 import '../../update/data/update_checker.dart';
 import '../../vocabulary/data/daily_words_repository.dart';
@@ -442,6 +443,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return ListView(
       children: [
         if (isEnglishContext) ...[
+          const _LevelCard(),
+          const SizedBox(height: 14),
           statsAsync.when(
             loading: () => const Padding(
               padding: EdgeInsets.symmetric(vertical: 24),
@@ -1910,6 +1913,132 @@ class _DailyWordsPopup extends ConsumerWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Vong tron Level/XP + chuoi ngay lien tiep.
+///
+/// Truoc day nam o DAU man Home Hoc Tieng Anh; da chuyen vao tab Hoat dong
+/// theo yeu cau (Home can gon de xem het trong 1 man). Cach ve giu nguyen.
+class _LevelCard extends ConsumerWidget {
+  const _LevelCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final xp = ref.watch(myLearningXpProvider).valueOrNull ?? LearningXp.empty;
+    final streak = ref.watch(myStatsProvider).valueOrNull?.streakDays ?? 0;
+
+    return GlowBox(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 50,
+            height: 44,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                SizedBox(
+                  width: 50,
+                  height: 44,
+                  child: CircularProgressIndicator(
+                    value: xp.levelProgress,
+                    strokeWidth: 4.2,
+                    strokeCap: StrokeCap.round,
+                    backgroundColor: Colors.white.withValues(alpha: 0.09),
+                    valueColor: const AlwaysStoppedAnimation(Color(0xFF5B9CFF)),
+                  ),
+                ),
+                // line-height 1 + can giua trong 1 lop rieng: dat baseline
+                // thang tren khung can giua se bi day lech xuong vi hop
+                // baseline cao hon chu.
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    Text(
+                      'Lv',
+                      style: AppTextStyles.body(
+                        size: 8.5,
+                        weight: FontWeight.w500,
+                        color: AppColors.textSecondary,
+                      ).copyWith(height: 1),
+                    ),
+                    const SizedBox(width: 1.5),
+                    Text(
+                      '${xp.level}',
+                      style: AppTextStyles.heading(size: 15.5)
+                          .copyWith(height: 1),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 13),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  ref.tr('level_${xp.levelKey}'),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.heading(size: 14.5),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  ref
+                      .tr('home_xp_to_next')
+                      .replaceFirst('{n}', '${xp.xpToNext}'),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.body(
+                    size: 10.5,
+                    weight: FontWeight.w500,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            width: 1,
+            height: 32,
+            margin: const EdgeInsets.symmetric(horizontal: 12),
+            color: Colors.white.withValues(alpha: 0.09),
+          ),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(
+                    Icons.local_fire_department_rounded,
+                    size: 16,
+                    color: AppColors.amber,
+                  ),
+                  const SizedBox(width: 4),
+                  Text('$streak', style: AppTextStyles.heading(size: 15.5)),
+                ],
+              ),
+              const SizedBox(height: 1),
+              Text(
+                ref.tr('home_day_streak'),
+                style: AppTextStyles.body(
+                  size: 9,
+                  weight: FontWeight.w500,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
