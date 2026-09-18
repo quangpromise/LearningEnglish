@@ -231,8 +231,8 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
                       ),
                     ),
                     (
-                      'assets/wealth/ic_coins.png',
-                      ref.tr('wealth_split_bill_title'),
+                      'assets/wealth/ic_doc.png',
+                      ref.tr('wealth_home_tile_split'),
                       ref.tr('wealth_home_sub_split'),
                       () =>
                           openAppPopup(context, const WealthSplitBillScreen()),
@@ -255,80 +255,9 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
               _OverviewCard(
                 onTap: () => openAppPopup(context, const WealthReportScreen()),
               ),
-              const SizedBox(height: 11),
-              // Bao cao tach rieng khoi luoi "Quan ly" (khac ban chat - day la
-              // man TONG HOP/phan tich, khong phai 1 hanh dong quan ly nhu Vi/
-              // Chi tieu/No...) - theo yeu cau nguoi dung, cung giup tile noi
-              // bat hon thay vi lan trong luoi icon nho.
-              GestureDetector(
-                onTap: () => openAppPopup(context, const WealthReportScreen()),
-                child: _GoldCard(
-                  child: Row(
-                    children: [
-                      const _GoldIconPad(asset: 'assets/wealth/ic_doc.png'),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              ref.tr('wealth_report_title'),
-                              style: AppTextStyles.heading(size: 14.5),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              ref.tr('wealth_home_report_sub'),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: AppTextStyles.body(
-                                size: 9.5,
-                                weight: FontWeight.w500,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      // Nut "Xem tat ca" dang vien vang bo tron - ban thiet ke
-                      // chot dung nut nay thay cho moi dau mui ten nho.
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 11,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(999),
-                          border: Border.all(
-                            color: AppColors.wealthAccent.withValues(
-                              alpha: 0.55,
-                            ),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              ref.tr('wealth_home_report_all'),
-                              style: AppTextStyles.body(
-                                size: 10,
-                                weight: FontWeight.w800,
-                                color: AppColors.wealthAccent,
-                              ),
-                            ),
-                            const SizedBox(width: 3),
-                            const Icon(
-                              Icons.chevron_right_rounded,
-                              size: 14,
-                              color: AppColors.wealthAccent,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              // The "Bao cao" rieng da BO: bam vao no mo dung man Bao cao
+              // ma the "Tong quan tai chinh" ben tren da mo, lai trung ca
+              // noi dung hien thi - de ca hai la thua.
               const SizedBox(height: 11),
               // Thanh nhac chuyen tu thanh Menu duoi VAO THAN TRANG (xem
               // wealth_shell.dart): man hinh ket thuc tu nhien sau widget nay,
@@ -516,16 +445,14 @@ class _StatChip extends ConsumerWidget {
     // tram di thay vi hien 1 con so vo nghia kieu "+100%".
     final percent = previous == 0 ? null : (value - previous) / previous * 100;
     final up = (percent ?? 0) >= 0;
-    final color = up ? AppColors.teal : AppColors.pink;
+    final color = up ? AppColors.wealthUp : AppColors.pink;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(10, 9, 10, 9),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.04),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: AppColors.wealthAccent.withValues(alpha: 0.22),
-        ),
+        border: Border.all(color: AppColors.wealthCardBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -660,9 +587,9 @@ class _GoldCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.homeCardFill,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: AppColors.wealthAccent.withValues(alpha: 0.30),
-        ),
+        // Vien XAM (do tu anh goc: cac the phu deu vien xam #1D2229..#3F4249,
+        // chi rieng the Tong tai san moi co vien vang sang).
+        border: Border.all(color: AppColors.wealthCardBorder),
       ),
       child: child,
     );
@@ -855,9 +782,9 @@ class _TotalCard extends StatelessWidget {
             end: Alignment.bottomRight,
             colors: [Color(0xFF0D0B06), Color(0xFF060505)],
           ),
-          border: Border.all(
-            color: AppColors.wealthAccent.withValues(alpha: 0.45),
-          ),
+          // Vien vang champagne SANG - do duoc #E4D49A o diem sang nhat cua
+          // net vien trong anh goc. Ban cu dung wealthAccent@45% ra net toi xin.
+          border: Border.all(color: AppColors.wealthHeroBorder),
         ),
         child: Stack(
           children: [
@@ -952,7 +879,7 @@ class _TotalCard extends StatelessWidget {
                                           : formatVnd(value!)),
                                 maxLines: 1,
                                 style: AppTextStyles.heading(size: 25)
-                                    .copyWith(color: AppColors.wealthAccent),
+                                    .copyWith(color: AppColors.wealthAmount),
                               ),
                             ),
                             if (!hidden && pnl != null && pnl != 0) ...[
@@ -965,7 +892,7 @@ class _TotalCard extends StatelessWidget {
                                         : Icons.trending_down_rounded,
                                     size: 14,
                                     color: pnl! >= 0
-                                        ? AppColors.teal
+                                        ? AppColors.wealthUp
                                         : AppColors.pink,
                                   ),
                                   const SizedBox(width: 5),
@@ -1015,7 +942,11 @@ class _CardFooterRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.white.withValues(alpha: 0.06),
+      // Anh goc: dai nay KHONG co nen sang rieng, chi duoc tach ra bang 1
+      // duong ke xam #1D2228 o canh tren.
+      decoration: const BoxDecoration(
+        border: Border(top: BorderSide(color: Color(0xFF1D2228))),
+      ),
       child: Row(
         children: [
           for (var i = 0; i < items.length; i++) ...[

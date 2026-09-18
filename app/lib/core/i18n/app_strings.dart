@@ -2463,6 +2463,12 @@ class AppStrings {
     'home_skill_toeic': {AppLanguage.vi: 'TOEIC', AppLanguage.en: 'TOEIC'},
     'home_skill_ielts': {AppLanguage.vi: 'IELTS', AppLanguage.en: 'IELTS'},
     'home_skill_quiz': {AppLanguage.vi: 'Đố vui', AppLanguage.en: 'Quiz'},
+    // Nhan NGAN cho 4 o o Home - o chi rong ~1/4 man nen ten day du
+    // ('Chia tien bill') bi thu nho qua muc hoac cat mat chu.
+    'wealth_home_tile_split': {
+      AppLanguage.vi: 'Chia bill',
+      AppLanguage.en: 'Split bill',
+    },
     'wealth_home_overview_title': {
       AppLanguage.vi: 'Tổng quan tài chính',
       AppLanguage.en: 'Financial overview',

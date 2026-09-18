@@ -248,22 +248,13 @@ class TopBarIconChip extends StatelessWidget {
             height: size,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              // Vien xam sang - do tu anh thiet ke: vong vien sang len
-              // rgb(73,78,83) tren nen rgb(4,9,14), tuc trang o khoang 27%.
-              // Truoc day nut khong co vien nao, chi 1 quang sang mo, nen
-              // nhin "chim" han so voi nut tron ro vanh trong anh goc.
+              // Do tu anh thiet ke goc: nut la 1 VONG VIEN xam mong tren nen
+              // TRONG SUOT - ben trong KHONG co nen/quang sang nao. Vien sang
+              // len rgb(73,78,83) tren nen rgb(4,9,14), tuc trang khoang 27%.
+              // Ban truoc co them 1 lop quang sang ben trong nen nut nhin day
+              // va duc hon han anh goc.
               border: Border.fromBorderSide(
                 BorderSide(color: Colors.white.withValues(alpha: 0.27)),
-              ),
-              gradient: const RadialGradient(
-                center: Alignment(-0.2, -0.3),
-                radius: 0.75,
-                colors: [
-                  Color(0x1FBED6FF),
-                  Color(0x0EA0C4F8),
-                  Color(0x00A0C4F8),
-                ],
-                stops: [0.0, 0.62, 1.0],
               ),
             ),
             child: Icon(icon, size: size * 0.46, color: AppColors.textPrimary),

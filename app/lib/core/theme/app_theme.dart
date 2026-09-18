@@ -40,6 +40,24 @@ class AppColors {
 
   /// Mau nhan chinh RIENG cho khu vuc Quan ly tai san (Wealth) - vang/gold.
   static const wealthAccent = Color(0xFFD4AF37);
+
+  // --- Do truc tiep tu anh thiet ke Quan ly tai san ---
+  /// Vien the Tong tai san: vang champagne SANG, gan nhu dac (#E4D49A o diem
+  /// sang nhat cua net vien). Khac han vang tham wealthAccent - dung
+  /// wealthAccent@45% cho ra net vien toi xin, nhin khong ra vanh vang.
+  static const wealthHeroBorder = Color(0xFFE4D49A);
+
+  /// Mau so tien tren the Tong tai san.
+  static const wealthAmount = Color(0xFFFFE788);
+
+  /// Vien cac the CON LAI (4 muc, Tong quan, o so lieu) - XAM chu khong phai
+  /// vang: trong anh goc chi rieng the Tong tai san co vien vang, cac the
+  /// khac deu la vien xam mong.
+  static const wealthCardBorder = Color(0x29FFFFFF);
+
+  /// Xanh la cua cac chi so tang trong anh goc (#46FFCF / #32FFEC) - sang va
+  /// ngA xanh ngoc hon AppColors.teal.
+  static const wealthUp = Color(0xFF3BFFC9);
   static const wealthAccentGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
