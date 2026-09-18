@@ -25,7 +25,7 @@ import 'package:learn_english_music/features/music_player/presentation/home_scre
 import 'package:learn_english_music/features/wealth/presentation/wealth_home_screen.dart';
 
 /// Kich thuoc khung chup - lay theo dung khung anh thiet ke goc (390 rong).
-const _size = Size(390, 1500);
+const _size = Size(390, 844);
 
 Future<void> _loadFonts() async {
   // MaterialIcons lay tu cache cua Flutter SDK - khong nap thi moi icon ve

@@ -202,6 +202,7 @@ class AppTopBar extends ConsumerWidget {
             onTap: onMessagesTap,
             child: TopBarIconChip(
               icon: Icons.chat_bubble_outline_rounded,
+              dotColor: accentColor,
               // Cham bao tin nhan nam NGAY TREN duong vien nut (do tu ban
               // thiet ke: tam cham cach tam nut dung bang ban kinh), khong
               // phai lo han ra ngoai goc nhu truoc.
@@ -221,12 +222,17 @@ class TopBarIconChip extends StatelessWidget {
     super.key,
     required this.icon,
     this.badge = false,
-    this.size = 40,
+    this.size = 38,
+    this.dotColor = AppColors.blue,
   });
 
   final IconData icon;
   final bool badge;
   final double size;
+
+  /// Mau cham bao - xanh cho Hoc Tieng Anh, vang cho Quan ly tai san (dung
+  /// mau cham vang nhu anh thiet ke).
+  final Color dotColor;
 
   @override
   Widget build(BuildContext context) {
@@ -240,20 +246,27 @@ class TopBarIconChip extends StatelessWidget {
           Container(
             width: size,
             height: size,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               shape: BoxShape.circle,
-              gradient: RadialGradient(
+              // Vien xam sang - do tu anh thiet ke: vong vien sang len
+              // rgb(73,78,83) tren nen rgb(4,9,14), tuc trang o khoang 27%.
+              // Truoc day nut khong co vien nao, chi 1 quang sang mo, nen
+              // nhin "chim" han so voi nut tron ro vanh trong anh goc.
+              border: Border.fromBorderSide(
+                BorderSide(color: Colors.white.withValues(alpha: 0.27)),
+              ),
+              gradient: const RadialGradient(
                 center: Alignment(-0.2, -0.3),
                 radius: 0.75,
                 colors: [
-                  Color(0x2EBED6FF),
-                  Color(0x14A0C4F8),
+                  Color(0x1FBED6FF),
+                  Color(0x0EA0C4F8),
                   Color(0x00A0C4F8),
                 ],
                 stops: [0.0, 0.62, 1.0],
               ),
             ),
-            child: Icon(icon, size: size * 0.45, color: AppColors.textPrimary),
+            child: Icon(icon, size: size * 0.46, color: AppColors.textPrimary),
           ),
           if (badge)
             Positioned(
@@ -263,11 +276,11 @@ class TopBarIconChip extends StatelessWidget {
                 width: 7,
                 height: 7,
                 decoration: BoxDecoration(
-                  color: AppColors.blue,
+                  color: dotColor,
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.blue.withValues(alpha: 0.75),
+                      color: dotColor.withValues(alpha: 0.75),
                       blurRadius: 6,
                     ),
                   ],

@@ -524,6 +524,11 @@ class WealthDesignBackground extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
+        // Cac mau duoi day DO TRUC TIEP tu anh thiet ke goc (trung vi 8px sat
+        // mep trai, theo tung 5% chieu cao): #04090E o dinh, nhat dan den
+        // #000307 o khoang 35% roi PHANG cho toi day. Nen la den LANH nga
+        // xanh (B > G > R), KHONG co quang vang - ban truoc do to nen am nau
+        // + quang vang o goc nen nhin khac han anh goc.
         const Positioned.fill(
           child: DecoratedBox(
             decoration: BoxDecoration(
@@ -531,31 +536,13 @@ class WealthDesignBackground extends StatelessWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Color(0xFF0B0A07),
-                  Color(0xFF07070A),
-                  Color(0xFF040406),
-                  Color(0xFF020203),
-                  Color(0xFF000000),
+                  Color(0xFF04090E),
+                  Color(0xFF04090D),
+                  Color(0xFF02060B),
+                  Color(0xFF000307),
+                  Color(0xFF000307),
                 ],
-                stops: [0, 0.2, 0.52, 0.8, 1],
-              ),
-            ),
-          ),
-        ),
-        Positioned.fill(
-          child: IgnorePointer(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: RadialGradient(
-                  center: const Alignment(0.85, -0.92),
-                  radius: 1.15,
-                  colors: [
-                    AppColors.wealthAccent.withValues(alpha: 0.16),
-                    AppColors.wealthAccent.withValues(alpha: 0.05),
-                    AppColors.wealthAccent.withValues(alpha: 0),
-                  ],
-                  stops: const [0, 0.42, 1],
-                ),
+                stops: [0, 0.16, 0.26, 0.36, 1],
               ),
             ),
           ),

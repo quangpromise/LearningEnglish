@@ -79,7 +79,7 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
     );
     return WealthDesignBackground(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 12, 14, 16),
+        padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -96,11 +96,11 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
                   child: const TopBarIconChip(icon: Icons.settings_outlined),
                 ),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 10),
               // The "Tin nhan" rieng da BO theo yeu cau - tin nhan van vao
               // duoc bang nut chat tren thanh dau man (co cham bao chua doc).
               SizedBox(
-                height: 178,
+                height: 158,
                 child: PageView(
                   controller: _pageController,
                   // padEnds:false - mac dinh PageView TU THEM le dau/cuoi de
@@ -178,7 +178,7 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 7),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -197,66 +197,65 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
                     ),
                 ],
               ),
-              const SizedBox(height: 16),
-              // 4 the quan ly xep 2x2 (truoc day 4 icon nho 1 hang trong 1
-              // khung chung): the to hon nen co cho cho phu de noi ro tung muc
-              // lam gi, va chu tieng Viet co dau khong con bi ep xuong dong.
+              const SizedBox(height: 12),
+              // 4 muc xep 1 HANG nhu anh thiet ke (truoc day 2x2): ngoai
+              // viec giong ban chot, xep 1 hang cat bot ~105pt chieu cao -
+              // day la thay doi chinh giup ca man vua DUNG 1 MAN HINH, khong
+              // phai cuon xuong moi thay het.
               Row(
                 children: [
-                  Expanded(
-                    child: _WealthTile(
-                      icon: Icons.account_balance_wallet_outlined,
-                      label: ref.tr('wealth_tab_expense'),
-                      subtitle: ref.tr('wealth_home_sub_expense'),
-                      onTap: () => _open(
+                  for (final t in [
+                    (
+                      'assets/wealth/ic_wallet.png',
+                      ref.tr('wealth_tab_expense'),
+                      ref.tr('wealth_home_sub_expense'),
+                      () => _open(
                         context,
                         ref.tr('wealth_tab_expense'),
                         const WealthExpenseTab(),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _WealthTile(
-                      icon: Icons.credit_card_outlined,
-                      label: ref.tr('wealth_debt_title'),
-                      subtitle: ref.tr('wealth_home_sub_debt'),
-                      onTap: () => openAppPopup(context, const DebtScreen()),
+                    (
+                      'assets/wealth/ic_card.png',
+                      ref.tr('wealth_debt_title'),
+                      ref.tr('wealth_home_sub_debt'),
+                      () => openAppPopup(context, const DebtScreen()),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    child: _WealthTile(
-                      icon: Icons.autorenew_rounded,
-                      label: ref.tr('wealth_service_title'),
-                      subtitle: ref.tr('wealth_home_sub_service'),
-                      onTap: () => openAppPopup(
+                    (
+                      'assets/wealth/ic_arrows.png',
+                      ref.tr('wealth_service_title'),
+                      ref.tr('wealth_home_sub_service'),
+                      () => openAppPopup(
                         context,
                         const RecurringServicesScreen(),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _WealthTile(
-                      icon: Icons.groups_outlined,
-                      label: ref.tr('wealth_split_bill_title'),
-                      subtitle: ref.tr('wealth_home_sub_split'),
-                      onTap: () =>
+                    (
+                      'assets/wealth/ic_coins.png',
+                      ref.tr('wealth_split_bill_title'),
+                      ref.tr('wealth_home_sub_split'),
+                      () =>
                           openAppPopup(context, const WealthSplitBillScreen()),
                     ),
-                  ),
+                  ].indexed)
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.only(left: t.$1 == 0 ? 0 : 7),
+                        child: _WealthTile(
+                          asset: t.$2.$1,
+                          label: t.$2.$2,
+                          subtitle: t.$2.$3,
+                          onTap: t.$2.$4,
+                        ),
+                      ),
+                    ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               _OverviewCard(
                 onTap: () => openAppPopup(context, const WealthReportScreen()),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 11),
               // Bao cao tach rieng khoi luoi "Quan ly" (khac ban chat - day la
               // man TONG HOP/phan tich, khong phai 1 hanh dong quan ly nhu Vi/
               // Chi tieu/No...) - theo yeu cau nguoi dung, cung giup tile noi
@@ -266,7 +265,7 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
                 child: _GoldCard(
                   child: Row(
                     children: [
-                      const _GoldIconPad(icon: Icons.description_outlined),
+                      const _GoldIconPad(asset: 'assets/wealth/ic_doc.png'),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
@@ -330,12 +329,11 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 11),
               // Thanh nhac chuyen tu thanh Menu duoi VAO THAN TRANG (xem
               // wealth_shell.dart): man hinh ket thuc tu nhien sau widget nay,
               // khong con thanh co dinh che noi dung.
               const CenterMediaButton(accentColor: AppColors.wealthAccent),
-              const SizedBox(height: 8),
             ],
           ),
         ),
@@ -421,7 +419,10 @@ class _OverviewCard extends ConsumerWidget {
           children: [
             Row(
               children: [
-                const _GoldIconPad(icon: Icons.insights_rounded, size: 38),
+                const _GoldIconPad(
+                  asset: 'assets/wealth/ic_bars.png',
+                  size: 38,
+                ),
                 const SizedBox(width: 11),
                 Expanded(
                   child: Column(
@@ -465,7 +466,7 @@ class _OverviewCard extends ConsumerWidget {
               )
             else ...[
               SizedBox(
-                height: 58,
+                height: 46,
                 width: double.infinity,
                 child: CustomPaint(painter: _SparklinePainter(nets)),
               ),
@@ -671,12 +672,31 @@ class _GoldCard extends StatelessWidget {
 /// Dem sang tron sau icon - cung ngon ngu voi man Home Hoc Tieng Anh nhung
 /// am mau vang thay vi xanh.
 class _GoldIconPad extends StatelessWidget {
-  const _GoldIconPad({required this.icon, this.size = 40});
-  final IconData icon;
+  const _GoldIconPad({this.icon, this.asset, this.size = 40})
+    : assert(icon != null || asset != null);
+
+  final IconData? icon;
+
+  /// Icon vang 3D cat tu chinh anh thiet ke goc. Kieu icon nay (khoi 3D co
+  /// chuyen sang, do bong, vien kim loai) khong dung net vector phang cua
+  /// Material ve lai duoc, nen dung thang anh - nguoi dung xac nhan anh goc
+  /// la cua ho. Anh da gom san nen tron toi nen dat trong ClipOval la khop.
+  final String? asset;
   final double size;
 
   @override
   Widget build(BuildContext context) {
+    if (asset != null) {
+      return ClipOval(
+        child: Image.asset(
+          asset!,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          filterQuality: FilterQuality.medium,
+        ),
+      );
+    }
     return Container(
       width: size,
       height: size,
@@ -703,12 +723,12 @@ class _GoldIconPad extends StatelessWidget {
 
 class _WealthTile extends StatelessWidget {
   const _WealthTile({
-    required this.icon,
+    required this.asset,
     required this.label,
     required this.subtitle,
     required this.onTap,
   });
-  final IconData icon;
+  final String asset;
   final String label;
   final String subtitle;
   final VoidCallback onTap;
@@ -718,47 +738,48 @@ class _WealthTile extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: _GoldCard(
-        padding: const EdgeInsets.fromLTRB(12, 12, 10, 11),
+        padding: const EdgeInsets.fromLTRB(9, 10, 7, 9),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
+            _GoldIconPad(asset: asset, size: 34),
+            const SizedBox(height: 8),
+            // The chi con ~1/4 be ngang nen ten dung FittedBox thu nho vua
+            // khung thay vi cat bang "..." - "Dich vu dinh ky" dai hon han
+            // "No" nhung van phai doc duoc du.
+            SizedBox(
+              width: double.infinity,
+              height: 13,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  style: AppTextStyles.heading(size: 11)
+                      .copyWith(color: AppColors.wealthAccent),
+                ),
+              ),
+            ),
             const SizedBox(height: 2),
-            _GoldIconPad(icon: icon, size: 38),
-            const SizedBox(height: 10),
             Row(
               children: [
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Ten muc mau VANG (ban thiet ke chot) - truoc day de
-                      // trang nen luoi 4 the nhin giong man Hoc Tieng Anh.
-                      Text(
-                        label,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.heading(size: 13)
-                            .copyWith(color: AppColors.wealthAccent),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        subtitle,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.body(
-                          size: 9,
-                          weight: FontWeight.w500,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    subtitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.body(
+                      size: 8,
+                      weight: FontWeight.w500,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ),
                 const Icon(
                   Icons.chevron_right_rounded,
-                  size: 15,
+                  size: 13,
                   color: AppColors.wealthAccent,
                 ),
               ],
@@ -874,7 +895,7 @@ class _TotalCard extends StatelessWidget {
                 // Chua chu hep lai (le phai 150) de khong chay de len anh
                 // dong xu ben phai - dai hanh dong ben duoi van full-width.
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(18, 16, 150, 12),
+                  padding: const EdgeInsets.fromLTRB(16, 13, 145, 10),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
