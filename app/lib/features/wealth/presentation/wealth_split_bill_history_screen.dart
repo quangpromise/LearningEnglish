@@ -5,6 +5,7 @@ import '../../../core/i18n/app_language.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_toast.dart';
 import '../../../core/utils/currency_format.dart';
 import '../../../core/utils/date_format.dart';
 import '../data/wealth_balance_entry_model.dart';
@@ -214,6 +215,9 @@ class _BillRow extends ConsumerWidget {
         final ok = await confirmDelete(context, ref);
         if (!ok) return false;
         await deleteSplitBillCascade(ref, bill);
+        if (context.mounted) {
+          showSuccessToast(context, ref.tr('toast_deleted'));
+        }
         return true;
       },
       background: Container(

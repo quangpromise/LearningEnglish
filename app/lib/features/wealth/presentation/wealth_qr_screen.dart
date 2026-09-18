@@ -6,7 +6,9 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_toast.dart';
 import '../data/wealth_payment_qr_model.dart';
 
 /// Man Ma QR nhan tien "cua toi" - mo tu nut "QR Code" o the Tong Vi man
@@ -27,22 +29,7 @@ class WealthQrScreen extends ConsumerWidget {
           children: [
             Row(
               children: [
-                GestureDetector(
-                  onTap: () => Navigator.of(context).maybePop(),
-                  child: Container(
-                    width: 34,
-                    height: 34,
-                    decoration: BoxDecoration(
-                      color: AppColors.glassFill,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.glassBorder),
-                    ),
-                    child: const Icon(
-                      Icons.chevron_left_rounded,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                ),
+                const PopupBackButton(),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -274,7 +261,14 @@ class _QrEditSheetState extends ConsumerState<_QrEditSheet> {
         holderName: _holderController.text.trim(),
       );
       ref.invalidate(wealthPaymentQrProvider);
-      if (mounted) Navigator.of(context).pop();
+      if (mounted) {
+        showSuccessToast(context, ref.tr('toast_saved'));
+        Navigator.of(context).pop();
+      }
+    } catch (_) {
+      // Truoc day chi co `finally`: loi ghi Supabase bi nuot, sheet van dong
+      // lai nhu da luu nen nguoi dung tuong da xong (xem bug danh muc ve 0).
+      if (mounted) showErrorToast(context, ref.tr('toast_failed'));
     } finally {
       if (mounted) setState(() => _saving = false);
     }

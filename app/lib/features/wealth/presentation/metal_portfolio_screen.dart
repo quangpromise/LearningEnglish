@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_toast.dart';
 import '../../../core/utils/currency_format.dart';
 import '../../../core/utils/thousands_input_formatter.dart';
 import '../data/exchange_rate_repository.dart';
@@ -71,7 +72,7 @@ class _MetalPortfolioScreenState extends ConsumerState<MetalPortfolioScreen> {
     if (_historyHolding != null) {
       return ScreenBackground(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+          padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
           child: WealthHoldingHistoryView(
             holding: _historyHolding!,
             livePrice: _historyLivePrice,
@@ -83,7 +84,7 @@ class _MetalPortfolioScreenState extends ConsumerState<MetalPortfolioScreen> {
 
     return ScreenBackground(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+        padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -297,6 +298,9 @@ class _LotTile extends ConsumerWidget {
             .read(wealthHoldingRepositoryProvider)
             .deleteHolding(userId, holding.id);
         ref.invalidate(wealthHoldingsProvider(holding.assetType));
+        if (context.mounted) {
+          showSuccessToast(context, ref.tr('toast_deleted'));
+        }
       },
       child: GlowBox(
         borderRadius: 16,
@@ -452,7 +456,14 @@ class _AddMetalLotSheetState extends ConsumerState<_AddMetalLotSheet> {
         );
       }
       ref.invalidate(wealthHoldingsProvider(widget.kind.assetType));
-      if (mounted) Navigator.of(context).pop();
+      if (mounted) {
+        showSuccessToast(context, ref.tr('toast_saved'));
+        Navigator.of(context).pop();
+      }
+    } catch (_) {
+      // Truoc day chi co `finally`: loi ghi Supabase bi nuot, sheet van dong
+      // lai nhu da luu nen nguoi dung tuong da xong (xem bug danh muc ve 0).
+      if (mounted) showErrorToast(context, ref.tr('toast_failed'));
     } finally {
       if (mounted) setState(() => _saving = false);
     }

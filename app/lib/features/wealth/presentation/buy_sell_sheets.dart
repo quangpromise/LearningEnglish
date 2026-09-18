@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_toast.dart';
 import '../../../core/utils/thousands_input_formatter.dart';
 import '../data/wealth_holding_model.dart';
 
@@ -199,7 +200,14 @@ class _BuyMoreSheetState extends ConsumerState<_BuyMoreSheet> {
             currency: widget.holding.currency,
           );
       ref.invalidate(wealthHoldingsProvider(widget.holding.assetType));
-      if (mounted) Navigator.of(context).pop();
+      if (mounted) {
+        showSuccessToast(context, ref.tr('toast_saved'));
+        Navigator.of(context).pop();
+      }
+    } catch (_) {
+      // Truoc day chi co `finally`: loi ghi Supabase bi nuot, sheet van dong
+      // lai nhu da luu nen nguoi dung tuong da xong (xem bug danh muc ve 0).
+      if (mounted) showErrorToast(context, ref.tr('toast_failed'));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -330,7 +338,14 @@ class _SellSheetState extends ConsumerState<_SellSheet> {
             currency: widget.holding.currency,
           );
       ref.invalidate(wealthHoldingsProvider(widget.holding.assetType));
-      if (mounted) Navigator.of(context).pop();
+      if (mounted) {
+        showSuccessToast(context, ref.tr('toast_saved'));
+        Navigator.of(context).pop();
+      }
+    } catch (_) {
+      // Truoc day chi co `finally`: loi ghi Supabase bi nuot, sheet van dong
+      // lai nhu da luu nen nguoi dung tuong da xong (xem bug danh muc ve 0).
+      if (mounted) showErrorToast(context, ref.tr('toast_failed'));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -488,7 +503,14 @@ class _RealEstateSellSheetState extends ConsumerState<_RealEstateSellSheet> {
             note: widget.holding.name,
           );
       ref.invalidate(wealthHoldingsProvider(widget.holding.assetType));
-      if (mounted) Navigator.of(context).pop();
+      if (mounted) {
+        showSuccessToast(context, ref.tr('toast_saved'));
+        Navigator.of(context).pop();
+      }
+    } catch (_) {
+      // Truoc day chi co `finally`: loi ghi Supabase bi nuot, sheet van dong
+      // lai nhu da luu nen nguoi dung tuong da xong (xem bug danh muc ve 0).
+      if (mounted) showErrorToast(context, ref.tr('toast_failed'));
     } finally {
       if (mounted) setState(() => _saving = false);
     }

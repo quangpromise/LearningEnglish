@@ -12,6 +12,7 @@ enum WealthExpenseCategory {
   shopping,
   bills,
   debt,
+  investment,
   other;
 
   static WealthExpenseCategory fromCode(String code) => switch (code) {
@@ -23,6 +24,7 @@ enum WealthExpenseCategory {
     'SHOPPING' => shopping,
     'BILLS' => bills,
     'DEBT' => debt,
+    'INVESTMENT' => investment,
     _ => other,
   };
 
@@ -35,6 +37,7 @@ enum WealthExpenseCategory {
     shopping => 'SHOPPING',
     bills => 'BILLS',
     debt => 'DEBT',
+    investment => 'INVESTMENT',
     other => 'OTHER',
   };
 
@@ -47,6 +50,7 @@ enum WealthExpenseCategory {
     shopping => 'wealth_expense_category_shopping',
     bills => 'wealth_expense_category_bills',
     debt => 'wealth_expense_category_debt',
+    investment => 'wealth_expense_category_investment',
     other => 'wealth_expense_category_other',
   };
 
@@ -59,6 +63,7 @@ enum WealthExpenseCategory {
     shopping => Icons.shopping_bag_rounded,
     bills => Icons.receipt_long_rounded,
     debt => Icons.handshake_rounded,
+    investment => Icons.trending_up_rounded,
     other => Icons.category_rounded,
   };
 }

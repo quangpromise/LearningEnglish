@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_toast.dart';
 import '../../../core/utils/currency_format.dart';
 import '../data/wealth_custom_category_model.dart';
 import '../data/wealth_transaction_model.dart';
@@ -130,6 +131,12 @@ class _WealthExpenseTabState extends ConsumerState<WealthExpenseTab> {
                                 .deleteTransaction(userId, t.id);
                             ref.invalidate(walletBalanceEntriesProvider);
                             ref.invalidate(wealthTransactionsProvider);
+                            if (context.mounted) {
+                              showSuccessToast(
+                                context,
+                                ref.tr('toast_deleted'),
+                              );
+                            }
                           },
                           child: GestureDetector(
                             onTap: () => showAddWealthTransactionSheet(

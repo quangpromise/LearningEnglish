@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/theme/app_theme.dart';
 import 'wallet_account_history_screen.dart';
 import 'wallet_existing_assets_tab.dart';
@@ -56,22 +57,7 @@ class _WalletScreenState extends State<WalletScreen> {
                   Consumer(
                     builder: (context, ref, _) => Row(
                       children: [
-                        GestureDetector(
-                          onTap: () => Navigator.of(context).maybePop(),
-                          child: Container(
-                            width: 34,
-                            height: 34,
-                            decoration: BoxDecoration(
-                              color: AppColors.glassFill,
-                              shape: BoxShape.circle,
-                              border: Border.all(color: AppColors.glassBorder),
-                            ),
-                            child: const Icon(
-                              Icons.chevron_left_rounded,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                        ),
+                        const PopupBackButton(),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(

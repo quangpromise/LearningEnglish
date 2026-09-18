@@ -1394,6 +1394,10 @@ class AppStrings {
       AppLanguage.vi: 'Trả nợ',
       AppLanguage.en: 'Debt payment',
     },
+    'wealth_expense_category_investment': {
+      AppLanguage.vi: 'Đầu tư',
+      AppLanguage.en: 'Investment',
+    },
     'wealth_expense_category_other': {
       AppLanguage.vi: 'Khác',
       AppLanguage.en: 'Other',
@@ -2124,6 +2128,16 @@ class AppStrings {
       AppLanguage.en: 'Property name',
     },
     'wealth_saved': {AppLanguage.vi: 'Đã lưu', AppLanguage.en: 'Saved'},
+    // Thong bao chung sau moi thao tac - dung cho showSuccessToast/
+    // showErrorToast o MOI man hinh (core/widgets/app_toast.dart).
+    'toast_saved': {AppLanguage.vi: 'Đã lưu', AppLanguage.en: 'Saved'},
+    'toast_added': {AppLanguage.vi: 'Đã thêm', AppLanguage.en: 'Added'},
+    'toast_updated': {AppLanguage.vi: 'Đã cập nhật', AppLanguage.en: 'Updated'},
+    'toast_deleted': {AppLanguage.vi: 'Đã xoá', AppLanguage.en: 'Deleted'},
+    'toast_failed': {
+      AppLanguage.vi: 'Thất bại, vui lòng thử lại',
+      AppLanguage.en: 'Failed, please try again',
+    },
     'wealth_investment_confirm_button': {
       AppLanguage.vi: 'Xác nhận mua',
       AppLanguage.en: 'Confirm purchase',
@@ -3786,6 +3800,59 @@ class AppStrings {
 
     // Planner feature (features/planner/) - man "Lap ke hoach" dung chung 3
     // mini-app + menu noi AssistiveTouch, xem docs/research-planner-app-ux.md
+    // ===== To do list (features/todo) - tinh nang RIENG, khong dung chung
+    // chuoi voi Lap ke hoach (planner_*) du vai nhan trung nghia.
+    'todo_title': {AppLanguage.vi: 'To do list', AppLanguage.en: 'To do list'},
+    'todo_today': {AppLanguage.vi: 'HÔM NAY', AppLanguage.en: 'TODAY'},
+    'todo_tasks': {AppLanguage.vi: 'CÔNG VIỆC', AppLanguage.en: 'TASKS'},
+    'todo_progress': {
+      AppLanguage.vi: 'TIẾN ĐỘ HÔM NAY',
+      AppLanguage.en: "TODAY'S PROGRESS",
+    },
+    'todo_this_week': {AppLanguage.vi: 'TUẦN NÀY', AppLanguage.en: 'THIS WEEK'},
+    'todo_empty': {
+      AppLanguage.vi: 'Chưa có việc nào. Bấm + để thêm.',
+      AppLanguage.en: 'No tasks yet. Tap + to add one.',
+    },
+    'todo_status_completed': {
+      AppLanguage.vi: 'Đã hoàn thành',
+      AppLanguage.en: 'Completed',
+    },
+    'todo_status_incomplete': {
+      AppLanguage.vi: 'Chưa hoàn thành',
+      AppLanguage.en: 'Incomplete',
+    },
+    'todo_status_overdue': {
+      AppLanguage.vi: 'Quá hạn',
+      AppLanguage.en: 'Overdue',
+    },
+    'todo_status_carried': {
+      AppLanguage.vi: 'Chuyển từ hôm qua',
+      AppLanguage.en: 'Carried from yesterday',
+    },
+    'todo_completed_n': {
+      AppLanguage.vi: 'hoàn thành',
+      AppLanguage.en: 'completed',
+    },
+    'todo_remaining_n': {
+      AppLanguage.vi: 'còn lại',
+      AppLanguage.en: 'remaining',
+    },
+    'todo_overdue_n': {AppLanguage.vi: 'quá hạn', AppLanguage.en: 'overdue'},
+    'todo_of_completed': {
+      AppLanguage.vi: 'trên tổng số việc',
+      AppLanguage.en: 'of tasks done',
+    },
+    'todo_new_task': {AppLanguage.vi: 'VIỆC MỚI', AppLanguage.en: 'NEW TASK'},
+    'todo_edit_task': {AppLanguage.vi: 'SỬA VIỆC', AppLanguage.en: 'EDIT TASK'},
+    'todo_title_hint': {
+      AppLanguage.vi: 'Cần làm gì?',
+      AppLanguage.en: 'What needs to be done?',
+    },
+    'todo_date': {AppLanguage.vi: 'Ngày', AppLanguage.en: 'Date'},
+    'todo_time': {AppLanguage.vi: 'Giờ', AppLanguage.en: 'Time'},
+    'todo_create': {AppLanguage.vi: 'Tạo việc', AppLanguage.en: 'Create'},
+    'todo_delete': {AppLanguage.vi: 'Xoá việc', AppLanguage.en: 'Delete'},
     'planner_title': {
       AppLanguage.vi: 'Lập kế hoạch',
       AppLanguage.en: 'Planner',

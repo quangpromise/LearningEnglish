@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/theme/app_theme.dart';
 import 'crypto_coin_detail_screen.dart';
 import 'crypto_coin_picker_sheet.dart';
@@ -37,7 +38,7 @@ class _CryptoPortfolioScreenState extends ConsumerState<CryptoPortfolioScreen> {
     final coinDetail = ref.watch(marketCoinDetailProvider);
     return ScreenBackground(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+        padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
         child: coinDetail != null
             ? CryptoCoinDetailScreen(
                 symbol: coinDetail.symbol,
@@ -62,55 +63,32 @@ class _CryptoPortfolioScreenState extends ConsumerState<CryptoPortfolioScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            GestureDetector(
-              onTap: () {
-                final back = widget.onBack;
-                if (back != null) {
-                  back();
-                } else {
-                  Navigator.of(context).maybePop();
-                }
-              },
-              child: Container(
-                width: 34,
-                height: 34,
-                decoration: BoxDecoration(
-                  color: AppColors.glassFill,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.glassBorder),
-                ),
-                child: const Icon(
-                  Icons.chevron_left_rounded,
-                  color: AppColors.textPrimary,
-                ),
+        PopupBackHeader(
+          title: ref.tr('crypto_tab_portfolio'),
+          onBack: () {
+            final back = widget.onBack;
+            if (back != null) {
+              back();
+            } else {
+              Navigator.of(context).maybePop();
+            }
+          },
+          trailing: GestureDetector(
+            onTap: () => showCryptoCoinPicker(context, ref),
+            child: Container(
+              width: 34,
+              height: 34,
+              decoration: const BoxDecoration(
+                gradient: AppColors.wealthAccentGradient,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.add_rounded,
+                size: 18,
+                color: Colors.white,
               ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                ref.tr('crypto_tab_portfolio'),
-                style: AppTextStyles.heading(size: 20),
-              ),
-            ),
-            GestureDetector(
-              onTap: () => showCryptoCoinPicker(context, ref),
-              child: Container(
-                width: 34,
-                height: 34,
-                decoration: BoxDecoration(
-                  gradient: AppColors.wealthAccentGradient,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.add_rounded,
-                  size: 18,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
         const SizedBox(height: 14),
         Expanded(

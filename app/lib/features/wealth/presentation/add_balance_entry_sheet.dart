@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_toast.dart';
 import '../../../core/utils/date_format.dart';
 import '../../../core/utils/thousands_input_formatter.dart';
 import '../data/vn_bank_model.dart';
@@ -172,7 +173,12 @@ class _AddBalanceEntrySheetState extends ConsumerState<_AddBalanceEntrySheet> {
         }
       }
       ref.invalidate(walletBalanceEntriesProvider);
-      if (mounted) Navigator.of(context).pop(true);
+      if (mounted) {
+        showSuccessToast(context, ref.tr('toast_saved'));
+        Navigator.of(context).pop(true);
+      }
+    } catch (_) {
+      if (mounted) showErrorToast(context, ref.tr('toast_failed'));
     } finally {
       if (mounted) setState(() => _saving = false);
     }

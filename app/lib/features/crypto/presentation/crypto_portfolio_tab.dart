@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_toast.dart';
 import '../../../core/utils/date_format.dart';
 import '../data/crypto_currency.dart';
 import '../data/crypto_portfolio_repository.dart';
@@ -191,8 +193,12 @@ class _HoldingTile extends ConsumerWidget {
         ),
         child: const Icon(Icons.delete_outline_rounded, color: AppColors.pink),
       ),
-      onDismissed: (_) =>
-          ref.read(cryptoPortfolioProvider.notifier).remove(holding.coinId),
+      onDismissed: (_) async {
+        await ref.read(cryptoPortfolioProvider.notifier).remove(holding.coinId);
+        if (context.mounted) {
+          showSuccessToast(context, ref.tr('toast_deleted'));
+        }
+      },
       child: GlowBox(
         borderRadius: 16,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -413,22 +419,7 @@ class CryptoHistoryView extends ConsumerWidget {
       children: [
         Row(
           children: [
-            GestureDetector(
-              onTap: onBack,
-              child: Container(
-                width: 34,
-                height: 34,
-                decoration: BoxDecoration(
-                  color: AppColors.glassFill,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.glassBorder),
-                ),
-                child: const Icon(
-                  Icons.chevron_left_rounded,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-            ),
+            PopupBackButton(onBack: onBack),
             const SizedBox(width: 12),
             Expanded(
               child: Text(

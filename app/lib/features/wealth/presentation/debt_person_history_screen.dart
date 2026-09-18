@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_toast.dart';
 import '../../../core/utils/currency_format.dart';
 import '../../../core/utils/date_format.dart';
 import '../data/wealth_debt_model.dart';
@@ -295,6 +296,9 @@ class _DebtEntryCard extends ConsumerWidget {
         ref.invalidate(walletBalanceEntriesProvider);
         ref.invalidate(debtsProvider(debt.direction));
         ref.invalidate(debtsByPersonProvider(debt.personId));
+        if (context.mounted) {
+          showSuccessToast(context, ref.tr('toast_deleted'));
+        }
       },
       child: GlowBox(
         borderRadius: 18,

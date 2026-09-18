@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_language.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_toast.dart';
 import '../../../core/utils/currency_format.dart';
 import '../../../core/utils/thousands_input_formatter.dart';
 import '../data/vn_bank_model.dart';
@@ -613,6 +615,7 @@ class _WealthSplitBillScreenState extends ConsumerState<WealthSplitBillScreen> {
       ref.invalidate(wealthTransactionsProvider);
       ref.invalidate(wealthSplitBillsProvider);
       if (mounted) {
+        showSuccessToast(context, ref.tr('toast_saved'));
         setState(() => _phase = _SplitPhase.settle);
       }
       // billId khong can giu lai o day - da luu vao DB, xem lai qua
@@ -1342,22 +1345,7 @@ class _SplitBillPreviewScreenState
           children: [
             Row(
               children: [
-                GestureDetector(
-                  onTap: widget.onBack,
-                  child: Container(
-                    width: 34,
-                    height: 34,
-                    decoration: BoxDecoration(
-                      color: AppColors.glassFill,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.glassBorder),
-                    ),
-                    child: const Icon(
-                      Icons.chevron_left_rounded,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                ),
+                PopupBackButton(onBack: widget.onBack),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(

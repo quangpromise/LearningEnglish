@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_format.dart';
 import '../../../core/utils/date_format.dart';
@@ -61,22 +62,7 @@ class WealthHoldingHistoryView extends ConsumerWidget {
       children: [
         Row(
           children: [
-            GestureDetector(
-              onTap: onBack,
-              child: Container(
-                width: 34,
-                height: 34,
-                decoration: BoxDecoration(
-                  color: AppColors.glassFill,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.glassBorder),
-                ),
-                child: const Icon(
-                  Icons.chevron_left_rounded,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-            ),
+            PopupBackButton(onBack: onBack),
             const SizedBox(width: 12),
             Expanded(
               child: Text(

@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_toast.dart';
 import '../../../core/utils/currency_format.dart';
 import '../data/wealth_debt_model.dart';
 import 'add_debt_sheet.dart';
@@ -62,22 +64,7 @@ class _DebtScreenState extends State<DebtScreen>
                   Consumer(
                     builder: (context, ref, _) => Row(
                       children: [
-                        GestureDetector(
-                          onTap: () => Navigator.of(context).maybePop(),
-                          child: Container(
-                            width: 34,
-                            height: 34,
-                            decoration: BoxDecoration(
-                              color: AppColors.glassFill,
-                              shape: BoxShape.circle,
-                              border: Border.all(color: AppColors.glassBorder),
-                            ),
-                            child: const Icon(
-                              Icons.chevron_left_rounded,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                        ),
+                        const PopupBackButton(),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
@@ -439,6 +426,9 @@ class _PersonGroupTile extends ConsumerWidget {
         ref.invalidate(walletBalanceEntriesProvider);
         ref.invalidate(debtsProvider(first.direction));
         ref.invalidate(debtsByPersonProvider(first.personId));
+        if (context.mounted) {
+          showSuccessToast(context, ref.tr('toast_deleted'));
+        }
       },
       child: GestureDetector(
         onTap: selecting

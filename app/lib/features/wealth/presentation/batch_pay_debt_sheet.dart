@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_toast.dart';
 import '../../../core/utils/thousands_input_formatter.dart';
 import '../data/vn_bank_model.dart';
 import '../data/wealth_balance_entry_model.dart';
@@ -200,7 +201,14 @@ class _BatchPayDebtSheetState extends ConsumerState<_BatchPayDebtSheet> {
         ref.invalidate(wealthSplitBillsProvider);
         ref.invalidate(wealthSplitBillSharesProvider);
       }
-      if (mounted) Navigator.of(context).pop();
+      if (mounted) {
+        showSuccessToast(context, ref.tr('toast_saved'));
+        Navigator.of(context).pop();
+      }
+    } catch (_) {
+      // Truoc day chi co `finally`: loi ghi Supabase bi nuot, sheet van dong
+      // lai nhu da luu nen nguoi dung tuong da xong (xem bug danh muc ve 0).
+      if (mounted) showErrorToast(context, ref.tr('toast_failed'));
     } finally {
       if (mounted) setState(() => _saving = false);
     }

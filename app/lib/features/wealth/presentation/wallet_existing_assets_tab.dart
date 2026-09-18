@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_toast.dart';
 import '../../../core/utils/currency_format.dart';
 import '../../../core/utils/date_format.dart';
 import '../data/wealth_balance_entry_model.dart';
@@ -363,7 +364,8 @@ class WalletEntryRow extends ConsumerWidget {
         final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
         if (userId == null) return;
         switch (entry.source) {
-          case 'expense' || 'income' when entry.sourceTransactionId != null:
+          case 'expense' || 'income' || 'investment'
+              when entry.sourceTransactionId != null:
             // Xoa ca giao dich goc de dong bo voi man Chi tieu/Thu nhap - FK
             // cascade se tu xoa dong wealth_balance_entries nay theo.
             await ref
@@ -431,6 +433,9 @@ class WalletEntryRow extends ConsumerWidget {
                 .deleteEntry(userId, entry.id);
         }
         ref.invalidate(walletBalanceEntriesProvider);
+        if (context.mounted) {
+          showSuccessToast(context, ref.tr('toast_deleted'));
+        }
       },
       child: GestureDetector(
         onTap: () => _openEditSheet(context, ref),
@@ -447,7 +452,13 @@ class WalletEntryRow extends ConsumerWidget {
   /// goc (truoc day luon mo sheet Nap/Rut cho MOI dong, sai ngu canh voi
   /// dong tu 1 khoan Chi tieu/Thu nhap).
   Future<void> _openEditSheet(BuildContext context, WidgetRef ref) async {
-    if ((entry.source == 'expense' || entry.source == 'income') &&
+    // 'investment' (mua Crypto/Co phieu/Vang/Nha dat tu man Dau tu) cung
+    // sinh ra 1 dong wealth_transactions danh muc "Dau tu", nen sua/xoa
+    // phai di qua giao dich goc y het chi tieu thuong - neu khong se con
+    // lai 1 giao dich mo coi trong Lich su chi tieu sau khi xoa o Vi.
+    if ((entry.source == 'expense' ||
+            entry.source == 'income' ||
+            entry.source == 'investment') &&
         entry.sourceTransactionId != null) {
       final transactions = await ref.read(wealthTransactionsProvider.future);
       WealthTransaction? tx;

@@ -3,14 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/thousands_input_formatter.dart';
+import '../../../core/widgets/app_toast.dart';
 import '../../crypto/data/crypto_currency.dart';
 import '../../crypto/data/crypto_repository.dart';
 import '../../crypto/presentation/crypto_coin_picker_sheet.dart';
 import '../../crypto/presentation/crypto_providers.dart';
 import '../data/vn_bank_model.dart';
 import '../data/wealth_balance_entry_model.dart';
+import '../data/wealth_category.dart';
 import '../data/wealth_holding_model.dart';
 import '../data/wealth_transaction_model.dart';
 import 'add_balance_entry_sheet.dart';
@@ -54,22 +57,7 @@ class _WealthPayScreenState extends State<WealthPayScreen>
             Consumer(
               builder: (context, ref, _) => Row(
                 children: [
-                  GestureDetector(
-                    onTap: () => Navigator.of(context).maybePop(),
-                    child: Container(
-                      width: 34,
-                      height: 34,
-                      decoration: BoxDecoration(
-                        color: AppColors.glassFill,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: AppColors.glassBorder),
-                      ),
-                      child: const Icon(
-                        Icons.chevron_left_rounded,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                  ),
+                  const PopupBackButton(),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
@@ -192,8 +180,7 @@ class _PayTab extends ConsumerWidget {
 }
 
 void _closeWithSuccess(BuildContext context, WidgetRef ref) {
-  ScaffoldMessenger.of(context)
-      .showSnackBar(SnackBar(content: Text(ref.tr('wealth_saved'))));
+  showSuccessToast(context, ref.tr('toast_saved'));
   Navigator.of(context).maybePop();
 }
 
@@ -468,6 +455,18 @@ class _InvestmentTabState extends ConsumerState<_InvestmentTab> {
       _realEstateNameController.text.trim().isNotEmpty,
   };
 
+  /// Ghi chu cho dong chi tieu + dong bien dong so du, de trong Lich su nguoi
+  /// dung biet da mua CAI GI chu khong chi thay "Dau tu - 1.000.000d".
+  String _investmentNote() => switch (_assetType) {
+    _InvAssetType.crypto => _selectedCoin!.symbol.toUpperCase(),
+    _InvAssetType.stock => _selectedStock!.symbol,
+    _InvAssetType.gold =>
+      _selectedGoldType == 'sjc'
+          ? ref.tr('wealth_metal_gold_sjc')
+          : ref.tr('wealth_metal_gold_pnj'),
+    _InvAssetType.realEstate => _realEstateNameController.text.trim(),
+  };
+
   Future<void> _confirm() async {
     final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
     if (userId == null) return;
@@ -497,20 +496,52 @@ class _InvestmentTabState extends ConsumerState<_InvestmentTab> {
 
     setState(() => _saving = true);
     try {
+      final now = DateTime.now();
+      final accountType = source.isCash ? 'cash' : 'bank';
+      final bankCode = source.isCash
+          ? null
+          : (source.bank!.isOther ? null : source.bank!.code);
+      final bankName = source.isCash ? null : source.bank!.shortName;
+
+      // Mua dau tu = 1 khoan CHI TIEU that su cua Vi, nen ngoai viec tru so
+      // du (wealth_balance_entries) con phai ghi 1 dong wealth_transactions
+      // danh muc "Dau tu" - truoc day chi tru tien ma khong tao giao dich,
+      // nen tien bien mat khoi so du nhung khong he xuat hien trong Lich su
+      // chi tieu lan Lich su giao dich cua man Vi.
+      final txId = await ref
+          .read(wealthTransactionRepositoryProvider)
+          .addTransaction(
+            userId,
+            WealthTransaction(
+              id: '',
+              type: WealthTransactionType.expense,
+              categoryCode: WealthExpenseCategory.investment.code,
+              amount: amount,
+              currency: 'VND',
+              occurredAt: now,
+              note: _investmentNote(),
+              paymentAccountType: accountType,
+              paymentBankCode: bankCode,
+              paymentBankName: bankName,
+            ),
+          );
+
       final balanceRepo = ref.read(wealthBalanceEntryRepositoryProvider);
       await balanceRepo.addEntry(
         userId,
         WealthBalanceEntry(
           id: '',
-          accountType: source.isCash ? 'cash' : 'bank',
-          bankCode: source.isCash
-              ? null
-              : (source.bank!.isOther ? null : source.bank!.code),
-          bankName: source.isCash ? null : source.bank!.shortName,
+          accountType: accountType,
+          bankCode: bankCode,
+          bankName: bankName,
           currency: 'VND',
           amount: -amount,
-          occurredAt: DateTime.now(),
+          occurredAt: now,
+          note: _investmentNote(),
           source: 'investment',
+          // Noi sang giao dich vua tao de xoa giao dich la so du tu hoan lai
+          // (cung co che voi chi tieu thuong trong add_transaction_sheet).
+          sourceTransactionId: txId,
         ),
       );
 
@@ -637,7 +668,12 @@ class _InvestmentTabState extends ConsumerState<_InvestmentTab> {
       }
 
       ref.invalidate(walletBalanceEntriesProvider);
+      ref.invalidate(wealthTransactionsProvider);
       if (mounted) _closeWithSuccess(context, ref);
+    } catch (_) {
+      // Truoc day khong co `catch`: ghi Supabase that bai thi sheet van dong
+      // lai nhu da luu (chinh la cach bug danh muc dau tu "ve 0" an minh).
+      if (mounted) showErrorToast(context, ref.tr('toast_failed'));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
