@@ -6,6 +6,7 @@ import '../../../core/navigation/app_popup.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../crypto/presentation/crypto_portfolio_screen.dart';
 import 'foreign_currency_portfolio_screen.dart';
+import 'investment_value_chart.dart';
 import 'metal_portfolio_screen.dart';
 import 'real_estate_portfolio_screen.dart';
 import 'stock_portfolio_screen.dart';
@@ -72,6 +73,25 @@ class _WealthInvestmentScreenState
               ),
             ),
           ],
+        ),
+        const SizedBox(height: 14),
+        // Bieu do gia tri danh muc theo thoi gian - dat TREN danh sach tai
+        // san: mo man nay ra la thay ngay danh muc dang len hay xuong, roi
+        // moi den chi tiet tung nhom.
+        GlowBox(
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+          borderRadius: 18,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                ref.tr('investment_chart_title'),
+                style: AppTextStyles.body(size: 12.5, weight: FontWeight.w700),
+              ),
+              const SizedBox(height: 8),
+              const InvestmentValueChart(),
+            ],
+          ),
         ),
         const SizedBox(height: 14),
         Expanded(

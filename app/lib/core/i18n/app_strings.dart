@@ -2210,6 +2210,14 @@ class AppStrings {
       AppLanguage.vi: 'Gửi thử 1 thông báo',
       AppLanguage.en: 'Send a test notification',
     },
+    'investment_chart_title': {
+      AppLanguage.vi: 'Giá trị danh mục',
+      AppLanguage.en: 'Portfolio value',
+    },
+    'investment_chart_empty': {
+      AppLanguage.vi: 'Chưa đủ dữ liệu để vẽ. App bắt đầu ghi lại giá trị danh mục từ bản cập nhật này, mỗi giờ 1 mốc - mở lại sau vài giờ sẽ thấy đường biểu đồ.',
+      AppLanguage.en: 'Not enough data yet. The app starts recording your portfolio value from this update, one point per hour - check back in a few hours.',
+    },
     'confirm_save_title': {
       AppLanguage.vi: 'Lưu thay đổi này?',
       AppLanguage.en: 'Save this change?',
