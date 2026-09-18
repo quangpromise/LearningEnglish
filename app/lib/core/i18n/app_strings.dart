@@ -2463,6 +2463,18 @@ class AppStrings {
     'home_skill_toeic': {AppLanguage.vi: 'TOEIC', AppLanguage.en: 'TOEIC'},
     'home_skill_ielts': {AppLanguage.vi: 'IELTS', AppLanguage.en: 'IELTS'},
     'home_skill_quiz': {AppLanguage.vi: 'Đố vui', AppLanguage.en: 'Quiz'},
+    'wealth_home_overview_title': {
+      AppLanguage.vi: 'Tổng quan tài chính',
+      AppLanguage.en: 'Financial overview',
+    },
+    'wealth_home_overview_sub': {
+      AppLanguage.vi: 'Biến động tài sản của bạn',
+      AppLanguage.en: 'How your money moved',
+    },
+    'wealth_home_overview_empty': {
+      AppLanguage.vi: 'Chưa có giao dịch nào trong 6 tháng gần đây',
+      AppLanguage.en: 'No transactions in the last 6 months',
+    },
     'wealth_home_report_all': {
       AppLanguage.vi: 'Xem tất cả',
       AppLanguage.en: 'View all',

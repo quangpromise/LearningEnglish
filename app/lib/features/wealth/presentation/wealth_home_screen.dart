@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -11,6 +13,9 @@ import '../../music_player/presentation/center_media_button.dart';
 import '../../music_player/presentation/home_screen.dart'
     show greetingKeyForNow;
 import '../../social/presentation/conversations_screen.dart';
+import '../data/wealth_balance_entry_model.dart';
+import '../data/wealth_report_data.dart';
+import '../data/wealth_transaction_model.dart';
 import 'debt_screen.dart';
 import 'market_screen.dart';
 import 'recurring_services_screen.dart';
@@ -248,6 +253,10 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
                 ],
               ),
               const SizedBox(height: 16),
+              _OverviewCard(
+                onTap: () => openAppPopup(context, const WealthReportScreen()),
+              ),
+              const SizedBox(height: 14),
               // Bao cao tach rieng khoi luoi "Quan ly" (khac ban chat - day la
               // man TONG HOP/phan tich, khong phai 1 hanh dong quan ly nhu Vi/
               // Chi tieu/No...) - theo yeu cau nguoi dung, cung giup tile noi
@@ -333,6 +342,304 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
       ),
     );
   }
+}
+
+/// The "Tong quan tai chinh" theo ban thiet ke chot - duong bieu dien 6 thang
+/// gan nhat + 2 o Thu nhap/Chi tieu cua thang nay.
+///
+/// KHONG co so lieu bia: tat ca tinh tu chinh du lieu man Bao cao dang dung
+/// (wealthTransactionsProvider + walletBalanceEntriesProvider, qua cac ham
+/// thuan trong wealth_report_data.dart), nen 2 man luon khop nhau. "Thu nhap"
+/// lay tu tien THAT vao Vi chu khong phai tab Thu nhap tu khai bao - xem giai
+/// thich trong computeMonthlyWalletInflow.
+class _OverviewCard extends ConsumerWidget {
+  const _OverviewCard({required this.onTap});
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final transactions =
+        ref.watch(wealthTransactionsProvider).valueOrNull ??
+        const <WealthTransaction>[];
+    final entries =
+        ref.watch(walletBalanceEntriesProvider).valueOrNull ??
+        const <WealthBalanceEntry>[];
+
+    // Chi doi ty gia khi thuc su co khoan USD - tranh bat 1 request mang
+    // khong can thiet ngay khi mo Home.
+    final hasUsd =
+        transactions.any((t) => t.currency == 'USD') ||
+        entries.any((e) => e.currency == 'USD');
+    final usdVnd = hasUsd
+        ? ref.watch(wealthVnAssetsProvider).valueOrNull?.usdVnd
+        : null;
+
+    final now = DateTime.now();
+    final months = lastNMonths(DateTime(now.year, now.month, 1), 6);
+    final nets = <double>[];
+    for (final m in months) {
+      final expense = computeMonthlyTotals(
+        transactions,
+        m,
+        usdVnd: usdVnd,
+      ).expense;
+      final income = computeMonthlyWalletInflow(entries, m, usdVnd: usdVnd);
+      nets.add(income - expense);
+    }
+
+    final thisMonth = months.last;
+    final prevMonth = months[months.length - 2];
+    final income = computeMonthlyWalletInflow(
+      entries,
+      thisMonth,
+      usdVnd: usdVnd,
+    );
+    final prevIncome = computeMonthlyWalletInflow(
+      entries,
+      prevMonth,
+      usdVnd: usdVnd,
+    );
+    final expense = computeMonthlyTotals(
+      transactions,
+      thisMonth,
+      usdVnd: usdVnd,
+    ).expense;
+    final prevExpense = computeMonthlyTotals(
+      transactions,
+      prevMonth,
+      usdVnd: usdVnd,
+    ).expense;
+
+    final hasData = nets.any((n) => n != 0);
+
+    return GestureDetector(
+      onTap: onTap,
+      child: _GoldCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                const _GoldIconPad(icon: Icons.insights_rounded, size: 38),
+                const SizedBox(width: 11),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        ref.tr('wealth_home_overview_title'),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.heading(size: 14),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        ref.tr('wealth_home_overview_sub'),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.body(
+                          size: 9.5,
+                          weight: FontWeight.w500,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            if (!hasData)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                child: Text(
+                  ref.tr('wealth_home_overview_empty'),
+                  style: AppTextStyles.body(
+                    size: 10.5,
+                    weight: FontWeight.w500,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              )
+            else ...[
+              SizedBox(
+                height: 58,
+                width: double.infinity,
+                child: CustomPaint(painter: _SparklinePainter(nets)),
+              ),
+              const SizedBox(height: 12),
+            ],
+            Row(
+              children: [
+                Expanded(
+                  child: _StatChip(
+                    label: ref.tr('wealth_tab_income'),
+                    value: income,
+                    previous: prevIncome,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _StatChip(
+                    label: ref.tr('wealth_tab_expense'),
+                    value: expense,
+                    previous: prevExpense,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 1 o so lieu trong [_OverviewCard] - so tien thang nay + % lech so voi
+/// thang truoc (xanh mui ten len / do mui ten xuong).
+class _StatChip extends ConsumerWidget {
+  const _StatChip({
+    required this.label,
+    required this.value,
+    required this.previous,
+  });
+  final String label;
+  final double value;
+  final double previous;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Thang truoc bang 0 thi khong co goc de tinh % (chia cho 0) - an phan
+    // tram di thay vi hien 1 con so vo nghia kieu "+100%".
+    final percent = previous == 0 ? null : (value - previous) / previous * 100;
+    final up = (percent ?? 0) >= 0;
+    final color = up ? AppColors.teal : AppColors.pink;
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(10, 9, 10, 9),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppColors.wealthAccent.withValues(alpha: 0.22),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTextStyles.body(
+              size: 9.5,
+              weight: FontWeight.w600,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 3),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              formatVnd(value),
+              maxLines: 1,
+              style: AppTextStyles.heading(size: 14),
+            ),
+          ),
+          if (percent != null) ...[
+            const SizedBox(height: 3),
+            Row(
+              children: [
+                Icon(
+                  up
+                      ? Icons.arrow_upward_rounded
+                      : Icons.arrow_downward_rounded,
+                  size: 11,
+                  color: color,
+                ),
+                const SizedBox(width: 2),
+                Flexible(
+                  child: Text(
+                    '${up ? '+' : ''}${percent.toStringAsFixed(0)}%',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.body(
+                      size: 9.5,
+                      weight: FontWeight.w800,
+                      color: color,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Duong bieu dien gon (khong truc, khong nhan) cho 6 thang gan nhat.
+class _SparklinePainter extends CustomPainter {
+  const _SparklinePainter(this.values);
+  final List<double> values;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (values.length < 2) return;
+    var min = values.reduce((a, b) => a < b ? a : b);
+    var max = values.reduce((a, b) => a > b ? a : b);
+    // Moi thang bang nhau -> khoang gia tri = 0, chia se ra vo cuc; noi rong
+    // ra 1 chut de duong nam giua khung thay vi dinh sat canh tren.
+    if (max - min < 1) {
+      min -= 1;
+      max += 1;
+    }
+
+    final dx = size.width / (values.length - 1);
+    double yOf(double v) => size.height - (v - min) / (max - min) * size.height;
+    final points = [
+      for (var i = 0; i < values.length; i++) Offset(i * dx, yOf(values[i])),
+    ];
+
+    final path = Path()..moveTo(points.first.dx, points.first.dy);
+    for (final p in points.skip(1)) {
+      path.lineTo(p.dx, p.dy);
+    }
+
+    // To mo phan duoi duong cho giong ban thiet ke.
+    final fill = Path.from(path)
+      ..lineTo(points.last.dx, size.height)
+      ..lineTo(points.first.dx, size.height)
+      ..close();
+    canvas.drawPath(
+      fill,
+      Paint()
+        ..shader = ui.Gradient.linear(Offset(0, 0), Offset(0, size.height), [
+          AppColors.wealthAccent.withValues(alpha: 0.22),
+          AppColors.wealthAccent.withValues(alpha: 0),
+        ]),
+    );
+
+    canvas.drawPath(
+      path,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.8
+        ..strokeJoin = StrokeJoin.round
+        ..color = AppColors.wealthAccent,
+    );
+    for (final p in points) {
+      canvas.drawCircle(p, 2.2, Paint()..color = AppColors.wealthAccent);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_SparklinePainter old) => old.values != values;
 }
 
 /// The kinh tong vang cua man Quan ly tai san - vien vang mong, nen toi trong.
