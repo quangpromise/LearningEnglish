@@ -47,3 +47,11 @@ app.*.map.json
 # Widget Preview related
 .widget_preview/
 tool/render/out/
+
+# San pham build Gradle - sinh lai moi lan build, khong bao gio commit.
+# Truoc day chung luon hien trong `git status` lam nhieu khi stage nham
+# (da tung lo `git add -A app/` keo ca chung vao).
+/android/build/
+/android/.gradle/
+/third_party/*/android/build/
+/third_party/*/android/.gradle/
