@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -42,6 +44,32 @@ final investmentSnapshotsProvider = FutureProvider.autoDispose
       );
     });
 
+/// Cac diem gia tri thu thap NGAY TRONG PHIEN dang chay (bo nho, khong qua
+/// server) - de bieu do co duong ve NGAY LAP TUC thay vi doi bang snapshot
+/// tren Supabase co du 2 moc (moi gio 1 moc = phai cho ca tieng).
+///
+/// Nguon du lieu la chinh gia song: crypto chay qua WebSocket nen tong danh
+/// muc nhuc nhich lien tuc, cu 10 giay lay 1 diem la du min cho duong nhin
+/// muot ma khong phinh bo nho.
+class InvestmentLiveSeries {
+  InvestmentLiveSeries._();
+
+  static const _sampleGap = Duration(seconds: 5);
+  static const _maxPoints = 1440; // 5s * 1440 = 2 tieng gan nhat
+
+  static final List<(DateTime, double)> points = [];
+
+  static void add(double valueVnd) {
+    if (valueVnd <= 0) return;
+    final now = DateTime.now();
+    if (points.isNotEmpty && now.difference(points.last.$1) < _sampleGap) {
+      return;
+    }
+    points.add((now, valueVnd));
+    if (points.length > _maxPoints) points.removeAt(0);
+  }
+}
+
 /// Ghi lai gia tri danh muc hien tai (toi da 1 lan/gio) - dat o bat ky man
 /// nao co hien tong dau tu. Khong ve gi ca, chi la 1 "moc" de bieu do co du
 /// lieu ma ve.
@@ -68,6 +96,7 @@ class _InvestmentSnapshotRecorderState
     if (userId != null && total > 0) {
       // Goi NGOAI pha build (post-frame): ghi du lieu ngay trong build la
       // tac dung phu, va o day build chay lai moi lan gia song nhay.
+      InvestmentLiveSeries.add(total);
       WidgetsBinding.instance.addPostFrameCallback((_) {
         WealthInvestmentSnapshotRepository.record(
           userId: userId,
@@ -96,6 +125,25 @@ class InvestmentValueChart extends ConsumerStatefulWidget {
 
 class _InvestmentValueChartState extends ConsumerState<InvestmentValueChart> {
   InvestmentChartRange _range = InvestmentChartRange.m1;
+  Timer? _tick;
+
+  @override
+  void initState() {
+    super.initState();
+    // Nhip ve lai dinh ky. KHONG the chi dua vao gia doi: danh muc khong co
+    // crypto (chi vang/BDS/co phieu) thi tong dung yen ca ngay, widget khong
+    // bao gio build lai, chuoi diem khong bao gio du 2 diem va bieu do ket
+    // vinh vien o trang thai "chua du du lieu".
+    _tick = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _tick?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -104,13 +152,19 @@ class _InvestmentValueChartState extends ConsumerState<InvestmentValueChart> {
     final liveTotal = ref.watch(totalInvestmentValueVndProvider);
 
     final snaps = snapsAsync.valueOrNull ?? const <InvestmentSnapshot>[];
-    // Diem CUOI luon la gia tri SONG hien tai (khong doi toi lan ghi moc
-    // tiep theo) - nho vay duong bieu do nhuc nhich theo gia y nhu chart
-    // coin, thay vi dung yen ca tieng dong ho.
+    // Ghi them diem cho chuoi song moi lan gia doi (ham tu gioi han 10s/diem)
+    // de chinh man nay cung "nuoi" duoc duong bieu do khi dang mo.
+    InvestmentLiveSeries.add(liveTotal);
+    final since = DateTime.now().subtract(range.window);
+    // 3 nguon gop lai: moc luu tren server (lich su dai han) + diem thu trong
+    // phien nay (de co duong ve NGAY, khong cho database) + gia tri song hien
+    // tai lam diem cuoi -> duong nhuc nhich theo tung tick nhu chart coin.
     final points = <(DateTime, double)>[
       for (final s in snaps) (s.takenAt, s.valueVnd),
+      for (final p in InvestmentLiveSeries.points)
+        if (p.$1.isAfter(since)) p,
       if (liveTotal > 0) (DateTime.now(), liveTotal),
-    ];
+    ]..sort((a, b) => a.$1.compareTo(b.$1));
 
     if (points.length < 2) {
       return _EmptyState(compact: widget.compact);

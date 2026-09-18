@@ -2215,8 +2215,8 @@ class AppStrings {
       AppLanguage.en: 'Portfolio value',
     },
     'investment_chart_empty': {
-      AppLanguage.vi: 'Chưa đủ dữ liệu để vẽ. App bắt đầu ghi lại giá trị danh mục từ bản cập nhật này, mỗi giờ 1 mốc - mở lại sau vài giờ sẽ thấy đường biểu đồ.',
-      AppLanguage.en: 'Not enough data yet. The app starts recording your portfolio value from this update, one point per hour - check back in a few hours.',
+      AppLanguage.vi: 'Đang lấy dữ liệu giá... Đường biểu đồ sẽ hiện sau vài giây, khi có đủ 2 điểm giá.',
+      AppLanguage.en: 'Collecting price data... The chart appears within a few seconds, once there are two data points.',
     },
     'confirm_save_title': {
       AppLanguage.vi: 'Lưu thay đổi này?',
