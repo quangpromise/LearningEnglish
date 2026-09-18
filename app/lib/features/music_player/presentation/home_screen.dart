@@ -86,6 +86,11 @@ class HomeScreen extends ConsumerWidget {
         // chieu cao goc - sinh ra 1 khoang trong du o duoi va van cuon duoc,
         // dong thoi noi dung bi thu hep lech vao giua. Da thu va phai bo.
         child: SingleChildScrollView(
+          // Khoa cuon: noi dung da duoc cat vua han than man (do bang bo chup,
+          // xem tool/render) nen khong duoc phep truot nua. Van giu
+          // SingleChildScrollView de neu 1 may nao do co vung hien thi thap
+          // bat thuong thi noi dung bi cat gon thay vi bao loi tran do.
+          physics: const NeverScrollableScrollPhysics(),
           child: _buildBody(
             context,
             ref,
@@ -141,23 +146,23 @@ class HomeScreen extends ConsumerWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 5),
             const ServiceExpiryBanner(section: AppSection.learnEnglish),
             // The tien do (Lv/XP/chuoi ngay) da BO theo yeu cau.
             const _DailyWordsHeroCard(),
-            const SizedBox(height: 6),
+            const SizedBox(height: 5),
             _SkillGrid(
               accent: accent,
               recommended: recommended,
               topPick: topPick,
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 5),
             _PracticePanel(
               accent: accent,
               recommended: recommended,
               topPick: topPick,
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 5),
             _TestPrepPanel(
               accent: accent,
               recommended: recommended,
@@ -341,7 +346,7 @@ class _DailyWordsHeroCard extends ConsumerWidget {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(14, 9, 14, 9),
+                padding: const EdgeInsets.fromLTRB(13, 7, 13, 7),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
@@ -354,7 +359,7 @@ class _DailyWordsHeroCard extends ConsumerWidget {
                         ref
                             .tr('profile_daily_words_title')
                             .replaceFirst('{n}', '$total'),
-                        style: AppTextStyles.heading(size: 16.5)
+                        style: AppTextStyles.heading(size: 15.5)
                             .copyWith(height: 1.12),
                       ),
                     ),
@@ -372,11 +377,11 @@ class _DailyWordsHeroCard extends ConsumerWidget {
                         ).copyWith(height: 1.3),
                       ),
                     ),
-                    const SizedBox(height: 9),
+                    const SizedBox(height: 7),
                     Row(
                       children: [
                         Container(
-                          height: 33,
+                          height: 30,
                           padding: const EdgeInsets.fromLTRB(14, 0, 17, 0),
                           decoration: BoxDecoration(
                             color: const Color(0xFFFAFCFF),
@@ -575,7 +580,7 @@ class _SkillCard extends StatelessWidget {
         _HomeCard(
           onTap: entry.open,
           radius: 15,
-          padding: const EdgeInsets.fromLTRB(9, 8, 9, 7),
+          padding: const EdgeInsets.fromLTRB(8, 7, 8, 6),
           borderColor: isRecommended ? accent : null,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -583,7 +588,7 @@ class _SkillCard extends StatelessWidget {
             children: [
               _IconPad(
                 icon: entry.icon,
-                size: 26,
+                size: 24,
                 color: isRecommended ? accent : null,
               ),
               const SizedBox(height: 5),
@@ -668,7 +673,7 @@ class _PracticePanel extends ConsumerWidget {
     ];
 
     return _HomeCard(
-      padding: const EdgeInsets.fromLTRB(12, 9, 12, 8),
+      padding: const EdgeInsets.fromLTRB(11, 7, 11, 6),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -685,7 +690,7 @@ class _PracticePanel extends ConsumerWidget {
                       ref.tr('home_listening_speaking'),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.heading(size: 16.5),
+                      style: AppTextStyles.heading(size: 15.5),
                     ),
                     const SizedBox(height: 3),
                     Text(
@@ -706,7 +711,7 @@ class _PracticePanel extends ConsumerWidget {
                 onTap: () => openAppPopup(context, const PronunciationScreen()),
                 child: Container(
                   width: 54,
-                  height: 46,
+                  height: 42,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(color: const Color(0x29AAD4FF)),
@@ -842,10 +847,10 @@ class _PracticeItem extends StatelessWidget {
             children: [
               _IconPad(
                 icon: entry.icon,
-                size: 25,
+                size: 23,
                 color: isRecommended ? accent : null,
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 5),
               _FixedLines(
                 entry.title,
                 lines: 2,
@@ -942,13 +947,13 @@ class _TestPrepPanel extends ConsumerWidget {
     ];
 
     return _HomeCard(
-      padding: const EdgeInsets.all(9),
+      padding: const EdgeInsets.all(8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const _IconPad(icon: Icons.timer_outlined, size: 34),
+              const _IconPad(icon: Icons.timer_outlined, size: 30),
               const SizedBox(width: 11),
               Expanded(
                 child: Column(
@@ -1025,7 +1030,7 @@ class _TestPrepTile extends StatelessWidget {
         _HomeCard(
           onTap: entry.open,
           radius: 13,
-          padding: const EdgeInsets.all(7),
+          padding: const EdgeInsets.all(6),
           borderColor: isRecommended ? accent : null,
           child: Row(
             children: [

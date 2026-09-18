@@ -80,213 +80,239 @@ class _WealthHomeScreenState extends ConsumerState<WealthHomeScreen> {
     return WealthDesignBackground(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(14, 5, 14, 2),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AppTopBar(
-                greeting: '${ref.tr(greetingKeyForNow())},',
-                accentColor: AppColors.wealthAccent,
-                unreadCount: unread,
-                onMessagesTap: () =>
-                    openAppPopup(context, const ConversationsScreen()),
-                trailing: GestureDetector(
-                  onTap: () =>
-                      openAppPopup(context, const WealthSettingsScreen()),
-                  child: const TopBarIconChip(icon: Icons.settings_outlined),
-                ),
-              ),
-              const SizedBox(height: 7),
-              // The "Tin nhan" rieng da BO theo yeu cau - tin nhan van vao
-              // duoc bang nut chat tren thanh dau man (co cham bao chua doc).
-              SizedBox(
-                height: 142,
-                child: PageView(
-                  controller: _pageController,
-                  // padEnds:false - mac dinh PageView TU THEM le dau/cuoi de
-                  // trang dau/cuoi "can doi" nhu cac trang giua (padEnds:true),
-                  // khien the Tong Vi (trang 0) bi day vao giua thay vi ap sat
-                  // le trai nhu mong muon - day la nguyen nhan gay khoang
-                  // trong ben trai nguoi dung bao, KHONG phai loi tinh toan
-                  // viewportFraction.
-                  padEnds: false,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(right: 10),
-                      child: _TotalCard(
-                        title: ref.tr('wallet_total_assets'),
-                        value: netWorth,
-                        hidden: hidden,
-                        showValue: _pageIndex == 0,
-                        placeholderIcon: Icons.account_balance_wallet_rounded,
-                        onTap: () =>
-                            openAppPopup(context, const WalletScreen()),
-                        onToggleHidden: () => ref
-                            .read(wealthPrivacyModeProvider.notifier)
-                            .toggle(),
-                        footer: _CardFooterRow(
-                          items: [
-                            (
-                              'assets/wealth/ic_wallet_sm.png',
-                              Icons.payments_rounded,
-                              ref.tr('wealth_home_pay_receive'),
-                              ref.tr('wealth_home_pay_receive_sub'),
-                              () => openAppPopup(
-                                context,
-                                const WealthPayScreen(),
-                              ),
-                            ),
-                            (
-                              'assets/wealth/ic_qr.png',
-                              Icons.qr_code_rounded,
-                              ref.tr('wealth_home_qr_code'),
-                              ref.tr('wealth_home_qr_code_sub'),
-                              () =>
-                                  openAppPopup(context, const WealthQrScreen()),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    _TotalCard(
-                      title: ref.tr('wealth_investments_total'),
-                      value: investmentTotal,
-                      hidden: investmentHidden,
-                      pnl: investmentPnl,
-                      pnlPercent: investmentPnlPercent,
-                      showValue: _pageIndex == 1,
-                      placeholderIcon: Icons.trending_up_rounded,
+        // The Tong tai san TU GIAN de lap het cho con trong -> thanh nhac luon
+        // ket thuc sat day man, khong con khoang trong thua.
+        //
+        // 453.8 = tong chieu cao cac khoi CON LAI, do bang bo chup
+        // (tool/render): ca man cao 595.8pt khi the tong cao 142pt.
+        // Lam kieu nay thi man cao bao nhieu cung tu vua, khong phai chinh
+        // tay theo tung may nhu truoc.
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            const otherContent = 453.8;
+            final heroHeight = (constraints.maxHeight - otherContent).clamp(
+              142.0,
+              240.0,
+            );
+            return SingleChildScrollView(
+              physics: const NeverScrollableScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppTopBar(
+                    greeting: '${ref.tr(greetingKeyForNow())},',
+                    accentColor: AppColors.wealthAccent,
+                    unreadCount: unread,
+                    onMessagesTap: () =>
+                        openAppPopup(context, const ConversationsScreen()),
+                    trailing: GestureDetector(
                       onTap: () =>
-                          openAppPopup(context, const WealthInvestmentScreen()),
-                      onToggleHidden: () => ref
-                          .read(investmentPrivacyModeProvider.notifier)
-                          .toggle(),
-                      footer: _CardFooterRow(
-                        items: [
-                          (
-                            null,
-                            Icons.show_chart_rounded,
-                            ref.tr('wealth_market_title'),
-                            ref.tr('wealth_home_market_sub'),
-                            () => openAppPopup(context, const MarketScreen()),
-                          ),
-                          (
-                            null,
-                            Icons.star_rounded,
-                            ref.tr('crypto_tab_watchlist'),
-                            ref.tr('wealth_home_watchlist_sub'),
-                            () => openAppPopup(
-                              context,
-                              const MarketScreen(initialTabIndex: 1),
+                          openAppPopup(context, const WealthSettingsScreen()),
+                      child: const TopBarIconChip(
+                        icon: Icons.settings_outlined,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 7),
+                  // The "Tin nhan" rieng da BO theo yeu cau - tin nhan van vao
+                  // duoc bang nut chat tren thanh dau man (co cham bao chua doc).
+                  SizedBox(
+                    height: heroHeight,
+                    child: PageView(
+                      controller: _pageController,
+                      // padEnds:false - mac dinh PageView TU THEM le dau/cuoi de
+                      // trang dau/cuoi "can doi" nhu cac trang giua (padEnds:true),
+                      // khien the Tong Vi (trang 0) bi day vao giua thay vi ap sat
+                      // le trai nhu mong muon - day la nguyen nhan gay khoang
+                      // trong ben trai nguoi dung bao, KHONG phai loi tinh toan
+                      // viewportFraction.
+                      padEnds: false,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(right: 10),
+                          child: _TotalCard(
+                            title: ref.tr('wallet_total_assets'),
+                            value: netWorth,
+                            hidden: hidden,
+                            showValue: _pageIndex == 0,
+                            placeholderIcon:
+                                Icons.account_balance_wallet_rounded,
+                            onTap: () =>
+                                openAppPopup(context, const WalletScreen()),
+                            onToggleHidden: () => ref
+                                .read(wealthPrivacyModeProvider.notifier)
+                                .toggle(),
+                            footer: _CardFooterRow(
+                              items: [
+                                (
+                                  'assets/wealth/ic_wallet_sm.png',
+                                  Icons.payments_rounded,
+                                  ref.tr('wealth_home_pay_receive'),
+                                  ref.tr('wealth_home_pay_receive_sub'),
+                                  () => openAppPopup(
+                                    context,
+                                    const WealthPayScreen(),
+                                  ),
+                                ),
+                                (
+                                  'assets/wealth/ic_qr.png',
+                                  Icons.qr_code_rounded,
+                                  ref.tr('wealth_home_qr_code'),
+                                  ref.tr('wealth_home_qr_code_sub'),
+                                  () => openAppPopup(
+                                    context,
+                                    const WealthQrScreen(),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 5),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  for (var i = 0; i < 2; i++)
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      margin: const EdgeInsets.symmetric(horizontal: 3),
-                      width: _pageIndex == i ? 16 : 6,
-                      height: 6,
-                      decoration: BoxDecoration(
-                        color: _pageIndex == i
-                            ? AppColors.wealthAccent
-                            : AppColors.glassBorder,
-                        borderRadius: BorderRadius.circular(3),
-                      ),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              // 4 muc xep 1 HANG nhu anh thiet ke (truoc day 2x2): ngoai
-              // viec giong ban chot, xep 1 hang cat bot ~105pt chieu cao -
-              // day la thay doi chinh giup ca man vua DUNG 1 MAN HINH, khong
-              // phai cuon xuong moi thay het.
-              Row(
-                children: [
-                  for (final t in [
-                    (
-                      'assets/wealth/ic_wallet.png',
-                      null,
-                      ref.tr('wealth_tab_expense'),
-                      ref.tr('wealth_home_sub_expense'),
-                      () => _open(
-                        context,
-                        ref.tr('wealth_tab_expense'),
-                        const WealthExpenseTab(),
-                      ),
-                    ),
-                    (
-                      'assets/wealth/ic_card.png',
-                      null,
-                      ref.tr('wealth_debt_title'),
-                      ref.tr('wealth_home_sub_debt'),
-                      () => openAppPopup(context, const DebtScreen()),
-                    ),
-                    (
-                      'assets/wealth/ic_arrows.png',
-                      null,
-                      ref.tr('wealth_service_title'),
-                      ref.tr('wealth_home_sub_service'),
-                      () => openAppPopup(
-                        context,
-                        const RecurringServicesScreen(),
-                      ),
-                    ),
-                    (
-                      // Mui ten re lam doi nhanh - icon nguoi dung chon, tach
-                      // nen trong suot roi dat vao dung dem tron vang nhu 3 o
-                      // con lai de khong lech kieu ve.
-                      null,
-                      null,
-                      ref.tr('wealth_home_tile_split'),
-                      ref.tr('wealth_home_sub_split'),
-                      () =>
-                          openAppPopup(context, const WealthSplitBillScreen()),
-                    ),
-                  ].indexed)
-                    Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.only(left: t.$1 == 0 ? 0 : 7),
-                        child: _WealthTile(
-                          asset: t.$2.$1,
-                          fallbackIcon: t.$2.$2,
-                          glyph: t.$1 == 3
-                              ? 'assets/wealth/ic_split.png'
-                              : null,
-                          label: t.$2.$3,
-                          subtitle: t.$2.$4,
-                          onTap: t.$2.$5,
                         ),
-                      ),
+                        _TotalCard(
+                          title: ref.tr('wealth_investments_total'),
+                          value: investmentTotal,
+                          hidden: investmentHidden,
+                          pnl: investmentPnl,
+                          pnlPercent: investmentPnlPercent,
+                          showValue: _pageIndex == 1,
+                          placeholderIcon: Icons.trending_up_rounded,
+                          onTap: () => openAppPopup(
+                            context,
+                            const WealthInvestmentScreen(),
+                          ),
+                          onToggleHidden: () => ref
+                              .read(investmentPrivacyModeProvider.notifier)
+                              .toggle(),
+                          footer: _CardFooterRow(
+                            items: [
+                              (
+                                null,
+                                Icons.show_chart_rounded,
+                                ref.tr('wealth_market_title'),
+                                ref.tr('wealth_home_market_sub'),
+                                () =>
+                                    openAppPopup(context, const MarketScreen()),
+                              ),
+                              (
+                                null,
+                                Icons.star_rounded,
+                                ref.tr('crypto_tab_watchlist'),
+                                ref.tr('wealth_home_watchlist_sub'),
+                                () => openAppPopup(
+                                  context,
+                                  const MarketScreen(initialTabIndex: 1),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
+                  ),
+                  const SizedBox(height: 5),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      for (var i = 0; i < 2; i++)
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          margin: const EdgeInsets.symmetric(horizontal: 3),
+                          width: _pageIndex == i ? 16 : 6,
+                          height: 6,
+                          decoration: BoxDecoration(
+                            color: _pageIndex == i
+                                ? AppColors.wealthAccent
+                                : AppColors.glassBorder,
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  // 4 muc xep 1 HANG nhu anh thiet ke (truoc day 2x2): ngoai
+                  // viec giong ban chot, xep 1 hang cat bot ~105pt chieu cao -
+                  // day la thay doi chinh giup ca man vua DUNG 1 MAN HINH, khong
+                  // phai cuon xuong moi thay het.
+                  Row(
+                    children: [
+                      for (final t in [
+                        (
+                          'assets/wealth/ic_wallet.png',
+                          null,
+                          ref.tr('wealth_tab_expense'),
+                          ref.tr('wealth_home_sub_expense'),
+                          () => _open(
+                            context,
+                            ref.tr('wealth_tab_expense'),
+                            const WealthExpenseTab(),
+                          ),
+                        ),
+                        (
+                          'assets/wealth/ic_card.png',
+                          null,
+                          ref.tr('wealth_debt_title'),
+                          ref.tr('wealth_home_sub_debt'),
+                          () => openAppPopup(context, const DebtScreen()),
+                        ),
+                        (
+                          'assets/wealth/ic_arrows.png',
+                          null,
+                          ref.tr('wealth_service_title'),
+                          ref.tr('wealth_home_sub_service'),
+                          () => openAppPopup(
+                            context,
+                            const RecurringServicesScreen(),
+                          ),
+                        ),
+                        (
+                          // Quay lai anh hoa don 3D: cung chat lieu voi 3 icon
+                          // con lai (khoi 3D co phoi canh, do day, anh kim).
+                          // Ban mui ten chi la hieu ung vat noi tren net phang
+                          // nen soi ky van lech chat.
+                          'assets/wealth/ic_doc.png',
+                          null,
+                          ref.tr('wealth_home_tile_split'),
+                          ref.tr('wealth_home_sub_split'),
+                          () => openAppPopup(
+                            context,
+                            const WealthSplitBillScreen(),
+                          ),
+                        ),
+                      ].indexed)
+                        Expanded(
+                          child: Padding(
+                            padding: EdgeInsets.only(left: t.$1 == 0 ? 0 : 7),
+                            child: _WealthTile(
+                              asset: t.$2.$1,
+                              fallbackIcon: t.$2.$2,
+                              label: t.$2.$3,
+                              subtitle: t.$2.$4,
+                              onTap: t.$2.$5,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  _OverviewCard(
+                    onTap: () =>
+                        openAppPopup(context, const WealthReportScreen()),
+                  ),
+                  // The "Bao cao" rieng da BO: bam vao no mo dung man Bao cao
+                  // ma the "Tong quan tai chinh" ben tren da mo, lai trung ca
+                  // noi dung hien thi - de ca hai la thua.
+                  const SizedBox(height: 8),
+                  // Thanh nhac chuyen tu thanh Menu duoi VAO THAN TRANG (xem
+                  // wealth_shell.dart): man hinh ket thuc tu nhien sau widget nay,
+                  // khong con thanh co dinh che noi dung.
+                  const CenterMediaButton(
+                    accentColor: AppColors.wealthAccent,
+                    discAsset: 'assets/home/ic_vinyl.png',
+                  ),
                 ],
               ),
-              const SizedBox(height: 8),
-              _OverviewCard(
-                onTap: () => openAppPopup(context, const WealthReportScreen()),
-              ),
-              // The "Bao cao" rieng da BO: bam vao no mo dung man Bao cao
-              // ma the "Tong quan tai chinh" ben tren da mo, lai trung ca
-              // noi dung hien thi - de ca hai la thua.
-              const SizedBox(height: 8),
-              // Thanh nhac chuyen tu thanh Menu duoi VAO THAN TRANG (xem
-              // wealth_shell.dart): man hinh ket thuc tu nhien sau widget nay,
-              // khong con thanh co dinh che noi dung.
-              const CenterMediaButton(
-                accentColor: AppColors.wealthAccent,
-                discAsset: 'assets/home/ic_vinyl.png',
-              ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
@@ -784,13 +810,8 @@ class _GoldCard extends StatelessWidget {
 /// Dem sang tron sau icon - cung ngon ngu voi man Home Hoc Tieng Anh nhung
 /// am mau vang thay vi xanh.
 class _GoldIconPad extends StatelessWidget {
-  const _GoldIconPad({this.icon, this.asset, this.glyph, this.size = 40})
-    : assert(icon != null || asset != null || glyph != null);
-
-  /// Anh glyph NEN TRONG SUOT ve o giua dem tron vang - dung khi ban thiet ke
-  /// khong co san icon 3D cho muc do (vd mui ten re nhanh cho "Chia bill").
-  /// Khac [asset] o cho [asset] la anh da gom SAN ca dem tron.
-  final String? glyph;
+  const _GoldIconPad({this.icon, this.asset, this.size = 40})
+    : assert(icon != null || asset != null);
 
   final IconData? icon;
 
@@ -833,12 +854,7 @@ class _GoldIconPad extends StatelessWidget {
           color: AppColors.wealthAccent.withValues(alpha: 0.24),
         ),
       ),
-      child: glyph != null
-          ? Padding(
-              padding: EdgeInsets.all(size * 0.22),
-              child: Image.asset(glyph!, filterQuality: FilterQuality.medium),
-            )
-          : Icon(icon, size: size * 0.5, color: AppColors.wealthAccent),
+      child: Icon(icon, size: size * 0.5, color: AppColors.wealthAccent),
     );
   }
 }
@@ -847,7 +863,6 @@ class _WealthTile extends StatelessWidget {
   const _WealthTile({
     required this.asset,
     required this.fallbackIcon,
-    this.glyph,
     required this.label,
     required this.subtitle,
     required this.onTap,
@@ -856,7 +871,6 @@ class _WealthTile extends StatelessWidget {
   /// Anh icon vang 3D cat tu ban thiet ke; null thi ve [fallbackIcon].
   final String? asset;
   final IconData? fallbackIcon;
-  final String? glyph;
   final String label;
   final String subtitle;
   final VoidCallback onTap;
@@ -871,12 +885,7 @@ class _WealthTile extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            _GoldIconPad(
-              asset: asset,
-              icon: fallbackIcon,
-              glyph: glyph,
-              size: 34,
-            ),
+            _GoldIconPad(asset: asset, icon: fallbackIcon, size: 34),
             const SizedBox(height: 8),
             // The chi con ~1/4 be ngang nen ten dung FittedBox thu nho vua
             // khung thay vi cat bang "..." - "Dich vu dinh ky" dai hon han
