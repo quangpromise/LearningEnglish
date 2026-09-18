@@ -15,6 +15,8 @@ class CryptoTransaction {
     required this.quantity,
     required this.priceAtTime,
     required this.timestamp,
+    this.id,
+    this.sourceTransactionId,
   });
 
   final String coinId;
@@ -26,8 +28,18 @@ class CryptoTransaction {
   final double priceAtTime;
   final DateTime timestamp;
 
+  /// Khoa dong trong wealth_investment_transactions - null voi doi tuong vua
+  /// tao o phia app (chua ghi xuong DB). Can de xoa DUNG 1 lan mua/ban.
+  final String? id;
+
+  /// Dong chi tieu "Dau tu" (wealth_transactions) da sinh ra lan mua nay -
+  /// xoa khoan chi tieu do thi phai tru lai so luong o Portfolio (xem
+  /// migration 0067 + revertInvestmentPortfolio).
+  final String? sourceTransactionId;
+
   factory CryptoTransaction.fromRow(Map<String, dynamic> row) =>
       CryptoTransaction(
+        id: row['id'] as String?,
         coinId: row['symbol'] as String? ?? '',
         symbol: row['symbol'] as String? ?? '',
         name: row['name'] as String? ?? '',
@@ -38,6 +50,7 @@ class CryptoTransaction {
         quantity: (row['quantity'] as num?)?.toDouble() ?? 0,
         priceAtTime: (row['price'] as num?)?.toDouble() ?? 0,
         timestamp: DateTime.parse(row['occurred_at'] as String),
+        sourceTransactionId: row['source_transaction_id'] as String?,
       );
 
   Map<String, dynamic> toRow(String userId) => {
@@ -51,6 +64,7 @@ class CryptoTransaction {
     'price': priceAtTime,
     'currency': 'USD',
     'occurred_at': timestamp.toIso8601String(),
+    'source_transaction_id': ?sourceTransactionId,
   };
 }
 

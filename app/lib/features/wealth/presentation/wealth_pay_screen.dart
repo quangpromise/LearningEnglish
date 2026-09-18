@@ -558,6 +558,7 @@ class _InvestmentTabState extends ConsumerState<_InvestmentTab> {
                 imageUrl: coin.imageUrl,
                 quantity: quantity!,
                 priceAtTime: amountUsd / quantity,
+                sourceTransactionId: txId,
               );
         case _InvAssetType.stock:
           final s = _selectedStock!;

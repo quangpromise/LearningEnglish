@@ -5,10 +5,13 @@ import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/navigation/app_popup.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_toast.dart';
 import '../../../core/utils/currency_format.dart';
 import '../../../core/utils/date_format.dart';
 import '../data/wealth_holding_model.dart';
 import '../data/wealth_investment_transaction_model.dart';
+import 'confirm_delete.dart';
+import 'delete_investment_expense.dart';
 
 /// Man "chi tiet + lich su" DUNG CHUNG cho moi loai khoan dau tu dung
 /// WealthHolding (Co phieu/Vang/Bat dong san/Ngoai te) - KHONG co bieu do gia
@@ -145,7 +148,42 @@ class WealthHoldingHistoryView extends ConsumerWidget {
               : ListView.separated(
                   itemCount: history.length,
                   separatorBuilder: (_, _) => const SizedBox(height: 8),
-                  itemBuilder: (context, i) => _HistoryRow(t: history[i]),
+                  // Vuot de xoa 1 lan mua/ban ghi nham - truoc day man Lich
+                  // su chi de XEM, khong co duong nao sua lai.
+                  itemBuilder: (context, i) => Dismissible(
+                    key: ValueKey(history[i].id),
+                    direction: DismissDirection.endToStart,
+                    confirmDismiss: (_) => confirmDelete(context, ref),
+                    background: Container(
+                      alignment: Alignment.centerRight,
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      decoration: BoxDecoration(
+                        color: AppColors.pink.withValues(alpha: 0.18),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: const Icon(
+                        Icons.delete_outline_rounded,
+                        color: AppColors.pink,
+                      ),
+                    ),
+                    onDismissed: (_) async {
+                      final userId = ref
+                          .read(supabaseClientProvider)
+                          .auth
+                          .currentUser
+                          ?.id;
+                      if (userId == null) return;
+                      await deleteInvestmentHistoryEntry(
+                        ref,
+                        userId,
+                        history[i],
+                      );
+                      if (context.mounted) {
+                        showSuccessToast(context, ref.tr('toast_deleted'));
+                      }
+                    },
+                    child: _HistoryRow(t: history[i]),
+                  ),
                 ),
         ),
       ],

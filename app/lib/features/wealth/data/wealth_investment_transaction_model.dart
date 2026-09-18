@@ -13,6 +13,7 @@ class WealthInvestmentTransaction {
     this.price,
     this.amount,
     this.note,
+    this.sourceTransactionId,
   });
 
   final String id;
@@ -26,6 +27,11 @@ class WealthInvestmentTransaction {
   final String? note;
   final DateTime occurredAt;
 
+  /// Dong chi tieu "Dau tu" da sinh ra dong lich su nay (xem migration
+  /// 0067). Xoa dong lich su thi phai xoa luon khoan chi tieu do, neu khong
+  /// tien van bi tru khoi Vi ma khong con dau vet mua gi.
+  final String? sourceTransactionId;
+
   factory WealthInvestmentTransaction.fromRow(Map<String, dynamic> row) {
     return WealthInvestmentTransaction(
       id: row['id'] as String,
@@ -38,6 +44,7 @@ class WealthInvestmentTransaction {
       currency: row['currency'] as String,
       note: row['note'] as String?,
       occurredAt: DateTime.parse(row['occurred_at'] as String),
+      sourceTransactionId: row['source_transaction_id'] as String?,
     );
   }
 }

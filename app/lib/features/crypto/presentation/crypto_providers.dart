@@ -165,6 +165,12 @@ class CryptoPortfolioController extends StateNotifier<List<CryptoHolding>> {
     state = await _repo.load(userId);
   }
 
+  /// Nap lai tu DB - dung khi CHO KHAC sua bang wealth_holdings truc tiep (vd
+  /// xoa khoan chi tieu "Dau tu" ben Vi/Chi tieu, xem
+  /// revertInvestmentPortfolio). Khong co ham nay thi state trong bo nho van
+  /// giu coin da bi xoa, va lan upsert sau se ghi no tro lai DB.
+  Future<void> reload() => _load();
+
   Future<void> addOrUpdate(CryptoCoin coin, double quantity) async {
     final userId = _userId;
     if (userId == null) return;
@@ -202,6 +208,7 @@ class CryptoPortfolioController extends StateNotifier<List<CryptoHolding>> {
     required String imageUrl,
     required double quantity,
     required double priceAtTime,
+    String? sourceTransactionId,
   }) async {
     final userId = _userId;
     if (userId == null || quantity <= 0) return;
@@ -234,6 +241,7 @@ class CryptoPortfolioController extends StateNotifier<List<CryptoHolding>> {
         quantity: quantity,
         priceAtTime: priceAtTime,
         timestamp: DateTime.now(),
+        sourceTransactionId: sourceTransactionId,
       ),
     );
   }

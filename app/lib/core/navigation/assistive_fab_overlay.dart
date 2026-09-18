@@ -243,44 +243,56 @@ class _AssistiveFabOverlayState extends ConsumerState<AssistiveFabOverlay> {
             Positioned(
               right: -_kFabSize / 2,
               top: y,
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onPanStart: (_) => _onPanStart(y),
-                onPanUpdate: (d) => _onPanUpdate(d, mq.size, mq.padding),
-                onPanEnd: _onPanEnd,
-                child: AnimatedScale(
-                  scale: _dragging ? 1.1 : 1.0,
-                  duration: const Duration(milliseconds: 150),
-                  child: Container(
-                    width: _kFabSize,
-                    height: _kFabSize,
-                    decoration: BoxDecoration(
-                      gradient: gradient,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: glowColor.withValues(alpha: 0.45),
-                          blurRadius: 22,
-                          spreadRadius: 2,
-                          offset: const Offset(-6, 0),
+              // AN HAN nut khi bang menu dang mo - luc do menu da chiem het
+              // canh phai, de nut nam de len tren vua thua vua che mat cac
+              // muc. Dong menu bang cach cham ra ngoai, nut hien lai.
+              // IgnorePointer di kem opacity: chi lam mo thoi thi nut van an
+              // tay cham tuy da khong nhin thay.
+              child: IgnorePointer(
+                ignoring: _expanded,
+                child: AnimatedOpacity(
+                  opacity: _expanded ? 0 : 1,
+                  duration: const Duration(milliseconds: 160),
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onPanStart: (_) => _onPanStart(y),
+                    onPanUpdate: (d) => _onPanUpdate(d, mq.size, mq.padding),
+                    onPanEnd: _onPanEnd,
+                    child: AnimatedScale(
+                      scale: _dragging ? 1.1 : 1.0,
+                      duration: const Duration(milliseconds: 150),
+                      child: Container(
+                        width: _kFabSize,
+                        height: _kFabSize,
+                        decoration: BoxDecoration(
+                          gradient: gradient,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: glowColor.withValues(alpha: 0.45),
+                              blurRadius: 22,
+                              spreadRadius: 2,
+                              offset: const Offset(-6, 0),
+                            ),
+                          ],
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.25),
+                            width: 1.4,
+                          ),
                         ),
-                      ],
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.25),
-                        width: 1.4,
+                        // Le trai de icon nam trong nua hinh tron con hien tren
+                        // man hinh (nua kia bi che boi canh phai).
+                        padding: const EdgeInsets.only(right: 20),
+                        alignment: Alignment.center,
+                        // LUON la tay nam chevron - truoc day doi sang dau X khi
+                        // mo; gio dong menu bang cach cham ra ngoai (hoac cham
+                        // lai chinh nut nay) nen khong can dau X nua.
+                        child: const Icon(
+                          Icons.chevron_left_rounded,
+                          color: Colors.white,
+                          size: 22,
+                        ),
                       ),
-                    ),
-                    // Le trai de icon nam trong nua hinh tron con hien tren
-                    // man hinh (nua kia bi che boi canh phai).
-                    padding: const EdgeInsets.only(right: 20),
-                    alignment: Alignment.center,
-                    // LUON la tay nam chevron - truoc day doi sang dau X khi
-                    // mo; gio dong menu bang cach cham ra ngoai (hoac cham
-                    // lai chinh nut nay) nen khong can dau X nua.
-                    child: const Icon(
-                      Icons.chevron_left_rounded,
-                      color: Colors.white,
-                      size: 22,
                     ),
                   ),
                 ),
