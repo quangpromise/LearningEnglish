@@ -23,6 +23,33 @@ class WealthInvestmentTransactionRepository {
         .toList();
   }
 
+  /// Cac giao dich dau tu sinh ra tu 1 dong chi tieu "Dau tu" cu the - dung
+  /// luc XOA khoan chi tieu do de biet phai tru lai bao nhieu o Portfolio
+  /// (xem migration 0067 + deleteInvestmentExpense).
+  Future<List<WealthInvestmentTransaction>> fetchBySourceTransaction(
+    String userId,
+    String transactionId,
+  ) async {
+    final rows = await _supabase
+        .from('wealth_investment_transactions')
+        .select()
+        .eq('user_id', userId)
+        .eq('source_transaction_id', transactionId);
+    return (rows as List)
+        .map(
+          (r) => WealthInvestmentTransaction.fromRow(r as Map<String, dynamic>),
+        )
+        .toList();
+  }
+
+  Future<void> deleteById(String userId, String id) async {
+    await _supabase
+        .from('wealth_investment_transactions')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', userId);
+  }
+
   Future<void> record({
     required String userId,
     required String assetType,
@@ -34,6 +61,11 @@ class WealthInvestmentTransactionRepository {
     String currency = 'VND',
     String? note,
     DateTime? occurredAt,
+
+    /// Dong chi tieu (wealth_transactions) da sinh ra giao dich nay - co no
+    /// thi luc xoa khoan chi tieu do biet duong tru lai holding + xoa dung
+    /// dong lich su nay (xem migration 0067).
+    String? sourceTransactionId,
   }) async {
     await _supabase.from('wealth_investment_transactions').insert({
       'user_id': userId,
@@ -46,6 +78,7 @@ class WealthInvestmentTransactionRepository {
       'currency': currency,
       'note': ?note,
       'occurred_at': (occurredAt ?? DateTime.now()).toIso8601String(),
+      'source_transaction_id': ?sourceTransactionId,
     });
   }
 }

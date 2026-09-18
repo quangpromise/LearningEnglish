@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/pull_to_dismiss.dart';
 import '../data/planner_models.dart';
 import 'planner_accent.dart';
-import 'planner_pull_to_dismiss.dart';
 import 'planner_providers.dart';
 import 'planner_undo.dart';
 
@@ -22,8 +22,7 @@ Future<void> showPlannerOverdueSheet(
     context: context,
     backgroundColor: Colors.transparent,
     isScrollControlled: true,
-    builder: (_) =>
-        PlannerPullToDismiss(child: _OverdueSheet(messenger: messenger)),
+    builder: (_) => PullToDismiss(child: _OverdueSheet(messenger: messenger)),
   );
 }
 

@@ -608,6 +608,7 @@ class _InvestmentTabState extends ConsumerState<_InvestmentTab> {
                 price: priceInAssetCurrency,
                 amount: amount,
                 currency: 'VND',
+                sourceTransactionId: txId,
               );
           ref.invalidate(wealthHoldingsProvider(s.assetType));
         case _InvAssetType.gold:
@@ -640,6 +641,7 @@ class _InvestmentTabState extends ConsumerState<_InvestmentTab> {
                 price: price,
                 amount: amount,
                 currency: 'VND',
+                sourceTransactionId: txId,
               );
           ref.invalidate(wealthHoldingsProvider('gold'));
         case _InvAssetType.realEstate:
@@ -663,6 +665,7 @@ class _InvestmentTabState extends ConsumerState<_InvestmentTab> {
                 action: 'buy',
                 amount: amount,
                 currency: 'VND',
+                sourceTransactionId: txId,
               );
           ref.invalidate(wealthHoldingsProvider('real_estate'));
       }

@@ -4,11 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/pull_to_dismiss.dart';
 import '../data/planner_models.dart';
 import '../data/planner_notification_service.dart';
 import 'planner_accent.dart';
 import 'planner_links.dart';
-import 'planner_pull_to_dismiss.dart';
 import 'planner_providers.dart';
 import 'planner_undo.dart';
 
@@ -29,7 +29,7 @@ Future<void> showPlannerTaskSheet(
     context: context,
     backgroundColor: Colors.transparent,
     isScrollControlled: true,
-    builder: (_) => PlannerPullToDismiss(
+    builder: (_) => PullToDismiss(
       child: _PlannerTaskSheet(
         initialStart: initialStart,
         editing: editing,

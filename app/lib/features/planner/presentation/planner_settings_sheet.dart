@@ -3,10 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/pull_to_dismiss.dart';
 import '../data/device_alarm_sounds.dart';
 import '../data/planner_models.dart';
 import '../data/planner_notification_service.dart';
-import 'planner_pull_to_dismiss.dart';
 import 'planner_providers.dart';
 
 Future<void> showPlannerSettingsSheet(BuildContext context) {
@@ -14,7 +14,7 @@ Future<void> showPlannerSettingsSheet(BuildContext context) {
     context: context,
     backgroundColor: Colors.transparent,
     isScrollControlled: true,
-    builder: (_) => const PlannerPullToDismiss(child: _PlannerSettingsSheet()),
+    builder: (_) => const PullToDismiss(child: _PlannerSettingsSheet()),
   );
 }
 

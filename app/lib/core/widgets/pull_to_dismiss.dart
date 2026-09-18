@@ -4,28 +4,28 @@ import 'package:flutter/material.dart';
 ///
 /// showModalBottomSheet chi tu dong theo cu keo o phan KHONG cuon duoc - khi
 /// ca noi dung nam trong SingleChildScrollView/ListView (form Them viec, cai
-/// dat chuong...), cu vuot xuong bi vung cuon "nuot" mat nen sheet khong
-/// dong duoc. Widget nay nghe OverscrollNotification: dang o DAU noi dung ma
-/// van keo xuong them > [threshold] px thi dong sheet.
+/// dat chuong, man To do list...), cu vuot xuong bi vung cuon "nuot" mat nen
+/// sheet khong dong duoc. Widget nay nghe OverscrollNotification: dang o DAU
+/// noi dung ma van keo xuong them > [threshold] px thi dong sheet.
 ///
 /// Vung cuon ben trong PHAI dung [ClampingScrollPhysics] - voi hieu ung nay
 /// bat kieu iOS (mac dinh tren web iPhone) Flutter khong phat
 /// OverscrollNotification ma chi nay noi dung len.
-class PlannerPullToDismiss extends StatefulWidget {
-  const PlannerPullToDismiss({
-    super.key,
-    required this.child,
-    this.threshold = 56,
-  });
+///
+/// TRUOC DAY nam trong features/planner (PlannerPullToDismiss) - chuyen ra
+/// core/widgets vi day la tien ich giao dien chung, khong rieng gi Planner;
+/// de o feature cu thi feature khac muon dung phai import cheo sang Planner.
+class PullToDismiss extends StatefulWidget {
+  const PullToDismiss({super.key, required this.child, this.threshold = 56});
 
   final Widget child;
   final double threshold;
 
   @override
-  State<PlannerPullToDismiss> createState() => _PlannerPullToDismissState();
+  State<PullToDismiss> createState() => _PullToDismissState();
 }
 
-class _PlannerPullToDismissState extends State<PlannerPullToDismiss> {
+class _PullToDismissState extends State<PullToDismiss> {
   double _pulled = 0;
   bool _closing = false;
 

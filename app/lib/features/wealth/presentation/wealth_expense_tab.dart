@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import 'delete_investment_expense.dart';
 import '../../../core/widgets/app_toast.dart';
 import '../../../core/utils/currency_format.dart';
 import '../data/wealth_custom_category_model.dart';
@@ -126,6 +127,10 @@ class _WealthExpenseTabState extends ConsumerState<WealthExpenseTab> {
                                 .currentUser
                                 ?.id;
                             if (userId == null) return;
+                            // Khoan "Dau tu" phai hoan tac luon phan da vao
+                            // Portfolio (so luong + lich su mua) TRUOC khi
+                            // xoa dong chi tieu.
+                            await revertInvestmentPortfolio(ref, userId, t.id);
                             await ref
                                 .read(wealthTransactionRepositoryProvider)
                                 .deleteTransaction(userId, t.id);

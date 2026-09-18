@@ -274,10 +274,11 @@ class _AssistiveFabOverlayState extends ConsumerState<AssistiveFabOverlay> {
                     // man hinh (nua kia bi che boi canh phai).
                     padding: const EdgeInsets.only(right: 20),
                     alignment: Alignment.center,
-                    child: Icon(
-                      _expanded
-                          ? Icons.close_rounded
-                          : Icons.chevron_left_rounded,
+                    // LUON la tay nam chevron - truoc day doi sang dau X khi
+                    // mo; gio dong menu bang cach cham ra ngoai (hoac cham
+                    // lai chinh nut nay) nen khong can dau X nua.
+                    child: const Icon(
+                      Icons.chevron_left_rounded,
                       color: Colors.white,
                       size: 22,
                     ),
@@ -312,6 +313,7 @@ class _AssistiveFabOverlayState extends ConsumerState<AssistiveFabOverlay> {
           glowColor: glowColor,
           gradient: gradient,
           onAction: _handleAction,
+          onDismiss: () => setState(() => _expanded = false),
         ),
       ),
     );
@@ -325,11 +327,13 @@ class _AssistiveRail extends ConsumerStatefulWidget {
     required this.glowColor,
     required this.gradient,
     required this.onAction,
+    required this.onDismiss,
   });
 
   final Color glowColor;
   final Gradient gradient;
   final void Function(_RadialAction) onAction;
+  final VoidCallback onDismiss;
 
   @override
   ConsumerState<_AssistiveRail> createState() => _AssistiveRailState();
@@ -392,6 +396,17 @@ class _AssistiveRailState extends ConsumerState<_AssistiveRail> {
       child: Stack(
         alignment: Alignment.centerRight,
         children: [
+          // Cham vao khoang TRONG trong vung banh xe (khong trung nhan/icon)
+          // thi dong menu. Phai nam DUOI banh xe trong Stack de cac muc o
+          // tren van an tay cham cua chung; ListWheelScrollView khong nuot
+          // su kien CHAM (no chi tranh cu KEO) nen cham vao cho trong se roi
+          // xuong lop nay.
+          Positioned.fill(
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: widget.onDismiss,
+            ),
+          ),
           // Duong cung mo lam "ray" cho cac muc chay theo - trong anh goc no
           // la 1 net xam rat nhat, chi du goi y quy dao chu khong noi bat.
           Positioned.fill(
@@ -443,9 +458,12 @@ class _AssistiveRailState extends ConsumerState<_AssistiveRail> {
   Widget _item((_RadialAction, IconData, String) entry, int index) {
     final (_, icon, labelKey) = entry;
     final selected = index == _centred;
+    // deferToChild (KHONG phai opaque): chi an tay cham khi trung dung nhan
+    // hoac icon. Voi opaque thi ca khoang TRONG ben trai nhan cung tinh la
+    // chon muc do, nen khong con cho nao de cham ra ngoai ma dong menu.
     return GestureDetector(
       onTap: () => _tap(index),
-      behavior: HitTestBehavior.opaque,
+      behavior: HitTestBehavior.deferToChild,
       child: Padding(
         // Chua cho cho dau gach trung tam o sat mep phai.
         padding: const EdgeInsets.only(right: 44),

@@ -4,19 +4,27 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_language.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/navigation/app_popup.dart';
+import '../../../core/widgets/pull_to_dismiss.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../planner/presentation/planner_accent.dart';
 import '../../planner/presentation/planner_providers.dart'
     show plannerNowProvider;
 import '../data/todo_models.dart';
 import 'todo_providers.dart';
 import 'todo_task_sheet.dart';
 
-/// Bang mau RIENG cua To do list ("personal mission control"): nen den, nhan
-/// VANG, xong = xanh luc, qua han = do. KHONG doi mau theo app dang mo nhu
-/// cac man khac - day la 1 "san pham" doc lap mo tu AssistiveTouch, dung
-/// chung 1 bo mau o moi noi de nguoi dung nhan ra ngay.
-const _gold = AppColors.wealthAccent;
+/// Mau nhan doi theo APP dang mo (xanh Hoc Tieng Anh / cam Fitness / vang
+/// Quan ly tai san) - giong moi man khac trong app, thay vi bo mau vang co
+/// dinh nhu ban dau.
+Color _accent(WidgetRef ref) =>
+    plannerAccentFor(ref.watch(currentAppSectionProvider)).$2;
+Gradient _accentGradient(WidgetRef ref) =>
+    plannerAccentFor(ref.watch(currentAppSectionProvider)).$1;
+
+/// 2 mau TRANG THAI thi KHONG doi theo app: xong luon xanh luc, qua han
+/// luon do - day la y nghia co dinh, doi theo app se lam nguoi dung phai
+/// doc lai nhan chu moi biet.
 const _green = Color(0xFF22C55E);
 const _red = Color(0xFFEF4444);
 
@@ -88,49 +96,71 @@ class TodoScreen extends ConsumerWidget {
     final tasks = ref.watch(todoTasksForSelectedDateProvider);
     final summary = ref.watch(todoDaySummaryProvider(selected));
 
+    final accent = _accent(ref);
     return Container(
-      // Nen "vu tru" bang gradient thay vi anh/blur - spec yeu cau uu tien
-      // hieu nang Android, tranh BackdropFilter va CustomPaint lien tuc.
-      decoration: const BoxDecoration(
+      // Nen toi pha MOT CHUT accent cua app dang mo - dung gradient thay vi
+      // anh/blur vi spec yeu cau uu tien hieu nang Android (tranh
+      // BackdropFilter va CustomPaint chay lien tuc).
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Color(0xFF0B1020), Color(0xFF05070E), Color(0xFF020306)],
+          colors: [
+            Color.alphaBlend(
+              accent.withValues(alpha: 0.13),
+              const Color(0xFF080B12),
+            ),
+            Color.alphaBlend(
+              accent.withValues(alpha: 0.05),
+              const Color(0xFF05070E),
+            ),
+            const Color(0xFF020306),
+          ],
         ),
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
         floatingActionButton: _AddButton(
+          gradient: _accentGradient(ref),
+          glow: accent,
           onTap: () => showTodoTaskSheet(context, ref, day: selected),
         ),
+        // Ca man la 1 ListView nen cu vuot xuong bi vung cuon "nuot", sheet
+        // khong dong duoc - PullToDismiss bat overscroll o DAU danh sach de
+        // dong. BAT BUOC di kem ClampingScrollPhysics: voi hieu ung bat kieu
+        // iOS (mac dinh tren web iPhone) Flutter khong phat
+        // OverscrollNotification ma chi nay noi dung len.
         body: SafeArea(
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
-            children: [
-              PopupHeader(title: ref.tr('todo_title')),
-              const SizedBox(height: 18),
-              _HeroBlock(day: selected, summary: summary, lang: lang),
-              const SizedBox(height: 18),
-              _DateStrip(selected: selected),
-              const SizedBox(height: 22),
-              _SectionLabel(ref.tr('todo_tasks')),
-              const SizedBox(height: 10),
-              if (tasks.isEmpty)
-                _EmptyState(text: ref.tr('todo_empty'))
-              else
-                for (final t in tasks) ...[
-                  _TaskCard(task: t),
-                  const SizedBox(height: 8),
-                ],
-              const SizedBox(height: 22),
-              _SectionLabel(ref.tr('todo_progress')),
-              const SizedBox(height: 12),
-              _ProgressBlock(summary: summary),
-              const SizedBox(height: 22),
-              _SectionLabel(ref.tr('todo_this_week')),
-              const SizedBox(height: 12),
-              const _WeekStrip(),
-            ],
+          child: PullToDismiss(
+            child: ListView(
+              physics: const ClampingScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+              children: [
+                PopupHeader(title: ref.tr('todo_title')),
+                const SizedBox(height: 18),
+                _HeroBlock(day: selected, summary: summary, lang: lang),
+                const SizedBox(height: 18),
+                _DateStrip(selected: selected),
+                const SizedBox(height: 22),
+                _SectionLabel(ref.tr('todo_tasks')),
+                const SizedBox(height: 10),
+                if (tasks.isEmpty)
+                  _EmptyState(text: ref.tr('todo_empty'))
+                else
+                  for (final t in tasks) ...[
+                    _TaskCard(task: t),
+                    const SizedBox(height: 8),
+                  ],
+                const SizedBox(height: 22),
+                _SectionLabel(ref.tr('todo_progress')),
+                const SizedBox(height: 12),
+                _ProgressBlock(summary: summary),
+                const SizedBox(height: 22),
+                _SectionLabel(ref.tr('todo_this_week')),
+                const SizedBox(height: 12),
+                const _WeekStrip(),
+              ],
+            ),
           ),
         ),
       ),
@@ -167,6 +197,7 @@ class _HeroBlock extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final accent = _accent(ref);
     final isToday = todoDayKey(day) == todoDayKey(_now(ref));
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -176,7 +207,7 @@ class _HeroBlock extends ConsumerWidget {
           style: AppTextStyles.body(
             size: 12,
             weight: FontWeight.w800,
-            color: _gold,
+            color: accent,
           ).copyWith(letterSpacing: 2.4),
         ),
         const SizedBox(height: 6),
@@ -194,7 +225,7 @@ class _HeroBlock extends ConsumerWidget {
               value: v,
               minHeight: 6,
               backgroundColor: Colors.white.withValues(alpha: 0.08),
-              color: _gold,
+              color: accent,
             ),
           ),
         ),
@@ -215,6 +246,7 @@ class _DateStrip extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final accent = _accent(ref);
     final lang = ref.watch(appLanguageProvider);
     final today = todoDayKey(_now(ref));
     final start = todoDayKey(selected).subtract(const Duration(days: 3));
@@ -237,19 +269,19 @@ class _DateStrip extends ConsumerWidget {
               width: 52,
               decoration: BoxDecoration(
                 color: isSelected
-                    ? _gold.withValues(alpha: 0.14)
+                    ? accent.withValues(alpha: 0.14)
                     : Colors.white.withValues(alpha: 0.03),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   color: isSelected
-                      ? _gold
+                      ? accent
                       : Colors.white.withValues(alpha: 0.08),
                   width: isSelected ? 1.4 : 1,
                 ),
                 boxShadow: isSelected
                     ? [
                         BoxShadow(
-                          color: _gold.withValues(alpha: 0.28),
+                          color: accent.withValues(alpha: 0.28),
                           blurRadius: 16,
                         ),
                       ]
@@ -260,15 +292,15 @@ class _DateStrip extends ConsumerWidget {
                 children: [
                   Text(
                     names[d.weekday - 1],
-                    style: AppTextStyles.muted(
-                      size: 10,
-                    ).copyWith(color: isSelected ? _gold : AppColors.textMuted),
+                    style: AppTextStyles.muted(size: 10).copyWith(
+                      color: isSelected ? accent : AppColors.textMuted,
+                    ),
                   ),
                   const SizedBox(height: 3),
                   Text(
                     '${d.day}',
                     style: AppTextStyles.heading(size: 16)
-                        .copyWith(color: isSelected ? _gold : null),
+                        .copyWith(color: isSelected ? accent : null),
                   ),
                   // Cham nho danh dau HOM NAY khi dang xem ngay khac - khong
                   // dua vao mau khong thoi.
@@ -277,8 +309,8 @@ class _DateStrip extends ConsumerWidget {
                       margin: const EdgeInsets.only(top: 2),
                       width: 4,
                       height: 4,
-                      decoration: const BoxDecoration(
-                        color: _gold,
+                      decoration: BoxDecoration(
+                        color: accent,
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -457,6 +489,7 @@ class _ProgressBlock extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final accent = _accent(ref);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -484,7 +517,7 @@ class _ProgressBlock extends ConsumerWidget {
                       strokeWidth: 7,
                       strokeCap: StrokeCap.round,
                       backgroundColor: Colors.white.withValues(alpha: 0.08),
-                      color: _gold,
+                      color: accent,
                     ),
                   ),
                   Text(
@@ -563,6 +596,7 @@ class _WeekStrip extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final accent = _accent(ref);
     final lang = ref.watch(appLanguageProvider);
     final week = ref.watch(todoWeekSummaryProvider);
     final names = lang == AppLanguage.vi ? _weekdaysVi : _weekdaysEn;
@@ -607,9 +641,9 @@ class _WeekStrip extends ConsumerWidget {
                 const SizedBox(height: 6),
                 Text(
                   names[day.weekday - 1],
-                  style: AppTextStyles.muted(
-                    size: 9.5,
-                  ).copyWith(color: day == today ? _gold : AppColors.textMuted),
+                  style: AppTextStyles.muted(size: 9.5).copyWith(
+                    color: day == today ? accent : AppColors.textMuted,
+                  ),
                 ),
               ],
             ),
@@ -621,8 +655,14 @@ class _WeekStrip extends ConsumerWidget {
 
 /// Nut + toi gian, phat sang - KHONG phai thanh dieu huong duoi.
 class _AddButton extends StatelessWidget {
-  const _AddButton({required this.onTap});
+  const _AddButton({
+    required this.onTap,
+    required this.gradient,
+    required this.glow,
+  });
   final VoidCallback onTap;
+  final Gradient gradient;
+  final Color glow;
 
   @override
   Widget build(BuildContext context) => GestureDetector(
@@ -631,10 +671,10 @@ class _AddButton extends StatelessWidget {
       width: 58,
       height: 58,
       decoration: BoxDecoration(
-        gradient: AppColors.wealthAccentGradient,
+        gradient: gradient,
         shape: BoxShape.circle,
         boxShadow: [
-          BoxShadow(color: _gold.withValues(alpha: 0.5), blurRadius: 26),
+          BoxShadow(color: glow.withValues(alpha: 0.5), blurRadius: 26),
         ],
       ),
       child: const Icon(Icons.add_rounded, size: 28, color: Colors.white),

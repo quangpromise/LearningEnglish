@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import 'delete_investment_expense.dart';
 import '../../../core/widgets/app_toast.dart';
 import '../../../core/utils/currency_format.dart';
 import '../../../core/utils/date_format.dart';
@@ -366,6 +367,13 @@ class WalletEntryRow extends ConsumerWidget {
         switch (entry.source) {
           case 'expense' || 'income' || 'investment'
               when entry.sourceTransactionId != null:
+            // Khoan "Dau tu" phai hoan tac luon phan da vao Portfolio (so
+            // luong + lich su mua) TRUOC khi xoa dong chi tieu.
+            await revertInvestmentPortfolio(
+              ref,
+              userId,
+              entry.sourceTransactionId!,
+            );
             // Xoa ca giao dich goc de dong bo voi man Chi tieu/Thu nhap - FK
             // cascade se tu xoa dong wealth_balance_entries nay theo.
             await ref
