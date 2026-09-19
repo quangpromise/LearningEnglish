@@ -155,63 +155,19 @@ class WalletInvestmentAssetsTab extends ConsumerWidget {
         ? null
         : currencyPnlVnd / currencyCostVnd * 100;
 
-    final total =
-        cryptoValueVnd +
-        stockValueVnd +
-        metalValueVnd +
-        realEstateValueVnd +
-        currencyValueVnd;
-
     // Moi gia tri duoc luu ben trong bang VND - khi nguoi dung chon xem
     // theo USD thi chia lai cho ty gia (usdVnd), bo qua neu ty gia chua
     // tai duoc (hien thi tam VND).
     String display(double vnd) =>
         formatInvestmentValue(vnd, displayCurrency, usdVnd);
 
+    // KHONG con the "Tong tai san dau tu" o dau danh sach: con so do trung
+    // y het so lon tren bieu do ngay phia tren (InvestmentValueChart hien
+    // money(last) = chinh tong nay), doc 2 lan cung 1 con so chi ton cho.
+    // Nut VND/USD va con mat da chuyen len canh tieu de bieu do - xem
+    // wealth_investment_screen.dart.
     return ListView(
       children: [
-        GlowBox(
-          padding: const EdgeInsets.all(16),
-          borderRadius: 18,
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      ref.tr('wealth_investments_total'),
-                      style: AppTextStyles.muted(size: 11),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      hidden ? '•••••••' : display(total),
-                      style: AppTextStyles.heading(size: 20),
-                    ),
-                  ],
-                ),
-              ),
-              _CurrencyToggleChip(
-                currency: displayCurrency,
-                onChanged: (c) =>
-                    ref.read(investmentDisplayCurrencyProvider.notifier).set(c),
-              ),
-              const SizedBox(width: 10),
-              GestureDetector(
-                onTap: () =>
-                    ref.read(investmentPrivacyModeProvider.notifier).toggle(),
-                child: Icon(
-                  hidden
-                      ? Icons.visibility_off_rounded
-                      : Icons.visibility_rounded,
-                  color: AppColors.textMuted,
-                  size: 20,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
         _InvestmentTile(
           icon: Icons.currency_bitcoin_rounded,
           color: AppColors.amber,
@@ -286,8 +242,12 @@ class WalletInvestmentAssetsTab extends ConsumerWidget {
 /// Chuyen doi hien thi tong gia tri dau tu giua VND/USD - chi doi CACH HIEN
 /// THI (gia tri goc luu VND khong doi), dung khi nguoi dung muon xem theo
 /// gia USD (vi du de so sanh voi gia coin/co phieu the gioi).
-class _CurrencyToggleChip extends StatelessWidget {
-  const _CurrencyToggleChip({required this.currency, required this.onChanged});
+class CurrencyToggleChip extends StatelessWidget {
+  const CurrencyToggleChip({
+    super.key,
+    required this.currency,
+    required this.onChanged,
+  });
   final String currency;
   final ValueChanged<String> onChanged;
 

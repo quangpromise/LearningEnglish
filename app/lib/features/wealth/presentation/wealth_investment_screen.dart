@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/navigation/app_popup.dart';
+import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../crypto/presentation/crypto_portfolio_screen.dart';
 import 'foreign_currency_portfolio_screen.dart';
@@ -84,9 +85,41 @@ class _WealthInvestmentScreenState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                ref.tr('investment_chart_title'),
-                style: AppTextStyles.body(size: 12.5, weight: FontWeight.w700),
+              // Nut VND/USD + con mat nam ngay canh tieu de bieu do. Truoc
+              // day chung o the "Tong tai san dau tu" ben duoi bieu do - ma
+              // the do lai hien LAI dung con so bieu do da hien, nen da bo
+              // han the, chuyen 2 nut nay len day.
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      ref.tr('investment_chart_title'),
+                      style: AppTextStyles.body(
+                        size: 12.5,
+                        weight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  CurrencyToggleChip(
+                    currency: ref.watch(investmentDisplayCurrencyProvider),
+                    onChanged: (c) => ref
+                        .read(investmentDisplayCurrencyProvider.notifier)
+                        .set(c),
+                  ),
+                  const SizedBox(width: 10),
+                  GestureDetector(
+                    onTap: () => ref
+                        .read(investmentPrivacyModeProvider.notifier)
+                        .toggle(),
+                    child: Icon(
+                      ref.watch(investmentPrivacyModeProvider)
+                          ? Icons.visibility_off_rounded
+                          : Icons.visibility_rounded,
+                      color: AppColors.textMuted,
+                      size: 20,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 8),
               const InvestmentValueChart(),

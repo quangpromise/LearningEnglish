@@ -13,7 +13,8 @@ import '../data/wealth_investment_snapshot_repository.dart';
 
 /// Khoang thoi gian xem cua bieu do gia tri danh muc - dat ten/thu tu giong
 /// cac nut o chart coin (crypto_coin_detail_screen) cho quen tay.
-enum InvestmentChartRange { h1, h4, d1, w1, m1, m3, y1 }
+/// Da bo rieng 3M - 1M va 1Y van con.
+enum InvestmentChartRange { h1, h4, d1, w1, m1, y1 }
 
 extension on InvestmentChartRange {
   Duration get window => switch (this) {
@@ -22,7 +23,6 @@ extension on InvestmentChartRange {
     InvestmentChartRange.d1 => const Duration(days: 1),
     InvestmentChartRange.w1 => const Duration(days: 7),
     InvestmentChartRange.m1 => const Duration(days: 30),
-    InvestmentChartRange.m3 => const Duration(days: 90),
     InvestmentChartRange.y1 => const Duration(days: 365),
   };
 
@@ -32,7 +32,6 @@ extension on InvestmentChartRange {
     InvestmentChartRange.d1 => '1D',
     InvestmentChartRange.w1 => '1W',
     InvestmentChartRange.m1 => '1M',
-    InvestmentChartRange.m3 => '3M',
     InvestmentChartRange.y1 => '1Y',
   };
 }
@@ -188,8 +187,12 @@ class _InvestmentValueChartState extends ConsumerState<InvestmentValueChart> {
 
   @override
   Widget build(BuildContext context) {
+    // Ban compact o man Home luon xem khung 1H (khong theo lua chon cua man
+    // chi tiet): the o Home be xiu, nhet ca ngay vao do thi moi nhip len
+    // xuong chi con vai pixel - 1 tieng gan nhat vua du cho biet "dang nhu
+    // the nao", con muon xem dai hon thi mo man chi tiet.
     final range = widget.compact
-        ? InvestmentChartRange.d1
+        ? InvestmentChartRange.h1
         : ref.watch(investmentChartRangeProvider);
     final snapsAsync = ref.watch(investmentSnapshotsProvider(range));
     final liveTotal = ref.watch(totalInvestmentValueVndProvider);
