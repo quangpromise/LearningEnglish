@@ -1,0 +1,25 @@
+name: Investment snapshot
+
+# Goi dinh ky Edge Function investment-snapshot (xem
+# supabase/functions/investment-snapshot/index.ts) - ghi 1 moc gia tri danh
+# muc dau tu cho moi user dang co tai san, de bieu do "Tong dau tu" co du
+# lieu LIEN TUC 24/7 chu khong chi nhung luc nguoi dung mo app.
+#
+# 15 phut/lan: du day de duong bieu do trai deu ca khung 1D (96 diem/ngay) ma
+# tai van rat nhe (1 request wealth-vn-assets + vai request ticker OKX).
+# Luu y GitHub Actions KHONG chay dung gio tuyet doi - lich co the tre vai
+# phut khi runner ban, nen bang luu (user_id, taken_at) va function dung
+# upsert de 2 lan chay don lich khong dam nhau.
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch: {}
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call investment-snapshot function
+        run: |
+          curl -sf -X POST "${{ secrets.INVESTMENT_SNAPSHOT_FUNCTION_URL }}" \
+            -H "x-webhook-secret: ${{ secrets.INVESTMENT_SNAPSHOT_WEBHOOK_SECRET }}"

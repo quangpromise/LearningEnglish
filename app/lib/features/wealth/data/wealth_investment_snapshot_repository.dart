@@ -24,11 +24,21 @@ class WealthInvestmentSnapshotRepository {
   static const _table = 'wealth_investment_snapshots';
 
   /// Khoang cach TOI THIEU giua 2 lan ghi. App tinh lai tong moi khi gia
-  /// song nhay (vai lan/giay) - ghi het thi vua nat bang vua ton bang thong,
-  /// ma bieu do cung khong can min hon 1 gio.
-  static const minGap = Duration(hours: 1);
+  /// song nhay (vai lan/giay) - ghi het thi vua nat bang vua ton bang thong.
+  ///
+  /// 5 phut chu KHONG phai 1 tieng nhu truoc: voi 1 tieng/moc thi khung 1D
+  /// chi co vai diem nen phan LICH SU cua bieu do la mot duong thang noi 2
+  /// diem, con toan bo nhuc nhich lai don vao vai phut cuoi (chuoi live trong
+  /// phien) - dung hien tuong "khong dan trai ca cay" nguoi dung thay. 5 phut
+  /// cho toi da 288 diem/ngay, du day de duong song deu tren ca chieu rong.
+  static const minGap = Duration(minutes: 5);
 
   static DateTime? _lastRecordedAt;
+
+  /// Dang co 1 lan ghi chay do. Bieu do build lai moi giay, nen tu luc qua
+  /// [minGap] den luc INSERT xong (vai tram ms) se co nhieu lan goi cung lot
+  /// qua cua _lastRecordedAt va ghi trung nhieu ban ghi cung 1 moc.
+  static bool _recording = false;
 
   /// Ghi 1 moc neu da qua [minGap] ke tu moc gan nhat. An toan khi goi nhieu
   /// lan: chan 2 lop - bien tinh trong phien nay, va kiem tra moc moi nhat
@@ -48,6 +58,8 @@ class WealthInvestmentSnapshotRepository {
     final now = DateTime.now();
     final last = _lastRecordedAt;
     if (last != null && now.difference(last) < minGap) return;
+    if (_recording) return;
+    _recording = true;
 
     final client = Supabase.instance.client;
     try {
@@ -76,6 +88,8 @@ class WealthInvestmentSnapshotRepository {
     } catch (_) {
       // Mat mang/chua dang nhap: bo qua lang le - day chi la du lieu phu
       // cho bieu do, khong duoc phep lam hong luong chinh cua man hinh.
+    } finally {
+      _recording = false;
     }
   }
 

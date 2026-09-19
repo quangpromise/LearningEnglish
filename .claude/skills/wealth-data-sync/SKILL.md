@@ -69,6 +69,34 @@ riêng (`wss://api.hsx.vn/hub/mddsnotificationhub`, cần header `Origin` mà
 `WebSocket` chuẩn của Deno không cho đặt được) — phức tạp hơn nhiều so với
 REST, xem chi tiết trong `docs/research-wealth-stock-apis.md`.
 
+## Edge Function `investment-snapshot` (cron ghi mốc biểu đồ)
+
+Ghi 1 mốc giá trị danh mục đầu tư cho **mọi** user vào
+`wealth_investment_snapshots`, gọi 15 phút/lần bởi
+`.github/workflows/investment-snapshot.yml`. Không gọi từ app.
+
+Lý do tồn tại: app cũng tự ghi mốc (`WealthInvestmentSnapshotRepository`)
+nhưng **chỉ khi app đang mở**, nên biểu đồ có những quãng trống dài — vẽ ra
+là đường thẳng nối 2 điểm. Cron phủ được 24/7.
+
+**Ràng buộc bắt buộc:** công thức tính tổng trong function phải **giống hệt**
+`totalInvestmentValueVndProvider` (`app/lib/core/providers/app_providers.dart`).
+Lệch là biểu đồ giật cục mỗi khi chuyển từ điểm cron sang điểm app ghi, và số
+trên biểu đồ khác thẻ ở màn Home. Cụ thể đang tính 4 nhóm: crypto (giá OKX),
+`stock_intl` (**theo giá vốn `avg_cost`**, chưa phải giá thị trường — cố ý, để
+khớp app), `gold` (giá bán SJC, thiếu thì PNJ), `real_estate` (`manual_value`).
+Bỏ qua `foreign_currency` và `stock_vn` vì app cũng không tính vào tổng này.
+
+Secret cần đặt:
+
+| Nơi đặt | Tên | Ghi chú |
+|---|---|---|
+| `supabase secrets set` | `INVESTMENT_SNAPSHOT_WEBHOOK_SECRET` | chuỗi tự chọn |
+| GitHub repo secrets | `INVESTMENT_SNAPSHOT_WEBHOOK_SECRET` | phải khớp cái trên |
+| GitHub repo secrets | `INVESTMENT_SNAPSHOT_FUNCTION_URL` | `https://<ref>.supabase.co/functions/v1/investment-snapshot` |
+
+Deploy: `supabase functions deploy investment-snapshot --no-verify-jwt --use-api`
+
 ## Checklist xác minh trước khi thêm 1 nguồn/mã dữ liệu mới
 
 1. Nguồn có cần API key không? Nếu có → phải đi qua Edge Function, không
