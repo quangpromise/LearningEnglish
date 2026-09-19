@@ -88,13 +88,16 @@ final investmentChartRangeProvider =
 /// tren Supabase co du 2 moc (moi gio 1 moc = phai cho ca tieng).
 ///
 /// Nguon du lieu la chinh gia song: crypto chay qua WebSocket nen tong danh
-/// muc nhuc nhich lien tuc, cu 10 giay lay 1 diem la du min cho duong nhin
-/// muot ma khong phinh bo nho.
+/// muc nhuc nhich lien tuc, cu 1 giay lay 1 diem de bat duoc tung nhip len
+/// xuong nho; ve thi rut gon lai (xem _thinKeepingPeaks) cho nhe.
 class InvestmentLiveSeries {
   InvestmentLiveSeries._();
 
-  static const _sampleGap = Duration(seconds: 5);
-  static const _maxPoints = 1440; // 5s * 1440 = 2 tieng gan nhat
+  // 1 diem/giay: gia crypto tren WebSocket nhay lien tuc, lay 5s/diem nhu
+  // truoc thi bo qua gan het cac nhip len xuong nho -> duong ve ra gan nhu
+  // mot vach thang. 1s/diem moi ra duoc dang rang cua song dong nhu chart coin.
+  static const _sampleGap = Duration(seconds: 1);
+  static const _maxPoints = 7200; // 1s * 7200 = 2 tieng gan nhat
 
   static final List<(DateTime, double)> points = [];
 
@@ -172,7 +175,7 @@ class _InvestmentValueChartState extends ConsumerState<InvestmentValueChart> {
     // crypto (chi vang/BDS/co phieu) thi tong dung yen ca ngay, widget khong
     // bao gio build lai, chuoi diem khong bao gio du 2 diem va bieu do ket
     // vinh vien o trang thai "chua du du lieu".
-    _tick = Timer.periodic(const Duration(seconds: 5), (_) {
+    _tick = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) setState(() {});
     });
   }
@@ -199,12 +202,13 @@ class _InvestmentValueChartState extends ConsumerState<InvestmentValueChart> {
     // 3 nguon gop lai: moc luu tren server (lich su dai han) + diem thu trong
     // phien nay (de co duong ve NGAY, khong cho database) + gia tri song hien
     // tai lam diem cuoi -> duong nhuc nhich theo tung tick nhu chart coin.
-    final points = <(DateTime, double)>[
+    var points = <(DateTime, double)>[
       for (final s in snaps) (s.takenAt, s.valueVnd),
       for (final p in InvestmentLiveSeries.points)
         if (p.$1.isAfter(since)) p,
       if (liveTotal > 0) (DateTime.now(), liveTotal),
     ]..sort((a, b) => a.$1.compareTo(b.$1));
+    points = _thinKeepingPeaks(points, widget.compact ? 120 : 260);
 
     if (points.length < 2) {
       return _EmptyState(compact: widget.compact);
@@ -259,10 +263,11 @@ class _InvestmentValueChartState extends ConsumerState<InvestmentValueChart> {
               for (final p in points)
                 FlSpot(p.$1.millisecondsSinceEpoch.toDouble(), p.$2),
             ],
-            // curveSmoothness thap: lam muot nhieu se "bao mon" cac dinh/day
-            // nho - dung thu can nhin thay nhat o bieu do nay.
+            // Duong bo cong nhe. Dinh/day nho khong bi "bao mon" nua vi
+            // _thinKeepingPeaks da giu lai san cac diem cao/thap nhat truoc
+            // khi ve, nen co the lam muot de duong nhin mem hon vach gay.
             isCurved: true,
-            curveSmoothness: 0.08,
+            curveSmoothness: 0.28,
             color: lineColor,
             barWidth: widget.compact ? 2 : 2.4,
             // Cham sang o DIEM CUOI (gia tri hien tai) - moc mat de biet dau
@@ -371,6 +376,49 @@ class _InvestmentValueChartState extends ConsumerState<InvestmentValueChart> {
       ],
     );
   }
+}
+
+/// Giam so diem ve xuong con toi da [target] ma VAN GIU duoc do nhap nho cua
+/// duong: chia truc thoi gian thanh cac o, moi o giu lai diem CAO NHAT va
+/// THAP NHAT (theo dung thu tu thoi gian).
+///
+/// Khong dung cach lay mau cach quang (1 diem/n diem): cach do de roi trung
+/// vao cac diem giua nen an mat dinh/day, lam duong bi bet lai - dung cai
+/// nguoi dung phan nan. O day dinh/day luon song sot du rut gon bao nhieu.
+List<(DateTime, double)> _thinKeepingPeaks(
+  List<(DateTime, double)> pts,
+  int target,
+) {
+  if (pts.length <= target) return pts;
+  final bucketCount = target ~/ 2;
+  final size = pts.length / bucketCount;
+  final out = <(DateTime, double)>[];
+  for (var b = 0; b < bucketCount; b++) {
+    final start = (b * size).floor();
+    final end = b == bucketCount - 1 ? pts.length : ((b + 1) * size).floor();
+    if (start >= end) continue;
+    var lo = pts[start];
+    var hi = pts[start];
+    for (var i = start + 1; i < end; i++) {
+      if (pts[i].$2 < lo.$2) lo = pts[i];
+      if (pts[i].$2 > hi.$2) hi = pts[i];
+    }
+    if (lo.$1 == hi.$1) {
+      out.add(lo);
+    } else if (lo.$1.isBefore(hi.$1)) {
+      out
+        ..add(lo)
+        ..add(hi);
+    } else {
+      out
+        ..add(hi)
+        ..add(lo);
+    }
+  }
+  // Diem cuoi cung phai la gia tri HIEN TAI - cham sang o cuoi duong va so
+  // tien hien ben tren deu lay tu day.
+  if (out.isNotEmpty && out.last.$1 != pts.last.$1) out.add(pts.last);
+  return out;
 }
 
 /// Chua du 2 moc de ve duong - noi ro LY DO thay vi de 1 o trong, vi day la
