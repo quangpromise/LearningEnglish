@@ -48,6 +48,35 @@ Future<T?> openAppPopup<T>(
   );
 }
 
+/// Dong HET cac man popup dang chong len nhau roi mo [child] nhu 1 popup moi
+/// nam TRUC TIEP tren man Home.
+///
+/// Dung cho cac buoc "ket thuc 1 luong": vd chon tu vung (popup Tu vung theo
+/// chu de) -> popup "Hoc {n} tu hom nay" -> bam "Bat dau hoc" mo man Quiz.
+/// Neu chi chong them popup Quiz len tren, dong Quiz xong nguoi dung lai roi
+/// ve 2 popup cu da xong viec; pop het truoc khi mo Quiz thi dong Quiz la ve
+/// thang Home.
+///
+/// Cach nhan ra "den Home thi dung": moi popup deu la route KHONG co ten,
+/// chi 3 man Home moi duoc dat ten (xem nav_keys.dart).
+Future<T?> openAppPopupFromHome<T>(
+  BuildContext context,
+  Widget child, {
+  bool dismissible = true,
+  String? routeName,
+}) {
+  final navigator = Navigator.of(context, rootNavigator: true);
+  navigator.popUntil((route) => route.isFirst || route.settings.name != null);
+  // Dung navigator.context (khong phai [context]): sau popUntil, context cua
+  // widget goi ham nay nam trong 1 route vua bi go khoi cay.
+  return openAppPopup<T>(
+    navigator.context,
+    child,
+    dismissible: dismissible,
+    routeName: routeName,
+  );
+}
+
 /// Nut dong (X) dung chung cho header cua MOI man popup - cac man nay
 /// KHONG con AppTopBar/avatar (chi man Home chinh moi co "header nhu
 /// headpage" voi avatar), nen can 1 cach ro rang de dong lai thay vi chi

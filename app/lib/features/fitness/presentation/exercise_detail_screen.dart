@@ -94,7 +94,11 @@ class ExerciseDetailScreen extends ConsumerWidget {
                       Padding(
                         padding: const EdgeInsets.only(bottom: 12),
                         child: _InvolvementBar(
-                          label: muscles[i],
+                          // Ten nhom co trong file noi dung chi co tieng Viet
+                          // -> phai qua exerciseMuscleLabel giong man Thu vien
+                          // bai tap, neu khong se con "Xo · chinh" o ban tieng
+                          // Anh.
+                          label: exerciseMuscleLabel(muscles[i], lang),
                           percent: percents[i],
                         ),
                       ),
