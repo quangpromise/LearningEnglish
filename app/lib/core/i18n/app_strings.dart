@@ -4775,6 +4775,84 @@ class AppStrings {
       AppLanguage.vi: 'Chưa có giấc ngủ nào được ghi.',
       AppLanguage.en: 'No sleep logged yet.',
     },
+
+    'football_title': {
+      AppLanguage.vi: 'Football Center',
+      AppLanguage.en: 'Football Center',
+    },
+    'football_live_now': {
+      AppLanguage.vi: 'Đang thi đấu',
+      AppLanguage.en: 'Live now',
+    },
+    'football_no_live': {
+      AppLanguage.vi: 'Hiện không có trận nào đang diễn ra.',
+      AppLanguage.en: 'No matches in play right now.',
+    },
+    'football_competitions': {
+      AppLanguage.vi: 'Giải đấu',
+      AppLanguage.en: 'Competitions',
+    },
+    'football_see_all': {
+      AppLanguage.vi: 'Xem tất cả',
+      AppLanguage.en: 'See all',
+    },
+    'football_today_matches': {
+      AppLanguage.vi: 'Trận hôm nay',
+      AppLanguage.en: 'Today’s matches',
+    },
+    'football_no_match_today': {
+      AppLanguage.vi: 'Hôm nay không có trận nào ở các giải đang theo dõi.',
+      AppLanguage.en: 'No matches today in the leagues you follow.',
+    },
+    'football_standings': {
+      AppLanguage.vi: 'Bảng xếp hạng',
+      AppLanguage.en: 'Standings',
+    },
+    'football_no_standings': {
+      AppLanguage.vi: 'Chưa có bảng xếp hạng cho giải này.',
+      AppLanguage.en: 'No standings for this competition yet.',
+    },
+    'football_pick_competition': {
+      AppLanguage.vi: 'Chọn một giải đấu để xem bảng xếp hạng.',
+      AppLanguage.en: 'Pick a competition to see its table.',
+    },
+    'football_recent_form': {
+      AppLanguage.vi: '5 trận gần nhất',
+      AppLanguage.en: 'Last 5 matches',
+    },
+    'football_load_error': {
+      AppLanguage.vi:
+          'Không tải được dữ liệu. Kiểm tra kết nối mạng rồi thử lại.',
+      AppLanguage.en:
+          'Could not load data. Check your connection and try again.',
+    },
+    'football_no_data_yet': {
+      AppLanguage.vi: 'Dữ liệu đang được đồng bộ, quay lại sau ít phút.',
+      AppLanguage.en: 'Data is still syncing, check back in a few minutes.',
+    },
+    'football_last_updated': {
+      AppLanguage.vi: 'Cập nhật lúc {time}',
+      AppLanguage.en: 'Updated at {time}',
+    },
+    'football_finished_short': {
+      AppLanguage.vi: 'Kết thúc',
+      AppLanguage.en: 'FT',
+    },
+    'football_postponed_short': {
+      AppLanguage.vi: 'Hoãn',
+      AppLanguage.en: 'PSTP',
+    },
+    'football_col_team': {AppLanguage.vi: 'Đội', AppLanguage.en: 'Team'},
+    'football_col_played': {AppLanguage.vi: 'ST', AppLanguage.en: 'P'},
+    'football_col_win': {AppLanguage.vi: 'T', AppLanguage.en: 'W'},
+    'football_col_draw': {AppLanguage.vi: 'H', AppLanguage.en: 'D'},
+    'football_col_loss': {AppLanguage.vi: 'B', AppLanguage.en: 'L'},
+    'football_col_diff': {AppLanguage.vi: 'HS', AppLanguage.en: 'GD'},
+    'football_col_points': {AppLanguage.vi: 'Đ', AppLanguage.en: 'Pts'},
+    'assistive_menu_football': {
+      AppLanguage.vi: 'Bóng đá',
+      AppLanguage.en: 'Football',
+    },
   };
 
   static String t(String key, AppLanguage lang) =>

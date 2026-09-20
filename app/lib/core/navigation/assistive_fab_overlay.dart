@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/ai_voice_chat/presentation/ai_voice_chat_screen.dart';
 import '../../features/planner/presentation/planner_accent.dart';
 import '../../features/planner/presentation/planner_screen.dart';
+import '../../features/football/presentation/football_center_screen.dart';
 import '../../features/todo/presentation/todo_screen.dart';
 import '../../features/translation/presentation/dictionary_popup.dart';
 import '../../features/wealth/presentation/calculator_screen.dart';
@@ -24,6 +25,7 @@ enum _RadialAction {
   openAiVoiceChat,
   openCalculator,
   openTranslate,
+  openFootball,
 }
 
 /// Cac loi tat hien co TRU "Ve trang chu" - theo thu tu tren/trai/phai/duoi
@@ -45,6 +47,11 @@ const _kGridItems = [
     _RadialAction.openTranslate,
     Icons.translate_rounded,
     'assistive_menu_translate',
+  ),
+  (
+    _RadialAction.openFootball,
+    Icons.sports_soccer_rounded,
+    'assistive_menu_football',
   ),
 ];
 
@@ -224,6 +231,16 @@ class _AssistiveFabOverlayState extends ConsumerState<AssistiveFabOverlay> {
     );
   }
 
+  /// Football Center mo dang POPUP nhu moi tinh nang khac - ca luong (Home ->
+  /// Giai dau -> Bang xep hang) nam trong DUNG 1 popup, chuyen man bang state
+  /// (xem football_center_screen.dart).
+  void _openFootball() {
+    setState(() => _expanded = false);
+    final navContext = rootNavigatorKey.currentContext;
+    if (navContext == null) return;
+    openAppPopup(navContext, const FootballCenterScreen());
+  }
+
   void _handleAction(_RadialAction action) {
     switch (action) {
       case _RadialAction.goHome:
@@ -238,6 +255,8 @@ class _AssistiveFabOverlayState extends ConsumerState<AssistiveFabOverlay> {
         _openCalculator();
       case _RadialAction.openTranslate:
         _openTranslate();
+      case _RadialAction.openFootball:
+        _openFootball();
     }
   }
 
