@@ -103,13 +103,48 @@ List<LearningPlanItem> buildFirstWeekPlan(LearnerProfile profile) {
       ? 'chủ đề thiết thực'
       : 'chủ đề ${profile.interestTopics.first.toLowerCase()}';
   return [
-    LearningPlanItem(day: 1, feature: primary, title: 'Khởi động với $topic', reason: 'Bắt đầu từ kỹ năng bạn ưu tiên.'),
-    LearningPlanItem(day: 2, feature: HomeFeature.grammar, title: 'Củng cố cấu trúc câu', reason: 'Giúp dùng từ mới thành câu đúng.'),
-    LearningPlanItem(day: 3, feature: HomeFeature.pronunciation, title: 'Luyện nói câu ngắn', reason: 'Tăng phản xạ và sự tự tin.'),
-    LearningPlanItem(day: 4, feature: goalFeature, title: 'Bài học theo mục tiêu', reason: 'Phục vụ trực tiếp mục tiêu đã chọn.'),
-    LearningPlanItem(day: 5, feature: HomeFeature.writing, title: 'Viết để ghi nhớ', reason: 'Vận dụng từ vựng và ngữ pháp.'),
-    LearningPlanItem(day: 6, feature: HomeFeature.story, title: 'Nghe và đọc hiểu', reason: 'Tiếp xúc tiếng Anh trong ngữ cảnh.'),
-    LearningPlanItem(day: 7, feature: HomeFeature.quiz, title: 'Ôn tập trong tuần', reason: 'Củng cố kiến thức trước tuần tiếp theo.'),
+    LearningPlanItem(
+      day: 1,
+      feature: primary,
+      title: 'Khởi động với $topic',
+      reason: 'Bắt đầu từ kỹ năng bạn ưu tiên.',
+    ),
+    LearningPlanItem(
+      day: 2,
+      feature: HomeFeature.grammar,
+      title: 'Củng cố cấu trúc câu',
+      reason: 'Giúp dùng từ mới thành câu đúng.',
+    ),
+    LearningPlanItem(
+      day: 3,
+      feature: HomeFeature.pronunciation,
+      title: 'Luyện nói câu ngắn',
+      reason: 'Tăng phản xạ và sự tự tin.',
+    ),
+    LearningPlanItem(
+      day: 4,
+      feature: goalFeature,
+      title: 'Bài học theo mục tiêu',
+      reason: 'Phục vụ trực tiếp mục tiêu đã chọn.',
+    ),
+    LearningPlanItem(
+      day: 5,
+      feature: HomeFeature.writing,
+      title: 'Viết để ghi nhớ',
+      reason: 'Vận dụng từ vựng và ngữ pháp.',
+    ),
+    LearningPlanItem(
+      day: 6,
+      feature: HomeFeature.story,
+      title: 'Nghe và đọc hiểu',
+      reason: 'Tiếp xúc tiếng Anh trong ngữ cảnh.',
+    ),
+    LearningPlanItem(
+      day: 7,
+      feature: HomeFeature.quiz,
+      title: 'Ôn tập trong tuần',
+      reason: 'Củng cố kiến thức trước tuần tiếp theo.',
+    ),
   ];
 }
 
