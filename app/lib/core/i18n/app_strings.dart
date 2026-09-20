@@ -4775,6 +4775,224 @@ class AppStrings {
       AppLanguage.vi: 'Chưa có giấc ngủ nào được ghi.',
       AppLanguage.en: 'No sleep logged yet.',
     },
+
+    'football_title': {
+      AppLanguage.vi: 'Football Center',
+      AppLanguage.en: 'Football Center',
+    },
+    'football_live_now': {
+      AppLanguage.vi: 'Đang thi đấu',
+      AppLanguage.en: 'Live now',
+    },
+    'football_no_live': {
+      AppLanguage.vi: 'Hiện không có trận nào đang diễn ra.',
+      AppLanguage.en: 'No matches in play right now.',
+    },
+    'football_competitions': {
+      AppLanguage.vi: 'Giải đấu',
+      AppLanguage.en: 'Competitions',
+    },
+    'football_see_all': {
+      AppLanguage.vi: 'Xem tất cả',
+      AppLanguage.en: 'See all',
+    },
+    'football_today_matches': {
+      AppLanguage.vi: 'Trận hôm nay',
+      AppLanguage.en: 'Today’s matches',
+    },
+    'football_no_match_today': {
+      AppLanguage.vi: 'Hôm nay không có trận nào ở các giải đang theo dõi.',
+      AppLanguage.en: 'No matches today in the leagues you follow.',
+    },
+    'football_standings': {
+      AppLanguage.vi: 'Bảng xếp hạng',
+      AppLanguage.en: 'Standings',
+    },
+    'football_no_standings': {
+      AppLanguage.vi: 'Chưa có bảng xếp hạng cho giải này.',
+      AppLanguage.en: 'No standings for this competition yet.',
+    },
+    'football_pick_competition': {
+      AppLanguage.vi: 'Chọn một giải đấu để xem bảng xếp hạng.',
+      AppLanguage.en: 'Pick a competition to see its table.',
+    },
+    'football_recent_form': {
+      AppLanguage.vi: '5 trận gần nhất',
+      AppLanguage.en: 'Last 5 matches',
+    },
+    'football_load_error': {
+      AppLanguage.vi:
+          'Không tải được dữ liệu. Kiểm tra kết nối mạng rồi thử lại.',
+      AppLanguage.en:
+          'Could not load data. Check your connection and try again.',
+    },
+    'football_no_data_yet': {
+      AppLanguage.vi: 'Dữ liệu đang được đồng bộ, quay lại sau ít phút.',
+      AppLanguage.en: 'Data is still syncing, check back in a few minutes.',
+    },
+    'football_last_updated': {
+      AppLanguage.vi: 'Cập nhật lúc {time}',
+      AppLanguage.en: 'Updated at {time}',
+    },
+    'football_finished_short': {
+      AppLanguage.vi: 'Kết thúc',
+      AppLanguage.en: 'FT',
+    },
+    'football_postponed_short': {
+      AppLanguage.vi: 'Hoãn',
+      AppLanguage.en: 'PSTP',
+    },
+    'football_col_team': {AppLanguage.vi: 'Đội', AppLanguage.en: 'Team'},
+    'football_col_played': {AppLanguage.vi: 'ST', AppLanguage.en: 'P'},
+    'football_col_win': {AppLanguage.vi: 'T', AppLanguage.en: 'W'},
+    'football_col_draw': {AppLanguage.vi: 'H', AppLanguage.en: 'D'},
+    'football_col_loss': {AppLanguage.vi: 'B', AppLanguage.en: 'L'},
+    'football_col_diff': {AppLanguage.vi: 'HS', AppLanguage.en: 'GD'},
+    'football_col_points': {AppLanguage.vi: 'Đ', AppLanguage.en: 'Pts'},
+    'football_favorites': {
+      AppLanguage.vi: 'Đội yêu thích',
+      AppLanguage.en: 'Favorite teams',
+    },
+    'football_manage': {AppLanguage.vi: 'Quản lý', AppLanguage.en: 'Manage'},
+    'football_add_favorite_hint': {
+      AppLanguage.vi: 'Chọn đội yêu thích để nhận thông báo trận đấu',
+      AppLanguage.en: 'Pick favorite teams to get match alerts',
+    },
+    'football_search_team': {
+      AppLanguage.vi: 'Tìm đội bóng...',
+      AppLanguage.en: 'Search teams...',
+    },
+    'football_your_teams': {
+      AppLanguage.vi: 'Đội của bạn',
+      AppLanguage.en: 'Your teams',
+    },
+    'football_all_teams': {
+      AppLanguage.vi: 'Tất cả đội',
+      AppLanguage.en: 'All teams',
+    },
+    'football_search_results': {
+      AppLanguage.vi: 'Kết quả tìm kiếm',
+      AppLanguage.en: 'Search results',
+    },
+    'football_no_team_found': {
+      AppLanguage.vi: 'Không tìm thấy đội nào khớp.',
+      AppLanguage.en: 'No teams match that search.',
+    },
+    'football_no_team_fixtures': {
+      AppLanguage.vi: 'Chưa có trận nào của đội này trong dữ liệu đã đồng bộ.',
+      AppLanguage.en: 'No matches for this team in the synced data yet.',
+    },
+    'football_filter_all': {AppLanguage.vi: 'Tất cả', AppLanguage.en: 'All'},
+    'football_upcoming': {
+      AppLanguage.vi: 'Sắp diễn ra',
+      AppLanguage.en: 'Upcoming',
+    },
+    'football_results': {AppLanguage.vi: 'Kết quả', AppLanguage.en: 'Results'},
+    'football_match_center': {
+      AppLanguage.vi: 'Chi tiết trận đấu',
+      AppLanguage.en: 'Match Center',
+    },
+    'football_tab_overview': {
+      AppLanguage.vi: 'Tổng quan',
+      AppLanguage.en: 'Overview',
+    },
+    'football_tab_events': {
+      AppLanguage.vi: 'Sự kiện',
+      AppLanguage.en: 'Events',
+    },
+    'football_tab_stats': {AppLanguage.vi: 'Thống kê', AppLanguage.en: 'Stats'},
+    'football_tab_lineup': {
+      AppLanguage.vi: 'Đội hình',
+      AppLanguage.en: 'Lineup',
+    },
+    'football_no_events': {
+      AppLanguage.vi: 'Chưa có sự kiện nào trong trận này.',
+      AppLanguage.en: 'No events in this match yet.',
+    },
+    'football_no_stats': {
+      AppLanguage.vi: 'Chưa có thống kê cho trận này.',
+      AppLanguage.en: 'No stats for this match yet.',
+    },
+    'football_lineup_not_ready': {
+      AppLanguage.vi: 'Đội hình chưa được công bố.',
+      AppLanguage.en: 'Lineup has not been announced yet.',
+    },
+    'football_substitutes': {
+      AppLanguage.vi: 'Dự bị',
+      AppLanguage.en: 'Substitutes',
+    },
+    'football_notifications': {
+      AppLanguage.vi: 'Thông báo',
+      AppLanguage.en: 'Notifications',
+    },
+    'football_notifications_hint': {
+      AppLanguage.vi: 'Chọn loại thông báo bạn muốn nhận cho đội yêu thích. Tắt mục nào thì hệ thống bỏ qua mục đó.',
+      AppLanguage.en: 'Choose which alerts you want for your favorite teams. Anything you turn off is skipped.',
+    },
+    'football_notif_group_inplay': {
+      AppLanguage.vi: 'Trong trận',
+      AppLanguage.en: 'In play',
+    },
+    'football_notif_group_milestones': {
+      AppLanguage.vi: 'Mốc trận đấu',
+      AppLanguage.en: 'Match milestones',
+    },
+    'football_notif_group_prematch': {
+      AppLanguage.vi: 'Trước trận',
+      AppLanguage.en: 'Before kick-off',
+    },
+    'football_notif_goal': {
+      AppLanguage.vi: 'Bàn thắng',
+      AppLanguage.en: 'Goals',
+    },
+    'football_notif_yellow': {
+      AppLanguage.vi: 'Thẻ vàng',
+      AppLanguage.en: 'Yellow cards',
+    },
+    'football_notif_red': {
+      AppLanguage.vi: 'Thẻ đỏ',
+      AppLanguage.en: 'Red cards',
+    },
+    'football_notif_subst': {
+      AppLanguage.vi: 'Thay người',
+      AppLanguage.en: 'Substitutions',
+    },
+    'football_notif_start': {
+      AppLanguage.vi: 'Bắt đầu trận',
+      AppLanguage.en: 'Kick-off',
+    },
+    'football_notif_halftime': {
+      AppLanguage.vi: 'Hết hiệp 1',
+      AppLanguage.en: 'Half time',
+    },
+    'football_notif_finish': {
+      AppLanguage.vi: 'Kết thúc trận',
+      AppLanguage.en: 'Full time',
+    },
+    'football_notif_lineup': {
+      AppLanguage.vi: 'Đội hình ra sân',
+      AppLanguage.en: 'Lineup announced',
+    },
+    'football_notif_lineup_sub': {
+      AppLanguage.vi: 'Khi đội hình chính thức được công bố',
+      AppLanguage.en: 'When the official lineup is published',
+    },
+    'football_notif_reminder': {
+      AppLanguage.vi: 'Nhắc trước 1 ngày',
+      AppLanguage.en: 'Remind me a day before',
+    },
+    'football_notif_reminder_sub': {
+      AppLanguage.vi: 'Tự động, không cần tự đặt lịch',
+      AppLanguage.en: 'Automatic, no need to set it yourself',
+    },
+    'football_notif_account_note': {
+      AppLanguage.vi: 'Cài đặt lưu theo tài khoản, đồng bộ mọi thiết bị',
+      AppLanguage.en: 'Saved to your account, synced across devices',
+    },
+    'assistive_menu_football': {
+      AppLanguage.vi: 'Bóng đá',
+      AppLanguage.en: 'Football',
+    },
   };
 
   static String t(String key, AppLanguage lang) =>

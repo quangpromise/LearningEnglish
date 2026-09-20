@@ -1,0 +1,28 @@
+name: Football sync
+
+# Goi dinh ky Edge Function football-sync (xem
+# supabase/functions/football-sync/index.ts) - dong bo lich thi dau + bang
+# xep hang tu Highlightly vao Postgres. KHONG goi truc tiep tu app Flutter
+# (giong price-alert-check, batch-driven theo lich).
+#
+# 3 gio/lan: bac Basic cua Highlightly chi cho 100 request/NGAY, va ham tu
+# gioi han thao tac theo quota con lai (bang football_api_budget) nen chay
+# day hon cung khong giup gi - chi som dot het han muc. 8 lan/ngay x ~10
+# request/lan la vua.
+#
+# Can 2 secret trong GitHub repo settings:
+#   FOOTBALL_SYNC_FUNCTION_URL - https://<project>.supabase.co/functions/v1/football-sync
+#   FOOTBALL_WEBHOOK_SECRET    - phai khop secret cung ten ben Supabase
+on:
+  schedule:
+    - cron: '17 */3 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call football-sync function
+        run: |
+          curl -sf -X POST "${{ secrets.FOOTBALL_SYNC_FUNCTION_URL }}" \
+            -H "x-webhook-secret: ${{ secrets.FOOTBALL_WEBHOOK_SECRET }}"

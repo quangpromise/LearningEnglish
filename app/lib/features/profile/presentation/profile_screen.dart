@@ -1452,13 +1452,16 @@ class DailyWordsSectionState extends ConsumerState<DailyWordsSection> {
         .read(dailyWordsControllerProvider.notifier)
         .relearn();
     if (!started || !context.mounted) return;
-    openAppPopup(context, const DailyQuizPopupScreen());
+    openAppPopupFromHome(context, const DailyQuizPopupScreen());
   }
 
   Future<void> _start(BuildContext context) async {
     await ref.read(dailyWordsControllerProvider.notifier).start();
     if (!context.mounted) return;
-    openAppPopup(context, const DailyQuizPopupScreen());
+    // openAppPopupFromHome (khong phai openAppPopup): den buoc nay ca popup
+    // chon tu vung lan popup "Hoc {n} tu hom nay" deu da xong viec, dong het
+    // di de hoc xong Quiz la ve thang Home.
+    openAppPopupFromHome(context, const DailyQuizPopupScreen());
   }
 
   /// Huong dan cho 1 KHUNG nhieu lua chon (vd luoi 4 cach on tap): vien sang
