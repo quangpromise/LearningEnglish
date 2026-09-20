@@ -34,6 +34,10 @@ class ExerciseRepository {
         involvementPercents: (map['involvementPercents'] as List).cast<int>(),
         equipment: map['equipment'] as String,
         instructions: (map['instructions'] as List).cast<String>(),
+        // Bai tap cu chua co ban dich thi de rong - man chi tiet tu quay
+        // ve ban tieng Viet (xem Exercise.instructionsFor).
+        instructionsEn: ((map['instructionsEn'] as List?) ?? const [])
+            .cast<String>(),
         suggestedSetsMin: map['suggestedSetsMin'] as int,
         suggestedSetsMax: map['suggestedSetsMax'] as int,
         suggestedRepsMin: map['suggestedRepsMin'] as int,

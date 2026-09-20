@@ -39,10 +39,11 @@ enum MuscleGroup {
     MuscleGroup.cardio => 'Tim mạch',
   };
 
-  /// Key AppStrings tuong ung - dung o tang presentation (`ref.tr(...)`) de
-  /// nhan Chuong co dich theo App language, khac voi noi dung bai tap tho
-  /// (nameVi/instructions...) van giu nguyen tieng Viet vi la du lieu tinh
-  /// dong goi san, dich het 155 bai la qua muc cho Phase 1.
+  /// Key AppStrings tuong ung - dung o tang presentation (`ref.tr(...)`).
+  /// Noi dung bai tap (ten, huong dan, thiet bi, nhom co) NAY DA CO ban
+  /// tieng Anh: ten va huong dan nam ngay trong exercises_seed.json
+  /// (nameEn/instructionsEn), thiet bi va nhom co tra qua
+  /// exercise_i18n.dart.
   String get labelKey => switch (this) {
     MuscleGroup.chest => 'fitness_muscle_chest',
     MuscleGroup.back => 'fitness_muscle_back',
@@ -107,6 +108,7 @@ class Exercise {
     required this.involvementPercents,
     required this.equipment,
     required this.instructions,
+    required this.instructionsEn,
     required this.suggestedSetsMin,
     required this.suggestedSetsMax,
     required this.suggestedRepsMin,
@@ -142,6 +144,17 @@ class Exercise {
 
   final String equipment;
   final List<String> instructions;
+
+  /// Ban tieng Anh cua [instructions]. Rong neu file noi dung chua co ban
+  /// dich - luc do [instructionsFor] tra ve ban tieng Viet thay vi danh
+  /// sach trong.
+  final List<String> instructionsEn;
+
+  /// Huong dan tung buoc theo ngon ngu giao dien dang chon.
+  List<String> instructionsFor(AppLanguage lang) =>
+      (lang == AppLanguage.en && instructionsEn.isNotEmpty)
+      ? instructionsEn
+      : instructions;
   final int suggestedSetsMin;
   final int suggestedSetsMax;
   final int suggestedRepsMin;

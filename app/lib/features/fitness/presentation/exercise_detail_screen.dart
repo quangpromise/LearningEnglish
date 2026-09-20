@@ -105,7 +105,11 @@ class ExerciseDetailScreen extends ConsumerWidget {
                     style: AppTextStyles.heading(size: 14),
                   ),
                   const SizedBox(height: 12),
-                  for (var i = 0; i < exercise.instructions.length; i++)
+                  for (
+                    var i = 0;
+                    i < exercise.instructionsFor(lang).length;
+                    i++
+                  )
                     Padding(
                       padding: const EdgeInsets.only(bottom: 10),
                       child: Row(
@@ -131,7 +135,7 @@ class ExerciseDetailScreen extends ConsumerWidget {
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
-                              exercise.instructions[i],
+                              exercise.instructionsFor(lang)[i],
                               style: AppTextStyles.body(size: 13.5),
                             ),
                           ),

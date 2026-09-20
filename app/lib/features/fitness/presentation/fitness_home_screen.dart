@@ -73,16 +73,32 @@ class FitnessHomeScreen extends ConsumerWidget {
                 AppTopBar(
                   accentColor: FitnessHome.red,
                   greeting: ref.tr('home_greeting'),
-                  // The bao han goi tap ("Gym Elite") thu gon thanh 1 nut
-                  // tron canh nut Tin nhan thay vi 1 bang ngang chiem han
-                  // 1 dong - man nay khong cuon nen tung dp deu quy.
-                  trailing: const ServiceExpiryBanner(
-                    section: AppSection.fitness,
-                    compact: true,
+                  // Nut Tin nhan va the bao han goi tap ("Gym Elite") xep
+                  // CHONG LEN NHAU o cot ben phai thay vi nam canh nhau:
+                  // xep ngang thi 2 thu nay an mat ~140dp be ngang va ten
+                  // nguoi dung bi cat ("Quang H..."). onMessagesTap de null
+                  // vi nut Tin nhan da tu ve o day (neu khong AppTopBar se
+                  // ve them 1 nut nua).
+                  trailing: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      GestureDetector(
+                        onTap: () =>
+                            openAppPopup(context, const ConversationsScreen()),
+                        child: TopBarIconChip(
+                          icon: Icons.sms_outlined,
+                          dotColor: FitnessHome.red,
+                          badge: unread > 0,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      const ServiceExpiryBanner(
+                        section: AppSection.fitness,
+                        compact: true,
+                      ),
+                    ],
                   ),
-                  unreadCount: unread,
-                  onMessagesTap: () =>
-                      openAppPopup(context, const ConversationsScreen()),
                 ),
                 const SizedBox(height: 14),
                 Expanded(

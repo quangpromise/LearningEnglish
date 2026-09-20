@@ -28,7 +28,13 @@
     "muscleGroupCode": "CHEST",
     "movementType": "COMPOUND",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "barbell_bench_press"
+    "photoSlug": "barbell_bench_press",
+    "instructionsEn": [
+      "Lie on the bench with your eyes under the bar and your feet planted firmly on the floor.",
+      "Grip the bar wider than shoulder width, squeeze your shoulder blades and lower the bar to the middle of your chest.",
+      "Press the bar straight up, breathing out as you press.",
+      "Do not bounce the bar off your chest, and keep your wrists straight."
+    ]
   },
   {
     "id": 2,
@@ -58,7 +64,12 @@
     "muscleGroupCode": "DELTOIDS",
     "movementType": "COMPOUND",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "dumbbell_shoulder_press"
+    "photoSlug": "dumbbell_shoulder_press",
+    "instructionsEn": [
+      "Sit tall with the dumbbells at shoulder height and your palms facing forward.",
+      "Brace your abs and press the weight straight overhead, breathing out as you press.",
+      "Lower the dumbbells under control to shoulder height, and do not lock your elbows at the top."
+    ]
   },
   {
     "id": 3,
@@ -86,7 +97,12 @@
     "muscleGroupCode": "CHEST",
     "movementType": "ISOLATION",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "flat_bench_cable_flyes"
+    "photoSlug": "flat_bench_cable_flyes",
+    "instructionsEn": [
+      "Stand between the two cable towers with the handles at shoulder height and a slight bend in your elbows.",
+      "Bring your hands together in front of your chest in an arc, squeezing your chest at the end.",
+      "Return slowly, keeping tension on the cable for the whole set."
+    ]
   },
   {
     "id": 4,
@@ -111,7 +127,12 @@
     "muscleGroupCode": "DELTOIDS",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "side_lateral_raise"
+    "photoSlug": "side_lateral_raise",
+    "instructionsEn": [
+      "Stand tall with the dumbbells at your sides and a slight bend in your elbows.",
+      "Raise the weights out to the sides to shoulder height and hold for 1 second at the top.",
+      "Lower the weights under control, without swinging."
+    ]
   },
   {
     "id": 5,
@@ -143,7 +164,12 @@
     "muscleGroupCode": "LEGS",
     "movementType": "COMPOUND",
     "difficultyCode": "ADVANCED",
-    "photoSlug": "barbell_squat"
+    "photoSlug": "barbell_squat",
+    "instructionsEn": [
+      "Set the bar across your upper back in the rack, then step out with your feet shoulder-width apart and your toes slightly out.",
+      "Breathe in and bend your knees and hips to lower yourself, keeping your back flat and your knees behind your toes.",
+      "Lower until your thighs are parallel to the floor, then drive through your heels to stand up, breathing out as you rise."
+    ]
   },
   {
     "id": 6,
@@ -175,7 +201,12 @@
     "muscleGroupCode": "BACK",
     "movementType": "COMPOUND",
     "difficultyCode": "ADVANCED",
-    "photoSlug": "barbell_deadlift"
+    "photoSlug": "barbell_deadlift",
+    "instructionsEn": [
+      "Stand at the bar with your feet shoulder-width apart and hinge down to grip it with a flat back and your chest up.",
+      "Push through your heels and extend your hips to lift the bar, keeping it close to your body the whole way.",
+      "At the top, stand tall and squeeze your glutes and back, then lower the bar back to the floor under control."
+    ]
   },
   {
     "id": 7,
@@ -205,7 +236,12 @@
     "muscleGroupCode": "BACK",
     "movementType": "COMPOUND",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "lat_pulldown"
+    "photoSlug": "lat_pulldown",
+    "instructionsEn": [
+      "Sit at the machine, take a grip wider than shoulder width and lean back about 30 degrees.",
+      "Pull the bar down to your upper chest, squeezing your lats and pulling your shoulders down and back, breathing out as you pull.",
+      "Return slowly until your arms are straight, feeling the stretch in your lats."
+    ]
   },
   {
     "id": 8,
@@ -237,7 +273,12 @@
     "muscleGroupCode": "BACK",
     "movementType": "COMPOUND",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "bent_over_row"
+    "photoSlug": "bent_over_row",
+    "instructionsEn": [
+      "Bend your knees slightly and hinge at the hips until your back is almost parallel to the floor, with the bar hanging in front of you.",
+      "Keep your back flat and your torso still, and row the bar toward your stomach with your elbows close to your body.",
+      "Squeeze your mid back at the end, then lower the bar back to the start under control."
+    ]
   },
   {
     "id": 9,
@@ -265,7 +306,12 @@
     "muscleGroupCode": "BICEPS",
     "movementType": "ISOLATION",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "barbell_curl"
+    "photoSlug": "barbell_curl",
+    "instructionsEn": [
+      "Stand tall gripping the bar at shoulder width with your palms facing forward and your elbows against your sides.",
+      "Keep your upper arms still and curl the bar up with your biceps, breathing out as you curl.",
+      "Squeeze your biceps at the top, then lower the bar back to the start under control."
+    ]
   },
   {
     "id": 10,
@@ -290,7 +336,12 @@
     "muscleGroupCode": "TRICEPS",
     "movementType": "ISOLATION",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "triceps_pushdown"
+    "photoSlug": "triceps_pushdown",
+    "instructionsEn": [
+      "Stand in front of the cable machine holding a V-bar or straight bar with your elbows tucked against your body.",
+      "Push the bar down until your arms are straight; only your forearms move, and breathe out as you push.",
+      "Hold for 1 second at the end, then let it come back up under control to the start."
+    ]
   },
   {
     "id": 11,
@@ -322,7 +373,12 @@
     "muscleGroupCode": "LEGS",
     "movementType": "COMPOUND",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "leg_press"
+    "photoSlug": "leg_press",
+    "instructionsEn": [
+      "Sit at the machine, place your feet shoulder-width apart on the platform and release the safety catches.",
+      "Breathe in and lower the platform under control until your thighs and shins form a 90-degree angle.",
+      "Press the platform back to the start through your heels without locking your knees, breathing out as you press."
+    ]
   },
   {
     "id": 12,
@@ -354,7 +410,12 @@
     "muscleGroupCode": "LEGS",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "dumbbell_lunges"
+    "photoSlug": "dumbbell_lunges",
+    "instructionsEn": [
+      "Stand tall with a dumbbell in each hand and your torso upright.",
+      "Step one foot about 60cm forward and lower your body, keeping the front knee behind your toes.",
+      "Drive through the front heel to return to standing, then switch legs once you finish the prescribed reps."
+    ]
   },
   {
     "id": 13,
@@ -379,7 +440,12 @@
     "muscleGroupCode": "ABS",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "crunches"
+    "photoSlug": "crunches",
+    "instructionsEn": [
+      "Lie on your back with your knees bent and your hands resting lightly beside your head, not laced behind your neck.",
+      "Press your lower back into the floor and curl your shoulders about 10cm off it, squeezing your abs and breathing out.",
+      "Hold for 1 second at the end, then lower slowly and under control."
+    ]
   },
   {
     "id": 14,
@@ -409,7 +475,12 @@
     "muscleGroupCode": "CHEST",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "pushups"
+    "photoSlug": "pushups",
+    "instructionsEn": [
+      "Place your hands on the floor shoulder-width apart with your body straight from head to heels.",
+      "Breathe in and lower yourself until your chest almost touches the floor, with your elbows angled back.",
+      "Push yourself back up to the start, squeezing your chest and breathing out as you push."
+    ]
   },
   {
     "id": 15,
@@ -439,7 +510,12 @@
     "muscleGroupCode": "GLUTEUS",
     "movementType": "COMPOUND",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "barbell_hip_thrust"
+    "photoSlug": "barbell_hip_thrust",
+    "instructionsEn": [
+      "Sit on the floor with your upper back against the edge of a bench and rest the bar across your hips (use a pad to reduce discomfort).",
+      "Drive your heels into the floor and lift your hips as high as you can, squeezing your glutes hard at the top.",
+      "Lower your hips back to the start under control, without letting your lower back touch the floor."
+    ]
   },
   {
     "id": 16,
@@ -469,7 +545,12 @@
     "muscleGroupCode": "GLUTEUS",
     "movementType": "COMPOUND",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "barbell_glute_bridge"
+    "photoSlug": "barbell_glute_bridge",
+    "instructionsEn": [
+      "Lie on your back on the floor with the bar across your hips, your knees bent and your feet flat.",
+      "Drive through your heels to lift your hips high, squeezing your glutes at the top and holding for 1 second.",
+      "Lower your hips back to the start under control."
+    ]
   },
   {
     "id": 17,
@@ -497,7 +578,12 @@
     "muscleGroupCode": "GLUTEUS",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "glute_kickback"
+    "photoSlug": "glute_kickback",
+    "instructionsEn": [
+      "Kneel on the floor with your hands directly under your shoulders, your knees at 90 degrees and your back flat.",
+      "Squeeze your glutes and kick one leg back up to hip height, holding for 1 second at the top and breathing out as you kick.",
+      "Lower your leg back to the start, then switch sides once you finish the prescribed reps."
+    ]
   },
   {
     "id": 18,
@@ -525,7 +611,12 @@
     "muscleGroupCode": "GLUTEUS",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "single_leg_glute_bridge"
+    "photoSlug": "single_leg_glute_bridge",
+    "instructionsEn": [
+      "Lie on your back with your knees bent and your feet flat on the floor, then pull one knee in toward your chest.",
+      "Drive through the heel of your working leg and lift your hips as high as you can, squeezing your glutes at the top.",
+      "Lower your hips under control, then switch legs once you finish the prescribed reps."
+    ]
   },
   {
     "id": 19,
@@ -553,7 +644,12 @@
     "muscleGroupCode": "GLUTEUS",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "butt_lift_bridge"
+    "photoSlug": "butt_lift_bridge",
+    "instructionsEn": [
+      "Lie on your back with your arms at your sides, your knees bent and your feet shoulder-width apart.",
+      "Drive through your heels to lift your hips off the floor, keeping your back flat, breathing out as you lift and holding for 1 second at the top.",
+      "Lower your hips slowly back to the start, breathing in as you lower."
+    ]
   },
   {
     "id": 20,
@@ -581,7 +677,12 @@
     "muscleGroupCode": "GLUTEUS",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "physioball_hip_bridge"
+    "photoSlug": "physioball_hip_bridge",
+    "instructionsEn": [
+      "Rest your shoulders on the exercise ball with your hips off the floor and your feet flat, shoulder-width apart.",
+      "Drive your hips up using your glutes and hamstrings, staying balanced on the ball.",
+      "Hold for 1 second at the top, then lower your hips back to the start under control."
+    ]
   },
   {
     "id": 21,
@@ -609,7 +710,12 @@
     "muscleGroupCode": "GLUTEUS",
     "movementType": "ISOLATION",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "one_legged_cable_kickback"
+    "photoSlug": "one_legged_cable_kickback",
+    "instructionsEn": [
+      "Attach the cuff to your ankle, stand about 60cm from the machine facing it, and hold the frame for balance.",
+      "Brace your abs and kick your leg back in an arc as far as it goes, squeezing your glute and holding for 1 second at the top.",
+      "Return your leg to the start under control, finish the prescribed reps and then switch legs."
+    ]
   },
   {
     "id": 22,
@@ -639,7 +745,12 @@
     "muscleGroupCode": "GLUTEUS",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "pull_through"
+    "photoSlug": "pull_through",
+    "instructionsEn": [
+      "Stand with your back to a low cable, feet wide on either side of the cable, and take the handle between your legs.",
+      "Hinge at the hips and reach your hands as far back as you can, keeping your knees slightly bent and your arms straight.",
+      "Drive your hips forward to stand up; the power comes from your hips, not from pulling with your shoulders."
+    ]
   },
   {
     "id": 23,
@@ -669,7 +780,12 @@
     "muscleGroupCode": "GLUTEUS",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "step_up_with_knee_raise"
+    "photoSlug": "step_up_with_knee_raise",
+    "instructionsEn": [
+      "Stand facing a box or bench of a suitable height with your feet together.",
+      "Step one foot onto the box and drive through that hip and knee to stand tall, raising the rear knee high at the same time.",
+      "Step back down to the start, then switch legs once you finish the prescribed reps."
+    ]
   },
   {
     "id": 24,
@@ -697,7 +813,12 @@
     "muscleGroupCode": "GLUTEUS",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "hip_extension_with_bands"
+    "photoSlug": "hip_extension_with_bands",
+    "instructionsEn": [
+      "Anchor one end of the resistance band to a low post and the other around your ankle, then face the anchor and hold the post for balance.",
+      "Keep your head and chest up and take the banded leg as far back as you can with the knee straight.",
+      "Bring your leg back to the start under control, finish the prescribed reps and then switch legs."
+    ]
   },
   {
     "id": 25,
@@ -722,7 +843,12 @@
     "muscleGroupCode": "FOREARM",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "cable_wrist_curl"
+    "photoSlug": "cable_wrist_curl",
+    "instructionsEn": [
+      "Sit in front of a low cable with a straight bar, take an underhand grip, rest your forearms on your thighs and let your wrists hang past your knees.",
+      "Curl your wrists up as far as they go, squeeze and hold for 1 second, breathing out as you curl.",
+      "Lower your wrists back to the start under control; only your wrists move while your forearms stay still."
+    ]
   },
   {
     "id": 26,
@@ -747,7 +873,12 @@
     "muscleGroupCode": "FOREARM",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "palms_up_barbell_wrist_curl"
+    "photoSlug": "palms_up_barbell_wrist_curl",
+    "instructionsEn": [
+      "Kneel in front of a flat bench holding the bar with your palms up, forearms resting on the bench and wrists loose past the edge.",
+      "Curl your wrists up as far as they go and breathe out, keeping your forearms still.",
+      "Lower your wrists back to the start under control, breathing in as you lower."
+    ]
   },
   {
     "id": 27,
@@ -772,7 +903,12 @@
     "muscleGroupCode": "FOREARM",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "palms_down_wrist_curl"
+    "photoSlug": "palms_down_wrist_curl",
+    "instructionsEn": [
+      "Kneel in front of a flat bench holding the bar with your palms down, forearms resting on the bench and wrists loose past the edge.",
+      "Curl your wrists up as far as they go and breathe out, keeping your forearms still.",
+      "Lower your wrists back to the start under control, breathing in as you lower."
+    ]
   },
   {
     "id": 28,
@@ -797,7 +933,12 @@
     "muscleGroupCode": "FOREARM",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "seated_dumbbell_palms_up_wrist_curl"
+    "photoSlug": "seated_dumbbell_palms_up_wrist_curl",
+    "instructionsEn": [
+      "Sit on the edge of a bench holding dumbbells with your palms up, forearms resting on your thighs and wrists loose past your knees.",
+      "Curl your wrists up as far as they go and breathe out, keeping your forearms still.",
+      "Lower your wrists back to the start under control, breathing in as you lower."
+    ]
   },
   {
     "id": 29,
@@ -822,7 +963,12 @@
     "muscleGroupCode": "FOREARM",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "seated_dumbbell_palms_down_wrist_curl"
+    "photoSlug": "seated_dumbbell_palms_down_wrist_curl",
+    "instructionsEn": [
+      "Sit on the edge of a bench holding dumbbells with your palms down, forearms resting on your thighs and wrists loose past your knees.",
+      "Curl your wrists up as far as they go and breathe out, keeping your forearms still.",
+      "Lower your wrists back to the start under control, breathing in as you lower."
+    ]
   },
   {
     "id": 30,
@@ -850,7 +996,12 @@
     "muscleGroupCode": "FOREARM",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "wrist_roller"
+    "photoSlug": "wrist_roller",
+    "instructionsEn": [
+      "Stand tall holding the wrist roller with your palms down and your arms straight out, parallel to the floor.",
+      "Turn your wrists alternately to wind the cord and raise the weight up to the bar.",
+      "Slowly turn the other way to lower the weight back to the start under control."
+    ]
   },
   {
     "id": 31,
@@ -875,7 +1026,12 @@
     "muscleGroupCode": "FOREARM",
     "movementType": "ISOLATION",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "plate_pinch"
+    "photoSlug": "plate_pinch",
+    "instructionsEn": [
+      "Pick two weight plates with smooth faces, turn the smooth sides out and press them together.",
+      "Pinch the two plates together with your fingers and thumb and lift them off the floor.",
+      "Hold the pinch as long as you can, then switch hands."
+    ]
   },
   {
     "id": 32,
@@ -900,7 +1056,12 @@
     "muscleGroupCode": "FOREARM",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "finger_curls"
+    "photoSlug": "finger_curls",
+    "instructionsEn": [
+      "Stand tall holding the bar with your palms up at shoulder width.",
+      "Lower the bar by opening your fingers and letting it roll down to your palm, holding it with your fingertips.",
+      "Curl the weight up as far as you can by closing your fingers around it, breathing out as you curl, and hold for 1 second at the top."
+    ]
   },
   {
     "id": 33,
@@ -934,7 +1095,12 @@
     "muscleGroupCode": "FOREARM",
     "movementType": "COMPOUND",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "rickshaw_carry"
+    "photoSlug": "rickshaw_carry",
+    "instructionsEn": [
+      "Stand inside the loaded frame and grip both handles firmly.",
+      "Drive through your heels to lift the frame, keeping your chest and head up and your back from rounding.",
+      "Walk quickly and under control to the finish point, then set the frame down on the floor."
+    ]
   },
   {
     "id": 34,
@@ -962,7 +1128,12 @@
     "muscleGroupCode": "FUNCTIONAL",
     "movementType": "COMPOUND",
     "difficultyCode": "ADVANCED",
-    "photoSlug": "clean_and_jerk"
+    "photoSlug": "clean_and_jerk",
+    "instructionsEn": [
+      "Stand at the bar with it close to your shins, grip it wider than shoulder width, drop your hips low and keep your back flat and your chest up.",
+      "Pull the bar past your knees, then explode through hips, knees and ankles to accelerate it upward and drop under it, catching it on your shoulders in a front squat.",
+      "Stand up fully, dip your knees slightly, then drive the weight overhead, split your feet to receive it, and finally stand tall with your arms locked to finish the lift."
+    ]
   },
   {
     "id": 35,
@@ -990,7 +1161,12 @@
     "muscleGroupCode": "FUNCTIONAL",
     "movementType": "COMPOUND",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "clean"
+    "photoSlug": "clean",
+    "instructionsEn": [
+      "Stand at the bar with it close to your shins, grip it wider than shoulder width, drop your hips low and keep your back flat.",
+      "Pull the bar past your knees, then explode through hips, knees and ankles to accelerate it upward.",
+      "Drop under the bar quickly, catch it on your shoulders in a front squat, then stand up to finish the lift."
+    ]
   },
   {
     "id": 36,
@@ -1019,7 +1195,12 @@
     "muscleGroupCode": "FUNCTIONAL",
     "movementType": "COMPOUND",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "snatch"
+    "photoSlug": "snatch",
+    "instructionsEn": [
+      "Stand with your feet shoulder-width apart, grip the bar wider than your shoulders and sit your hips down as if into a chair, keeping your back flat.",
+      "Push through the floor with your legs and pull the bar up close to your body; as it passes your thighs, snap your hips open for maximum drive.",
+      "Drop quickly under the bar and lock your arms out overhead in a squat position, then stand up."
+    ]
   },
   {
     "id": 37,
@@ -1049,7 +1230,12 @@
     "muscleGroupCode": "FUNCTIONAL",
     "movementType": "COMPOUND",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "hang_clean"
+    "photoSlug": "hang_clean",
+    "instructionsEn": [
+      "Stand tall gripping the bar at shoulder width, then lower it to mid-thigh with a flat back and a slight forward lean.",
+      "Explode through your hips, knees and ankles to drive the bar up, shrugging your shoulders toward your ears.",
+      "Drop under the bar quickly, catch it on your shoulders, then stand up to finish the lift."
+    ]
   },
   {
     "id": 38,
@@ -1078,7 +1264,12 @@
     "muscleGroupCode": "FUNCTIONAL",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "sled_push"
+    "photoSlug": "sled_push",
+    "instructionsEn": [
+      "Load the sled with a suitable weight, get into a low stance and grip the handles firmly with your arms straight.",
+      "Lean into the sled and push it as fast as you can, driving from your hips and knees.",
+      "Keep a steady, unbroken walking rhythm until you cover the prescribed distance."
+    ]
   },
   {
     "id": 39,
@@ -1110,7 +1301,12 @@
     "muscleGroupCode": "FUNCTIONAL",
     "movementType": "COMPOUND",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "tire_flip"
+    "photoSlug": "tire_flip",
+    "instructionsEn": [
+      "Grip the bottom edge of the tyre firmly with a wide staggered stance and your chest against the tyre.",
+      "Explode through your hips, knees and ankles to lift the tyre past its balance point.",
+      "Once the tyre reaches about 45 degrees, step in, drive your knee into it and push it over onto the other side."
+    ]
   },
   {
     "id": 40,
@@ -1142,7 +1338,12 @@
     "muscleGroupCode": "FUNCTIONAL",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "sandbag_load"
+    "photoSlug": "sandbag_load",
+    "instructionsEn": [
+      "Hug the sandbag tight to your body, sliding your arms as far underneath it as you can.",
+      "Drive through your hips and knees to lift the sandbag higher, keeping it close to your body.",
+      "Move quickly to the platform, lift the sandbag onto it, then go back for the next bag."
+    ]
   },
   {
     "id": 41,
@@ -1173,7 +1374,12 @@
     "muscleGroupCode": "FUNCTIONAL",
     "movementType": "COMPOUND",
     "difficultyCode": "ADVANCED",
-    "photoSlug": "atlas_stones"
+    "photoSlug": "atlas_stones",
+    "instructionsEn": [
+      "Stand over the stone with it between your feet, hinge at the hips to wrap your arms around it and slide your fingers underneath.",
+      "Hug the stone tight to your body and drive through your heels to lift it off the floor; once it passes your knees, sit back and rest it on your thighs.",
+      "Squat down, lift the stone to your chest, stand up and push it onto the platform."
+    ]
   },
   {
     "id": 42,
@@ -1202,7 +1408,12 @@
     "muscleGroupCode": "FUNCTIONAL",
     "movementType": "COMPOUND",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "yoke_walk"
+    "photoSlug": "yoke_walk",
+    "instructionsEn": [
+      "Stand under the yoke, set the frame across your upper back, look straight ahead and keep your back arched.",
+      "Drive through your heels to lift the yoke off the rack, holding the frame on both sides for balance.",
+      "Walk fast with short, decisive steps until you cover the prescribed distance."
+    ]
   },
   {
     "id": 43,
@@ -1231,7 +1442,12 @@
     "muscleGroupCode": "FUNCTIONAL",
     "movementType": "COMPOUND",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "farmers_walk"
+    "photoSlug": "farmers_walk",
+    "instructionsEn": [
+      "Stand between two heavy weights (dumbbells, kettlebells or dedicated carry handles).",
+      "Grip the handles firmly and drive through your heels to lift the weight, keeping your back flat and your eyes forward.",
+      "Walk fast with short steps and steady breathing until you cover the prescribed distance."
+    ]
   },
   {
     "id": 44,
@@ -1258,7 +1474,12 @@
     "muscleGroupCode": "CARDIO",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "treadmill_run"
+    "photoSlug": "treadmill_run",
+    "instructionsEn": [
+      "Step onto the machine and pick a running program, or set the speed and incline manually.",
+      "Keep your back tall and run with a natural stride, holding the rails only when you need to.",
+      "Hold a steady pace for the whole session, easing off gradually before you finish."
+    ]
   },
   {
     "id": 45,
@@ -1285,7 +1506,12 @@
     "muscleGroupCode": "CARDIO",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "treadmill_walk"
+    "photoSlug": "treadmill_walk",
+    "instructionsEn": [
+      "Step onto the machine and pick a walking program, or set the speed and incline manually.",
+      "Walk at a brisk pace, not too slowly, and keep your back tall.",
+      "Hold a steady pace for the whole session and only hold the rails when you need to."
+    ]
   },
   {
     "id": 46,
@@ -1312,7 +1538,12 @@
     "muscleGroupCode": "CARDIO",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "stationary_bike"
+    "photoSlug": "stationary_bike",
+    "instructionsEn": [
+      "Sit on the bike and adjust the seat to your height.",
+      "Pick a program or resistance level and start pedalling at a steady rhythm.",
+      "Hold a steady pedalling speed for the whole session, adding resistance if you want it harder."
+    ]
   },
   {
     "id": 47,
@@ -1339,7 +1570,12 @@
     "muscleGroupCode": "CARDIO",
     "movementType": "COMPOUND",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "elliptical_trainer"
+    "photoSlug": "elliptical_trainer",
+    "instructionsEn": [
+      "Step onto the machine, put your feet on the pedals and pick a suitable program.",
+      "Push the handles and drive with your legs in a natural elliptical rhythm, keeping your back tall.",
+      "Hold a steady pace for the whole session, raising the incline if you want it harder."
+    ]
   },
   {
     "id": 48,
@@ -1368,7 +1604,12 @@
     "muscleGroupCode": "CARDIO",
     "movementType": "COMPOUND",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "rowing_stationary"
+    "photoSlug": "rowing_stationary",
+    "instructionsEn": [
+      "Sit on the machine, put your feet on the footplates and tighten the straps, then hinge forward to take the handle.",
+      "Push your legs straight, then row the handle toward your upper stomach, pulling your shoulders back.",
+      "Straighten your arms, bend your knees and slide forward to start the next stroke."
+    ]
   },
   {
     "id": 49,
@@ -1394,7 +1635,12 @@
     "muscleGroupCode": "CARDIO",
     "movementType": "COMPOUND",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "rope_jumping"
+    "photoSlug": "rope_jumping",
+    "instructionsEn": [
+      "Hold one end of the rope in each hand with the rope behind your heels.",
+      "Swing the rope over your head and forward, hopping lightly over it as it reaches the ground.",
+      "Keep the rope turning and your jumps even, changing the speed to make it harder."
+    ]
   },
   {
     "id": 50,
@@ -1421,7 +1667,12 @@
     "muscleGroupCode": "CARDIO",
     "movementType": "COMPOUND",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "stairmaster"
+    "photoSlug": "stairmaster",
+    "instructionsEn": [
+      "Step onto the machine and pick a suitable program.",
+      "Step up and down at a steady rhythm, pressing the pedals down without letting them hit the bottom, and rest your hands lightly on the rails for balance.",
+      "Hold a steady pace for the whole session."
+    ]
   },
   {
     "id": 51,
@@ -1448,7 +1699,12 @@
     "muscleGroupCode": "CARDIO",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "recumbent_bike"
+    "photoSlug": "recumbent_bike",
+    "instructionsEn": [
+      "Sit on the bike and adjust the seat to your leg length.",
+      "Pick a program or resistance level and start pedalling at a steady rhythm.",
+      "Hold a steady pedalling speed for the whole session."
+    ]
   },
   {
     "id": 52,
@@ -1475,7 +1731,12 @@
     "muscleGroupCode": "CARDIO",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "trail_running_walking"
+    "photoSlug": "trail_running_walking",
+    "instructionsEn": [
+      "Choose shoes suited to the terrain and warm up thoroughly before you start.",
+      "Run or walk at a pace that suits the incline, using short steps and bending your knees on the way down to reduce impact.",
+      "Keep your breathing steady and slow down if the ground is slippery or uneven."
+    ]
   },
   {
     "id": 53,
@@ -1504,7 +1765,12 @@
     "muscleGroupCode": "CARDIO",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "prowler_sprint"
+    "photoSlug": "prowler_sprint",
+    "instructionsEn": [
+      "Load the sled with a suitable weight and choose either the high or the low handles.",
+      "Lean into the sled with your arms straight and grip the handles firmly.",
+      "Push as fast as you can with short, decisive steps over a short distance."
+    ]
   },
   {
     "id": 54,
@@ -1531,7 +1797,12 @@
     "muscleGroupCode": "CARDIO",
     "movementType": "COMPOUND",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "step_mill"
+    "photoSlug": "step_mill",
+    "instructionsEn": [
+      "Step onto the machine and pick a suitable program, watching your footing as the steps move.",
+      "Climb the steps at a steady rhythm, holding the rails lightly for balance.",
+      "Hold a steady pace for the whole session."
+    ]
   },
   {
     "id": 55,
@@ -1554,7 +1825,12 @@
     "muscleGroupCode": "STRETCHING",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "hamstring_stretch"
+    "photoSlug": "hamstring_stretch",
+    "instructionsEn": [
+      "Lie on your back and raise one leg straight up to 90 degrees at the hip, keeping the other leg straight on the floor.",
+      "Loop a strap or towel around the sole of your foot and pull gently to create tension in your hamstring and calf.",
+      "Hold for 10-30 seconds, breathing steadily, then switch legs."
+    ]
   },
   {
     "id": 56,
@@ -1577,7 +1853,12 @@
     "muscleGroupCode": "STRETCHING",
     "movementType": "ISOLATION",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "quad_stretch"
+    "photoSlug": "quad_stretch",
+    "instructionsEn": [
+      "Lie on your side and bend the top knee back, looping a strap or towel over the top of that foot.",
+      "Pull the strap gently over your shoulder to deepen the quad stretch, keeping your hips square.",
+      "Hold for 10-20 seconds, then switch sides."
+    ]
   },
   {
     "id": 57,
@@ -1600,7 +1881,12 @@
     "muscleGroupCode": "STRETCHING",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "calf_stretch_wall"
+    "photoSlug": "calf_stretch_wall",
+    "instructionsEn": [
+      "Stand facing a wall with one foot forward and the back leg straight.",
+      "Lean forward with both hands on the wall, keeping the heel of the back foot on the floor.",
+      "Hold for 10-20 seconds, feeling the stretch in your calf, then switch sides."
+    ]
   },
   {
     "id": 58,
@@ -1623,7 +1909,12 @@
     "muscleGroupCode": "STRETCHING",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "standing_lateral_stretch"
+    "photoSlug": "standing_lateral_stretch",
+    "instructionsEn": [
+      "Stand with your feet wider than your hips, your knees slightly bent and your right hand on your right hip.",
+      "Reach your left arm straight overhead and lean to the right, keeping your weight even on both feet.",
+      "Hold for 10-20 seconds, feeling the stretch down your left side, then switch sides."
+    ]
   },
   {
     "id": 59,
@@ -1649,7 +1940,12 @@
     "muscleGroupCode": "STRETCHING",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "childs_pose"
+    "photoSlug": "childs_pose",
+    "instructionsEn": [
+      "Kneel on the floor with your hands out in front and slowly sit your hips back onto your heels.",
+      "Slide your hands far out along the floor and fold forward as far as you can to stretch the whole spine.",
+      "Relax your shoulders with your forehead on the floor, breathe deeply and hold for 20-30 seconds."
+    ]
   },
   {
     "id": 60,
@@ -1675,7 +1971,12 @@
     "muscleGroupCode": "STRETCHING",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "cat_stretch"
+    "photoSlug": "cat_stretch",
+    "instructionsEn": [
+      "Get on all fours on the floor with your back in its natural position.",
+      "Draw your belly in, round your back up high and tuck your chin toward your navel.",
+      "Hold for 15 seconds, breathing steadily, then relax back to the start."
+    ]
   },
   {
     "id": 61,
@@ -1698,7 +1999,12 @@
     "muscleGroupCode": "STRETCHING",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "shoulder_stretch"
+    "photoSlug": "shoulder_stretch",
+    "instructionsEn": [
+      "Stand or sit tall and bring your left arm across your chest.",
+      "Use your right hand to hold your left elbow lightly and pull it across your chest to deepen the shoulder stretch.",
+      "Hold for 10-20 seconds, then switch sides."
+    ]
   },
   {
     "id": 62,
@@ -1723,7 +2029,12 @@
     "muscleGroupCode": "STRETCHING",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "triceps_stretch"
+    "photoSlug": "triceps_stretch",
+    "instructionsEn": [
+      "Stand or sit tall and reach one hand behind your head with your elbow pointing at the ceiling.",
+      "Use your other hand to hold that elbow lightly and pull it behind your head to deepen the triceps stretch.",
+      "Hold for 10-20 seconds, then switch sides."
+    ]
   },
   {
     "id": 63,
@@ -1748,7 +2059,12 @@
     "muscleGroupCode": "STRETCHING",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "chest_front_shoulder_stretch"
+    "photoSlug": "chest_front_shoulder_stretch",
+    "instructionsEn": [
+      "Stand tall holding a stick or long towel wider than shoulder width with your palms facing down.",
+      "Slowly raise the stick overhead and take it behind your head, keeping your arms as straight as you can.",
+      "Hold for 15-20 seconds at the deepest point, breathing steadily, then bring the stick back to the front."
+    ]
   },
   {
     "id": 64,
@@ -1771,7 +2087,12 @@
     "muscleGroupCode": "STRETCHING",
     "movementType": "COMPOUND",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "groin_back_stretch"
+    "photoSlug": "groin_back_stretch",
+    "instructionsEn": [
+      "Sit on the floor with your knees bent and the soles of your feet together.",
+      "Lace your hands behind your head and crunch down, bringing your elbows toward your inner thighs.",
+      "Come back to sitting tall with a flat back and your head up, then repeat for the prescribed reps."
+    ]
   },
   {
     "id": 65,
@@ -1798,7 +2119,12 @@
     "muscleGroupCode": "STRETCHING",
     "movementType": "COMPOUND",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "worlds_greatest_stretch"
+    "photoSlug": "worlds_greatest_stretch",
+    "instructionsEn": [
+      "Step one foot forward into a deep lunge with the back leg straight on the ball of the foot, and hold for 10-20 seconds.",
+      "Place the hand on the same side as your front foot on the floor beside that heel, and use the other hand on the floor for balance.",
+      "Place both hands beside your front foot, lift the front toes and straighten that knee to deepen the hamstring stretch, holding for 10-20 seconds before switching sides."
+    ]
   },
   {
     "id": 66,
@@ -1821,7 +2147,12 @@
     "muscleGroupCode": "STRETCHING",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "upper_back_stretch"
+    "photoSlug": "upper_back_stretch",
+    "instructionsEn": [
+      "Stand or sit tall and lace your fingers together with your thumbs pointing down.",
+      "Reach both arms forward, round your shoulders and push your shoulder blades apart.",
+      "Hold for 10-20 seconds, feeling the stretch across your upper back, and breathe steadily."
+    ]
   },
   {
     "id": 67,
@@ -1847,7 +2178,12 @@
     "muscleGroupCode": "STRETCHING",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "seated_calf_stretch"
+    "photoSlug": "seated_calf_stretch",
+    "instructionsEn": [
+      "Sit tall on the mat with one knee bent and that foot flat on the floor for balance.",
+      "Straighten the other leg and pull your toes back toward your shin.",
+      "Loop a strap or towel around the ball of your foot and pull gently toward you, holding for 10-20 seconds before switching sides."
+    ]
   },
   {
     "id": 68,
@@ -1875,7 +2211,12 @@
     "muscleGroupCode": "BICEPS",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "dumbbell_bicep_curl"
+    "photoSlug": "dumbbell_bicep_curl",
+    "instructionsEn": [
+      "Stand tall holding dumbbells at your sides with your elbows close to your body and your palms facing forward.",
+      "Curl the dumbbells to your shoulders with your biceps, keeping your elbows fixed, breathing out as you curl, and hold for 1 second at the top.",
+      "Lower the weight back to the start under control, breathing in as you lower."
+    ]
   },
   {
     "id": 69,
@@ -1900,7 +2241,12 @@
     "muscleGroupCode": "BICEPS",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "hammer_curls"
+    "photoSlug": "hammer_curls",
+    "instructionsEn": [
+      "Stand tall holding dumbbells at your sides with your palms facing you (neutral grip).",
+      "Keep your elbows fixed, curl the dumbbells to your shoulders, breathing out as you curl, and hold for 1 second at the top.",
+      "Lower the weight back to the start under control."
+    ]
   },
   {
     "id": 70,
@@ -1928,7 +2274,12 @@
     "muscleGroupCode": "BICEPS",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "concentration_curls"
+    "photoSlug": "concentration_curls",
+    "instructionsEn": [
+      "Sit on a bench with your legs apart, brace your elbow against the inside of the same-side thigh and let the dumbbell hang.",
+      "Curl the dumbbell to your shoulder with your biceps, keeping your elbow pressed against your thigh, and breathe out as you curl.",
+      "Lower the weight under control, finish the prescribed reps and then switch arms."
+    ]
   },
   {
     "id": 71,
@@ -1953,7 +2304,12 @@
     "muscleGroupCode": "BICEPS",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "incline_dumbbell_curl"
+    "photoSlug": "incline_dumbbell_curl",
+    "instructionsEn": [
+      "Sit back on an incline bench holding the dumbbells hanging straight down with your palms facing forward.",
+      "Keep your upper arms still, curl the dumbbells to your shoulders, breathing out as you curl, and hold for 1 second at the top.",
+      "Lower the weight back to the start under control."
+    ]
   },
   {
     "id": 72,
@@ -1978,7 +2334,12 @@
     "muscleGroupCode": "BICEPS",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "preacher_curl"
+    "photoSlug": "preacher_curl",
+    "instructionsEn": [
+      "Sit at the preacher bench with your upper arms and chest against the pad, holding the EZ bar at shoulder width.",
+      "Lower the bar slowly until your arms are almost straight, breathing in as you lower.",
+      "Curl the bar to your shoulders with your biceps, breathing out as you curl, then squeeze hard and hold for 1 second at the top."
+    ]
   },
   {
     "id": 73,
@@ -2003,7 +2364,12 @@
     "muscleGroupCode": "BICEPS",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "ez_bar_curl"
+    "photoSlug": "ez_bar_curl",
+    "instructionsEn": [
+      "Stand tall holding the EZ bar on the outer grips with your elbows against your sides.",
+      "Curl the bar to your shoulders with your biceps, keeping your upper arms still, and breathe out as you curl.",
+      "Lower the bar back to the start under control, breathing in as you lower."
+    ]
   },
   {
     "id": 74,
@@ -2028,7 +2394,12 @@
     "muscleGroupCode": "BICEPS",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "cable_hammer_curls"
+    "photoSlug": "cable_hammer_curls",
+    "instructionsEn": [
+      "Attach the rope to the low pulley, stand about 30cm from the machine and hold the rope with your palms facing each other.",
+      "Keep your elbows tucked in and fixed, and curl the handle up until your biceps meet your forearms, breathing out as you curl.",
+      "Hold for 1 second at the top, then lower the handle back to the start under control."
+    ]
   },
   {
     "id": 75,
@@ -2053,7 +2424,12 @@
     "muscleGroupCode": "BICEPS",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "standing_biceps_cable_curl"
+    "photoSlug": "standing_biceps_cable_curl",
+    "instructionsEn": [
+      "Stand tall holding a straight bar attached to a low pulley at shoulder width with your palms facing up.",
+      "Keep your upper arms still, curl the bar to your shoulders, breathing out as you curl, and hold for 1 second at the top.",
+      "Lower the bar back to the start under control."
+    ]
   },
   {
     "id": 76,
@@ -2078,7 +2454,12 @@
     "muscleGroupCode": "BICEPS",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "machine_bicep_curl"
+    "photoSlug": "machine_bicep_curl",
+    "instructionsEn": [
+      "Adjust the seat, rest your upper arms on the pad and grip the handles firmly.",
+      "Bend your elbows to pull your forearms toward your upper arms, breathing out as you curl.",
+      "Hold for 1 second at the top, then return under control without letting the weight stack rest between reps."
+    ]
   },
   {
     "id": 77,
@@ -2106,7 +2487,12 @@
     "muscleGroupCode": "BICEPS",
     "movementType": "ISOLATION",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "zottman_curl"
+    "photoSlug": "zottman_curl",
+    "instructionsEn": [
+      "Stand tall holding dumbbells at your sides with your palms facing each other.",
+      "Curl the dumbbells to your shoulders, turning your palms up as you go, then rotate them over at the top.",
+      "Lower the dumbbells slowly with your palms down, turning them back to the starting position near the bottom."
+    ]
   },
   {
     "id": 78,
@@ -2134,7 +2520,12 @@
     "muscleGroupCode": "BICEPS",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "close_grip_ez_bar_curl"
+    "photoSlug": "close_grip_ez_bar_curl",
+    "instructionsEn": [
+      "Stand tall holding the EZ bar on the narrow inner grips with your elbows against your sides.",
+      "Curl the bar to your shoulders with your biceps, breathing out as you curl, and hold for 1 second at the top.",
+      "Lower the bar back to the start under control, breathing in as you lower."
+    ]
   },
   {
     "id": 79,
@@ -2162,7 +2553,12 @@
     "muscleGroupCode": "BICEPS",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "reverse_barbell_curl"
+    "photoSlug": "reverse_barbell_curl",
+    "instructionsEn": [
+      "Stand tall holding the bar at shoulder width with your palms down and your elbows against your sides.",
+      "Curl the dumbbells to your shoulders with your biceps, breathing out as you curl, and hold for 1 second at the top.",
+      "Lower the weight back to the start under control, breathing in as you lower."
+    ]
   },
   {
     "id": 80,
@@ -2187,7 +2583,12 @@
     "muscleGroupCode": "TRICEPS",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "triceps_rope_pushdown"
+    "photoSlug": "triceps_rope_pushdown",
+    "instructionsEn": [
+      "Attach the rope to the high pulley, stand tall leaning slightly forward and keep your upper arms against your sides.",
+      "Push the rope down with your triceps until your arms are straight, breathing out as you push and keeping your upper arms still.",
+      "Hold for 1 second at the bottom, then bring the handle back up to the start under control."
+    ]
   },
   {
     "id": 81,
@@ -2217,7 +2618,12 @@
     "muscleGroupCode": "TRICEPS",
     "movementType": "COMPOUND",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "close_grip_barbell_bench_press"
+    "photoSlug": "close_grip_barbell_bench_press",
+    "instructionsEn": [
+      "Lie on a bench, grip the bar at shoulder width, lift it off the rack and hold it with straight arms above your chest.",
+      "Lower the bar to the middle of your chest, keeping your elbows close to your body throughout, and breathe in as you lower.",
+      "Press the bar back to the start with your triceps, breathing out as you press and locking your arms at the top."
+    ]
   },
   {
     "id": 82,
@@ -2245,7 +2651,12 @@
     "muscleGroupCode": "TRICEPS",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "ez_bar_skullcrusher"
+    "photoSlug": "ez_bar_skullcrusher",
+    "instructionsEn": [
+      "Lie on a bench holding an EZ bar with a narrow grip, arms straight and perpendicular to the floor above your forehead.",
+      "Keep your upper arms still and bend your elbows to lower the bar toward your forehead, breathing in as you lower.",
+      "Straighten your elbows to push the bar back to the start, breathing out as you push."
+    ]
   },
   {
     "id": 83,
@@ -2270,7 +2681,12 @@
     "muscleGroupCode": "TRICEPS",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "triceps_overhead_rope_extension"
+    "photoSlug": "triceps_overhead_rope_extension",
+    "instructionsEn": [
+      "Attach the rope to the low pulley, turn your back to the machine and bring the rope behind your head with your elbows pointing up.",
+      "Keep your upper arms still and straighten your elbows to press your hands overhead, breathing out as you press.",
+      "Squeeze your triceps hard at the top, then lower the weight back to the start under control."
+    ]
   },
   {
     "id": 84,
@@ -2300,7 +2716,12 @@
     "muscleGroupCode": "TRICEPS",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "bench_dips"
+    "photoSlug": "bench_dips",
+    "instructionsEn": [
+      "Sit on the edge of a bench, place your hands on the edge shoulder-width apart and stretch your legs out in front of you.",
+      "Bend your elbows to lower yourself until your upper arms and forearms form close to a 90-degree angle, breathing in as you lower.",
+      "Press yourself back to the start with your triceps, breathing out as you press."
+    ]
   },
   {
     "id": 85,
@@ -2330,7 +2751,12 @@
     "muscleGroupCode": "TRICEPS",
     "movementType": "COMPOUND",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "dips_triceps_version"
+    "photoSlug": "dips_triceps_version",
+    "instructionsEn": [
+      "Support yourself on the parallel bars with your arms nearly locked and your torso upright.",
+      "Lower slowly with your elbows close to your body until they reach about 90 degrees, breathing in as you lower.",
+      "Press yourself back to the start with your triceps, breathing out as you press."
+    ]
   },
   {
     "id": 86,
@@ -2355,7 +2781,12 @@
     "muscleGroupCode": "TRICEPS",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "standing_dumbbell_triceps_extension"
+    "photoSlug": "standing_dumbbell_triceps_extension",
+    "instructionsEn": [
+      "Stand tall holding a single dumbbell overhead with both hands, arms straight and palms up.",
+      "Keep your elbows close to your head and bend them to lower the weight behind your neck, breathing in as you lower.",
+      "Straighten your elbows to press the weight back to the start, breathing out as you press."
+    ]
   },
   {
     "id": 87,
@@ -2380,7 +2811,12 @@
     "muscleGroupCode": "TRICEPS",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "tricep_dumbbell_kickback"
+    "photoSlug": "tricep_dumbbell_kickback",
+    "instructionsEn": [
+      "Hinge forward with a flat back, a dumbbell in each hand, upper arms parallel to the floor and elbows bent to 90 degrees.",
+      "Keep your upper arms still and straighten your elbows to press the weight back behind you, breathing out as you press.",
+      "Hold for 1 second at the top, then lower the weight back to the start under control."
+    ]
   },
   {
     "id": 88,
@@ -2410,7 +2846,12 @@
     "muscleGroupCode": "TRICEPS",
     "movementType": "ISOLATION",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "lying_dumbbell_tricep_extension"
+    "photoSlug": "lying_dumbbell_tricep_extension",
+    "instructionsEn": [
+      "Lie on a bench holding the dumbbells straight up, perpendicular to the floor above your chest.",
+      "Keep your upper arms still and bend your elbows to lower the dumbbells beside your ears, breathing in as you lower.",
+      "Straighten your elbows to press the weight back to the start, breathing out as you press."
+    ]
   },
   {
     "id": 89,
@@ -2440,7 +2881,12 @@
     "muscleGroupCode": "TRICEPS",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "close_grip_dumbbell_press"
+    "photoSlug": "close_grip_dumbbell_press",
+    "instructionsEn": [
+      "Lie on a bench holding a single dumbbell upright above your chest with both hands pressed together and your arms straight.",
+      "Lower the weight until it touches your chest, pressing your hands together throughout, and breathe in as you lower.",
+      "Press the weight back to the start with your triceps, breathing out as you press."
+    ]
   },
   {
     "id": 90,
@@ -2465,7 +2911,12 @@
     "muscleGroupCode": "TRICEPS",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "machine_triceps_extension"
+    "photoSlug": "machine_triceps_extension",
+    "instructionsEn": [
+      "Adjust the seat, rest your upper arms on the pad and grip the handles firmly.",
+      "Straighten your elbows to push your forearms away from your upper arms, breathing out as you push.",
+      "Hold for 1 second at the top, then return under control without letting the weight stack rest between reps."
+    ]
   },
   {
     "id": 91,
@@ -2495,7 +2946,12 @@
     "muscleGroupCode": "TRICEPS",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "dip_machine"
+    "photoSlug": "dip_machine",
+    "instructionsEn": [
+      "Sit at the machine, pick your weight, grip the handles firmly and tuck your elbows against your body at 90 degrees.",
+      "Squeeze your triceps and push your hands down until your arms are nearly straight, breathing out as you push.",
+      "Return your arms to the start under control, breathing in as you release."
+    ]
   },
   {
     "id": 92,
@@ -2525,7 +2981,12 @@
     "muscleGroupCode": "DELTOIDS",
     "movementType": "COMPOUND",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "barbell_shoulder_press"
+    "photoSlug": "barbell_shoulder_press",
+    "instructionsEn": [
+      "Sit on a bench with a back rest and grip the bar wider than shoulder width with your palms facing forward.",
+      "Press the weight overhead and lock your arms out, keeping it in line with your shoulders and slightly in front of your head.",
+      "Lower the weight to shoulder height under control, breathing in as you lower, then press it back up and breathe out."
+    ]
   },
   {
     "id": 93,
@@ -2553,7 +3014,12 @@
     "muscleGroupCode": "DELTOIDS",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "standing_military_press"
+    "photoSlug": "standing_military_press",
+    "instructionsEn": [
+      "Stand tall gripping the bar wider than shoulder width, resting it across your collarbone with your feet shoulder-width apart.",
+      "Press the weight overhead and lock your arms out, keeping it in line with your shoulders and slightly in front of your head.",
+      "Lower the bar to your collarbone under control, breathing in as you lower and out as you press up."
+    ]
   },
   {
     "id": 94,
@@ -2581,7 +3047,12 @@
     "muscleGroupCode": "DELTOIDS",
     "movementType": "COMPOUND",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "arnold_dumbbell_press"
+    "photoSlug": "arnold_dumbbell_press",
+    "instructionsEn": [
+      "Sit back against the bench with the dumbbells at upper-chest height, palms facing you and elbows bent.",
+      "Press the weight up while turning your wrists so your palms face forward, finishing with your arms straight overhead.",
+      "Lower the weight under control, turning your wrists back to the starting position."
+    ]
   },
   {
     "id": 95,
@@ -2609,7 +3080,12 @@
     "muscleGroupCode": "DELTOIDS",
     "movementType": "COMPOUND",
     "difficultyCode": "ADVANCED",
-    "photoSlug": "seated_barbell_military_press"
+    "photoSlug": "seated_barbell_military_press",
+    "instructionsEn": [
+      "Sit on a shoulder press bench and grip the bar wider than shoulder width behind your neck — only do this exercise if your shoulders are very mobile, and use a lighter weight than for a front press.",
+      "Press the weight overhead and lock your arms out, keeping it in line with your shoulders.",
+      "Lower the weight behind your neck slowly and under control, and stop immediately if you feel pain or tightness in your shoulders."
+    ]
   },
   {
     "id": 96,
@@ -2634,7 +3110,12 @@
     "muscleGroupCode": "DELTOIDS",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "front_dumbbell_raise"
+    "photoSlug": "front_dumbbell_raise",
+    "instructionsEn": [
+      "Stand tall holding dumbbells in front of your thighs with your palms facing your thighs.",
+      "Raise one arm forward to shoulder height with a slight bend in the elbow and your palm facing down, breathing out as you lift.",
+      "Lower one arm under control as you raise the other, alternating sides."
+    ]
   },
   {
     "id": 97,
@@ -2659,7 +3140,12 @@
     "muscleGroupCode": "DELTOIDS",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "reverse_flyes"
+    "photoSlug": "reverse_flyes",
+    "instructionsEn": [
+      "Lie face down on an incline bench with your chest on the pad and the dumbbells hanging straight down.",
+      "Keep a slight bend in your elbows and open your arms out to the sides in an arc until they are parallel to the floor, squeezing your shoulder blades.",
+      "Lower the weight back to the start under control."
+    ]
   },
   {
     "id": 98,
@@ -2684,7 +3170,12 @@
     "muscleGroupCode": "DELTOIDS",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "cable_rear_delt_fly"
+    "photoSlug": "cable_rear_delt_fly",
+    "instructionsEn": [
+      "Set the pulleys at head height and cross your arms to take the opposite handle (right hand on the left cable, left hand on the right).",
+      "Pull your arms back and out to the sides with straight arms, squeezing your shoulder blades together.",
+      "Hold for 1 second at the end of the movement, then return your arms to the start under control."
+    ]
   },
   {
     "id": 99,
@@ -2712,7 +3203,12 @@
     "muscleGroupCode": "DELTOIDS",
     "movementType": "COMPOUND",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "face_pull"
+    "photoSlug": "face_pull",
+    "instructionsEn": [
+      "Stand facing a high pulley with a rope attached, holding both ends with your arms straight out in front of you.",
+      "Pull the rope toward your face, spreading your hands apart as you pull, keeping your upper arms parallel to the floor and breathing out.",
+      "Hold for 1 second, then bring the handle back to the start under control."
+    ]
   },
   {
     "id": 100,
@@ -2740,7 +3236,12 @@
     "muscleGroupCode": "DELTOIDS",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "upright_barbell_row"
+    "photoSlug": "upright_barbell_row",
+    "instructionsEn": [
+      "Stand tall gripping the bar slightly narrower than shoulder width, resting it against your thighs with your arms straight.",
+      "Pull the weight up along your body with your shoulders, elbows pointing up and out, until it is near your chin, breathing out as you pull.",
+      "Lower the weight back to the start under control, breathing in as you lower."
+    ]
   },
   {
     "id": 101,
@@ -2768,7 +3269,12 @@
     "muscleGroupCode": "DELTOIDS",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "cable_shoulder_press"
+    "photoSlug": "cable_shoulder_press",
+    "instructionsEn": [
+      "Stand between two low cable towers holding the handles at shoulder height with your palms facing forward.",
+      "Keep your head and chest up and press the handles straight overhead, breathing out as you press.",
+      "Lower the handle back to the start under control, breathing in as you lower."
+    ]
   },
   {
     "id": 102,
@@ -2793,7 +3299,12 @@
     "muscleGroupCode": "DELTOIDS",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "front_cable_raise"
+    "photoSlug": "front_cable_raise",
+    "instructionsEn": [
+      "Stand with your back to a low cable and hold the handle in one hand in front of your thigh, palm facing your thigh.",
+      "Raise your arms forward to shoulder height with a slight bend in the elbows, breathing out as you lift.",
+      "Lower your arm under control, finish the prescribed reps and then switch arms."
+    ]
   },
   {
     "id": 103,
@@ -2818,7 +3329,12 @@
     "muscleGroupCode": "DELTOIDS",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "seated_side_lateral_raise"
+    "photoSlug": "seated_side_lateral_raise",
+    "instructionsEn": [
+      "Sit on a bench holding a dumbbell in each hand hanging at your sides with your palms facing in.",
+      "Raise the weights out to the sides to shoulder height with a slight bend in the elbows, breathing out as you lift, and hold for 1 second at the top.",
+      "Lower the weight back to the start under control, breathing in as you lower."
+    ]
   },
   {
     "id": 104,
@@ -2848,7 +3364,12 @@
     "muscleGroupCode": "DELTOIDS",
     "movementType": "COMPOUND",
     "difficultyCode": "ADVANCED",
-    "photoSlug": "push_press"
+    "photoSlug": "push_press",
+    "instructionsEn": [
+      "Stand tall with the bar resting across your front shoulders, your feet shoulder-width apart and your elbows pointing forward.",
+      "Dip your knees slightly, then drive up explosively to create momentum and press the weight straight overhead.",
+      "Lock your arms out at the top, then lower the weight back to shoulder height under control."
+    ]
   },
   {
     "id": 105,
@@ -2873,7 +3394,12 @@
     "muscleGroupCode": "ABS",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "situp"
+    "photoSlug": "situp",
+    "instructionsEn": [
+      "Lie on your back with your knees bent and your feet anchored under something heavy or held by a partner, resting your hands beside your head without pulling on your neck.",
+      "Lift your torso up to form a V with your thighs, breathing out as you lift, and hold for 1 second at the top.",
+      "Lower your torso back to the start under control, breathing in as you lower."
+    ]
   },
   {
     "id": 106,
@@ -2898,7 +3424,12 @@
     "muscleGroupCode": "ABS",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "reverse_crunch"
+    "photoSlug": "reverse_crunch",
+    "instructionsEn": [
+      "Lie on your back with your arms at your sides and your palms down, then lift your legs so your thighs are vertical.",
+      "Curl your pelvis up, pull your knees toward your chest and lift your hips off the floor, breathing out as you curl.",
+      "Lower your hips and legs back to the start under control, breathing in as you lower."
+    ]
   },
   {
     "id": 107,
@@ -2923,7 +3454,12 @@
     "muscleGroupCode": "ABS",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "cable_crunch"
+    "photoSlug": "cable_crunch",
+    "instructionsEn": [
+      "Kneel under a high pulley with a rope attached and pull the rope down beside your face.",
+      "Bend at the waist to curl your torso down with your elbows toward the middle of your thighs, squeezing your abs and breathing out.",
+      "Return to the start under control, breathing in as you extend and keeping your hips still throughout."
+    ]
   },
   {
     "id": 108,
@@ -2948,7 +3484,12 @@
     "muscleGroupCode": "ABS",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "plank"
+    "photoSlug": "plank",
+    "instructionsEn": [
+      "Support yourself on your toes and forearms with your elbows directly under your shoulders.",
+      "Keep your body straight from head to heels and brace your abs hard.",
+      "Hold the position as long as you can, breathing steadily, without letting your hips sag or pike up."
+    ]
   },
   {
     "id": 109,
@@ -2976,7 +3517,12 @@
     "muscleGroupCode": "ABS",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "side_bridge"
+    "photoSlug": "side_bridge",
+    "instructionsEn": [
+      "Lie on your side and prop yourself up on your forearm and the outside edge of your foot, with your elbow directly under your shoulder.",
+      "Lift your hips off the floor so your body makes a straight line from head to feet, and brace your abs hard.",
+      "Hold the position as long as you can, breathing steadily, then switch sides."
+    ]
   },
   {
     "id": 110,
@@ -3004,7 +3550,12 @@
     "muscleGroupCode": "ABS",
     "movementType": "COMPOUND",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "russian_twist"
+    "photoSlug": "russian_twist",
+    "instructionsEn": [
+      "Sit on the floor with your knees bent, lean your torso back to form a V with your thighs and clasp your hands straight out in front of your chest.",
+      "Rotate your torso to the right until your arms are parallel to the floor, breathing out as you turn.",
+      "Rotate back to the middle and then to the left, alternating sides for the prescribed reps."
+    ]
   },
   {
     "id": 111,
@@ -3029,7 +3580,12 @@
     "muscleGroupCode": "ABS",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "air_bike"
+    "photoSlug": "air_bike",
+    "instructionsEn": [
+      "Lie on your back with your lower back pressed into the floor and your hands resting lightly behind your head, lifting your shoulders off the floor.",
+      "Raise your knees so your shins are perpendicular to the floor, pedal as if cycling and bring each elbow to the opposite knee.",
+      "Alternate sides continuously, breathing out each time your elbow meets your knee."
+    ]
   },
   {
     "id": 112,
@@ -3054,7 +3610,12 @@
     "muscleGroupCode": "ABS",
     "movementType": "ISOLATION",
     "difficultyCode": "ADVANCED",
-    "photoSlug": "hanging_leg_raise"
+    "photoSlug": "hanging_leg_raise",
+    "instructionsEn": [
+      "Hang from the pull-up bar with your arms straight and your legs straight below you.",
+      "Raise both legs until your torso and legs form a 90-degree angle, breathing out as you lift, and hold for 1 second at the top.",
+      "Lower your legs back to the start under control, breathing in as you lower."
+    ]
   },
   {
     "id": 113,
@@ -3082,7 +3643,12 @@
     "muscleGroupCode": "ABS",
     "movementType": "COMPOUND",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "ab_roller"
+    "photoSlug": "ab_roller",
+    "instructionsEn": [
+      "Kneel on the floor holding the ab wheel on the ground in front of your knees.",
+      "Roll the wheel forward slowly, extending as far as you can without touching the floor, and breathe in as you roll out.",
+      "Pull yourself back to the start with your abs, keeping them braced throughout and breathing out as you come back."
+    ]
   },
   {
     "id": 114,
@@ -3107,7 +3673,12 @@
     "muscleGroupCode": "ABS",
     "movementType": "ISOLATION",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "ab_crunch_machine"
+    "photoSlug": "ab_crunch_machine",
+    "instructionsEn": [
+      "Sit at the machine with your feet under the holding pad, take the handles above you and rest your elbows on the pad at 90 degrees.",
+      "Crunch your torso down with your abs while lifting your legs slightly, breathing out as you crunch.",
+      "Return to the start under control, breathing in as you extend."
+    ]
   },
   {
     "id": 115,
@@ -3132,7 +3703,12 @@
     "muscleGroupCode": "ABS",
     "movementType": "ISOLATION",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "decline_crunch"
+    "photoSlug": "decline_crunch",
+    "instructionsEn": [
+      "Hook your feet at the end of the decline bench, lie back and rest your hands lightly beside your head without lacing them behind your neck.",
+      "Press your lower back into the bench and curl your shoulders about 10cm off it, squeezing your abs and breathing out.",
+      "Hold for 1 second at the top, then lower slowly and under control to the start."
+    ]
   },
   {
     "id": 116,
@@ -3157,7 +3733,12 @@
     "muscleGroupCode": "ABS",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "dead_bug"
+    "photoSlug": "dead_bug",
+    "instructionsEn": [
+      "Lie on your back with your arms straight up toward the ceiling and your hips and knees bent to 90 degrees.",
+      "Press your lower back into the floor, brace your abs, then extend one leg almost to the floor without letting your back arch.",
+      "Bring your leg back to the start and alternate legs, keeping your lower back pressed into the floor throughout."
+    ]
   },
   {
     "id": 117,
@@ -3187,7 +3768,12 @@
     "muscleGroupCode": "CHEST",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "incline_barbell_bench_press"
+    "photoSlug": "incline_barbell_bench_press",
+    "instructionsEn": [
+      "Lie on an incline bench, take a medium grip on the bar so your elbows are at 90 degrees, and lift it off the rack.",
+      "Lower the bar to your upper chest under control, breathing in as you lower.",
+      "Press the bar back to the start with your chest, breathing out as you press and squeezing at the top."
+    ]
   },
   {
     "id": 118,
@@ -3217,7 +3803,12 @@
     "muscleGroupCode": "CHEST",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "decline_barbell_bench_press"
+    "photoSlug": "decline_barbell_bench_press",
+    "instructionsEn": [
+      "Hook your feet at the end of the decline bench, lie back, take a medium grip on the bar and lift it off the rack.",
+      "Lower the bar to your lower chest under control, breathing in as you lower.",
+      "Press the bar back to the start with your chest, breathing out as you press and squeezing at the top."
+    ]
   },
   {
     "id": 119,
@@ -3247,7 +3838,12 @@
     "muscleGroupCode": "CHEST",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "dumbbell_bench_press"
+    "photoSlug": "dumbbell_bench_press",
+    "instructionsEn": [
+      "Lie on a bench holding the dumbbells at chest height with your palms facing forward and your elbows at 90 degrees.",
+      "Press the weight up with your chest until your arms are straight, breathing out as you press and squeezing at the top.",
+      "Lower the weight back to the start under control, breathing in as you lower."
+    ]
   },
   {
     "id": 120,
@@ -3277,7 +3873,12 @@
     "muscleGroupCode": "CHEST",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "incline_dumbbell_press"
+    "photoSlug": "incline_dumbbell_press",
+    "instructionsEn": [
+      "Lie on an incline bench holding the dumbbells at shoulder height with your palms facing forward.",
+      "Press the weight up with your chest until your arms are straight, breathing out as you press and squeezing at the top.",
+      "Lower the weight back to the start under control, breathing in as you lower."
+    ]
   },
   {
     "id": 121,
@@ -3307,7 +3908,12 @@
     "muscleGroupCode": "CHEST",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "decline_dumbbell_bench_press"
+    "photoSlug": "decline_dumbbell_bench_press",
+    "instructionsEn": [
+      "Hook your feet at the end of the decline bench, lie back and hold the dumbbells at shoulder height with your palms facing forward.",
+      "Lower the dumbbells to the sides of your chest under control, breathing in as you lower and keeping your forearms perpendicular to the floor.",
+      "Press the weight back to the start with your chest, breathing out as you press and squeezing at the top."
+    ]
   },
   {
     "id": 122,
@@ -3332,7 +3938,12 @@
     "muscleGroupCode": "CHEST",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "dumbbell_flyes"
+    "photoSlug": "dumbbell_flyes",
+    "instructionsEn": [
+      "Lie on a bench holding the dumbbells straight above your chest with your palms facing each other and a slight bend in your elbows.",
+      "Lower the dumbbells out to the sides in an arc until you feel a stretch in your chest, breathing in as you lower; only your shoulders move.",
+      "Bring your arms back to the start using your chest, squeezing hard and breathing out."
+    ]
   },
   {
     "id": 123,
@@ -3360,7 +3971,12 @@
     "muscleGroupCode": "CHEST",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "incline_dumbbell_flyes"
+    "photoSlug": "incline_dumbbell_flyes",
+    "instructionsEn": [
+      "Lie on a bench set below 30 degrees and hold the dumbbells straight above your head with a slight bend in your elbows.",
+      "Lower the dumbbells out to the sides in an arc, turning your wrists so your palms face each other at the bottom, and breathe in as you lower.",
+      "Bring your arms back to the start, turning your wrists back over, squeezing your chest and breathing out."
+    ]
   },
   {
     "id": 124,
@@ -3390,7 +4006,12 @@
     "muscleGroupCode": "CHEST",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "machine_bench_press"
+    "photoSlug": "machine_bench_press",
+    "instructionsEn": [
+      "Sit at the machine, pick your weight and take the handles with your palms down and your elbows at shoulder height.",
+      "Press the handles away with your chest, breathing out as you press and squeezing at the end.",
+      "Return the handle to the start under control, breathing in as it comes back."
+    ]
   },
   {
     "id": 125,
@@ -3415,7 +4036,12 @@
     "muscleGroupCode": "CHEST",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "butterfly"
+    "photoSlug": "butterfly",
+    "instructionsEn": [
+      "Sit at the machine with your back flat against the pad and take the handles with your upper arms parallel to the floor.",
+      "Squeeze the handles together and contract your chest hard in the middle, breathing out as you squeeze.",
+      "Bring the handles back to the start slowly, breathing in as they open."
+    ]
   },
   {
     "id": 126,
@@ -3445,7 +4071,12 @@
     "muscleGroupCode": "CHEST",
     "movementType": "COMPOUND",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "dips_chest_version"
+    "photoSlug": "dips_chest_version",
+    "instructionsEn": [
+      "Support yourself on the parallel bars with your arms locked and your torso leaning about 30 degrees forward.",
+      "Lower slowly with your elbows flared slightly outward until you feel a stretch in your chest, breathing in as you lower.",
+      "Press yourself back to the start with your chest, squeezing at the top and breathing out as you press."
+    ]
   },
   {
     "id": 127,
@@ -3477,7 +4108,12 @@
     "muscleGroupCode": "CHEST",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "pushup_wide"
+    "photoSlug": "pushup_wide",
+    "instructionsEn": [
+      "Place your hands wider than shoulder width with your body straight from head to heels and your arms locked out.",
+      "Bend your elbows to lower your chest toward the floor, breathing in as you lower and keeping your hips from sagging.",
+      "Press yourself back to the start with your chest, breathing out as you press."
+    ]
   },
   {
     "id": 128,
@@ -3507,7 +4143,12 @@
     "muscleGroupCode": "CHEST",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "incline_pushup"
+    "photoSlug": "incline_pushup",
+    "instructionsEn": [
+      "Stand facing a sturdy bench or box and place your hands on the edge slightly wider than shoulder width.",
+      "Walk your feet back, keep your body straight, and bend your elbows to lower your chest toward the edge of the bench.",
+      "Press yourself back to the start with your chest, breathing out as you press."
+    ]
   },
   {
     "id": 129,
@@ -3532,7 +4173,12 @@
     "muscleGroupCode": "CHEST",
     "movementType": "ISOLATION",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "flat_bench_cable_flyes"
+    "photoSlug": "flat_bench_cable_flyes",
+    "instructionsEn": [
+      "Set a flat bench between two low pulleys and lie on it so your chest is level with the pulleys.",
+      "Take both handles and open your arms out to the sides with a slight bend in the elbows and your forearms parallel to the floor.",
+      "Bring your hands together in an arc above your chest, squeezing your chest and breathing out."
+    ]
   },
   {
     "id": 130,
@@ -3562,7 +4208,12 @@
     "muscleGroupCode": "BACK",
     "movementType": "COMPOUND",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "pullups"
+    "photoSlug": "pullups",
+    "instructionsEn": [
+      "Take a grip wider than shoulder width with your palms facing forward and hang with your arms straight and your chest up.",
+      "Pull yourself up until your chin clears the bar, squeezing your lats and back and breathing out as you pull.",
+      "Lower yourself back to the start under control, breathing in as you lower."
+    ]
   },
   {
     "id": 131,
@@ -3594,7 +4245,12 @@
     "muscleGroupCode": "BACK",
     "movementType": "COMPOUND",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "chinup"
+    "photoSlug": "chinup",
+    "instructionsEn": [
+      "Take a grip narrower than shoulder width with your palms facing you and hang with your arms straight.",
+      "Pull yourself up until your head is level with the bar, keeping your elbows close to your body and breathing out as you pull.",
+      "Lower yourself back to the start under control, breathing in as you lower."
+    ]
   },
   {
     "id": 132,
@@ -3624,7 +4280,12 @@
     "muscleGroupCode": "BACK",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "one_arm_dumbbell_row"
+    "photoSlug": "one_arm_dumbbell_row",
+    "instructionsEn": [
+      "Put one knee and one hand on a flat bench with your back flat and parallel to the floor, letting the dumbbell hang from the other hand.",
+      "Row the weight up to your hip with your elbow pointing at the ceiling, keeping your torso still and breathing out as you pull.",
+      "Lower the weight back to the start under control, finish the prescribed reps and then switch arms."
+    ]
   },
   {
     "id": 133,
@@ -3654,7 +4315,12 @@
     "muscleGroupCode": "BACK",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "seated_cable_rows"
+    "photoSlug": "seated_cable_rows",
+    "instructionsEn": [
+      "Sit at the machine with your feet on the footplate and your knees slightly bent, take the V-handle and straighten your arms.",
+      "Row the handle toward your stomach with a flat back and your chest up, breathing out as you pull and squeezing your back at the end.",
+      "Return the handle to the start under control, breathing in as you extend."
+    ]
   },
   {
     "id": 134,
@@ -3684,7 +4350,12 @@
     "muscleGroupCode": "BACK",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "t_bar_row"
+    "photoSlug": "t_bar_row",
+    "instructionsEn": [
+      "Stand over the barbell with one end anchored, take the T-handle, set your feet wide, push your hips back and keep your chest up.",
+      "Pull the weight toward your upper stomach by squeezing your shoulder blades and bending your elbows, breathing out as you pull.",
+      "Lower the weight back to the start under control, breathing in as you lower."
+    ]
   },
   {
     "id": 135,
@@ -3716,7 +4387,12 @@
     "muscleGroupCode": "BACK",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "close_grip_front_lat_pulldown"
+    "photoSlug": "close_grip_front_lat_pulldown",
+    "instructionsEn": [
+      "Sit at the machine, adjust the knee pad to fit and take a grip narrower than shoulder width on the bar.",
+      "Pull the bar down to your upper chest, leaning back slightly, squeezing your lats and breathing out as you pull.",
+      "Return the bar to the start under control, breathing in as you extend."
+    ]
   },
   {
     "id": 136,
@@ -3746,7 +4422,12 @@
     "muscleGroupCode": "BACK",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "one_arm_lat_pulldown"
+    "photoSlug": "one_arm_lat_pulldown",
+    "instructionsEn": [
+      "Sit at the machine, adjust the knee pad to fit and take one handle with an overhand grip.",
+      "Pull the handle down with your elbows tucked against your body, breathing out as you pull.",
+      "Bring the handle back up to the start under control, finish the prescribed reps and then switch arms."
+    ]
   },
   {
     "id": 137,
@@ -3771,7 +4452,12 @@
     "muscleGroupCode": "BACK",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "barbell_shrug"
+    "photoSlug": "barbell_shrug",
+    "instructionsEn": [
+      "Stand tall with your feet shoulder-width apart, holding the bar in front of your thighs with your palms facing your thighs.",
+      "Shrug your shoulders as high as you can, breathing out as you shrug, and hold for 1 second at the top.",
+      "Lower your shoulders back to the start under control, breathing in as you lower and without using your biceps."
+    ]
   },
   {
     "id": 138,
@@ -3796,7 +4482,12 @@
     "muscleGroupCode": "BACK",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "dumbbell_shrug"
+    "photoSlug": "dumbbell_shrug",
+    "instructionsEn": [
+      "Stand tall holding dumbbells at your sides with your palms facing you.",
+      "Shrug your shoulders as high as you can, breathing out as you shrug, and hold for 1 second at the top.",
+      "Lower your shoulders back to the start under control, breathing in as you lower."
+    ]
   },
   {
     "id": 139,
@@ -3826,7 +4517,12 @@
     "muscleGroupCode": "BACK",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "hyperextensions"
+    "photoSlug": "hyperextensions",
+    "instructionsEn": [
+      "Lie face down on the back extension bench with your ankles under the pad and your hips on the upper pad, arms crossed over your chest.",
+      "Hinge slowly at the hips with a flat back, breathing in as you fold, until you feel a stretch in your hamstrings.",
+      "Raise your torso back to the start, squeezing your lower back and breathing out, without over-arching."
+    ]
   },
   {
     "id": 140,
@@ -3860,7 +4556,12 @@
     "muscleGroupCode": "BACK",
     "movementType": "COMPOUND",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "rack_pulls"
+    "photoSlug": "rack_pulls",
+    "instructionsEn": [
+      "Set the bar on the rack pins at knee height and take a deadlift stance with your feet under your hips and your back arched.",
+      "Push through the floor and extend your hips and knees to pull the weight up, drawing your shoulders back at the top.",
+      "Lower the weight back onto the rack pins under control, then repeat."
+    ]
   },
   {
     "id": 141,
@@ -3888,7 +4589,12 @@
     "muscleGroupCode": "BACK",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "inverted_row"
+    "photoSlug": "inverted_row",
+    "instructionsEn": [
+      "Set the bar at hip height in a rack, grip it wider than shoulder width and hang underneath it with your body straight and your heels on the floor.",
+      "Bend your elbows to pull your chest up to the bar, squeezing your shoulder blades and breathing out as you pull.",
+      "Lower yourself back to the start under control, breathing in as you lower."
+    ]
   },
   {
     "id": 142,
@@ -3922,7 +4628,12 @@
     "muscleGroupCode": "BACK",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "bent_over_one_arm_row"
+    "photoSlug": "bent_over_one_arm_row",
+    "instructionsEn": [
+      "Wedge one end of the barbell into a corner, hinge forward until your torso is almost parallel to the floor with your knees slightly bent.",
+      "Hold the free end of the bar with one hand and brace the other on your knee, then row the weight up to your lower chest with your elbow close to your body.",
+      "Lower the dumbbell under control to stretch your lat, breathe out as you pull it up, and switch arms after the prescribed reps."
+    ]
   },
   {
     "id": 143,
@@ -3954,7 +4665,12 @@
     "muscleGroupCode": "LEGS",
     "movementType": "COMPOUND",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "front_squat"
+    "photoSlug": "front_squat",
+    "instructionsEn": [
+      "Rest the bar on your front shoulders, holding it with your fingers in a clean grip and your elbows high.",
+      "Lift the bar off the rack and step back with your feet shoulder-width apart and toes slightly out, keeping your head and elbows high.",
+      "Bend your knees and sit down between your legs until your hamstrings touch your calves, then push through the floor to stand back up."
+    ]
   },
   {
     "id": 144,
@@ -3988,7 +4704,12 @@
     "muscleGroupCode": "LEGS",
     "movementType": "COMPOUND",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "goblet_squat"
+    "photoSlug": "goblet_squat",
+    "instructionsEn": [
+      "Stand tall holding a kettlebell against your chest with both hands and your feet shoulder-width apart.",
+      "Squat down between your legs until your hamstrings touch your calves, keeping your chest and head up and your back flat.",
+      "Use your elbows to push your knees gently outward at the bottom, then stand back up to the start."
+    ]
   },
   {
     "id": 145,
@@ -4020,7 +4741,12 @@
     "muscleGroupCode": "LEGS",
     "movementType": "COMPOUND",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "barbell_lunge"
+    "photoSlug": "barbell_lunge",
+    "instructionsEn": [
+      "Set the bar across your upper back, lift it off the rack and stand tall with your feet hip-width apart.",
+      "Step one foot forward and lower your body by bending the knee, keeping it behind your toes, and breathe in as you lower.",
+      "Drive through the front heel to stand back up, breathing out as you push, then switch legs after the prescribed reps."
+    ]
   },
   {
     "id": 146,
@@ -4045,7 +4771,12 @@
     "muscleGroupCode": "LEGS",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "leg_extensions"
+    "photoSlug": "leg_extensions",
+    "instructionsEn": [
+      "Sit at the machine with your shins under the pad and your knees at 90 degrees, holding the handles at your sides.",
+      "Extend your legs fully using your quads, breathing out as you extend, and hold for 1 second at the top.",
+      "Lower your legs back to the start under control, breathing in as you lower."
+    ]
   },
   {
     "id": 147,
@@ -4070,7 +4801,12 @@
     "muscleGroupCode": "LEGS",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "lying_leg_curls"
+    "photoSlug": "lying_leg_curls",
+    "instructionsEn": [
+      "Lie face down on the machine with the pad under your calves, hold the handles and keep your legs straight.",
+      "Bend your knees to pull the pad up as far as it goes, breathing out as you curl, holding for 1 second at the top and keeping your torso still.",
+      "Return your legs to the starting position under control, breathing in as you go."
+    ]
   },
   {
     "id": 148,
@@ -4095,7 +4831,12 @@
     "muscleGroupCode": "LEGS",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "seated_leg_curl"
+    "photoSlug": "seated_leg_curl",
+    "instructionsEn": [
+      "Sit at the machine with your calves on the pad and your thighs locked under the upper pad, holding the handles at your sides.",
+      "Pull the pad back by bending your knees, breathing out as you curl, and hold for 1 second at the top.",
+      "Return your legs to the starting position under control, breathing in as you go."
+    ]
   },
   {
     "id": 149,
@@ -4127,7 +4868,12 @@
     "muscleGroupCode": "LEGS",
     "movementType": "COMPOUND",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "romanian_deadlift"
+    "photoSlug": "romanian_deadlift",
+    "instructionsEn": [
+      "Stand tall gripping the bar slightly wider than shoulder width with your palms down and your knees slightly bent.",
+      "Push your hips back and lower the bar along your legs to just below your knees, keeping your back flat and your knees only slightly bent (do not rest the bar on the floor between reps), and breathe in as you lower.",
+      "Drive your hips forward to stand up, breathing out as you rise and squeezing your glutes at the top."
+    ]
   },
   {
     "id": 150,
@@ -4161,7 +4907,12 @@
     "muscleGroupCode": "LEGS",
     "movementType": "COMPOUND",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "sumo_deadlift"
+    "photoSlug": "sumo_deadlift",
+    "instructionsEn": [
+      "Take a very wide stance with your toes pointing out, the bar over the middle of your feet, and hinge at the hips to grip it.",
+      "Drop your hips low with your chest up and eyes forward, push through the floor to lift the bar, and drive your hips forward once the bar passes your knees.",
+      "Stand all the way up, squeeze your glutes at the top, then lower the weight back to the floor under control."
+    ]
   },
   {
     "id": 151,
@@ -4191,7 +4942,12 @@
     "muscleGroupCode": "LEGS",
     "movementType": "COMPOUND",
     "difficultyCode": "INTERMEDIATE",
-    "photoSlug": "glute_ham_raise"
+    "photoSlug": "glute_ham_raise",
+    "instructionsEn": [
+      "Place your feet between the machine's rollers and lie face down with your knees just behind the pad.",
+      "Start folded forward with your back arched, then bend your knees and pull yourself up with your hamstrings until your torso is upright.",
+      "Lower yourself back to the start under control, without dropping."
+    ]
   },
   {
     "id": 152,
@@ -4216,7 +4972,12 @@
     "muscleGroupCode": "LEGS",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "standing_calf_raises"
+    "photoSlug": "standing_calf_raises",
+    "instructionsEn": [
+      "Put your shoulders under the machine pads with the balls of your feet on the platform and your heels hanging off the edge, and stand tall.",
+      "Rise onto your toes as high as you can by extending your ankles, breathing out as you rise, and hold for 1 second at the top.",
+      "Lower your heels under control until you feel a stretch in your calves, breathing in as you lower."
+    ]
   },
   {
     "id": 153,
@@ -4241,7 +5002,12 @@
     "muscleGroupCode": "LEGS",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "seated_calf_raise"
+    "photoSlug": "seated_calf_raise",
+    "instructionsEn": [
+      "Sit at the machine with the balls of your feet on the platform, your heels hanging off the edge and your thighs under the pad above.",
+      "Rise onto your toes as high as you can by extending your ankles, breathing out as you rise, and hold for 1 second at the top.",
+      "Lower your heels under control until you feel a stretch in your calves, breathing in as you lower."
+    ]
   },
   {
     "id": 154,
@@ -4269,7 +5035,12 @@
     "muscleGroupCode": "LEGS",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "thigh_abductor"
+    "photoSlug": "thigh_abductor",
+    "instructionsEn": [
+      "Sit at the machine with your legs against the pads on each side, hold the handles and keep your torso still.",
+      "Push your legs apart with your outer thighs, breathing out as you push, and hold for 1 second at the end.",
+      "Bring your legs back together to the start under control, breathing in as you go."
+    ]
   },
   {
     "id": 155,
@@ -4299,6 +5070,11 @@
     "muscleGroupCode": "LEGS",
     "movementType": "ISOLATION",
     "difficultyCode": "BEGINNER",
-    "photoSlug": "thigh_adductor"
+    "photoSlug": "thigh_adductor",
+    "instructionsEn": [
+      "Sit at the machine with your legs against the pads on each side, hold the handles and keep your torso still.",
+      "Squeeze your legs together with your inner thighs, breathing out as you squeeze, and hold for 1 second at the top.",
+      "Open your legs back to the start under control, breathing in as you go."
+    ]
   }
 ]
