@@ -118,11 +118,11 @@ class _ProgramCard extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  stops: [0, 0.46, 1],
+                  stops: [0, 0.6, 1],
                   colors: [
-                    Color(0x9E050505),
-                    Color(0xD6050505),
-                    Color(0xFF060606),
+                    Color(0x00050505),
+                    Color(0x26050505),
+                    Color(0x8C060606),
                   ],
                 ),
               ),

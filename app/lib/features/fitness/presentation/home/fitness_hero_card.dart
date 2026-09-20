@@ -29,65 +29,72 @@ class FitnessHeroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: FitnessHome.heroHeight,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(FitnessHome.heroRadius),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            const ColoredBox(color: Color(0xFF080808)),
-            Image.asset('assets/fitness/home/hero.jpg', fit: BoxFit.cover),
-            // Lop phu rat nhe: nua trai cua anh da den dac san nen chi can
-            // phu them mot chut cho chac chan doc duoc chu, khong lam toi
-            // ca buc anh nhu ban dung anh phong gym truoc day.
-            const DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                  stops: [0.0, 0.5, 1],
-                  colors: [
-                    Color(0x99050505),
-                    Color(0x33050505),
-                    Color(0x00050505),
+    // CA THE deu bam duoc chu khong rieng nut - vung bam cua nut nho hon
+    // nhieu so voi khoang trong quanh no, bam tay hay truot. Nut ben trong
+    // van giu hieu ung bam rieng de nhin ra ngay day la cho bam chinh.
+    return GestureDetector(
+      onTap: onStart,
+      behavior: HitTestBehavior.opaque,
+      child: SizedBox(
+        height: FitnessHome.heroHeight,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(FitnessHome.heroRadius),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              const ColoredBox(color: Color(0xFF080808)),
+              Image.asset('assets/fitness/home/hero.jpg', fit: BoxFit.cover),
+              // Lop phu rat nhe: nua trai cua anh da den dac san nen chi can
+              // phu them mot chut cho chac chan doc duoc chu, khong lam toi
+              // ca buc anh nhu ban dung anh phong gym truoc day.
+              const DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    stops: [0.0, 0.5, 1],
+                    colors: [
+                      Color(0x99050505),
+                      Color(0x33050505),
+                      Color(0x00050505),
+                    ],
+                  ),
+                ),
+                child: SizedBox.expand(),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(14, 11, 14, 9),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      kicker.toUpperCase(),
+                      style: AppTextStyles.body(
+                        size: 9,
+                        weight: FontWeight.w800,
+                        color: FitnessHome.red,
+                      ).copyWith(letterSpacing: 1.2),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      title,
+                      style: AppTextStyles.heading(size: 17.5)
+                          .copyWith(height: 1.24, letterSpacing: -0.3),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      subtitle,
+                      style: FitnessHome.bodySecondary(size: 10.5)
+                          .copyWith(height: 1.4),
+                    ),
+                    const SizedBox(height: 6),
+                    _StartButton(label: ctaLabel, onTap: onStart),
                   ],
                 ),
               ),
-              child: SizedBox.expand(),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(14, 11, 14, 9),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    kicker.toUpperCase(),
-                    style: AppTextStyles.body(
-                      size: 9,
-                      weight: FontWeight.w800,
-                      color: FitnessHome.red,
-                    ).copyWith(letterSpacing: 1.2),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    title,
-                    style: AppTextStyles.heading(size: 17.5)
-                        .copyWith(height: 1.24, letterSpacing: -0.3),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    subtitle,
-                    style: FitnessHome.bodySecondary(size: 10.5)
-                        .copyWith(height: 1.4),
-                  ),
-                  const SizedBox(height: 6),
-                  _StartButton(label: ctaLabel, onTap: onStart),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

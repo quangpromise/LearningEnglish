@@ -87,15 +87,25 @@ class FitnessHomeScreen extends ConsumerWidget {
                     title: ref.tr('fitness_hero_title'),
                     subtitle: ref.tr('fitness_hero_subtitle'),
                     ctaLabel: ref.tr('fitness_hero_cta'),
-                    onStart: () => _openTodayWorkout(context, ref),
+                    // "Bat dau tap" mo thang Thu vien bai tap - day la loi
+                    // vao DUY NHAT cua thu vien sau khi bo o "Bai tap" o
+                    // hang Tien ich nhanh. Buoi tap theo giao an van mo tu
+                    // the "Ke hoach hom nay" ngay ben duoi.
+                    onStart: () => openAppPopup(
+                      context,
+                      const MuscleGroupCategoriesScreen(),
+                    ),
                   ),
                   const SizedBox(height: 10),
-                  // Bam vao the chi so mo man Thong ke - day la loi vao DUY
-                  // NHAT cua Thong ke; cau dong luc ben duoi khong con mo
-                  // cung man do nua (truoc day trung lap).
                   FitnessStatsRow(
-                    onTap: () =>
+                    onOpenNutrition: () =>
+                        openAppPopup(context, const NutritionScreen()),
+                    onOpenStatistics: () =>
                         openAppPopup(context, const FitnessStatisticsScreen()),
+                    onOpenHeartRate: () async {
+                      await openAppPopup(context, const HeartRateScreen());
+                      ref.invalidate(heartRateHistoryProvider);
+                    },
                   ),
                   const SizedBox(height: 10),
                   FitnessTodayCard(
@@ -121,20 +131,13 @@ class FitnessHomeScreen extends ConsumerWidget {
                     title: ref.tr('fitness_quick_actions_title'),
                   ),
                   const SizedBox(height: 8),
-                  // 5 o vua khit 1 hang, KHONG cuon ngang - ban truoc giau
-                  // mat 2 tinh nang (Thu vien bai tap, Cong dong) o phan
-                  // phai vuot sang moi thay. O "Lich tap" cu da bo vi no mo
-                  // dung man ma khu "Tap luyen" ngay ben tren da mo.
+                  // 4 o vua khit 1 hang, KHONG cuon ngang (ban dau tien
+                  // cuon duoc nen o thu 5 tro di bi khuat han). Hai o da bo:
+                  // "Lich tap" (mo dung man ma khu "Tap luyen" ngay tren da
+                  // mo) va "Bai tap" (da chuyen thanh nut "Bat dau tap" o
+                  // the lon dau man).
                   FitnessQuickActions(
                     actions: [
-                      FitnessQuickAction(
-                        icon: Icons.fitness_center_rounded,
-                        label: ref.tr('fitness_quick_exercises'),
-                        onTap: () => openAppPopup(
-                          context,
-                          const MuscleGroupCategoriesScreen(),
-                        ),
-                      ),
                       FitnessQuickAction(
                         icon: Icons.restaurant_rounded,
                         label: ref.tr('fitness_nutrition_title'),

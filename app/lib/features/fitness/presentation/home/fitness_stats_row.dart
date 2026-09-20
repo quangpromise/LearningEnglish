@@ -14,9 +14,19 @@ import 'fitness_home_theme.dart';
 ///  - Tong khoi luong tuan nay: doi sang tan, kem mui ten so voi tuan truoc.
 ///  - Nhip tim: lan do GAN NHAT bang camera (xem heart_rate_service.dart).
 class FitnessStatsRow extends ConsumerWidget {
-  const FitnessStatsRow({super.key, required this.onTap});
+  const FitnessStatsRow({
+    super.key,
+    required this.onOpenNutrition,
+    required this.onOpenStatistics,
+    required this.onOpenHeartRate,
+  });
 
-  final VoidCallback onTap;
+  /// Moi o mo dung man hinh CUA CHINH NO thay vi ca 4 o cung dan toi man
+  /// Thong ke - truoc day bam o nao cung ra 1 man giong het nhau nen nguoi
+  /// dung khong biet 4 o khac nhau cho nao.
+  final VoidCallback onOpenNutrition;
+  final VoidCallback onOpenStatistics;
+  final VoidCallback onOpenHeartRate;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -36,7 +46,6 @@ class FitnessStatsRow extends ConsumerWidget {
         (stats?.previousWeekVolumeKg ?? 0);
 
     return FitnessCard(
-      onTap: onTap,
       radius: FitnessHome.cardRadius,
       padding: const EdgeInsets.symmetric(vertical: 11),
       child: SizedBox(
@@ -52,6 +61,7 @@ class FitnessStatsRow extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _StatCell(
+                  onTap: onOpenNutrition,
                   icon: Icons.local_fire_department_rounded,
                   label: ref.tr('fitness_stat_calories'),
                   value: '$kcalToday',
@@ -61,6 +71,7 @@ class FitnessStatsRow extends ConsumerWidget {
                   ),
                 ),
                 _StatCell(
+                  onTap: onOpenStatistics,
                   icon: Icons.fitness_center_rounded,
                   label: ref.tr('fitness_stat_sessions'),
                   value: '$sessionsDone',
@@ -71,6 +82,7 @@ class FitnessStatsRow extends ConsumerWidget {
                   ),
                 ),
                 _StatCell(
+                  onTap: onOpenStatistics,
                   icon: Icons.scale_rounded,
                   label: ref.tr('fitness_stat_volume'),
                   value: volumeTons >= 10
@@ -82,6 +94,7 @@ class FitnessStatsRow extends ConsumerWidget {
                       : null,
                 ),
                 _StatCell(
+                  onTap: onOpenHeartRate,
                   icon: Icons.favorite_rounded,
                   label: ref.tr('fitness_stat_heart_rate'),
                   // Chua do lan nao -> gach ngang. KHONG dat 1 con so mac dinh
@@ -110,6 +123,7 @@ class FitnessStatsRow extends ConsumerWidget {
 
 class _StatCell extends StatelessWidget {
   const _StatCell({
+    required this.onTap,
     required this.icon,
     required this.label,
     required this.value,
@@ -118,6 +132,7 @@ class _StatCell extends StatelessWidget {
     this.trailingIcon,
   });
 
+  final VoidCallback onTap;
   final IconData icon;
   final String label;
   final String value;
@@ -131,42 +146,52 @@ class _StatCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 9),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, size: 16, color: FitnessHome.red),
-            const SizedBox(height: 6),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(label, maxLines: 1, style: FitnessHome.statLabel()),
-            ),
-            const SizedBox(height: 1),
-            // FittedBox chu KHONG phai Flexible+ellipsis: khi cot hep, ban
-            // cu cat mat han CON SO (phan quan trong nhat cua the) ma chi
-            // con lai don vi - o day ca cum so + don vi cung thu nho lai.
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.baseline,
-                textBaseline: TextBaseline.alphabetic,
-                children: [
-                  Text(value, maxLines: 1, style: FitnessHome.statValue()),
-                  const SizedBox(width: 4),
-                  Text(unit, maxLines: 1, style: FitnessHome.statUnit()),
-                  if (trailingIcon != null) ...[
-                    const SizedBox(width: 3),
-                    Icon(trailingIcon, size: 13, color: FitnessHome.redBright),
-                  ],
-                ],
+      child: GestureDetector(
+        onTap: onTap,
+        // opaque de bam vao khoang trong trong o (khong trung chu/icon) van
+        // an - o chi so rat hep, bam trung dung chu la kho.
+        behavior: HitTestBehavior.opaque,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 9),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(icon, size: 16, color: FitnessHome.red),
+              const SizedBox(height: 6),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(label, maxLines: 1, style: FitnessHome.statLabel()),
               ),
-            ),
-            const Spacer(),
-            ?indicator,
-          ],
+              const SizedBox(height: 1),
+              // FittedBox chu KHONG phai Flexible+ellipsis: khi cot hep, ban
+              // cu cat mat han CON SO (phan quan trong nhat cua the) ma chi
+              // con lai don vi - o day ca cum so + don vi cung thu nho lai.
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    Text(value, maxLines: 1, style: FitnessHome.statValue()),
+                    const SizedBox(width: 4),
+                    Text(unit, maxLines: 1, style: FitnessHome.statUnit()),
+                    if (trailingIcon != null) ...[
+                      const SizedBox(width: 3),
+                      Icon(
+                        trailingIcon,
+                        size: 13,
+                        color: FitnessHome.redBright,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const Spacer(),
+              ?indicator,
+            ],
+          ),
         ),
       ),
     );

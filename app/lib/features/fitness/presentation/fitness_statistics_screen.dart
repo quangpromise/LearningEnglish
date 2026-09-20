@@ -392,7 +392,7 @@ class _StreakCard extends ConsumerWidget {
     } else if (stats.streakDays >= 3) {
       tip = ref
           .tr('fitness_dashboard_tip_streak_praise')
-          .replaceFirst('{n}', '\${stats.streakDays}');
+          .replaceFirst('{n}', '${stats.streakDays}');
     } else {
       final dayOfYear = DateTime.now()
           .difference(DateTime(DateTime.now().year))
@@ -417,7 +417,7 @@ class _StreakCard extends ConsumerWidget {
             ),
             alignment: Alignment.center,
             child: Text(
-              '\${stats.streakDays}',
+              '${stats.streakDays}',
               style: AppTextStyles.heading(size: 20),
             ),
           ),
