@@ -3,11 +3,14 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import 'fitness_home_theme.dart';
 
-/// The lon dau man Home: anh phong gym toi + lop phu den->trong suot (pha
-/// chut do tham o mep phai), khau hieu va nut "Bat dau tap".
+/// The lon dau man Home.
 ///
-/// Anh nen dung lai `assets/fitness/fitness_background.jpg` da co san trong
-/// app (KHONG tai anh tu internet - xem quy tac asset trong CLAUDE.md).
+/// Anh nen `assets/fitness/home/hero.jpg` duoc cat ra tu chinh file thiet
+/// ke cua chu du an (xem docs/design/fitness-redesign/README.md): phan chu
+/// tieu de/nut ben trai da bi xoa de widget nay ve chu that len tren (co
+/// dich ngon ngu), con cum khau hieu STRONGER/HEALTHIER/HAPPIER va duong
+/// nhip tim ben phai thi GIU NGUYEN tren anh - nen o day khong con widget
+/// nao ve lai 2 thu do nua.
 class FitnessHeroCard extends StatelessWidget {
   const FitnessHeroCard({
     super.key,
@@ -33,29 +36,21 @@ class FitnessHeroCard extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            Image.asset(
-              'assets/fitness/fitness_background.jpg',
-              fit: BoxFit.cover,
-              // Neo lech han sang PHAI: nua trai cua the bi lop phu den +
-              // chu de kin, phan anh dang xem duoc chi con o nua phai.
-              alignment: const Alignment(0.75, -0.1),
-              // Phong to nhe khung anh de khong lo vung tran/san trong o
-              // mep tren - anh goc rong hon nhieu so voi o 158dp nay.
-              scale: 0.9,
-            ),
-            // Lop phu: chu nam nua trai nen phai gan nhu den dac o do, mo
-            // dan sang phai de van thay duoc anh.
+            const ColoredBox(color: Color(0xFF080808)),
+            Image.asset('assets/fitness/home/hero.jpg', fit: BoxFit.cover),
+            // Lop phu rat nhe: nua trai cua anh da den dac san nen chi can
+            // phu them mot chut cho chac chan doc duoc chu, khong lam toi
+            // ca buc anh nhu ban dung anh phong gym truoc day.
             const DecoratedBox(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
-                  stops: [0.26, 0.46, 0.78, 1],
+                  stops: [0.0, 0.5, 1],
                   colors: [
-                    Color(0xFF050505),
-                    Color(0xDB050505),
-                    Color(0x4D050505),
-                    Color(0x475C080D),
+                    Color(0x99050505),
+                    Color(0x33050505),
+                    Color(0x00050505),
                   ],
                 ),
               ),
@@ -63,44 +58,32 @@ class FitnessHeroCard extends StatelessWidget {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(14, 11, 14, 9),
-              child: Row(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Expanded thay vi rong cung 206dp: khung thiet ke cua
-                  // man Home co the hep hon 390dp (xem _FittedCanvas), luc
-                  // do cot chu + cum khau hieu se tran ra ngoai the.
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          kicker.toUpperCase(),
-                          style: AppTextStyles.body(
-                            size: 9,
-                            weight: FontWeight.w800,
-                            color: FitnessHome.red,
-                          ).copyWith(letterSpacing: 1.2),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          title,
-                          style: AppTextStyles.heading(size: 17.5)
-                              .copyWith(height: 1.24, letterSpacing: -0.3),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          subtitle,
-                          style: FitnessHome.bodySecondary(size: 10.5)
-                              .copyWith(height: 1.4),
-                        ),
-                        const SizedBox(height: 6),
-                        _StartButton(label: ctaLabel, onTap: onStart),
-                      ],
-                    ),
+                  Text(
+                    kicker.toUpperCase(),
+                    style: AppTextStyles.body(
+                      size: 9,
+                      weight: FontWeight.w800,
+                      color: FitnessHome.red,
+                    ).copyWith(letterSpacing: 1.2),
                   ),
-                  const SizedBox(width: 8),
-                  const _SloganColumn(),
+                  const SizedBox(height: 6),
+                  Text(
+                    title,
+                    style: AppTextStyles.heading(size: 17.5)
+                        .copyWith(height: 1.24, letterSpacing: -0.3),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    subtitle,
+                    style: FitnessHome.bodySecondary(size: 10.5)
+                        .copyWith(height: 1.4),
+                  ),
+                  const SizedBox(height: 6),
+                  _StartButton(label: ctaLabel, onTap: onStart),
                 ],
               ),
             ),
@@ -157,80 +140,4 @@ class _StartButton extends StatelessWidget {
       ),
     );
   }
-}
-
-/// Cot khau hieu goc phai + duong nhip tim do - phan trang tri thuan tuy,
-/// giu dung anh thiet ke.
-class _SloganColumn extends StatelessWidget {
-  const _SloganColumn();
-
-  static const _lines = ['STRONGER', 'HEALTHIER', 'HAPPIER'];
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const SizedBox(height: 4),
-        for (final line in _lines)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 3),
-            child: Text(
-              line,
-              style: AppTextStyles.body(
-                size: 8.5,
-                weight: FontWeight.w600,
-                color: const Color(0xFFBDBDBD),
-              ).copyWith(letterSpacing: 0.6),
-            ),
-          ),
-        const SizedBox(height: 4),
-        const SizedBox(
-          width: 72,
-          height: 24,
-          child: CustomPaint(painter: _EcgPainter()),
-        ),
-      ],
-    );
-  }
-}
-
-class _EcgPainter extends CustomPainter {
-  const _EcgPainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = FitnessHome.redBright
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-    // Toa do chuan hoa 0..1 roi nhan theo kich thuoc that - nho vay duong
-    // ve giu dung hinh dang o moi be rong man hinh.
-    const points = <Offset>[
-      Offset(0, 0.66),
-      Offset(0.19, 0.66),
-      Offset(0.25, 0.22),
-      Offset(0.32, 0.92),
-      Offset(0.38, 0.4),
-      Offset(0.43, 0.68),
-      Offset(0.49, 0.54),
-      Offset(0.55, 0.74),
-      Offset(0.62, 0.2),
-      Offset(0.68, 0.62),
-      Offset(0.73, 0.46),
-      Offset(1, 0.46),
-    ];
-    final path = Path()
-      ..moveTo(points.first.dx * size.width, points.first.dy * size.height);
-    for (final p in points.skip(1)) {
-      path.lineTo(p.dx * size.width, p.dy * size.height);
-    }
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant _EcgPainter oldDelegate) => false;
 }

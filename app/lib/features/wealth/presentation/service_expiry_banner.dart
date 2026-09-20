@@ -14,9 +14,19 @@ import 'renew_service_sheet.dart';
 /// nao duoc gan, tranh chiem cho vo ich tren man Home. Bam vao mo thang man
 /// Gia han (dung lai renew_service_sheet.dart cua Quan ly tai san).
 class ServiceExpiryBanner extends ConsumerWidget {
-  const ServiceExpiryBanner({super.key, required this.section});
+  const ServiceExpiryBanner({
+    super.key,
+    required this.section,
+    this.compact = false,
+  });
 
   final AppSection section;
+
+  /// Ban GON: 1 nut tron nho (icon + so ngay con lai) dat chung hang voi
+  /// cac nut o thanh dau man, thay vi bang ngang chiem han 1 dong. Dung o
+  /// man Fitness Home - man do khong cuon nen khong con cho cho 1 dong
+  /// rieng. Bam vao van mo dung man Gia han nhu ban day du.
+  final bool compact;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -35,6 +45,39 @@ class ServiceExpiryBanner extends ConsumerWidget {
     final isOverdue = daysLeft < 0;
     final isUrgent = isOverdue || daysLeft <= service.reminderLeadDays;
     final tint = isUrgent ? AppColors.pink : AppColors.wealthAccent;
+
+    if (compact) {
+      return GestureDetector(
+        onTap: () => showRenewServiceSheet(context, service),
+        child: Container(
+          height: 34,
+          padding: const EdgeInsets.symmetric(horizontal: 9),
+          decoration: BoxDecoration(
+            color: tint.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(color: tint.withValues(alpha: 0.45)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.workspace_premium_rounded, size: 14, color: tint),
+              const SizedBox(width: 5),
+              Text(
+                // Qua han thi hien dau tru de phan biet ngay voi con han,
+                // khong chi doi mau (nguoi kho phan biet mau van doc duoc).
+                isOverdue ? '-${daysLeft.abs()}d' : '${daysLeft}d',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  color: tint,
+                  decoration: TextDecoration.none,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     return GestureDetector(
       onTap: () => showRenewServiceSheet(context, service),

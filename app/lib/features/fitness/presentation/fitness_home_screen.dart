@@ -3,11 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/navigation/app_popup.dart';
-import '../../../core/navigation/app_switcher_sheet.dart';
 import '../../../core/navigation/app_top_bar.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../profile/presentation/profile_screen.dart';
 import '../../social/presentation/conversations_screen.dart';
 import '../../wealth/presentation/service_expiry_banner.dart';
 import '../data/program_model.dart';
@@ -45,22 +43,11 @@ class FitnessHomeScreen extends ConsumerWidget {
 
   /// Chieu cao khung thiet ke (dp). Tong cac khoi ben duoi vua khit so nay;
   /// doi bat ky chieu cao nao trong [FitnessHome] thi phai cong tru lai day.
-  static const _designHeight = 716.0;
-
-  /// Chieu cao danh cho bang bao het han dich vu khi no co noi dung.
-  static const _bannerHeight = 52.0;
+  static const _designHeight = 756.0;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Bang bao het han chi hien khi that su co dich vu sap het han - phai
-    // biet TRUOC de cong them vao chieu cao khung thiet ke, neu khong no se
-    // day cac khoi ben duoi tran ra ngoai man hinh.
-    final hasExpiryBanner =
-        ref
-            .watch(recurringServicesForSectionProvider(AppSection.fitness))
-            .valueOrNull
-            ?.isNotEmpty ??
-        false;
+    final unread = ref.watch(unreadMessageCountProvider).valueOrNull ?? 0;
 
     return ColoredBox(
       color: FitnessHome.background,
@@ -76,18 +63,25 @@ class FitnessHomeScreen extends ConsumerWidget {
               0,
             ),
             child: _FittedCanvas(
-              designHeight:
-                  _designHeight + (hasExpiryBanner ? _bannerHeight : 0),
+              designHeight: _designHeight,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const _FitnessHeader(),
-                  const SizedBox(height: 12),
-                  if (hasExpiryBanner)
-                    const SizedBox(
-                      height: _bannerHeight,
-                      child: ServiceExpiryBanner(section: AppSection.fitness),
+                  AppTopBar(
+                    accentColor: FitnessHome.red,
+                    greeting: ref.tr('home_greeting'),
+                    // The bao han goi tap ("Gym Elite") thu gon thanh 1 nut
+                    // tron canh nut Tin nhan thay vi 1 bang ngang chiem han
+                    // 1 dong - man nay khong cuon nen tung dp deu quy.
+                    trailing: const ServiceExpiryBanner(
+                      section: AppSection.fitness,
+                      compact: true,
                     ),
+                    unreadCount: unread,
+                    onMessagesTap: () =>
+                        openAppPopup(context, const ConversationsScreen()),
+                  ),
+                  const SizedBox(height: 14),
                   FitnessHeroCard(
                     kicker: ref.tr('fitness_hero_kicker'),
                     title: ref.tr('fitness_hero_title'),
@@ -228,9 +222,19 @@ class _FittedCanvas extends StatelessWidget {
         // bat thuong; de trong 1 khoang o day man (ngay tren thanh nhac)
         // trong hon la keo gian het co.
         final scale = (available / designHeight).clamp(0.6, 1.18);
+        // OverflowBox BAT BUOC o day: khung thiet ke thuong RONG/CAO hon o
+        // chua no (truoc khi duoc thu nho lai), ma SizedBox thi luon bi cat
+        // theo rang buoc cua cha. Thieu no, khung bi ep ve dung kich thuoc
+        // man hinh roi con bi Transform thu nho them 1 lan nua - noi dung
+        // lech han sang trai va phan duoi nam ngoai vung ve nen bam khong
+        // an (da gap dung loi nay).
         return ClipRect(
-          child: Align(
+          child: OverflowBox(
             alignment: Alignment.topLeft,
+            minWidth: 0,
+            minHeight: 0,
+            maxWidth: double.infinity,
+            maxHeight: double.infinity,
             child: Transform.scale(
               scale: scale,
               alignment: Alignment.topLeft,
@@ -243,81 +247,6 @@ class _FittedCanvas extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-}
-
-/// Thanh dau man Fitness - KHAC [AppTopBar] dung chung o 2 khu vuc kia o
-/// 2 diem, deu de tiet kiem chieu cao cho bo cuc khong cuon:
-///  - pill chuyen app ("Fitness") nam CHUNG HANG voi nut Tin nhan ben phai
-///    (ban gon) thay vi chiem rieng 1 dong duoi ten.
-///  - khong co nut Cai dat: moi cai dat deu nam trong man Ho so ma chinh
-///    avatar ben trai da mo.
-class _FitnessHeader extends ConsumerWidget {
-  const _FitnessHeader();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final profile = ref.watch(myProfileProvider);
-    final displayName = profile.when(
-      data: (p) => p.nameLabel,
-      loading: () => '...',
-      error: (_, _) => '...',
-    );
-    final avatarUrl = profile.valueOrNull?.avatarUrl;
-    final unread = ref.watch(unreadMessageCountProvider).valueOrNull ?? 0;
-
-    return Row(
-      children: [
-        GestureDetector(
-          onTap: () => openAppPopup(context, const ProfileScreen()),
-          child: Container(
-            width: 46,
-            height: 46,
-            decoration: BoxDecoration(
-              color: FitnessHome.card,
-              shape: BoxShape.circle,
-              border: Border.all(color: FitnessHome.red, width: 1.4),
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: avatarUrl != null
-                ? Image.network(avatarUrl, fit: BoxFit.cover)
-                : const Icon(Icons.person_rounded, color: FitnessHome.red),
-          ),
-        ),
-        const SizedBox(width: 13),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                ref.tr('home_greeting'),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: FitnessHome.bodySecondary(),
-              ),
-              Text(
-                displayName,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.heading(size: 18),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(width: 8),
-        const AppSwitcherPill(compact: true),
-        const SizedBox(width: 8),
-        GestureDetector(
-          onTap: () => openAppPopup(context, const ConversationsScreen()),
-          child: TopBarIconChip(
-            icon: Icons.sms_outlined,
-            dotColor: FitnessHome.red,
-            badge: unread > 0,
-          ),
-        ),
-      ],
     );
   }
 }

@@ -60,18 +60,14 @@ class FitnessTodayCard extends ConsumerWidget {
       clip: true,
       child: Stack(
         children: [
-          // Anh nen o nua phai - dung anh bai tap co san trong app.
+          // Anh nen TRAN VIEN, cat ra tu file thiet ke cua chu du an (xem
+          // docs/design/fitness-redesign/README.md) - nua trai cua anh da
+          // duoc lam den san de chu doc duoc, nen khong can lop phu nang
+          // nhu ban dung anh bai tap truoc day.
           Positioned.fill(
-            left: 140,
-            child: Opacity(
-              opacity: 0.5,
-              child: Image.asset(
-                'assets/fitness/exercise_photos/barbell_deadlift_0.jpg',
-                fit: BoxFit.cover,
-                // Lay phan GIUA-PHAI cua anh (nguoi tap + banh ta) thay vi
-                // mac dinh can giua - nua trai cua the da bi chu che kin.
-                alignment: const Alignment(0.45, 0),
-              ),
+            child: Image.asset(
+              'assets/fitness/home/today_plan.jpg',
+              fit: BoxFit.cover,
             ),
           ),
           const Positioned.fill(
@@ -80,11 +76,11 @@ class FitnessTodayCard extends ConsumerWidget {
                 gradient: LinearGradient(
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
-                  stops: [0.4, 0.62, 1],
+                  stops: [0, 0.55, 1],
                   colors: [
-                    Color(0xFF111111),
-                    Color(0xD1111111),
-                    Color(0x575C080D),
+                    Color(0x8C111111),
+                    Color(0x33111111),
+                    Color(0x00111111),
                   ],
                 ),
               ),

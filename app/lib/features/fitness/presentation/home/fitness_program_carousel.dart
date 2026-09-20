@@ -6,44 +6,39 @@ import '../../../../core/theme/app_theme.dart';
 import '../../data/program_model.dart';
 import 'fitness_home_theme.dart';
 
-/// Anh + icon dai dien cho tung giao an. Dung anh bai tap DA CO SAN trong
-/// app (assets/fitness/exercise_photos/) thay vi tai anh moi tu internet -
-/// xem quy tac asset trong CLAUDE.md. Giao an moi chua co trong bang nay se
-/// tu dong dung anh phong gym chung.
+/// Anh + icon dai dien cho tung giao an. Ba anh nay duoc cat ra tu chinh
+/// file thiet ke cua chu du an (xem docs/design/fitness-redesign/README.md),
+/// phan chu/icon in san o day the da duoc xoa de widget tu ve len tren.
+/// Map theo Y NGHIA giao an chu khong theo id: anh nguoi moi tap -> giao an
+/// de nhat, anh day ta nam -> giao an tang co, anh cardio -> giao an giam
+/// mo. Giao an moi chua co trong bang nay dung [_fallbackArt].
 class _ProgramArt {
-  const _ProgramArt(this.image, this.icon, this.alignment);
+  const _ProgramArt(this.image, this.icon);
 
   final String image;
   final IconData icon;
-
-  /// Diem neo khi cat anh vao o doc 116x102 - moi anh 1 khac vi chu the
-  /// (nguoi dang tap) nam o vi tri khac nhau; de mac dinh can giua thi vai
-  /// anh chi con thay tuong/san.
-  final Alignment alignment;
 }
 
 const _programArt = <int, _ProgramArt>{
+  // 1 = Tang co toan than 8 tuan, 2 = Suc manh co ban 5x5,
+  // 3 = Giam mo 30 ngay tai nha (xem assets/fitness/programs_seed.json).
   1: _ProgramArt(
-    'assets/fitness/exercise_photos/barbell_bench_press_0.jpg',
+    'assets/fitness/home/program_muscle.jpg',
     Icons.fitness_center_rounded,
-    Alignment(0.1, -0.35),
   ),
   2: _ProgramArt(
-    'assets/fitness/exercise_photos/cable_hammer_curls_0.jpg',
+    'assets/fitness/home/program_beginner.jpg',
     Icons.sports_gymnastics_rounded,
-    Alignment(-0.15, -0.5),
   ),
   3: _ProgramArt(
-    'assets/fitness/exercise_photos/rope_jumping_0.jpg',
+    'assets/fitness/home/program_fatloss.jpg',
     Icons.directions_run_rounded,
-    Alignment(0, -0.45),
   ),
 };
 
 const _fallbackArt = _ProgramArt(
-  'assets/fitness/fitness_background.jpg',
+  'assets/fitness/home/program_beginner.jpg',
   Icons.fitness_center_rounded,
-  Alignment.center,
 );
 
 /// Hang the giao an cuon ngang o Trang chu. Doc tu [programListProvider]
@@ -115,7 +110,7 @@ class _ProgramCard extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            Image.asset(art.image, fit: BoxFit.cover, alignment: art.alignment),
+            Image.asset(art.image, fit: BoxFit.cover),
             // Lop phu toi dan xuong duoi - chu o day the phai doc duoc
             // tren moi anh.
             const DecoratedBox(
