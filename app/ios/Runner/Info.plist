@@ -2,6 +2,18 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<!-- Do nhip tim bang camera sau + den flash o man "Suc khoe" cua Fitness
+	     (features/fitness/data/heart_rate_service.dart). Bat buoc phai co tu
+	     khi them goi camera, neu khong app se bi he thong dung ngay khi mo
+	     camera lan dau va bi App Store tu choi. -->
+	<key>NSCameraUsageDescription</key>
+	<string>App dùng camera sau và đèn flash để đo nhịp tim khi bạn đặt ngón tay lên ống kính.</string>
+	<!-- Ghi am cho tinh nang luyen phat am / AI Voice Chat (speech_to_text,
+	     record). Truoc day chua khai bao - iOS bat buoc co khi dung mic. -->
+	<key>NSMicrophoneUsageDescription</key>
+	<string>App dùng micro để ghi âm giọng bạn khi luyện phát âm và khi trò chuyện với trợ lý AI.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>App dùng nhận diện giọng nói để chấm điểm phát âm của bạn.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>

@@ -107,6 +107,48 @@ class WorkoutRepository {
     return (rows as List).length;
   }
 
+  /// Lich su tap theo NGAY trong [days] ngay gan nhat - nguon du lieu duy
+  /// nhat cua man Thong ke (bieu do khoi luong/so buoi/thoi luong, cac moc
+  /// loc 7 ngay - 30 ngay - 3 thang - 1 nam). Tinh o may khach tu cac buoi
+  /// DA HOAN THANH, khong them bang tong hop rieng nao trong Supabase.
+  Future<FitnessHistorySeries> getHistorySeries(String userId, int days) async {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final since = today.subtract(Duration(days: days - 1));
+    final rows = await _supabase
+        .from('workout_sessions')
+        .select('completed_at, total_volume_kg, duration_seconds')
+        .eq('user_id', userId)
+        .not('completed_at', 'is', null)
+        .gte('completed_at', since.toIso8601String())
+        .order('completed_at');
+
+    final volume = List<double>.filled(days, 0);
+    final sessions = List<int>.filled(days, 0);
+    final minutes = List<int>.filled(days, 0);
+    for (final row in rows as List) {
+      final map = row as Map<String, dynamic>;
+      final completedAt = DateTime.parse(map['completed_at'] as String)
+          .toLocal();
+      final date = DateTime(
+        completedAt.year,
+        completedAt.month,
+        completedAt.day,
+      );
+      final index = days - 1 - today.difference(date).inDays;
+      if (index < 0 || index >= days) continue;
+      volume[index] += (map['total_volume_kg'] as num?)?.toDouble() ?? 0;
+      sessions[index] += 1;
+      minutes[index] += ((map['duration_seconds'] as num?)?.toInt() ?? 0) ~/ 60;
+    }
+    return FitnessHistorySeries(
+      days: days,
+      dailyVolumeKg: volume,
+      dailySessions: sessions,
+      dailyDurationMinutes: minutes,
+    );
+  }
+
   /// So lieu cho Trang chu Fitness (Phase 4) - port tinh than tu
   /// DashboardStatsCalculator cua FitViet (Gate 3): chuoi ngay lien tiep co
   /// tap (streak), so buoi + tong kg TUAN NAY (tinh tu Thu Hai, khop dung
@@ -149,13 +191,17 @@ class WorkoutRepository {
 
     // Tuan bat dau Thu Hai (dayOfWeek=1) - dung y het quy uoc ProgramDay.
     final weekStart = today.subtract(Duration(days: today.weekday - 1));
+    final previousWeekStart = weekStart.subtract(const Duration(days: 7));
     var sessionsThisWeek = 0;
     var totalVolumeThisWeek = 0.0;
+    var totalVolumePreviousWeek = 0.0;
     final dailyVolumeLast7 = List<double>.filled(7, 0);
     for (final s in sessions) {
       if (!s.date.isBefore(weekStart)) {
         sessionsThisWeek++;
         totalVolumeThisWeek += s.volume;
+      } else if (!s.date.isBefore(previousWeekStart)) {
+        totalVolumePreviousWeek += s.volume;
       }
       final daysAgo = today.difference(s.date).inDays;
       if (daysAgo >= 0 && daysAgo < 7) {
@@ -167,6 +213,7 @@ class WorkoutRepository {
       streakDays: streak,
       sessionsThisWeek: sessionsThisWeek,
       totalVolumeThisWeekKg: totalVolumeThisWeek,
+      previousWeekVolumeKg: totalVolumePreviousWeek,
       dailyVolumeLast7: dailyVolumeLast7,
     );
   }
@@ -179,12 +226,44 @@ class FitnessDashboardStats {
     required this.sessionsThisWeek,
     required this.totalVolumeThisWeekKg,
     required this.dailyVolumeLast7,
+    this.previousWeekVolumeKg = 0,
   });
 
   final int streakDays;
   final int sessionsThisWeek;
   final double totalVolumeThisWeekKg;
 
+  /// Tong kg cua TUAN TRUOC - chi dung de ve mui ten tang/giam canh so
+  /// "Tong khoi luong" o Trang chu, khong hien thanh so rieng.
+  final double previousWeekVolumeKg;
+
   /// 7 gia tri, index 0 la 6 ngay truoc, index 6 la HOM NAY.
   final List<double> dailyVolumeLast7;
+}
+
+/// Chuoi so lieu theo NGAY cho man Thong ke - xem
+/// [WorkoutRepository.getHistorySeries].
+class FitnessHistorySeries {
+  const FitnessHistorySeries({
+    required this.days,
+    required this.dailyVolumeKg,
+    required this.dailySessions,
+    required this.dailyDurationMinutes,
+  });
+
+  /// So ngay cua chuoi (7 / 30 / 90 / 365).
+  final int days;
+
+  /// Do dai dung bang [days]; phan tu CUOI CUNG la hom nay.
+  final List<double> dailyVolumeKg;
+  final List<int> dailySessions;
+  final List<int> dailyDurationMinutes;
+
+  double get totalVolumeKg =>
+      dailyVolumeKg.fold<double>(0, (sum, v) => sum + v);
+  int get totalSessions => dailySessions.fold<int>(0, (sum, v) => sum + v);
+  int get totalMinutes =>
+      dailyDurationMinutes.fold<int>(0, (sum, v) => sum + v);
+
+  bool get isEmpty => totalSessions == 0;
 }

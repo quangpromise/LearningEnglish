@@ -1,6 +1,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- Do nhip tim bang camera sau + den flash o man "Suc khoe" cua Fitness
+         (xem features/fitness/data/heart_rate_service.dart). Khong dung cho
+         chup anh/quay phim - viec chon anh dai dien van di qua bo chon anh
+         cua he thong (image_picker) nen khong can quyen nay. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.flash" android:required="false" />
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- Bat buoc cho audio_service (dung boi just_audio_background) chay
          foreground service phat nhac o nen + thong bao/man hinh khoa - xem

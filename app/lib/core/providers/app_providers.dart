@@ -13,10 +13,13 @@ import '../../features/fitness/data/community_post_model.dart';
 import '../../features/fitness/data/community_repository.dart';
 import '../../features/fitness/data/exercise_model.dart';
 import '../../features/fitness/data/exercise_repository.dart';
+import '../../features/fitness/data/heart_rate_model.dart';
+import '../../features/fitness/data/heart_rate_repository.dart';
 import '../../features/fitness/data/meal_model.dart';
 import '../../features/fitness/data/nutrition_repository.dart';
 import '../../features/fitness/data/program_model.dart';
 import '../../features/fitness/data/program_repository.dart';
+import '../../features/fitness/data/sleep_repository.dart';
 import '../../features/fitness/data/workout_repository.dart';
 import '../../features/music_player/data/favorites_repository.dart';
 import '../../features/profile/data/profile_repository.dart';
@@ -539,6 +542,106 @@ final todayMealsProvider = FutureProvider.autoDispose<List<Meal>>((ref) {
       .watch(nutritionRepositoryProvider)
       .getMealsForDate(userId, DateTime.now());
 });
+
+/// Khoang thoi gian cua man Thong ke Fitness.
+enum FitnessStatsRange {
+  week(7),
+  month(30),
+  quarter(90),
+  year(365);
+
+  const FitnessStatsRange(this.days);
+
+  final int days;
+}
+
+final fitnessStatsRangeProvider = StateProvider<FitnessStatsRange>(
+  (ref) => FitnessStatsRange.week,
+);
+
+/// Chuoi so lieu tap theo ngay cho man Thong ke, doi theo
+/// [fitnessStatsRangeProvider].
+final fitnessHistorySeriesProvider =
+    FutureProvider.autoDispose<FitnessHistorySeries>((ref) {
+      final range = ref.watch(fitnessStatsRangeProvider);
+      final userId = ref.watch(supabaseClientProvider).auth.currentUser?.id;
+      if (userId == null) {
+        return Future.value(
+          FitnessHistorySeries(
+            days: range.days,
+            dailyVolumeKg: List<double>.filled(range.days, 0),
+            dailySessions: List<int>.filled(range.days, 0),
+            dailyDurationMinutes: List<int>.filled(range.days, 0),
+          ),
+        );
+      }
+      return ref
+          .watch(workoutRepositoryProvider)
+          .getHistorySeries(userId, range.days);
+    });
+
+// --- Fitness (thiet ke lai Trang chu: Nhip tim + Giac ngu) ---
+// Hai nguon du lieu nay luu TREN MAY (shared_preferences), khong phai
+// Supabase - xem giai thich trong heart_rate_repository.dart.
+
+final heartRateRepositoryProvider = Provider<HeartRateRepository>(
+  (ref) => HeartRateRepository(),
+);
+
+/// Toan bo lich su do nhip tim (moi nhat truoc). Goi
+/// `ref.invalidate(heartRateHistoryProvider)` sau moi lan do xong.
+final heartRateHistoryProvider =
+    FutureProvider.autoDispose<List<HeartRateMeasurement>>(
+      (ref) => ref.watch(heartRateRepositoryProvider).getHistory(),
+    );
+
+/// Lan do GAN NHAT - null khi nguoi dung chua do lan nao. The "Nhip tim" o
+/// Trang chu phai hien dau gach ngang trong truong hop null chu KHONG dung
+/// mot con so mac dinh nao ca (xem quy tac trong heart_rate_service.dart).
+final latestHeartRateProvider = Provider<HeartRateMeasurement?>((ref) {
+  final history = ref.watch(heartRateHistoryProvider).valueOrNull;
+  return (history == null || history.isEmpty) ? null : history.first;
+});
+
+final sleepRepositoryProvider = Provider<SleepRepository>(
+  (ref) => SleepRepository(),
+);
+
+final sleepHistoryProvider = FutureProvider.autoDispose<List<SleepEntry>>(
+  (ref) => ref.watch(sleepRepositoryProvider).getHistory(),
+);
+
+/// Chuong trinh dang theo (da doc ra doi tuong [Program]) + buoi tap cua
+/// HOM NAY theo lich tuan cua chuong trinh do - null khi user chua chon
+/// giao an nao. The "Ke hoach hom nay" o Trang chu dung truc tiep gia tri
+/// nay thay vi tu ghep lai tu 2 provider roi.
+final todayWorkoutPlanProvider = FutureProvider.autoDispose<TodayWorkoutPlan?>((
+  ref,
+) async {
+  final programId = await ref.watch(activeProgramIdProvider.future);
+  if (programId == null) return null;
+  final programs = await ref.watch(programListProvider.future);
+  final program = programs.where((p) => p.id == programId).firstOrNull;
+  if (program == null) return null;
+  return TodayWorkoutPlan(
+    program: program,
+    day: program.dayFor(DateTime.now()),
+  );
+});
+
+/// Xem [todayWorkoutPlanProvider].
+class TodayWorkoutPlan {
+  const TodayWorkoutPlan({required this.program, required this.day});
+
+  final Program program;
+  final ProgramDay day;
+
+  bool get isRestDay => day.isRestDay;
+
+  /// Tong so hiep cua ca buoi.
+  int get totalSets =>
+      day.exercises.fold<int>(0, (sum, e) => sum + e.targetSets);
+}
 
 // --- Fitness (Phase 6: Cong dong - port tu FitViet, xem giai thich kien
 // truc trong supabase/migrations/0031_fitness_community.sql) ---

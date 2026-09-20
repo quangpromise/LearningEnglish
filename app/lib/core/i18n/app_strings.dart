@@ -3109,7 +3109,7 @@ class AppStrings {
       AppLanguage.en: 'Exercise library',
     },
     'fitness_home_category_workout': {
-      AppLanguage.vi: 'Luyện tập',
+      AppLanguage.vi: 'Tập luyện',
       AppLanguage.en: 'Workout',
     },
     'fitness_categories_title': {
@@ -4277,6 +4277,254 @@ class AppStrings {
       AppLanguage.en: 'Add a step…',
     },
     'planner_status_auto': {AppLanguage.vi: 'Tự động', AppLanguage.en: 'Auto'},
+
+    // Fitness - Trang chu thiet ke lai (xem docs/design/fitness-redesign/).
+    'fitness_hero_kicker': {
+      AppLanguage.vi: 'Hành trình sức khỏe',
+      AppLanguage.en: 'Your health journey',
+    },
+    'fitness_hero_title': {
+      AppLanguage.vi: 'Kỷ luật hôm nay\nlà kết quả ngày mai',
+      AppLanguage.en: "Today's discipline\nis tomorrow's result",
+    },
+    'fitness_hero_subtitle': {
+      AppLanguage.vi: 'Tập luyện – Ăn uống – Nghỉ ngơi\nvà tiến bộ mỗi ngày.',
+      AppLanguage.en: 'Train – Eat – Rest\nand improve every day.',
+    },
+    'fitness_hero_cta': {
+      AppLanguage.vi: 'Bắt đầu tập',
+      AppLanguage.en: 'Start training',
+    },
+    'fitness_see_all': {
+      AppLanguage.vi: 'Xem tất cả',
+      AppLanguage.en: 'See all',
+    },
+    'fitness_quick_schedule': {
+      AppLanguage.vi: 'Lịch tập',
+      AppLanguage.en: 'Schedule',
+    },
+    'fitness_quick_actions_title': {
+      AppLanguage.vi: 'Tiện ích nhanh',
+      AppLanguage.en: 'Quick actions',
+    },
+    'fitness_quote_default': {
+      AppLanguage.vi:
+          'Không có giới hạn nào ngoài những giới hạn bạn tự đặt ra.',
+      AppLanguage.en: 'There are no limits but the ones you set yourself.',
+    },
+
+    // Fitness - 4 the chi so o Trang chu.
+    'fitness_stat_calories': {
+      AppLanguage.vi: 'Calo nạp vào',
+      AppLanguage.en: 'Calories in',
+    },
+    'fitness_stat_sessions': {
+      AppLanguage.vi: 'Buổi tập',
+      AppLanguage.en: 'Workouts',
+    },
+    'fitness_stat_volume': {
+      AppLanguage.vi: 'Tổng khối lượng',
+      AppLanguage.en: 'Total volume',
+    },
+    'fitness_stat_volume_unit': {AppLanguage.vi: 'tấn', AppLanguage.en: 't'},
+    'fitness_stat_heart_rate': {
+      AppLanguage.vi: 'Nhịp tim',
+      AppLanguage.en: 'Heart rate',
+    },
+
+    // Fitness - the "Ke hoach hom nay".
+    'fitness_today_caption': {
+      AppLanguage.vi: 'Kế hoạch hôm nay',
+      AppLanguage.en: "Today's plan",
+    },
+    'fitness_today_no_program': {
+      AppLanguage.vi: 'Chưa chọn giáo án',
+      AppLanguage.en: 'No program yet',
+    },
+    'fitness_today_rest_day': {
+      AppLanguage.vi: 'Hôm nay là ngày nghỉ',
+      AppLanguage.en: 'Rest day today',
+    },
+    'fitness_today_exercise_count': {
+      AppLanguage.vi: '{n} bài tập',
+      AppLanguage.en: '{n} exercises',
+    },
+    'fitness_today_set_count': {
+      AppLanguage.vi: '{n} hiệp',
+      AppLanguage.en: '{n} sets',
+    },
+
+    // Fitness - man Thong ke.
+    'fitness_stats_title': {
+      AppLanguage.vi: 'Thống kê',
+      AppLanguage.en: 'Statistics',
+    },
+    'fitness_stats_range_week': {
+      AppLanguage.vi: '7 ngày',
+      AppLanguage.en: '7 days',
+    },
+    'fitness_stats_range_month': {
+      AppLanguage.vi: '30 ngày',
+      AppLanguage.en: '30 days',
+    },
+    'fitness_stats_range_quarter': {
+      AppLanguage.vi: '3 tháng',
+      AppLanguage.en: '3 months',
+    },
+    'fitness_stats_range_year': {
+      AppLanguage.vi: '1 năm',
+      AppLanguage.en: '1 year',
+    },
+    'fitness_stats_sessions': {
+      AppLanguage.vi: 'Buổi tập',
+      AppLanguage.en: 'Workouts',
+    },
+    'fitness_stats_duration': {
+      AppLanguage.vi: 'Thời lượng',
+      AppLanguage.en: 'Duration',
+    },
+    'fitness_stats_volume': {
+      AppLanguage.vi: 'Khối lượng',
+      AppLanguage.en: 'Volume',
+    },
+    'fitness_stats_volume_chart': {
+      AppLanguage.vi: 'Khối lượng theo thời gian',
+      AppLanguage.en: 'Volume over time',
+    },
+    'fitness_stats_sessions_chart': {
+      AppLanguage.vi: 'Số buổi tập',
+      AppLanguage.en: 'Workout count',
+    },
+    'fitness_stats_empty': {
+      AppLanguage.vi: 'Chưa có buổi tập nào trong khoảng này.\nHoàn thành 1 buổi để thấy biểu đồ.',
+      AppLanguage.en:
+          'No workouts in this range yet.\nFinish one to see the chart.',
+    },
+    'fitness_stats_error': {
+      AppLanguage.vi: 'Không tải được số liệu tập luyện.',
+      AppLanguage.en: 'Could not load your training data.',
+    },
+
+    // Fitness - man Nhip tim (do bang camera, xem heart_rate_service.dart).
+    'fitness_heart_rate_title': {
+      AppLanguage.vi: 'Sức khỏe',
+      AppLanguage.en: 'Health',
+    },
+    'fitness_heart_rate_intro': {
+      AppLanguage.vi: 'Đo nhịp tim bằng camera',
+      AppLanguage.en: 'Measure heart rate with the camera',
+    },
+    'fitness_heart_rate_step_1': {
+      AppLanguage.vi: 'Đặt ngón tay lên camera sau.',
+      AppLanguage.en: 'Place a fingertip on the rear camera.',
+    },
+    'fitness_heart_rate_step_2': {
+      AppLanguage.vi: 'Che kín cả ống kính và đèn flash.',
+      AppLanguage.en: 'Cover both the lens and the flash.',
+    },
+    'fitness_heart_rate_step_3': {
+      AppLanguage.vi: 'Giữ yên tay trong suốt 30 giây đo.',
+      AppLanguage.en: 'Hold still for the full 30 seconds.',
+    },
+    'fitness_heart_rate_disclaimer': {
+      AppLanguage.vi:
+          'Kết quả chỉ để tham khảo khi tập, không phải thiết bị y tế.',
+      AppLanguage.en: 'For training reference only, not a medical device.',
+    },
+    'fitness_heart_rate_start': {
+      AppLanguage.vi: 'Bắt đầu đo',
+      AppLanguage.en: 'Start measuring',
+    },
+    'fitness_heart_rate_cancel': {
+      AppLanguage.vi: 'Dừng',
+      AppLanguage.en: 'Stop',
+    },
+    'fitness_heart_rate_measuring': {
+      AppLanguage.vi: 'Đang đo... giữ yên tay',
+      AppLanguage.en: 'Measuring... hold still',
+    },
+    'fitness_heart_rate_cover_lens': {
+      AppLanguage.vi: 'Hãy che kín camera và đèn flash',
+      AppLanguage.en: 'Cover the camera and the flash',
+    },
+    'fitness_heart_rate_seconds_left': {
+      AppLanguage.vi: 'còn {n} giây',
+      AppLanguage.en: '{n}s left',
+    },
+    'fitness_heart_rate_result_title': {
+      AppLanguage.vi: 'Nhịp tim của bạn',
+      AppLanguage.en: 'Your heart rate',
+    },
+    'fitness_heart_rate_measured_at': {
+      AppLanguage.vi: 'Đo lúc {t}',
+      AppLanguage.en: 'Measured at {t}',
+    },
+    'fitness_heart_rate_remeasure': {
+      AppLanguage.vi: 'Đo lại',
+      AppLanguage.en: 'Measure again',
+    },
+    'fitness_heart_rate_error_title': {
+      AppLanguage.vi: 'Không đo được nhịp tim',
+      AppLanguage.en: 'Could not measure your heart rate',
+    },
+    'fitness_heart_rate_error_noisy': {
+      AppLanguage.vi: 'Tín hiệu quá nhiễu. Hãy che kín ống kính, giữ tay thật yên rồi đo lại.',
+      AppLanguage.en: 'The signal was too noisy. Cover the lens fully, hold still and try again.',
+    },
+    'fitness_heart_rate_error_camera': {
+      AppLanguage.vi: 'Không mở được camera. Kiểm tra quyền truy cập camera của app rồi thử lại.',
+      AppLanguage.en: 'Could not open the camera. Check the camera permission and try again.',
+    },
+    'fitness_heart_rate_error_range': {
+      AppLanguage.vi: 'Kết quả nằm ngoài khoảng nhịp tim thông thường nên không hiển thị. Hãy đo lại khi đã nghỉ ngơi.',
+      AppLanguage.en: 'The result fell outside the usual range, so it is not shown. Rest a moment and measure again.',
+    },
+    'fitness_heart_rate_retry': {
+      AppLanguage.vi: 'Đo lại',
+      AppLanguage.en: 'Try again',
+    },
+    'fitness_heart_rate_today': {
+      AppLanguage.vi: 'Hôm nay',
+      AppLanguage.en: 'Today',
+    },
+    'fitness_heart_rate_empty': {
+      AppLanguage.vi: 'Hôm nay bạn chưa đo lần nào.',
+      AppLanguage.en: 'No measurements today yet.',
+    },
+
+    // Fitness - man Giac ngu.
+    'fitness_sleep_title': {
+      AppLanguage.vi: 'Giấc ngủ',
+      AppLanguage.en: 'Sleep',
+    },
+    'fitness_sleep_last_night': {
+      AppLanguage.vi: 'Đêm gần nhất',
+      AppLanguage.en: 'Last night',
+    },
+    'fitness_sleep_log': {
+      AppLanguage.vi: 'Ghi giấc ngủ',
+      AppLanguage.en: 'Log sleep',
+    },
+    'fitness_sleep_pick_bed': {
+      AppLanguage.vi: 'Mấy giờ bạn đi ngủ?',
+      AppLanguage.en: 'What time did you go to bed?',
+    },
+    'fitness_sleep_pick_wake': {
+      AppLanguage.vi: 'Mấy giờ bạn thức dậy?',
+      AppLanguage.en: 'What time did you wake up?',
+    },
+    'fitness_sleep_week': {
+      AppLanguage.vi: '7 ngày gần nhất',
+      AppLanguage.en: 'Last 7 days',
+    },
+    'fitness_sleep_history': {
+      AppLanguage.vi: 'Lịch sử',
+      AppLanguage.en: 'History',
+    },
+    'fitness_sleep_empty': {
+      AppLanguage.vi: 'Chưa có giấc ngủ nào được ghi.',
+      AppLanguage.en: 'No sleep logged yet.',
+    },
   };
 
   static String t(String key, AppLanguage lang) =>

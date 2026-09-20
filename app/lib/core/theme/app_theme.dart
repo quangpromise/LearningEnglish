@@ -31,11 +31,36 @@ class AppColors {
   /// Mau nhan chinh RIENG cho khu vuc Fitness (app-switcher) - dung thay the
   /// [blue] trong moi man hinh duoi `features/fitness/`, KHONG dung o cac
   /// man hinh khac.
-  static const fitnessAccent = Color(0xFFF0883D);
+  ///
+  /// Doi tu CAM (#F0883D) sang DO theo anh thiet ke lai man Fitness Home
+  /// (`docs/design/fitness-redesign/_ref.jpg`, bang do mau trong TOKENS.md
+  /// cung thu muc). Chi doi GIA TRI o day - moi man Fitness deu tham chieu
+  /// qua ten bien nay nen tu dong doi mau theo, khong phai sua tung file.
+  static const fitnessAccent = Color(0xFFE50914);
+
+  /// Do SANG hon accent - dung cho net do sac (duong nhip tim, mui ten
+  /// tang) tren nen den, noi accent thuong bi chim.
+  static const fitnessAccentBright = Color(0xFFFF2028);
+
+  /// Do THAM - chi dung pha vao nen (the Tien ich nhanh, lop phu anh hero),
+  /// khong bao gio dung lam mau chu.
+  static const fitnessAccentDeep = Color(0xFF5C080D);
+
+  /// Nen the cua man Fitness thiet ke lai - DAC (khong phai kinh mo nhu
+  /// [glassFill]) vi nen man hinh do da la den tuyet doi, the trong suot se
+  /// khong tach duoc khoi nen.
+  static const fitnessCard = Color(0xFF111111);
+  static const fitnessCardBorder = Color(0xFF1C1C1C);
+  static const fitnessDivider = Color(0xFF262626);
+
+  /// Chu phu tren nen den cua man Fitness - sang hon [textMuted] (von hoi
+  /// xanh vi ke thua bang mau cua Hoc Tieng Anh).
+  static const fitnessTextSecondary = Color(0xFFA5A5A5);
+
   static const fitnessAccentGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [fitnessAccent, Color(0xFFF2A35C)],
+    colors: [fitnessAccent, Color(0xFFFF2028)],
   );
 
   /// Mau nhan chinh RIENG cho khu vuc Quan ly tai san (Wealth) - vang/gold.

@@ -108,6 +108,12 @@ dependencies:
   # docs/setup-firebase-chat-push.md.
   firebase_core: ^4.14.0
   firebase_messaging: ^16.6.0
+  # Do nhip tim bang camera sau + den flash (phuong phap PPG - xem
+  # features/fitness/data/heart_rate_service.dart). Goi CHINH THUC cua
+  # nhom Flutter (flutter/packages), BSD-3, mien phi, chay hoan toan
+  # on-device (khong goi API nao). Chi dung o man "Suc khoe" cua Fitness -
+  # anh chup/chon anh o cho khac van dung image_picker nhu cu.
+  camera: ^0.11.0
   # Ve bieu do gia (crypto/chung khoan) - MIT, mien phi, chi ve UI thuan tuy
   # (khong tu goi API nao) nen khong anh huong den nguon du lieu da chon.
   # ^1.0.0 (khong phai 0.69 truoc day) vi CandlestickChart (nen xanh/do kieu
