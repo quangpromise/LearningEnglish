@@ -4299,9 +4299,9 @@ class AppStrings {
       AppLanguage.vi: 'Xem tất cả',
       AppLanguage.en: 'See all',
     },
-    'fitness_quick_schedule': {
-      AppLanguage.vi: 'Lịch tập',
-      AppLanguage.en: 'Schedule',
+    'fitness_quick_exercises': {
+      AppLanguage.vi: 'Bài tập',
+      AppLanguage.en: 'Exercises',
     },
     'fitness_quick_actions_title': {
       AppLanguage.vi: 'Tiện ích nhanh',

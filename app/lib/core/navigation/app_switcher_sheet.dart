@@ -21,7 +21,12 @@ const kEnglishLogoAsset = 'assets/home/english_logo.jpg';
 /// CompositedTransformTarget/Follower de neo dropdown dung ngay duoi pill
 /// bat ke pill dang nam o vi tri nao tren man hinh.
 class AppSwitcherPill extends ConsumerStatefulWidget {
-  const AppSwitcherPill({super.key});
+  const AppSwitcherPill({super.key, this.compact = false});
+
+  /// Ban GON hon (icon + chu + mui ten nho lai, le sat hon) - dung khi pill
+  /// nam CHUNG HANG voi cac nut tron ben phai thanh dau man hinh thay vi
+  /// dung 1 dong rieng duoi ten (xem FitnessHomeScreen).
+  final bool compact;
 
   @override
   ConsumerState<AppSwitcherPill> createState() => _AppSwitcherPillState();
@@ -152,7 +157,9 @@ class _AppSwitcherPillState extends ConsumerState<AppSwitcherPill> {
         // Vung cham lon hon chu/icon that su (them padding + nen mo) de de
         // bam hon - truoc day chi la 1 dong chu+icon nho, kho trung dich.
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+          padding: widget.compact
+              ? const EdgeInsets.fromLTRB(6, 4, 4, 4)
+              : const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
           decoration: BoxDecoration(
             color: AppColors.glassFill,
             borderRadius: BorderRadius.circular(999),
@@ -161,23 +168,31 @@ class _AppSwitcherPillState extends ConsumerState<AppSwitcherPill> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _AppIcon(icon: icon, imageAsset: image, color: color, size: 15),
-              const SizedBox(width: 5),
+              _AppIcon(
+                icon: icon,
+                imageAsset: image,
+                color: color,
+                size: widget.compact ? 13 : 15,
+              ),
+              SizedBox(width: widget.compact ? 4 : 5),
               Flexible(
                 child: Text(
                   ref.tr(labelKey),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.muted(size: 12, weight: FontWeight.w700),
+                  style: AppTextStyles.muted(
+                    size: widget.compact ? 10.5 : 12,
+                    weight: FontWeight.w700,
+                  ),
                 ),
               ),
-              const SizedBox(width: 3),
+              SizedBox(width: widget.compact ? 1 : 3),
               AnimatedRotation(
                 turns: _open ? 0.5 : 0,
                 duration: const Duration(milliseconds: 150),
-                child: const Icon(
+                child: Icon(
                   Icons.keyboard_arrow_down_rounded,
-                  size: 16,
+                  size: widget.compact ? 14 : 16,
                   color: AppColors.textMuted,
                 ),
               ),

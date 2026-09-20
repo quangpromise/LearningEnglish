@@ -138,39 +138,31 @@ class _StatCell extends StatelessWidget {
           children: [
             Icon(icon, size: 16, color: FitnessHome.red),
             const SizedBox(height: 6),
-            Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: FitnessHome.statLabel(),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(label, maxLines: 1, style: FitnessHome.statLabel()),
             ),
             const SizedBox(height: 1),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.baseline,
-              textBaseline: TextBaseline.alphabetic,
-              children: [
-                Flexible(
-                  child: Text(
-                    value,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: FitnessHome.statValue(),
-                  ),
-                ),
-                const SizedBox(width: 4),
-                Flexible(
-                  child: Text(
-                    unit,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: FitnessHome.statUnit(),
-                  ),
-                ),
-                if (trailingIcon != null) ...[
-                  const SizedBox(width: 3),
-                  Icon(trailingIcon, size: 13, color: FitnessHome.redBright),
+            // FittedBox chu KHONG phai Flexible+ellipsis: khi cot hep, ban
+            // cu cat mat han CON SO (phan quan trong nhat cua the) ma chi
+            // con lai don vi - o day ca cum so + don vi cung thu nho lai.
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                children: [
+                  Text(value, maxLines: 1, style: FitnessHome.statValue()),
+                  const SizedBox(width: 4),
+                  Text(unit, maxLines: 1, style: FitnessHome.statUnit()),
+                  if (trailingIcon != null) ...[
+                    const SizedBox(width: 3),
+                    Icon(trailingIcon, size: 13, color: FitnessHome.redBright),
+                  ],
                 ],
-              ],
+              ),
             ),
             const Spacer(),
             ?indicator,
@@ -252,21 +244,29 @@ class _SessionDots extends StatelessWidget {
     // dung ti le (moi cham = 1 phan cua muc tieu).
     final dots = goal.clamp(1, 6);
     final filled = goal == 0 ? 0 : (done / goal * dots).round().clamp(0, dots);
-    return Row(
-      children: [
-        for (var i = 0; i < dots; i++)
-          Padding(
-            padding: const EdgeInsets.only(right: 4),
-            child: Container(
-              width: 6,
-              height: 6,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: i < filled ? FitnessHome.red : const Color(0xFF333333),
+    // FittedBox: so cham phu thuoc muc tieu cua giao an (toi da 6) trong
+    // khi be ngang cot lai doi theo khung thiet ke - de Row tu do thi co
+    // truong hop tran ngang vai phan nghin dp.
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      alignment: Alignment.centerLeft,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (var i = 0; i < dots; i++)
+            Padding(
+              padding: const EdgeInsets.only(right: 4),
+              child: Container(
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: i < filled ? FitnessHome.red : const Color(0xFF333333),
+                ),
               ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 }

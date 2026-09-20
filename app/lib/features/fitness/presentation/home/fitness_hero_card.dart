@@ -36,7 +36,12 @@ class FitnessHeroCard extends StatelessWidget {
             Image.asset(
               'assets/fitness/fitness_background.jpg',
               fit: BoxFit.cover,
-              alignment: const Alignment(0.2, -0.2),
+              // Neo lech han sang PHAI: nua trai cua the bi lop phu den +
+              // chu de kin, phan anh dang xem duoc chi con o nua phai.
+              alignment: const Alignment(0.75, -0.1),
+              // Phong to nhe khung anh de khong lo vung tran/san trong o
+              // mep tren - anh goc rong hon nhieu so voi o 158dp nay.
+              scale: 0.9,
             ),
             // Lop phu: chu nam nua trai nen phai gan nhu den dac o do, mo
             // dan sang phai de van thay duoc anh.
@@ -61,8 +66,10 @@ class FitnessHeroCard extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(
-                    width: 206,
+                  // Expanded thay vi rong cung 206dp: khung thiet ke cua
+                  // man Home co the hep hon 390dp (xem _FittedCanvas), luc
+                  // do cot chu + cum khau hieu se tran ra ngoai the.
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
@@ -92,7 +99,7 @@ class FitnessHeroCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const Spacer(),
+                  const SizedBox(width: 8),
                   const _SloganColumn(),
                 ],
               ),
@@ -180,8 +187,8 @@ class _SloganColumn extends StatelessWidget {
           ),
         const SizedBox(height: 4),
         const SizedBox(
-          width: 86,
-          height: 26,
+          width: 72,
+          height: 24,
           child: CustomPaint(painter: _EcgPainter()),
         ),
       ],

@@ -18,12 +18,13 @@ class FitnessTodayCard extends ConsumerWidget {
     super.key,
     required this.onOpenPlan,
     required this.quote,
-    required this.onQuoteTap,
   });
 
   final VoidCallback onOpenPlan;
+
+  /// Cau dong luc o day the - chi de DOC, khong bam duoc: truoc day bam vao
+  /// no mo dung man Thong ke ma the chi so ngay ben tren da mo.
   final String quote;
-  final VoidCallback onQuoteTap;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -67,6 +68,9 @@ class FitnessTodayCard extends ConsumerWidget {
               child: Image.asset(
                 'assets/fitness/exercise_photos/barbell_deadlift_0.jpg',
                 fit: BoxFit.cover,
+                // Lay phan GIUA-PHAI cua anh (nguoi tap + banh ta) thay vi
+                // mac dinh can giua - nua trai cua the da bi chu che kin.
+                alignment: const Alignment(0.45, 0),
               ),
             ),
           ),
@@ -160,38 +164,32 @@ class FitnessTodayCard extends ConsumerWidget {
                   color: FitnessHome.divider,
                 ),
               ),
-              FitnessPressable(
-                onTap: onQuoteTap,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(13, 10, 13, 11),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 3,
-                        height: 34,
-                        decoration: BoxDecoration(
-                          color: FitnessHome.red,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(13, 10, 13, 11),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 3,
+                      height: 34,
+                      decoration: BoxDecoration(
+                        color: FitnessHome.red,
+                        borderRadius: BorderRadius.circular(2),
                       ),
-                      const SizedBox(width: 11),
-                      Expanded(
-                        child: Text(
-                          quote,
-                          style: AppTextStyles.body(
-                            size: 11.5,
-                            weight: FontWeight.w500,
-                            color: const Color(0xFFC9C9C9),
-                          ).copyWith(height: 1.45),
-                        ),
+                    ),
+                    const SizedBox(width: 11),
+                    Expanded(
+                      child: Text(
+                        quote,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.body(
+                          size: 11.5,
+                          weight: FontWeight.w500,
+                          color: const Color(0xFFC9C9C9),
+                        ).copyWith(height: 1.45),
                       ),
-                      const Icon(
-                        Icons.chevron_right_rounded,
-                        size: 22,
-                        color: Color(0xFF9A9A9A),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ],
