@@ -68,7 +68,7 @@ class ProgramDetailScreen extends ConsumerWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    program.titleVi,
+                    program.titleFor(ref.watch(appLanguageProvider)),
                     style: AppTextStyles.heading(size: 18),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -102,7 +102,7 @@ class ProgramDetailScreen extends ConsumerWidget {
               onTap: () => addFitnessProgramToPlanner(
                 ref,
                 programId: program.id,
-                programTitle: program.titleVi,
+                programTitle: program.titleFor(ref.watch(appLanguageProvider)),
                 trainingWeekdays: [
                   for (final d in program.days)
                     if (!d.isRestDay) d.dayOfWeek,
@@ -206,7 +206,9 @@ class _DayCard extends StatelessWidget {
                         Padding(
                           padding: const EdgeInsets.only(bottom: 2),
                           child: Text(
-                            exercisesById[ex.exerciseId]?.nameVi ??
+                            exercisesById[ex.exerciseId]?.nameFor(
+                                  ref.watch(appLanguageProvider),
+                                ) ??
                                 '#${ex.exerciseId}',
                             style: AppTextStyles.muted(),
                           ),

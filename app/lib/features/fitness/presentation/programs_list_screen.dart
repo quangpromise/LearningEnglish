@@ -147,7 +147,7 @@ class _ProgramsListScreenState extends ConsumerState<ProgramsListScreen> {
   }
 }
 
-class _ProgramCard extends StatelessWidget {
+class _ProgramCard extends ConsumerWidget {
   const _ProgramCard({
     required this.program,
     required this.isActive,
@@ -158,7 +158,7 @@ class _ProgramCard extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return GestureDetector(
       onTap: onTap,
       child: GlowBox(
@@ -171,7 +171,7 @@ class _ProgramCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    program.titleVi,
+                    program.titleFor(ref.watch(appLanguageProvider)),
                     style: AppTextStyles.body(weight: FontWeight.w800),
                   ),
                 ),
@@ -203,7 +203,9 @@ class _ProgramCard extends StatelessWidget {
                 _DifficultyBadge(difficulty: program.difficulty),
                 const SizedBox(width: 8),
                 Text(
-                  '${program.equipment} · ${program.sessionsPerWeek} buổi/tuần',
+                  '${program.equipmentLabelKey == null ? program.equipment : ref.tr(program.equipmentLabelKey!)}'
+                  ' · '
+                  '${ref.tr('fitness_sessions_per_week').replaceFirst('{n}', '${program.sessionsPerWeek}')}',
                   style: AppTextStyles.muted(),
                 ),
               ],

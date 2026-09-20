@@ -187,13 +187,13 @@ class _InvestmentValueChartState extends ConsumerState<InvestmentValueChart> {
 
   @override
   Widget build(BuildContext context) {
-    // Ban compact o man Home luon xem khung 1H (khong theo lua chon cua man
-    // chi tiet): the o Home be xiu, nhet ca ngay vao do thi moi nhip len
-    // xuong chi con vai pixel - 1 tieng gan nhat vua du cho biet "dang nhu
-    // the nao", con muon xem dai hon thi mo man chi tiet.
-    final range = widget.compact
-        ? InvestmentChartRange.h1
-        : ref.watch(investmentChartRangeProvider);
+    // Ca ban compact o man Home LAN ban day du o man chi tiet deu doc CUNG
+    // 1 khung thoi gian (1H/4H/1D/1W/1M/1Y) - doi o man chi tiet thi the o
+    // Home doi theo. Truoc day ban compact bi ghim cung 1H vi so the o Home
+    // qua be de nhin ra nhip len xuong; nhung nhu vay 2 duong cung mot chi
+    // so lai ke chuyen khac nhau, kho hieu hon han. Bu lai bang cach giu
+    // nguyen viec thua diem manh tay hon o ban compact (xem ben duoi).
+    final range = ref.watch(investmentChartRangeProvider);
     final snapsAsync = ref.watch(investmentSnapshotsProvider(range));
     final liveTotal = ref.watch(totalInvestmentValueVndProvider);
 

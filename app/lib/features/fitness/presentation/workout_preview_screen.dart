@@ -150,12 +150,12 @@ class _WorkoutPreviewScreenState extends ConsumerState<WorkoutPreviewScreen> {
   }
 }
 
-class _PreviewTile extends StatelessWidget {
+class _PreviewTile extends ConsumerWidget {
   const _PreviewTile({required this.block});
   final WorkoutExerciseBlock block;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final exercise = block.exercise;
     return GlowBox(
       padding: const EdgeInsets.all(12),
@@ -186,7 +186,7 @@ class _PreviewTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  exercise.nameVi,
+                  exercise.nameFor(ref.watch(appLanguageProvider)),
                   style: AppTextStyles.body(weight: FontWeight.w800),
                 ),
                 Consumer(

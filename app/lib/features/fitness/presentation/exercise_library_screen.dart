@@ -6,6 +6,7 @@ import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/exercise_model.dart';
 import 'exercise_detail_screen.dart';
+import '../data/exercise_i18n.dart';
 
 /// Thu vien bai tap (Fitness Phase 1) - xem/tim theo nhom co, bam vao xem
 /// chi tiet + danh dau yeu thich. Port tu man "1c" cua FitViet, rut gon cho
@@ -288,11 +289,12 @@ class _ExerciseTile extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    exercise.nameVi,
+                    exercise.nameFor(ref.watch(appLanguageProvider)),
                     style: AppTextStyles.body(weight: FontWeight.w800),
                   ),
                   Text(
-                    '${exercise.primaryMuscle} · ${ref.tr(exercise.difficulty.labelKey)}',
+                    '${exerciseMuscleLabel(exercise.primaryMuscle, ref.watch(appLanguageProvider))}'
+                    ' · ${ref.tr(exercise.difficulty.labelKey)}',
                     style: AppTextStyles.muted(),
                   ),
                 ],

@@ -6,6 +6,7 @@ import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/exercise_model.dart';
 import 'exercise_photo_animator.dart';
+import '../data/exercise_i18n.dart';
 
 /// Chi tiet 1 bai tap - huong dan tung buoc + thanh % tham gia cua tung
 /// nhom co (an neu involvementPercents rong - day la tin hieu CHU DONG
@@ -22,6 +23,7 @@ class ExerciseDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final lang = ref.watch(appLanguageProvider);
     final favoritesAsync = ref.watch(favoriteExerciseIdsProvider);
     final isFavorite =
         favoritesAsync.valueOrNull?.contains(exercise.id) ?? false;
@@ -54,8 +56,11 @@ class ExerciseDetailScreen extends ConsumerWidget {
             const SizedBox(height: 12),
             ExercisePhotoAnimator(assets: exercise.photoAssets),
             const SizedBox(height: 16),
-            Text(exercise.nameVi, style: AppTextStyles.heading(size: 20)),
-            Text(exercise.nameEn, style: AppTextStyles.muted()),
+            Text(
+              exercise.nameFor(lang),
+              style: AppTextStyles.heading(size: 20),
+            ),
+            Text(exercise.altNameFor(lang), style: AppTextStyles.muted()),
             const SizedBox(height: 12),
             Wrap(
               spacing: 8,
@@ -69,7 +74,10 @@ class ExerciseDetailScreen extends ConsumerWidget {
                   label: ref.tr(exercise.muscleGroup.labelKey),
                   color: AppColors.teal,
                 ),
-                _Tag(label: exercise.equipment, color: AppColors.purple),
+                _Tag(
+                  label: exerciseEquipmentLabel(exercise.equipment, lang),
+                  color: AppColors.purple,
+                ),
               ],
             ),
             const SizedBox(height: 20),

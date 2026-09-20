@@ -50,7 +50,7 @@ class _WorkoutFinishedScreenState extends ConsumerState<WorkoutFinishedScreen> {
         final programs = await ref.read(programListProvider.future);
         for (final p in programs) {
           if (p.id == programId) {
-            programTitle = p.titleVi;
+            programTitle = p.titleFor(ref.read(appLanguageProvider));
             break;
           }
         }

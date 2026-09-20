@@ -131,22 +131,22 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
   }
 }
 
-class _LoggingView extends StatelessWidget {
+class _LoggingView extends ConsumerWidget {
   const _LoggingView({required this.controller, required this.exercise});
   final WorkoutController controller;
   final Exercise exercise;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       children: [
         Text(
-          exercise.nameVi,
+          exercise.nameFor(ref.watch(appLanguageProvider)),
           textAlign: TextAlign.center,
           style: AppTextStyles.heading(size: 20),
         ),
         Text(
-          exercise.nameEn,
+          exercise.altNameFor(ref.watch(appLanguageProvider)),
           textAlign: TextAlign.center,
           style: AppTextStyles.muted(),
         ),

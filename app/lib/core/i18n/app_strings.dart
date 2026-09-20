@@ -4299,6 +4299,15 @@ class AppStrings {
       AppLanguage.vi: 'Xem tất cả',
       AppLanguage.en: 'See all',
     },
+    'fitness_place_gym': {AppLanguage.vi: 'Phòng gym', AppLanguage.en: 'Gym'},
+    'fitness_place_home': {
+      AppLanguage.vi: 'Tại nhà',
+      AppLanguage.en: 'At home',
+    },
+    'fitness_sessions_per_week': {
+      AppLanguage.vi: '{n} buổi/tuần',
+      AppLanguage.en: '{n} sessions/week',
+    },
     'fitness_level_beginner': {
       AppLanguage.vi: 'Mới bắt đầu',
       AppLanguage.en: 'Beginner',

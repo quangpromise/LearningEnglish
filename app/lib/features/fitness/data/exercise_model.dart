@@ -1,3 +1,5 @@
+import '../../../core/i18n/app_language.dart';
+
 /// Nhom co chinh cua 1 bai tap - dung ma on dinh (khong doi theo ngon ngu)
 /// de loc/nhom, khac voi [Exercise.primaryMuscle] la chuoi hien thi tu do.
 /// Danh sach nay khop voi `MuscleGroup` enum cua FitViet (nguon port).
@@ -118,6 +120,15 @@ class Exercise {
 
   final int id;
   final String nameVi;
+
+  /// Ten bai tap theo ngon ngu giao dien dang chon. Ten con lai van hien
+  /// lam dong phu o man chi tiet (hoc vien hoc tieng Anh qua gym nen thay
+  /// ca 2 la co ich), xem exercise_detail_screen.dart.
+  String nameFor(AppLanguage lang) => lang == AppLanguage.en ? nameEn : nameVi;
+
+  /// Ten o dong phu - luon la ten CON LAI so voi [nameFor].
+  String altNameFor(AppLanguage lang) =>
+      lang == AppLanguage.en ? nameVi : nameEn;
   final String nameEn;
   final String primaryMuscle;
   final List<String> secondaryMuscles;

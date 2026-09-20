@@ -112,6 +112,14 @@ class Program {
   /// Khoa chuoi giao dien cho muc do cua giao an nay.
   String get levelLabelKey => difficulty?.labelKey ?? 'fitness_level_all';
 
+  /// Khoa chuoi giao dien cho noi tap. Chi co 2 gia tri trong file noi
+  /// dung; gia tri la khac thi giu nguyen chuoi goc (tra null).
+  String? get equipmentLabelKey => switch (equipment) {
+    'Phòng gym' => 'fitness_place_gym',
+    'Tại nhà' => 'fitness_place_home',
+    _ => null,
+  };
+
   /// Ngay trong tuan hien tai theo lich cua chuong trinh nay -
   /// `DateTime.weekday` da san dung chuan ISO (1-7) nen khong can chuyen doi.
   ProgramDay dayFor(DateTime date) =>
