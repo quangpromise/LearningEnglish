@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/learning_path_models.dart';
@@ -78,39 +79,61 @@ class _LearningPathSurveyScreenState
   }
 
   Widget _survey() {
-    final questions = [
-      (
-        '1. Trình độ hiện tại của bạn?',
-        [
-          'Mới bắt đầu / gần như mất gốc',
-          'Biết cơ bản nhưng ngữ pháp còn yếu',
-          'Khá ổn, muốn học theo mục tiêu',
-        ],
-      ),
-      (
-        '2. Mục tiêu chính của bạn là gì?',
-        [
-          'Giao tiếp hằng ngày',
-          'Tiếng Anh công sở',
-          'Luyện thi TOEIC',
-          'Luyện thi IELTS',
-          'Củng cố nền tảng toàn diện',
-        ],
-      ),
-      (
-        '3. Bạn có thể học bao lâu mỗi ngày?',
-        ['10 phút', '20 phút', '30 phút', '45 phút'],
-      ),
-      (
-        '4. Chọn tối đa 2 kỹ năng ưu tiên',
-        ['Từ vựng', 'Ngữ pháp', 'Nghe', 'Nói', 'Đọc', 'Viết'],
-      ),
-      (
-        '5. Chủ đề bạn muốn gặp nhiều hơn? (có thể bỏ qua)',
-        ['Đời sống', 'Công việc', 'Du lịch', 'Công nghệ', 'Âm nhạc'],
-      ),
-    ];
-    final (title, options) = questions[_step];
+    final questions =
+        <({String titleKey, List<({String id, String labelKey})> options})>[
+          (
+            titleKey: 'learning_survey_level_title',
+            options: [
+              (id: 'beginner', labelKey: 'learning_survey_level_beginner'),
+              (
+                id: 'grammar_weak',
+                labelKey: 'learning_survey_level_grammar_weak',
+              ),
+              (id: 'goal_ready', labelKey: 'learning_survey_level_goal_ready'),
+            ],
+          ),
+          (
+            titleKey: 'learning_survey_goal_title',
+            options: [
+              (id: 'daily', labelKey: 'learning_survey_goal_daily'),
+              (id: 'office', labelKey: 'learning_survey_goal_office'),
+              (id: 'toeic', labelKey: 'learning_survey_goal_toeic'),
+              (id: 'ielts', labelKey: 'learning_survey_goal_ielts'),
+              (id: 'foundation', labelKey: 'learning_survey_goal_foundation'),
+            ],
+          ),
+          (
+            titleKey: 'learning_survey_time_title',
+            options: [
+              (id: '10', labelKey: 'learning_survey_time_10'),
+              (id: '20', labelKey: 'learning_survey_time_20'),
+              (id: '30', labelKey: 'learning_survey_time_30'),
+              (id: '45', labelKey: 'learning_survey_time_45'),
+            ],
+          ),
+          (
+            titleKey: 'learning_survey_skills_title',
+            options: [
+              (id: 'vocabulary', labelKey: 'learning_survey_skill_vocabulary'),
+              (id: 'grammar', labelKey: 'learning_survey_skill_grammar'),
+              (id: 'listening', labelKey: 'learning_survey_skill_listening'),
+              (id: 'speaking', labelKey: 'learning_survey_skill_speaking'),
+              (id: 'reading', labelKey: 'learning_survey_skill_reading'),
+              (id: 'writing', labelKey: 'learning_survey_skill_writing'),
+            ],
+          ),
+          (
+            titleKey: 'learning_survey_topics_title',
+            options: [
+              (id: 'daily_life', labelKey: 'learning_survey_topic_daily_life'),
+              (id: 'work', labelKey: 'learning_survey_topic_work'),
+              (id: 'travel', labelKey: 'learning_survey_topic_travel'),
+              (id: 'technology', labelKey: 'learning_survey_topic_technology'),
+              (id: 'music', labelKey: 'learning_survey_topic_music'),
+            ],
+          ),
+        ];
+    final (titleKey: title, options: options) = questions[_step];
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -127,17 +150,17 @@ class _LearningPathSurveyScreenState
         ),
         const SizedBox(height: 16),
         Text(
-          'Tạo kế hoạch học cùng AI',
+          ref.tr('learning_survey_title'),
           style: AppTextStyles.heading(size: 19),
         ),
         const SizedBox(height: 4),
         Text(
-          'Bước ${_step + 1}/5 · Kế hoạch sẽ dựa trên thời gian và mục tiêu thực tế của bạn.',
+          ref.tr('learning_survey_progress_${_step + 1}'),
           style: AppTextStyles.muted(size: 12.5),
         ),
         const SizedBox(height: 18),
         Text(
-          title,
+          ref.tr(title),
           style: AppTextStyles.body(size: 15, weight: FontWeight.w800),
         ),
         const SizedBox(height: 10),
@@ -145,7 +168,8 @@ class _LearningPathSurveyScreenState
           child: SingleChildScrollView(
             child: Column(
               children: [
-                for (var i = 0; i < options.length; i++) _option(options[i], i),
+                for (var i = 0; i < options.length; i++)
+                  _option(options[i].id, ref.tr(options[i].labelKey), i),
               ],
             ),
           ),
@@ -156,12 +180,18 @@ class _LearningPathSurveyScreenState
             if (_step > 0)
               TextButton(
                 onPressed: () => setState(() => _step--),
-                child: const Text('Quay lại'),
+                child: Text(ref.tr('learning_survey_back')),
               ),
             const Spacer(),
             FilledButton(
               onPressed: _step == 4 ? _finish : _next,
-              child: Text(_step == 4 ? 'Tạo kế hoạch 7 ngày' : 'Tiếp tục'),
+              child: Text(
+                ref.tr(
+                  _step == 4
+                      ? 'learning_survey_create_plan'
+                      : 'learning_survey_continue',
+                ),
+              ),
             ),
           ],
         ),
@@ -169,7 +199,7 @@ class _LearningPathSurveyScreenState
           child: TextButton(
             onPressed: _turnOff,
             child: Text(
-              'Tôi muốn tự học, tắt gợi ý',
+              ref.tr('learning_survey_turn_off'),
               style: AppTextStyles.muted(size: 12),
             ),
           ),
@@ -178,7 +208,7 @@ class _LearningPathSurveyScreenState
     );
   }
 
-  Widget _option(String label, int index) {
+  Widget _option(String id, String label, int index) {
     bool selected;
     VoidCallback onTap;
     if (_step == 0) {
@@ -200,12 +230,12 @@ class _LearningPathSurveyScreenState
       onTap = () => setState(() => _dailyMinutes = values[index]);
     } else {
       final target = _step == 3 ? _skills : _topics;
-      selected = target.contains(label);
+      selected = target.contains(id);
       onTap = () => setState(() {
         if (selected) {
-          target.remove(label);
+          target.remove(id);
         } else if (_step != 3 || target.length < 2) {
-          target.add(label);
+          target.add(id);
         }
       });
     }
@@ -257,18 +287,21 @@ class _LearningPathSurveyScreenState
   }
 }
 
-class _PlanResult extends StatelessWidget {
+class _PlanResult extends ConsumerWidget {
   const _PlanResult({required this.plan});
   final List<LearningPlanItem> plan;
 
   @override
-  Widget build(BuildContext context) => Column(
+  Widget build(BuildContext context, WidgetRef ref) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Text('Kế hoạch 7 ngày của bạn', style: AppTextStyles.heading(size: 19)),
+      Text(
+        ref.tr('learning_plan_title'),
+        style: AppTextStyles.heading(size: 19),
+      ),
       const SizedBox(height: 4),
       Text(
-        'AI sẽ dùng kết quả học thực tế để điều chỉnh kế hoạch tuần tới.',
+        ref.tr('learning_plan_subtitle'),
         style: AppTextStyles.muted(size: 12.5),
       ),
       const SizedBox(height: 14),
@@ -304,7 +337,7 @@ class _PlanResult extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          item.title,
+                          ref.tr(item.titleKey),
                           style: AppTextStyles.body(
                             size: 13.5,
                             weight: FontWeight.w800,
@@ -312,7 +345,7 @@ class _PlanResult extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          item.reason,
+                          ref.tr(item.reasonKey),
                           style: AppTextStyles.muted(size: 11.5),
                         ),
                       ],
@@ -329,7 +362,7 @@ class _PlanResult extends StatelessWidget {
         width: double.infinity,
         child: FilledButton(
           onPressed: () => Navigator.of(context).maybePop(),
-          child: const Text('Bắt đầu học'),
+          child: Text(ref.tr('learning_plan_start')),
         ),
       ),
     ],

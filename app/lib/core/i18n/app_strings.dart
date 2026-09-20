@@ -514,6 +514,235 @@ class AppStrings {
       AppLanguage.en: "I'll study on my own, turn off suggestions",
     },
 
+    // Personalized learning plan survey.
+    'learning_survey_title': {
+      AppLanguage.vi: 'Tạo kế hoạch học cùng AI',
+      AppLanguage.en: 'Create a learning plan with AI',
+    },
+    'learning_survey_progress_1': {
+      AppLanguage.vi:
+          'Bước 1/5 · Kế hoạch dựa trên thời gian và mục tiêu thực tế của bạn.',
+      AppLanguage.en: 'Step 1/5 · Your plan will fit your time and real goal.',
+    },
+    'learning_survey_progress_2': {
+      AppLanguage.vi:
+          'Bước 2/5 · Kế hoạch dựa trên thời gian và mục tiêu thực tế của bạn.',
+      AppLanguage.en: 'Step 2/5 · Your plan will fit your time and real goal.',
+    },
+    'learning_survey_progress_3': {
+      AppLanguage.vi:
+          'Bước 3/5 · Kế hoạch dựa trên thời gian và mục tiêu thực tế của bạn.',
+      AppLanguage.en: 'Step 3/5 · Your plan will fit your time and real goal.',
+    },
+    'learning_survey_progress_4': {
+      AppLanguage.vi:
+          'Bước 4/5 · Kế hoạch dựa trên thời gian và mục tiêu thực tế của bạn.',
+      AppLanguage.en: 'Step 4/5 · Your plan will fit your time and real goal.',
+    },
+    'learning_survey_progress_5': {
+      AppLanguage.vi:
+          'Bước 5/5 · Kế hoạch dựa trên thời gian và mục tiêu thực tế của bạn.',
+      AppLanguage.en: 'Step 5/5 · Your plan will fit your time and real goal.',
+    },
+    'learning_survey_level_title': {
+      AppLanguage.vi: '1. Trình độ hiện tại của bạn?',
+      AppLanguage.en: '1. What is your current level?',
+    },
+    'learning_survey_level_beginner': {
+      AppLanguage.vi: 'Mới bắt đầu / gần như mất gốc',
+      AppLanguage.en: 'New to English / almost a complete beginner',
+    },
+    'learning_survey_level_grammar_weak': {
+      AppLanguage.vi: 'Biết cơ bản nhưng ngữ pháp còn yếu',
+      AppLanguage.en: 'I know the basics, but my grammar is weak',
+    },
+    'learning_survey_level_goal_ready': {
+      AppLanguage.vi: 'Khá ổn, muốn học theo mục tiêu',
+      AppLanguage.en: 'I am doing okay and want to study for a goal',
+    },
+    'learning_survey_goal_title': {
+      AppLanguage.vi: '2. Mục tiêu chính của bạn là gì?',
+      AppLanguage.en: '2. What is your main goal?',
+    },
+    'learning_survey_goal_daily': {
+      AppLanguage.vi: 'Giao tiếp hằng ngày',
+      AppLanguage.en: 'Everyday conversation',
+    },
+    'learning_survey_goal_office': {
+      AppLanguage.vi: 'Tiếng Anh công sở',
+      AppLanguage.en: 'English for work',
+    },
+    'learning_survey_goal_toeic': {
+      AppLanguage.vi: 'Luyện thi TOEIC',
+      AppLanguage.en: 'Prepare for TOEIC',
+    },
+    'learning_survey_goal_ielts': {
+      AppLanguage.vi: 'Luyện thi IELTS',
+      AppLanguage.en: 'Prepare for IELTS',
+    },
+    'learning_survey_goal_foundation': {
+      AppLanguage.vi: 'Củng cố nền tảng toàn diện',
+      AppLanguage.en: 'Build a solid foundation',
+    },
+    'learning_survey_time_title': {
+      AppLanguage.vi: '3. Bạn có thể học bao lâu mỗi ngày?',
+      AppLanguage.en: '3. How long can you study each day?',
+    },
+    'learning_survey_time_10': {
+      AppLanguage.vi: '10 phút',
+      AppLanguage.en: '10 minutes',
+    },
+    'learning_survey_time_20': {
+      AppLanguage.vi: '20 phút',
+      AppLanguage.en: '20 minutes',
+    },
+    'learning_survey_time_30': {
+      AppLanguage.vi: '30 phút',
+      AppLanguage.en: '30 minutes',
+    },
+    'learning_survey_time_45': {
+      AppLanguage.vi: '45 phút',
+      AppLanguage.en: '45 minutes',
+    },
+    'learning_survey_skills_title': {
+      AppLanguage.vi: '4. Chọn tối đa 2 kỹ năng ưu tiên',
+      AppLanguage.en: '4. Choose up to two priority skills',
+    },
+    'learning_survey_skill_vocabulary': {
+      AppLanguage.vi: 'Từ vựng',
+      AppLanguage.en: 'Vocabulary',
+    },
+    'learning_survey_skill_grammar': {
+      AppLanguage.vi: 'Ngữ pháp',
+      AppLanguage.en: 'Grammar',
+    },
+    'learning_survey_skill_listening': {
+      AppLanguage.vi: 'Nghe',
+      AppLanguage.en: 'Listening',
+    },
+    'learning_survey_skill_speaking': {
+      AppLanguage.vi: 'Nói',
+      AppLanguage.en: 'Speaking',
+    },
+    'learning_survey_skill_reading': {
+      AppLanguage.vi: 'Đọc',
+      AppLanguage.en: 'Reading',
+    },
+    'learning_survey_skill_writing': {
+      AppLanguage.vi: 'Viết',
+      AppLanguage.en: 'Writing',
+    },
+    'learning_survey_topics_title': {
+      AppLanguage.vi: '5. Chủ đề bạn muốn gặp nhiều hơn? (có thể bỏ qua)',
+      AppLanguage.en: '5. What topics would you like more of? (optional)',
+    },
+    'learning_survey_topic_daily_life': {
+      AppLanguage.vi: 'Đời sống',
+      AppLanguage.en: 'Daily life',
+    },
+    'learning_survey_topic_work': {
+      AppLanguage.vi: 'Công việc',
+      AppLanguage.en: 'Work',
+    },
+    'learning_survey_topic_travel': {
+      AppLanguage.vi: 'Du lịch',
+      AppLanguage.en: 'Travel',
+    },
+    'learning_survey_topic_technology': {
+      AppLanguage.vi: 'Công nghệ',
+      AppLanguage.en: 'Technology',
+    },
+    'learning_survey_topic_music': {
+      AppLanguage.vi: 'Âm nhạc',
+      AppLanguage.en: 'Music',
+    },
+    'learning_survey_back': {
+      AppLanguage.vi: 'Quay lại',
+      AppLanguage.en: 'Back',
+    },
+    'learning_survey_continue': {
+      AppLanguage.vi: 'Tiếp tục',
+      AppLanguage.en: 'Continue',
+    },
+    'learning_survey_create_plan': {
+      AppLanguage.vi: 'Tạo kế hoạch 7 ngày',
+      AppLanguage.en: 'Create 7-day plan',
+    },
+    'learning_survey_turn_off': {
+      AppLanguage.vi: 'Tôi muốn tự học, tắt gợi ý',
+      AppLanguage.en: 'I want to study on my own',
+    },
+    'learning_plan_title': {
+      AppLanguage.vi: 'Kế hoạch 7 ngày của bạn',
+      AppLanguage.en: 'Your 7-day plan',
+    },
+    'learning_plan_subtitle': {
+      AppLanguage.vi:
+          'AI sẽ dùng kết quả học thực tế để điều chỉnh kế hoạch tuần tới.',
+      AppLanguage.en:
+          'AI will use your learning results to adjust next week’s plan.',
+    },
+    'learning_plan_start': {
+      AppLanguage.vi: 'Bắt đầu học',
+      AppLanguage.en: 'Start learning',
+    },
+    'learning_plan_day1_title': {
+      AppLanguage.vi: 'Khởi động với chủ đề đã chọn',
+      AppLanguage.en: 'Warm up with your chosen topic',
+    },
+    'learning_plan_day1_reason': {
+      AppLanguage.vi: 'Bắt đầu từ kỹ năng bạn ưu tiên.',
+      AppLanguage.en: 'Start with the skill you chose.',
+    },
+    'learning_plan_day2_title': {
+      AppLanguage.vi: 'Củng cố cấu trúc câu',
+      AppLanguage.en: 'Strengthen sentence structure',
+    },
+    'learning_plan_day2_reason': {
+      AppLanguage.vi: 'Giúp dùng từ mới thành câu đúng.',
+      AppLanguage.en: 'Turn new words into correct sentences.',
+    },
+    'learning_plan_day3_title': {
+      AppLanguage.vi: 'Luyện nói câu ngắn',
+      AppLanguage.en: 'Practise short spoken sentences',
+    },
+    'learning_plan_day3_reason': {
+      AppLanguage.vi: 'Tăng phản xạ và sự tự tin.',
+      AppLanguage.en: 'Build fluency and confidence.',
+    },
+    'learning_plan_day4_title': {
+      AppLanguage.vi: 'Bài học theo mục tiêu',
+      AppLanguage.en: 'Goal-focused lesson',
+    },
+    'learning_plan_day4_reason': {
+      AppLanguage.vi: 'Phục vụ trực tiếp mục tiêu đã chọn.',
+      AppLanguage.en: 'Directly supports your chosen goal.',
+    },
+    'learning_plan_day5_title': {
+      AppLanguage.vi: 'Viết để ghi nhớ',
+      AppLanguage.en: 'Write to remember',
+    },
+    'learning_plan_day5_reason': {
+      AppLanguage.vi: 'Vận dụng từ vựng và ngữ pháp.',
+      AppLanguage.en: 'Apply vocabulary and grammar.',
+    },
+    'learning_plan_day6_title': {
+      AppLanguage.vi: 'Nghe và đọc hiểu',
+      AppLanguage.en: 'Listen and read for meaning',
+    },
+    'learning_plan_day6_reason': {
+      AppLanguage.vi: 'Tiếp xúc tiếng Anh trong ngữ cảnh.',
+      AppLanguage.en: 'Meet English in context.',
+    },
+    'learning_plan_day7_title': {
+      AppLanguage.vi: 'Ôn tập trong tuần',
+      AppLanguage.en: 'Weekly review',
+    },
+    'learning_plan_day7_reason': {
+      AppLanguage.vi: 'Củng cố kiến thức trước tuần tiếp theo.',
+      AppLanguage.en: 'Consolidate learning before next week.',
+    },
+
     // 3 cap hoc suy tu persona - xem docs/research-level-based-content.md.
     'learner_level_basic': {AppLanguage.vi: 'Cơ bản', AppLanguage.en: 'Basic'},
     'learner_level_intermediate': {

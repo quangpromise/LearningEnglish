@@ -77,14 +77,14 @@ class LearningPlanItem {
   const LearningPlanItem({
     required this.day,
     required this.feature,
-    required this.title,
-    required this.reason,
+    required this.titleKey,
+    required this.reasonKey,
   });
 
   final int day;
   final HomeFeature feature;
-  final String title;
-  final String reason;
+  final String titleKey;
+  final String reasonKey;
 }
 
 List<LearningPlanItem> buildFirstWeekPlan(LearnerProfile profile) {
@@ -99,61 +99,58 @@ List<LearningPlanItem> buildFirstWeekPlan(LearnerProfile profile) {
     LearningPersona.beginner => HomeFeature.phonics,
     LearningPersona.grammarOverhaul => HomeFeature.grammar,
   };
-  final topic = profile.interestTopics.isEmpty
-      ? 'chủ đề thiết thực'
-      : 'chủ đề ${profile.interestTopics.first.toLowerCase()}';
   return [
     LearningPlanItem(
       day: 1,
       feature: primary,
-      title: 'Khởi động với $topic',
-      reason: 'Bắt đầu từ kỹ năng bạn ưu tiên.',
+      titleKey: 'learning_plan_day1_title',
+      reasonKey: 'learning_plan_day1_reason',
     ),
     LearningPlanItem(
       day: 2,
       feature: HomeFeature.grammar,
-      title: 'Củng cố cấu trúc câu',
-      reason: 'Giúp dùng từ mới thành câu đúng.',
+      titleKey: 'learning_plan_day2_title',
+      reasonKey: 'learning_plan_day2_reason',
     ),
     LearningPlanItem(
       day: 3,
       feature: HomeFeature.pronunciation,
-      title: 'Luyện nói câu ngắn',
-      reason: 'Tăng phản xạ và sự tự tin.',
+      titleKey: 'learning_plan_day3_title',
+      reasonKey: 'learning_plan_day3_reason',
     ),
     LearningPlanItem(
       day: 4,
       feature: goalFeature,
-      title: 'Bài học theo mục tiêu',
-      reason: 'Phục vụ trực tiếp mục tiêu đã chọn.',
+      titleKey: 'learning_plan_day4_title',
+      reasonKey: 'learning_plan_day4_reason',
     ),
     LearningPlanItem(
       day: 5,
       feature: HomeFeature.writing,
-      title: 'Viết để ghi nhớ',
-      reason: 'Vận dụng từ vựng và ngữ pháp.',
+      titleKey: 'learning_plan_day5_title',
+      reasonKey: 'learning_plan_day5_reason',
     ),
     LearningPlanItem(
       day: 6,
       feature: HomeFeature.story,
-      title: 'Nghe và đọc hiểu',
-      reason: 'Tiếp xúc tiếng Anh trong ngữ cảnh.',
+      titleKey: 'learning_plan_day6_title',
+      reasonKey: 'learning_plan_day6_reason',
     ),
     LearningPlanItem(
       day: 7,
       feature: HomeFeature.quiz,
-      title: 'Ôn tập trong tuần',
-      reason: 'Củng cố kiến thức trước tuần tiếp theo.',
+      titleKey: 'learning_plan_day7_title',
+      reasonKey: 'learning_plan_day7_reason',
     ),
   ];
 }
 
 HomeFeature _featureForSkill(String skill) => switch (skill) {
-  'Nghe' => HomeFeature.story,
-  'Nói' => HomeFeature.pronunciation,
-  'Ngữ pháp' => HomeFeature.grammar,
-  'Đọc' => HomeFeature.reading,
-  'Viết' => HomeFeature.writing,
+  'listening' => HomeFeature.story,
+  'speaking' => HomeFeature.pronunciation,
+  'grammar' => HomeFeature.grammar,
+  'reading' => HomeFeature.reading,
+  'writing' => HomeFeature.writing,
   _ => HomeFeature.vocabulary,
 };
 
