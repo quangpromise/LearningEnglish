@@ -4299,6 +4299,22 @@ class AppStrings {
       AppLanguage.vi: 'Xem tất cả',
       AppLanguage.en: 'See all',
     },
+    'fitness_level_beginner': {
+      AppLanguage.vi: 'Mới bắt đầu',
+      AppLanguage.en: 'Beginner',
+    },
+    'fitness_level_intermediate': {
+      AppLanguage.vi: 'Trung cấp',
+      AppLanguage.en: 'Intermediate',
+    },
+    'fitness_level_advanced': {
+      AppLanguage.vi: 'Nâng cao',
+      AppLanguage.en: 'Advanced',
+    },
+    'fitness_level_all': {
+      AppLanguage.vi: 'Mọi trình độ',
+      AppLanguage.en: 'All levels',
+    },
     'fitness_quick_actions_title': {
       AppLanguage.vi: 'Tiện ích nhanh',
       AppLanguage.en: 'Quick actions',

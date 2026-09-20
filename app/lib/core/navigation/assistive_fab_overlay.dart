@@ -243,6 +243,23 @@ class _AssistiveFabOverlayState extends ConsumerState<AssistiveFabOverlay> {
 
   @override
   Widget build(BuildContext context) {
+    // KHONG hien khi chua dang nhap (man Dang nhap/Dang ky, man khoi phuc
+    // mat khau): moi loi tat trong nut deu can 1 tai khoan (Lap ke hoach,
+    // Viec can lam, AI Voice Chat...), bam vao chi ra man trong hoac loi.
+    // Watch authStateProvider de nut tu hien ngay sau khi dang nhap xong
+    // ma khong phai mo lai app.
+    // try/catch: khi app thieu cau hinh Supabase, no hien man bao thieu
+    // cau hinh nhung MaterialApp.builder VAN gan nut nay - luc do
+    // Supabase.instance.client nem loi. Coi nhu chua dang nhap.
+    try {
+      ref.watch(authStateProvider);
+      if (ref.watch(supabaseClientProvider).auth.currentSession == null) {
+        return const SizedBox.shrink();
+      }
+    } catch (_) {
+      return const SizedBox.shrink();
+    }
+
     final section = ref.watch(currentAppSectionProvider);
     final (gradient, glowColor) = plannerAccentFor(section);
 

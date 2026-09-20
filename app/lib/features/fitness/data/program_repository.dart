@@ -40,6 +40,9 @@ class ProgramRepository {
       return Program(
         id: map['id'] as int,
         titleVi: map['titleVi'] as String,
+        // Giao an cu trong file noi dung co the chua co ten tieng Anh -
+        // lay tam ten tieng Viet thay vi lam hong ca danh sach.
+        titleEn: (map['titleEn'] as String?) ?? map['titleVi'] as String,
         level: map['level'] as String,
         equipment: map['equipment'] as String,
         sessionsPerWeek: map['sessionsPerWeek'] as int,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/i18n/app_strings.dart';
 import '../../../../core/providers/app_providers.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../data/program_model.dart';
@@ -90,7 +91,7 @@ class FitnessProgramCarousel extends ConsumerWidget {
   }
 }
 
-class _ProgramCard extends StatelessWidget {
+class _ProgramCard extends ConsumerWidget {
   const _ProgramCard({
     required this.program,
     required this.art,
@@ -102,7 +103,7 @@ class _ProgramCard extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return FitnessPressable(
       onTap: onTap,
       child: ClipRRect(
@@ -138,7 +139,10 @@ class _ProgramCard extends StatelessWidget {
                   Icon(art.icon, size: 19, color: FitnessHome.red),
                   const SizedBox(height: 7),
                   Text(
-                    program.titleVi,
+                    // Ten giao an theo ngon ngu giao dien dang chon - de
+                    // nguyen titleVi thi nguoi chon tieng Anh van thay
+                    // tieng Viet ngay o man dau tien.
+                    program.titleFor(ref.watch(appLanguageProvider)),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: AppTextStyles.body(
@@ -151,7 +155,7 @@ class _ProgramCard extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          program.level,
+                          ref.tr(program.levelLabelKey),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: FitnessHome.bodySecondary(size: 10),

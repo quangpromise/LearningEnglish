@@ -41,9 +41,10 @@ import 'sleep_screen.dart';
 class FitnessHomeScreen extends ConsumerWidget {
   const FitnessHomeScreen({super.key});
 
-  /// Chieu cao khung thiet ke (dp). Tong cac khoi ben duoi vua khit so nay;
-  /// doi bat ky chieu cao nao trong [FitnessHome] thi phai cong tru lai day.
-  static const _designHeight = 756.0;
+  /// Chieu cao khung thiet ke cua phan NOI DUNG (khong ke thanh dau man).
+  /// Tong cac khoi ben duoi vua khit so nay; doi bat ky chieu cao nao trong
+  /// [FitnessHome] thi phai cong tru lai day.
+  static const _designHeight = 674.0;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -62,113 +63,137 @@ class FitnessHomeScreen extends ConsumerWidget {
               FitnessHome.pagePadding,
               0,
             ),
-            child: _FittedCanvas(
-              designHeight: _designHeight,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AppTopBar(
-                    accentColor: FitnessHome.red,
-                    greeting: ref.tr('home_greeting'),
-                    // The bao han goi tap ("Gym Elite") thu gon thanh 1 nut
-                    // tron canh nut Tin nhan thay vi 1 bang ngang chiem han
-                    // 1 dong - man nay khong cuon nen tung dp deu quy.
-                    trailing: const ServiceExpiryBanner(
-                      section: AppSection.fitness,
-                      compact: true,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // NAM NGOAI _FittedCanvas: thanh dau man phai co kich thuoc
+                // Y HET 2 khu vuc kia (Hoc Tieng Anh/Wealth) - neu de trong
+                // khung co gian, no se bi phong to/thu nho theo chieu cao
+                // may va nhin lech han so voi 2 app con lai.
+                AppTopBar(
+                  accentColor: FitnessHome.red,
+                  greeting: ref.tr('home_greeting'),
+                  // The bao han goi tap ("Gym Elite") thu gon thanh 1 nut
+                  // tron canh nut Tin nhan thay vi 1 bang ngang chiem han
+                  // 1 dong - man nay khong cuon nen tung dp deu quy.
+                  trailing: const ServiceExpiryBanner(
+                    section: AppSection.fitness,
+                    compact: true,
+                  ),
+                  unreadCount: unread,
+                  onMessagesTap: () =>
+                      openAppPopup(context, const ConversationsScreen()),
+                ),
+                const SizedBox(height: 14),
+                Expanded(
+                  child: _FittedCanvas(
+                    designHeight: _designHeight,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        FitnessHeroCard(
+                          kicker: ref.tr('fitness_hero_kicker'),
+                          title: ref.tr('fitness_hero_title'),
+                          subtitle: ref.tr('fitness_hero_subtitle'),
+                          ctaLabel: ref.tr('fitness_hero_cta'),
+                          // "Bat dau tap" mo thang Thu vien bai tap - day la loi
+                          // vao DUY NHAT cua thu vien sau khi bo o "Bai tap" o
+                          // hang Tien ich nhanh. Buoi tap theo giao an van mo tu
+                          // the "Ke hoach hom nay" ngay ben duoi.
+                          onStart: () => openAppPopup(
+                            context,
+                            const MuscleGroupCategoriesScreen(),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        FitnessStatsRow(
+                          onOpenNutrition: () =>
+                              openAppPopup(context, const NutritionScreen()),
+                          onOpenStatistics: () => openAppPopup(
+                            context,
+                            const FitnessStatisticsScreen(),
+                          ),
+                          onOpenHeartRate: () async {
+                            await openAppPopup(
+                              context,
+                              const HeartRateScreen(),
+                            );
+                            ref.invalidate(heartRateHistoryProvider);
+                          },
+                        ),
+                        const SizedBox(height: 10),
+                        FitnessTodayCard(
+                          onOpenPlan: () => _openTodayWorkout(context, ref),
+                          quote: _quote(ref),
+                        ),
+                        const SizedBox(height: 12),
+                        FitnessSectionHeader(
+                          title: ref.tr('fitness_home_category_workout'),
+                          actionLabel: ref.tr('fitness_see_all'),
+                          onAction: () =>
+                              openAppPopup(context, const ProgramsListScreen()),
+                        ),
+                        const SizedBox(height: 8),
+                        FitnessProgramCarousel(
+                          onOpenProgram: (Program program) => openAppPopup(
+                            context,
+                            ProgramsListScreen(initialProgramId: program.id),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        FitnessSectionHeader(
+                          title: ref.tr('fitness_quick_actions_title'),
+                        ),
+                        const SizedBox(height: 8),
+                        // 4 o vua khit 1 hang, KHONG cuon ngang (ban dau tien
+                        // cuon duoc nen o thu 5 tro di bi khuat han). Hai o da bo:
+                        // "Lich tap" (mo dung man ma khu "Tap luyen" ngay tren da
+                        // mo) va "Bai tap" (da chuyen thanh nut "Bat dau tap" o
+                        // the lon dau man).
+                        FitnessQuickActions(
+                          actions: [
+                            FitnessQuickAction(
+                              icon: Icons.restaurant_rounded,
+                              label: ref.tr('fitness_nutrition_title'),
+                              onTap: () => openAppPopup(
+                                context,
+                                const NutritionScreen(),
+                              ),
+                            ),
+                            FitnessQuickAction(
+                              icon: Icons.bedtime_rounded,
+                              label: ref.tr('fitness_sleep_title'),
+                              onTap: () =>
+                                  openAppPopup(context, const SleepScreen()),
+                            ),
+                            FitnessQuickAction(
+                              icon: Icons.monitor_heart_rounded,
+                              label: ref.tr('fitness_heart_rate_title'),
+                              onTap: () async {
+                                await openAppPopup(
+                                  context,
+                                  const HeartRateScreen(),
+                                );
+                                // Lan do moi lam thay doi the "Nhip tim" o tren -
+                                // nap lai lich su sau khi dong man do.
+                                ref.invalidate(heartRateHistoryProvider);
+                              },
+                            ),
+                            FitnessQuickAction(
+                              icon: Icons.groups_rounded,
+                              label: ref.tr('fitness_community_title'),
+                              onTap: () => openAppPopup(
+                                context,
+                                const CommunityScreen(),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                    unreadCount: unread,
-                    onMessagesTap: () =>
-                        openAppPopup(context, const ConversationsScreen()),
                   ),
-                  const SizedBox(height: 14),
-                  FitnessHeroCard(
-                    kicker: ref.tr('fitness_hero_kicker'),
-                    title: ref.tr('fitness_hero_title'),
-                    subtitle: ref.tr('fitness_hero_subtitle'),
-                    ctaLabel: ref.tr('fitness_hero_cta'),
-                    // "Bat dau tap" mo thang Thu vien bai tap - day la loi
-                    // vao DUY NHAT cua thu vien sau khi bo o "Bai tap" o
-                    // hang Tien ich nhanh. Buoi tap theo giao an van mo tu
-                    // the "Ke hoach hom nay" ngay ben duoi.
-                    onStart: () => openAppPopup(
-                      context,
-                      const MuscleGroupCategoriesScreen(),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  FitnessStatsRow(
-                    onOpenNutrition: () =>
-                        openAppPopup(context, const NutritionScreen()),
-                    onOpenStatistics: () =>
-                        openAppPopup(context, const FitnessStatisticsScreen()),
-                    onOpenHeartRate: () async {
-                      await openAppPopup(context, const HeartRateScreen());
-                      ref.invalidate(heartRateHistoryProvider);
-                    },
-                  ),
-                  const SizedBox(height: 10),
-                  FitnessTodayCard(
-                    onOpenPlan: () => _openTodayWorkout(context, ref),
-                    quote: _quote(ref),
-                  ),
-                  const SizedBox(height: 12),
-                  FitnessSectionHeader(
-                    title: ref.tr('fitness_home_category_workout'),
-                    actionLabel: ref.tr('fitness_see_all'),
-                    onAction: () =>
-                        openAppPopup(context, const ProgramsListScreen()),
-                  ),
-                  const SizedBox(height: 8),
-                  FitnessProgramCarousel(
-                    onOpenProgram: (Program program) => openAppPopup(
-                      context,
-                      ProgramsListScreen(initialProgramId: program.id),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  FitnessSectionHeader(
-                    title: ref.tr('fitness_quick_actions_title'),
-                  ),
-                  const SizedBox(height: 8),
-                  // 4 o vua khit 1 hang, KHONG cuon ngang (ban dau tien
-                  // cuon duoc nen o thu 5 tro di bi khuat han). Hai o da bo:
-                  // "Lich tap" (mo dung man ma khu "Tap luyen" ngay tren da
-                  // mo) va "Bai tap" (da chuyen thanh nut "Bat dau tap" o
-                  // the lon dau man).
-                  FitnessQuickActions(
-                    actions: [
-                      FitnessQuickAction(
-                        icon: Icons.restaurant_rounded,
-                        label: ref.tr('fitness_nutrition_title'),
-                        onTap: () =>
-                            openAppPopup(context, const NutritionScreen()),
-                      ),
-                      FitnessQuickAction(
-                        icon: Icons.bedtime_rounded,
-                        label: ref.tr('fitness_sleep_title'),
-                        onTap: () => openAppPopup(context, const SleepScreen()),
-                      ),
-                      FitnessQuickAction(
-                        icon: Icons.monitor_heart_rounded,
-                        label: ref.tr('fitness_heart_rate_title'),
-                        onTap: () async {
-                          await openAppPopup(context, const HeartRateScreen());
-                          // Lan do moi lam thay doi the "Nhip tim" o tren -
-                          // nap lai lich su sau khi dong man do.
-                          ref.invalidate(heartRateHistoryProvider);
-                        },
-                      ),
-                      FitnessQuickAction(
-                        icon: Icons.groups_rounded,
-                        label: ref.tr('fitness_community_title'),
-                        onTap: () =>
-                            openAppPopup(context, const CommunityScreen()),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),

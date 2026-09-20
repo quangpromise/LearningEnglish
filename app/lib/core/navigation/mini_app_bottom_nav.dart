@@ -17,7 +17,11 @@ class MiniAppBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+      // Le duoi 8 chu KHONG phai 20: phai khop DUNG voi thanh nhac cua
+      // Hoc Tieng Anh (xem root_shell.dart) - de 20 thi 2 khu vuc Fitness/
+      // Wealth co 1 khoang den thua o day man, nhin lech han so voi app kia
+      // va an mat 12dp chieu cao cua than man hinh.
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
       child: CenterMediaButton(accentColor: accentColor),
     );
   }

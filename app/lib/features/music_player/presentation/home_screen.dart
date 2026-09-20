@@ -221,7 +221,10 @@ class _HomeCard extends StatelessWidget {
     this.radius = 18,
     this.borderColor,
     this.onTap,
+    this.dim = false,
   });
+
+  /// Nen toi hon binh thuong - xem [AppColors.homeCardFillDim].
 
   final Widget child;
   final EdgeInsetsGeometry padding;
@@ -230,6 +233,7 @@ class _HomeCard extends StatelessWidget {
   /// Vien doi mau khi the nay nam trong danh sach goi y cua persona.
   final Color? borderColor;
   final VoidCallback? onTap;
+  final bool dim;
 
   @override
   Widget build(BuildContext context) {
@@ -241,7 +245,7 @@ class _HomeCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: highlighted
               ? borderColor!.withValues(alpha: 0.10)
-              : AppColors.homeCardFill,
+              : (dim ? AppColors.homeCardFillDim : AppColors.homeCardFill),
           borderRadius: BorderRadius.circular(radius),
           border: Border.all(
             color: borderColor ?? AppColors.homeCardBorder,
@@ -627,6 +631,8 @@ class _SkillCard extends StatelessWidget {
           child: _HomeCard(
             onTap: entry.open,
             radius: 15,
+            // Nen toi hon de hang nay xen ke voi cac khoi tren/duoi.
+            dim: true,
             padding: const EdgeInsets.fromLTRB(8, 7, 8, 6),
             borderColor: isRecommended ? accent : null,
             child: Column(
@@ -1023,6 +1029,9 @@ class _TestPrepPanel extends ConsumerWidget {
     ];
 
     return _HomeCard(
+      // Nen toi hon de khoi nay xen ke voi cac khoi tren/duoi; 3 the con
+      // ben trong van giu nen sang binh thuong nen noi len ro rang.
+      dim: true,
       padding: const EdgeInsets.all(8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

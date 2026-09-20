@@ -62,6 +62,23 @@ class ServiceExpiryBanner extends ConsumerWidget {
             children: [
               Icon(Icons.workspace_premium_rounded, size: 14, color: tint),
               const SizedBox(width: 5),
+              // Ghi ro TEN GOI chu khong chi con so: "512d" tran trui thi
+              // khong ai doan ra day la han cua goi tap nao.
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 62),
+                child: Text(
+                  service.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    decoration: TextDecoration.none,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 5),
               Text(
                 // Qua han thi hien dau tru de phan biet ngay voi con han,
                 // khong chi doi mau (nguoi kho phan biet mau van doc duoc).

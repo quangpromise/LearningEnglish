@@ -1,3 +1,5 @@
+import '../../../core/i18n/app_language.dart';
+
 /// 1 bai tap duoc gan vao 1 ngay cua chuong trinh - chi tham chieu
 /// [exerciseId] (khop voi `Exercise.id` trong exercises_seed.json), KHONG
 /// nhung lai toan bo thong tin bai tap (ten/anh/huong dan...) de tranh
@@ -44,6 +46,15 @@ enum ProgramDifficulty {
   intermediate,
   advanced;
 
+  /// Khoa chuoi giao dien cho muc do nay (xem app_strings.dart). Rieng "Moi
+  /// trinh do" khong co trong enum (fromLevel tra null) nen dung
+  /// `fitness_level_all`.
+  String get labelKey => switch (this) {
+    ProgramDifficulty.beginner => 'fitness_level_beginner',
+    ProgramDifficulty.intermediate => 'fitness_level_intermediate',
+    ProgramDifficulty.advanced => 'fitness_level_advanced',
+  };
+
   /// null nghia la "Moi trinh do" - khong ve vach nao ca (mo/muted).
   static ProgramDifficulty? fromLevel(String level) => switch (level) {
     'Mới bắt đầu' => beginner,
@@ -68,6 +79,7 @@ class Program {
   const Program({
     required this.id,
     required this.titleVi,
+    required this.titleEn,
     required this.level,
     required this.equipment,
     required this.sessionsPerWeek,
@@ -78,6 +90,12 @@ class Program {
 
   final int id;
   final String titleVi;
+
+  /// Ten tieng Anh cua giao an. Ten bai tap thi van chi co tieng Viet (xem
+  /// exercise_model.dart), nhung 3 ten giao an nay hien ngay tren Trang chu
+  /// nen bat buoc phai dich - de nguyen tieng Viet thi nguoi dung chon
+  /// tieng Anh van thay tieng Viet o man dau tien.
+  final String titleEn;
   final String level;
   final String equipment;
   final int sessionsPerWeek;
@@ -86,6 +104,13 @@ class Program {
   final List<ProgramDay> days;
 
   ProgramDifficulty? get difficulty => ProgramDifficulty.fromLevel(level);
+
+  /// Ten giao an theo ngon ngu giao dien dang chon.
+  String titleFor(AppLanguage lang) =>
+      lang == AppLanguage.en ? titleEn : titleVi;
+
+  /// Khoa chuoi giao dien cho muc do cua giao an nay.
+  String get levelLabelKey => difficulty?.labelKey ?? 'fitness_level_all';
 
   /// Ngay trong tuan hien tai theo lich cua chuong trinh nay -
   /// `DateTime.weekday` da san dung chuan ISO (1-7) nen khong can chuyen doi.

@@ -37,9 +37,14 @@ class FitnessTodayCard extends ConsumerWidget {
       meta = const [];
     } else if (plan.isRestDay) {
       title = ref.tr('fitness_today_rest_day');
-      meta = [(Icons.self_improvement_rounded, plan.program.titleVi)];
+      meta = [
+        (
+          Icons.self_improvement_rounded,
+          plan.program.titleFor(ref.watch(appLanguageProvider)),
+        ),
+      ];
     } else {
-      title = plan.program.titleVi;
+      title = plan.program.titleFor(ref.watch(appLanguageProvider));
       meta = [
         (
           Icons.fitness_center_rounded,

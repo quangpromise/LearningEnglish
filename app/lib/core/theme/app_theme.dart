@@ -112,6 +112,12 @@ class AppColors {
   /// sang hon la do anh sang NEN hat qua chu khong phai tung the tu sang.
   static const homeCardFill = Color(0x1682B2F0);
 
+  /// Ban TOI hon cua [homeCardFill] - phu them 1 lop den thay vi lop kinh
+  /// sang. Dung xen ke cho 1 so khoi o man Home (hang 4 ky nang, khoi Luyen
+  /// thi) de cac khoi khong dinh lien thanh 1 mang phang, de doc ranh gioi
+  /// giua chung hon.
+  static const homeCardFillDim = Color(0x40000000);
+
   /// Vien the o man Home thiet ke lai.
   static const homeCardBorder = Color(0x24C8E0FF);
 
