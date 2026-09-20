@@ -90,6 +90,23 @@ class LearningPathRepository {
     }
   }
 
+  /// Luu cac dau vao cua ke hoach ca nhan. Loi mang khong chan trai nghiem:
+  /// persona van duoc cache o [choosePersona], con profile se dong bo o lan
+  /// sau khi nguoi dung thuc hien lai khao sat.
+  Future<void> saveProfile(LearnerProfile profile) async {
+    await choosePersona(profile.persona);
+    final userId = _supabase.auth.currentUser?.id;
+    if (userId == null) return;
+    try {
+      await _supabase.from('user_learner_profiles').upsert({
+        'user_id': userId,
+        ...profile.toJson(),
+      }, onConflict: 'user_id');
+    } catch (_) {
+      // Migration co the chua duoc deploy; goi y persona van hoat dong.
+    }
+  }
+
   /// Nguoi dung chon "Tu hoc" - tat het highlight/goi y tren Home. Luu
   /// chuoi 'none' (khong khop ten enum nao) thay vi xoa dong - tai dung
   /// DUOC policy insert/update da co san (khong can them policy delete +

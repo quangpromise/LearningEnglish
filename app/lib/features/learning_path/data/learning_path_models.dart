@@ -43,6 +43,85 @@ enum LearnerLevel {
   };
 }
 
+/// Du lieu tu khao sat "Ke hoach hoc ca nhan". Persona van duoc luu rieng
+/// de cac man hien co co the loc noi dung nhu cu; profile giu them ngu canh
+/// de bo lap ke hoach (va sau nay de AI dieu chinh ke hoach).
+class LearnerProfile {
+  const LearnerProfile({
+    required this.persona,
+    required this.goal,
+    required this.dailyMinutes,
+    required this.prioritySkills,
+    required this.interestTopics,
+  });
+
+  final LearningPersona persona;
+  final LearningPersona goal;
+  final int dailyMinutes;
+  final List<String> prioritySkills;
+  final List<String> interestTopics;
+
+  Map<String, dynamic> toJson() => {
+    'persona': persona.name,
+    'goal': goal.name,
+    'daily_minutes': dailyMinutes,
+    'priority_skills': prioritySkills,
+    'interest_topics': interestTopics,
+  };
+}
+
+/// Mot bai trong ke hoach 7 ngay. V1 dung content da kiem duyet trong app;
+/// AI sau nay chi can xep lai danh sach nay, khong tu sinh bai hoc vo kiem
+/// chung.
+class LearningPlanItem {
+  const LearningPlanItem({
+    required this.day,
+    required this.feature,
+    required this.title,
+    required this.reason,
+  });
+
+  final int day;
+  final HomeFeature feature;
+  final String title;
+  final String reason;
+}
+
+List<LearningPlanItem> buildFirstWeekPlan(LearnerProfile profile) {
+  final primary = profile.prioritySkills.isEmpty
+      ? HomeFeature.vocabulary
+      : _featureForSkill(profile.prioritySkills.first);
+  final goalFeature = switch (profile.goal) {
+    LearningPersona.toeicPrep => HomeFeature.toeic,
+    LearningPersona.ieltsPrep => HomeFeature.ielts,
+    LearningPersona.dailyConversation => HomeFeature.pronunciation,
+    LearningPersona.officeEnglish => HomeFeature.writing,
+    LearningPersona.beginner => HomeFeature.phonics,
+    LearningPersona.grammarOverhaul => HomeFeature.grammar,
+  };
+  final topic = profile.interestTopics.isEmpty
+      ? 'chủ đề thiết thực'
+      : 'chủ đề ${profile.interestTopics.first.toLowerCase()}';
+  return [
+    LearningPlanItem(day: 1, feature: primary, title: 'Khởi động với $topic', reason: 'Bắt đầu từ kỹ năng bạn ưu tiên.'),
+    LearningPlanItem(day: 2, feature: HomeFeature.grammar, title: 'Củng cố cấu trúc câu', reason: 'Giúp dùng từ mới thành câu đúng.'),
+    LearningPlanItem(day: 3, feature: HomeFeature.pronunciation, title: 'Luyện nói câu ngắn', reason: 'Tăng phản xạ và sự tự tin.'),
+    LearningPlanItem(day: 4, feature: goalFeature, title: 'Bài học theo mục tiêu', reason: 'Phục vụ trực tiếp mục tiêu đã chọn.'),
+    LearningPlanItem(day: 5, feature: HomeFeature.writing, title: 'Viết để ghi nhớ', reason: 'Vận dụng từ vựng và ngữ pháp.'),
+    LearningPlanItem(day: 6, feature: HomeFeature.story, title: 'Nghe và đọc hiểu', reason: 'Tiếp xúc tiếng Anh trong ngữ cảnh.'),
+    LearningPlanItem(day: 7, feature: HomeFeature.quiz, title: 'Ôn tập trong tuần', reason: 'Củng cố kiến thức trước tuần tiếp theo.'),
+  ];
+}
+
+HomeFeature _featureForSkill(String skill) => switch (skill) {
+  'Nghe' => HomeFeature.story,
+  'Nói' => HomeFeature.pronunciation,
+  'Ngữ pháp' => HomeFeature.grammar,
+  'Đọc' => HomeFeature.reading,
+  'Viết' => HomeFeature.writing,
+  _ => HomeFeature.vocabulary,
+};
+
 extension LearningPersonaLevel on LearningPersona {
   LearnerLevel get level => switch (this) {
     LearningPersona.beginner => LearnerLevel.basic,
