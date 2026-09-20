@@ -5,11 +5,24 @@ import '../../../core/i18n/app_strings.dart';
 import '../../../core/navigation/app_popup.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/football_models.dart';
+import 'football_favorites_view.dart';
+import 'football_fixture_card.dart';
+import 'football_match_center_view.dart';
+import 'football_notification_settings_view.dart';
 import 'football_providers.dart';
 import 'football_standings_view.dart';
+import 'football_team_view.dart';
 import 'football_widgets.dart';
 
-enum _FootballStep { home, leagues, standings }
+enum _FootballStep {
+  home,
+  leagues,
+  standings,
+  favorites,
+  team,
+  matchCenter,
+  notifications,
+}
 
 /// Man goc cua Football Center.
 ///
@@ -19,7 +32,11 @@ enum _FootballStep { home, leagues, standings }
 /// vocabulary_topics_screen.dart: mo sheet chong sheet se lam mat gesture
 /// vuot-xuong-de-dong cua chinh popup goc.
 class FootballCenterScreen extends ConsumerStatefulWidget {
-  const FootballCenterScreen({super.key});
+  const FootballCenterScreen({super.key, this.initialFixtureId});
+
+  /// Mo thang Match Center cua 1 tran thay vi man Home - dung khi nguoi dung
+  /// bam vao thong bao ban thang (xem football_notification_link.dart).
+  final int? initialFixtureId;
 
   @override
   ConsumerState<FootballCenterScreen> createState() =>
@@ -27,12 +44,41 @@ class FootballCenterScreen extends ConsumerStatefulWidget {
 }
 
 class _FootballCenterScreenState extends ConsumerState<FootballCenterScreen> {
-  _FootballStep _step = _FootballStep.home;
+  late _FootballStep _step = widget.initialFixtureId == null
+      ? _FootballStep.home
+      : _FootballStep.matchCenter;
+
+  /// Man truoc do - de nut quay lai cua Match Center tra ve dung cho da mo no
+  /// (tu Home hay tu trang doi yeu thich), thay vi luon ve Home.
+  _FootballStep _previous = _FootballStep.home;
+
+  FootballTeam? _activeTeam;
+  late int? _activeFixtureId = widget.initialFixtureId;
+
+  void _go(_FootballStep next) {
+    setState(() {
+      _previous = _step;
+      _step = next;
+    });
+  }
 
   void _openStandings(int competitionId) {
     ref.read(footballSelectedCompetitionProvider.notifier).state =
         competitionId;
-    setState(() => _step = _FootballStep.standings);
+    _go(_FootballStep.standings);
+  }
+
+  void _openTeam(FootballTeam team) {
+    // Bo loc giai la theo TUNG doi - doi doi ma giu bo loc cu se ra danh sach
+    // rong kho hieu.
+    ref.read(footballTeamLeagueFilterProvider.notifier).state = null;
+    _activeTeam = team;
+    _go(_FootballStep.team);
+  }
+
+  void _openMatch(int fixtureId) {
+    _activeFixtureId = fixtureId;
+    _go(_FootballStep.matchCenter);
   }
 
   @override
@@ -43,16 +89,40 @@ class _FootballCenterScreenState extends ConsumerState<FootballCenterScreen> {
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
           child: switch (_step) {
             _FootballStep.home => _HomeView(
-              onOpenLeagues: () =>
-                  setState(() => _step = _FootballStep.leagues),
+              onOpenLeagues: () => _go(_FootballStep.leagues),
               onOpenStandings: _openStandings,
+              onOpenFavorites: () => _go(_FootballStep.favorites),
+              onOpenNotifications: () => _go(_FootballStep.notifications),
+              onOpenMatch: _openMatch,
             ),
             _FootballStep.leagues => _LeaguesView(
-              onBack: () => setState(() => _step = _FootballStep.home),
+              onBack: () => _go(_FootballStep.home),
               onOpenStandings: _openStandings,
             ),
             _FootballStep.standings => FootballStandingsView(
-              onBack: () => setState(() => _step = _FootballStep.home),
+              onBack: () => _go(_FootballStep.home),
+            ),
+            _FootballStep.favorites => FootballFavoritesView(
+              onBack: () => _go(_FootballStep.home),
+              onOpenTeam: _openTeam,
+            ),
+            // `!` an toan: chi vao 2 nhanh nay qua _openTeam/_openMatch, ma 2
+            // ham do luon gan gia tri truoc khi doi buoc.
+            _FootballStep.team => FootballTeamView(
+              team: _activeTeam!,
+              onBack: () => _go(_FootballStep.favorites),
+              onOpenMatch: _openMatch,
+            ),
+            _FootballStep.matchCenter => FootballMatchCenterView(
+              fixtureId: _activeFixtureId!,
+              onBack: () => _go(
+                _previous == _FootballStep.matchCenter
+                    ? _FootballStep.home
+                    : _previous,
+              ),
+            ),
+            _FootballStep.notifications => FootballNotificationSettingsView(
+              onBack: () => _go(_FootballStep.home),
             ),
           },
         ),
@@ -65,10 +135,19 @@ class _FootballCenterScreenState extends ConsumerState<FootballCenterScreen> {
 // Man Home
 // ---------------------------------------------------------------------------
 class _HomeView extends ConsumerWidget {
-  const _HomeView({required this.onOpenLeagues, required this.onOpenStandings});
+  const _HomeView({
+    required this.onOpenLeagues,
+    required this.onOpenStandings,
+    required this.onOpenFavorites,
+    required this.onOpenNotifications,
+    required this.onOpenMatch,
+  });
 
   final VoidCallback onOpenLeagues;
   final void Function(int competitionId) onOpenStandings;
+  final VoidCallback onOpenFavorites;
+  final VoidCallback onOpenNotifications;
+  final void Function(int fixtureId) onOpenMatch;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -79,7 +158,27 @@ class _HomeView extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        PopupHeader(title: ref.tr('football_title')),
+        PopupHeader(
+          title: ref.tr('football_title'),
+          trailing: GestureDetector(
+            onTap: onOpenNotifications,
+            child: Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: AppColors.glassFill,
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.glassBorder),
+              ),
+              alignment: Alignment.center,
+              child: const Icon(
+                Icons.notifications_none_rounded,
+                size: 17,
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ),
+        ),
         const SizedBox(height: 14),
         Expanded(
           child: RefreshIndicator(
@@ -112,11 +211,23 @@ class _HomeView extends ConsumerWidget {
                             for (final f in fixtures.take(4))
                               Padding(
                                 padding: const EdgeInsets.only(bottom: 8),
-                                child: FixtureCard(fixture: f),
+                                child: FixtureCard(
+                                  fixture: f,
+                                  onTap: () => onOpenMatch(f.id),
+                                ),
                               ),
                           ],
                         ),
                 ),
+                const SizedBox(height: 18),
+
+                _SectionLabel(
+                  label: ref.tr('football_favorites'),
+                  action: ref.tr('football_manage'),
+                  onAction: onOpenFavorites,
+                ),
+                const SizedBox(height: 8),
+                _FavoritesStrip(onOpenFavorites: onOpenFavorites),
                 const SizedBox(height: 18),
 
                 _SectionLabel(
@@ -166,7 +277,10 @@ class _HomeView extends ConsumerWidget {
                             for (final f in fixtures)
                               Padding(
                                 padding: const EdgeInsets.only(bottom: 8),
-                                child: FixtureCard(fixture: f),
+                                child: FixtureCard(
+                                  fixture: f,
+                                  onTap: () => onOpenMatch(f.id),
+                                ),
                               ),
                           ],
                         ),
@@ -186,6 +300,83 @@ class _HomeView extends ConsumerWidget {
 // ---------------------------------------------------------------------------
 // Man danh sach giai dau
 // ---------------------------------------------------------------------------
+/// Dai doi yeu thich o man Home - bam vao 1 doi mo thang trang cua doi do.
+class _FavoritesStrip extends ConsumerWidget {
+  const _FavoritesStrip({required this.onOpenFavorites});
+
+  final VoidCallback onOpenFavorites;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final teams =
+        ref.watch(footballFavoriteTeamsProvider).valueOrNull ?? const [];
+    if (teams.isEmpty) {
+      return GestureDetector(
+        onTap: onOpenFavorites,
+        child: GlowBox(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+          borderRadius: 16,
+          child: Row(
+            children: [
+              const Icon(
+                Icons.star_border_rounded,
+                size: 20,
+                color: AppColors.amber,
+              ),
+              const SizedBox(width: 11),
+              Expanded(
+                child: Text(
+                  ref.tr('football_add_favorite_hint'),
+                  style: AppTextStyles.body(size: 12, weight: FontWeight.w600),
+                ),
+              ),
+              const Icon(
+                Icons.chevron_right_rounded,
+                size: 19,
+                color: AppColors.textMuted,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    return SizedBox(
+      height: 74,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: [
+          for (final team in teams)
+            Padding(
+              padding: const EdgeInsets.only(right: 10),
+              child: GestureDetector(
+                onTap: onOpenFavorites,
+                child: SizedBox(
+                  width: 62,
+                  child: Column(
+                    children: [
+                      TeamBadge(team: team, size: 40),
+                      const SizedBox(height: 6),
+                      Text(
+                        team.name,
+                        maxLines: 1,
+                        textAlign: TextAlign.center,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.body(
+                          size: 9.5,
+                          weight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
 class _LeaguesView extends ConsumerWidget {
   const _LeaguesView({required this.onBack, required this.onOpenStandings});
 
@@ -266,102 +457,6 @@ class _LeaguesView extends ConsumerWidget {
 // ---------------------------------------------------------------------------
 // Thanh phan dung chung trong man Football
 // ---------------------------------------------------------------------------
-
-/// The 1 tran dau - dung chung cho ca danh sach live lan lich thi dau.
-class FixtureCard extends ConsumerWidget {
-  const FixtureCard({super.key, required this.fixture, this.onTap});
-
-  final FootballFixture fixture;
-  final VoidCallback? onTap;
-
-  /// Gio bong lan theo mui gio MAY NGUOI DUNG (yeu cau muc 18).
-  String _timeLabel() {
-    final t = fixture.kickoffLocal;
-    return '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
-  }
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return GestureDetector(
-      onTap: onTap,
-      child: GlowBox(
-        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 12),
-        borderRadius: 16,
-        border: fixture.isLive
-            ? Border.all(color: FootballColors.live.withValues(alpha: 0.4))
-            : null,
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                children: [
-                  _TeamLine(team: fixture.homeTeam, goals: fixture.homeGoals),
-                  const SizedBox(height: 8),
-                  _TeamLine(team: fixture.awayTeam, goals: fixture.awayGoals),
-                ],
-              ),
-            ),
-            const SizedBox(width: 10),
-            Container(width: 1, height: 34, color: AppColors.glassBorder),
-            const SizedBox(width: 10),
-            SizedBox(
-              width: 52,
-              child: Center(
-                child: switch (fixture.state) {
-                  FixtureState.live => LivePill(minute: fixture.elapsed),
-                  FixtureState.finished => Text(
-                    ref.tr('football_finished_short'),
-                    style: AppTextStyles.muted(size: 10.5),
-                  ),
-                  FixtureState.postponed => Text(
-                    ref.tr('football_postponed_short'),
-                    style: AppTextStyles.muted(size: 10.5),
-                  ),
-                  FixtureState.upcoming => Text(
-                    _timeLabel(),
-                    style: AppTextStyles.heading(size: 13)
-                        .copyWith(fontWeight: FontWeight.w700),
-                  ),
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _TeamLine extends StatelessWidget {
-  const _TeamLine({required this.team, required this.goals});
-
-  final FootballTeam? team;
-  final int? goals;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        TeamBadge(team: team, size: 22),
-        const SizedBox(width: 9),
-        Expanded(
-          child: Text(
-            team?.name ?? '-',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: AppTextStyles.body(size: 12.5, weight: FontWeight.w700),
-          ),
-        ),
-        if (goals != null)
-          Text(
-            '$goals',
-            style: AppTextStyles.heading(size: 13)
-                .copyWith(fontWeight: FontWeight.w800),
-          ),
-      ],
-    );
-  }
-}
 
 class _CompetitionTile extends StatelessWidget {
   const _CompetitionTile({required this.competition, required this.onTap});

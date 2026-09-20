@@ -264,3 +264,176 @@ class FootballMatchEvent {
     );
   }
 }
+
+/// Doi hinh ra san cua 1 doi trong 1 tran.
+class FootballLineup {
+  const FootballLineup({
+    required this.teamId,
+    this.formation,
+    this.starters = const [],
+    this.substitutes = const [],
+    this.coachName,
+  });
+
+  final int teamId;
+  final String? formation;
+  final List<FootballPlayer> starters;
+  final List<FootballPlayer> substitutes;
+  final String? coachName;
+
+  factory FootballLineup.fromRow(Map<String, dynamic> row) {
+    List<FootballPlayer> parse(Object? raw) => (raw as List? ?? const [])
+        .map((e) => FootballPlayer.fromJson(e as Map<String, dynamic>))
+        .toList();
+    return FootballLineup(
+      teamId: (row['team_id'] as num).toInt(),
+      formation: row['formation'] as String?,
+      starters: parse(row['starters']),
+      substitutes: parse(row['substitutes']),
+      coachName: row['coach_name'] as String?,
+    );
+  }
+}
+
+/// 1 cau thu trong doi hinh. Nha cung cap dat ten truong khong dong nhat giua
+/// cac endpoint nen doc theo nhieu kha nang roi lay cai dau tien co gia tri.
+class FootballPlayer {
+  const FootballPlayer({required this.name, this.number, this.position});
+
+  final String name;
+  final int? number;
+  final String? position;
+
+  factory FootballPlayer.fromJson(Map<String, dynamic> json) {
+    return FootballPlayer(
+      name: (json['name'] ?? json['player'] ?? '') as String,
+      number: (json['number'] ?? json['shirtNumber'] ?? json['jersey']) is num
+          ? ((json['number'] ?? json['shirtNumber'] ?? json['jersey']) as num)
+                .toInt()
+          : null,
+      position: (json['position'] ?? json['pos']) as String?,
+    );
+  }
+}
+
+/// Thong ke cua 1 doi trong 1 tran. Giu nguyen danh sach chi so cua nha cung
+/// cap (moi ben tra 1 bo khac nhau) thay vi ep ve cac cot co dinh.
+class FootballTeamStats {
+  const FootballTeamStats({required this.teamId, required this.entries});
+
+  final int teamId;
+  final List<FootballStatEntry> entries;
+
+  factory FootballTeamStats.fromRow(Map<String, dynamic> row) {
+    return FootballTeamStats(
+      teamId: (row['team_id'] as num).toInt(),
+      entries: (row['stats'] as List? ?? const [])
+          .map((e) => FootballStatEntry.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+}
+
+class FootballStatEntry {
+  const FootballStatEntry({required this.name, required this.value});
+
+  final String name;
+
+  /// Giu dang chuoi: co chi so la so ("14"), co chi so la phan tram ("56%"),
+  /// co chi so la so thuc (xG "2.05") - ep het ve num se mat thong tin.
+  final String value;
+
+  /// Phan so de ve thanh so sanh 2 cot; null neu khong doc duoc ra so.
+  double? get numeric {
+    final cleaned = value.replaceAll('%', '').trim();
+    return double.tryParse(cleaned);
+  }
+
+  factory FootballStatEntry.fromJson(Map<String, dynamic> json) {
+    final raw = json['value'] ?? json['displayValue'];
+    return FootballStatEntry(
+      name:
+          (json['displayName'] ?? json['name'] ?? json['type'] ?? '') as String,
+      value: raw == null ? '-' : '$raw',
+    );
+  }
+}
+
+/// Bat/tat tung loai thong bao. Mac dinh PHAI khop y het cot `default` trong
+/// migration 0070 va DEFAULT_PREFS ben Edge Function football-live - lech 1
+/// trong 3 cho la nguoi dung nhan thong bao khac voi cai ho thay tren man
+/// cai dat.
+class FootballNotificationPrefs {
+  const FootballNotificationPrefs({
+    this.goal = true,
+    this.yellowCard = true,
+    this.redCard = true,
+    this.substitution = false,
+    this.matchStarted = true,
+    this.halfTime = false,
+    this.matchFinished = true,
+    this.lineupAvailable = true,
+    this.fixtureReminder = true,
+  });
+
+  final bool goal;
+  final bool yellowCard;
+  final bool redCard;
+  final bool substitution;
+  final bool matchStarted;
+  final bool halfTime;
+  final bool matchFinished;
+  final bool lineupAvailable;
+  final bool fixtureReminder;
+
+  FootballNotificationPrefs copyWith({
+    bool? goal,
+    bool? yellowCard,
+    bool? redCard,
+    bool? substitution,
+    bool? matchStarted,
+    bool? halfTime,
+    bool? matchFinished,
+    bool? lineupAvailable,
+    bool? fixtureReminder,
+  }) {
+    return FootballNotificationPrefs(
+      goal: goal ?? this.goal,
+      yellowCard: yellowCard ?? this.yellowCard,
+      redCard: redCard ?? this.redCard,
+      substitution: substitution ?? this.substitution,
+      matchStarted: matchStarted ?? this.matchStarted,
+      halfTime: halfTime ?? this.halfTime,
+      matchFinished: matchFinished ?? this.matchFinished,
+      lineupAvailable: lineupAvailable ?? this.lineupAvailable,
+      fixtureReminder: fixtureReminder ?? this.fixtureReminder,
+    );
+  }
+
+  Map<String, dynamic> toRow(String userId) => {
+    'user_id': userId,
+    'goal': goal,
+    'yellow_card': yellowCard,
+    'red_card': redCard,
+    'substitution': substitution,
+    'match_started': matchStarted,
+    'half_time': halfTime,
+    'match_finished': matchFinished,
+    'lineup_available': lineupAvailable,
+    'fixture_reminder': fixtureReminder,
+  };
+
+  factory FootballNotificationPrefs.fromRow(Map<String, dynamic> row) {
+    return FootballNotificationPrefs(
+      goal: row['goal'] as bool? ?? true,
+      yellowCard: row['yellow_card'] as bool? ?? true,
+      redCard: row['red_card'] as bool? ?? true,
+      substitution: row['substitution'] as bool? ?? false,
+      matchStarted: row['match_started'] as bool? ?? true,
+      halfTime: row['half_time'] as bool? ?? false,
+      matchFinished: row['match_finished'] as bool? ?? true,
+      lineupAvailable: row['lineup_available'] as bool? ?? true,
+      fixtureReminder: row['fixture_reminder'] as bool? ?? true,
+    );
+  }
+}

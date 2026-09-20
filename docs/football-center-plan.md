@@ -441,3 +441,69 @@ Lần chạy đầu trả về `{"fixtures":N,"standings":M,"budgetLeft":K}`. Ki
 - Match Center 5 tab + Realtime cho timeline.
 - Worker lấy đội hình/thống kê; thông báo nhắc trước 1 ngày và đội hình ra sân.
 - Nhánh `type: 'football_event'` trong `chat_push.dart` + channel thông báo riêng.
+
+---
+
+## Phần F — PHASE 3→6
+
+### F1. Phase 3 — Đội yêu thích
+
+| File | Vai trò |
+|---|---|
+| `football_favorites_view.dart` | Tìm + chọn nhiều đội, đánh dấu sao |
+| `football_team_view.dart` | Trang 1 đội: lịch sắp tới + kết quả, lọc theo giải |
+
+Hai quyết định:
+
+- **Danh sách đội chỉ gồm đội đã xuất hiện trong lịch đã đồng bộ.** Cố ý: người
+  dùng chỉ chọn được đội mà app thực sự có dữ liệu, thay vì chọn xong màn hình
+  trống trơn.
+- **Chip lọc giải dựng từ chính dữ liệu trả về** — chỉ hiện giải đội đó thực sự
+  có trận, không liệt kê cứng 6 giải rồi để người dùng bấm vào cái rỗng.
+
+### F2. Phase 4 — Match Center
+
+`football_match_center_view.dart` với 4 tab (Tổng quan/Sự kiện gộp chung, Thống
+kê, Đội hình).
+
+- **Timeline tự cập nhật qua Supabase Realtime** — máy người dùng không gọi thêm
+  request nào, đúng yêu cầu "không polling liên tục từ từng điện thoại".
+- **Ghép 2 nguồn dữ liệu trong 1 màn**: bản tĩnh (có tên 2 đội nhờ join) + bản
+  realtime (chỉ có tỉ số, vì `.stream()` không kéo theo join). Lấy tên từ bản
+  tĩnh, tỉ số từ bản realtime.
+- **Đội hình + thống kê lấy THEO NHU CẦU**, không đồng bộ sẵn: 50 trận cuối tuần
+  × 2 endpoint = 100 request, đúng bằng hạn mức cả ngày. Chỉ khi người dùng mở
+  tab mới gọi `football-match`, có cache 3 phút để nhiều người cùng mở 1 trận
+  hot không làm nổ quota.
+- Thống kê **chỉ hiện chỉ số có ở CẢ HAI đội** — so sánh một bên không có nghĩa.
+
+### F3. Phase 5 — Thông báo
+
+| Thành phần | Nội dung |
+|---|---|
+| `football-reminders` (Edge Function) | Nhắc trước 1 ngày + báo đội hình ra sân |
+| `chat_push.dart` | Nhánh `football_event` + channel `football_v1` + màu theo loại sự kiện |
+| `football_notification_link.dart` | Bấm thông báo → mở thẳng Match Center đúng trận |
+| `football_notification_settings_view.dart` | Bật/tắt 9 loại, lưu theo tài khoản |
+
+- **Cửa sổ nhắc trước rộng 4 tiếng** (22–26h trước bóng lăn) vì GitHub Actions
+  cron hay trễ; hẹp hơn là trượt mất.
+- **Dò đội hình chỉ trong 75 phút trước trận** và chỉ cho trận của đội yêu thích
+  — ngoài cửa sổ đó không gọi API.
+- Ba nơi định nghĩa giá trị mặc định của 9 loại thông báo (migration, Edge
+  Function, model Dart) — đã ghi chú chéo ở cả ba, lệch một chỗ là người dùng
+  nhận thông báo khác với cái họ thấy trên màn cài đặt.
+
+### F4. Phase 6 — Xử lý biên
+
+| Tình huống | Cách xử lý |
+|---|---|
+| Hết quota trong ngày | `football_spend()` chặn, worker dừng, app hiện "Cập nhật lúc HH:mm" |
+| Mất mạng / timeout | Mọi khối có `error` state riêng, icon wifi-off, không hiện số giả |
+| API chưa có đội hình | "Đội hình chưa được công bố" (yêu cầu mục 9) |
+| Chưa có thống kê | Trạng thái rỗng riêng, không vẽ thanh 0-0 |
+| Trận hoãn/huỷ | `FixtureState.postponed`, nhãn riêng thay cho giờ thi đấu |
+| Timezone | Lưu UTC, hiển thị `.toLocal()`; riêng nội dung push in giờ VN vì server không biết múi giờ từng máy |
+| FCM lỗi | Không ghi `football_push_state` → nhịp sau gửi lại |
+| Logo lỗi/không có quyền | `TeamBadge` rơi về huy hiệu chữ viết tắt |
+| `fixtureId` hỏng trong payload | Vẫn mở màn gốc thay vì không phản ứng gì |

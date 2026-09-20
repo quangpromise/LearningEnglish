@@ -169,6 +169,123 @@ class FootballRepository {
     });
   }
 
+  /// Tim doi theo ten. Chi tim trong cac doi DA xuat hien o lich da dong bo
+  /// (6 giai, cua so ~38 ngay) - dung y do: nguoi dung chi chon duoc doi ma
+  /// app thuc su co du lieu, thay vi chon 1 doi rong khong bao gio hien tran nao.
+  Future<List<FootballTeam>> searchTeams(String query, {int limit = 30}) async {
+    final q = query.trim();
+    final rows = await (q.isEmpty
+        ? _supabase
+              .from('football_teams')
+              .select('id, name, logo_url')
+              .order('name')
+              .limit(limit)
+        : _supabase
+              .from('football_teams')
+              .select('id, name, logo_url')
+              .ilike('name', '%$q%')
+              .order('name')
+              .limit(limit));
+    return (rows as List)
+        .map((r) => FootballTeam.fromRow(r as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// Thong tin cac doi theo danh sach id - dung de hien the doi yeu thich.
+  Future<List<FootballTeam>> teamsByIds(List<int> ids) async {
+    if (ids.isEmpty) return const [];
+    final rows = await _supabase
+        .from('football_teams')
+        .select('id, name, logo_url')
+        .inFilter('id', ids);
+    final byId = {
+      for (final r in rows as List)
+        ((r as Map<String, dynamic>)['id'] as num).toInt():
+            FootballTeam.fromRow(r),
+    };
+    // Giu dung thu tu nguoi dung da sap trong danh sach yeu thich.
+    return [
+      for (final id in ids)
+        if (byId[id] != null) byId[id]!,
+    ];
+  }
+
+  // --- Match Center --------------------------------------------------------
+
+  Future<FootballFixture?> fixtureById(int fixtureId) async {
+    final row = await _supabase
+        .from('football_fixtures')
+        .select(_fixtureSelect)
+        .eq('id', fixtureId)
+        .maybeSingle();
+    return row == null ? null : FootballFixture.fromRow(row);
+  }
+
+  Future<List<FootballLineup>> lineups(int fixtureId) async {
+    final rows = await _supabase
+        .from('football_lineups')
+        .select('team_id, formation, starters, substitutes, coach_name')
+        .eq('fixture_id', fixtureId);
+    return (rows as List)
+        .map((r) => FootballLineup.fromRow(r as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<List<FootballTeamStats>> matchStats(int fixtureId) async {
+    final rows = await _supabase
+        .from('football_match_stats')
+        .select('team_id, stats')
+        .eq('fixture_id', fixtureId);
+    return (rows as List)
+        .map((r) => FootballTeamStats.fromRow(r as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// Yeu cau backend lay doi hinh + thong ke cua 1 tran TU NHA CUNG CAP.
+  ///
+  /// Day la truong hop DUY NHAT app cham vao Edge Function cua Football: 2
+  /// bang tren chi duoc dien khi co nguoi thuc su mo Match Center, vi lay
+  /// truoc cho moi tran se dot sach han muc 100 request/ngay. Ham tra ve
+  /// true khi backend bao da co du lieu moi.
+  Future<bool> requestMatchDetail(int fixtureId) async {
+    try {
+      final res = await _supabase.functions.invoke(
+        'football-match',
+        body: {'fixtureId': fixtureId},
+      );
+      final data = res.data;
+      if (data is Map && data['ok'] == true) return true;
+      return false;
+    } catch (_) {
+      // Mang loi/het quota: khong nem loi ra UI - man hinh da co trang thai
+      // "chua co doi hinh" rieng.
+      return false;
+    }
+  }
+
+  // --- Cai dat thong bao ---------------------------------------------------
+
+  Future<FootballNotificationPrefs> notificationPrefs(String userId) async {
+    final row = await _supabase
+        .from('football_notification_prefs')
+        .select()
+        .eq('user_id', userId)
+        .maybeSingle();
+    // Chua co dong nao = dung mac dinh, KHONG phai tat het.
+    return row == null
+        ? const FootballNotificationPrefs()
+        : FootballNotificationPrefs.fromRow(row);
+  }
+
+  Future<void> saveNotificationPrefs(
+    String userId,
+    FootballNotificationPrefs prefs,
+  ) async {
+    await _supabase
+        .from('football_notification_prefs')
+        .upsert(prefs.toRow(userId));
+  }
+
   Future<void> removeFavorite(String userId, int teamId) async {
     await _supabase
         .from('football_favorite_teams')
