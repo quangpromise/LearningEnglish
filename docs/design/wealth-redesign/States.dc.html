@@ -1,0 +1,121 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@500;600;700;800&display=swap">
+  <style>
+    body { margin: 0; font-family: 'Manrope', 'Segoe UI', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #D4AF37; text-decoration: none; }
+    a:hover { color: #F0D585; }
+    .s-screen {
+      width: 390px; box-sizing: border-box; color: #EEF1FB;
+      background: linear-gradient(180deg, #04090F 0%, #02060B 50%, #000205 100%);
+    }
+    .s-card {
+      border: 1px solid transparent; border-radius: 16px;
+      background:
+        linear-gradient(180deg,#101620 0%, #070C13 45%, #04080E 100%) padding-box,
+        linear-gradient(120deg, rgba(212,175,55,.42) 0%, #2C3239 16%, #23282E 100%) border-box;
+    }
+    .s-h { font-family: 'Space Grotesk', sans-serif; font-size: 12.5px; font-weight: 700; color: #FFFFFF; }
+    .s-m { color: #AEB7C3; font-size: 9.5px; font-weight: 500; line-height: 1.55; }
+    .s-cap { font-size: 8.5px; font-weight: 800; letter-spacing: .12em; color: #7E8795; }
+  </style>
+</helmet>
+
+<div class="s-screen" style="display: flex; flex-direction: column; gap: 14px; padding: 18px 16px 22px;">
+
+  <div style="display: flex; flex-direction: column; gap: 5px;">
+    <div style="font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 700; color: #FFFFFF;">Quy tắc màu % biến động</div>
+    <div class="s-m">Màu và hướng mũi tên đổi theo dữ liệu thật, không cố định trong giao diện.</div>
+  </div>
+
+  <div class="s-card" style="padding: 13px 14px; display: flex; flex-direction: column; gap: 11px;">
+    <div class="s-cap">DÒNG % TRONG HERO</div>
+    <div style="display: flex; align-items: center; gap: 7px;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M4 16.5L10 10l3.6 3.4L20 6.5" stroke="#22E3A4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.6 6.5H20v5.2" stroke="#22E3A4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span style="font-size: 13px; font-weight: 800; color: #22E3A4;">+12.8%</span>
+      <span style="font-size: 10.5px; font-weight: 600; color: #AEB7C3;">(24h)</span>
+      <span class="s-m" style="margin-left: auto;">dương → #22E3A4</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 7px;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M4 7.5L10 14l3.6-3.4L20 17.5" stroke="#F4626C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.6 17.5H20v-5.2" stroke="#F4626C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span style="font-size: 13px; font-weight: 800; color: #F4626C;">-4.6%</span>
+      <span style="font-size: 10.5px; font-weight: 600; color: #AEB7C3;">(24h)</span>
+      <span class="s-m" style="margin-left: auto;">âm → #F4626C</span>
+    </div>
+  </div>
+
+  <div class="s-card" style="padding: 13px 14px; display: flex; flex-direction: column; gap: 11px;">
+    <div class="s-cap">BADGE TỔNG QUAN & Ô THỐNG KÊ</div>
+    <div style="display: flex; gap: 10px; align-items: center;">
+      <div style="width: 98px; height: 34px; border-radius: 12px; border: 1px solid rgba(34,227,164,.26); background: rgba(34,227,164,.07); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
+        <div style="display: flex; align-items: center; gap: 4px;">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M12 19V5M12 5l-6 6M12 5l6 6" stroke="#22E3A4" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span style="font-size: 11.5px; font-weight: 800; color: #22E3A4;">+12.8%</span>
+        </div>
+        <div class="s-m" style="font-size: 8px;">so với tháng trước</div>
+      </div>
+      <div style="width: 98px; height: 34px; border-radius: 12px; border: 1px solid rgba(244,98,108,.26); background: rgba(244,98,108,.07); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
+        <div style="display: flex; align-items: center; gap: 4px;">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M12 19l-6-6M12 19l6-6" stroke="#F4626C" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span style="font-size: 11.5px; font-weight: 800; color: #F4626C;">-3.2%</span>
+        </div>
+        <div class="s-m" style="font-size: 8px;">so với tháng trước</div>
+      </div>
+      <div style="width: 67px; height: 48px; box-sizing: border-box; border-radius: 11px; border: 1px solid rgba(255,255,255,.09); background: rgba(255,255,255,.035); padding: 7px 8px; display: flex; flex-direction: column; justify-content: space-between;">
+        <div class="s-m" style="font-size: 8.5px;">Chi tiêu</div>
+        <div style="font-size: 11px; font-weight: 700; color: #FFFFFF;">$ 1,230</div>
+        <div style="display: flex; align-items: center; gap: 2px;">
+          <svg width="8" height="8" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M12 19l-6-6M12 19l6-6" stroke="#F4626C" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span style="font-size: 9px; font-weight: 800; color: #F4626C;">-8%</span>
+        </div>
+      </div>
+    </div>
+    <div class="s-m">Cần chốt: với ô <b style="color:#EEF1FB">Chi tiêu</b>, giảm là tin tốt. Mockup đang theo đúng quy tắc trong brief (âm → đỏ). Nếu muốn “chi tiêu giảm” hiện màu xanh thì đảo dấu riêng cho ô này khi code.</div>
+  </div>
+
+  <div class="s-card" style="padding: 13px 14px; display: flex; flex-direction: column; gap: 9px;">
+    <div class="s-cap">VÌ SAO 4 WIDGET XẾP 2×2, KHÔNG PHẢI 4 CỘT</div>
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px;">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+        <div style="width: 40px; height: 40px; border-radius: 13px; border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.04);"></div>
+        <div style="font-size: 9px; font-weight: 700; color: #EEF1FB; text-align: center;">Chi tiêu</div>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+        <div style="width: 40px; height: 40px; border-radius: 13px; border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.04);"></div>
+        <div style="font-size: 9px; font-weight: 700; color: #EEF1FB; text-align: center;">Ghi nợ</div>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+        <div style="width: 40px; height: 40px; border-radius: 13px; border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.04);"></div>
+        <div style="font-size: 9px; font-weight: 700; color: #F4626C; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%;">Recurring servi…</div>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+        <div style="width: 40px; height: 40px; border-radius: 13px; border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.04);"></div>
+        <div style="font-size: 9px; font-weight: 700; color: #EEF1FB; text-align: center;">Chia Bill</div>
+      </div>
+    </div>
+    <div class="s-m">Ở 390 px mỗi cột chỉ rộng ~85 px: “Recurring services” và phụ đề “Đăng ký định kỳ” đều bị cắt. Lưới 2×2 cho mỗi thẻ ~175 px — đủ chỗ cho tiêu đề + phụ đề, vùng chạm 175×90.</div>
+  </div>
+
+  <div class="s-card" style="padding: 13px 14px; display: flex; flex-direction: column; gap: 7px;">
+    <div class="s-cap">SỐ LIỆU TRONG MOCKUP LÀ VÍ DỤ</div>
+    <div class="s-m">
+      Tổng tài sản → <b style="color:#EEF1FB">netWorthVndProvider</b><br>
+      % biến động đầu tư → <b style="color:#EEF1FB">investmentPnlProvider</b><br>
+      Tin nhắn chưa đọc → <b style="color:#EEF1FB">unreadMessageCountProvider</b><br>
+      Ẩn/hiện số dư → <b style="color:#EEF1FB">wealthPrivacyModeProvider</b><br>
+      Widget nhạc → <b style="color:#EEF1FB">NowPlayingService</b> (CenterMediaButton)<br>
+      Đơn vị tiền khi code là <b style="color:#EEF1FB">VND</b> qua <b style="color:#EEF1FB">formatVnd()</b> — ký hiệu “$” chỉ có trong ảnh mẫu.
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

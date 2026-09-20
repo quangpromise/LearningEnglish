@@ -1,0 +1,25 @@
+<!doctype html><html><body><pre id="o">loading</pre><script>
+const load=s=>new Promise((r,j)=>{const i=new Image();i.onload=()=>r(i);i.onerror=j;i.src=s;});
+(async()=>{
+ const A=await load('_ref.png'), B=await load('_mine.png');
+ const grab=img=>{const c=document.createElement('canvas');c.width=img.width;c.height=img.height;
+   const g=c.getContext('2d');g.drawImage(img,0,0);return {d:g.getImageData(0,0,img.width,img.height).data,w:img.width,h:img.height};};
+ const a=grab(A), b=grab(B);
+ const L=(o,x,y)=>{const i=(y*o.w+x)*4;return Math.round(0.2126*o.d[i]+0.7152*o.d[i+1]+0.0722*o.d[i+2]);};
+ // lay do sang NEN cua chip: bo qua net icon trang bang cach lay percentile 40 trong dia
+ const pad=(o,cx,cy,r)=>{const v=[];for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){if(dx*dx+dy*dy>r*r)continue;v.push(L(o,cx+dx,cy+dy));}
+   v.sort((p,q)=>p-q);return {nen:v[Math.floor(v.length*0.45)], dinh:v[Math.floor(v.length*0.80)]};};
+ const pa=pad(a,120,856,22), pb=pad(b,80,790,22);
+ let out='DEM SANG SAU ICON (percentile trong dia, bo net icon trang)\n';
+ out+='  ANH GOC   nen L'+pa.nen+'   dinh L'+pa.dinh+'\n';
+ out+='  BAN DUNG  nen L'+pb.nen+'   dinh L'+pb.dinh+'\n\n';
+ const st=o=>{const v=[];for(let y=0;y<o.h;y+=2)for(let x=8;x<o.w-8;x+=3){const i=(y*o.w+x)*4;v.push(0.2126*o.d[i]+0.7152*o.d[i+1]+0.0722*o.d[i+2]);}
+   v.sort((p,q)=>p-q);const q=t=>Math.round(v[Math.floor(v.length*t)]);return [q(.10),q(.25),q(.50),q(.75),q(.90),q(.97)];};
+ const A2=st(a),B2=st(b);
+ out+='TOAN MAN  p10  p25  p50  p75  p90  p97\n';
+ out+='GOC     '+A2.map(v=>String(v).padStart(5)).join('')+'\n';
+ out+='DUNG    '+B2.map(v=>String(v).padStart(5)).join('')+'\n';
+ out+='LECH    '+B2.map((v,i)=>String((v-A2[i]>0?'+':'')+(v-A2[i])).padStart(5)).join('')+'\n';
+ document.getElementById('o').textContent=out;
+})();
+</script></body></html>

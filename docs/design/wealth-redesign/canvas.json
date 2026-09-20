@@ -1,0 +1,37 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "x": 0, "y": 0, "w": 390, "h": 920, "title": "Wealth — Home" },
+    { "file": "States.dc.html", "x": 500, "y": 0, "w": 390, "h": 690, "title": "Quy tắc & ghi chú" }
+  ],
+  "annotations": [
+    {
+      "id": "note-scope",
+      "x": -330,
+      "y": 0,
+      "w": 280,
+      "text": "Mockup TĨNH màn Home của Quản lý tài sản.\n\nDựng theo ảnh mẫu do bạn tự thiết kế — mọi màu, toạ độ và cỡ chữ đều đo bằng pixel từ ảnh đó (bảng đo: docs/design/wealth-redesign/TOKENS.md).\n\nCác khối 3D (chồng xu, biểu đồ cột, icon ví/thẻ/đĩa than) được CẮT thẳng từ ảnh mẫu, không vẽ lại."
+    },
+    {
+      "id": "note-order",
+      "x": -330,
+      "y": 300,
+      "w": 280,
+      "text": "Thứ tự khối: Header → Tin nhắn → Tổng tài sản → 4 widget → Tổng quan tài chính → Báo cáo → Nhạc.\n\nĐÃ BỎ thanh điều hướng dưới. Nhạc nay là 1 widget trong thân trang, không còn là pill cố định đáy màn.\n\nNút chuông đổi thành nút TIN NHẮN (chấm vàng = còn tin chưa đọc)."
+    },
+    {
+      "id": "note-data",
+      "x": -330,
+      "y": 600,
+      "w": 280,
+      "text": "Số liệu trong mockup chỉ là VÍ DỤ. Khi code Flutter sẽ nối vào provider thật (netWorthVndProvider, investmentPnlProvider, unreadMessageCountProvider…), không hardcode.\n\nĐơn vị thật của app là VND qua formatVnd() — ký hiệu “$” chỉ có trong ảnh mẫu."
+    },
+    {
+      "id": "note-grid",
+      "x": 500,
+      "y": 740,
+      "w": 390,
+      "text": "4 widget xếp lưới 2×2 thay vì 4 cột: ở 390 px mỗi cột chỉ ~85 px, không đủ cho “Recurring services” + phụ đề. Lưới 2×2 cho mỗi thẻ ~175×90 px, vùng chạm thoải mái trên 44 px."
+    }
+  ],
+  "launch": { "view": "canvas" }
+}

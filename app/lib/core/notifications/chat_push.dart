@@ -10,7 +10,6 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../features/football/presentation/football_notification_link.dart';
 import '../../features/crypto/presentation/crypto_coin_detail_screen.dart';
 import '../../features/planner/data/planner_notification_service.dart';
 import '../../features/planner/presentation/planner_screen.dart';
@@ -43,11 +42,6 @@ const kServiceExpiryChannelId = 'service_expiry_v1';
 /// watchlist) - xem supabase/functions/price-alert-check/index.ts.
 const kPriceAlertChannelId = 'price_alert_v1';
 
-/// Kenh rieng cho thong bao bong da (ban thang, the, doi hinh, nhac truoc
-/// tran) - tach khoi 3 kenh tren de nguoi dung tat/chinh am rieng duoc cho
-/// rieng bong da. Xem supabase/functions/football-live/index.ts.
-const kFootballChannelId = 'football_v1';
-
 // Alias toi instance CHUNG (xem local_notifications_core.dart) - KHONG con
 // tu tao FlutterLocalNotificationsPlugin() rieng o day nua, giu nguyen ten
 // _localNotifications de moi cho dung ben duoi khong can doi.
@@ -60,7 +54,6 @@ String _payloadFor(String senderId) => 'chat:$senderId';
 String _servicePayload() => 'service:';
 String _priceAlertPayload(String assetType, String symbol) =>
     'price:$assetType:$symbol';
-String _footballPayload(String fixtureId) => 'football:$fixtureId';
 
 /// Tai ve 1 anh/sticker (khong bo tron, khong resize vuong) lam anh xem
 /// truoc lon trong thong bao (BigPictureStyle) - voi sticker dong chi lay
@@ -249,47 +242,6 @@ Future<void> _showPriceAlertLocal({
   }
 }
 
-/// Su kien bong da (ban thang/the/thay nguoi/bat dau/ket thuc) - data-only
-/// message tu football-live. Tieu de va noi dung do SERVER soan san (server
-/// biet ti so va phut thi dau), app chi hien lai + dinh payload de bam vao
-/// mo dung tran.
-Future<void> _showFootballNotification(RemoteMessage message) async {
-  final data = message.data;
-  final fixtureId = data['fixture_id'] as String? ?? '';
-  final title = data['title'] as String? ?? 'Cập nhật trận đấu';
-  final body = data['body'] as String? ?? '';
-
-  // Mau vien/icon nho theo loai su kien - Android khong cho doi mau CHU cua
-  // thong bao he thong nen dau hieu mau nam o day (giong _showPriceAlertLocal).
-  final eventType = (data['event_type'] as String? ?? '').toLowerCase();
-  final color = switch (eventType) {
-    'goal' => const Color(0xFF2ECC71),
-    'card' => const Color(0xFFFFC53D),
-    _ => const Color(0xFF4DA3FF),
-  };
-
-  await _localNotifications.show(
-    // id duy nhat theo tran de nhieu tran cung luc khong de len nhau, nhung
-    // cung 1 tran thi thong bao moi thay the cai cu (khong dun 1 chong thong
-    // bao cho 1 tran).
-    id: fixtureId.hashCode & 0x7fffffff,
-    title: title,
-    body: body,
-    notificationDetails: NotificationDetails(
-      android: AndroidNotificationDetails(
-        kFootballChannelId,
-        'Bóng đá',
-        channelDescription: 'Thông báo bàn thắng, thẻ phạt và lịch thi đấu',
-        importance: Importance.high,
-        priority: Priority.high,
-        color: color,
-        styleInformation: BigTextStyleInformation(body),
-      ),
-    ),
-    payload: _footballPayload(fixtureId),
-  );
-}
-
 /// Dispatch theo `type` trong data payload - PHAI kiem tra truoc khi doc cac
 /// truong rieng cua tung loai (chat dung sender_id/content, service_expiry
 /// dung service_id/body, price_alert dung asset_type/symbol/body).
@@ -299,8 +251,6 @@ Future<void> _dispatchRemoteMessage(RemoteMessage message) async {
       await _showServiceExpiryNotification(message);
     case 'price_alert':
       await _showPriceAlertNotification(message);
-    case 'football_event':
-      await _showFootballNotification(message);
     default:
       await _showChatNotification(message);
   }
@@ -357,10 +307,6 @@ void handleNotificationAction(NotificationResponse response) {
         symbol: parts[1],
       );
     }
-    return;
-  }
-  if (payload.startsWith('football:')) {
-    openFootballFromNotification(payload.substring('football:'.length));
     return;
   }
   if (payload.startsWith('chat:')) {

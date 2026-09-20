@@ -29,6 +29,14 @@ import '../../wealth/presentation/service_expiry_banner.dart';
 import '../../writing/presentation/writing_home_screen.dart';
 
 /// Khoa loi chao theo GIO TREN MAY - sang/chieu/toi/khuya.
+/// Khoa chuoi loi chao theo gio, dang provider.
+///
+/// Boc [greetingKeyForNow] lai de TEST chot duoc gio: ham goc doc
+/// DateTime.now() that, nen anh chup golden cua man Fitness se doi 4 lan moi
+/// ngay (sang/chieu/toi/khuya) va test hong vinh vien. Test ghi de provider
+/// nay bang 1 khoa co dinh (xem test/fitness_home_golden_test.dart).
+final greetingKeyProvider = Provider<String>((ref) => greetingKeyForNow());
+
 String greetingKeyForNow([DateTime? now]) {
   final h = (now ?? DateTime.now()).hour;
   if (h >= 5 && h < 12) return 'home_greeting_morning';

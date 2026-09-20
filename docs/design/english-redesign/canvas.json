@@ -1,0 +1,78 @@
+{
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "title": "Home",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 876
+    },
+    {
+      "file": "DailyWords.dc.html",
+      "title": "Learn 12 words today (from hero)",
+      "x": 520,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Vocabulary.dc.html",
+      "title": "Vocabulary by topic",
+      "x": 1040,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Player.dc.html",
+      "title": "Player + bilingual lyrics",
+      "x": 1560,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Pronunciation.dc.html",
+      "title": "Pronunciation practice",
+      "x": 2080,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Profile.dc.html",
+      "title": "Profile (daily-words block moved out)",
+      "x": 2600,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    }
+  ],
+  "annotations": [
+    {
+      "id": "note-scope",
+      "x": 0,
+      "y": -210,
+      "w": 500,
+      "text": "ROUND 1 — static mockup for review. No Flutter code touched yet.\n\nColours, borders, text colours and geometry were sampled pixel-by-pixel from reference.png. Planet + dunes are the real artwork cropped from that same file."
+    },
+    {
+      "id": "note-hero",
+      "x": 520,
+      "y": -210,
+      "w": 500,
+      "text": "Hero \"Learn 12 words today\" replaces Main Skill: this block currently lives in the Profile screen (profile_screen.dart:1544) and moves to Home. Tapping it opens the word list (next artboard). Profile no longer carries it."
+    },
+    {
+      "id": "note-data",
+      "x": 1560,
+      "y": -210,
+      "w": 930,
+      "text": "Figures are samples; real providers on implementation: name/avatar (myProfileProvider), streak + words + pronunciation score + practice time (stats_repository), today's words (dailyWordsControllerProvider).\n\nMISSING: Lv 8 / 420 XP — the app has no Level-XP system yet, it must be built.\n\nGreeting follows device clock: Good morning / afternoon / evening / night."
+    }
+  ],
+  "launch": {
+    "view": "canvas"
+  }
+}

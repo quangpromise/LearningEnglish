@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:learn_english_music/features/music_player/presentation/home_screen.dart'
+    show greetingKeyProvider;
 import 'package:learn_english_music/core/providers/app_providers.dart';
 import 'package:learn_english_music/features/fitness/data/heart_rate_model.dart';
 import 'package:learn_english_music/features/fitness/data/meal_model.dart';
@@ -65,6 +67,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          // Loi chao doi theo gio tren may -> chot lai 1 gia tri, neu khong
+          // anh chup se khac nhau tuy luc chay test (sang/chieu/toi/khuya).
+          greetingKeyProvider.overrideWithValue('home_greeting_morning'),
           // Toan bo du lieu that deu di qua Supabase - o day thay bang gia
           // tri co dinh de anh chup khong doi theo tai khoan dang dang nhap.
           myProfileProvider.overrideWith(

@@ -7,7 +7,7 @@ import '../../../core/navigation/app_top_bar.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../music_player/presentation/home_screen.dart'
-    show greetingKeyForNow;
+    show greetingKeyProvider;
 import '../../social/presentation/conversations_screen.dart';
 import '../../wealth/presentation/service_expiry_banner.dart';
 import '../data/program_model.dart';
@@ -78,7 +78,7 @@ class FitnessHomeScreen extends ConsumerWidget {
                   // GIONG HET 2 khu vuc kia (Hoc Tieng Anh, Wealth). Truoc
                   // day rieng Fitness dung chuoi co dinh 'Xin chao' nen 3 man
                   // Home nhin lech nhau.
-                  greeting: '${ref.tr(greetingKeyForNow())},',
+                  greeting: '${ref.tr(ref.watch(greetingKeyProvider))},',
                   // Nut Tin nhan va the bao han goi tap ("Gym Elite") xep
                   // CHONG LEN NHAU o cot ben phai thay vi nam canh nhau:
                   // xep ngang thi 2 thu nay an mat ~140dp be ngang va ten

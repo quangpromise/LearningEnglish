@@ -1,0 +1,375 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap">
+  <style>
+    /* Token do truc tiep tu reference.png (xem docs/design/english-redesign/TOKENS.md) */
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Manrope, "Segoe UI", system-ui, sans-serif; background: #020810; color: #FFFFFF; -webkit-font-smoothing: antialiased; }
+    a { color: #6FA8FF; } a:hover { color: #9CC5FF; }
+    .h { font-family: "Space Grotesk", Manrope, system-ui, sans-serif; letter-spacing: -0.4px; }
+    .eyebrow { font-size: 8px; font-weight: 700; letter-spacing: 1.5px; color: #9EB4CC; text-transform: uppercase; }
+    /* Nen widget: sang o tren-trai, loang dan xuong toi. Vien tren sang, vien duoi TOI HON nen. */
+    .card { border-radius: 18px;
+      /* do tu anh goc: long the PHANG #0D1622 tren nen #02070F -> rgba(130,178,240,0.085) */
+      background: rgba(130,178,240,0.085);
+      border: 1px solid rgba(200,224,255,0.14);
+      box-shadow: inset 0 1px 0 rgba(212,232,255,0.11); }
+    .tile { border-radius: 13px;
+      background: rgba(130,178,240,0.105);
+      border: 1px solid rgba(200,224,255,0.12);
+      box-shadow: inset 0 1px 0 rgba(212,232,255,0.09); }
+    /* Chip icon: quang sang tron, KHONG vien */
+    .chip { border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      /* do tu anh goc: dem sang dat L45 tren nen the L21, co mep dia hoi ro */
+      background: radial-gradient(circle at 50% 47%, rgba(194,222,255,0.185) 0%, rgba(184,212,252,0.165) 56%, rgba(168,202,248,0.125) 76%, rgba(150,188,240,0.035) 93%, rgba(140,180,236,0) 100%);
+      box-shadow: inset 0 0 0 1px rgba(206,228,255,0.10); }
+    .sub { font-size: 8px; font-weight: 500; color: #9BB9DA; }
+    @keyframes wave { 0%, 100% { transform: scaleY(0.30); opacity: 0.45; } 50% { transform: scaleY(1); opacity: 0.95; } }
+    .wv { width: 2px; border-radius: 999px; background: linear-gradient(180deg, rgba(120,175,255,0.85), rgba(74,144,255,0.25)); transform-origin: center; animation: wave 1.1s ease-in-out infinite; }
+  </style>
+</helmet>
+
+<div style="width: 390px; min-height: 876px; position: relative; overflow: hidden; background: #020810;">
+
+  <!-- Nen trang: #050C15 tren -> #020810 giua -> #01050D duoi (do tu anh goc) -->
+  <div style="position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, #071020 0%, #030A15 20%, #01060D 50%, #000409 76%, #000206 100%);"></div>
+
+  <!-- Than + vanh sang hanh tinh goc tren-phai -->
+  <div style="position: absolute; top: 0; left: 0; width: 900px; height: 900px; pointer-events: none;">
+    <svg width="900" height="900" viewBox="0 0 900 900" fill="none">
+      <defs>
+        <radialGradient id="haze" gradientUnits="userSpaceOnUse" cx="352" cy="74" r="300">
+          <stop offset="0%" stop-color="rgba(112,172,255,0.26)"/>
+          <stop offset="44%" stop-color="rgba(70,124,226,0.10)"/>
+          <stop offset="100%" stop-color="rgba(40,78,168,0)"/>
+        </radialGradient>
+        <linearGradient id="limb" gradientUnits="userSpaceOnUse" x1="120" y1="240" x2="392" y2="52">
+          <stop offset="0%" stop-color="rgba(158,205,255,0)"/>
+          <stop offset="34%" stop-color="rgba(170,212,255,0.05)"/>
+          <stop offset="60%" stop-color="rgba(214,236,255,0.55)"/>
+          <stop offset="80%" stop-color="rgba(255,255,255,0.98)"/>
+          <stop offset="100%" stop-color="rgba(180,216,255,0.46)"/>
+        </linearGradient>
+        <linearGradient id="limbSoft" gradientUnits="userSpaceOnUse" x1="120" y1="240" x2="392" y2="52">
+          <stop offset="0%" stop-color="rgba(120,172,255,0)"/>
+          <stop offset="40%" stop-color="rgba(130,180,255,0.02)"/>
+          <stop offset="68%" stop-color="rgba(158,202,255,0.26)"/>
+          <stop offset="86%" stop-color="rgba(180,218,255,0.46)"/>
+          <stop offset="100%" stop-color="rgba(150,196,255,0.20)"/>
+        </linearGradient>
+        <filter id="bWide" x="-25%" y="-25%" width="150%" height="150%"><feGaussianBlur stdDeviation="9"/></filter>
+        <filter id="bMid" x="-25%" y="-25%" width="150%" height="150%"><feGaussianBlur stdDeviation="3.4"/></filter>
+        <filter id="bCore" x="-25%" y="-25%" width="150%" height="150%"><feGaussianBlur stdDeviation="1.0"/></filter>
+      </defs>
+      <circle cx="352" cy="74" r="300" fill="url(#haze)"/>
+      <!-- Vanh sang = 3 lop nhoe chong nhau -> chi thay SANG DAM LEN, khong thay duong vien -->
+      <circle cx="452" cy="434" r="379" fill="none" stroke="url(#limbSoft)" stroke-width="34" opacity="0.62" filter="url(#bWide)"/>
+      <circle cx="452" cy="434" r="379" fill="none" stroke="url(#limbSoft)" stroke-width="10" filter="url(#bMid)"/>
+      <circle cx="452" cy="434" r="379" fill="none" stroke="url(#limb)" stroke-width="2.2" filter="url(#bCore)"/>
+    </svg>
+  </div>
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 520px; pointer-events: none; background: linear-gradient(180deg, rgba(1,5,12,0) 0%, rgba(1,5,12,0.45) 52%, rgba(1,5,12,0.85) 100%);"></div>
+
+  <!-- le ngang 19.5px do tu anh goc (mep the: 19.5 -> 371) -->
+  <div style="position: relative; display: flex; flex-direction: column; gap: 13px; padding: 14px 14px 12px;">
+
+    <!-- ── HEADER ─────────────────────────────────────── -->
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <div style="position: relative; flex-shrink: 0;">
+        <div style="width: 50px; height: 50px; border-radius: 50%; border: 1.6px solid rgba(196,222,255,0.72); background: radial-gradient(circle at 35% 28%, rgba(190,215,255,0.16), rgba(140,176,232,0.03)); display: flex; align-items: center; justify-content: center;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#E8EDF7" stroke-width="1.4" stroke-linecap="round"><circle cx="12" cy="8" r="3.6"/><path d="M4.8 20c.6-3.7 3.6-5.6 7.2-5.6s6.6 1.9 7.2 5.6"/></svg>
+        </div>
+        <div style="position: absolute; right: -1px; bottom: -1px; width: 17px; height: 17px; border-radius: 50%; background: #3E8BFF; border: 2px solid #040B15; display: flex; align-items: center; justify-content: center;">
+          <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+      </div>
+
+      <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0;">
+        <div style="font-size: 9.5px; font-weight: 500; color: #A7C3E2;">Good morning,</div>
+        <div class="h" style="font-size: 16.5px; font-weight: 700; line-height: 1.18; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Quang Hua</div>
+        <div style="display: inline-flex; align-self: flex-start; align-items: center; gap: 5px;">
+          <span style="font-size: 9px; font-weight: 500; color: #9BB9DA;">Learn English</span>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="rgba(200,218,246,0.40)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+        <div class="chip" style="width: 37px; height: 37px;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#E8EDF7" stroke-width="1.5" stroke-linejoin="round"><circle cx="12" cy="12" r="8.4"/><path d="M15.4 8.6l-2 4.8-4.8 2 2-4.8z"/></svg>
+        </div>
+        <div style="position: relative;">
+          <div class="chip" style="width: 37px; height: 37px;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#E8EDF7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.4 11.6c0 4-3.8 7.3-8.4 7.3-1 0-2-.15-2.9-.42L4 20.4l1.4-3.5C4.1 15.5 3.6 13.6 3.6 11.6 3.6 7.5 7.4 4.2 12 4.2s8.4 3.3 8.4 7.4z"/><path d="M8.6 11.6h.01M12 11.6h.01M15.4 11.6h.01"/></svg>
+          </div>
+          <div style="position: absolute; right: 1.9px; top: 1.9px; width: 7px; height: 7px; border-radius: 50%; background: #4A93FF; box-shadow: 0 0 6px rgba(74,147,255,0.75);"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PROGRESS / LEVEL (cao 73px theo anh goc) ───── -->
+    <div class="card" style="display: flex; align-items: center; gap: 13px; padding: 11px 15px;">
+      <div style="position: relative; width: 50px; height: 50px; flex-shrink: 0;">
+        <svg width="50" height="50" viewBox="0 0 50 50">
+          <defs>
+            <linearGradient id="ring" x1="0%" y1="100%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#2F6BE0"/>
+              <stop offset="100%" stop-color="#6FB6FF"/>
+            </linearGradient>
+          </defs>
+          <circle cx="25" cy="25" r="20.5" fill="none" stroke="rgba(190,215,255,0.10)" stroke-width="4.2"/>
+          <circle cx="25" cy="25" r="20.5" fill="none" stroke="url(#ring)" stroke-width="4.2" stroke-linecap="round" stroke-dasharray="128.8" stroke-dashoffset="42" transform="rotate(-90 25 25)"/>
+        </svg>
+        <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;">
+          <div style="display: flex; align-items: baseline; gap: 1.5px;">
+            <span style="font-size: 7.5px; font-weight: 500; line-height: 1; color: #9BB9DA;">Lv</span>
+            <span class="h" style="font-size: 13.5px; font-weight: 700; line-height: 1;">8</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0;">
+        <div style="display: flex; align-items: center; gap: 4px;">
+          <span class="h" style="font-size: 11.5px; font-weight: 700;">Intermediate</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(200,218,246,0.48)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+        </div>
+        <div style="font-size: 8.5px; font-weight: 500; color: #9BB9DA; white-space: nowrap;">Next level in 420 XP</div>
+      </div>
+
+      <div style="width: 1px; height: 32px; background: rgba(190,215,255,0.10); flex-shrink: 0;"></div>
+
+      <div style="display: flex; align-items: center; gap: 7px; flex-shrink: 0;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E8EDF7" stroke-width="1.4" stroke-linejoin="round"><path d="M12 3.2s4.6 3.6 4.6 8.2a4.6 4.6 0 0 1-9.2 0c0-1.5.6-2.7 1.4-3.7.3 1.2 1 2 1.9 2.2-.4-2.8.5-5.1 1.3-6.7z"/></svg>
+        <div style="display: flex; flex-direction: column; gap: 1px;">
+          <span class="h" style="font-size: 12.5px; font-weight: 700; line-height: 1;">7</span>
+          <span class="sub" style="font-size: 8px; white-space: nowrap;">Day streak</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── HERO ───────────────────────────────────────── -->
+    <div style="position: relative; overflow: hidden; border-radius: 18px; padding: 14px 15px 15px; background: linear-gradient(153deg, #16202F 0%, #0B1522 46%, #040A13 100%); border: 1px solid rgba(200,224,255,0.14);">
+
+
+      <img src="hero-art.jpg" alt="" style="position: absolute; right: 0; top: 0; height: 100%; width: auto; pointer-events: none; -webkit-mask-image: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 26%); mask-image: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 26%);">
+
+      <div style="position: relative; display: flex; flex-direction: column; gap: 5px; max-width: 166px;">
+        <div class="eyebrow">Main skill</div>
+        <div class="h" style="font-size: 15.5px; font-weight: 700; line-height: 1.14;">Learn 12 words<br>today</div>
+        <div style="font-size: 9px; font-weight: 500; line-height: 1.42; color: #9BB9DA; text-wrap: pretty;">Build your vocabulary, grammar and real-life skills.</div>
+      </div>
+
+      <div style="position: relative; display: flex; align-items: center; justify-content: space-between; margin-top: 13px;">
+        <div style="display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 19px 0 16px; border-radius: 999px; background: #FAFCFF;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="#07090F"><path d="M8 5.2v13.6l11-6.8z"/></svg>
+          <span class="h" style="font-size: 10.5px; font-weight: 700; color: #07090F;">Continue</span>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="rgba(7,9,15,0.42)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+        </div>
+        <div style="width: 32px; height: 32px; border-radius: 50%; background: rgba(28,42,62,0.94); border: 1px solid rgba(200,222,255,0.16); display: flex; align-items: center; justify-content: center;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#E8EDF7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ĐỌC VIẾT (4 thẻ, cao 92px theo anh goc) ────── -->
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px;">
+
+      <div class="card" style="display: flex; flex-direction: column; gap: 6px; padding: 10px 8px 8px; border-radius: 15px;">
+        <div class="chip" style="width: 30px; height: 30px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E8EDF7" stroke-width="1.4" stroke-linejoin="round"><path d="M3.6 5.2h5.2A3.2 3.2 0 0 1 12 8.4v11a2.6 2.6 0 0 0-2.4-1.6H3.6z"/><path d="M20.4 5.2h-5.2A3.2 3.2 0 0 0 12 8.4v11a2.6 2.6 0 0 1 2.4-1.6h6z"/></svg>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 1px;">
+          <div style="font-size: 9px; font-weight: 700; line-height: 1.2;">Vocabulary</div>
+          <div class="sub" style="font-size: 7.5px; line-height: 1.2;">46 topics</div>
+        </div>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(200,218,246,0.45)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13.4 6.4L19.6 12l-6.2 5.6"/></svg>
+      </div>
+
+      <div class="card" style="display: flex; flex-direction: column; gap: 6px; padding: 10px 8px 8px; border-radius: 15px;">
+        <div class="chip" style="width: 30px; height: 30px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E8EDF7" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3.2" width="14" height="17.6" rx="2.6"/><path d="M8.6 8.4h6.8M8.6 12h6.8M8.6 15.6h4.2"/></svg>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 1px;">
+          <div style="font-size: 9px; font-weight: 700; line-height: 1.2;">Grammar</div>
+          <div class="sub" style="font-size: 7.5px; line-height: 1.2;">Use naturally</div>
+        </div>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(200,218,246,0.45)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13.4 6.4L19.6 12l-6.2 5.6"/></svg>
+      </div>
+
+      <div class="card" style="display: flex; flex-direction: column; gap: 6px; padding: 10px 8px 8px; border-radius: 15px;">
+        <div class="chip" style="width: 30px; height: 30px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E8EDF7" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18.8V6.4a2 2 0 0 1 2-2h11.4a1.6 1.6 0 0 1 1.6 1.6v13.6H6.2A2.2 2.2 0 0 1 4 17.4a2.2 2.2 0 0 1 2.2-2.2H19"/></svg>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 1px;">
+          <div style="font-size: 9px; font-weight: 700; line-height: 1.2;">Reading</div>
+          <div class="sub" style="font-size: 7.5px; line-height: 1.2;">Understand deeper</div>
+        </div>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(200,218,246,0.45)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13.4 6.4L19.6 12l-6.2 5.6"/></svg>
+      </div>
+
+      <div class="card" style="display: flex; flex-direction: column; gap: 6px; padding: 10px 8px 8px; border-radius: 15px;">
+        <div class="chip" style="width: 30px; height: 30px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E8EDF7" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M16.6 3.8l3.6 3.6L8.8 18.8l-4.6 1 1-4.6z"/><path d="M14.2 6.2l3.6 3.6"/></svg>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 1px;">
+          <div style="font-size: 9px; font-weight: 700; line-height: 1.2;">Writing</div>
+          <div class="sub" style="font-size: 7.5px; line-height: 1.2;">Express yourself</div>
+        </div>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(200,218,246,0.45)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13.4 6.4L19.6 12l-6.2 5.6"/></svg>
+      </div>
+
+    </div>
+
+    <!-- ── NGHE NÓI ───────────────────────────────────── -->
+    <div class="card" style="display: flex; flex-direction: column; gap: 12px; padding: 14px 13px 13px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px; min-width: 0;">
+          <div class="eyebrow">Practice</div>
+          <div class="h" style="font-size: 14.5px; font-weight: 700;">Listening &amp; Speaking</div>
+          <div style="font-size: 9px; font-weight: 500; color: #9BB9DA;">Hear it. Say it. Be confident.</div>
+        </div>
+        <div style="position: relative; width: 54px; height: 54px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+          <div style="position: absolute; inset: 0; border-radius: 50%; border: 1px solid rgba(180,212,255,0.16);"></div>
+          <div style="position: absolute; inset: 6px; border-radius: 50%; border: 1.3px solid rgba(130,180,255,0.50); background: radial-gradient(circle at 40% 30%, rgba(110,165,255,0.20), rgba(90,150,255,0.04)); box-shadow: 0 0 20px rgba(62,139,255,0.22);"></div>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F2F5FA" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position: relative;"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.4 11.4a6.6 6.6 0 0 0 13.2 0M12 18v3"/></svg>
+        </div>
+        <div style="flex-shrink: 0; display: flex; align-items: center; justify-content: center; width: 22px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(200,218,246,0.58)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13.4 6.4L19.6 12l-6.2 5.6"/></svg>
+        </div>
+      </div>
+
+      <div style="height: 1px; background: rgba(190,215,255,0.09);"></div>
+
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2px;">
+        <div style="display: flex; flex-direction: column; gap: 6px; padding-right: 6px; border-right: 1px solid rgba(190,215,255,0.085);">
+          <div class="chip" style="width: 28px; height: 28px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#E8EDF7" stroke-width="1.7" stroke-linecap="round"><path d="M3.6 11v2M7.4 7.6v8.8M11.2 4.4v15.2M15 8.6v6.8M18.8 10.4v3.2"/></svg>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 1px;">
+            <div style="font-size: 8px; font-weight: 700; line-height: 1.22;">Pronunciation</div>
+            <div class="sub" style="font-size: 7.5px; line-height: 1.2;">Sound natural</div>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px; padding-right: 6px; border-right: 1px solid rgba(190,215,255,0.085);">
+          <div class="chip" style="width: 28px; height: 28px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#E8EDF7" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9.6" cy="7.4" r="3.4"/><path d="M3.6 19.4c.5-3.2 3-4.8 6-4.8s5.5 1.6 6 4.8"/><path d="M17.4 6.4a3.4 3.4 0 0 1 0 5M19.8 4.4a6.4 6.4 0 0 1 0 9"/></svg>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 1px;">
+            <div style="font-size: 8px; font-weight: 700; line-height: 1.22;">Speaking Practice</div>
+            <div class="sub" style="font-size: 7.5px; line-height: 1.2;">Real-life scenarios</div>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px; padding-right: 6px; border-right: 1px solid rgba(190,215,255,0.085);">
+          <div class="chip" style="width: 28px; height: 28px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#E8EDF7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.2 15.6V11.4a7.8 7.8 0 0 1 15.6 0v4.2"/><rect x="2.6" y="14.4" width="4.2" height="6.2" rx="2.1"/><rect x="17.2" y="14.4" width="4.2" height="6.2" rx="2.1"/></svg>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 1px;">
+            <div style="font-size: 8px; font-weight: 700; line-height: 1.22;">Stories</div>
+            <div class="sub" style="font-size: 7.5px; line-height: 1.2;">Learn with stories</div>
+          </div>
+        </div>
+
+        <div style="position: relative; display: flex; flex-direction: column; gap: 6px; padding-left: 6px;">
+          <div style="position: absolute; top: -3px; right: 0; padding: 2px 6px; border-radius: 999px; background: rgba(190,215,255,0.11); border: 1px solid rgba(200,222,255,0.16); font-size: 7.5px; font-weight: 800; letter-spacing: 0.4px; color: #E8EDF7;">New</div>
+          <div class="chip" style="width: 28px; height: 28px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#E8EDF7" stroke-width="1.5" stroke-linejoin="round"><rect x="7" y="7" width="10" height="10" rx="2.4"/><rect x="10.4" y="10.4" width="3.2" height="3.2" rx="1"/><path d="M10 3.4v3.6M14 3.4v3.6M10 17v3.6M14 17v3.6M3.4 10H7M3.4 14H7M17 10h3.6M17 14h3.6"/></svg>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 1px;">
+            <div style="font-size: 8px; font-weight: 700; line-height: 1.22;">AI Conversation</div>
+            <div class="sub" style="font-size: 7.5px; line-height: 1.2;">Chat anytime</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── LUYỆN THI ──────────────────────────────────── -->
+    <div class="card" style="display: flex; flex-direction: column; gap: 10px; padding: 13px;">
+      <div style="display: flex; align-items: center; gap: 11px;">
+        <div class="chip" style="width: 40px; height: 40px;">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#E8EDF7" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13.4" r="7"/><path d="M12 13.4V9.8M9.8 2.8h4.4M18.4 6.6l1.4-1.4M12 13.4l2.6-2.6"/></svg>
+        </div>
+        <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0;">
+          <div class="eyebrow">Achieve</div>
+          <div class="h" style="font-size: 12.5px; font-weight: 700;">Test Prep</div>
+          <div class="sub" style="font-size: 8.5px;">Practice. Improve. Achieve.</div>
+        </div>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(200,218,246,0.48)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M9 6l6 6-6 6"/></svg>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px;">
+        <div class="tile" style="display: flex; align-items: center; gap: 7px; padding: 8px 8px;">
+          <div class="chip" style="width: 24px; height: 24px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#E8EDF7" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3.2" width="14" height="17.6" rx="2.4"/><path d="M8.6 8.4h6.8M8.6 12h6.8M8.6 15.6h4"/></svg>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 1px; min-width: 0;">
+            <div style="font-size: 8.5px; font-weight: 700;">TOEIC</div>
+            <div class="sub" style="font-size: 7.5px; line-height: 1.2;">Official format</div>
+          </div>
+        </div>
+
+        <div class="tile" style="display: flex; align-items: center; gap: 7px; padding: 8px 8px;">
+          <div class="chip" style="width: 24px; height: 24px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#E8EDF7" stroke-width="1.7" stroke-linecap="round"><path d="M5 19.4v-5.6M10 19.4V8.6M15 19.4v-8M20 19.4V4.6"/></svg>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 1px; min-width: 0;">
+            <div style="font-size: 8.5px; font-weight: 700;">IELTS</div>
+            <div class="sub" style="font-size: 7.5px; line-height: 1.2;">Score higher</div>
+          </div>
+        </div>
+
+        <div class="tile" style="display: flex; align-items: center; gap: 7px; padding: 8px 8px;">
+          <div class="chip" style="width: 24px; height: 24px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#E8EDF7" stroke-width="1.6" stroke-linejoin="round"><path d="M10.2 3.6h3.6v2.2a1.7 1.7 0 0 0 3.4 0h2.2v3.6h-2.2a1.7 1.7 0 0 0 0 3.4h2.2v3.6h-3.6v-2.2a1.7 1.7 0 0 0-3.4 0v2.2H8.6v-3.6H6.4a1.7 1.7 0 0 1 0-3.4h2.2V5.8h1.6z"/></svg>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 1px; min-width: 0;">
+            <div style="font-size: 8.5px; font-weight: 700;">Riddles</div>
+            <div class="sub" style="font-size: 7.5px; line-height: 1.2;">Think &amp; learn</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── THANH NHẠC ─────────────────────────────────── -->
+    <div style="position: relative; overflow: hidden; border-radius: 16px; padding: 8px 11px 9px 8px; background: linear-gradient(180deg, #131F2E 0%, #101A29 55%, #0E1826 100%); border: 1px solid rgba(200,224,255,0.12); border-bottom-color: rgba(0,0,0,0.5);">
+      <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 16px; display: flex; align-items: flex-end; justify-content: space-between; gap: 2px; padding: 0 12px; opacity: 0.20; pointer-events: none;">
+        <div class="wv" style="height: 9px; animation-delay: -0.05s;"></div><div class="wv" style="height: 15px; animation-delay: -0.62s;"></div><div class="wv" style="height: 6px; animation-delay: -0.31s;"></div><div class="wv" style="height: 16px; animation-delay: -0.88s;"></div><div class="wv" style="height: 10px; animation-delay: -0.17s;"></div><div class="wv" style="height: 14px; animation-delay: -0.74s;"></div><div class="wv" style="height: 7px; animation-delay: -0.43s;"></div><div class="wv" style="height: 16px; animation-delay: -0.96s;"></div><div class="wv" style="height: 11px; animation-delay: -0.24s;"></div><div class="wv" style="height: 13px; animation-delay: -0.55s;"></div><div class="wv" style="height: 6px; animation-delay: -0.81s;"></div><div class="wv" style="height: 15px; animation-delay: -0.12s;"></div><div class="wv" style="height: 9px; animation-delay: -0.67s;"></div><div class="wv" style="height: 16px; animation-delay: -0.38s;"></div><div class="wv" style="height: 8px; animation-delay: -0.92s;"></div><div class="wv" style="height: 12px; animation-delay: -0.21s;"></div><div class="wv" style="height: 10px; animation-delay: -0.58s;"></div><div class="wv" style="height: 15px; animation-delay: -0.84s;"></div><div class="wv" style="height: 6px; animation-delay: -0.29s;"></div><div class="wv" style="height: 13px; animation-delay: -0.71s;"></div><div class="wv" style="height: 11px; animation-delay: -0.09s;"></div><div class="wv" style="height: 16px; animation-delay: -0.49s;"></div><div class="wv" style="height: 8px; animation-delay: -0.78s;"></div><div class="wv" style="height: 14px; animation-delay: -0.35s;"></div><div class="wv" style="height: 7px; animation-delay: -0.99s;"></div><div class="wv" style="height: 12px; animation-delay: -0.15s;"></div><div class="wv" style="height: 16px; animation-delay: -0.64s;"></div><div class="wv" style="height: 9px; animation-delay: -0.41s;"></div>
+      </div>
+      <div style="position: relative; display: flex; align-items: center; gap: 10px;">
+        <div style="width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0; overflow: hidden; position: relative; background: linear-gradient(155deg, #2B3F73, #0C1226);">
+          <div style="position: absolute; top: 7px; right: 8px; width: 8px; height: 8px; border-radius: 50%; background: #E4EDFF; box-shadow: 0 0 8px rgba(228,237,255,0.9);"></div>
+          <svg width="38" height="16" viewBox="0 0 38 16" style="position: absolute; bottom: 0;"><path d="M0 16 L9 6 L17 16 Z" fill="rgba(150,182,255,0.45)"/><path d="M12 16 L24 3 L35 16 Z" fill="rgba(104,140,225,0.62)"/></svg>
+        </div>
+        <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px;">
+          <div style="font-size: 9px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Don't Close Your Eyes</div>
+          <div class="sub" style="font-size: 8.5px;">Josh Woodward</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#E8EDF7"><path d="M7 5.4h2.2v13.2H7zM19 5.4v13.2l-8.4-6.6z"/></svg>
+          <div style="width: 28px; height: 28px; border-radius: 50%; background: rgba(190,215,255,0.10); border: 1px solid rgba(200,222,255,0.14); display: flex; align-items: center; justify-content: center;">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="#F2F5FA"><path d="M8 5.2v13.6l11-6.8z"/></svg>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#E8EDF7"><path d="M17 5.4h-2.2v13.2H17zM5 5.4v13.2l8.4-6.6z"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#E8EDF7" stroke-width="1.6" stroke-linecap="round"><path d="M3.6 6.4h10M3.6 11h10M3.6 15.6h6"/><circle cx="17.6" cy="16.4" r="2.4"/><path d="M20 16.4V6.8l2.4 1.2"/></svg>
+        </div>
+      </div>
+      <div style="position: relative; display: flex; align-items: center; gap: 8px; margin-top: 7px; padding-left: 48px;">
+        <div style="flex-grow: 1; height: 3px; border-radius: 999px; background: rgba(190,215,255,0.11); position: relative;">
+          <div style="height: 100%; width: 34%; border-radius: 999px; background: #4A90FF;"></div>
+        </div>
+        <span class="sub" style="font-size: 7.5px;">-3:32</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,23 @@
+<!doctype html><html><body><pre id="o">loading</pre><script>
+const load=s=>new Promise((r,j)=>{const i=new Image();i.onload=()=>r(i);i.onerror=j;i.src=s;});
+(async()=>{
+ const A=await load('_ref.png'), B=await load('_mine.png');
+ const grab=img=>{const c=document.createElement('canvas');c.width=img.width;c.height=img.height;
+   const g=c.getContext('2d');g.drawImage(img,0,0);return {d:g.getImageData(0,0,img.width,img.height).data,w:img.width,h:img.height};};
+ const a=grab(A), b=grab(B);
+ const stat=o=>{const v=[],sat=[];let viv=0,tot=0;
+   for(let y=0;y<o.h;y+=2)for(let x=6;x<o.w-6;x+=3){const i=(y*o.w+x)*4,R=o.d[i],G=o.d[i+1],Bl=o.d[i+2];
+     const L=0.2126*R+0.7152*G+0.0722*Bl; v.push(L);
+     const mx=Math.max(R,G,Bl),mn=Math.min(R,G,Bl),S=mx>0?(mx-mn)/mx*100:0;
+     if(mx>40)sat.push(S); tot++; if(S>40&&L>60)viv++;}
+   v.sort((p,q)=>p-q);sat.sort((p,q)=>p-q);const q=(A,t)=>Math.round(A[Math.floor(A.length*t)]);
+   return [q(v,.10),q(v,.50),q(v,.75),q(v,.90),q(v,.97),q(sat,.50),+(viv/tot*100).toFixed(1)];};
+ const A2=stat(a),B2=stat(b);
+ const h=['p10','p50','p75','p90','p97','bao-hoa','vang%'];
+ let out='          '+h.map(x=>x.padStart(9)).join('')+'\n';
+ out+='ANH MAU   '+A2.map(v=>String(v).padStart(9)).join('')+'\n';
+ out+='BAN DUNG  '+B2.map(v=>String(v).padStart(9)).join('')+'\n';
+ out+='LECH      '+B2.map((v,i)=>String((v-A2[i]>0?'+':'')+(Math.round((v-A2[i])*10)/10)).padStart(9)).join('')+'\n';
+ document.getElementById('o').textContent=out;
+})();
+</script></body></html>

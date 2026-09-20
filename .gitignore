@@ -73,3 +73,6 @@ content/pending/
 # commit vao repo app (tranh loi "embedded git repository" vi no da co
 # .git rieng ben trong).
 anam_vercel_server/
+
+# Anh so sanh do golden test sinh ra khi fail - la rac tam, khong commit
+app/test/failures/

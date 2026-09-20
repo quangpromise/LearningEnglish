@@ -1,0 +1,7 @@
+<!doctype html><html><body><pre id="o">x</pre><script>
+const i=new Image();
+i.onload=()=>{const c=document.createElement('canvas');c.width=i.width;c.height=i.height;
+ c.getContext('2d').drawImage(i,0,0);
+ document.getElementById('o').textContent='DATA:'+c.toDataURL('image/jpeg',0.86);};
+i.src='hero-art.png';
+</script></body></html>
