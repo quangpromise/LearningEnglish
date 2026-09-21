@@ -83,12 +83,21 @@ enum HeartRateFailure {
 /// gio ca hai cung null.
 class HeartRateResult {
   const HeartRateResult.success(HeartRateMeasurement this.measurement)
-    : failure = null;
-  const HeartRateResult.failed(HeartRateFailure this.failure)
+    : failure = null,
+      debugInfo = null;
+  const HeartRateResult.failed(HeartRateFailure this.failure, {this.debugInfo})
     : measurement = null;
 
   final HeartRateMeasurement? measurement;
   final HeartRateFailure? failure;
+
+  /// Vai con so tho ve tin hieu vua thu duoc (do sang, do do, ti le khung
+  /// hinh coi la co ngon tay). Hien duoi dang dong chu nho o man bao loi.
+  ///
+  /// Ly do phai hien ra man hinh: may thu nghiem khong cam USB debug duoc
+  /// nen khong doc duoc log - anh chup man hinh la kenh duy nhat de biet
+  /// phep do that bai o dau. Chi xuat hien khi do KHONG thanh cong.
+  final String? debugInfo;
 
   bool get isSuccess => measurement != null;
 }

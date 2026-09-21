@@ -29,6 +29,7 @@ class _HeartRateScreenState extends ConsumerState<HeartRateScreen> {
   _Phase _phase = _Phase.idle;
   HeartRateMeasurement? _result;
   HeartRateFailure? _failure;
+  String? _debugInfo;
 
   @override
   void dispose() {
@@ -42,6 +43,7 @@ class _HeartRateScreenState extends ConsumerState<HeartRateScreen> {
       _phase = _Phase.measuring;
       _result = null;
       _failure = null;
+      _debugInfo = null;
     });
     final result = await _service.measure();
     if (!mounted) return;
@@ -61,6 +63,7 @@ class _HeartRateScreenState extends ConsumerState<HeartRateScreen> {
           ? _Phase.idle
           : _Phase.failed;
       _failure = result.failure;
+      _debugInfo = result.debugInfo;
     });
   }
 
@@ -97,6 +100,7 @@ class _HeartRateScreenState extends ConsumerState<HeartRateScreen> {
               _Phase.failed => _FailureCard(
                 key: const ValueKey('failed'),
                 failure: _failure ?? HeartRateFailure.signalTooNoisy,
+                debugInfo: _debugInfo,
                 onRetry: _start,
               ),
             },
@@ -235,23 +239,49 @@ class _MeasuringCard extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 16),
+          // Bao NGAY khi may bat duoc ngon tay, thay vi de nguoi dung cho
+          // het 30 giay roi moi biet la dat sai cho.
           ValueListenableBuilder<bool>(
             valueListenable: service.sensorCovered,
-            builder: (context, covered, _) => Text(
-              ref.tr(
-                covered
-                    ? 'fitness_heart_rate_measuring'
-                    : 'fitness_heart_rate_cover_lens',
-              ),
-              textAlign: TextAlign.center,
-              style: AppTextStyles.body(
-                size: 13,
-                weight: FontWeight.w700,
-                color: covered ? Colors.white : FitnessHome.redBright,
-              ),
+            builder: (context, covered, _) => Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  covered
+                      ? Icons.check_circle_rounded
+                      : Icons.error_outline_rounded,
+                  size: 17,
+                  color: covered ? Colors.white : FitnessHome.redBright,
+                ),
+                const SizedBox(width: 7),
+                Flexible(
+                  child: Text(
+                    ref.tr(
+                      covered
+                          ? 'fitness_heart_rate_signal_ok'
+                          : 'fitness_heart_rate_cover_lens',
+                    ),
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.body(
+                      size: 13,
+                      weight: FontWeight.w700,
+                      color: covered ? Colors.white : FitnessHome.redBright,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 6),
+          ValueListenableBuilder<String>(
+            valueListenable: service.signalInfo,
+            builder: (context, info, _) => Text(
+              info,
+              textAlign: TextAlign.center,
+              style: FitnessHome.bodySecondary(size: 10.5),
+            ),
+          ),
+          const SizedBox(height: 10),
           ValueListenableBuilder<List<double>>(
             valueListenable: service.liveWaveform,
             builder: (context, waveform, _) => SizedBox(
@@ -359,9 +389,15 @@ class _ResultCard extends ConsumerWidget {
 
 /// Khong do duoc - noi RO ly do va cach khac phuc thay vi tra ve 1 con so.
 class _FailureCard extends ConsumerWidget {
-  const _FailureCard({super.key, required this.failure, required this.onRetry});
+  const _FailureCard({
+    super.key,
+    required this.failure,
+    required this.onRetry,
+    this.debugInfo,
+  });
 
   final HeartRateFailure failure;
+  final String? debugInfo;
   final VoidCallback onRetry;
 
   @override
@@ -394,6 +430,17 @@ class _FailureCard extends ConsumerWidget {
             textAlign: TextAlign.center,
             style: FitnessHome.bodySecondary(size: 12.5),
           ),
+          // Vai con so tho ve tin hieu vua thu duoc. Nho va mo di, khong
+          // phai thu nguoi dung can doc - nhung khi ho chup man hinh gui
+          // lai thi day la thong tin duy nhat noi duoc phep do hong o dau.
+          if (debugInfo case final info? when info.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Text(
+              info,
+              textAlign: TextAlign.center,
+              style: FitnessHome.bodySecondary(size: 10),
+            ),
+          ],
           const SizedBox(height: 18),
           SizedBox(
             width: double.infinity,

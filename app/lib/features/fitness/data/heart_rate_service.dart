@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
@@ -9,13 +10,24 @@ import 'ppg_analyzer.dart';
 /// Thoi gian do 1 lan (giay).
 const kHeartRateMeasureSeconds = 30;
 
-/// Do sang trung binh toi thieu de coi la "ngon tay da che kin ong kinh +
-/// den flash". Khi ngon tay ap sat, anh sang flash xuyen qua da lam khung
-/// hinh sang deu va do ruc; khi ong kinh de ho, khung hinh toi hon nhieu.
-/// Nguong nay do tren kenh luma (0-255). De thap vi nguoi an manh tay hoac
-/// da day thi khung hinh toi han di - dat cao qua se bao "khong thay ngon
-/// tay" trong khi tin hieu van dung.
-const _kCoveredMinBrightness = 55.0;
+/// Nhan biet "ngon tay da che kin ong kinh + den flash" bang SAC DO chu
+/// khong bang do sang.
+///
+/// Do sang tuyet doi khong dung duoc lam moc: anh sang xuyen qua dau ngon
+/// tay ra mau do tham, ma do sang (luma) cua mau do von da thap - do do
+/// 255,0,0 chi cho luma ~76 - lai con phu thuoc vao muc phoi sang may tu
+/// chon va vao viec nguoi dung an manh hay nhe. Dat nguong luma kieu gi
+/// cung sai voi mot nhom may nao do (da thu 90 roi 55, deu bao nham).
+///
+/// Nguoc lai, SAC thi rat ro rang: da nguoi duoc den flash roi xuyen qua
+/// cho ra mau do bao hoa, tuc kenh V (Cr) cao hon han kenh U (Cb). Canh
+/// bat ky thu gi khac - mat ban, tran nha, khong khi - deu trung tinh hon
+/// nhieu. Hieu so nay gan nhu khong doi theo muc phoi sang.
+const _kCoveredMinRedness = 30.0;
+
+/// San toi tuyet doi: neu khung hinh gan nhu den thi den flash khong bat
+/// duoc (hoac ong kinh bi bit hoan toan), luc do sac mau khong con y nghia.
+const _kCoveredMinBrightness = 12.0;
 
 /// Thoi gian bo dau moi lan do. Ngay sau khi bat torch, camera con dang tu
 /// dong can bang sang/trang: do sang khung hinh nhay bac rat manh trong
@@ -42,6 +54,11 @@ abstract class HeartRateService {
   /// nay de nhac "Dat ngon tay len camera".
   ValueListenable<bool> get sensorCovered;
 
+  /// Vai con so tho ve khung hinh dang thu (do sang, sac do). Hien duoi
+  /// dang dong chu nho khi dang do, de nguoi dung thay ngay may CO dang
+  /// nhan du lieu hay khong thay vi cho het 30 giay moi biet.
+  ValueListenable<String> get signalInfo;
+
   /// Chay tron 1 lan do. Luon tra ve ket qua (thanh cong HOAC ly do that
   /// bai) - KHONG BAO GIO bia ra 1 con so khi tin hieu khong dat.
   Future<HeartRateResult> measure();
@@ -67,12 +84,16 @@ class CameraHeartRateService implements HeartRateService {
   CameraController? _controller;
   Completer<HeartRateResult>? _completer;
   final _samples = <PpgSample>[];
+
+  /// Sac do cua tung khung hinh, cung chi so voi [_samples].
+  final _redness = <double>[];
   Stopwatch? _clock;
   bool _cancelled = false;
 
   final _progress = ValueNotifier<double>(0);
   final _liveWaveform = ValueNotifier<List<double>>(const []);
   final _covered = ValueNotifier<bool>(false);
+  final _signalInfo = ValueNotifier<String>('');
 
   @override
   ValueListenable<double> get progress => _progress;
@@ -80,14 +101,18 @@ class CameraHeartRateService implements HeartRateService {
   ValueListenable<List<double>> get liveWaveform => _liveWaveform;
   @override
   ValueListenable<bool> get sensorCovered => _covered;
+  @override
+  ValueListenable<String> get signalInfo => _signalInfo;
 
   @override
   Future<HeartRateResult> measure() async {
     _cancelled = false;
     _samples.clear();
+    _redness.clear();
     _progress.value = 0;
     _liveWaveform.value = const [];
     _covered.value = false;
+    _signalInfo.value = '';
 
     final completer = Completer<HeartRateResult>();
     _completer = completer;
@@ -113,11 +138,14 @@ class CameraHeartRateService implements HeartRateService {
       await _lockCameraAdjustments(controller);
       _clock = Stopwatch()..start();
       await controller.startImageStream(_onFrame);
-    } catch (_) {
+    } catch (error) {
       await _stopCamera();
       if (!completer.isCompleted) {
         completer.complete(
-          const HeartRateResult.failed(HeartRateFailure.cameraUnavailable),
+          HeartRateResult.failed(
+            HeartRateFailure.cameraUnavailable,
+            debugInfo: '$error',
+          ),
         );
       }
     }
@@ -155,8 +183,16 @@ class CameraHeartRateService implements HeartRateService {
     if (clock == null || completer == null || completer.isCompleted) return;
 
     final brightness = _meanLuma(image);
-    _covered.value = brightness >= _kCoveredMinBrightness;
+    final redness = _meanRedness(image);
+    _covered.value =
+        brightness >= _kCoveredMinBrightness && redness >= _kCoveredMinRedness;
     _samples.add(PpgSample(clock.elapsedMilliseconds, brightness));
+    _redness.add(redness);
+    // Cap nhat cach quang - moi khung hinh 1 lan se ve lai chu lien tuc,
+    // vua nhay mat vua ton CPU dung luc dang can CPU cho viec do.
+    if (_samples.length % 8 == 0) {
+      _signalInfo.value = 'sang ${brightness.round()} · do ${redness.round()}';
+    }
 
     final elapsed = clock.elapsedMilliseconds / 1000;
     _progress.value = (elapsed / kHeartRateMeasureSeconds).clamp(0.0, 1.0);
@@ -189,14 +225,22 @@ class CameraHeartRateService implements HeartRateService {
     if (completer == null || completer.isCompleted) return;
     // Bo doan khoi dong den flash, va doi goc thoi gian ve 0 de phan tich
     // khong phai biet den chuyen nay.
-    final samples = [
-      for (final s in _samples)
-        if (s.elapsedMs >= _kWarmUpMs)
-          PpgSample(s.elapsedMs - _kWarmUpMs, s.brightness),
+    final kept = <int>[
+      for (var i = 0; i < _samples.length; i++)
+        if (_samples[i].elapsedMs >= _kWarmUpMs) i,
     ];
-    final covered = samples
-        .where((s) => s.brightness >= _kCoveredMinBrightness)
+    final samples = [
+      for (final i in kept)
+        PpgSample(_samples[i].elapsedMs - _kWarmUpMs, _samples[i].brightness),
+    ];
+    final covered = kept
+        .where(
+          (i) =>
+              _samples[i].brightness >= _kCoveredMinBrightness &&
+              _redness[i] >= _kCoveredMinRedness,
+        )
         .length;
+    final debugInfo = _describeSignal(samples, kept, covered);
     await _stopCamera();
     if (_cancelled) {
       if (!completer.isCompleted) {
@@ -208,7 +252,10 @@ class CameraHeartRateService implements HeartRateService {
     }
     if (samples.isEmpty || covered < samples.length * _kMinCoveredRatio) {
       completer.complete(
-        const HeartRateResult.failed(HeartRateFailure.fingerNotDetected),
+        HeartRateResult.failed(
+          HeartRateFailure.fingerNotDetected,
+          debugInfo: debugInfo,
+        ),
       );
       return;
     }
@@ -217,6 +264,7 @@ class CameraHeartRateService implements HeartRateService {
       completer.complete(
         HeartRateResult.failed(
           analysis.failure ?? HeartRateFailure.signalTooNoisy,
+          debugInfo: debugInfo,
         ),
       );
       return;
@@ -273,6 +321,61 @@ class CameraHeartRateService implements HeartRateService {
     _progress.dispose();
     _liveWaveform.dispose();
     _covered.dispose();
+    _signalInfo.dispose();
+  }
+
+  /// Vai con so tho ve lan do vua roi, de man bao loi hien ra cho nguoi
+  /// dung chup man hinh gui lai - may thu nghiem khong cam USB debug duoc
+  /// nen day la cach duy nhat biet phep do hong o dau.
+  String _describeSignal(List<PpgSample> samples, List<int> kept, int covered) {
+    if (samples.isEmpty) return 'khong nhan duoc khung hinh nao';
+    var minLuma = 255.0;
+    var maxLuma = 0.0;
+    var sumLuma = 0.0;
+    for (final s in samples) {
+      minLuma = math.min(minLuma, s.brightness);
+      maxLuma = math.max(maxLuma, s.brightness);
+      sumLuma += s.brightness;
+    }
+    final redness =
+        kept.map((i) => _redness[i]).reduce((a, b) => a + b) / kept.length;
+    final seconds = samples.last.elapsedMs / 1000;
+    final fps = seconds <= 0 ? 0 : samples.length / seconds;
+    return 'sang ${(sumLuma / samples.length).round()} '
+        '(${minLuma.round()}-${maxLuma.round()}) · '
+        'do ${redness.round()} · '
+        'che ${(100 * covered / samples.length).round()}% · '
+        '${fps.round()} khung/giay';
+  }
+
+  /// Muc "do" trung binh cua khung hinh: kenh V (Cr) tru kenh U (Cb).
+  ///
+  /// Canh trung tinh cho ra gan 0; da nguoi duoc den flash roi xuyen qua
+  /// cho ra so duong lon. Dai luong nay gan nhu khong doi khi may thay muc
+  /// phoi sang, nen dang tin hon nhieu so voi do sang tuyet doi.
+  static double _meanRedness(CameraImage image) {
+    if (image.planes.length < 2) return 0;
+    if (image.planes.length >= 3) {
+      // Android YUV_420_888: plane 1 = U (Cb), plane 2 = V (Cr).
+      return _meanOfPlane(image.planes[2]) - _meanOfPlane(image.planes[1]);
+    }
+    // iOS bi-planar: 1 plane chua U va V xen ke nhau.
+    return _meanOfPlane(image.planes[1], offset: 1) -
+        _meanOfPlane(image.planes[1]);
+  }
+
+  /// Trung binh 1 kenh mau, ton trong buoc nhay giua 2 diem anh (chroma co
+  /// the duoc luu xen ke nen buoc nhay la 2 chu khong phai 1).
+  static double _meanOfPlane(Plane plane, {int offset = 0}) {
+    final bytes = plane.bytes;
+    final step = math.max(1, plane.bytesPerPixel ?? 1);
+    var sum = 0;
+    var count = 0;
+    for (var i = offset; i < bytes.length; i += step * 4) {
+      sum += bytes[i];
+      count++;
+    }
+    return count == 0 ? 0 : sum / count;
   }
 
   /// Trung binh kenh sang (plane Y cua YUV420). Lay mau CACH QUANG (moi 4

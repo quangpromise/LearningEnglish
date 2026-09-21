@@ -4697,6 +4697,10 @@ class AppStrings {
       AppLanguage.vi: 'Hãy che kín camera và đèn flash',
       AppLanguage.en: 'Cover the camera and the flash',
     },
+    'fitness_heart_rate_signal_ok': {
+      AppLanguage.vi: 'Đã nhận tín hiệu — giữ yên tay',
+      AppLanguage.en: 'Signal detected — hold still',
+    },
     'fitness_heart_rate_seconds_left': {
       AppLanguage.vi: 'còn {n} giây',
       AppLanguage.en: '{n}s left',
