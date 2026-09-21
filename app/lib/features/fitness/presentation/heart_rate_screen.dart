@@ -309,6 +309,60 @@ class _MeasuringCard extends ConsumerWidget {
 }
 
 /// Do xong: so bpm + gio do + bieu do tin hieu 30 giay.
+/// Doc con so vua do ra thanh 1 cau nguoi thuong hieu duoc: cao, thap hay
+/// binh thuong, kem ly do thuong gap.
+///
+/// Moc 60-100 bpm la khoang nhip nghi thong thuong cua nguoi lon. CO Y
+/// khong dung tu ngu chan doan ("tot", "nguy hiem", "benh"): day la phep do
+/// bang camera dien thoai, khong phai thiet bi y te - xem dong mien tru o
+/// man chuan bi. Chi mo ta so do nam o dau so voi khoang thong thuong va
+/// neu vai nguyen nhan pho bien.
+class _ZoneNote extends ConsumerWidget {
+  const _ZoneNote({required this.bpm});
+
+  final int bpm;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final (titleKey, noteKey, color) = switch (bpm) {
+      < 60 => (
+        'fitness_heart_rate_zone_low',
+        'fitness_heart_rate_zone_low_note',
+        FitnessHome.redBright,
+      ),
+      > 100 => (
+        'fitness_heart_rate_zone_high',
+        'fitness_heart_rate_zone_high_note',
+        FitnessHome.redBright,
+      ),
+      _ => (
+        'fitness_heart_rate_zone_normal',
+        'fitness_heart_rate_zone_normal_note',
+        Colors.white,
+      ),
+    };
+    return Column(
+      children: [
+        Text(
+          ref.tr(titleKey),
+          textAlign: TextAlign.center,
+          style: AppTextStyles.body(
+            size: 13,
+            weight: FontWeight.w700,
+            color: color,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          ref.tr(noteKey),
+          textAlign: TextAlign.center,
+          style: FitnessHome.bodySecondary(size: 11.5),
+        ),
+      ],
+    );
+  }
+}
+
 class _ResultCard extends ConsumerWidget {
   const _ResultCard({
     super.key,
@@ -363,6 +417,8 @@ class _ResultCard extends ConsumerWidget {
             ref.tr('fitness_heart_rate_measured_at').replaceFirst('{t}', time),
             style: FitnessHome.bodySecondary(size: 11.5),
           ),
+          const SizedBox(height: 12),
+          _ZoneNote(bpm: measurement.bpm),
           const SizedBox(height: 16),
           SizedBox(
             height: 70,

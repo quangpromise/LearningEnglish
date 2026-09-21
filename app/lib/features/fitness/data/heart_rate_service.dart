@@ -40,6 +40,11 @@ const _kCoveredMinBrightness = 12.0;
 /// tinh vao thanh tien do de nguoi dung khong phai cho them.
 const _kWarmUpMs = 3000;
 
+/// Con bat lai den trong bao lau neu khung hinh van chua ra mau ngon tay.
+/// Du rong de cuu duoc lan do, nhung van con thua thoi gian cho 1 doan tin
+/// hieu dai hon [_kMinCoveredMs] o phan con lai.
+const _kTorchRetryUntilMs = 12000;
+
 /// Doan lien tuc co ngon tay phai dai it nhat bao nhieu thi moi phan tich.
 /// Thay cho luat "phai co ngon tay o X% tong so khung hinh" truoc day: cai
 /// dang can khong phai la ti le tren ca lan do, ma la co du 1 doan tin
@@ -97,6 +102,7 @@ class CameraHeartRateService implements HeartRateService {
   Stopwatch? _clock;
   Timer? _noFrameTimer;
   Timer? _timeoutTimer;
+  Timer? _torchTimer;
   bool _cancelled = false;
   bool _finishing = false;
   bool _finishScheduled = false;
@@ -221,6 +227,8 @@ class CameraHeartRateService implements HeartRateService {
     _noFrameTimer?.cancel();
     _noFrameTimer = null;
     _timeoutTimer?.cancel();
+    _torchTimer?.cancel();
+    _torchTimer = null;
     _timeoutTimer = null;
   }
 
@@ -240,10 +248,9 @@ class CameraHeartRateService implements HeartRateService {
   /// chinh xac hon); rieng den flash hong thi ghi lai de man bao loi noi ro.
   Future<void> _enableTorchAndLock(CameraController controller) async {
     _torchInfo = await _tryTorch(controller);
+    _startTorchKeepAlive();
     await Future<void>.delayed(const Duration(milliseconds: 1200));
     if (_controller != controller) return;
-    final second = await _tryTorch(controller);
-    if (second != 'den ok') _torchInfo = second;
     for (final lock in <Future<void> Function()>[
       () => controller.setExposureMode(ExposureMode.locked),
       () => controller.setFocusMode(FocusMode.locked),
@@ -256,13 +263,43 @@ class CameraHeartRateService implements HeartRateService {
     }
   }
 
+  /// Bat den, nhung BAT BUOC di qua trang thai "tat" truoc.
+  ///
+  /// Goi thang setFlashMode(torch) co the khong lam gi ca: neu phia Android
+  /// con nho che do den cua lan do truoc van la "torch" thi lenh nay bi coi
+  /// la khong co gi thay doi va bi bo qua, trong khi den thuc te da tat theo
+  /// camera cu. Dung la trieu chung da gap - lan do dau tien sau khi mo app
+  /// thi duoc, lan thu hai thi khung hinh van ve nhung toi om, phai tat han
+  /// app moi do lai duoc. Doi qua "off" roi "torch" buoc no phai thuc su
+  /// doi trang thai.
   Future<String> _tryTorch(CameraController controller) async {
     try {
+      await controller.setFlashMode(FlashMode.off);
       await controller.setFlashMode(FlashMode.torch);
       return 'den ok';
     } catch (error) {
       return 'den loi: $error';
     }
+  }
+
+  /// Bat lai den moi 2 giay chung nao khung hinh van chua ra mau cua dau
+  /// ngon tay. Tu chua lanh cho moi kieu quai chieu cua tung dong may, thay
+  /// vi doan xem may nao tat den vao luc nao. Dung ngay khi da co tin hieu,
+  /// va dung han sau [_kTorchRetryUntilMs] de khong pha giua chung phep do.
+  void _startTorchKeepAlive() {
+    _torchTimer?.cancel();
+    _torchTimer = Timer.periodic(const Duration(seconds: 2), (timer) async {
+      final controller = _controller;
+      final clock = _clock;
+      if (controller == null ||
+          clock == null ||
+          _covered.value ||
+          clock.elapsedMilliseconds > _kTorchRetryUntilMs) {
+        timer.cancel();
+        return;
+      }
+      _torchInfo = await _tryTorch(controller);
+    });
   }
 
   void _onFrame(CameraImage image) {
@@ -402,18 +439,28 @@ class CameraHeartRateService implements HeartRateService {
     _clock?.stop();
     _clock = null;
     if (controller == null) return;
+    // MOI buoc mot khoi try rieng. Truoc day ca ba nam chung 1 khoi: chi
+    // can stopImageStream nem loi la hai buoc sau bi nhay qua - den flash
+    // khong duoc tat (dung trieu chung "flash van sang" ma nguoi dung thay)
+    // va luong khung hinh cua plugin ket lai o trang thai do, nen lan do sau
+    // khong con khung hinh nao va phai tat han app.
     try {
-      if (controller.value.isStreamingImages) {
-        await controller.stopImageStream();
-      }
+      await controller.stopImageStream();
+    } catch (_) {
+      // Luong co the da dung san - khong sao, cac buoc duoi van phai chay.
+    }
+    try {
       // Tat den flash TRUOC khi dispose - vai may giu nguyen den sang neu
       // controller bi huy khi torch dang bat.
       await controller.setFlashMode(FlashMode.off);
     } catch (_) {
-      // Camera co the da bi he thong thu hoi (goi den, khoa may) - khong co
-      // gi de lam them ngoai viec dispose ben duoi.
+      // Camera co the da bi he thong thu hoi (goi den, khoa may).
     }
-    await controller.dispose();
+    try {
+      await controller.dispose();
+    } catch (_) {
+      // Da bi huy roi.
+    }
   }
 
   @override

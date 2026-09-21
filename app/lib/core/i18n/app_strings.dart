@@ -4713,6 +4713,30 @@ class AppStrings {
       AppLanguage.vi: 'Đo lúc {t}',
       AppLanguage.en: 'Measured at {t}',
     },
+    'fitness_heart_rate_zone_low': {
+      AppLanguage.vi: 'Thấp hơn nhịp nghỉ thông thường',
+      AppLanguage.en: 'Below the usual resting range',
+    },
+    'fitness_heart_rate_zone_low_note': {
+      AppLanguage.vi: 'Nhịp nghỉ thông thường của người lớn là 60–100 bpm. Người tập thể thao đều đặn thường thấp hơn mức này mà vẫn bình thường. Nếu bạn thấy chóng mặt hoặc mệt bất thường, hãy đi khám.',
+      AppLanguage.en: 'A typical adult resting rate is 60–100 bpm. People who train regularly are often below it and still fine. See a doctor if you also feel dizzy or unusually tired.',
+    },
+    'fitness_heart_rate_zone_normal': {
+      AppLanguage.vi: 'Trong khoảng nhịp nghỉ bình thường',
+      AppLanguage.en: 'Within the usual resting range',
+    },
+    'fitness_heart_rate_zone_normal_note': {
+      AppLanguage.vi: 'Nhịp nghỉ thông thường của người lớn là 60–100 bpm.',
+      AppLanguage.en: 'A typical adult resting rate is 60–100 bpm.',
+    },
+    'fitness_heart_rate_zone_high': {
+      AppLanguage.vi: 'Cao hơn nhịp nghỉ thông thường',
+      AppLanguage.en: 'Above the usual resting range',
+    },
+    'fitness_heart_rate_zone_high_note': {
+      AppLanguage.vi: 'Nhịp nghỉ thông thường của người lớn là 60–100 bpm. Vừa vận động, uống cà phê, căng thẳng hay thiếu ngủ đều làm nhịp tăng. Hãy ngồi nghỉ 5 phút rồi đo lại.',
+      AppLanguage.en: 'A typical adult resting rate is 60–100 bpm. Recent exercise, caffeine, stress or poor sleep all raise it. Rest for five minutes and measure again.',
+    },
     'fitness_heart_rate_remeasure': {
       AppLanguage.vi: 'Đo lại',
       AppLanguage.en: 'Measure again',
