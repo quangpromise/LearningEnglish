@@ -23,7 +23,12 @@ const kHeartRateMeasureSeconds = 30;
 /// cho ra mau do bao hoa, tuc kenh V (Cr) cao hon han kenh U (Cb). Canh
 /// bat ky thu gi khac - mat ban, tran nha, khong khi - deu trung tinh hon
 /// nhieu. Hieu so nay gan nhu khong doi theo muc phoi sang.
-const _kCoveredMinRedness = 30.0;
+///
+/// Muc 30 tung dat o day la qua chat: may thu nghiem do duoc dung 31, tuc
+/// sat nguong, nen chi khoang mot nua so khung hinh lot qua va lan do bi
+/// loai oan. Canh trung tinh chi cho vai don vi, nen 12 van phan biet duoc
+/// thoai mai.
+const _kCoveredMinRedness = 12.0;
 
 /// San toi tuyet doi: neu khung hinh gan nhu den thi den flash khong bat
 /// duoc (hoac ong kinh bi bit hoan toan), luc do sac mau khong con y nghia.
@@ -35,9 +40,11 @@ const _kCoveredMinBrightness = 12.0;
 /// tinh vao thanh tien do de nguoi dung khong phai cho them.
 const _kWarmUpMs = 3000;
 
-/// Ti le khung hinh phai dat nguong che ong kinh thi lan do moi duoc coi la
-/// co ngon tay. Duoi muc nay tra ve [HeartRateFailure.fingerNotDetected].
-const _kMinCoveredRatio = 0.5;
+/// Doan lien tuc co ngon tay phai dai it nhat bao nhieu thi moi phan tich.
+/// Thay cho luat "phai co ngon tay o X% tong so khung hinh" truoc day: cai
+/// dang can khong phai la ti le tren ca lan do, ma la co du 1 doan tin
+/// hieu sach de dem nhip hay khong.
+const _kMinCoveredMs = 10000;
 
 /// Hop dong do nhip tim - man hinh CHI biet den giao dien nay, khong biet
 /// dang do bang camera hay bang thiet bi deo. Nho vay sau nay ghep vong deo
@@ -88,7 +95,10 @@ class CameraHeartRateService implements HeartRateService {
   /// Sac do cua tung khung hinh, cung chi so voi [_samples].
   final _redness = <double>[];
   Stopwatch? _clock;
+  Timer? _noFrameTimer;
+  Timer? _timeoutTimer;
   bool _cancelled = false;
+  bool _finishing = false;
 
   final _progress = ValueNotifier<double>(0);
   final _liveWaveform = ValueNotifier<List<double>>(const []);
@@ -107,6 +117,7 @@ class CameraHeartRateService implements HeartRateService {
   @override
   Future<HeartRateResult> measure() async {
     _cancelled = false;
+    _finishing = false;
     _samples.clear();
     _redness.clear();
     _progress.value = 0;
@@ -118,6 +129,12 @@ class CameraHeartRateService implements HeartRateService {
     _completer = completer;
 
     try {
+      // Tra camera cua lan do truoc ve he thong TRUOC khi mo lan moi. Neu
+      // con sot 1 controller chua dispose, may se tu choi mo camera lan 2
+      // ("camera is already in use") va tu lan do thu hai tro di khong con
+      // khung hinh nao - dung hien tuong "lan dau thi thay so lieu, cac lan
+      // sau khong thay".
+      await _stopCamera();
       final cameras = await availableCameras();
       final back = cameras.firstWhere(
         (c) => c.lensDirection == CameraLensDirection.back,
@@ -138,6 +155,7 @@ class CameraHeartRateService implements HeartRateService {
       await _lockCameraAdjustments(controller);
       _clock = Stopwatch()..start();
       await controller.startImageStream(_onFrame);
+      _startWatchdogs();
     } catch (error) {
       await _stopCamera();
       if (!completer.isCompleted) {
@@ -150,6 +168,40 @@ class CameraHeartRateService implements HeartRateService {
       }
     }
     return completer.future;
+  }
+
+  /// Hai cai phanh cho truong hop luong khung hinh khong chay.
+  ///
+  /// Truoc day [_finish] chi duoc goi tu trong [_onFrame], nghia la neu
+  /// camera khong tra ve khung hinh nao (bi thu hoi, mo that bai, hoac
+  /// luong dung giua chung) thi man hinh dung nguyen o mot muc phan tram
+  /// va cho mai - khong bao loi, khong tu thoat.
+  void _startWatchdogs() {
+    _noFrameTimer = Timer(const Duration(seconds: 6), () {
+      if (_samples.isNotEmpty) return;
+      final completer = _completer;
+      if (completer == null || completer.isCompleted) return;
+      _stopCamera();
+      completer.complete(
+        const HeartRateResult.failed(
+          HeartRateFailure.cameraUnavailable,
+          debugInfo: 'camera khong tra ve khung hinh nao',
+        ),
+      );
+    });
+    // Du rong de luong khung hinh cham van kip ve dich; chi de cuu truong
+    // hop luong tat han giua chung.
+    _timeoutTimer = Timer(
+      const Duration(seconds: kHeartRateMeasureSeconds + 10),
+      () => _finish(),
+    );
+  }
+
+  void _cancelWatchdogs() {
+    _noFrameTimer?.cancel();
+    _noFrameTimer = null;
+    _timeoutTimer?.cancel();
+    _timeoutTimer = null;
   }
 
   /// Khoa phoi sang + lay net cua camera.
@@ -222,25 +274,30 @@ class CameraHeartRateService implements HeartRateService {
 
   Future<void> _finish() async {
     final completer = _completer;
-    if (completer == null || completer.isCompleted) return;
-    // Bo doan khoi dong den flash, va doi goc thoi gian ve 0 de phan tich
-    // khong phai biet den chuyen nay.
+    if (completer == null || completer.isCompleted || _finishing) return;
+    // Co the bi goi ca tu khung hinh cuoi lan tu dong ho canh gio, ma giua
+    // chung co await - khong chan thi 2 luong cung chay 1 luc.
+    _finishing = true;
+    // Bo doan khoi dong den flash.
     final kept = <int>[
       for (var i = 0; i < _samples.length; i++)
         if (_samples[i].elapsedMs >= _kWarmUpMs) i,
     ];
+    // Chi phan tich DOAN LIEN TUC DAI NHAT co ngon tay, chu khong phai ca
+    // 30 giay. Nguoi dung thuong loay hoay chinh lai the tay vai giay dau;
+    // tinh ca doan do vao se vua lam hong tin hieu vua keo ti le "co ngon
+    // tay" xuong duoi nguong va bi loai oan (da gap: che 49%, thieu dung
+    // 1% so voi nguong cu).
+    final run = _longestCoveredRun(kept);
     final samples = [
-      for (final i in kept)
-        PpgSample(_samples[i].elapsedMs - _kWarmUpMs, _samples[i].brightness),
+      for (final i in run)
+        PpgSample(
+          _samples[i].elapsedMs - _samples[run.first].elapsedMs,
+          _samples[i].brightness,
+        ),
     ];
-    final covered = kept
-        .where(
-          (i) =>
-              _samples[i].brightness >= _kCoveredMinBrightness &&
-              _redness[i] >= _kCoveredMinRedness,
-        )
-        .length;
-    final debugInfo = _describeSignal(samples, kept, covered);
+    final covered = kept.where(_isCovered).length;
+    final debugInfo = _describeSignal(kept, covered, samples);
     await _stopCamera();
     if (_cancelled) {
       if (!completer.isCompleted) {
@@ -250,7 +307,7 @@ class CameraHeartRateService implements HeartRateService {
       }
       return;
     }
-    if (samples.isEmpty || covered < samples.length * _kMinCoveredRatio) {
+    if (samples.length < 30 || samples.last.elapsedMs < _kMinCoveredMs) {
       completer.complete(
         HeartRateResult.failed(
           HeartRateFailure.fingerNotDetected,
@@ -296,6 +353,7 @@ class CameraHeartRateService implements HeartRateService {
   }
 
   Future<void> _stopCamera() async {
+    _cancelWatchdogs();
     final controller = _controller;
     _controller = null;
     _clock?.stop();
@@ -324,28 +382,67 @@ class CameraHeartRateService implements HeartRateService {
     _signalInfo.dispose();
   }
 
+  /// Khung hinh [i] co dang bi ngon tay che dung cach khong.
+  bool _isCovered(int i) =>
+      _samples[i].brightness >= _kCoveredMinBrightness &&
+      _redness[i] >= _kCoveredMinRedness;
+
+  /// Doan lien tuc dai nhat (tinh bang thoi gian) co ngon tay, trong so cac
+  /// khung hinh [kept]. Cho phep vai khung hinh le bi truot nguong ma khong
+  /// cat doi ca doan - mot cai chop mat cua bo do sang khong dang de vut di
+  /// 15 giay tin hieu tot.
+  List<int> _longestCoveredRun(List<int> kept) {
+    const toleranceMs = 400;
+    var best = const <int>[];
+    var current = <int>[];
+    var lastCoveredMs = 0;
+    for (final i in kept) {
+      if (_isCovered(i)) {
+        current.add(i);
+        lastCoveredMs = _samples[i].elapsedMs;
+        continue;
+      }
+      if (current.isEmpty) continue;
+      if (_samples[i].elapsedMs - lastCoveredMs <= toleranceMs) {
+        // Truot nguong trong chop mat - van tinh la 1 doan.
+        current.add(i);
+        continue;
+      }
+      if (_duration(current) > _duration(best)) best = current;
+      current = <int>[];
+    }
+    return _duration(current) > _duration(best) ? current : best;
+  }
+
+  int _duration(List<int> run) => run.length < 2
+      ? 0
+      : _samples[run.last].elapsedMs - _samples[run.first].elapsedMs;
+
   /// Vai con so tho ve lan do vua roi, de man bao loi hien ra cho nguoi
   /// dung chup man hinh gui lai - may thu nghiem khong cam USB debug duoc
   /// nen day la cach duy nhat biet phep do hong o dau.
-  String _describeSignal(List<PpgSample> samples, List<int> kept, int covered) {
-    if (samples.isEmpty) return 'khong nhan duoc khung hinh nao';
+  String _describeSignal(List<int> kept, int covered, List<PpgSample> run) {
+    if (kept.isEmpty) return 'khong nhan duoc khung hinh nao';
     var minLuma = 255.0;
     var maxLuma = 0.0;
     var sumLuma = 0.0;
-    for (final s in samples) {
-      minLuma = math.min(minLuma, s.brightness);
-      maxLuma = math.max(maxLuma, s.brightness);
-      sumLuma += s.brightness;
+    var sumRed = 0.0;
+    for (final i in kept) {
+      final luma = _samples[i].brightness;
+      minLuma = math.min(minLuma, luma);
+      maxLuma = math.max(maxLuma, luma);
+      sumLuma += luma;
+      sumRed += _redness[i];
     }
-    final redness =
-        kept.map((i) => _redness[i]).reduce((a, b) => a + b) / kept.length;
-    final seconds = samples.last.elapsedMs / 1000;
-    final fps = seconds <= 0 ? 0 : samples.length / seconds;
-    return 'sang ${(sumLuma / samples.length).round()} '
+    final seconds =
+        (_samples[kept.last].elapsedMs - _samples[kept.first].elapsedMs) / 1000;
+    final fps = seconds <= 0 ? 0 : kept.length / seconds;
+    return 'sang ${(sumLuma / kept.length).round()} '
         '(${minLuma.round()}-${maxLuma.round()}) · '
-        'do ${redness.round()} · '
-        'che ${(100 * covered / samples.length).round()}% · '
-        '${fps.round()} khung/giay';
+        'do ${(sumRed / kept.length).round()} · '
+        'che ${(100 * covered / kept.length).round()}% · '
+        '${fps.round()} khung/giay · '
+        'doan do ${(run.isEmpty ? 0 : run.last.elapsedMs / 1000).toStringAsFixed(1)}s';
   }
 
   /// Muc "do" trung binh cua khung hinh: kenh V (Cr) tru kenh U (Cb).
