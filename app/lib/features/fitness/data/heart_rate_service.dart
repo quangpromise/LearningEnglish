@@ -106,6 +106,11 @@ class CameraHeartRateService implements HeartRateService {
   bool _cancelled = false;
   bool _finishing = false;
   bool _finishScheduled = false;
+  bool _measuring = false;
+
+  /// Buoc gan nhat trong quy trinh mo camera - de khi hong thi man bao loi
+  /// noi duoc no ket o dau, thay vi de doan.
+  String _stage = 'chua bat dau';
   String _cameraInfo = 'cam ?';
   String _torchInfo = 'den ?';
 
@@ -125,15 +130,11 @@ class CameraHeartRateService implements HeartRateService {
 
   @override
   Future<HeartRateResult> measure() async {
-    // Tra camera cua lan do truoc ve he thong TRUOC khi mo lan moi, va cho
-    // mot nhip cho he dieu hanh nha han thiet bi ra. Khong lam vay thi tu
-    // lan do thu hai tro di camera khong mo lai duoc.
-    await _stopCamera();
-    await Future<void>.delayed(const Duration(milliseconds: 300));
-
     _cancelled = false;
     _finishing = false;
     _finishScheduled = false;
+    _measuring = false;
+    _stage = 'chuan bi';
     _cameraInfo = 'cam ?';
     _torchInfo = 'den ?';
     _samples.clear();
@@ -155,31 +156,10 @@ class CameraHeartRateService implements HeartRateService {
     _startWatchdogs();
 
     try {
-      final cameras = await availableCameras();
-      final back = cameras.firstWhere(
-        (c) => c.lensDirection == CameraLensDirection.back,
-        orElse: () => cameras.first,
-      );
-      final controller = CameraController(
-        back,
-        // Do phan giai THAP nhat co the: ta chi can do sang trung binh, anh
-        // cang nho thi moi khung hinh cang nhanh (nhieu mau/giay hon) va it
-        // ton CPU - quan trong vi phai xu ly lien tuc 30 giay.
-        ResolutionPreset.low,
-        enableAudio: false,
-        imageFormatGroup: ImageFormatGroup.yuv420,
-      );
-      await controller.initialize();
-      _controller = controller;
-      _cameraInfo =
-          'cam ${back.name}'
-          '${cameras.length > 1 ? '/${cameras.length}' : ''}';
+      final controller = await _ensureCameraRunning();
+      _stage = 'dang do';
       _clock = Stopwatch()..start();
-      // Bat luong khung hinh TRUOC khi bat den. Bat den truoc roi moi mo
-      // luong thi phien chup bi dung lai de cau hinh lai, va tren nhieu may
-      // Android den tat theo - luc do ta quay phim dau ngon tay trong bong
-      // toi, khong co gi de do.
-      await controller.startImageStream(_onFrame);
+      _measuring = true;
       unawaited(_enableTorchAndLock(controller));
     } catch (error) {
       await _stopCamera();
@@ -187,12 +167,80 @@ class CameraHeartRateService implements HeartRateService {
         completer.complete(
           HeartRateResult.failed(
             HeartRateFailure.cameraUnavailable,
-            debugInfo: '$_cameraInfo · $error',
+            debugInfo: 'ket o buoc "$_stage" · $_cameraInfo · $error',
           ),
         );
       }
     }
     return completer.future;
+  }
+
+  /// Mo camera va luong khung hinh NEU chua chay, va chi khi do.
+  ///
+  /// Doi lan thu 3 sua loi "do lai thi khong nhan duoc du lieu". Hai lan
+  /// truoc deu di theo huong "dong cho sach roi mo lai cho chuan" va deu
+  /// khong an. Lan nay bo han viec dong/mo lai: camera va luong khung hinh
+  /// chay lien tuc suot thoi gian o man hinh nay, giua cac lan do chi bat
+  /// tat viec LAY MAU va den flash. Khong con buoc dong/mo thi cung khong
+  /// con cho de ket.
+  ///
+  /// Doi lai camera mo lau hon - chap nhan duoc vi day la man hinh chuyen
+  /// de do nhip tim, va [dispose] van dong han camera khi roi man hinh.
+  Future<CameraController> _ensureCameraRunning() async {
+    final existing = _controller;
+    if (existing != null &&
+        existing.value.isInitialized &&
+        existing.value.isStreamingImages &&
+        !existing.value.hasError) {
+      _stage = 'dung lai camera dang mo';
+      return existing;
+    }
+    // Co controller nhung khong dung duoc nua - bo han roi lam lai tu dau.
+    if (existing != null) await _stopCamera();
+
+    _stage = 'tim camera';
+    final cameras = await availableCameras();
+    final back = cameras.firstWhere(
+      (c) => c.lensDirection == CameraLensDirection.back,
+      orElse: () => cameras.first,
+    );
+    _cameraInfo =
+        'cam ${back.name}'
+        '${cameras.length > 1 ? '/${cameras.length}' : ''}';
+    final controller = CameraController(
+      back,
+      // Do phan giai THAP nhat co the: ta chi can do sang trung binh, anh
+      // cang nho thi moi khung hinh cang nhanh (nhieu mau/giay hon) va it
+      // ton CPU - quan trong vi phai xu ly lien tuc 30 giay.
+      ResolutionPreset.low,
+      enableAudio: false,
+      imageFormatGroup: ImageFormatGroup.yuv420,
+    );
+    _stage = 'khoi tao camera';
+    await controller.initialize();
+    _controller = controller;
+    // Mo luong khung hinh TRUOC khi bat den. Bat den truoc roi moi mo luong
+    // thi phien chup bi dung lai de cau hinh lai, va tren nhieu may Android
+    // den tat theo - luc do ta quay phim dau ngon tay trong bong toi.
+    _stage = 'mo luong hinh';
+    await controller.startImageStream(_onFrame);
+    return controller;
+  }
+
+  /// Ket thuc 1 lan do nhung GIU camera lai: tat den, dung dong ho, thoi
+  /// lay mau. Camera chi bi dong han o [dispose].
+  Future<void> _stopMeasuring() async {
+    _measuring = false;
+    _cancelWatchdogs();
+    _clock?.stop();
+    _clock = null;
+    final controller = _controller;
+    if (controller == null) return;
+    try {
+      await controller.setFlashMode(FlashMode.off);
+    } catch (_) {
+      // Camera co the da bi he thong thu hoi (goi den, khoa may).
+    }
   }
 
   /// Hai cai phanh cho truong hop luong khung hinh khong chay.
@@ -207,11 +255,13 @@ class CameraHeartRateService implements HeartRateService {
       if (_samples.isNotEmpty) return;
       final completer = _completer;
       if (completer == null || completer.isCompleted) return;
-      _stopCamera();
+      _stopMeasuring();
       completer.complete(
         HeartRateResult.failed(
           HeartRateFailure.cameraUnavailable,
-          debugInfo: 'khong nhan duoc khung hinh · $_cameraInfo · $_torchInfo',
+          debugInfo:
+              'khong nhan duoc khung hinh · ket o buoc "$_stage" · '
+              '$_cameraInfo · $_torchInfo',
         ),
       );
     });
@@ -247,6 +297,19 @@ class CameraHeartRateService implements HeartRateService {
   /// May nao khong ho tro khoa thi bo qua lang le (van do duoc, chi kem
   /// chinh xac hon); rieng den flash hong thi ghi lai de man bao loi noi ro.
   Future<void> _enableTorchAndLock(CameraController controller) async {
+    // Mo khoa TRUOC da. Camera bay gio duoc dung lai qua nhieu lan do, nen
+    // neu khong mo khoa thi lan do thu hai van bi dinh o muc phoi sang da
+    // khoa tu lan truoc - do voi the tay khac han thi muc do khong con dung.
+    for (final unlock in <Future<void> Function()>[
+      () => controller.setExposureMode(ExposureMode.auto),
+      () => controller.setFocusMode(FocusMode.auto),
+    ]) {
+      try {
+        await unlock();
+      } catch (_) {
+        // Thiet bi khong cho doi muc nay - bo qua.
+      }
+    }
     _torchInfo = await _tryTorch(controller);
     _startTorchKeepAlive();
     await Future<void>.delayed(const Duration(milliseconds: 1200));
@@ -305,6 +368,9 @@ class CameraHeartRateService implements HeartRateService {
   void _onFrame(CameraImage image) {
     final clock = _clock;
     final completer = _completer;
+    // Luong khung hinh chay suot thoi gian o man hinh nay, ke ca giua cac
+    // lan do - chi lay mau khi dang thuc su do.
+    if (!_measuring) return;
     if (clock == null || completer == null || completer.isCompleted) return;
 
     final brightness = _meanLuma(image);
@@ -378,7 +444,7 @@ class CameraHeartRateService implements HeartRateService {
     ];
     final covered = kept.where(_isCovered).length;
     final debugInfo = _describeSignal(kept, covered, samples);
-    await _stopCamera();
+    await _stopMeasuring();
     if (_cancelled) {
       if (!completer.isCompleted) {
         completer.complete(
@@ -423,7 +489,7 @@ class CameraHeartRateService implements HeartRateService {
   @override
   Future<void> cancel() async {
     _cancelled = true;
-    await _stopCamera();
+    await _stopMeasuring();
     final completer = _completer;
     if (completer != null && !completer.isCompleted) {
       completer.complete(
@@ -466,6 +532,7 @@ class CameraHeartRateService implements HeartRateService {
   @override
   Future<void> dispose() async {
     await cancel();
+    await _stopCamera();
     _progress.dispose();
     _liveWaveform.dispose();
     _covered.dispose();
@@ -533,7 +600,7 @@ class CameraHeartRateService implements HeartRateService {
         'che ${(100 * covered / kept.length).round()}% · '
         '${fps.round()} khung/giay · '
         'doan do ${(run.isEmpty ? 0 : run.last.elapsedMs / 1000).toStringAsFixed(1)}s · '
-        '$_cameraInfo · $_torchInfo';
+        '$_cameraInfo · $_torchInfo · $_stage';
   }
 
   /// Muc "do" trung binh cua khung hinh: kenh V (Cr) tru kenh U (Cb).
