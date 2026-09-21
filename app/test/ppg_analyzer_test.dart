@@ -25,8 +25,59 @@ List<PpgSample> _fakeSignal({
   });
 }
 
+/// Gan giong tin hieu PPG that hon [_fakeSignal]: moi nhip co 1 dinh chinh
+/// (tam thu) va 1 buou nho theo sau (dicrotic notch) - chinh cai buou nay
+/// tung lam cach dem dinh cu tinh nham thanh 2 nhip. [jitterMs] mo phong
+/// camera tra khung hinh khong deu.
+List<PpgSample> _realisticSignal({
+  required int bpm,
+  int seconds = 30,
+  int fps = 30,
+  double jitterMs = 0,
+}) {
+  final random = math.Random(11);
+  final periodMs = 60000 / bpm;
+  final samples = <PpgSample>[];
+  var t = 0.0;
+  while (t < seconds * 1000) {
+    final phase = (t % periodMs) / periodMs;
+    final systolic = math.exp(-math.pow(phase / 0.12, 2).toDouble());
+    final dicrotic =
+        0.45 * math.exp(-math.pow((phase - 0.4) / 0.14, 2).toDouble());
+    final baseline = 150 + 8 * math.sin(2 * math.pi * t / 20000);
+    samples.add(
+      PpgSample(
+        t.round(),
+        baseline + 5 * (systolic + dicrotic) + 0.3 * random.nextDouble(),
+      ),
+    );
+    t += 1000 / fps + jitterMs * (random.nextDouble() - 0.5);
+  }
+  return samples;
+}
+
 void main() {
   group('analyzePpg', () {
+    test('doc dung nhip tim khi song co buou phu (dicrotic notch)', () {
+      for (final bpm in [52, 68, 84, 110]) {
+        final result = analyzePpg(_realisticSignal(bpm: bpm));
+        expect(result.bpm, isNotNull, reason: 'phai doc duoc o $bpm bpm');
+        expect(
+          (result.bpm! - bpm).abs(),
+          lessThanOrEqualTo(3),
+          reason: 'doc ra ${result.bpm} thay vi $bpm',
+        );
+      }
+    });
+
+    test('van doc dung khi khung hinh ve khong deu', () {
+      final result = analyzePpg(
+        _realisticSignal(bpm: 74, fps: 20, jitterMs: 18),
+      );
+      expect(result.bpm, isNotNull);
+      expect((result.bpm! - 74).abs(), lessThanOrEqualTo(3));
+    });
+
     test('doc dung nhip tim tu tin hieu sach', () {
       for (final bpm in [48, 62, 75, 96, 120]) {
         final result = analyzePpg(_fakeSignal(bpm: bpm));

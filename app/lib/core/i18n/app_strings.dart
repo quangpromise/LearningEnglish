@@ -4721,6 +4721,10 @@ class AppStrings {
       AppLanguage.vi: 'Tín hiệu quá nhiễu. Hãy che kín ống kính, giữ tay thật yên rồi đo lại.',
       AppLanguage.en: 'The signal was too noisy. Cover the lens fully, hold still and try again.',
     },
+    'fitness_heart_rate_error_no_finger': {
+      AppLanguage.vi: 'Không thấy ngón tay trên camera. Đặt đầu ngón trỏ phủ kín cả ống kính lẫn đèn flash ở mặt sau máy rồi đo lại.',
+      AppLanguage.en: 'No finger detected. Rest your fingertip so it covers both the rear lens and the flash, then try again.',
+    },
     'fitness_heart_rate_error_camera': {
       AppLanguage.vi: 'Không mở được camera. Kiểm tra quyền truy cập camera của app rồi thử lại.',
       AppLanguage.en: 'Could not open the camera. Check the camera permission and try again.',

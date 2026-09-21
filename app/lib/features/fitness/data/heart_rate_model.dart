@@ -69,6 +69,11 @@ enum HeartRateFailure {
   /// kin ong kinh hoac ngon tay rung.
   signalTooNoisy,
 
+  /// Gan nhu ca lan do khong thay ngon tay che ong kinh (khung hinh toi).
+  /// Tach rieng khoi [signalTooNoisy] vi cach xu ly khac han: khong phai
+  /// "giu yen hon" ma la "dat ngon tay len dung cho".
+  fingerNotDetected,
+
   /// Phat hien duoc nhip nhung ra ngoai khoang sinh ly (40-200 bpm) nen
   /// khong dang tin.
   outOfRange,

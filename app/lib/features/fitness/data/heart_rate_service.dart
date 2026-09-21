@@ -12,8 +12,20 @@ const kHeartRateMeasureSeconds = 30;
 /// Do sang trung binh toi thieu de coi la "ngon tay da che kin ong kinh +
 /// den flash". Khi ngon tay ap sat, anh sang flash xuyen qua da lam khung
 /// hinh sang deu va do ruc; khi ong kinh de ho, khung hinh toi hon nhieu.
-/// Nguong nay do tren kenh luma (0-255).
-const _kCoveredMinBrightness = 90.0;
+/// Nguong nay do tren kenh luma (0-255). De thap vi nguoi an manh tay hoac
+/// da day thi khung hinh toi han di - dat cao qua se bao "khong thay ngon
+/// tay" trong khi tin hieu van dung.
+const _kCoveredMinBrightness = 55.0;
+
+/// Thoi gian bo dau moi lan do. Ngay sau khi bat torch, camera con dang tu
+/// dong can bang sang/trang: do sang khung hinh nhay bac rat manh trong
+/// 1-2 giay dau va se lam hong phan phan tich neu dua vao. Doan nay van
+/// tinh vao thanh tien do de nguoi dung khong phai cho them.
+const _kWarmUpMs = 3000;
+
+/// Ti le khung hinh phai dat nguong che ong kinh thi lan do moi duoc coi la
+/// co ngon tay. Duoi muc nay tra ve [HeartRateFailure.fingerNotDetected].
+const _kMinCoveredRatio = 0.5;
 
 /// Hop dong do nhip tim - man hinh CHI biet den giao dien nay, khong biet
 /// dang do bang camera hay bang thiet bi deo. Nho vay sau nay ghep vong deo
@@ -98,6 +110,7 @@ class CameraHeartRateService implements HeartRateService {
       await controller.initialize();
       _controller = controller;
       await controller.setFlashMode(FlashMode.torch);
+      await _lockCameraAdjustments(controller);
       _clock = Stopwatch()..start();
       await controller.startImageStream(_onFrame);
     } catch (_) {
@@ -109,6 +122,31 @@ class CameraHeartRateService implements HeartRateService {
       }
     }
     return completer.future;
+  }
+
+  /// Khoa phoi sang + lay net cua camera.
+  ///
+  /// Day la sua loi quan trong nhat cua phep do: neu de che do tu dong,
+  /// camera lien tuc chinh lai do phoi sang de bu chinh cai thay doi rat nho
+  /// ma ta dang can do. Ket qua la nhip dap bi "san phang" hoac bi nhan
+  /// chim trong cac buoc nhay cua bo tu dong phoi sang - va man hinh bao
+  /// "tin hieu qua nhieu" du nguoi dung lam dung.
+  ///
+  /// Doi mot nhip cho den flash on dinh TRUOC khi khoa, neu khong se khoa
+  /// nham vao muc phoi sang cua luc chua bat den. May nao khong ho tro thi
+  /// bo qua lang le (van do duoc, chi kem chinh xac hon).
+  Future<void> _lockCameraAdjustments(CameraController controller) async {
+    await Future<void>.delayed(const Duration(milliseconds: 1200));
+    for (final lock in <Future<void> Function()>[
+      () => controller.setExposureMode(ExposureMode.locked),
+      () => controller.setFocusMode(FocusMode.locked),
+    ]) {
+      try {
+        await lock();
+      } catch (_) {
+        // Thiet bi khong cho khoa muc nay - van do tiep duoc.
+      }
+    }
   }
 
   void _onFrame(CameraImage image) {
@@ -149,7 +187,16 @@ class CameraHeartRateService implements HeartRateService {
   Future<void> _finish() async {
     final completer = _completer;
     if (completer == null || completer.isCompleted) return;
-    final samples = List<PpgSample>.from(_samples);
+    // Bo doan khoi dong den flash, va doi goc thoi gian ve 0 de phan tich
+    // khong phai biet den chuyen nay.
+    final samples = [
+      for (final s in _samples)
+        if (s.elapsedMs >= _kWarmUpMs)
+          PpgSample(s.elapsedMs - _kWarmUpMs, s.brightness),
+    ];
+    final covered = samples
+        .where((s) => s.brightness >= _kCoveredMinBrightness)
+        .length;
     await _stopCamera();
     if (_cancelled) {
       if (!completer.isCompleted) {
@@ -157,6 +204,12 @@ class CameraHeartRateService implements HeartRateService {
           const HeartRateResult.failed(HeartRateFailure.cancelled),
         );
       }
+      return;
+    }
+    if (samples.isEmpty || covered < samples.length * _kMinCoveredRatio) {
+      completer.complete(
+        const HeartRateResult.failed(HeartRateFailure.fingerNotDetected),
+      );
       return;
     }
     final analysis = analyzePpg(samples);

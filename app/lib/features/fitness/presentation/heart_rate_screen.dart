@@ -369,6 +369,8 @@ class _FailureCard extends ConsumerWidget {
     final hintKey = switch (failure) {
       HeartRateFailure.cameraUnavailable => 'fitness_heart_rate_error_camera',
       HeartRateFailure.outOfRange => 'fitness_heart_rate_error_range',
+      HeartRateFailure.fingerNotDetected =>
+        'fitness_heart_rate_error_no_finger',
       _ => 'fitness_heart_rate_error_noisy',
     };
     return FitnessCard(
