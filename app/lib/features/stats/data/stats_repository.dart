@@ -1,5 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../today/data/daily_progress_store.dart';
+
 /// 1 ngày trong biểu đồ "hoạt động tuần này" — [date] là ngày thật (server,
 /// UTC), [seconds] là tổng số giây luyện tập ghi nhận được trong ngày đó.
 class DailyActivity {
@@ -162,6 +164,8 @@ class StatsRepository {
   /// 0027_pronunciation_attempt_source.sql) - chỉ để phân tích sau này,
   /// không ảnh hưởng điểm hay thống kê hiển thị.
   Future<void> recordPronunciationScore(int score, {String? source}) async {
+    // Vong "Noi" o man Hom nay - dem ca khi chua dang nhap/mat mang.
+    DailyProgressStore.instance.addSpeakAttempt();
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) return;
     await _supabase.from('user_pronunciation_attempts').insert({

@@ -13,6 +13,7 @@ import 'core/config/env.dart';
 import 'core/navigation/assistive_fab_overlay.dart';
 import 'core/navigation/nav_keys.dart';
 import 'core/navigation/root_shell.dart';
+import 'core/navigation/root_tabs.dart';
 import 'core/notifications/chat_push.dart';
 import 'core/notifications/daily_quiz_notifications.dart';
 import 'core/notifications/local_notifications_core.dart';
@@ -22,7 +23,6 @@ import 'core/tts/app_tts.dart';
 import 'features/ai_voice_chat/data/gemini_voices.dart';
 import 'features/auth/presentation/reset_password_screen.dart';
 import 'features/auth/presentation/sign_in_screen.dart';
-import 'features/fitness/presentation/fitness_shell.dart';
 import 'features/onboarding/data/onboarding_repository.dart';
 import 'features/onboarding/presentation/onboarding_screen.dart';
 import 'core/navigation/planner_source_openers.dart';
@@ -268,12 +268,8 @@ class _AuthGate extends ConsumerWidget {
             if (nav == null) return;
             switch (pending) {
               case AppSection.fitness:
-                nav.push(
-                  MaterialPageRoute(
-                    settings: const RouteSettings(name: kFitnessHomeRouteName),
-                    builder: (_) => const FitnessShell(),
-                  ),
-                );
+                // Fitness la tab "Tap" cua RootShell (xem root_tabs.dart).
+                ref.read(rootTabProvider.notifier).state = RootTab.train;
               case AppSection.wealth:
                 nav.push(
                   MaterialPageRoute(

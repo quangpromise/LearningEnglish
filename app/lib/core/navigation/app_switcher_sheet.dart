@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../features/fitness/presentation/fitness_shell.dart';
 import '../../features/wealth/presentation/wealth_shell.dart';
 import '../i18n/app_strings.dart';
 import '../providers/app_providers.dart';
 import '../theme/app_theme.dart';
 import 'nav_keys.dart';
+import 'root_tabs.dart';
 
 /// Logo that nguoi dung cung cap dung lam icon dai dien cho Fitness/Hoc
 /// Tieng Anh o pill + dropdown chuyen doi app (Wealth van dung Material
@@ -54,7 +54,9 @@ class _AppSwitcherPillState extends ConsumerState<AppSwitcherPill> {
   void _select(AppSection section) {
     _close();
     final current = ref.read(currentAppSectionProvider);
-    if (current == section) return;
+    // Hoc tieng Anh/Fitness la TAB (Hom nay/Tien do cung la khu vuc Hoc
+    // tieng Anh) nen van phai doi tab ke ca khi khu vuc khong doi.
+    if (current == section && section == AppSection.wealth) return;
     ref.read(currentAppSectionProvider.notifier).state = section;
     // rootNavigator: true - AppSwitcherPill nam trong AppTopBar, ben trong 1
     // Navigator LONG cua tung tab (xem root_shell.dart/fitness_shell.dart/
@@ -63,14 +65,11 @@ class _AppSwitcherPillState extends ConsumerState<AppSwitcherPill> {
     // GOC cua toan app moi pop/push dung FitnessShell/WealthShell.
     final rootNav = Navigator.of(context, rootNavigator: true);
     rootNav.popUntil((r) => r.isFirst);
+    // GymTalk: Fitness va Hoc tieng Anh gio la 2 TAB cua RootShell (xem
+    // root_tabs.dart) - chi doi tab; Wealth van la app rieng push len tren.
     switch (section) {
       case AppSection.fitness:
-        rootNav.push(
-          MaterialPageRoute(
-            settings: const RouteSettings(name: kFitnessHomeRouteName),
-            builder: (_) => const FitnessShell(),
-          ),
-        );
+        ref.read(rootTabProvider.notifier).state = RootTab.train;
       case AppSection.wealth:
         rootNav.push(
           MaterialPageRoute(
@@ -79,7 +78,7 @@ class _AppSwitcherPillState extends ConsumerState<AppSwitcherPill> {
           ),
         );
       case AppSection.learnEnglish:
-        break;
+        ref.read(rootTabProvider.notifier).state = RootTab.learn;
     }
   }
 

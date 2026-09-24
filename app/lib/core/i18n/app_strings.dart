@@ -3554,6 +3554,173 @@ class AppStrings {
       AppLanguage.vi: 'Đã chia sẻ ✓',
       AppLanguage.en: 'Shared ✓',
     },
+    // GymTalk giai doan 2: tab goc, man Hom nay, On tap, Tien do.
+    'tab_today': {AppLanguage.vi: 'Hôm nay', AppLanguage.en: 'Today'},
+    'tab_train': {AppLanguage.vi: 'Tập', AppLanguage.en: 'Train'},
+    'tab_learn': {AppLanguage.vi: 'Học', AppLanguage.en: 'Learn'},
+    'tab_progress': {AppLanguage.vi: 'Tiến độ', AppLanguage.en: 'Progress'},
+    'ring_train': {AppLanguage.vi: 'Tập', AppLanguage.en: 'Train'},
+    'ring_learn': {AppLanguage.vi: 'Học', AppLanguage.en: 'Learn'},
+    'ring_speak': {AppLanguage.vi: 'Nói', AppLanguage.en: 'Speak'},
+    'ring_rest_day': {AppLanguage.vi: 'Ngày nghỉ', AppLanguage.en: 'Rest day'},
+    'today_goals_title': {
+      AppLanguage.vi: 'Mục tiêu hôm nay',
+      AppLanguage.en: "Today's goals",
+    },
+    'today_streak': {
+      AppLanguage.vi: '{days} ngày Body + Brain',
+      AppLanguage.en: '{days}-day Body + Brain',
+    },
+    'today_level': {
+      AppLanguage.vi: 'Cấp {level} · {xp}/{next} XP',
+      AppLanguage.en: 'Level {level} · {xp}/{next} XP',
+    },
+    'today_cta_start_workout': {
+      AppLanguage.vi: 'Bắt đầu buổi tập hôm nay',
+      AppLanguage.en: "Start today's workout",
+    },
+    'today_cta_start_workout_sub': {
+      AppLanguage.vi: '{exercises} bài · {sets} set · học từ khi nghỉ',
+      AppLanguage.en: '{exercises} exercises · {sets} sets · learn words while resting',
+    },
+    'today_cta_done': {
+      AppLanguage.vi: 'Đã tập xong hôm nay!',
+      AppLanguage.en: 'Workout done today!',
+    },
+    'today_cta_done_sub': {
+      AppLanguage.vi: 'Xem tiến độ và chuỗi Body + Brain',
+      AppLanguage.en: 'See your progress and Body + Brain streak',
+    },
+    'today_cta_rest_day': {
+      AppLanguage.vi: 'Hôm nay là ngày nghỉ tập',
+      AppLanguage.en: 'Today is a rest day',
+    },
+    'today_cta_rest_day_sub': {
+      AppLanguage.vi: 'Dành 5 phút ôn {count} từ đến hạn',
+      AppLanguage.en: 'Take 5 minutes to review {count} due words',
+    },
+    'today_cta_choose_program': {
+      AppLanguage.vi: 'Chọn giáo án tập',
+      AppLanguage.en: 'Choose a training program',
+    },
+    'today_cta_choose_program_sub': {
+      AppLanguage.vi: 'Có giáo án, app sẽ gợi ý buổi tập mỗi ngày',
+      AppLanguage.en: 'With a program, the app suggests a workout every day',
+    },
+    'today_cta_error_sub': {
+      AppLanguage.vi: 'Không tải được lịch tập, chạm để mở giáo án',
+      AppLanguage.en: "Couldn't load your plan, tap to open programs",
+    },
+    'today_review_title': {
+      AppLanguage.vi: 'Ôn tập từ vựng',
+      AppLanguage.en: 'Review vocabulary',
+    },
+    'today_review_due': {
+      AppLanguage.vi: '{count} từ đến hạn ôn hôm nay',
+      AppLanguage.en: '{count} words due today',
+    },
+    'today_review_none_due': {
+      AppLanguage.vi: 'Không có từ đến hạn, quay lại ngày mai',
+      AppLanguage.en: 'Nothing due, come back tomorrow',
+    },
+    'today_review_empty': {
+      AppLanguage.vi: 'Học từ khi nghỉ giữa set để có thẻ ôn tập',
+      AppLanguage.en: 'Learn words between sets to build your deck',
+    },
+    'today_speak_title': {
+      AppLanguage.vi: 'Luyện nói',
+      AppLanguage.en: 'Speaking practice',
+    },
+    'today_speak_sub': {
+      AppLanguage.vi: 'Mục tiêu {goal} câu được chấm điểm mỗi ngày',
+      AppLanguage.en: 'Goal: {goal} scored sentences a day',
+    },
+    'srs_review_title': {AppLanguage.vi: 'Ôn tập', AppLanguage.en: 'Review'},
+    'srs_review_show_meaning': {
+      AppLanguage.vi: 'Hiện nghĩa',
+      AppLanguage.en: 'Show meaning',
+    },
+    'srs_review_forgot': {AppLanguage.vi: 'Quên', AppLanguage.en: 'Forgot'},
+    'srs_review_remembered': {
+      AppLanguage.vi: 'Nhớ',
+      AppLanguage.en: 'Remembered',
+    },
+    'srs_review_empty_title': {
+      AppLanguage.vi: 'Không có từ nào đến hạn!',
+      AppLanguage.en: 'Nothing to review!',
+    },
+    'srs_review_empty_body': {
+      AppLanguage.vi: 'Học từ khi nghỉ giữa set hoặc qua Từ mới mỗi ngày để có thêm thẻ ôn.',
+      AppLanguage.en: 'Learn words between sets or with Daily Words to add cards.',
+    },
+    'srs_review_done_title': {
+      AppLanguage.vi: 'Xong lượt ôn!',
+      AppLanguage.en: 'Review done!',
+    },
+    'srs_review_done_body': {
+      AppLanguage.vi: 'Đã ôn {reviewed} từ, nhớ {remembered} từ.',
+      AppLanguage.en: 'Reviewed {reviewed} words, remembered {remembered}.',
+    },
+    'progress_xp_title': {
+      AppLanguage.vi: 'GymTalk XP',
+      AppLanguage.en: 'GymTalk XP',
+    },
+    'progress_level': {
+      AppLanguage.vi: 'Cấp {level}',
+      AppLanguage.en: 'Level {level}',
+    },
+    'progress_xp_hint': {
+      AppLanguage.vi: 'Tập gym và học tiếng Anh đều cộng XP.',
+      AppLanguage.en: 'Both workouts and English practice earn XP.',
+    },
+    'progress_load_error': {
+      AppLanguage.vi: 'Không tải được, kéo xuống để thử lại',
+      AppLanguage.en: "Couldn't load, pull down to retry",
+    },
+    'progress_streak': {
+      AppLanguage.vi: 'Chuỗi {days} ngày Body + Brain',
+      AppLanguage.en: '{days}-day Body + Brain streak',
+    },
+    'progress_streak_hint': {
+      AppLanguage.vi: 'Mỗi ngày: xong vòng Học và vòng Tập (hoặc ngày nghỉ theo giáo án).',
+      AppLanguage.en: 'Each day: finish the Learn ring and the Train ring (or a planned rest day).',
+    },
+    'progress_train_title': {
+      AppLanguage.vi: 'Tập luyện tuần này',
+      AppLanguage.en: 'Training this week',
+    },
+    'progress_train_sessions': {
+      AppLanguage.vi: 'Buổi tập',
+      AppLanguage.en: 'Workouts',
+    },
+    'progress_train_volume': {
+      AppLanguage.vi: 'Khối lượng',
+      AppLanguage.en: 'Volume',
+    },
+    'progress_train_streak': {
+      AppLanguage.vi: 'Chuỗi ngày tập',
+      AppLanguage.en: 'Workout streak',
+    },
+    'progress_train_more': {
+      AppLanguage.vi: 'Xem thống kê tập',
+      AppLanguage.en: 'See training stats',
+    },
+    'progress_learn_title': {
+      AppLanguage.vi: 'Học tiếng Anh',
+      AppLanguage.en: 'English learning',
+    },
+    'progress_learn_words': {
+      AppLanguage.vi: 'Từ đã học',
+      AppLanguage.en: 'Words learned',
+    },
+    'progress_learn_deck': {
+      AppLanguage.vi: 'Thẻ đã thuộc',
+      AppLanguage.en: 'Cards mastered',
+    },
+    'progress_learn_pron': {
+      AppLanguage.vi: 'Điểm phát âm TB',
+      AppLanguage.en: 'Avg. pronunciation',
+    },
     // Man dang tap + the "Hoc khi nghi" (GymTalk giai doan 1).
     'fitness_workout_exercise_progress': {
       AppLanguage.vi: 'Bài {current}/{total}',
@@ -3657,7 +3824,7 @@ class AppStrings {
     },
     'fitness_warmup_words_subtitle': {
       AppLanguage.vi: 'Từ vựng cho buổi tập hôm nay',
-      AppLanguage.en: 'Words for today's workout',
+      AppLanguage.en: "Words for today's workout",
     },
 
     // Fitness Phase 6: Cong dong (Community) - port tu FitViet
