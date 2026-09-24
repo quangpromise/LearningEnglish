@@ -47,9 +47,9 @@ void main() {
       count: 10,
     );
     expect(words.first.en, 'Back Squat');
-    final legWords = words.skip(1).takeWhile(
-      (w) => w.groups.contains(MuscleGroup.legs),
-    );
+    final legWords = words
+        .skip(1)
+        .takeWhile((w) => w.groups.contains(MuscleGroup.legs));
     expect(legWords, isNotEmpty);
     // Khong lay tu cua nhom co khac (vd nguc) khi con tu chung.
     expect(words.any((w) => w.en == 'chest'), isFalse);
@@ -70,10 +70,7 @@ void main() {
 
   test('khong trung tu khi 2 bai trung ten', () {
     final words = pickGymWords(
-      exercises: [
-        _exercise(1, 'Plank', 'CORE'),
-        _exercise(2, 'Plank', 'CORE'),
-      ],
+      exercises: [_exercise(1, 'Plank', 'CORE'), _exercise(2, 'Plank', 'CORE')],
       boxes: const {},
       count: 200,
       random: Random(1),

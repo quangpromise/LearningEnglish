@@ -62,8 +62,7 @@ class WorkoutOutbox extends ChangeNotifier {
           Map<String, dynamic>.from(op as Map),
       ];
       final loadedIds = {
-        for (final e
-            in (decoded['serverIds'] as Map? ?? const {}).entries)
+        for (final e in (decoded['serverIds'] as Map? ?? const {}).entries)
           e.key as String: (e.value as num).toInt(),
       };
       // Giu lai lenh da duoc xep vao TRUOC khi doc xong file (neu co).
@@ -178,9 +177,7 @@ class WorkoutOutbox extends ChangeNotifier {
   /// chi tinh buoi da hoan thanh nen khong bi dem.
   Future<void> discardSession(String local) async {
     await _ensureLoaded();
-    _ops.removeWhere(
-      (op) => op['local'] == local && !identical(op, _inFlight),
-    );
+    _ops.removeWhere((op) => op['local'] == local && !identical(op, _inFlight));
     if (!_hasOpsFor(local)) _serverIds.remove(local);
     await _persist();
     notifyListeners();

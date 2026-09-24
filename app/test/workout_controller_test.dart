@@ -61,8 +61,7 @@ class _FakeRepo implements WorkoutRepository {
   }
 
   @override
-  dynamic noSuchMethod(Invocation invocation) =>
-      super.noSuchMethod(invocation);
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 Exercise _exercise(int id, {String group = 'CHEST'}) => Exercise(

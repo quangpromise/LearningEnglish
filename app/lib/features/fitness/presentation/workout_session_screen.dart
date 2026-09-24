@@ -188,9 +188,8 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
         content: Text(
           sets == 0
               ? _t('fitness_workout_exit_message_empty')
-              : _t(
-                  'fitness_workout_exit_message',
-                ).replaceFirst('{sets}', '$sets'),
+              : _t('fitness_workout_exit_message')
+                    .replaceFirst('{sets}', '$sets'),
           style: AppTextStyles.body(size: 13),
         ),
         actions: [
@@ -494,10 +493,7 @@ class _ElapsedTextState extends State<_ElapsedText> {
   @override
   void initState() {
     super.initState();
-    _timer = Timer.periodic(
-      const Duration(seconds: 1),
-      (_) => setState(() {}),
-    );
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) => setState(() {}));
   }
 
   @override
@@ -579,9 +575,8 @@ class _LoggingView extends ConsumerWidget {
   }
 
   /// 20.0 -> "20", 22.5 -> "22.5".
-  static String _formatKg(double kg) => kg == kg.roundToDouble()
-      ? kg.toStringAsFixed(0)
-      : kg.toStringAsFixed(1);
+  static String _formatKg(double kg) =>
+      kg == kg.roundToDouble() ? kg.toStringAsFixed(0) : kg.toStringAsFixed(1);
 }
 
 class _SetBadge extends ConsumerWidget {
@@ -839,9 +834,8 @@ class _BigButton extends StatelessWidget {
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.heading(
-                    size: 18,
-                  ).copyWith(color: foreground),
+                  style: AppTextStyles.heading(size: 18)
+                      .copyWith(color: foreground),
                 ),
               ),
             ],
