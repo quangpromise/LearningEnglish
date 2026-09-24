@@ -114,9 +114,7 @@ class _RingsCard extends ConsumerWidget {
               _Chip(
                 icon: Icons.local_fire_department_rounded,
                 color: AppColors.amber,
-                label: ref
-                    .tr('today_streak')
-                    .replaceFirst('{days}', '$streak'),
+                label: ref.tr('today_streak').replaceFirst('{days}', '$streak'),
               ),
             ],
           ),
@@ -229,8 +227,8 @@ class _PrimaryAction extends ConsumerWidget {
             color: AppColors.wealthUp,
             title: ref.tr('today_cta_done'),
             subtitle: ref.tr('today_cta_done_sub'),
-            onTap: () => ref.read(rootTabProvider.notifier).state =
-                RootTab.progress,
+            onTap: () =>
+                ref.read(rootTabProvider.notifier).state = RootTab.progress,
           );
         }
         final exercises = plan.day.exercises.length;

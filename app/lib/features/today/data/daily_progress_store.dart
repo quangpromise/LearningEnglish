@@ -37,9 +37,8 @@ class DayProgress {
   /// Ngay nghi theo giao an dang theo -> vong Tap tinh la xong.
   final bool restDay;
 
-  double get trainRatio => restDay
-      ? 1
-      : (workouts / kDailyTrainGoal).clamp(0.0, 1.0).toDouble();
+  double get trainRatio =>
+      restDay ? 1 : (workouts / kDailyTrainGoal).clamp(0.0, 1.0).toDouble();
   double get learnRatio =>
       (wordsReviewed / kDailyLearnGoal).clamp(0.0, 1.0).toDouble();
   double get speakRatio =>

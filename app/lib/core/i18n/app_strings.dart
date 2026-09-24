@@ -3581,7 +3581,8 @@ class AppStrings {
     },
     'today_cta_start_workout_sub': {
       AppLanguage.vi: '{exercises} bài · {sets} set · học từ khi nghỉ',
-      AppLanguage.en: '{exercises} exercises · {sets} sets · learn words while resting',
+      AppLanguage.en:
+          '{exercises} exercises · {sets} sets · learn words while resting',
     },
     'today_cta_done': {
       AppLanguage.vi: 'Đã tập xong hôm nay!',
@@ -3651,7 +3652,8 @@ class AppStrings {
     },
     'srs_review_empty_body': {
       AppLanguage.vi: 'Học từ khi nghỉ giữa set hoặc qua Từ mới mỗi ngày để có thêm thẻ ôn.',
-      AppLanguage.en: 'Learn words between sets or with Daily Words to add cards.',
+      AppLanguage.en:
+          'Learn words between sets or with Daily Words to add cards.',
     },
     'srs_review_done_title': {
       AppLanguage.vi: 'Xong lượt ôn!',
@@ -3682,7 +3684,8 @@ class AppStrings {
       AppLanguage.en: '{days}-day Body + Brain streak',
     },
     'progress_streak_hint': {
-      AppLanguage.vi: 'Mỗi ngày: xong vòng Học và vòng Tập (hoặc ngày nghỉ theo giáo án).',
+      AppLanguage.vi:
+          'Mỗi ngày: xong vòng Học và vòng Tập (hoặc ngày nghỉ theo giáo án).',
       AppLanguage.en: 'Each day: finish the Learn ring and the Train ring (or a planned rest day).',
     },
     'progress_train_title': {

@@ -135,9 +135,7 @@ class SrsStore extends ChangeNotifier {
   bool contains(String key) => _cards.containsKey(key.toLowerCase());
 
   /// Hop hien tai cua moi the (khoa -> hop) - dung de chon tu cho buoi tap.
-  Map<String, int> get boxes => {
-    for (final c in _cards.values) c.key: c.box,
-  };
+  Map<String, int> get boxes => {for (final c in _cards.values) c.key: c.box};
 
   /// The den han on tinh den [now], han som nhat + hop thap nhat truoc.
   List<SrsCard> dueCards(DateTime now) {
