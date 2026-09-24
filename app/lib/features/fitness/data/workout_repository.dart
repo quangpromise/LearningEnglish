@@ -27,13 +27,19 @@ class WorkoutRepository {
     }, onConflict: 'user_id');
   }
 
-  Future<int> startSession({required String userId, int? programId}) async {
+  /// [startedAt] do may khach truyen vao (thoi diem bam "Bat dau" that) -
+  /// lenh insert co the chay tre hon nhieu neu dang mat mang va duoc thu lai.
+  Future<int> startSession({
+    required String userId,
+    int? programId,
+    DateTime? startedAt,
+  }) async {
     final row = await _supabase
         .from('workout_sessions')
         .insert({
           'user_id': userId,
           'program_id': programId,
-          'started_at': DateTime.now().toIso8601String(),
+          'started_at': (startedAt ?? DateTime.now()).toIso8601String(),
         })
         .select('id')
         .single();
@@ -58,15 +64,31 @@ class WorkoutRepository {
     });
   }
 
+  /// Go 1 set da log (nut "Hoan tac") - can policy delete o migration 0072.
+  /// Xoa theo (buoi, bai, thu tu set) vi may khach khong giu id dong.
+  Future<void> deleteSet({
+    required int sessionId,
+    required int exerciseId,
+    required int setIndex,
+  }) async {
+    await _supabase
+        .from('workout_set_logs')
+        .delete()
+        .eq('session_id', sessionId)
+        .eq('exercise_id', exerciseId)
+        .eq('set_index', setIndex);
+  }
+
   Future<void> finishSession({
     required int sessionId,
     required double totalVolumeKg,
     required int durationSeconds,
+    DateTime? completedAt,
   }) async {
     await _supabase
         .from('workout_sessions')
         .update({
-          'completed_at': DateTime.now().toIso8601String(),
+          'completed_at': (completedAt ?? DateTime.now()).toIso8601String(),
           'total_volume_kg': totalVolumeKg,
           'duration_seconds': durationSeconds,
         })

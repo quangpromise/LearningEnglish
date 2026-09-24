@@ -25,6 +25,9 @@ class _FitnessShellState extends ConsumerState<FitnessShell> {
   void initState() {
     super.initState();
     _openedAt = DateTime.now();
+    // Gui not cac set/buoi tap con ket trong hang doi tu lan truoc (app bi
+    // tat giua buoi, mat mang...) - xem workout_outbox.dart.
+    ref.read(workoutOutboxProvider).flush();
   }
 
   @override

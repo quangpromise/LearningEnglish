@@ -12,8 +12,18 @@ import '../data/workout_model.dart';
 /// nut chia se len Cong dong (Gate 40/41, Phase 6) - KHONG port calo uoc
 /// luong (Gate 19, dua tren can nang gia dinh co dinh, chu dong bo qua).
 class WorkoutFinishedScreen extends ConsumerStatefulWidget {
-  const WorkoutFinishedScreen({super.key, required this.controller});
+  const WorkoutFinishedScreen({
+    super.key,
+    required this.controller,
+    this.wordsReviewed = 0,
+  });
+
+  /// Man nay NHAN QUYEN SO HUU controller tu WorkoutSessionScreen (man do
+  /// khong dispose khi da chuyen sang day) va tu dispose khi dong.
   final WorkoutController controller;
+
+  /// So the tu vung da on trong luc nghi cua buoi tap.
+  final int wordsReviewed;
 
   @override
   ConsumerState<WorkoutFinishedScreen> createState() =>
@@ -23,18 +33,47 @@ class WorkoutFinishedScreen extends ConsumerStatefulWidget {
 class _WorkoutFinishedScreenState extends ConsumerState<WorkoutFinishedScreen> {
   bool _shared = false;
   bool _sharing = false;
+  bool _statsRefreshed = false;
+  late final WorkoutOutbox _outbox = ref.read(workoutOutboxProvider);
 
   @override
   void initState() {
     super.initState();
     // Xong buoi tap -> tu tick "Hoan thanh" lan tap hom nay trong Lap ke
-    // hoach (neu chuong trinh da duoc them vao ke hoach).
+    // hoach (neu chuong trinh da duoc them vao ke hoach). KHONG tick khi
+    // nguoi dung "Luu & ket thuc" som giua chung.
     final programId = widget.controller.programId;
-    if (programId != null) {
-      WidgetsBinding.instance.addPostFrameCallback(
-        (_) => completeFitnessProgramToday(ref, programId),
-      );
+    if (programId != null && widget.controller.completedAllSets) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) completeFitnessProgramToday(ref, programId);
+      });
     }
+    _outbox.addListener(_refreshStatsWhenSynced);
+    // Khong invalidate provider ngay trong initState (dang build cay widget).
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _refreshStatsWhenSynced(),
+    );
+  }
+
+  /// Buoi tap len server xong (co the tre neu dang mat mang) -> lam moi so
+  /// lieu Trang chu Fitness/Thong ke dang mo ben duoi.
+  void _refreshStatsWhenSynced() {
+    if (!mounted ||
+        _statsRefreshed ||
+        widget.controller.syncState != WorkoutSyncState.synced) {
+      return;
+    }
+    _statsRefreshed = true;
+    ref
+      ..invalidate(fitnessDashboardStatsProvider)
+      ..invalidate(fitnessHistorySeriesProvider);
+  }
+
+  @override
+  void dispose() {
+    _outbox.removeListener(_refreshStatsWhenSynced);
+    widget.controller.dispose();
+    super.dispose();
   }
 
   Future<void> _share() async {
@@ -92,11 +131,17 @@ class _WorkoutFinishedScreenState extends ConsumerState<WorkoutFinishedScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                ref.tr('fitness_workout_finished_title'),
+                ref.tr(
+                  controller.completedAllSets
+                      ? 'fitness_workout_finished_title'
+                      : 'fitness_workout_ended_early',
+                ),
                 style: AppTextStyles.heading(size: 20),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 10),
+              _SyncStatus(controller: controller),
+              const SizedBox(height: 18),
               GlowBox(
                 padding: const EdgeInsets.all(18),
                 borderRadius: 20,
@@ -116,6 +161,11 @@ class _WorkoutFinishedScreenState extends ConsumerState<WorkoutFinishedScreen> {
                       label: ref.tr('fitness_workout_total_sets'),
                       value: '${controller.totalSetsLogged}',
                     ),
+                    if (widget.wordsReviewed > 0)
+                      _SummaryTile(
+                        label: ref.tr('fitness_workout_words_reviewed'),
+                        value: '${widget.wordsReviewed}',
+                      ),
                   ],
                 ),
               ),
@@ -166,12 +216,77 @@ class _SummaryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(value, style: AppTextStyles.heading(size: 18)),
-        const SizedBox(height: 4),
-        Text(label, style: AppTextStyles.muted()),
-      ],
+    // Expanded: toi 4 o tren 1 hang (co them "Tu da on") - khong tran tren
+    // man 360dp.
+    return Expanded(
+      child: Column(
+        children: [
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(value, style: AppTextStyles.heading(size: 18)),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            style: AppTextStyles.muted(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Trang thai luu buoi tap len server (qua WorkoutOutbox) - de nguoi dung
+/// biet khi dang mat mang va buoi tap chua duoc luu, kem nut thu lai.
+class _SyncStatus extends ConsumerWidget {
+  const _SyncStatus({required this.controller});
+  final WorkoutController controller;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final outbox = ref.watch(workoutOutboxProvider);
+    return ListenableBuilder(
+      listenable: outbox,
+      builder: (context, _) {
+        final state = controller.syncState;
+        final (icon, color, key) = switch (state) {
+          WorkoutSyncState.synced => (
+            Icons.cloud_done_rounded,
+            AppColors.wealthUp,
+            'fitness_workout_sync_synced',
+          ),
+          WorkoutSyncState.pending => (
+            Icons.cloud_upload_rounded,
+            AppColors.fitnessTextSecondary,
+            'fitness_workout_sync_pending',
+          ),
+          WorkoutSyncState.failed => (
+            Icons.cloud_off_rounded,
+            AppColors.amber,
+            'fitness_workout_sync_failed',
+          ),
+        };
+        return Wrap(
+          alignment: WrapAlignment.center,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 6,
+          children: [
+            Icon(icon, size: 18, color: color),
+            Text(
+              ref.tr(key),
+              textAlign: TextAlign.center,
+              style: AppTextStyles.body(size: 13, color: color),
+            ),
+            if (state == WorkoutSyncState.failed)
+              TextButton(
+                onPressed: outbox.retryNow,
+                child: Text(ref.tr('fitness_workout_sync_retry')),
+              ),
+          ],
+        );
+      },
     );
   }
 }

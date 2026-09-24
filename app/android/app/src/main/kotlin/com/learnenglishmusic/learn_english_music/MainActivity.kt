@@ -63,6 +63,11 @@ class MainActivity : AudioServiceActivity() {
         // crash_diagnostics.dart).
         private const val BATTERY_CHANNEL = "app/battery"
 
+        // Giu man hinh sang trong luc dang tap gym (dem nguoc nghi, the tu
+        // vung) - xem keep_screen_on.dart. Dung co cua Window thay vi them
+        // package wakelock (khong can quyen WAKE_LOCK, tu het khi roi app).
+        private const val KEEP_SCREEN_ON_CHANNEL = "app/keep_screen_on"
+
         // Khop voi FlutterLocalNotificationsPlugin (flutter_local_notifications
         // 22.x): thong bao dung CHUNG 1 PendingIntent cho ca luc bam lan
         // fullScreenIntent, voi action/extra ben duoi.
@@ -186,6 +191,21 @@ class MainActivity : AudioServiceActivity() {
                 when (call.method) {
                     "clearShowWhenLocked" -> {
                         setShowOverLockScreen(false)
+                        result.success(null)
+                    }
+                    else -> result.notImplemented()
+                }
+            }
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, KEEP_SCREEN_ON_CHANNEL)
+            .setMethodCallHandler { call, result ->
+                val flag = WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+                when (call.method) {
+                    "enable" -> {
+                        window.addFlags(flag)
+                        result.success(null)
+                    }
+                    "disable" -> {
+                        window.clearFlags(flag)
                         result.success(null)
                     }
                     else -> result.notImplemented()
