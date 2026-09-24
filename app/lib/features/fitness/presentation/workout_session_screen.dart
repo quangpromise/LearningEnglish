@@ -56,6 +56,11 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
   WorkoutPhase? _lastPhase;
   int? _lastRestSecond;
 
+  /// Nguoi dung da tu chon thoi gian nghi -> khong de tuy chon luu tren may
+  /// (doc bat dong bo, co the ve muon) ghi de len.
+  bool _restPickedByUser = false;
+  bool _exitDialogOpen = false;
+
   @override
   void initState() {
     super.initState();
@@ -81,7 +86,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
     final prefs = await WorkoutPrefs.load();
     final vocab = await GymVocabProgress.load();
     if (!mounted) return;
-    controller.setRestDuration(prefs.restSeconds);
+    if (!_restPickedByUser) controller.setRestDuration(prefs.restSeconds);
     setState(() {
       _learnWhileResting = prefs.learnWhileResting;
       _vocab = vocab;
@@ -173,6 +178,8 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
       Navigator.of(context).pop();
       return;
     }
+    if (_exitDialogOpen) return;
+    _exitDialogOpen = true;
     final sets = controller.totalSetsLogged;
     final choice = await showDialog<_ExitChoice>(
       context: context,
@@ -221,6 +228,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
         ],
       ),
     );
+    _exitDialogOpen = false;
     if (!mounted || choice == null) return;
     switch (choice) {
       case _ExitChoice.save:
@@ -279,6 +287,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
       ),
     );
     if (picked == null || !mounted) return;
+    _restPickedByUser = true;
     controller.setRestDuration(picked);
     WorkoutPrefs.saveRestSeconds(picked);
   }
@@ -356,6 +365,10 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                                 : word == null
                                 ? null
                                 : RestVocabCard(
+                                    // Moi the 1 key rieng: tu "Chua nho"
+                                    // gap lai ngay the sau van bat dau o
+                                    // trang thai an nghia.
+                                    key: ValueKey(_wordIndex),
                                     word: word,
                                     onKnown: () => _answerWord(known: true),
                                     onStillLearning: () =>
