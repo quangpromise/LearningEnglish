@@ -25,6 +25,7 @@ class GeminiLiveDirectClient implements VoiceChatSession {
     this.model = _defaultModel,
     this.voiceName = kDefaultGeminiVoiceName,
     this.level,
+    this.scenarioInstruction,
   });
 
   final String apiKey;
@@ -38,6 +39,10 @@ class GeminiLiveDirectClient implements VoiceChatSession {
   /// Cap hoc tu "Goi y lo trinh" - doi cach AI noi/sua loi cho hop trinh do
   /// (xem [systemPromptFor]). null = Tu hoc -> dung prompt Trung cap nhu cu.
   final LearnerLevel? level;
+
+  /// Huong dan nhap vai them vao cuoi system prompt (xem
+  /// VoiceChatScenario.instruction) - null = tro chuyen tu do.
+  final String? scenarioInstruction;
 
   static const _defaultModel = 'gemini-3.1-flash-live-preview';
   static const _outputSampleRate = 24000;
@@ -181,7 +186,12 @@ class GeminiLiveDirectClient implements VoiceChatSession {
             },
             'systemInstruction': {
               'parts': [
-                {'text': systemPromptFor(level)},
+                {
+                  'text': [
+                    systemPromptFor(level),
+                    ?scenarioInstruction,
+                  ].join('\n\n'),
+                },
               ],
             },
             // Bat transcription 2 chieu de hien thi hoi thoai dang text tren

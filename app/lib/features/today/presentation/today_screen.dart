@@ -8,14 +8,18 @@ import '../../../core/navigation/nav_keys.dart';
 import '../../../core/navigation/root_tabs.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../ai_voice_chat/data/voice_chat_scenario.dart';
+import '../../ai_voice_chat/presentation/ai_voice_chat_screen.dart';
 import '../../fitness/presentation/programs_list_screen.dart';
 import '../../music_player/presentation/home_screen.dart';
 import '../../pronunciation/presentation/pronunciation_screen.dart';
 import '../../social/presentation/conversations_screen.dart';
+import '../../speaking/presentation/hands_free_drill_screen.dart';
 import '../../srs/data/srs_store.dart';
 import '../../srs/presentation/srs_review_screen.dart';
 import '../data/daily_progress_store.dart';
 import 'daily_rings.dart';
+import 'gymtalk_setup_sheet.dart';
 
 /// Tab "Hom nay" - man dau tien cua GymTalk: 3 vong muc tieu trong ngay
 /// (Tap - Hoc - Noi), chuoi "Body + Brain", 1 nut hanh dong CHINH thay doi
@@ -77,6 +81,10 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
                       _ReviewCard(),
                       SizedBox(height: 12),
                       _SpeakCard(),
+                      SizedBox(height: 12),
+                      _HandsFreeCard(),
+                      SizedBox(height: 12),
+                      _TrainerChatCard(),
                     ],
                   ),
                 ),
@@ -184,6 +192,8 @@ class _PrimaryAction extends ConsumerWidget {
 
     void openReview() => openAppPopup(context, const SrsReviewScreen());
 
+    void openSetup() => openAppPopup(context, const GymTalkSetupSheet());
+
     return planAsync.when(
       loading: () => const _ActionSkeleton(),
       error: (_, _) => _ActionCard(
@@ -200,7 +210,7 @@ class _PrimaryAction extends ConsumerWidget {
             color: AppColors.fitnessAccent,
             title: ref.tr('today_cta_choose_program'),
             subtitle: ref.tr('today_cta_choose_program_sub'),
-            onTap: () => openPrograms(),
+            onTap: openSetup,
           );
         }
         if (plan.isRestDay) {
@@ -287,6 +297,58 @@ class _SpeakCard extends ConsumerWidget {
         context,
         const PronunciationScreen(),
         routeName: kPronunciationRouteName,
+      ),
+    );
+  }
+}
+
+/// Luyen noi ranh tay (nghe va nhac lai) - dung khi chay bo/dap xe.
+class _HandsFreeCard extends ConsumerWidget {
+  const _HandsFreeCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return _ActionCard(
+      icon: Icons.headphones_rounded,
+      color: AppColors.teal,
+      title: ref.tr('hands_free_title'),
+      subtitle: ref.tr('today_hands_free_sub'),
+      onTap: () => openAppPopup(
+        context,
+        const HandsFreeDrillScreen(),
+        // Chiem mic - nut AI Voice Chat biet de khong mo chong len.
+        routeName: kPronunciationRouteName,
+      ),
+    );
+  }
+}
+
+/// Tro chuyen voi "PT AI" - AI Voice Chat nhap vai huan luyen vien.
+class _TrainerChatCard extends ConsumerWidget {
+  const _TrainerChatCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return _ActionCard(
+      icon: Icons.sports_gymnastics_rounded,
+      color: AppColors.purple,
+      title: ref.tr('voice_chat_pt_title'),
+      subtitle: ref.tr('today_pt_sub'),
+      onTap: () => showModalBottomSheet<void>(
+        context: context,
+        useRootNavigator: true,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        routeSettings: const RouteSettings(name: kAiVoiceChatRouteName),
+        builder: (_) => const FractionallySizedBox(
+          heightFactor: 0.94,
+          child: ClipRRect(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+            child: AiVoiceChatScreen(
+              scenario: VoiceChatScenario.personalTrainer,
+            ),
+          ),
+        ),
       ),
     );
   }

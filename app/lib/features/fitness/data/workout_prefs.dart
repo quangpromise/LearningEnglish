@@ -3,18 +3,23 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'workout_model.dart';
 
 /// Tuy chon man dang tap cua nguoi dung, luu tren may: thoi gian nghi mac
-/// dinh va bat/tat the "Hoc khi nghi".
+/// dinh, bat/tat the "Hoc khi nghi" va giong HLV tieng Anh.
 class WorkoutPrefs {
   const WorkoutPrefs({
     required this.restSeconds,
     required this.learnWhileResting,
+    this.coachVoice = true,
   });
 
   static const _restKey = 'fitness_rest_seconds';
   static const _learnKey = 'fitness_learn_while_resting';
+  static const _coachKey = 'fitness_coach_voice';
 
   final int restSeconds;
   final bool learnWhileResting;
+
+  /// Giong HLV doc cau nhac tieng Anh luc bat dau/het gio nghi.
+  final bool coachVoice;
 
   static Future<WorkoutPrefs> load() async {
     try {
@@ -25,6 +30,7 @@ class WorkoutPrefs {
             ? rest!
             : kDefaultRestSeconds,
         learnWhileResting: prefs.getBool(_learnKey) ?? true,
+        coachVoice: prefs.getBool(_coachKey) ?? true,
       );
     } catch (_) {
       return const WorkoutPrefs(
@@ -38,6 +44,13 @@ class WorkoutPrefs {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt(_restKey, seconds);
+    } catch (_) {}
+  }
+
+  static Future<void> saveCoachVoice(bool enabled) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_coachKey, enabled);
     } catch (_) {}
   }
 

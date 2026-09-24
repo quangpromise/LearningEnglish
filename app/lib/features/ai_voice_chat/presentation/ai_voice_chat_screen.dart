@@ -25,6 +25,7 @@ import '../data/gemini_voices.dart';
 import '../data/spatius_session_api.dart';
 import '../data/voice_chat_client.dart';
 import '../data/voice_chat_config.dart';
+import '../data/voice_chat_scenario.dart';
 import '../../translation/presentation/word_popup_sheet.dart';
 import 'anam_live_avatar.dart';
 import 'gemini_voice_picker_sheet.dart';
@@ -40,7 +41,11 @@ import 'spatius_live_avatar.dart';
 /// luon co dinh tieng Anh du app dang o ngon ngu nao, vi day la tinh nang
 /// luyen tieng Anh.
 class AiVoiceChatScreen extends ConsumerStatefulWidget {
-  const AiVoiceChatScreen({super.key});
+  const AiVoiceChatScreen({super.key, this.scenario = VoiceChatScenario.free});
+
+  /// Tinh huong hoi thoai (vd PT AI cua GymTalk). Chi ap dung cho ket noi
+  /// Gemini truc tiep - backend proxy chua nhan huong dan tu may khach.
+  final VoiceChatScenario scenario;
 
   @override
   ConsumerState<AiVoiceChatScreen> createState() => _AiVoiceChatScreenState();
@@ -210,6 +215,7 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
           apiKey: Env.geminiApiKeyDirect,
           voiceName: _voiceName,
           level: ref.read(learnerLevelProvider),
+          scenarioInstruction: widget.scenario.instruction,
         );
       } else {
         final token = Supabase.instance.client.auth.currentSession?.accessToken;
@@ -590,7 +596,7 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    ref.tr('voice_chat_title'),
+                    ref.tr(widget.scenario.titleKey),
                     style: AppTextStyles.heading(size: 20),
                   ),
                 ),
