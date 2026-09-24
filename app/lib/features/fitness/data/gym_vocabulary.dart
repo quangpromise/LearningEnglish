@@ -1,8 +1,6 @@
-import 'dart:convert';
 import 'dart:math';
 
-import 'package:shared_preferences/shared_preferences.dart';
-
+import '../../srs/data/srs_store.dart';
 import 'exercise_model.dart';
 
 /// 1 tu/cum tu tieng Anh dung trong phong gym - noi dung HOC (luon giu cap
@@ -47,6 +45,17 @@ class GymWord {
 
   /// Khoa luu tien do (khong phan biet hoa thuong).
   String get key => en.toLowerCase();
+
+  /// The SRS moi (den han on hom nay) mang noi dung tu nay.
+  SrsCard toSrsCard(DateTime now) => SrsCard(
+    key: key,
+    en: en,
+    vi: vi,
+    ipa: ipa,
+    exampleEn: exampleEn,
+    exampleVi: exampleVi,
+    due: srsDateOnly(now),
+  );
 }
 
 /// Bo tu vung gym tuyen chon (A2-B1): tu chung/khau lenh cua HLV, dung cu,
@@ -570,14 +579,11 @@ const kGymWords = <GymWord>[
   ),
 ];
 
-/// Hop Leitner toi da - tu o hop nay coi nhu "da thuoc", it khi hien lai.
-const kGymWordMaxBox = 4;
-
 /// Chon [count] tu cho buoi tap co cac nhom co [groups].
 ///
 /// Uu tien: (1) ten chinh cac bai tap hom nay [exercises], (2) tu thuoc
-/// dung nhom co, (3) tu chung. Trong moi muc, tu o hop Leitner THAP hon
-/// (chua thuoc/chua gap) len truoc. [random] chi dung de tron thu tu giua
+/// dung nhom co, (3) tu chung. Trong moi muc, tu o hop SRS THAP hon (chua
+/// thuoc/chua gap) len truoc; tu da thuoc ([kSrsMasteredBox]) xuong cuoi. [random] chi dung de tron thu tu giua
 /// cac tu cung muc uu tien + cung hop, cho moi buoi mot chut khac nhau.
 List<GymWord> pickGymWords({
   required Iterable<Exercise> exercises,
@@ -612,62 +618,12 @@ List<GymWord> pickGymWords({
       final boxA = boxes[a.$2.word.key] ?? 0;
       final boxB = boxes[b.$2.word.key] ?? 0;
       // Tu da thuoc (hop cao nhat) xuong cuoi bat ke muc uu tien.
-      final masteredA = boxA >= kGymWordMaxBox ? 1 : 0;
-      final masteredB = boxB >= kGymWordMaxBox ? 1 : 0;
+      final masteredA = boxA >= kSrsMasteredBox ? 1 : 0;
+      final masteredB = boxB >= kSrsMasteredBox ? 1 : 0;
       if (masteredA != masteredB) return masteredA - masteredB;
       if (a.$2.tier != b.$2.tier) return a.$2.tier - b.$2.tier;
       if (boxA != boxB) return boxA - boxB;
       return a.$1 - b.$1;
     });
   return indexed.take(count).map((e) => e.$2.word).toList();
-}
-
-/// Tien do hoc tu gym theo kieu hop Leitner (0..[kGymWordMaxBox]) - luu
-/// tren may (SharedPreferences) vi chi la thu tu uu tien hien the, khong can
-/// dong bo nhieu thiet bi. Day la ban toi gian; SRS co lich on theo ngay se
-/// thay the o giai doan sau.
-class GymVocabProgress {
-  GymVocabProgress._(this._boxes);
-
-  static const _prefKey = 'fitness_gym_vocab_boxes';
-
-  final Map<String, int> _boxes;
-  Map<String, int> get boxes => Map.unmodifiable(_boxes);
-
-  static Future<GymVocabProgress> load() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final raw = prefs.getString(_prefKey);
-      if (raw == null) return GymVocabProgress._({});
-      final decoded = jsonDecode(raw) as Map<String, dynamic>;
-      return GymVocabProgress._({
-        for (final e in decoded.entries)
-          if (e.value is int) e.key: e.value as int,
-      });
-    } catch (_) {
-      // Du lieu hong/khong doc duoc -> bat dau lai, khong chan buoi tap.
-      return GymVocabProgress._({});
-    }
-  }
-
-  int boxOf(GymWord word) => _boxes[word.key] ?? 0;
-
-  /// "Da nho" -> len 1 hop.
-  Future<void> markKnown(GymWord word) {
-    _boxes[word.key] = min(boxOf(word) + 1, kGymWordMaxBox);
-    return _save();
-  }
-
-  /// "Chua nho" -> ve hop 0 de hien lai som.
-  Future<void> markLearning(GymWord word) {
-    _boxes[word.key] = 0;
-    return _save();
-  }
-
-  Future<void> _save() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_prefKey, jsonEncode(_boxes));
-    } catch (_) {}
-  }
 }

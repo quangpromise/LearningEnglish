@@ -10,6 +10,8 @@ import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/tts/app_tts.dart';
 import '../../../core/utils/keep_screen_on.dart';
+import '../../srs/data/srs_store.dart';
+import '../../today/data/daily_progress_store.dart';
 import '../data/gym_vocabulary.dart';
 import '../data/workout_model.dart';
 import '../data/workout_prefs.dart';
@@ -48,7 +50,6 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
   bool _handedOff = false;
 
   bool _learnWhileResting = true;
-  GymVocabProgress? _vocab;
   List<GymWord> _words = const [];
   int _wordIndex = 0;
   int _wordsReviewed = 0;
@@ -84,15 +85,14 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
 
   Future<void> _loadPrefsAndWords(WorkoutController controller) async {
     final prefs = await WorkoutPrefs.load();
-    final vocab = await GymVocabProgress.load();
+    await SrsStore.instance.ensureLoaded();
     if (!mounted) return;
     if (!_restPickedByUser) controller.setRestDuration(prefs.restSeconds);
     setState(() {
       _learnWhileResting = prefs.learnWhileResting;
-      _vocab = vocab;
       _words = pickGymWords(
         exercises: controller.exercises,
-        boxes: vocab.boxes,
+        boxes: SrsStore.instance.boxes,
         count: 15,
         random: Random(),
       );
@@ -137,6 +137,8 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
   void _goToFinished(WorkoutController controller) {
     if (_handedOff) return;
     _handedOff = true;
+    // Vong "Tap" o man Hom nay.
+    DailyProgressStore.instance.addWorkout();
     controller
       ..removeListener(_onControllerChanged)
       ..onRestElapsed = null;
@@ -298,12 +300,14 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
   void _answerWord({required bool known}) {
     final word = _currentWord;
     if (word == null) return;
-    final vocab = _vocab;
-    if (vocab != null && known) {
-      vocab.markKnown(word);
-    } else if (vocab != null) {
-      vocab.markLearning(word);
-    }
+    final now = DateTime.now();
+    SrsStore.instance.review(
+      word.key,
+      known: known,
+      now: now,
+      content: word.toSrsCard(now),
+    );
+    DailyProgressStore.instance.addWordsReviewed();
     AppTts.instance.stopSpeaking();
     setState(() {
       _wordsReviewed++;

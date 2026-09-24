@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:learn_english_music/features/fitness/data/exercise_model.dart';
 import 'package:learn_english_music/features/fitness/data/gym_vocabulary.dart';
+import 'package:learn_english_music/features/srs/data/srs_store.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Exercise _exercise(int id, String nameEn, String group) => Exercise(
@@ -55,7 +56,7 @@ void main() {
   });
 
   test('tu da thuoc xuong cuoi, tu chua thuoc len truoc', () {
-    final boxes = {'back squat': kGymWordMaxBox, 'squat': 2};
+    final boxes = {'back squat': kSrsMasteredBox, 'squat': 2};
     final words = pickGymWords(
       exercises: [_exercise(1, 'Back Squat', 'LEGS')],
       boxes: boxes,
@@ -78,18 +79,50 @@ void main() {
     expect(keys.toSet().length, keys.length);
   });
 
-  test('luu tien do Leitner', () async {
+  test('SRS: nho -> len hop + gian han, quen -> ve hop 0 on hom nay', () async {
     SharedPreferences.setMockInitialValues({});
-    final progress = await GymVocabProgress.load();
+    final store = SrsStore.forTest();
+    final now = DateTime(2026, 9, 24, 20);
     final word = kGymWords.first;
-    await progress.markKnown(word);
-    await progress.markKnown(word);
-    expect((await GymVocabProgress.load()).boxOf(word), 2);
-    await progress.markLearning(word);
-    expect((await GymVocabProgress.load()).boxOf(word), 0);
+    await store.review(
+      word.key,
+      known: true,
+      now: now,
+      content: word.toSrsCard(now),
+    );
+    expect(store.boxOf(word.key), 1);
+    expect(store.dueCount(now), 0);
+    expect(store.dueCount(now.add(const Duration(days: 1))), 1);
+
+    await store.review(word.key, known: true, now: now);
+    expect(store.boxOf(word.key), 2);
+    expect(store.dueCount(now.add(const Duration(days: 2))), 0);
+    expect(store.dueCount(now.add(const Duration(days: 3))), 1);
+
+    await store.review(word.key, known: false, now: now);
+    expect(store.boxOf(word.key), 0);
+    expect(store.dueCards(now).single.en, word.en);
+
     for (var i = 0; i < 10; i++) {
-      await progress.markKnown(word);
+      await store.review(word.key, known: true, now: now);
     }
-    expect(progress.boxOf(word), kGymWordMaxBox);
+    expect(store.boxOf(word.key), kSrsMaxBox);
+
+    // Doc lai tu may.
+    final reloaded = SrsStore.forTest();
+    await reloaded.ensureLoaded();
+    expect(reloaded.boxOf(word.key), kSrsMaxBox);
+    expect(reloaded.totalCards, 1);
+  });
+
+  test('SRS: them the khong ghi de the da co', () async {
+    SharedPreferences.setMockInitialValues({});
+    final store = SrsStore.forTest();
+    final now = DateTime(2026, 9, 24);
+    final card = kGymWords[1].toSrsCard(now);
+    await store.addIfAbsent(card);
+    await store.review(card.key, known: true, now: now);
+    await store.addIfAbsent(card);
+    expect(store.boxOf(card.key), 1);
   });
 }

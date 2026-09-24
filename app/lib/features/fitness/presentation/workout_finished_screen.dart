@@ -66,7 +66,9 @@ class _WorkoutFinishedScreenState extends ConsumerState<WorkoutFinishedScreen> {
     _statsRefreshed = true;
     ref
       ..invalidate(fitnessDashboardStatsProvider)
-      ..invalidate(fitnessHistorySeriesProvider);
+      ..invalidate(fitnessHistorySeriesProvider)
+      // Buoi tap hoan thanh duoc cong vao GymTalk XP (migration 0073).
+      ..invalidate(myLearningXpProvider);
   }
 
   @override

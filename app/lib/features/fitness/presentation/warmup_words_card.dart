@@ -5,6 +5,7 @@ import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/tts/app_tts.dart';
 import '../../../core/widgets/speaker_button.dart';
+import '../../srs/data/srs_store.dart';
 import '../data/exercise_model.dart';
 import '../data/gym_vocabulary.dart';
 
@@ -23,8 +24,11 @@ class _WarmupWordsCardState extends State<WarmupWordsCard> {
   late final Future<List<GymWord>> _words = _load();
 
   Future<List<GymWord>> _load() async {
-    final progress = await GymVocabProgress.load();
-    return pickGymWords(exercises: widget.exercises, boxes: progress.boxes);
+    await SrsStore.instance.ensureLoaded();
+    return pickGymWords(
+      exercises: widget.exercises,
+      boxes: SrsStore.instance.boxes,
+    );
   }
 
   @override

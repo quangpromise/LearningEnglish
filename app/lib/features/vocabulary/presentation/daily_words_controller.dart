@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/notifications/daily_quiz_notifications.dart';
 import '../../../core/utils/vn_time.dart';
+import '../../srs/data/srs_store.dart';
+import '../../today/data/daily_progress_store.dart';
 import '../data/daily_words_repository.dart';
 
 class DailyWordsState {
@@ -204,9 +206,28 @@ class DailyWordsController extends StateNotifier<DailyWordsState> {
   /// de hien thi tien do o Ho so.
   Future<void> markLearned(String en) async {
     final lower = en.toLowerCase();
+    final isNew = !state.learnedTodayEnLower.contains(lower);
     final updated = {...state.learnedTodayEnLower, lower};
     state = state.copyWith(learnedTodayEnLower: updated);
     await DailyWordsRepository.saveLearnedToday(updated);
+    if (!isNew) return;
+    // GymTalk: tu da hoc vao bo on tap SRS (danh sach tu moi ngay het han
+    // luc nua dem nen phai luu kem noi dung) + tinh vao vong "Hoc" hom nay.
+    for (final word in state.words) {
+      if (word.en.toLowerCase() != lower) continue;
+      final now = DateTime.now();
+      await SrsStore.instance.addIfAbsent(
+        SrsCard(
+          key: lower,
+          en: word.en,
+          vi: word.vi,
+          ipa: word.ipa,
+          due: srsDateOnly(now).add(const Duration(days: 1)),
+        ),
+      );
+      break;
+    }
+    await DailyProgressStore.instance.addWordsReviewed();
   }
 
   Future<void> start() async {
