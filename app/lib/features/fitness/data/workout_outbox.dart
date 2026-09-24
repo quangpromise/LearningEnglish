@@ -75,7 +75,14 @@ class WorkoutOutbox extends ChangeNotifier {
     }
   }
 
-  Future<void> _persist() async {
+  Future<void> _writeChain = Future.value();
+
+  /// Ghi hang doi xuong may - XEP HANG tung lan ghi (moi lan ma hoa trang
+  /// thai MOI NHAT luc den luot) de cac setString khong hoan tat sai thu tu
+  /// va hoi sinh lenh da gui/xoa.
+  Future<void> _persist() => _writeChain = _writeChain.then((_) => _write());
+
+  Future<void> _write() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(
@@ -236,7 +243,11 @@ class WorkoutOutbox extends ChangeNotifier {
   /// Nut "Thu lai" - gui ngay, bo qua thoi gian cho backoff.
   Future<bool> retryNow() async {
     _retryAttempt = 0;
+    final joinedRunning = _flushFuture != null;
     await flush();
+    // Vua "ghep" vao 1 vong gui dang chay va vong do that bai -> thu THAT
+    // them 1 lan nua thay vi tra ve that bai ngay.
+    if (joinedRunning && _lastFlushFailed) await flush();
     return !_lastFlushFailed;
   }
 

@@ -118,7 +118,13 @@ class SrsStore extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _save() async {
+  Future<void> _writeChain = Future.value();
+
+  /// Xep hang cac lan ghi (xem WorkoutOutbox._persist) - on nhanh 2 the lien
+  /// tiep khong lam lan ghi cu de len lan ghi moi.
+  Future<void> _save() => _writeChain = _writeChain.then((_) => _write());
+
+  Future<void> _write() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(
@@ -129,6 +135,19 @@ class SrsStore extends ChangeNotifier {
       debugPrint('SrsStore save failed: $e');
     }
   }
+
+  /// Moi khoa luu o dang chu thuong (boxOf/review/boxes deu tra theo dang
+  /// nay) - tranh 1 tu bi luu 2 lan khac hoa/thuong.
+  static SrsCard _withKey(SrsCard card, String key) => SrsCard(
+    key: key,
+    en: card.en,
+    vi: card.vi,
+    ipa: card.ipa,
+    exampleEn: card.exampleEn,
+    exampleVi: card.exampleVi,
+    box: card.box,
+    due: card.due,
+  );
 
   int boxOf(String key) => _cards[key.toLowerCase()]?.box ?? 0;
 
@@ -154,8 +173,9 @@ class SrsStore extends ChangeNotifier {
   /// Them the moi (den han on ngay hom nay) neu chua co.
   Future<void> addIfAbsent(SrsCard card) async {
     await ensureLoaded();
-    if (_cards.containsKey(card.key)) return;
-    _cards[card.key] = card;
+    final key = card.key.toLowerCase();
+    if (_cards.containsKey(key)) return;
+    _cards[key] = card.key == key ? card : _withKey(card, key);
     notifyListeners();
     await _save();
   }
@@ -171,7 +191,12 @@ class SrsStore extends ChangeNotifier {
   }) async {
     await ensureLoaded();
     final lower = key.toLowerCase();
-    final current = _cards[lower] ?? content;
+    final existing = _cards[lower];
+    final current =
+        existing ??
+        (content == null || content.key == lower
+            ? content
+            : _withKey(content, lower));
     if (current == null) return;
     final box = known ? min(current.box + 1, kSrsMaxBox) : 0;
     _cards[lower] = current.copyWith(

@@ -115,6 +115,18 @@ void main() {
     expect(reloaded.totalCards, 1);
   });
 
+  test('SRS: khoa khong phan biet hoa thuong', () async {
+    SharedPreferences.setMockInitialValues({});
+    final store = SrsStore.forTest();
+    final now = DateTime(2026, 9, 24);
+    await store.addIfAbsent(
+      SrsCard(key: 'Bench Press', en: 'Bench Press', vi: 'x', due: now),
+    );
+    await store.review('BENCH PRESS', known: true, now: now);
+    expect(store.totalCards, 1);
+    expect(store.boxes, {'bench press': 1});
+  });
+
   test('SRS: them the khong ghi de the da co', () async {
     SharedPreferences.setMockInitialValues({});
     final store = SrsStore.forTest();
