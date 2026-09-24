@@ -3580,7 +3580,8 @@ class AppStrings {
       AppLanguage.en: 'Stop this workout?',
     },
     'fitness_workout_exit_message': {
-      AppLanguage.vi: 'Bạn đã ghi {sets} set. Lưu lại các set này hay bỏ cả buổi tập?',
+      AppLanguage.vi:
+          'Bạn đã ghi {sets} set. Lưu lại các set này hay bỏ cả buổi tập?',
       AppLanguage.en: 'You have logged {sets} sets. Save them or discard the whole workout?',
     },
     'fitness_workout_exit_message_empty': {
@@ -3657,7 +3658,7 @@ class AppStrings {
     },
     'fitness_warmup_words_subtitle': {
       AppLanguage.vi: 'Từ vựng cho buổi tập hôm nay',
-      AppLanguage.en: 'Words for today's workout',
+      AppLanguage.en: "Words for today's workout",
     },
 
     // Fitness Phase 6: Cong dong (Community) - port tu FitViet
