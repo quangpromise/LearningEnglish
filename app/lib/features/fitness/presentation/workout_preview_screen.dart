@@ -138,7 +138,10 @@ class _WorkoutPreviewScreenState extends ConsumerState<WorkoutPreviewScreen> {
                 return PillButton(
                   label: ref.tr('fitness_workout_begin'),
                   accentColor: AppColors.fitnessAccent,
-                  onTap: blocks == null
+                  // Rong khi moi bai trong ngay deu khong tim thay trong thu
+                  // vien - khong mo man tap trong (truoc day hien nham man
+                  // "chua dang nhap").
+                  onTap: blocks == null || blocks.isEmpty
                       ? null
                       : () => Navigator.of(context).pushReplacement(
                           MaterialPageRoute(

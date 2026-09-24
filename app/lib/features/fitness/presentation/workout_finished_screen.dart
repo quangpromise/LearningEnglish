@@ -44,9 +44,9 @@ class _WorkoutFinishedScreenState extends ConsumerState<WorkoutFinishedScreen> {
     // nguoi dung "Luu & ket thuc" som giua chung.
     final programId = widget.controller.programId;
     if (programId != null && widget.controller.completedAllSets) {
-      WidgetsBinding.instance.addPostFrameCallback(
-        (_) => completeFitnessProgramToday(ref, programId),
-      );
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) completeFitnessProgramToday(ref, programId);
+      });
     }
     _outbox.addListener(_refreshStatsWhenSynced);
     // Khong invalidate provider ngay trong initState (dang build cay widget).
@@ -218,12 +218,24 @@ class _SummaryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(value, style: AppTextStyles.heading(size: 18)),
-        const SizedBox(height: 4),
-        Text(label, style: AppTextStyles.muted()),
-      ],
+    // Expanded: toi 4 o tren 1 hang (co them "Tu da on") - khong tran tren
+    // man 360dp.
+    return Expanded(
+      child: Column(
+        children: [
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(value, style: AppTextStyles.heading(size: 18)),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            style: AppTextStyles.muted(),
+          ),
+        ],
+      ),
     );
   }
 }
