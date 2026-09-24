@@ -20,6 +20,7 @@ import '../../features/fitness/data/nutrition_repository.dart';
 import '../../features/fitness/data/program_model.dart';
 import '../../features/fitness/data/program_repository.dart';
 import '../../features/fitness/data/sleep_repository.dart';
+import '../../features/fitness/data/workout_outbox.dart';
 import '../../features/fitness/data/workout_repository.dart';
 import '../../features/music_player/data/favorites_repository.dart';
 import '../../features/profile/data/profile_repository.dart';
@@ -496,6 +497,17 @@ final programListProvider = FutureProvider<List<Program>>(
 final workoutRepositoryProvider = Provider<WorkoutRepository>(
   (ref) => WorkoutRepository(ref.watch(supabaseClientProvider)),
 );
+
+/// Hang doi ghi buoi tap luu tren may, tu gui lai khi co mang - xem
+/// workout_outbox.dart. Song suot vong doi app (khong autoDispose) de lenh
+/// dang cho van duoc gui sau khi dong man tap.
+final workoutOutboxProvider = Provider<WorkoutOutbox>((ref) {
+  final outbox = WorkoutOutbox(
+    repository: ref.watch(workoutRepositoryProvider),
+  );
+  ref.onDispose(outbox.dispose);
+  return outbox;
+});
 
 /// Id chuong trinh dang theo cua user hien tai - null neu chua chon giao an
 /// nao. Invalidate thu cong sau khi goi setActiveProgramId() (xem

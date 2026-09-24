@@ -3554,6 +3554,111 @@ class AppStrings {
       AppLanguage.vi: 'Đã chia sẻ ✓',
       AppLanguage.en: 'Shared ✓',
     },
+    // Man dang tap + the "Hoc khi nghi" (GymTalk giai doan 1).
+    'fitness_workout_exercise_progress': {
+      AppLanguage.vi: 'Bài {current}/{total}',
+      AppLanguage.en: 'Exercise {current}/{total}',
+    },
+    'fitness_workout_target_reps': {
+      AppLanguage.vi: 'Mục tiêu {min}–{max} reps',
+      AppLanguage.en: 'Target {min}–{max} reps',
+    },
+    'fitness_workout_undo_set': {
+      AppLanguage.vi: 'Hoàn tác set vừa ghi',
+      AppLanguage.en: 'Undo last set',
+    },
+    'fitness_workout_next_up': {
+      AppLanguage.vi: 'Tiếp theo',
+      AppLanguage.en: 'Next up',
+    },
+    'fitness_workout_rest_duration': {
+      AppLanguage.vi: 'Thời gian nghỉ',
+      AppLanguage.en: 'Rest time',
+    },
+    'fitness_workout_exit_title': {
+      AppLanguage.vi: 'Dừng buổi tập?',
+      AppLanguage.en: 'Stop this workout?',
+    },
+    'fitness_workout_exit_message': {
+      AppLanguage.vi: 'Bạn đã ghi {sets} set. Lưu lại các set này hay bỏ cả buổi tập?',
+      AppLanguage.en: 'You have logged {sets} sets. Save them or discard the whole workout?',
+    },
+    'fitness_workout_exit_message_empty': {
+      AppLanguage.vi: 'Chưa ghi set nào nên buổi tập sẽ không được lưu.',
+      AppLanguage.en: 'No sets logged yet, so this workout will not be saved.',
+    },
+    'fitness_workout_exit_save': {
+      AppLanguage.vi: 'Lưu & kết thúc',
+      AppLanguage.en: 'Save & finish',
+    },
+    'fitness_workout_exit_discard': {
+      AppLanguage.vi: 'Bỏ buổi tập',
+      AppLanguage.en: 'Discard workout',
+    },
+    'fitness_workout_exit_continue': {
+      AppLanguage.vi: 'Tập tiếp',
+      AppLanguage.en: 'Keep going',
+    },
+    'fitness_workout_signed_out': {
+      AppLanguage.vi: 'Bạn cần đăng nhập để lưu buổi tập.',
+      AppLanguage.en: 'Please sign in to save your workout.',
+    },
+    'fitness_workout_go_back': {
+      AppLanguage.vi: 'Quay lại',
+      AppLanguage.en: 'Go back',
+    },
+    'fitness_workout_sync_synced': {
+      AppLanguage.vi: 'Đã lưu buổi tập',
+      AppLanguage.en: 'Workout saved',
+    },
+    'fitness_workout_sync_pending': {
+      AppLanguage.vi: 'Đang lưu…',
+      AppLanguage.en: 'Saving…',
+    },
+    'fitness_workout_sync_failed': {
+      AppLanguage.vi: 'Chưa lưu được (mất mạng?), app sẽ tự thử lại',
+      AppLanguage.en: 'Not saved yet (offline?), the app will keep retrying',
+    },
+    'fitness_workout_sync_retry': {
+      AppLanguage.vi: 'Thử lại',
+      AppLanguage.en: 'Retry',
+    },
+    'fitness_workout_words_reviewed': {
+      AppLanguage.vi: 'Từ đã ôn',
+      AppLanguage.en: 'Words reviewed',
+    },
+    'fitness_workout_ended_early': {
+      AppLanguage.vi: 'Buổi tập kết thúc sớm',
+      AppLanguage.en: 'Workout ended early',
+    },
+    'fitness_rest_learn_title': {
+      AppLanguage.vi: 'Học khi nghỉ',
+      AppLanguage.en: 'Learn while resting',
+    },
+    'fitness_rest_learn_tap_reveal': {
+      AppLanguage.vi: 'Chạm để xem nghĩa',
+      AppLanguage.en: 'Tap to see the meaning',
+    },
+    'fitness_rest_learn_still': {
+      AppLanguage.vi: 'Chưa nhớ',
+      AppLanguage.en: 'Still learning',
+    },
+    'fitness_rest_learn_got_it': {
+      AppLanguage.vi: 'Đã nhớ',
+      AppLanguage.en: 'Got it',
+    },
+    'fitness_rest_learn_enable': {
+      AppLanguage.vi: 'Bật học từ khi nghỉ',
+      AppLanguage.en: 'Learn words while resting',
+    },
+    'fitness_warmup_words_title': {
+      AppLanguage.vi: '5 từ khởi động',
+      AppLanguage.en: '5 warm-up words',
+    },
+    'fitness_warmup_words_subtitle': {
+      AppLanguage.vi: 'Từ vựng cho buổi tập hôm nay',
+      AppLanguage.en: 'Words for today's workout',
+    },
 
     // Fitness Phase 6: Cong dong (Community) - port tu FitViet
     'fitness_community_title': {

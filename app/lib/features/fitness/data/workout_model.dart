@@ -1,10 +1,13 @@
 // ignore_for_file: prefer_initializing_formals
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 
 import 'exercise_model.dart';
-import 'workout_repository.dart';
+import 'workout_outbox.dart';
+
+export 'workout_outbox.dart' show WorkoutOutbox, WorkoutSyncState;
 
 /// Nghi mac dinh giua cac set - dung 1 gia tri co dinh cho ca buoi (khong
 /// doc rieng tu tung bai tap) giong dung hanh vi runtime that su cua FitViet
@@ -93,6 +96,33 @@ List<WorkoutBlockGroup> resolveGroupings(List<WorkoutExerciseBlock> blocks) {
 
 enum WorkoutPhase { logging, resting, finished }
 
+/// Cac muc thoi gian nghi cho nguoi dung chon (giay).
+const kRestDurationOptions = [30, 45, 60, 90, 120];
+
+/// Anh chup trang thai TRUOC 1 lan "Hoan thanh set" - de hoan tac.
+class _SetSnapshot {
+  const _SetSnapshot({
+    required this.groupIndex,
+    required this.setOrRoundIndex,
+    required this.subIndex,
+    required this.weightKg,
+    required this.reps,
+    required this.totalVolumeKg,
+    required this.totalSetsLogged,
+    required this.setOpId,
+    required this.exerciseId,
+  });
+  final int groupIndex;
+  final int setOrRoundIndex;
+  final int subIndex;
+  final double weightKg;
+  final int reps;
+  final double totalVolumeKg;
+  final int totalSetsLogged;
+  final String setOpId;
+  final int exerciseId;
+}
+
 /// May trang thai 1 buoi tap - port tu WorkoutViewModel cua FitViet (Gate 4,
 /// mo rong sieu set o Gate 47/48): log 1 set -> nghi (dem nguoc, +15s/bo
 /// qua) -> set tiep theo -> het nhom bai tap cuoi -> finished. Voi
@@ -100,31 +130,58 @@ enum WorkoutPhase { logging, resting, finished }
 /// [PairedBlock.totalRounds] vong -> chuyen nhom tiep theo. CHI la state cuc
 /// bo cua 1 man hinh (khong phai Riverpod provider toan cuc), dung y cach
 /// AiVoiceChatScreen tu quan state phuc tap cua no.
+///
+/// GHI LAC QUAN: bam "Hoan thanh set" chuyen trang thai NGAY; lenh ghi
+/// Supabase di qua [WorkoutOutbox] (hang doi luu tren may, tu thu lai) - truoc
+/// day `await` thang lenh insert nen mat mang la man hinh ket cung.
 class WorkoutController extends ChangeNotifier {
-  // Khong dung initializing formal (this._repository/this._userId) - ten
-  // tham so se phai trung ten field RIENG TU, khien noi goi khac file
+  // Khong dung initializing formal (this._outbox/this._userId) - ten tham so
+  // se phai trung ten field RIENG TU, khien noi goi khac file
   // (workout_session_screen.dart) khong the truyen tham so do qua ten
   // (privacy cua Dart chan tham chieu ten bat dau bang "_" tu library
-  // khac). Giu ten tham so cong khai (repository/userId) roi tu gan vao
-  // field rieng tu trong initializer list ben duoi la cach dung.
+  // khac). Giu ten tham so cong khai (outbox/userId) roi tu gan vao field
+  // rieng tu trong initializer list ben duoi la cach dung.
   WorkoutController({
     required List<WorkoutExerciseBlock> blocks,
-    required WorkoutRepository repository,
+    required WorkoutOutbox outbox,
     required String userId,
     this.programId,
+    int restSeconds = kDefaultRestSeconds,
+    DateTime Function()? clock,
   }) : groups = resolveGroupings(blocks),
-       _repository = repository,
+       _outbox = outbox,
        _userId = userId,
-       _startedAt = DateTime.now();
+       _clock = clock ?? DateTime.now,
+       restDurationSeconds = restSeconds,
+       localSessionId = WorkoutOutbox.newLocalSessionId() {
+    _startedAt = _clock();
+  }
 
   final List<WorkoutBlockGroup> groups;
   final int? programId;
-  final WorkoutRepository _repository;
+  final WorkoutOutbox _outbox;
   final String _userId;
-  final DateTime _startedAt;
+  final DateTime Function() _clock;
+  late final DateTime _startedAt;
+  DateTime? _finishedAt;
 
-  int? _sessionId;
+  /// Id cuc bo cua buoi tap trong [WorkoutOutbox].
+  final String localSessionId;
+
   Timer? _restTimer;
+  DateTime? _restStartedAt;
+  DateTime? _restEndsAt;
+  DateTime? _lastCompleteAt;
+  bool _disposed = false;
+  final List<_SetSnapshot> _history = [];
+
+  /// Muc ta vua dung gan nhat cho tung bai - set sau cua CUNG bai giu nguyen
+  /// muc nay thay vi quay ve muc goi y (nguoi dung vua tang/giam ta).
+  final Map<int, double> _lastWeightByExercise = {};
+
+  /// Goi khi het gio nghi TU NHIEN (khong goi khi bam "Bo qua") - man hinh
+  /// dung de rung/phat am bao.
+  VoidCallback? onRestElapsed;
 
   int groupIndex = 0;
 
@@ -138,7 +195,9 @@ class WorkoutController extends ChangeNotifier {
   int subIndex = 0;
 
   WorkoutPhase phase = WorkoutPhase.logging;
-  int restSecondsRemaining = 0;
+
+  /// Thoi gian nghi cho CAC LAN NGHI (nguoi dung chon o man tap).
+  int restDurationSeconds;
 
   /// Gia tri dang chinh bang stepper cho set HIEN TAI - khoi tao lai moi khi
   /// chuyen sang 1 set/bai tap moi (xem _resetInputsForCurrentSet()).
@@ -148,11 +207,15 @@ class WorkoutController extends ChangeNotifier {
   double totalVolumeKg = 0;
   int totalSetsLogged = 0;
 
+  /// True khi buoi ket thuc vi da lam HET moi set (khong phai thoat som) -
+  /// chi khi do moi tu tick "Hoan thanh" trong Lap ke hoach.
+  bool completedAllSets = false;
+
   WorkoutBlockGroup get currentGroup => groups[groupIndex];
   bool get isLastGroup => groupIndex == groups.length - 1;
 
   /// Bai tap DANG hien thi/log - o [PairedBlock] la bai A hoac B tuy
-  /// [subIndex].
+  /// [subIndex]. Trong luc nghi, day chinh la bai/set SAP TOI.
   WorkoutExerciseBlock get currentBlock {
     final group = currentGroup;
     return switch (group) {
@@ -160,6 +223,18 @@ class WorkoutController extends ChangeNotifier {
       PairedBlock() => subIndex == 0 ? group.first : group.second,
     };
   }
+
+  /// Tat ca bai tap cua buoi (theo thu tu) - dung de chon tu vung.
+  List<Exercise> get exercises => [
+    for (final g in groups)
+      ...switch (g) {
+        SoloBlock(:final exercise) => [exercise.exercise],
+        PairedBlock(:final first, :final second) => [
+          first.exercise,
+          second.exercise,
+        ],
+      },
+  ];
 
   int get currentSetNumber => setOrRoundIndex + 1;
   int get currentTotalSets => switch (currentGroup) {
@@ -172,22 +247,55 @@ class WorkoutController extends ChangeNotifier {
   bool get isPairedGroup => currentGroup is PairedBlock;
   int get pairSubIndex => subIndex;
 
-  Future<void> start() async {
-    _sessionId = await _repository.startSession(
-      userId: _userId,
-      programId: programId,
-    );
+  /// Ty le hoan thanh buoi tap (0..1) theo so set da log tren tong so set -
+  /// dung cho thanh tien do o dau man tap.
+  double get progress {
+    if (phase == WorkoutPhase.finished) return 1;
+    var total = 0;
+    var done = 0;
+    for (var i = 0; i < groups.length; i++) {
+      final (rounds, perRound) = switch (groups[i]) {
+        SoloBlock(:final exercise) => (exercise.targetSets, 1),
+        PairedBlock(:final totalRounds) => (totalRounds, 2),
+      };
+      total += rounds * perRound;
+      if (i < groupIndex) {
+        done += rounds * perRound;
+      } else if (i == groupIndex) {
+        done += setOrRoundIndex * perRound + subIndex;
+      }
+    }
+    return total == 0 ? 0 : (done / total).clamp(0.0, 1.0);
+  }
+
+  bool get canUndo => _history.isNotEmpty && phase != WorkoutPhase.finished;
+
+  WorkoutSyncState get syncState => _outbox.stateFor(localSessionId);
+
+  /// Bat dau buoi tap: xep lenh tao dong workout_sessions (khong chan giao
+  /// dien - mat mang van tap binh thuong, hang doi tu gui sau).
+  void start() {
     _resetInputsForCurrentSet();
     notifyListeners();
+    unawaited(
+      _outbox.startSession(
+        local: localSessionId,
+        userId: _userId,
+        programId: programId,
+        startedAt: _startedAt,
+      ),
+    );
   }
 
   void _resetInputsForCurrentSet() {
-    currentWeightKg = currentBlock.recommendedWeightKg;
-    currentReps = currentBlock.targetRepsMin;
+    final block = currentBlock;
+    currentWeightKg =
+        _lastWeightByExercise[block.exercise.id] ?? block.recommendedWeightKg;
+    currentReps = block.targetRepsMin;
   }
 
   void adjustWeight(double delta) {
-    currentWeightKg = (currentWeightKg + delta).clamp(0, 500);
+    currentWeightKg = (currentWeightKg + delta).clamp(0.0, 500.0);
     notifyListeners();
   }
 
@@ -196,27 +304,53 @@ class WorkoutController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Ghi nhan set hien tai la xong - luu xuong Supabase NGAY (khong doi den
-  /// cuoi buoi moi ghi hang loat) de khong mat du lieu neu app bi thoat giua
-  /// chung, dung y triet ly cua SetLogEntity trong FitViet.
-  Future<void> completeSet() async {
-    final sessionId = _sessionId;
-    if (sessionId == null) return;
-    await _repository.logSet(
-      sessionId: sessionId,
+  /// Ghi nhan set hien tai la xong. Trang thai chuyen NGAY, lenh ghi set vao
+  /// [WorkoutOutbox] - van ghi tung set ngay khi xong thay vi doi cuoi buoi,
+  /// dung triet ly SetLogEntity cua FitViet.
+  ///
+  /// Bo qua lan bam thu 2 trong vong 700ms (cham dup tay luc dang met) -
+  /// tranh log nham set ke tiep cua bai sau.
+  void completeSet() {
+    if (phase != WorkoutPhase.logging) return;
+    final now = _clock();
+    final last = _lastCompleteAt;
+    if (last != null && now.difference(last).inMilliseconds.abs() < 700) {
+      return;
+    }
+    _lastCompleteAt = now;
+
+    final exerciseId = currentBlock.exercise.id;
+    final weightKg = currentWeightKg;
+    final reps = currentReps;
+    final setOpId = _outbox.logSet(
+      local: localSessionId,
       userId: _userId,
-      exerciseId: currentBlock.exercise.id,
+      exerciseId: exerciseId,
       setIndex: setOrRoundIndex,
-      weightKg: currentWeightKg,
-      reps: currentReps,
+      weightKg: weightKg,
+      reps: reps,
     );
-    totalVolumeKg += currentWeightKg * currentReps;
+    _history.add(
+      _SetSnapshot(
+        groupIndex: groupIndex,
+        setOrRoundIndex: setOrRoundIndex,
+        subIndex: subIndex,
+        weightKg: weightKg,
+        reps: reps,
+        totalVolumeKg: totalVolumeKg,
+        totalSetsLogged: totalSetsLogged,
+        setOpId: setOpId,
+        exerciseId: exerciseId,
+      ),
+    );
+    _lastWeightByExercise[exerciseId] = weightKg;
+    totalVolumeKg += weightKg * reps;
     totalSetsLogged++;
 
     final group = currentGroup;
     if (group is SoloBlock) {
       if (setOrRoundIndex == group.exercise.targetSets - 1) {
-        await _advanceGroupOrFinish();
+        _advanceGroupOrFinish();
         return;
       }
       setOrRoundIndex++;
@@ -231,13 +365,12 @@ class WorkoutController extends ChangeNotifier {
       // Vua xong bai A - sang thang bai B, KHONG nghi.
       subIndex = 1;
       _resetInputsForCurrentSet();
-      phase = WorkoutPhase.logging;
       notifyListeners();
       return;
     }
     // Vua xong bai B - het 1 vong.
     if (setOrRoundIndex == group.totalRounds - 1) {
-      await _advanceGroupOrFinish();
+      _advanceGroupOrFinish();
       return;
     }
     setOrRoundIndex++;
@@ -246,68 +379,184 @@ class WorkoutController extends ChangeNotifier {
     _startRest();
   }
 
-  Future<void> _advanceGroupOrFinish() async {
+  /// Hoan tac set vua ghi (bam nham, nhap sai reps...): quay lai dung set
+  /// do voi gia tri da nhap, go set khoi hang doi/server.
+  void undoLastSet() {
+    if (!canUndo) return;
+    final snap = _history.removeLast();
+    _cancelRestTimer();
+    groupIndex = snap.groupIndex;
+    setOrRoundIndex = snap.setOrRoundIndex;
+    subIndex = snap.subIndex;
+    currentWeightKg = snap.weightKg;
+    currentReps = snap.reps;
+    totalVolumeKg = snap.totalVolumeKg;
+    totalSetsLogged = snap.totalSetsLogged;
+    phase = WorkoutPhase.logging;
+    _lastCompleteAt = null;
+    notifyListeners();
+    unawaited(
+      _outbox.cancelSet(
+        local: localSessionId,
+        setOpId: snap.setOpId,
+        exerciseId: snap.exerciseId,
+        setIndex: snap.setOrRoundIndex,
+      ),
+    );
+  }
+
+  void _advanceGroupOrFinish() {
     if (isLastGroup) {
-      await _finish();
+      completedAllSets = true;
+      _finish();
       return;
     }
     groupIndex++;
     setOrRoundIndex = 0;
     subIndex = 0;
     _resetInputsForCurrentSet();
-    phase = WorkoutPhase.logging;
-    notifyListeners();
+    // Nghi ca khi chuyen sang bai moi (truoc day chuyen thang, khong nghi) -
+    // day cung la luc chuan bi dung cu cho bai tiep theo.
+    _startRest();
+  }
+
+  // ---------------------------------------------------------------------
+  // Nghi giua set - tinh theo MOC THOI GIAN KET THUC (khong tru dan tung
+  // giay) de khong bi lech khi app vao nen/Timer bi tre.
+  // ---------------------------------------------------------------------
+
+  int get restSecondsRemaining {
+    final endsAt = _restEndsAt;
+    if (phase != WorkoutPhase.resting || endsAt == null) return 0;
+    final ms = endsAt.difference(_clock()).inMilliseconds;
+    return ms <= 0 ? 0 : (ms / 1000).ceil();
+  }
+
+  /// Tong thoi gian cua lan nghi hien tai (ke ca phan +15s) - dung ve vong
+  /// dem nguoc.
+  int get restTotalSeconds {
+    final start = _restStartedAt;
+    final end = _restEndsAt;
+    if (start == null || end == null) return restDurationSeconds;
+    return max(1, (end.difference(start).inMilliseconds / 1000).round());
   }
 
   void _startRest() {
     phase = WorkoutPhase.resting;
-    restSecondsRemaining = kDefaultRestSeconds;
+    final startedAt = _clock();
+    _restStartedAt = startedAt;
+    _restEndsAt = startedAt.add(Duration(seconds: restDurationSeconds));
     notifyListeners();
     _restTimer?.cancel();
-    _restTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      restSecondsRemaining--;
-      if (restSecondsRemaining <= 0) {
-        _endRest();
-      } else {
-        notifyListeners();
-      }
-    });
-  }
-
-  void addRestSeconds(int seconds) {
-    if (phase != WorkoutPhase.resting) return;
-    restSecondsRemaining += seconds;
-    notifyListeners();
-  }
-
-  void skipRest() => _endRest();
-
-  void _endRest() {
-    _restTimer?.cancel();
-    _restTimer = null;
-    phase = WorkoutPhase.logging;
-    restSecondsRemaining = 0;
-    notifyListeners();
-  }
-
-  Future<void> _finish() async {
-    _restTimer?.cancel();
-    final sessionId = _sessionId;
-    phase = WorkoutPhase.finished;
-    notifyListeners();
-    if (sessionId == null) return;
-    await _repository.finishSession(
-      sessionId: sessionId,
-      totalVolumeKg: totalVolumeKg,
-      durationSeconds: DateTime.now().difference(_startedAt).inSeconds,
+    _restTimer = Timer.periodic(
+      const Duration(milliseconds: 250),
+      (_) => tickRest(),
     );
   }
 
-  Duration get elapsed => DateTime.now().difference(_startedAt);
+  /// Cap nhat dem nguoc - Timer goi dinh ky; test goi truc tiep sau khi tua
+  /// dong ho gia.
+  void tickRest() {
+    if (phase != WorkoutPhase.resting) return;
+    if (restSecondsRemaining <= 0) {
+      _endRest();
+      onRestElapsed?.call();
+    } else {
+      notifyListeners();
+    }
+  }
+
+  void addRestSeconds(int seconds) {
+    final endsAt = _restEndsAt;
+    if (phase != WorkoutPhase.resting || endsAt == null) return;
+    _restEndsAt = endsAt.add(Duration(seconds: seconds));
+    notifyListeners();
+  }
+
+  /// Doi thoi gian nghi. Neu DANG nghi thi ap dung luon cho lan nghi nay
+  /// (tinh tu luc bat dau nghi).
+  void setRestDuration(int seconds) {
+    restDurationSeconds = seconds;
+    final start = _restStartedAt;
+    if (phase == WorkoutPhase.resting && start != null) {
+      _restEndsAt = start.add(Duration(seconds: seconds));
+      tickRest();
+    } else {
+      notifyListeners();
+    }
+  }
+
+  void skipRest() {
+    if (phase != WorkoutPhase.resting) return;
+    _endRest();
+  }
+
+  void _cancelRestTimer() {
+    _restTimer?.cancel();
+    _restTimer = null;
+    _restStartedAt = null;
+    _restEndsAt = null;
+  }
+
+  void _endRest() {
+    _cancelRestTimer();
+    phase = WorkoutPhase.logging;
+    notifyListeners();
+  }
+
+  // ---------------------------------------------------------------------
+  // Ket thuc
+  // ---------------------------------------------------------------------
+
+  void _finish() {
+    _cancelRestTimer();
+    final finishedAt = _clock();
+    _finishedAt = finishedAt;
+    phase = WorkoutPhase.finished;
+    unawaited(
+      _outbox.finishSession(
+        local: localSessionId,
+        totalVolumeKg: totalVolumeKg,
+        durationSeconds: finishedAt.difference(_startedAt).inSeconds,
+        completedAt: finishedAt,
+      ),
+    );
+    notifyListeners();
+  }
+
+  /// Nguoi dung chon "Luu & ket thuc" giua chung: ket thuc SOM, van luu
+  /// cac set da log (buoi van tinh vao thong ke nhung KHONG tick hoan thanh
+  /// trong Lap ke hoach - xem [completedAllSets]). Chua log set nao thi coi
+  /// nhu bo buoi.
+  void finishEarly() {
+    if (phase == WorkoutPhase.finished) return;
+    if (totalSetsLogged == 0) {
+      discard();
+      return;
+    }
+    _finish();
+  }
+
+  /// Nguoi dung chon "Bo buoi tap": khong danh dau hoan thanh, go cac lenh
+  /// chua gui. Phan da len server co completed_at = null nen moi thong ke
+  /// (chi tinh buoi da hoan thanh) deu bo qua.
+  void discard() {
+    _cancelRestTimer();
+    unawaited(_outbox.discardSession(localSessionId));
+  }
+
+  Duration get elapsed => (_finishedAt ?? _clock()).difference(_startedAt);
+
+  @override
+  void notifyListeners() {
+    if (_disposed) return;
+    super.notifyListeners();
+  }
 
   @override
   void dispose() {
-    _restTimer?.cancel();
+    _disposed = true;
+    _cancelRestTimer();
     super.dispose();
   }
 }

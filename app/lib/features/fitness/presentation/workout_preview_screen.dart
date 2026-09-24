@@ -6,6 +6,7 @@ import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/program_model.dart';
 import '../data/workout_model.dart';
+import 'warmup_words_card.dart';
 import 'workout_session_screen.dart';
 
 /// Xem truoc bai tap hom nay TRUOC KHI vao log that - port tu
@@ -104,12 +105,19 @@ class _WorkoutPreviewScreenState extends ConsumerState<WorkoutPreviewScreen> {
                       ),
                     );
                   }
-                  final groups = resolveGroupings(snapshot.data!);
+                  final blocks = snapshot.data!;
+                  final groups = resolveGroupings(blocks);
                   return ListView.separated(
-                    itemCount: groups.length,
+                    // +1: the "5 tu khoi dong" o dau danh sach.
+                    itemCount: groups.length + 1,
                     separatorBuilder: (_, _) => const SizedBox(height: 10),
                     itemBuilder: (context, i) {
-                      final group = groups[i];
+                      if (i == 0) {
+                        return WarmupWordsCard(
+                          exercises: [for (final b in blocks) b.exercise],
+                        );
+                      }
+                      final group = groups[i - 1];
                       return switch (group) {
                         SoloBlock(:final exercise) => _PreviewTile(
                           block: exercise,
