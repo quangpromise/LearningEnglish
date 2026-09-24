@@ -114,7 +114,11 @@ void main() {
     now = DateTime(2026, 9, 24, 18);
   });
 
-  tearDown(() => outbox.dispose());
+  tearDown(() async {
+    // Cho vong gui dang chay xong truoc khi huy outbox.
+    await _settle();
+    outbox.dispose();
+  });
 
   WorkoutController makeController(List<WorkoutExerciseBlock> blocks) {
     final c = WorkoutController(

@@ -43,6 +43,7 @@ class WorkoutOutbox extends ChangeNotifier {
   Timer? _retryTimer;
   int _retryAttempt = 0;
   bool _lastFlushFailed = false;
+  bool _disposed = false;
   int _opCounter = 0;
 
   /// Sinh id cuc bo cho 1 buoi tap moi.
@@ -240,6 +241,7 @@ class WorkoutOutbox extends ChangeNotifier {
   }
 
   void _scheduleRetry() {
+    if (_disposed) return;
     _retryAttempt++;
     // 5s, 10s, 20s, 40s, roi giu 60s.
     final seconds = min(60, 5 * (1 << min(_retryAttempt - 1, 4)));
@@ -303,8 +305,17 @@ class WorkoutOutbox extends ChangeNotifier {
     }
   }
 
+  /// Vong gui dang chay co the ket thuc SAU khi dispose (vd provider bi huy
+  /// giua chung) - bo qua thong bao thay vi nem loi "used after disposed".
+  @override
+  void notifyListeners() {
+    if (_disposed) return;
+    super.notifyListeners();
+  }
+
   @override
   void dispose() {
+    _disposed = true;
     _retryTimer?.cancel();
     super.dispose();
   }
