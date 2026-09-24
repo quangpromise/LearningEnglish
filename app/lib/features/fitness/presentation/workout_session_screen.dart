@@ -60,6 +60,9 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
   /// Nguoi dung da tu chon thoi gian nghi -> khong de tuy chon luu tren may
   /// (doc bat dong bo, co the ve muon) ghi de len.
   bool _restPickedByUser = false;
+
+  /// Giong HLV tieng Anh (xem [_coach]).
+  bool _coachVoice = true;
   bool _exitDialogOpen = false;
 
   @override
@@ -90,6 +93,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
     if (!_restPickedByUser) controller.setRestDuration(prefs.restSeconds);
     setState(() {
       _learnWhileResting = prefs.learnWhileResting;
+      _coachVoice = prefs.coachVoice;
       _words = pickGymWords(
         exercises: controller.exercises,
         boxes: SrsStore.instance.boxes,
@@ -107,6 +111,9 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
       // Het nghi (tu nhien/bo qua/hoan tac) -> dung doc tu dang phat do.
       AppTts.instance.stopSpeaking();
       _lastRestSecond = null;
+    }
+    if (_lastPhase != WorkoutPhase.resting && phase == WorkoutPhase.resting) {
+      _coach('Nice set! Rest for ${controller.restDurationSeconds} seconds.');
     }
     if (phase == WorkoutPhase.resting) {
       // Rung nhe o 3-2-1 - CHI khi giam dung 1 giay, tranh rung don dap khi
@@ -132,6 +139,19 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
   void _onRestElapsed() {
     HapticFeedback.heavyImpact();
     SystemSound.play(SystemSoundType.alert);
+    final controller = _controller;
+    if (controller == null) return;
+    final block = controller.currentBlock;
+    _coach(
+      'Rest is over. Next: ${block.exercise.nameEn}, '
+      'set ${controller.currentSetNumber} of ${controller.currentTotalSets}.',
+    );
+  }
+
+  /// "Giong HLV": doc cau nhac TIENG ANH ngan (luyen nghe trong luc tap).
+  /// Chi doc khi nguoi dung bat (mac dinh bat, tat trong bang cai dat nghi).
+  void _coach(String text) {
+    if (_coachVoice) AppTts.instance.speak(text);
   }
 
   void _goToFinished(WorkoutController controller) {
@@ -282,6 +302,28 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                           Navigator.of(sheetContext).pop(seconds),
                     ),
                 ],
+              ),
+              const SizedBox(height: 12),
+              StatefulBuilder(
+                builder: (context, setSheetState) => SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  value: _coachVoice,
+                  activeThumbColor: AppColors.fitnessAccent,
+                  title: Text(
+                    _t('fitness_coach_voice'),
+                    style: AppTextStyles.body(weight: FontWeight.w700),
+                  ),
+                  subtitle: Text(
+                    _t('fitness_coach_voice_sub'),
+                    style: AppTextStyles.muted(),
+                  ),
+                  onChanged: (enabled) {
+                    setSheetState(() {});
+                    setState(() => _coachVoice = enabled);
+                    if (!enabled) AppTts.instance.stopSpeaking();
+                    WorkoutPrefs.saveCoachVoice(enabled);
+                  },
+                ),
               ),
             ],
           ),

@@ -3554,6 +3554,131 @@ class AppStrings {
       AppLanguage.vi: 'Đã chia sẻ ✓',
       AppLanguage.en: 'Shared ✓',
     },
+    // GymTalk giai doan 3: PT AI, luyen noi ranh tay, giong HLV, thiet lap.
+    'voice_chat_pt_title': {
+      AppLanguage.vi: 'PT AI (tiếng Anh)',
+      AppLanguage.en: 'AI Personal Trainer',
+    },
+    'today_pt_sub': {
+      AppLanguage.vi:
+          'Nhập vai hỏi máy tập, đặt lịch PT, kể chấn thương… bằng tiếng Anh',
+      AppLanguage.en:
+          'Role-play gym talk: machines, booking a PT, injuries… in English',
+    },
+    'hands_free_title': {
+      AppLanguage.vi: 'Luyện nói rảnh tay',
+      AppLanguage.en: 'Hands-free speaking',
+    },
+    'hands_free_subtitle': {
+      AppLanguage.vi: 'Nghe và nhắc lại, không cần nhìn màn hình, hợp khi chạy bộ hay đạp xe.',
+      AppLanguage.en: 'Listen and repeat without looking at the screen, great for running or cycling.',
+    },
+    'today_hands_free_sub': {
+      AppLanguage.vi: 'Nghe và nhắc lại khi chạy bộ, đạp xe',
+      AppLanguage.en: 'Listen and repeat while running or cycling',
+    },
+    'hands_free_status_idle': {
+      AppLanguage.vi: 'Đang tạm dừng',
+      AppLanguage.en: 'Paused',
+    },
+    'hands_free_status_speaking': {
+      AppLanguage.vi: 'Nghe nhé…',
+      AppLanguage.en: 'Listen…',
+    },
+    'hands_free_status_listening': {
+      AppLanguage.vi: 'Nói lại đi!',
+      AppLanguage.en: 'Your turn!',
+    },
+    'hands_free_status_finished': {
+      AppLanguage.vi: 'Hoàn thành',
+      AppLanguage.en: 'Finished',
+    },
+    'hands_free_done': {
+      AppLanguage.vi: 'Xong! Bạn nói đạt {passed}/{total} câu.',
+      AppLanguage.en: 'Done! You nailed {passed}/{total} phrases.',
+    },
+    'hands_free_score': {
+      AppLanguage.vi: 'Điểm: {score}',
+      AppLanguage.en: 'Score: {score}',
+    },
+    'hands_free_start': {AppLanguage.vi: 'Bắt đầu', AppLanguage.en: 'Start'},
+    'hands_free_pause': {AppLanguage.vi: 'Tạm dừng', AppLanguage.en: 'Pause'},
+    'hands_free_again': {AppLanguage.vi: 'Luyện lại', AppLanguage.en: 'Again'},
+    'hands_free_skip': {AppLanguage.vi: 'Bỏ qua', AppLanguage.en: 'Skip'},
+    'fitness_coach_voice': {
+      AppLanguage.vi: 'Giọng HLV tiếng Anh',
+      AppLanguage.en: 'English coach voice',
+    },
+    'fitness_coach_voice_sub': {
+      AppLanguage.vi: 'Đọc câu nhắc tiếng Anh khi nghỉ và khi hết giờ nghỉ',
+      AppLanguage.en: 'Speaks short English cues when rest starts and ends',
+    },
+    'setup_title': {
+      AppLanguage.vi: 'Thiết lập GymTalk',
+      AppLanguage.en: 'Set up GymTalk',
+    },
+    'setup_subtitle': {
+      AppLanguage.vi: 'Trả lời 4 câu để nhận giáo án phù hợp.',
+      AppLanguage.en: 'Answer 4 questions to get a matching program.',
+    },
+    'setup_q_goal': {
+      AppLanguage.vi: 'Mục tiêu của bạn?',
+      AppLanguage.en: 'Your goal?',
+    },
+    'setup_goal_muscle': {
+      AppLanguage.vi: 'Tăng cơ',
+      AppLanguage.en: 'Build muscle',
+    },
+    'setup_goal_fat_loss': {
+      AppLanguage.vi: 'Giảm mỡ',
+      AppLanguage.en: 'Lose fat',
+    },
+    'setup_goal_strength': {
+      AppLanguage.vi: 'Tăng sức mạnh',
+      AppLanguage.en: 'Get stronger',
+    },
+    'setup_q_level': {
+      AppLanguage.vi: 'Trình độ tập luyện?',
+      AppLanguage.en: 'Training level?',
+    },
+    'setup_q_days': {
+      AppLanguage.vi: 'Mỗi tuần tập mấy buổi?',
+      AppLanguage.en: 'Workouts per week?',
+    },
+    'setup_days_value': {
+      AppLanguage.vi: '{days} buổi',
+      AppLanguage.en: '{days} days',
+    },
+    'setup_q_place': {
+      AppLanguage.vi: 'Bạn tập ở đâu?',
+      AppLanguage.en: 'Where do you train?',
+    },
+    'setup_place_gym': {
+      AppLanguage.vi: 'Phòng gym',
+      AppLanguage.en: 'At the gym',
+    },
+    'setup_place_home': {AppLanguage.vi: 'Tại nhà', AppLanguage.en: 'At home'},
+    'setup_recommended': {
+      AppLanguage.vi: 'Giáo án gợi ý cho bạn',
+      AppLanguage.en: 'Recommended program',
+    },
+    'setup_program_meta': {
+      AppLanguage.vi: '{sessions} buổi/tuần · {weeks} tuần',
+      AppLanguage.en: '{sessions} days/week · {weeks} weeks',
+    },
+    'setup_follow_program': {
+      AppLanguage.vi: 'Theo giáo án này',
+      AppLanguage.en: 'Follow this program',
+    },
+    'setup_saving': {AppLanguage.vi: 'Đang lưu…', AppLanguage.en: 'Saving…'},
+    'setup_save_failed': {
+      AppLanguage.vi: 'Chưa lưu được, kiểm tra kết nối rồi thử lại',
+      AppLanguage.en: 'Could not save, check your connection and try again',
+    },
+    'setup_english_survey': {
+      AppLanguage.vi: 'Khảo sát trình độ tiếng Anh',
+      AppLanguage.en: 'English level survey',
+    },
     // GymTalk giai doan 2: tab goc, man Hom nay, On tap, Tien do.
     'tab_today': {AppLanguage.vi: 'Hôm nay', AppLanguage.en: 'Today'},
     'tab_train': {AppLanguage.vi: 'Tập', AppLanguage.en: 'Train'},

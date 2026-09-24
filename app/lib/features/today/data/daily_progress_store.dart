@@ -121,7 +121,12 @@ class DailyProgressStore extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _save() async {
+  Future<void> _writeChain = Future.value();
+
+  /// Xep hang cac lan ghi - 2 lan cong lien tiep khong de mat nhau.
+  Future<void> _save() => _writeChain = _writeChain.then((_) => _write());
+
+  Future<void> _write() async {
     // Chi giu [_keepDays] ngay gan nhat.
     final cutoff = _keyOf(_clock().subtract(const Duration(days: _keepDays)));
     _days.removeWhere((key, _) => key.compareTo(cutoff) < 0);
