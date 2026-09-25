@@ -7,7 +7,7 @@ import '../../../core/i18n/app_strings.dart';
 import '../../../core/navigation/nav_keys.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/tts/app_tts.dart';
+import '../../../core/tts/tutorial_voice.dart';
 import '../data/exercise_model.dart';
 import '../../srs/data/srs_store.dart';
 import '../data/exercise_tutorial.dart';
@@ -201,7 +201,7 @@ class ExerciseDetailScreen extends ConsumerWidget {
                           _KeywordChip(
                             en: word.en,
                             vi: word.vi,
-                            onTap: () => AppTts.instance.speak(word.en),
+                            onTap: () => TutorialVoice.shared.speak(word.en),
                           ),
                       ],
                     ),

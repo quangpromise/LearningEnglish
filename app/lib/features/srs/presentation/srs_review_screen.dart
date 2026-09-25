@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/tts/app_tts.dart';
+import '../../../core/tts/tutorial_voice.dart';
 import '../../../core/widgets/speaker_button.dart';
 import '../../today/data/daily_progress_store.dart';
 import '../data/srs_store.dart';
@@ -45,12 +46,12 @@ class _SrsReviewScreenState extends ConsumerState<SrsReviewScreen> {
 
   @override
   void dispose() {
-    AppTts.instance.stopSpeaking();
+    TutorialVoice.shared.stop();
     super.dispose();
   }
 
   void _answer(SrsCard card, {required bool known}) {
-    AppTts.instance.stopSpeaking();
+    TutorialVoice.shared.stop();
     SrsStore.instance.review(card.key, known: known, now: DateTime.now());
     DailyProgressStore.instance.addWordsReviewed();
     setState(() {
@@ -155,7 +156,7 @@ class _SrsReviewScreenState extends ConsumerState<SrsReviewScreen> {
                         tapSize: 56,
                         iconSize: 30,
                         color: AppColors.blue,
-                        onTap: () => AppTts.instance.speak(card.en),
+                        onTap: () => TutorialVoice.shared.speak(card.en),
                       ),
                     ],
                   ),
