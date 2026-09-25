@@ -9,6 +9,7 @@ import '../theme/app_theme.dart';
 import '../../features/fitness/presentation/fitness_home_screen.dart';
 import '../../features/music_player/presentation/center_media_button.dart';
 import '../../features/music_player/presentation/home_screen.dart';
+import '../../features/today/data/gymtalk_reminders.dart';
 import '../../features/today/presentation/progress_screen.dart';
 import '../../features/today/presentation/today_screen.dart';
 import '../../features/update/presentation/update_dialog.dart';
@@ -63,6 +64,12 @@ class _RootShellState extends ConsumerState<RootShell>
     // Gui not buoi tap con ket trong hang doi tu lan truoc (xem
     // workout_outbox.dart) - truoc day chi chay khi mo FitnessShell.
     ref.read(workoutOutboxProvider).flush();
+    // Dong bo SRS + 3 vong theo tai khoan (migration 0074).
+    ref.read(gymTalkSyncProvider)
+      ..start()
+      ..syncNow();
+    GymTalkReminders.instance.rescheduleFromPrefs(ref);
+    GymTalkReminders.instance.openTodayRequests.addListener(_openToday);
     final initialTab = ref.read(rootTabProvider);
     if (initialTab == RootTab.train) _trainSince = DateTime.now();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -76,6 +83,11 @@ class _RootShellState extends ConsumerState<RootShell>
     final sectionNotifier = ref.read(currentAppSectionProvider.notifier);
     if (sectionNotifier.state == AppSection.wealth) return;
     sectionNotifier.state = tab.section;
+  }
+
+  /// Cham thong bao "nhac tap + hoc" -> tab Hom nay.
+  void _openToday() {
+    if (mounted) ref.read(rootTabProvider.notifier).state = RootTab.today;
   }
 
   void _flushTrainTime() {
@@ -105,6 +117,7 @@ class _RootShellState extends ConsumerState<RootShell>
     WidgetsBinding.instance.removeObserver(this);
     _updateCheckTimer?.cancel();
     _presenceTimer?.cancel();
+    GymTalkReminders.instance.openTodayRequests.removeListener(_openToday);
     _flushTrainTime();
     super.dispose();
   }
@@ -121,6 +134,7 @@ class _RootShellState extends ConsumerState<RootShell>
       if (ref.read(rootTabProvider) == RootTab.train) {
         _trainSince ??= DateTime.now();
       }
+      ref.read(gymTalkSyncProvider).syncNow();
     } else if (state == AppLifecycleState.paused) {
       // App xuong nen khi dang o tab Tap -> ghi phan thoi gian da dung.
       _flushTrainTime();

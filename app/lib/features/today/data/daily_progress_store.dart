@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -139,6 +140,57 @@ class DailyProgressStore extends ChangeNotifier {
     } catch (e) {
       debugPrint('DailyProgressStore save failed: $e');
     }
+  }
+
+  // ---------------------------------------------------------------------
+  // Dong bo tai khoan (xem gymtalk_sync_service.dart)
+  // ---------------------------------------------------------------------
+
+  /// {"YYYY-MM-DD": {...}} de day len Supabase.
+  Map<String, dynamic> exportJson() => {
+    for (final e in _days.entries) e.key: e.value.toJson(),
+  };
+
+  /// Gop so lieu tu server: moi ngay lay MAX tung bo dem, ngay nghi = OR
+  /// (khong bao gio lam giam so lieu, gop nhieu lan van ra cung ket qua).
+  /// Tra ve true neu du lieu tren may thay doi.
+  Future<bool> mergeRemote(Map<String, dynamic> remote) async {
+    await ensureLoaded();
+    var changed = false;
+    for (final e in remote.entries) {
+      if (e.value is! Map) continue;
+      final incoming = DayProgress.fromJson(
+        Map<String, dynamic>.from(e.value as Map),
+      );
+      final local = _days[e.key] ?? const DayProgress();
+      final merged = DayProgress(
+        workouts: max(local.workouts, incoming.workouts),
+        wordsReviewed: max(local.wordsReviewed, incoming.wordsReviewed),
+        speakAttempts: max(local.speakAttempts, incoming.speakAttempts),
+        restDay: local.restDay || incoming.restDay,
+      );
+      if (merged.workouts != local.workouts ||
+          merged.wordsReviewed != local.wordsReviewed ||
+          merged.speakAttempts != local.speakAttempts ||
+          merged.restDay != local.restDay ||
+          !_days.containsKey(e.key)) {
+        _days[e.key] = merged;
+        changed = true;
+      }
+    }
+    if (changed) {
+      notifyListeners();
+      await _save();
+    }
+    return changed;
+  }
+
+  /// Xoa sach so lieu tren may (doi sang tai khoan khac).
+  Future<void> clearLocal() async {
+    await ensureLoaded();
+    _days.clear();
+    notifyListeners();
+    await _save();
   }
 
   DayProgress dayOf(DateTime date) =>

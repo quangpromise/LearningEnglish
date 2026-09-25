@@ -12,10 +12,13 @@ import '../../../core/tts/app_tts.dart';
 import '../../../core/utils/keep_screen_on.dart';
 import '../../srs/data/srs_store.dart';
 import '../../today/data/daily_progress_store.dart';
+import '../data/coach_script.dart';
 import '../data/gym_vocabulary.dart';
+import '../data/rep_counter.dart';
 import '../data/workout_model.dart';
 import '../data/workout_prefs.dart';
 import 'exercise_photo_animator.dart';
+import 'rep_camera_screen.dart';
 import 'rest_vocab_card.dart';
 import 'workout_finished_screen.dart';
 
@@ -63,6 +66,15 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
 
   /// Giong HLV tieng Anh (xem [_coach]).
   bool _coachVoice = true;
+
+  /// Kich ban HLV dan buoi tap theo trinh do nguoi hoc (xem coach_script).
+  late final CoachScript _script = CoachScript(
+    level: ref.read(learnerLevelProvider),
+  );
+
+  /// Set/bai vua duoc HLV gioi thieu - tranh doc lai cung 1 set.
+  String? _announcedSetKey;
+  bool _prefsLoaded = false;
   bool _exitDialogOpen = false;
 
   @override
@@ -92,6 +104,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
     if (!mounted) return;
     if (!_restPickedByUser) controller.setRestDuration(prefs.restSeconds);
     setState(() {
+      _prefsLoaded = true;
       _learnWhileResting = prefs.learnWhileResting;
       _coachVoice = prefs.coachVoice;
       _words = pickGymWords(
@@ -101,6 +114,40 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
         random: Random(),
       );
     });
+    // Gioi thieu bai + set dau tien khi da biet nguoi dung co bat giong HLV.
+    if (controller.phase == WorkoutPhase.logging) _announceSet(controller);
+  }
+
+  String _setKey(WorkoutController c) =>
+      '${c.groupIndex}-${c.setOrRoundIndex}-${c.subIndex}';
+
+  /// HLV doc: (bai moi) gioi thieu bai -> "Set x of y, aim for n reps" ->
+  /// 1 nhac ky thuat tu huong dan tieng Anh cua bai.
+  void _announceSet(WorkoutController controller) {
+    // Chua doc xong cai dat (co the nguoi dung da tat giong HLV) -> chua noi.
+    if (!_prefsLoaded) return;
+    final key = _setKey(controller);
+    if (key == _announcedSetKey) return;
+    _announcedSetKey = key;
+    if (!_coachVoice) return;
+    final block = controller.currentBlock;
+    final exercise = block.exercise;
+    final lines = <String>[
+      if (controller.currentSetNumber == 1 && controller.subIndex == 0)
+        _script.exerciseIntro(exercise, sets: controller.currentTotalSets),
+      _script.setStart(
+        setNumber: controller.currentSetNumber,
+        totalSets: controller.currentTotalSets,
+        repsMin: block.targetRepsMin,
+        repsMax: block.targetRepsMax,
+      ),
+    ];
+    final cue = _script.formCue(
+      exercise,
+      setNumber: controller.currentSetNumber,
+    );
+    if (cue != null) lines.add(cue);
+    AppTts.instance.speak(lines.join(' '));
   }
 
   void _onControllerChanged() {
@@ -112,6 +159,9 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
       AppTts.instance.stopSpeaking();
       _lastRestSecond = null;
     }
+    // Vao set moi (het nghi, bo qua nghi, sang bai B cua sieu set) -> HLV
+    // gioi thieu set do.
+    if (phase == WorkoutPhase.logging) _announceSet(controller);
     if (_lastPhase != WorkoutPhase.resting && phase == WorkoutPhase.resting) {
       _coach('Nice set! Rest for ${controller.restDurationSeconds} seconds.');
     }
@@ -126,6 +176,15 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
           second <= 3) {
         HapticFeedback.selectionClick();
       }
+      // Giua gio nghi: 1 cau HLV (chi khi TAT the tu - tranh noi chen
+      // luc nguoi dung dang nghe tu).
+      if (!_learnWhileResting &&
+          previous != null &&
+          controller.restTotalSeconds >= 40 &&
+          previous > controller.restTotalSeconds ~/ 2 &&
+          second <= controller.restTotalSeconds ~/ 2) {
+        _coach(_script.restMiddle());
+      }
       _lastRestSecond = second;
     }
     _lastPhase = phase;
@@ -139,13 +198,29 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
   void _onRestElapsed() {
     HapticFeedback.heavyImpact();
     SystemSound.play(SystemSoundType.alert);
+    // Loi HLV cho set tiep theo do _announceSet doc (listener).
+  }
+
+  /// Dem rep bang camera cho set hien tai; so rep dem duoc dien thang vao
+  /// o "Reps" (nguoi dung van chinh lai duoc truoc khi bam Hoan thanh set).
+  Future<void> _openRepCamera() async {
     final controller = _controller;
     if (controller == null) return;
     final block = controller.currentBlock;
-    _coach(
-      'Rest is over. Next: ${block.exercise.nameEn}, '
-      'set ${controller.currentSetNumber} of ${controller.currentTotalSets}.',
+    final pattern = RepPattern.forExercise(block.exercise);
+    if (pattern == null) return;
+    AppTts.instance.stopSpeaking();
+    final reps = await Navigator.of(context).push<int>(
+      MaterialPageRoute(
+        builder: (_) => RepCameraScreen(
+          exercise: block.exercise,
+          pattern: pattern,
+          targetReps: block.targetRepsMax,
+        ),
+      ),
     );
+    if (!mounted || reps == null || reps <= 0) return;
+    controller.adjustReps(reps - controller.currentReps);
   }
 
   /// "Giong HLV": doc cau nhac TIENG ANH ngan (luyen nghe trong luc tap).
@@ -167,6 +242,13 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
         builder: (_) => WorkoutFinishedScreen(
           controller: controller,
           wordsReviewed: _wordsReviewed,
+          // Doc o man tong ket (man nay tat TTS khi dong).
+          coachLine: _coachVoice
+              ? _script.workoutDone(
+                  sets: controller.totalSetsLogged,
+                  words: _wordsReviewed,
+                )
+              : null,
         ),
       ),
     );
@@ -423,7 +505,16 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                                         _setLearnWhileResting(false),
                                   ),
                           )
-                        : _LoggingView(controller: controller),
+                        : _LoggingView(
+                            controller: controller,
+                            onOpenCamera:
+                                RepPattern.forExercise(
+                                      controller.currentBlock.exercise,
+                                    ) ==
+                                    null
+                                ? null
+                                : _openRepCamera,
+                          ),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -573,8 +664,11 @@ class _ElapsedTextState extends State<_ElapsedText> {
 }
 
 class _LoggingView extends ConsumerWidget {
-  const _LoggingView({required this.controller});
+  const _LoggingView({required this.controller, this.onOpenCamera});
   final WorkoutController controller;
+
+  /// Mo "Dem rep bang camera" - null khi bai nay chua ho tro (plank...).
+  final VoidCallback? onOpenCamera;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -625,6 +719,18 @@ class _LoggingView extends ConsumerWidget {
           onMinus: () => controller.adjustReps(-1),
           onPlus: () => controller.adjustReps(1),
         ),
+        if (onOpenCamera != null) ...[
+          const SizedBox(height: 8),
+          TextButton.icon(
+            onPressed: onOpenCamera,
+            style: TextButton.styleFrom(
+              minimumSize: const Size.fromHeight(48),
+              foregroundColor: AppColors.fitnessAccentBright,
+            ),
+            icon: const Icon(Icons.videocam_rounded),
+            label: Text(ref.tr('rep_camera_open')),
+          ),
+        ],
       ],
     );
   }

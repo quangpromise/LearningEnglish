@@ -10,6 +10,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/audio/audio_service_diagnostics.dart';
 import 'core/config/env.dart';
+import 'core/config/gymtalk_flags.dart';
 import 'core/navigation/assistive_fab_overlay.dart';
 import 'core/navigation/nav_keys.dart';
 import 'core/navigation/root_shell.dart';
@@ -260,7 +261,9 @@ class _AuthGate extends ConsumerWidget {
         // addPostFrameCallback vi luc nay RootShell (route "/") co the chua
         // kip mount xong trong cung frame voi su kien dang nhap.
         final pending = ref.read(pendingRestoreAppSectionProvider);
-        if (pending != null && pending != AppSection.learnEnglish) {
+        if (pending != null &&
+            pending != AppSection.learnEnglish &&
+            (kShowWealthSection || pending != AppSection.wealth)) {
           ref.read(pendingRestoreAppSectionProvider.notifier).state = null;
           WidgetsBinding.instance.addPostFrameCallback((_) {
             ref.read(currentAppSectionProvider.notifier).state = pending;

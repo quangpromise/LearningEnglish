@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../features/wealth/presentation/wealth_shell.dart';
+import '../config/gymtalk_flags.dart';
 import '../i18n/app_strings.dart';
 import '../providers/app_providers.dart';
 import '../theme/app_theme.dart';
@@ -245,14 +246,16 @@ class _DropdownPanel extends ConsumerWidget {
               active: section == AppSection.fitness,
               onTap: () => onSelect(AppSection.fitness),
             ),
-            const SizedBox(height: 6),
-            _AppSwitcherTile(
-              icon: Icons.account_balance_wallet_rounded,
-              color: AppColors.wealthAccent,
-              label: ref.tr('app_switcher_wealth'),
-              active: section == AppSection.wealth,
-              onTap: () => onSelect(AppSection.wealth),
-            ),
+            if (kShowWealthSection) ...[
+              const SizedBox(height: 6),
+              _AppSwitcherTile(
+                icon: Icons.account_balance_wallet_rounded,
+                color: AppColors.wealthAccent,
+                label: ref.tr('app_switcher_wealth'),
+                active: section == AppSection.wealth,
+                onTap: () => onSelect(AppSection.wealth),
+              ),
+            ],
           ],
         ),
       ),

@@ -16,6 +16,7 @@ import '../../features/planner/presentation/planner_screen.dart';
 import '../../features/social/data/device_token_repository.dart';
 import '../../features/social/data/social_repository.dart';
 import '../../features/social/presentation/chat_screen.dart';
+import '../../features/today/data/gymtalk_reminders.dart';
 import '../../features/wealth/presentation/market_screen.dart';
 import '../../features/wealth/presentation/recurring_services_screen.dart';
 import '../navigation/nav_keys.dart';
@@ -287,6 +288,13 @@ void handleNotificationAction(NotificationResponse response) {
   // trang thai sau khi da mo Quiz.
   if (payload.startsWith('quiz:')) {
     DailyQuizNotifications.instance.openQuiz(notificationId: response.id);
+    return;
+  }
+  // "gymtalk:today" - nhac tap + hoc hang ngay (GymTalkReminders) -> ve
+  // man goc, tab Hom nay.
+  if (payload == GymTalkReminders.payload) {
+    rootNavigatorKey.currentState?.popUntil((r) => r.isFirst);
+    GymTalkReminders.instance.handleTap();
     return;
   }
   // "planner:<taskId>|<yyyy-MM-dd>" - nhac viec cua Lap ke hoach (xem

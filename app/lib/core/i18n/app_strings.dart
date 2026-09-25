@@ -3554,6 +3554,105 @@ class AppStrings {
       AppLanguage.vi: 'Đã chia sẻ ✓',
       AppLanguage.en: 'Shared ✓',
     },
+    // GymTalk giai doan 4-6: camera dem rep, chia se, thu thach, nhac.
+    'rep_camera_open': {
+      AppLanguage.vi: 'Đếm rep bằng camera',
+      AppLanguage.en: 'Count reps with camera',
+    },
+    'rep_camera_unavailable': {
+      AppLanguage.vi: 'Máy này chưa dùng được camera đếm rep. Bạn vẫn nhập số reps bằng tay như bình thường.',
+      AppLanguage.en: 'Camera rep counting is not available on this device. You can still enter reps by hand.',
+    },
+    'rep_camera_tracking': {
+      AppLanguage.vi: 'Đang theo dõi tư thế',
+      AppLanguage.en: 'Tracking your form',
+    },
+    'rep_camera_step_back': {
+      AppLanguage.vi: 'Lùi ra xa để camera thấy toàn thân',
+      AppLanguage.en: 'Step back so the camera can see your whole body',
+    },
+    'rep_camera_reset': {AppLanguage.vi: 'Đếm lại', AppLanguage.en: 'Reset'},
+    'rep_camera_done': {
+      AppLanguage.vi: 'Xong · {reps} reps',
+      AppLanguage.en: 'Done · {reps} reps',
+    },
+    'share_card_button': {
+      AppLanguage.vi: 'Chia sẻ ảnh kết quả',
+      AppLanguage.en: 'Share result image',
+    },
+    'share_card_preparing': {
+      AppLanguage.vi: 'Đang tạo ảnh…',
+      AppLanguage.en: 'Preparing image…',
+    },
+    'share_card_text': {
+      AppLanguage.vi: 'Vừa tập xong và học tiếng Anh cùng GymTalk!',
+      AppLanguage.en:
+          'Just finished a workout and learned English with GymTalk!',
+    },
+    'challenge_title': {
+      AppLanguage.vi: 'Thử thách tuần với bạn bè',
+      AppLanguage.en: 'Weekly friends challenge',
+    },
+    'challenge_subtitle': {
+      AppLanguage.vi: 'Số ngày đạt Body + Brain trong 7 ngày qua',
+      AppLanguage.en: 'Body + Brain days in the last 7 days',
+    },
+    'challenge_no_friends': {
+      AppLanguage.vi: 'Kết bạn trong mục Tin nhắn để thi đua cùng nhau.',
+      AppLanguage.en: 'Add friends in Messages to compete together.',
+    },
+    'challenge_me': {AppLanguage.vi: 'Bạn', AppLanguage.en: 'You'},
+    'remind_setting_title': {
+      AppLanguage.vi: 'Nhắc tập & học mỗi ngày',
+      AppLanguage.en: 'Daily training & study reminder',
+    },
+    'remind_setting_sub': {
+      AppLanguage.vi: 'Nội dung theo lịch giáo án của bạn',
+      AppLanguage.en: 'Tailored to your program schedule',
+    },
+    'remind_setting_time': {
+      AppLanguage.vi: 'Giờ nhắc',
+      AppLanguage.en: 'Reminder time',
+    },
+    'remind_workout_title': {
+      AppLanguage.vi: 'Hôm nay có buổi tập 💪',
+      AppLanguage.en: 'Workout day 💪',
+    },
+    'remind_workout_body': {
+      AppLanguage.vi:
+          'Ôn 5 từ gym trước khi tập, rồi học tiếp lúc nghỉ giữa set nhé!',
+      AppLanguage.en: 'Review 5 gym words before training, then keep learning between sets!',
+    },
+    'remind_rest_title': {
+      AppLanguage.vi: 'Hôm nay nghỉ tập',
+      AppLanguage.en: 'Rest day',
+    },
+    'remind_rest_body': {
+      AppLanguage.vi: 'Dành 5 phút ôn {count} từ để giữ chuỗi Body + Brain.',
+      AppLanguage.en: 'Spend 5 minutes reviewing {count} words to keep your Body + Brain streak.',
+    },
+    'remind_generic_title': {
+      AppLanguage.vi: 'Đến giờ GymTalk',
+      AppLanguage.en: 'GymTalk time',
+    },
+    'remind_generic_body': {
+      AppLanguage.vi: 'Tập một chút, học vài từ, giữ chuỗi ngày của bạn!',
+      AppLanguage.en: 'Train a little, learn a few words, keep your streak!',
+    },
+    'remind_workout_body_later': {
+      AppLanguage.vi:
+          'Ôn 5 từ gym trước khi tập, rồi học tiếp lúc nghỉ giữa set nhé!',
+      AppLanguage.en: 'Review 5 gym words before training, then keep learning between sets!',
+    },
+    'remind_rest_body_later': {
+      AppLanguage.vi: 'Dành 5 phút ôn từ để giữ chuỗi Body + Brain.',
+      AppLanguage.en:
+          'Spend 5 minutes reviewing words to keep your Body + Brain streak.',
+    },
+    'remind_generic_body_later': {
+      AppLanguage.vi: 'Tập một chút, học vài từ, giữ chuỗi ngày của bạn!',
+      AppLanguage.en: 'Train a little, learn a few words, keep your streak!',
+    },
     // GymTalk giai doan 3: PT AI, luyen noi ranh tay, giong HLV, thiet lap.
     'voice_chat_pt_title': {
       AppLanguage.vi: 'PT AI (tiếng Anh)',
