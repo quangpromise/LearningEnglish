@@ -20,6 +20,7 @@ import 'core/notifications/daily_quiz_notifications.dart';
 import 'core/notifications/local_notifications_core.dart';
 import 'core/providers/app_providers.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/gt_tokens.dart';
 import 'core/tts/app_tts.dart';
 import 'features/ai_voice_chat/data/gemini_voices.dart';
 import 'features/auth/presentation/reset_password_screen.dart';
@@ -209,6 +210,8 @@ class LearnEnglishMusicApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
         brightness: Brightness.dark,
+        // Design token redesign (ADR-0004) - dark-first, light dang khoa.
+        extensions: const [GtTokens.dark],
         scaffoldBackgroundColor: AppColors.bgTop,
         colorScheme: ColorScheme.fromSeed(
           seedColor: AppColors.blue,

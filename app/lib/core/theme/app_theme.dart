@@ -3,7 +3,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../providers/app_providers.dart';
+import 'gt_tokens.dart';
 
 /// Design tokens theo `.claude/skills/ui-design-system/SKILL.md`.
 class AppColors {
@@ -321,17 +321,14 @@ class ScreenBackground extends ConsumerWidget {
   /// nen rieng thay vi dung mac dinh chung ca app.
   final Gradient? gradient;
 
-  /// Anh nen phu rieng cho MAN HINH NAY - thuong KHONG can truyen, de trong
-  /// se tu dong lay theo [currentAppBackgroundProvider] (dung "app" dang mo:
-  /// Hoc Tieng Anh/Fitness/Wealth) de moi man hinh trong 1 khu vuc tu dong
-  /// dong bo anh nen ma khong phai sua tung file. Chi truyen rieng khi 1 man
-  /// hinh CO CHU DINH khac voi mac dinh cua khu vuc no dang o.
+  /// Anh nen rieng cho MAN HINH NAY (hiem khi dung). Mac dinh nen PHANG
+  /// mau `bg` cua design token - ban redesign bo anh nen theo khu vuc
+  /// (ADR-0004, docs/design/gymtalk-redesign/), anh chi con trong hero card.
   final String? backgroundImage;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final effectiveBackgroundImage =
-        backgroundImage ?? ref.watch(currentAppBackgroundProvider);
+    final effectiveBackgroundImage = backgroundImage;
     return Stack(
       children: [
         // Positioned.fill BAT BUOC cho moi lop, ke ca gradient nen: 1
@@ -341,7 +338,8 @@ class ScreenBackground extends ConsumerWidget {
         Positioned.fill(
           child: Container(
             decoration: BoxDecoration(
-              gradient: gradient ?? AppColors.screenGradient,
+              color: gradient == null ? context.gt.bg : null,
+              gradient: gradient,
             ),
           ),
         ),
