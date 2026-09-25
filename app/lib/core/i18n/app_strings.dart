@@ -5648,6 +5648,7 @@ class AppStrings {
     'progress_body_next_workouts': {
       AppLanguage.vi: 'Còn {w} buổi tập nữa để lên {level}',
       AppLanguage.en: '{w} more workouts to reach {level}',
+    },
     'rest_game_title': {
       AppLanguage.vi: 'Rest Game',
       AppLanguage.en: 'Rest Game',
