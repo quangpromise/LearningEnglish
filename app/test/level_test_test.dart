@@ -104,6 +104,53 @@ void main() {
       expect(items.map((i) => i.unitId).toSet(), {'a1-u1', 'a1-u2', 'a1-u3'});
     });
 
+    test('B1+ reserves one whole IELTS reading passage', () {
+      PracticeItem ielts(String unit, int k) => PracticeItem(
+        id: '$unit-ielts$k',
+        unitId: unit,
+        type: PracticeItemType.ieltsMicro,
+        prompt: 's$k',
+        options: const ['True', 'False', 'Not Given'],
+        answerIndex: 0,
+        sourceIds: const ['gymtalk-ielts'],
+        passage: 'p',
+        task: 'tfng',
+      );
+      PathUnit unit(String id) => PathUnit(
+        id: id,
+        index: 1,
+        titleEn: id,
+        titleVi: id,
+        words: const [],
+        items: [
+          ..._unit(id, 1, items: 12).items,
+          for (var k = 0; k < 3; k++) ielts(id, k),
+        ],
+      );
+      final pack = ContentPack(
+        schemaVersion: 1,
+        packVersion: 'pv',
+        contentHash: 'h',
+        approval: null,
+        sources: const [],
+        stages: [
+          PathStage(stage: CefrLevel.b1, units: [unit('b1-u1'), unit('b1-u2')]),
+          PathStage(stage: CefrLevel.a2, units: [unit('a2-u1')]),
+        ],
+      );
+      for (var seed = 0; seed < 10; seed++) {
+        final items = buildLevelTest(pack, CefrLevel.b1, Random(seed));
+        expect(items.length, kLevelTestQuestions);
+        final reading = items
+            .where((i) => i.type == PracticeItemType.ieltsMicro)
+            .toList();
+        expect(reading.length, 3);
+        expect(reading.map((i) => i.unitId).toSet().length, 1);
+      }
+      final a2 = buildLevelTest(pack, CefrLevel.a2, Random(1));
+      expect(a2.where((i) => i.type == PracticeItemType.ieltsMicro), isEmpty);
+    });
+
     test('uses every item when the stage has fewer than 20', () {
       final items = buildLevelTest(_pack(), CefrLevel.a2, Random(3));
       expect(items.length, 10);

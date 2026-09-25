@@ -2,7 +2,8 @@
   "_comment": "Loai tru do review (nguoi + Grok) phat hien. Moi muc ghi ly do.",
   "excludeWords": {
     "slide": "Xep nham vao chu de Food; nghia 'slide' (trang trinh chieu) de gay nham.",
-    "tear": "Dong tu/danh tu 2 cach doc (nuoc mat / xe) - Listening khong phan biet duoc."
+    "tear": "Dong tu/danh tu 2 cach doc (nuoc mat / xe) - Listening khong phan biet duoc.",
+    "mercury": "Trong bo tu vung la ten hanh tinh (Mercury, danh tu rieng) - khong hop voi C1 hoc thuat."
   },
   "excludeSentences": {
     "There is no telling when the rainy season will be over.": "Qua kho so voi A1-A2, ban dich lech nghia.",

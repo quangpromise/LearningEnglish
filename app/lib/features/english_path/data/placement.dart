@@ -257,7 +257,13 @@ Map<CefrLevel, ({int correct, int asked})> placementStageScores(
   return out;
 }
 
-/// Pool cau hoi Placement tu Content Pack: moi Practice Item cua tung Stage.
+/// Pool cau hoi Placement tu Content Pack: Practice Item cua tung Stage, bo
+/// bai doc IELTS (qua dai cho bai xep lop ~3 phut).
 Map<CefrLevel, List<PracticeItem>> placementPool(ContentPack pack) => {
-  for (final s in pack.stages) s.stage: [for (final u in s.units) ...u.items],
+  for (final s in pack.stages)
+    s.stage: [
+      for (final u in s.units)
+        for (final i in u.items)
+          if (i.type != PracticeItemType.ieltsMicro) i,
+    ],
 };

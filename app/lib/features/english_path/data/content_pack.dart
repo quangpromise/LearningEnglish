@@ -10,14 +10,23 @@ import 'cefr_level.dart';
 /// hash noi dung se lech va pack mat approval.
 const kContentPackAsset = 'assets/english_path/pack.json';
 
-/// Loai Practice Item (ieltsMicro them cung ticket sinh ra no - #56):
+/// Loai Practice Item:
 /// - meaning: [PracticeItem.prompt] la tu tieng Anh, options la nghia Viet.
 /// - listening: nghe [PracticeItem.prompt] (khong hien chu), chon tu dung.
 /// - gapFill: prompt la cau co "___", options la tu tieng Anh; hintVi la
 ///   ban dich cau.
 /// - wordScramble: xep chu cai thanh tu options[0]; hintVi la nghia Viet.
 /// - grammar: cau co "___" chon dang dung; explanationVi giai thich quy tac.
-enum PracticeItemType { meaning, listening, gapFill, wordScramble, grammar }
+/// - ieltsMicro: bai doc ngan kieu IELTS (chi B1-C1) - [PracticeItem.passage]
+///   + cau True/False/Not Given hoac chon tieu de ([PracticeItem.task]).
+enum PracticeItemType {
+  meaning,
+  listening,
+  gapFill,
+  wordScramble,
+  grammar,
+  ieltsMicro,
+}
 
 class ContentSource {
   const ContentSource({
@@ -97,6 +106,8 @@ class PracticeItem {
     this.hintVi,
     this.explanationVi,
     this.sourceRef,
+    this.passage,
+    this.task,
   });
 
   factory PracticeItem.fromJson(Map<String, dynamic> json) => PracticeItem(
@@ -111,6 +122,8 @@ class PracticeItem {
     hintVi: json['hintVi'] as String?,
     explanationVi: json['explanationVi'] as String?,
     sourceRef: json['sourceRef'] as String?,
+    passage: json['passage'] as String?,
+    task: json['task'] as String?,
   );
 
   final String id;
@@ -132,6 +145,12 @@ class PracticeItem {
 
   /// Nguon cu the cua noi dung, vd "tatoeba:eng#123/vie#456" (ghi cong).
   final String? sourceRef;
+
+  /// Doan van cua cau IELTS Micro.
+  final String? passage;
+
+  /// Dang IELTS Micro: "tfng" hoac "heading".
+  final String? task;
 
   String get correctAnswer => options[answerIndex];
 }

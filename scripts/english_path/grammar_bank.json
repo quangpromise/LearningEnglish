@@ -763,5 +763,885 @@
         }
       ]
     }
+  ],
+  "B1": [
+    {
+      "id": "present-perfect",
+      "titleEn": "Present perfect",
+      "titleVi": "Thì hiện tại hoàn thành",
+      "explanationVi": "have/has + quá khứ phân từ: nói trải nghiệm hoặc việc đã xảy ra nhưng còn liên quan tới hiện tại.",
+      "items": [
+        {
+          "prompt": "I have never ___ a marathon.",
+          "options": [
+            "run",
+            "ran",
+            "running",
+            "runs"
+          ],
+          "answer": "run"
+        },
+        {
+          "prompt": "She ___ already finished her workout.",
+          "options": [
+            "has",
+            "have",
+            "is",
+            "did"
+          ],
+          "answer": "has"
+        },
+        {
+          "prompt": "Have you ever ___ yoga?",
+          "options": [
+            "tried",
+            "try",
+            "trying",
+            "tries"
+          ],
+          "answer": "tried"
+        }
+      ]
+    },
+    {
+      "id": "for-since",
+      "titleEn": "for / since",
+      "titleVi": "for và since với hiện tại hoàn thành",
+      "explanationVi": "for + khoảng thời gian (for two years); since + mốc thời gian (since 2020).",
+      "items": [
+        {
+          "prompt": "I have trained here ___ three years.",
+          "options": [
+            "for",
+            "since",
+            "ago",
+            "during"
+          ],
+          "answer": "for"
+        },
+        {
+          "prompt": "He has been a coach ___ 2019.",
+          "options": [
+            "since",
+            "for",
+            "ago",
+            "from"
+          ],
+          "answer": "since"
+        },
+        {
+          "prompt": "We haven't seen her ___ last Monday.",
+          "options": [
+            "since",
+            "for",
+            "ago",
+            "before"
+          ],
+          "answer": "since"
+        }
+      ]
+    },
+    {
+      "id": "past-continuous",
+      "titleEn": "Past continuous",
+      "titleVi": "Thì quá khứ tiếp diễn",
+      "explanationVi": "was/were + V-ing: việc đang diễn ra tại một thời điểm trong quá khứ, thường bị một việc khác cắt ngang.",
+      "items": [
+        {
+          "prompt": "I ___ running when it started to rain.",
+          "options": [
+            "was",
+            "were",
+            "am",
+            "did"
+          ],
+          "answer": "was"
+        },
+        {
+          "prompt": "They were ___ weights when the lights went out.",
+          "options": [
+            "lifting",
+            "lifted",
+            "lift",
+            "lifts"
+          ],
+          "answer": "lifting"
+        },
+        {
+          "prompt": "What ___ you doing at 7 p.m. yesterday?",
+          "options": [
+            "were",
+            "was",
+            "did",
+            "are"
+          ],
+          "answer": "were"
+        }
+      ]
+    },
+    {
+      "id": "first-conditional",
+      "titleEn": "First conditional",
+      "titleVi": "Câu điều kiện loại 1",
+      "explanationVi": "If + hiện tại đơn, will + động từ nguyên mẫu: điều có thể xảy ra ở tương lai.",
+      "items": [
+        {
+          "prompt": "If you train every day, you ___ get stronger.",
+          "options": [
+            "will",
+            "would",
+            "did",
+            "are"
+          ],
+          "answer": "will"
+        },
+        {
+          "prompt": "If it ___ tomorrow, we will train indoors.",
+          "options": [
+            "rains",
+            "will rain",
+            "rained",
+            "raining"
+          ],
+          "answer": "rains"
+        },
+        {
+          "prompt": "You will hurt your back if you ___ warm up.",
+          "options": [
+            "don't",
+            "won't",
+            "didn't",
+            "not"
+          ],
+          "answer": "don't"
+        }
+      ]
+    },
+    {
+      "id": "relative-clauses",
+      "titleEn": "Defining relative clauses",
+      "titleVi": "Mệnh đề quan hệ xác định",
+      "explanationVi": "who dùng cho người, which dùng cho vật; that dùng được cho cả hai; where dùng cho nơi chốn.",
+      "items": [
+        {
+          "prompt": "The coach ___ helped me is from Da Nang.",
+          "options": [
+            "who",
+            "which",
+            "where",
+            "whose"
+          ],
+          "answer": "who"
+        },
+        {
+          "prompt": "This is the machine ___ I use for my legs.",
+          "options": [
+            "which",
+            "who",
+            "where",
+            "whose"
+          ],
+          "answer": "which"
+        },
+        {
+          "prompt": "That is the gym ___ I met my best friend.",
+          "options": [
+            "where",
+            "which",
+            "who",
+            "whose"
+          ],
+          "answer": "where"
+        }
+      ]
+    },
+    {
+      "id": "gerund-infinitive",
+      "titleEn": "Gerund or infinitive",
+      "titleVi": "V-ing hay to + V",
+      "explanationVi": "Sau enjoy, finish, avoid dùng V-ing; sau want, decide, plan dùng to + động từ.",
+      "items": [
+        {
+          "prompt": "I enjoy ___ in the morning.",
+          "options": [
+            "running",
+            "to run",
+            "run",
+            "ran"
+          ],
+          "answer": "running"
+        },
+        {
+          "prompt": "She decided ___ a personal trainer.",
+          "options": [
+            "to hire",
+            "hiring",
+            "hire",
+            "hired"
+          ],
+          "answer": "to hire"
+        },
+        {
+          "prompt": "Try to avoid ___ too much sugar.",
+          "options": [
+            "eating",
+            "to eat",
+            "eat",
+            "ate"
+          ],
+          "answer": "eating"
+        }
+      ]
+    },
+    {
+      "id": "should-might",
+      "titleEn": "should / might",
+      "titleVi": "should (lời khuyên) và might (khả năng)",
+      "explanationVi": "should + V: khuyên nên làm; might + V: có thể sẽ xảy ra (không chắc).",
+      "items": [
+        {
+          "prompt": "Your knee hurts. You ___ see a doctor.",
+          "options": [
+            "should",
+            "might",
+            "must to",
+            "would to"
+          ],
+          "answer": "should"
+        },
+        {
+          "prompt": "Take an umbrella. It ___ rain later.",
+          "options": [
+            "might",
+            "should",
+            "must",
+            "ought"
+          ],
+          "answer": "might"
+        },
+        {
+          "prompt": "You shouldn't ___ heavy weights without a spotter.",
+          "options": [
+            "lift",
+            "to lift",
+            "lifting",
+            "lifted"
+          ],
+          "answer": "lift"
+        }
+      ]
+    },
+    {
+      "id": "used-to",
+      "titleEn": "used to",
+      "titleVi": "used to: thói quen trong quá khứ",
+      "explanationVi": "used to + V: việc thường làm trước đây nhưng nay không còn.",
+      "items": [
+        {
+          "prompt": "I used to ___ fast food every day.",
+          "options": [
+            "eat",
+            "eating",
+            "ate",
+            "eats"
+          ],
+          "answer": "eat"
+        },
+        {
+          "prompt": "She didn't ___ to like running, but now she loves it.",
+          "options": [
+            "use",
+            "used",
+            "using",
+            "uses"
+          ],
+          "answer": "use"
+        },
+        {
+          "prompt": "___ you use to play football at school?",
+          "options": [
+            "Did",
+            "Were",
+            "Do",
+            "Have"
+          ],
+          "answer": "Did"
+        }
+      ]
+    },
+    {
+      "id": "passive-present",
+      "titleEn": "Passive voice (present simple)",
+      "titleVi": "Câu bị động ở hiện tại đơn",
+      "explanationVi": "am/is/are + quá khứ phân từ: nhấn vào việc được làm, không phải ai làm.",
+      "items": [
+        {
+          "prompt": "The gym ___ cleaned every night.",
+          "options": [
+            "is",
+            "are",
+            "has",
+            "does"
+          ],
+          "answer": "is"
+        },
+        {
+          "prompt": "Towels are ___ at the front desk.",
+          "options": [
+            "given",
+            "give",
+            "gave",
+            "giving"
+          ],
+          "answer": "given"
+        },
+        {
+          "prompt": "These machines ___ used by beginners.",
+          "options": [
+            "are",
+            "is",
+            "have",
+            "do"
+          ],
+          "answer": "are"
+        }
+      ]
+    },
+    {
+      "id": "too-enough",
+      "titleEn": "too / enough",
+      "titleVi": "too và enough",
+      "explanationVi": "too + tính từ: quá (không đạt được); tính từ + enough: đủ.",
+      "items": [
+        {
+          "prompt": "This weight is ___ heavy for me.",
+          "options": [
+            "too",
+            "enough",
+            "very enough",
+            "so much"
+          ],
+          "answer": "too"
+        },
+        {
+          "prompt": "I'm not strong ___ to lift 100 kg.",
+          "options": [
+            "enough",
+            "too",
+            "so",
+            "very"
+          ],
+          "answer": "enough"
+        },
+        {
+          "prompt": "Are you fit ___ for the race?",
+          "options": [
+            "enough",
+            "too",
+            "much",
+            "more"
+          ],
+          "answer": "enough"
+        }
+      ]
+    }
+  ],
+  "B2": [
+    {
+      "id": "second-conditional",
+      "titleEn": "Second conditional",
+      "titleVi": "Câu điều kiện loại 2",
+      "explanationVi": "If + quá khứ đơn, would + V: tình huống không có thật hoặc khó xảy ra ở hiện tại.",
+      "items": [
+        {
+          "prompt": "If I had more time, I ___ train every day.",
+          "options": [
+            "would",
+            "will",
+            "did",
+            "had"
+          ],
+          "answer": "would"
+        },
+        {
+          "prompt": "If she ___ closer to the gym, she would go more often.",
+          "options": [
+            "lived",
+            "lives",
+            "would live",
+            "has lived"
+          ],
+          "answer": "lived"
+        },
+        {
+          "prompt": "What would you do if you ___ injured before a race?",
+          "options": [
+            "got",
+            "get",
+            "will get",
+            "had got"
+          ],
+          "answer": "got"
+        }
+      ]
+    },
+    {
+      "id": "third-conditional",
+      "titleEn": "Third conditional",
+      "titleVi": "Câu điều kiện loại 3",
+      "explanationVi": "If + had + quá khứ phân từ, would have + quá khứ phân từ: giả định trái với quá khứ.",
+      "items": [
+        {
+          "prompt": "If I had warmed up, I wouldn't have ___ my ankle.",
+          "options": [
+            "hurt",
+            "hurting",
+            "hurts",
+            "to hurt"
+          ],
+          "answer": "hurt"
+        },
+        {
+          "prompt": "She would have won if she ___ trained harder.",
+          "options": [
+            "had",
+            "has",
+            "would",
+            "did"
+          ],
+          "answer": "had"
+        },
+        {
+          "prompt": "If we had left earlier, we ___ have missed the class.",
+          "options": [
+            "wouldn't",
+            "won't",
+            "didn't",
+            "hadn't"
+          ],
+          "answer": "wouldn't"
+        }
+      ]
+    },
+    {
+      "id": "passive-perfect",
+      "titleEn": "Passive (past and perfect)",
+      "titleVi": "Bị động ở quá khứ và hoàn thành",
+      "explanationVi": "was/were + V3 (quá khứ); has/have been + V3 (hiện tại hoàn thành).",
+      "items": [
+        {
+          "prompt": "The new equipment ___ delivered yesterday.",
+          "options": [
+            "was",
+            "has",
+            "is being",
+            "had"
+          ],
+          "answer": "was"
+        },
+        {
+          "prompt": "The pool has ___ closed for repairs.",
+          "options": [
+            "been",
+            "being",
+            "be",
+            "was"
+          ],
+          "answer": "been"
+        },
+        {
+          "prompt": "Two new trainers have been ___ this month.",
+          "options": [
+            "hired",
+            "hire",
+            "hiring",
+            "to hire"
+          ],
+          "answer": "hired"
+        }
+      ]
+    },
+    {
+      "id": "reported-speech",
+      "titleEn": "Reported speech",
+      "titleVi": "Câu tường thuật",
+      "explanationVi": "Khi tường thuật, động từ thường lùi một thì: \"I am tired\" → She said she was tired.",
+      "items": [
+        {
+          "prompt": "\"I am tired.\" → She said that she ___ tired.",
+          "options": [
+            "was",
+            "is",
+            "has been",
+            "be"
+          ],
+          "answer": "was"
+        },
+        {
+          "prompt": "\"We will train tomorrow.\" → They said they ___ train the next day.",
+          "options": [
+            "would",
+            "will",
+            "are",
+            "can"
+          ],
+          "answer": "would"
+        },
+        {
+          "prompt": "\"Don't skip warm-ups.\" → The coach told us ___ skip warm-ups.",
+          "options": [
+            "not to",
+            "don't",
+            "to not to",
+            "not"
+          ],
+          "answer": "not to"
+        }
+      ]
+    },
+    {
+      "id": "present-perfect-continuous",
+      "titleEn": "Present perfect continuous",
+      "titleVi": "Hiện tại hoàn thành tiếp diễn",
+      "explanationVi": "have/has been + V-ing: nhấn mạnh việc kéo dài liên tục đến bây giờ.",
+      "items": [
+        {
+          "prompt": "I have been ___ for two hours, so I'm exhausted.",
+          "options": [
+            "cycling",
+            "cycled",
+            "cycle",
+            "to cycle"
+          ],
+          "answer": "cycling"
+        },
+        {
+          "prompt": "How long ___ you been learning English?",
+          "options": [
+            "have",
+            "has",
+            "are",
+            "did"
+          ],
+          "answer": "have"
+        },
+        {
+          "prompt": "She has ___ training for the marathon since March.",
+          "options": [
+            "been",
+            "being",
+            "be",
+            "was"
+          ],
+          "answer": "been"
+        }
+      ]
+    },
+    {
+      "id": "modal-perfect",
+      "titleEn": "should have / must have",
+      "titleVi": "Động từ khuyết thiếu hoàn thành",
+      "explanationVi": "should have + V3: lẽ ra nên làm (nhưng đã không làm); must have + V3: chắc hẳn đã.",
+      "items": [
+        {
+          "prompt": "My legs hurt. I should have ___ after the run.",
+          "options": [
+            "stretched",
+            "stretch",
+            "stretching",
+            "to stretch"
+          ],
+          "answer": "stretched"
+        },
+        {
+          "prompt": "He looks exhausted. He ___ have trained very hard.",
+          "options": [
+            "must",
+            "should",
+            "would",
+            "ought"
+          ],
+          "answer": "must"
+        },
+        {
+          "prompt": "You ___ have told me the class was cancelled!",
+          "options": [
+            "should",
+            "must",
+            "might",
+            "can"
+          ],
+          "answer": "should"
+        }
+      ]
+    },
+    {
+      "id": "wish",
+      "titleEn": "wish",
+      "titleVi": "Câu ước với wish",
+      "explanationVi": "wish + quá khứ đơn: ước điều trái với hiện tại; wish + had + V3: tiếc về quá khứ.",
+      "items": [
+        {
+          "prompt": "I wish I ___ more flexible.",
+          "options": [
+            "were",
+            "am",
+            "will be",
+            "be"
+          ],
+          "answer": "were"
+        },
+        {
+          "prompt": "She wishes she ___ started training earlier.",
+          "options": [
+            "had",
+            "has",
+            "would",
+            "did"
+          ],
+          "answer": "had"
+        },
+        {
+          "prompt": "I wish my gym ___ open on Sundays.",
+          "options": [
+            "was",
+            "is",
+            "will be",
+            "has been"
+          ],
+          "answer": "was"
+        }
+      ]
+    },
+    {
+      "id": "non-defining-relative",
+      "titleEn": "Non-defining relative clauses",
+      "titleVi": "Mệnh đề quan hệ không xác định",
+      "explanationVi": "Thêm thông tin phụ, đặt giữa hai dấu phẩy; dùng who/which/whose, không dùng that.",
+      "items": [
+        {
+          "prompt": "My trainer, ___ is from Hue, speaks three languages.",
+          "options": [
+            "who",
+            "that",
+            "which",
+            "whom he"
+          ],
+          "answer": "who"
+        },
+        {
+          "prompt": "The app, ___ I use every day, tracks my sleep.",
+          "options": [
+            "which",
+            "that",
+            "who",
+            "what"
+          ],
+          "answer": "which"
+        },
+        {
+          "prompt": "Lan, ___ brother is a boxer, trains with us.",
+          "options": [
+            "whose",
+            "who",
+            "which",
+            "that"
+          ],
+          "answer": "whose"
+        }
+      ]
+    },
+    {
+      "id": "causative",
+      "titleEn": "have something done",
+      "titleVi": "Thể nhờ: have something done",
+      "explanationVi": "have + vật + quá khứ phân từ: nhờ/thuê người khác làm việc gì cho mình.",
+      "items": [
+        {
+          "prompt": "I had my body fat ___ at the clinic.",
+          "options": [
+            "measured",
+            "measure",
+            "measuring",
+            "to measure"
+          ],
+          "answer": "measured"
+        },
+        {
+          "prompt": "She is having her bike ___ this week.",
+          "options": [
+            "repaired",
+            "repair",
+            "repairing",
+            "to repair"
+          ],
+          "answer": "repaired"
+        },
+        {
+          "prompt": "We need to ___ the air conditioner fixed.",
+          "options": [
+            "have",
+            "make",
+            "do",
+            "be"
+          ],
+          "answer": "have"
+        }
+      ]
+    },
+    {
+      "id": "contrast-linkers",
+      "titleEn": "although / despite / however",
+      "titleVi": "Từ nối chỉ sự tương phản",
+      "explanationVi": "although + mệnh đề; despite + danh từ/V-ing; however đứng đầu câu, sau đó có dấu phẩy.",
+      "items": [
+        {
+          "prompt": "___ it was raining, we went for a run.",
+          "options": [
+            "Although",
+            "Despite",
+            "However",
+            "In spite"
+          ],
+          "answer": "Although"
+        },
+        {
+          "prompt": "___ the pain, she finished the race.",
+          "options": [
+            "Despite",
+            "Although",
+            "However",
+            "Even"
+          ],
+          "answer": "Despite"
+        },
+        {
+          "prompt": "The class was hard. ___, I enjoyed it.",
+          "options": [
+            "However",
+            "Although",
+            "Despite",
+            "Because"
+          ],
+          "answer": "However"
+        }
+      ]
+    }
+  ],
+  "C1": [
+    {
+      "id": "inversion",
+      "titleEn": "Negative inversion",
+      "titleVi": "Đảo ngữ với trạng từ phủ định",
+      "explanationVi": "Never/Rarely/Not only đứng đầu câu thì đảo trợ động từ lên trước chủ ngữ: Never have I...",
+      "items": [
+        {
+          "prompt": "Never ___ I felt so fit in my life.",
+          "options": [
+            "have",
+            "I have",
+            "had I",
+            "did"
+          ],
+          "answer": "have"
+        },
+        {
+          "prompt": "Rarely ___ she miss a training session.",
+          "options": [
+            "does",
+            "she does",
+            "is",
+            "has she"
+          ],
+          "answer": "does"
+        },
+        {
+          "prompt": "Not only ___ he run, but he also swims.",
+          "options": [
+            "does",
+            "he does",
+            "is",
+            "did he"
+          ],
+          "answer": "does"
+        }
+      ]
+    },
+    {
+      "id": "mixed-conditionals",
+      "titleEn": "Mixed conditionals",
+      "titleVi": "Câu điều kiện hỗn hợp",
+      "explanationVi": "If + had + V3, would + V: điều kiện trong quá khứ dẫn tới kết quả ở hiện tại.",
+      "items": [
+        {
+          "prompt": "If I had trained harder last year, I ___ be on the team now.",
+          "options": [
+            "would",
+            "will",
+            "had",
+            "have"
+          ],
+          "answer": "would"
+        },
+        {
+          "prompt": "If she weren't so busy, she ___ have joined us yesterday.",
+          "options": [
+            "would",
+            "will",
+            "had",
+            "is"
+          ],
+          "answer": "would"
+        },
+        {
+          "prompt": "If he ___ taken the medicine, he would feel better now.",
+          "options": [
+            "had",
+            "has",
+            "would",
+            "did"
+          ],
+          "answer": "had"
+        }
+      ]
+    },
+    {
+      "id": "cleft-sentences",
+      "titleEn": "Cleft sentences",
+      "titleVi": "Câu chẻ (nhấn mạnh)",
+      "explanationVi": "What + mệnh đề + is/was...: nhấn mạnh một phần câu (What I need is more sleep).",
+      "items": [
+        {
+          "prompt": "___ I need most is a good night's sleep.",
+          "options": [
+            "What",
+            "That",
+            "Which",
+            "It"
+          ],
+          "answer": "What"
+        },
+        {
+          "prompt": "It ___ consistency that makes the difference.",
+          "options": [
+            "is",
+            "does",
+            "has",
+            "makes"
+          ],
+          "answer": "is"
+        },
+        {
+          "prompt": "What surprised me ___ how quickly I improved.",
+          "options": [
+            "was",
+            "were",
+            "did",
+            "had"
+          ],
+          "answer": "was"
+        }
+      ]
+    }
   ]
 }
