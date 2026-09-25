@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/tts/tutorial_voice.dart';
 import '../../../core/widgets/speaker_button.dart';
 import '../data/content_pack.dart';
 import '../data/english_path_progress.dart';
