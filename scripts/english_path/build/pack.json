@@ -1,5 +1,6 @@
 {
  "schemaVersion": 1,
+ "packVersion": "0.1.0-tracer",
  "sources": [
   {
    "id": "cefrj",
@@ -7,6 +8,7 @@
    "license": "Free for research and commercial use with citation",
    "url": "https://github.com/openlanguageprofiles/olp-en-cefrj",
    "retrievedAt": "2026-09-25",
+   "revision": "c5c6a64303a9fc2d3da22a06dd9827e471dc244c",
    "files": [
     "cefrj-vocabulary-profile-1.5.csv"
    ]
@@ -414,6 +416,6 @@
    ]
   }
  ],
- "contentHash": "3904f207e5e865a9ac7ab98c7a8b21fb4668642a2cb4593ac835c32e7ae2f33b",
+ "contentHash": "2fa948521f64c497f82117b5c4a79b70c0077ec637d3a70274570abeb51dfd7a",
  "approval": null
 }

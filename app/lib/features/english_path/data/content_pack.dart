@@ -2,21 +2,16 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart';
 
-import 'cefr_stage.dart';
+import 'cefr_level.dart';
 
 /// Content Pack dong goi trong app, sinh offline boi
 /// `scripts/english_path_pipeline.py` (ADR-0003). Khong sua tay file JSON -
 /// hash noi dung se lech va pack mat approval.
 const kContentPackAsset = 'assets/english_path/pack.json';
 
-enum PracticeItemType {
-  meaning,
-  listening,
-  gapFill,
-  scramble,
-  grammar,
-  ieltsMicro,
-}
+/// Loai Practice Item. Cac loai khac (listening, gapFill, wordScramble,
+/// grammar, ieltsMicro) duoc them cung ticket sinh ra chung.
+enum PracticeItemType { meaning }
 
 class ContentSource {
   const ContentSource({
@@ -157,20 +152,21 @@ class PathStage {
   const PathStage({required this.stage, required this.units});
 
   factory PathStage.fromJson(Map<String, dynamic> json) => PathStage(
-    stage: CefrStage.fromCode(json['cefr'] as String),
+    stage: CefrLevel.fromCode(json['cefr'] as String),
     units: [
       for (final u in json['units'] as List)
         PathUnit.fromJson(u as Map<String, dynamic>),
     ],
   );
 
-  final CefrStage stage;
+  final CefrLevel stage;
   final List<PathUnit> units;
 }
 
 class ContentPack {
   const ContentPack({
     required this.schemaVersion,
+    required this.packVersion,
     required this.contentHash,
     required this.approval,
     required this.sources,
@@ -181,6 +177,7 @@ class ContentPack {
     final approval = json['approval'] as Map<String, dynamic>?;
     return ContentPack(
       schemaVersion: json['schemaVersion'] as int,
+      packVersion: json['packVersion'] as String,
       contentHash: json['contentHash'] as String,
       approval: approval == null ? null : PackApproval.fromJson(approval),
       sources: [
@@ -200,6 +197,9 @@ class ContentPack {
   }
 
   final int schemaVersion;
+
+  /// Phien ban noi dung, luu kem ket qua Placement de audit.
+  final String packVersion;
   final String contentHash;
   final PackApproval? approval;
   final List<ContentSource> sources;

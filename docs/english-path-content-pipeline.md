@@ -17,12 +17,14 @@ python scripts/english_path_pipeline.py build
   - Unit không tồn tại;
   - `sourceId` lạ, hoặc source thiếu license/provenance;
   - trùng id.
-- Ghi `app/assets/english_path/pack.json` và CSV review `scripts/english_path/review/pack_review.csv`.
+- Ghi pack vào **staging** `scripts/english_path/build/pack.json` và CSV review `scripts/english_path/review/pack_review.csv`. Chỉ pack **đã approve đúng hash** mới được ghi vào `app/assets/english_path/pack.json`, tức là mới được đóng gói vào app.
+- CEFR-J được pin vào một commit cố định (`CEFRJ_COMMIT`), nên chạy lại luôn ra cùng dữ liệu.
 - Chạy lại lúc nào cũng cho ra cùng một kết quả (deterministic), vì id và seed đều cố định theo nội dung.
 
 ## Quality gate (bắt buộc trước khi đóng gói)
 
 1. **Validation tự động**: nằm trong `build`, như trên.
+   Validation không bắt được đáp án nhiễu **đồng nghĩa** (khác chữ nhưng trùng nghĩa). Lỗi này do bước 2 và 3 bắt; kiểm tra bằng WordNet sẽ thêm ở #55.
 2. **Review ngẫu nhiên 10%**: người duyệt đọc các dòng có `sample = yes` trong CSV review. Mẫu được chọn cố định theo id. Lỗi phải sửa trong pipeline hoặc dữ liệu nguồn, **không sửa tay JSON**.
 3. **Grok đối chiếu chéo** trên cùng mẫu đó.
 4. **Final approval** của maintainer/reviewer được chỉ định:
@@ -31,9 +33,9 @@ python scripts/english_path_pipeline.py build
    python scripts/english_path_pipeline.py approve --reviewer "<tên>" --date YYYY-MM-DD --note "<ghi chú>"
    ```
 
-   Lệnh này ghi `contentHash` vào `scripts/english_path/approvals.json`, rồi gắn metadata `approval` vào pack.
+   Lệnh này đọc pack ở staging, kiểm reviewer không rỗng và ngày đúng dạng YYYY-MM-DD, ghi `contentHash` và `packVersion` vào `scripts/english_path/approvals.json`, rồi đóng gói pack kèm metadata `approval` vào assets.
 
-`contentHash` là sha256 của JSON đã chuẩn hoá (bỏ phần `approval`). Mọi thay đổi nội dung đều làm hash đổi và pack mất approval. Hai test sẽ **fail CI** khi pack chưa được approve hoặc bị sửa tay:
+`contentHash` là sha256 của JSON đã chuẩn hoá (bỏ phần `approval`). Mọi thay đổi nội dung đều làm hash đổi và pack mất approval. Hai test sẽ **fail CI** khi pack trong assets thiếu, chưa được approve hoặc bị sửa tay:
 - `app/test/english_path_content_pack_test.dart`
 - `scripts/test_english_path_pipeline.py`
 

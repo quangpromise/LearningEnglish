@@ -2,12 +2,13 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:learn_english_music/features/english_path/data/cefr_stage.dart';
+import 'package:learn_english_music/features/english_path/data/cefr_level.dart';
 import 'package:learn_english_music/features/english_path/data/content_pack.dart';
 
 /// Pack nho viet tay de test loader, doc lap voi asset that.
 Map<String, dynamic> _fixture() => {
   'schemaVersion': 1,
+  'packVersion': '0.1.0-tracer',
   'contentHash': 'abc',
   'approval': {
     'contentHash': 'abc',
@@ -71,13 +72,14 @@ void main() {
     test('reads stages, units, words and items', () {
       final pack = ContentPack.fromJson(_fixture());
       final unit = pack.stages.single.units.single;
-      expect(pack.stages.single.stage, CefrStage.a1);
+      expect(pack.stages.single.stage, CefrLevel.a1);
       expect(unit.id, 'a1-u01');
       expect(unit.words.single.vi, 'nhảy');
       final item = unit.items.single;
       expect(item.type, PracticeItemType.meaning);
       expect(item.correctAnswer, 'nhảy');
       expect(pack.unitById('a1-u01'), same(unit));
+      expect(pack.packVersion, '0.1.0-tracer');
       expect(pack.isApproved, isTrue);
     });
 

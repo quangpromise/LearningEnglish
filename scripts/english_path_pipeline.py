@@ -8,9 +8,14 @@ Quality gate bat buoc truoc khi dong goi:
   1. validate_pack() - loi thi dung, khong ghi file.
   2. export_review_csv() - lay mau ngau nhien 10% (co dinh theo id) de nguoi
      duyet + Grok doi chieu cheo.
-  3. `approve --reviewer <ten>` - ghi contentHash da duyet vao
-     scripts/english_path/approvals.json. Pack chi mang metadata approval khi
-     hash khop; test integrity (Dart + Python) fail neu pack chua approve.
+  3. `approve --reviewer <ten> --date YYYY-MM-DD` - ghi contentHash +
+     packVersion da duyet vao scripts/english_path/approvals.json.
+Pack chua approve CHI duoc ghi vao thu muc staging (scripts/english_path/
+build/, khong dong goi); chi pack da approve moi duoc ghi vao assets cua app.
+Test integrity (Dart + Python) fail neu pack trong assets chua approve.
+
+Dap an nhieu dong nghia (khac chu nhung trung nghia) khong bat duoc bang may:
+de cho buoc review nguoi 10% + Grok. Kiem tra bang WordNet se them o #55.
 
 Nguon (Content Source) - moi nguon phai co license da xac minh cho thuong mai:
   - CEFR-J Wordlist 1.5 (Tono Lab, TUFS): dung thuong mai mien phi, bat buoc
@@ -37,10 +42,23 @@ VOCAB_DART = ROOT / "app/lib/features/vocabulary/data/vocabulary_data.dart"
 PACK_ASSET = ROOT / "app/assets/english_path/pack.json"
 APPROVALS = ROOT / "scripts/english_path/approvals.json"
 REVIEW_CSV = ROOT / "scripts/english_path/review/pack_review.csv"
+STAGING_PACK = ROOT / "scripts/english_path/build/pack.json"
 
 PACK_SCHEMA_VERSION = 1
+# Phien ban noi dung - tang moi lan doi quy mo/nguon (Placement luu kem).
+PACK_VERSION = "0.1.0-tracer"
 STAGES = ["A1", "A2", "B1", "B2", "C1"]
 REVIEW_SAMPLE_RATE = 0.10
+# Quy mo hien tai cua pack. Ticket #55/#56 nang len A1-B2 x 10 Unit + C1 x 3.
+UNITS_PER_STAGE = {"A1": 1}
+WORDS_PER_UNIT = 15
+
+# Pin CEFR-J vao 1 commit de chay lai luon ra cung du lieu.
+CEFRJ_COMMIT = "c5c6a64303a9fc2d3da22a06dd9827e471dc244c"
+CEFRJ_CSV_URL = (
+    "https://raw.githubusercontent.com/openlanguageprofiles/olp-en-cefrj/"
+    f"{CEFRJ_COMMIT}/cefrj-vocabulary-profile-1.5.csv"
+)
 
 SOURCES = [
     {
@@ -49,6 +67,7 @@ SOURCES = [
         "license": "Free for research and commercial use with citation",
         "url": "https://github.com/openlanguageprofiles/olp-en-cefrj",
         "retrievedAt": "2026-09-25",
+        "revision": CEFRJ_COMMIT,
         "files": ["cefrj-vocabulary-profile-1.5.csv"],
     },
     {
@@ -185,6 +204,7 @@ def build_pack(words: list[dict], units_per_stage: dict[str, int],
         stages.append({"cefr": cefr, "units": units})
     return {
         "schemaVersion": PACK_SCHEMA_VERSION,
+        "packVersion": PACK_VERSION,
         "sources": [dict(s) for s in SOURCES],
         "stages": stages,
     }
@@ -203,8 +223,8 @@ def validate_pack(pack: dict) -> list[str]:
     for stage in pack.get("stages", []):
         if stage.get("cefr") not in STAGES:
             errors.append(f"stage {stage.get('cefr')}: unknown CEFR stage")
-        unit_ids = {u["id"] for u in stage.get("units", [])}
         for unit in stage.get("units", []):
+            unit_words = {w.get("en") for w in unit.get("words", [])}
             for w in unit.get("words", []):
                 if not _has_vietnamese(w):
                     errors.append(f"{unit['id']}/{w.get('en')}: missing Vietnamese translation")
@@ -213,8 +233,10 @@ def validate_pack(pack: dict) -> list[str]:
                 if iid in seen_ids:
                     errors.append(f"{iid}: duplicate item id")
                 seen_ids.add(iid)
-                if item.get("unitId") not in unit_ids or item.get("unitId") != unit["id"]:
+                if item.get("unitId") != unit["id"]:
                     errors.append(f"{iid}: invalid unit reference {item.get('unitId')}")
+                if "wordEn" in item and item["wordEn"] not in unit_words:
+                    errors.append(f"{iid}: word {item['wordEn']} is not in the unit")
                 options = item.get("options", [])
                 ans = item.get("answerIndex")
                 if not isinstance(ans, int) or not 0 <= ans < len(options):
@@ -228,7 +250,41 @@ def validate_pack(pack: dict) -> list[str]:
                 for sid in src_ids:
                     if sid not in sources:
                         errors.append(f"{iid}: unknown source {sid}")
+    approval = pack.get("approval")
+    if approval is not None:
+        if not str(approval.get("reviewer", "")).strip():
+            errors.append("approval: missing reviewer")
+        if not _ISO_DATE.fullmatch(str(approval.get("approvedAt", ""))):
+            errors.append("approval: approvedAt must be YYYY-MM-DD")
     return errors
+
+
+_ISO_DATE = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}")
+
+
+def approval_record(pack: dict, reviewer: str, date: str, note: str) -> dict:
+    """Ban ghi final approval cho dung noi dung hien tai cua [pack]."""
+    if not reviewer.strip():
+        raise ValueError("reviewer is required")
+    if not _ISO_DATE.fullmatch(date):
+        raise ValueError("date must be YYYY-MM-DD")
+    return {
+        "contentHash": content_hash(pack),
+        "packVersion": pack["packVersion"],
+        "reviewer": reviewer.strip(),
+        "approvedAt": date,
+        "note": note,
+    }
+
+
+def write_outputs(pack: dict, asset: Path, staging: Path) -> bool:
+    """Ghi pack vao staging; chi dong goi vao assets khi da approve dung hash.
+    Tra ve True neu da dong goi."""
+    _write_json(staging, pack)
+    approved = (pack.get("approval") or {}).get("contentHash") == content_hash(pack)
+    if approved:
+        _write_json(asset, pack)
+    return approved
 
 
 def content_hash(pack: dict) -> str:
@@ -286,16 +342,19 @@ def _write_json(path: Path, data) -> None:
     path.write_text(json.dumps(data, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
 
 
-# Quy mo hien tai cua pack. Ticket #55/#56 nang len A1-B2 x 10 Unit + C1 x 3.
-UNITS_PER_STAGE = {"A1": 1}
-WORDS_PER_UNIT = 15
-
-
 def cmd_build(args) -> int:
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     from check_vocab_cefr import load_cefr
 
-    levels = load_cefr(args.csv)
+    csv_path = args.csv
+    if csv_path is None:
+        import tempfile
+        import urllib.request
+        with urllib.request.urlopen(CEFRJ_CSV_URL, timeout=60) as resp:
+            tmp = Path(tempfile.gettempdir()) / f"cefrj-{CEFRJ_COMMIT[:8]}.csv"
+            tmp.write_bytes(resp.read())
+        csv_path = str(tmp)
+    levels = load_cefr(csv_path)
     words = tag_cefr(parse_vocab_dart(VOCAB_DART.read_text(encoding="utf-8")), levels)
     pack = build_pack(words, UNITS_PER_STAGE, WORDS_PER_UNIT)
     errors = validate_pack(pack)
@@ -303,32 +362,34 @@ def cmd_build(args) -> int:
         print("VALIDATION FAILED - pack khong duoc ghi:", *errors, sep="\n  ")
         return 1
     pack = apply_approval(pack, _load_approvals())
-    _write_json(PACK_ASSET, pack)
+    packaged = write_outputs(pack, PACK_ASSET, STAGING_PACK)
     export_review_csv(pack, REVIEW_CSV)
     n = sum(1 for _ in _all_items(pack))
-    print(f"pack: {n} items, hash {pack['contentHash'][:12]} -> {PACK_ASSET}")
+    print(f"pack {pack['packVersion']}: {n} items, hash {pack['contentHash'][:12]}")
     print(f"review CSV -> {REVIEW_CSV}")
-    if pack["approval"] is None:
-        print("CHUA APPROVE: review mau 10% + Grok, roi chay "
-              "`approve --reviewer <ten>`. Test integrity se fail cho den luc do.")
+    if packaged:
+        print(f"da approve -> dong goi {PACK_ASSET}")
+    else:
+        print(f"CHUA APPROVE -> chi ghi staging {STAGING_PACK}. Review mau 10% + "
+              "Grok, roi chay `approve --reviewer <ten> --date YYYY-MM-DD`.")
     return 0
 
 
 def cmd_approve(args) -> int:
-    pack = json.loads(PACK_ASSET.read_text(encoding="utf-8"))
+    pack = json.loads(STAGING_PACK.read_text(encoding="utf-8"))
     errors = validate_pack(pack)
     if errors or pack.get("contentHash") != content_hash(pack):
         print("Pack khong hop le hoac da bi sua tay - chay lai build.", *errors, sep="\n  ")
         return 1
-    approvals = [a for a in _load_approvals() if a["contentHash"] != pack["contentHash"]]
-    approvals.append({
-        "contentHash": pack["contentHash"],
-        "reviewer": args.reviewer,
-        "approvedAt": args.date,
-        "note": args.note,
-    })
+    try:
+        record = approval_record(pack, args.reviewer, args.date, args.note)
+    except ValueError as e:
+        print(f"approve: {e}")
+        return 1
+    approvals = [a for a in _load_approvals() if a["contentHash"] != record["contentHash"]]
+    approvals.append(record)
     _write_json(APPROVALS, approvals)
-    _write_json(PACK_ASSET, apply_approval(pack, approvals))
+    write_outputs(apply_approval(pack, approvals), PACK_ASSET, STAGING_PACK)
     print(f"approved {pack['contentHash'][:12]} by {args.reviewer}")
     return 0
 
@@ -337,7 +398,7 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     sub = ap.add_subparsers(dest="cmd", required=True)
     b = sub.add_parser("build")
-    b.add_argument("--csv", help="CEFR-J CSV cuc bo (mac dinh tai tu GitHub)")
+    b.add_argument("--csv", help="CEFR-J CSV cuc bo (mac dinh tai ban da pin tu GitHub)")
     a = sub.add_parser("approve")
     a.add_argument("--reviewer", required=True)
     a.add_argument("--date", required=True, help="YYYY-MM-DD")

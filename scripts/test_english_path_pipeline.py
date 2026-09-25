@@ -147,6 +147,19 @@ class ValidatePackTest(unittest.TestCase):
         self._first_item(pack)["sourceIds"] = ["scraped-site"]
         self.assertTrue(any("source" in e for e in pp.validate_pack(pack)))
 
+    def test_rejects_item_word_not_in_unit(self):
+        pack = _valid_pack()
+        self._first_item(pack)["wordEn"] = "ghost"
+        self.assertTrue(any("word" in e for e in pp.validate_pack(pack)))
+
+    def test_rejects_blank_reviewer_or_bad_date_in_approval(self):
+        pack = pp.apply_approval(_valid_pack(), [])
+        pack["approval"] = {"contentHash": pack["contentHash"], "reviewer": " ",
+                            "approvedAt": "hom qua", "packVersion": pack["packVersion"]}
+        errors = pp.validate_pack(pack)
+        self.assertTrue(any("reviewer" in e for e in errors))
+        self.assertTrue(any("approvedAt" in e for e in errors))
+
     def test_rejects_duplicate_item_ids(self):
         pack = _valid_pack()
         items = pack["stages"][0]["units"][0]["items"]
@@ -174,9 +187,43 @@ class ApprovalTest(unittest.TestCase):
         stale = dict(record, contentHash="deadbeef")
         self.assertIsNone(pp.apply_approval(pack, [stale])["approval"])
 
+    def test_pack_and_approval_carry_pack_version(self):
+        pack = _valid_pack()
+        self.assertEqual(pack["packVersion"], pp.PACK_VERSION)
+        record = pp.approval_record(pp.apply_approval(pack, []), "maintainer", "2026-09-25", "")
+        self.assertEqual(record["packVersion"], pp.PACK_VERSION)
+        self.assertEqual(record["contentHash"], pp.content_hash(pack))
+
+    def test_approval_record_requires_reviewer_and_iso_date(self):
+        pack = pp.apply_approval(_valid_pack(), [])
+        with self.assertRaises(ValueError):
+            pp.approval_record(pack, "  ", "2026-09-25", "")
+        with self.assertRaises(ValueError):
+            pp.approval_record(pack, "maintainer", "25/09/2026", "")
+
     def test_pack_records_its_content_hash(self):
         pack = pp.apply_approval(_valid_pack(), [])
         self.assertEqual(pack["contentHash"], pp.content_hash(pack))
+
+
+class PackagingGateTest(unittest.TestCase):
+    def test_unapproved_pack_only_goes_to_staging(self):
+        pack = pp.apply_approval(_valid_pack(), [])
+        with tempfile.TemporaryDirectory() as d:
+            asset, staging = Path(d) / "asset.json", Path(d) / "staging.json"
+            self.assertFalse(pp.write_outputs(pack, asset, staging))
+            self.assertTrue(staging.exists())
+            self.assertFalse(asset.exists())
+
+    def test_approved_pack_is_packaged(self):
+        pack = _valid_pack()
+        rec = {"contentHash": pp.content_hash(pack), "reviewer": "maintainer",
+               "approvedAt": "2026-09-25", "packVersion": pp.PACK_VERSION}
+        pack = pp.apply_approval(pack, [rec])
+        with tempfile.TemporaryDirectory() as d:
+            asset, staging = Path(d) / "asset.json", Path(d) / "staging.json"
+            self.assertTrue(pp.write_outputs(pack, asset, staging))
+            self.assertEqual(json.loads(asset.read_text(encoding="utf-8")), pack)
 
 
 class ReviewCsvTest(unittest.TestCase):
@@ -201,11 +248,12 @@ class CommittedPackTest(unittest.TestCase):
 
     def test_bundled_pack_is_valid_and_hash_matches(self):
         path = pp.PACK_ASSET
-        if not path.exists():
-            self.skipTest("chua sinh pack")
+        self.assertTrue(path.exists(), "chua dong goi pack da approve vao assets")
         pack = json.loads(path.read_text(encoding="utf-8"))
         self.assertEqual(pp.validate_pack(pack), [])
         self.assertEqual(pack["contentHash"], pp.content_hash(pack))
+        self.assertIsNotNone(pack["approval"], "pack dong goi phai da approve")
+        self.assertEqual(pack["approval"]["contentHash"], pack["contentHash"])
 
 
 if __name__ == "__main__":
