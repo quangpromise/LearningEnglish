@@ -1,0 +1,682 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1300" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Space+Grotesk:wght@600;700&display=block"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      :root {
+        --bg: #0a0d0a;
+        --card: #111111;
+        --red: #e50914;
+        --red2: #ff2028;
+        --blue: #5b8cff;
+        --teal: #5be0d0;
+        --amber: #ffb23c;
+        --purple: #9b6bff;
+        --text: #eef1fb;
+        --muted: rgba(238, 241, 251, 0.6);
+        --border: rgba(255, 255, 255, 0.12);
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1920px;
+        height: 1300px;
+        overflow: hidden;
+        background: #1a1d24;
+        color: var(--text);
+        font-family: Manrope, sans-serif;
+      }
+      #root {
+        position: relative;
+        width: 1920px;
+        height: 1300px;
+      }
+      .clip {
+        position: absolute;
+        inset: 0;
+      }
+      .sg {
+        font-family: 'Space Grotesk', sans-serif;
+      }
+      .stage {
+        display: flex;
+        gap: 80px;
+        justify-content: center;
+        padding-top: 150px;
+      }
+      .caption {
+        position: absolute;
+        top: 40px;
+        left: 0;
+        right: 0;
+        text-align: center;
+      }
+      .caption h1 {
+        font-size: 44px;
+        font-weight: 700;
+      }
+      .caption p {
+        color: var(--muted);
+        font-size: 22px;
+        margin-top: 6px;
+      }
+      .col {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 22px;
+      }
+      .label {
+        font-size: 24px;
+        font-weight: 800;
+      }
+      .label small {
+        display: block;
+        color: var(--muted);
+        font-size: 17px;
+        font-weight: 700;
+        text-align: center;
+        margin-top: 4px;
+      }
+      .phone {
+        width: 430px;
+        height: 932px;
+        border-radius: 56px;
+        border: 10px solid #2b2f38;
+        background: var(--bg);
+        overflow: hidden;
+        position: relative;
+        box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55);
+      }
+      .status {
+        height: 40px;
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 26px 0;
+        font-size: 14px;
+        font-weight: 800;
+        color: var(--muted);
+      }
+
+      /* Man 1 */
+      .p1 {
+        padding: 6px 20px;
+      }
+      .toprow {
+        display: flex;
+        justify-content: space-between;
+      }
+      .cbtn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.35);
+        border: 1px solid var(--border);
+        display: grid;
+        place-items: center;
+        font-size: 18px;
+      }
+      .hero {
+        margin-top: 12px;
+        height: 250px;
+        border-radius: 22px;
+        overflow: hidden;
+        position: relative;
+      }
+      .hero img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .hero .shade {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, transparent 45%, rgba(0, 0, 0, 0.75));
+      }
+      .playpill {
+        position: absolute;
+        right: 12px;
+        bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 14px 8px 8px;
+        border-radius: 999px;
+        background: rgba(229, 9, 20, 0.92);
+        box-shadow: 0 0 0 6px rgba(229, 9, 20, 0.25);
+        font-weight: 800;
+        font-size: 14px;
+      }
+      .playpill .pb {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: #fff;
+        color: var(--red);
+        display: grid;
+        place-items: center;
+        font-size: 13px;
+      }
+      .playpill small {
+        font-weight: 700;
+        opacity: 0.85;
+      }
+      .loop-tag {
+        position: absolute;
+        left: 12px;
+        bottom: 14px;
+        font-size: 12px;
+        font-weight: 800;
+        color: var(--teal);
+        background: rgba(0, 0, 0, 0.6);
+        padding: 5px 10px;
+        border-radius: 999px;
+      }
+      .title {
+        margin-top: 14px;
+        font-size: 24px;
+        font-weight: 700;
+      }
+      .alt {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .tags {
+        margin-top: 10px;
+        display: flex;
+        gap: 6px;
+      }
+      .tag {
+        font-size: 11px;
+        font-weight: 800;
+        padding: 5px 10px;
+        border-radius: 999px;
+      }
+      .chapters-title {
+        margin-top: 16px;
+        font-size: 13px;
+        font-weight: 800;
+        color: var(--muted);
+        letter-spacing: 0.06em;
+      }
+      .chapters {
+        margin-top: 8px;
+        display: flex;
+        gap: 8px;
+        overflow: hidden;
+      }
+      .chap {
+        flex: none;
+        width: 92px;
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        background: #141414;
+        padding: 8px;
+      }
+      .chap .thumb {
+        height: 50px;
+        border-radius: 9px;
+        background-size: cover;
+        background-position: center;
+        position: relative;
+      }
+      .chap .thumb span {
+        position: absolute;
+        right: 4px;
+        bottom: 4px;
+        font-size: 9px;
+        font-weight: 800;
+        background: rgba(0, 0, 0, 0.7);
+        padding: 1px 5px;
+        border-radius: 6px;
+      }
+      .chap b {
+        display: block;
+        margin-top: 6px;
+        font-size: 11px;
+      }
+      .chap.kw .thumb {
+        background: linear-gradient(135deg, #1d2a55, #2a1f55);
+        display: grid;
+        place-items: center;
+        font-size: 12px;
+        font-weight: 800;
+        color: var(--blue);
+      }
+      .section {
+        margin-top: 16px;
+        font-size: 14px;
+        font-weight: 700;
+      }
+      .mbar {
+        margin-top: 8px;
+      }
+      .mbar .row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+      }
+      .mbar .t {
+        margin-top: 4px;
+        height: 7px;
+        border-radius: 99px;
+        background: rgba(255, 255, 255, 0.08);
+      }
+      .mbar .t i {
+        display: block;
+        height: 100%;
+        border-radius: 99px;
+        background: var(--red);
+      }
+      .kwrow {
+        margin-top: 8px;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .kwc {
+        border: 1px solid rgba(91, 140, 255, 0.5);
+        background: rgba(91, 140, 255, 0.08);
+        border-radius: 999px;
+        padding: 6px 12px;
+        font-size: 13px;
+        font-weight: 800;
+      }
+      .kwc small {
+        color: var(--muted);
+        font-weight: 700;
+        margin-left: 4px;
+      }
+      .startbtn {
+        position: absolute;
+        left: 20px;
+        right: 20px;
+        bottom: 24px;
+        height: 56px;
+        border-radius: 18px;
+        background: var(--red);
+        display: grid;
+        place-items: center;
+        font-weight: 800;
+        font-size: 17px;
+      }
+
+      /* Man 2: player doc */
+      .p2 .frame {
+        position: absolute;
+        inset: 0;
+        background: #0a0d0a;
+      }
+      .p2 .vid-photo {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 90px;
+        height: 330px;
+      }
+      .p2 .vid-photo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .p2 .segbar {
+        position: absolute;
+        top: 48px;
+        left: 14px;
+        right: 14px;
+        display: flex;
+        gap: 5px;
+      }
+      .seg {
+        flex: 1;
+        height: 4px;
+        border-radius: 99px;
+        background: rgba(255, 255, 255, 0.25);
+        overflow: hidden;
+      }
+      .seg i {
+        display: block;
+        height: 100%;
+        background: #fff;
+      }
+      .p2 .topctl {
+        position: absolute;
+        top: 60px;
+        left: 14px;
+        right: 14px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 13px;
+        font-weight: 800;
+      }
+      .speed {
+        background: rgba(0, 0, 0, 0.55);
+        padding: 5px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+      }
+      .p2 .stepbox {
+        position: absolute;
+        left: 22px;
+        right: 22px;
+        top: 450px;
+      }
+      .badge {
+        display: inline-block;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        color: var(--red2);
+        background: rgba(229, 9, 20, 0.18);
+        padding: 5px 12px;
+        border-radius: 999px;
+      }
+      .en {
+        margin-top: 12px;
+        font-size: 24px;
+        line-height: 1.35;
+        font-weight: 800;
+      }
+      .en .dim {
+        color: rgba(238, 241, 251, 0.35);
+      }
+      .en u {
+        text-decoration-color: var(--blue);
+        text-decoration-thickness: 3px;
+        text-underline-offset: 5px;
+      }
+      .vi {
+        margin-top: 10px;
+        font-size: 15px;
+        color: var(--muted);
+        line-height: 1.4;
+        font-weight: 700;
+      }
+      .rail {
+        position: absolute;
+        right: 12px;
+        top: 430px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        display: none;
+      }
+      .shadow {
+        position: absolute;
+        left: 18px;
+        right: 18px;
+        bottom: 30px;
+        border-radius: 22px;
+        background: rgba(91, 224, 208, 0.12);
+        border: 1px solid rgba(91, 224, 208, 0.5);
+        padding: 14px 16px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .mic {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: var(--teal);
+        color: #06221f;
+        display: grid;
+        place-items: center;
+        font-size: 24px;
+        box-shadow: 0 0 0 8px rgba(91, 224, 208, 0.18);
+        flex: none;
+      }
+      .shadow b {
+        font-size: 15px;
+      }
+      .shadow small {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 2px;
+        font-weight: 700;
+      }
+      .skip {
+        margin-left: auto;
+        font-size: 12px;
+        font-weight: 800;
+        color: var(--muted);
+      }
+
+      /* Man 3: ket thuc */
+      .p3 {
+        padding: 70px 22px 0;
+      }
+      .done {
+        text-align: center;
+      }
+      .done .big {
+        font-size: 52px;
+      }
+      .done h2 {
+        margin-top: 6px;
+        font-size: 26px;
+        font-weight: 700;
+      }
+      .done p {
+        color: var(--muted);
+        font-size: 14px;
+        margin-top: 4px;
+        font-weight: 700;
+      }
+      .score {
+        margin: 20px auto 0;
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+      }
+      .score div {
+        background: #141414;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 10px 14px;
+        text-align: center;
+        font-size: 11px;
+        color: var(--muted);
+        font-weight: 700;
+      }
+      .score b {
+        display: block;
+        font-size: 22px;
+        color: var(--text);
+      }
+      .wcard {
+        margin-top: 12px;
+        border-radius: 18px;
+        border: 1px solid rgba(91, 140, 255, 0.45);
+        background: rgba(91, 140, 255, 0.07);
+        padding: 12px 14px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .wcard .w {
+        font-size: 20px;
+        font-weight: 700;
+      }
+      .wcard .i {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .wcard .m {
+        color: var(--teal);
+        font-size: 13px;
+        font-weight: 800;
+      }
+      .wcard .spk {
+        margin-left: auto;
+        color: var(--blue);
+        font-size: 20px;
+      }
+      .addall {
+        margin-top: 16px;
+        height: 50px;
+        border-radius: 16px;
+        border: 2px solid var(--blue);
+        color: var(--blue);
+        display: grid;
+        place-items: center;
+        font-weight: 800;
+        font-size: 15px;
+      }
+      .go {
+        margin-top: 10px;
+        height: 54px;
+        border-radius: 16px;
+        background: var(--red);
+        display: grid;
+        place-items: center;
+        font-weight: 800;
+        font-size: 16px;
+      }
+      .replay {
+        margin-top: 12px;
+        text-align: center;
+        font-size: 13px;
+        color: var(--muted);
+        font-weight: 800;
+      }
+      .note {
+        width: 430px;
+        font-size: 16px;
+        color: var(--muted);
+        line-height: 1.45;
+        font-weight: 600;
+      }
+      .note b {
+        color: var(--text);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="1" data-width="1920" data-height="1300">
+      <div id="board" class="clip" data-start="0" data-duration="1">
+        <div class="caption">
+          <h1 class="sg">Bài tập + Video hướng dẫn tiếng Anh · đề xuất UI/UX</h1>
+          <p>Giữ ảnh 2 tư thế ở tổng quan · video dọc 9:16 chỉ chạy khi bấm · học tiếng Anh ngay trong video</p>
+        </div>
+        <div class="stage">
+          <!-- MAN 1 -->
+          <div class="col">
+            <div class="label">① Chi tiết bài tập<small>Tổng quan giữ ảnh 2 tư thế + lối vào video</small></div>
+            <div class="phone">
+              <div class="status"><span>9:41</span><span>●●● 100%</span></div>
+              <div class="p1">
+                <div class="toprow"><div class="cbtn">‹</div><div class="cbtn" style="color: #ff6b9d">♥</div></div>
+                <div class="hero">
+                  <img src="assets/goblet_squat_1.jpg" alt="" />
+                  <div class="shade"></div>
+                  <div class="loop-tag">↻ 2 tư thế</div>
+                  <div class="playpill"><div class="pb">▶</div>Video hướng dẫn <small>0:45 · EN</small></div>
+                </div>
+                <div class="title sg">Goblet Squat</div>
+                <div class="alt">Squat ôm tạ ấm</div>
+                <div class="tags">
+                  <span class="tag" style="color: #ffb23c; background: rgba(255, 178, 60, 0.15)">Cơ bản</span>
+                  <span class="tag" style="color: #5be0d0; background: rgba(91, 224, 208, 0.15)">Chân</span>
+                  <span class="tag" style="color: #9b6bff; background: rgba(155, 107, 255, 0.15)">Tạ ấm</span>
+                  <span class="tag" style="color: #ff2028; background: rgba(229, 9, 20, 0.15)">3 × 12–15</span>
+                </div>
+                <div class="chapters-title">CHƯƠNG VIDEO · BẤM ĐỂ XEM ĐÚNG ĐOẠN</div>
+                <div class="chapters">
+                  <div class="chap"><div class="thumb" style="background-image: url(assets/goblet_squat_0.jpg)"><span>0:00</span></div><b>Tổng quan</b></div>
+                  <div class="chap"><div class="thumb" style="background-image: url(assets/goblet_squat_0.jpg)"><span>0:08</span></div><b>Bước 1</b></div>
+                  <div class="chap"><div class="thumb" style="background-image: url(assets/goblet_squat_1.jpg)"><span>0:15</span></div><b>Bước 2</b></div>
+                  <div class="chap"><div class="thumb" style="background-image: url(assets/goblet_squat_1.jpg)"><span>0:24</span></div><b>Bước 3</b></div>
+                </div>
+                <div class="section">Nhóm cơ tác động</div>
+                <div class="mbar"><div class="row"><span>Đùi trước</span><b>45%</b></div><div class="t"><i style="width: 45%"></i></div></div>
+                <div class="mbar"><div class="row"><span>Mông · Đùi sau · Bắp chân</span><b>14%</b></div><div class="t"><i style="width: 14%; opacity: 0.6"></i></div></div>
+                <div class="section">Từ khoá của bài <span style="color: #5b8cff; font-size: 12px">· chạm để nghe</span></div>
+                <div class="kwrow">
+                  <div class="kwc">squat<small>ngồi xuống</small></div>
+                  <div class="kwc">hamstrings<small>đùi sau</small></div>
+                  <div class="kwc">kettlebell<small>tạ ấm</small></div>
+                </div>
+              </div>
+              <div class="startbtn">▶ Tập bài này</div>
+            </div>
+            <div class="note"><b>Hero giữ 2 ảnh chuyển động</b> (xem nhanh không tốn data). Nút đỏ "Video hướng dẫn" nổi bật, <b>chương có thumbnail</b> vào thẳng đoạn cần xem; <b>từ khoá</b> chạm để nghe phát âm.</div>
+          </div>
+
+          <!-- MAN 2 -->
+          <div class="col">
+            <div class="label">② Trình phát dọc 9:16<small>Toàn màn hình · chỉ chạy khi bấm</small></div>
+            <div class="phone p2">
+              <div class="frame"></div>
+              <div class="segbar">
+                <div class="seg"><i style="width: 100%"></i></div>
+                <div class="seg"><i style="width: 100%"></i></div>
+                <div class="seg"><i style="width: 70%"></i></div>
+                <div class="seg"><i style="width: 0"></i></div>
+                <div class="seg"><i style="width: 0"></i></div>
+              </div>
+              <div class="topctl"><span>✕</span><span class="speed">0.75× · CC VI</span></div>
+              <div class="vid-photo"><img src="assets/goblet_squat_1.jpg" alt="" /></div>
+              <div class="stepbox">
+                <div class="badge">STEP 2 / 3</div>
+                <div class="en"><u>Squat</u> down between your legs until your <u>hamstrings</u> touch your calves. <span class="dim">Keep your chest up and your back flat.</span></div>
+                <div class="vi">Squat xuống giữa hai chân tới khi đùi sau chạm bắp chân, giữ ngực và đầu thẳng, lưng thẳng.</div>
+              </div>
+              <div class="shadow">
+                <div class="mic">🎤</div>
+                <div><b>Nói theo câu này</b><small>Máy chấm điểm · +1 vòng Nói</small></div>
+                <div class="skip">Bỏ qua ›</div>
+              </div>
+            </div>
+            <div class="note"><b>Thanh chương kiểu Stories</b> (chạm nhảy chương), <b>0.75×</b> cho người mới, bật/tắt dịch VI. Cuối mỗi bước video <b>tạm dừng mời "Nói theo"</b> – chấm phát âm, tính vào vòng Nói. Chạm trái/phải = lùi/tới 1 bước.</div>
+          </div>
+
+          <!-- MAN 3 -->
+          <div class="col">
+            <div class="label">③ Kết thúc video<small>Biến xem → học → tập</small></div>
+            <div class="phone">
+              <div class="status"><span>9:41</span><span>●●● 100%</span></div>
+              <div class="p3">
+                <div class="done">
+                  <div class="big">🎉</div>
+                  <h2 class="sg">Xong video Goblet Squat!</h2>
+                  <p>Bạn đã nghe 3 bước và 3 từ khoá</p>
+                </div>
+                <div class="score">
+                  <div><b>2/3</b>câu nói đạt</div>
+                  <div><b>86</b>điểm phát âm</div>
+                  <div><b>+3</b>lượt Nói</div>
+                </div>
+                <div class="wcard"><div><div class="w sg">squat</div><div class="i">/skwɑːt/</div><div class="m">ngồi xuống (gánh đùi)</div></div><div class="spk">🔊</div></div>
+                <div class="wcard"><div><div class="w sg">hamstrings</div><div class="i">/ˈhæmstrɪŋz/</div><div class="m">cơ đùi sau</div></div><div class="spk">🔊</div></div>
+                <div class="wcard"><div><div class="w sg">kettlebell</div><div class="i">/ˈketlbel/</div><div class="m">tạ ấm</div></div><div class="spk">🔊</div></div>
+                <div class="addall">＋ Thêm 3 từ vào Ôn tập</div>
+                <div class="go">▶ Tập bài này ngay</div>
+                <div class="replay">↻ Xem lại · ⏩ Bài tiếp theo</div>
+              </div>
+            </div>
+            <div class="note">Kết video không bỏ trống: <b>điểm nói</b>, <b>3 từ khoá</b> thêm thẳng vào SRS (vòng Học), nút <b>Tập bài này ngay</b> vào luôn buổi tập – xem video trở thành 1 phần vòng lặp GymTalk.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      window.__timelines = window.__timelines || {};
+      window.__timelines['main'] = gsap.timeline({ paused: true });
+    </script>
+  </body>
+</html>

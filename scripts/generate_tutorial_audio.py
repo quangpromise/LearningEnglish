@@ -4,7 +4,8 @@ Sinh DUNG cac cau ma app se doc (xem app/lib/features/fitness/data/
 exercise_tutorial.dart):
   - Tong quan moi bai: "Today's exercise: the {nameEn}. It works your ..."
   - Tung buoc: "Step one. {instructionsEn[i]}"
-  - Tung tu vung gym (the tu khoa) + cau phan hoi "Great job!" / "Nice try!"
+  - Tung tu vung gym (the tu khoa) + cau vi du cua tu (the Hoc khi nghi,
+    On tap, Luyen noi ranh tay) + cau phan hoi "Great job!" / "Nice try!"
 
 Moi cau -> app/assets/tutorial_audio/<fnv1a32(cau)>.mp3. App tinh cung ma
 bam tu cau can doc: co file thi phat giong Kokoro, khong co thi quay ve TTS
@@ -51,12 +52,22 @@ def load_muscle_map(i18n_path: Path) -> dict:
     return dict(re.findall(r"'([^']+)': '([^']+)',", block))
 
 
+def _field(block: str, name: str) -> list:
+    single = re.findall(rf"^\s+{name}: '([^']+)',", block, re.M)
+    double = re.findall(rf'^\s+{name}: "([^"]+)",', block, re.M)
+    return single + double
+
+
 def load_gym_words(vocab_path: Path) -> list:
     src = vocab_path.read_text(encoding='utf-8')
     block = src[src.index('const kGymWords'):]
-    words = re.findall(r"^\s+en: '([^']+)',", block, re.M)
-    words += re.findall(r'^\s+en: "([^"]+)",', block, re.M)
-    return words
+    return _field(block, 'en')
+
+
+def load_gym_examples(vocab_path: Path) -> list:
+    src = vocab_path.read_text(encoding='utf-8')
+    block = src[src.index('const kGymWords'):]
+    return _field(block, 'exampleEn')
 
 
 def join_english(items: list) -> str:
@@ -96,7 +107,9 @@ def all_texts(app_dir: Path) -> list:
     texts = []
     for ex in exercises:
         texts += exercise_texts(ex, muscle_en)
-    texts += load_gym_words(app_dir / 'lib/features/fitness/data/gym_vocabulary.dart')
+    vocab = app_dir / 'lib/features/fitness/data/gym_vocabulary.dart'
+    texts += load_gym_words(vocab)
+    texts += load_gym_examples(vocab)
     texts += FEEDBACK
     seen, unique = set(), []
     for t in texts:

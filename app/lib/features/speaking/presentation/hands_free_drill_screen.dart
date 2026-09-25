@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/tts/app_tts.dart';
+import '../../../core/tts/tutorial_voice.dart';
 import '../../../core/utils/keep_screen_on.dart';
 import '../../../core/widgets/speaker_button.dart';
 import '../../pronunciation/data/pronunciation_scoring.dart';
@@ -49,7 +49,8 @@ class _HandsFreeDrillScreenState extends ConsumerState<HandsFreeDrillScreen> {
     );
     final drill = HandsFreeDrillController(
       items: items,
-      speak: AppTts.instance.speakAndWait,
+      // Cau vi du tu vung gym co san giong Kokoro (roi ve TTS neu thieu).
+      speak: TutorialVoice.shared.speakAndWait,
       listen: _listenOnce,
       score: (target, heard) =>
           scorePronunciation(targetEn: target, recognized: heard).score,
@@ -80,7 +81,7 @@ class _HandsFreeDrillScreenState extends ConsumerState<HandsFreeDrillScreen> {
   // --- Dieu khien ----------------------------------------------------------
 
   void _stopAudio() {
-    AppTts.instance.stopSpeaking();
+    TutorialVoice.shared.stop();
     _listener.stop();
   }
 
