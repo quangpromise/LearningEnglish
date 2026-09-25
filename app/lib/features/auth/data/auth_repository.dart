@@ -9,7 +9,12 @@ import '../../../core/config/env.dart';
 /// signInWithGoogle) de Supabase biet dua trinh duyet quay lai dau sau khi
 /// dang nhap Google xong. PHAI nam trong danh sach "Redirect URLs" o
 /// Supabase Dashboard > Authentication > URL Configuration.
-const _kWebRedirectUrl = 'https://quangpromise.github.io/LearningEnglish/';
+/// Ban web kenh moi (/LearningEnglish/next/) truyen WEB_REDIRECT_URL rieng
+/// qua --dart-define de dang nhap xong quay ve dung kenh cua no.
+const _kWebRedirectUrl = String.fromEnvironment(
+  'WEB_REDIRECT_URL',
+  defaultValue: 'https://quangpromise.github.io/LearningEnglish/',
+);
 
 class AuthRepository {
   AuthRepository(this._supabase);
