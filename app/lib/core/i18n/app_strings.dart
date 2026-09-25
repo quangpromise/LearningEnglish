@@ -5394,6 +5394,79 @@ class AppStrings {
       AppLanguage.vi: 'Chưa có giấc ngủ nào được ghi.',
       AppLanguage.en: 'No sleep logged yet.',
     },
+    'path_title': {
+      AppLanguage.vi: 'Lộ trình tiếng Anh',
+      AppLanguage.en: 'English path',
+    },
+    'path_load_error': {
+      AppLanguage.vi: 'Không tải được nội dung lộ trình.',
+      AppLanguage.en: 'Couldn\'t load the path content.',
+    },
+    'path_stage_done': {
+      AppLanguage.vi:
+          'Bạn đã hoàn thành mọi Unit của bậc này. Level Test sẽ sớm mở.',
+      AppLanguage.en: 'You\'ve completed every unit of this stage. The Level Test opens soon.',
+    },
+    'path_coming_soon': {
+      AppLanguage.vi: 'Nội dung bậc này đang được soạn, sắp có.',
+      AppLanguage.en: 'Content for this stage is coming soon.',
+    },
+    'path_stage_a1': {
+      AppLanguage.vi: 'A1 · Khởi đầu',
+      AppLanguage.en: 'A1 · Starter',
+    },
+    'path_stage_a2': {
+      AppLanguage.vi: 'A2 · Sơ cấp',
+      AppLanguage.en: 'A2 · Elementary',
+    },
+    'path_stage_b1': {
+      AppLanguage.vi: 'B1 · Trung cấp (IELTS ~4.0–5.0)',
+      AppLanguage.en: 'B1 · Intermediate (IELTS ~4.0–5.0)',
+    },
+    'path_stage_b2': {
+      AppLanguage.vi: 'B2 · Trung cao cấp (IELTS ~5.5–6.5)',
+      AppLanguage.en: 'B2 · Upper-intermediate (IELTS ~5.5–6.5)',
+    },
+    'path_stage_c1': {
+      AppLanguage.vi: 'C1 · Nâng cao (IELTS ~7.0+)',
+      AppLanguage.en: 'C1 · Advanced (IELTS ~7.0+)',
+    },
+    'path_you_are_here': {
+      AppLanguage.vi: 'Bạn ở đây',
+      AppLanguage.en: 'You are here',
+    },
+    'path_soon': {AppLanguage.vi: 'Sắp có', AppLanguage.en: 'Soon'},
+    'path_unit_label': {AppLanguage.vi: 'Unit {n}', AppLanguage.en: 'Unit {n}'},
+    'path_next': {AppLanguage.vi: 'Tiếp theo', AppLanguage.en: 'Up next'},
+    'path_unit_progress': {
+      AppLanguage.vi: 'Đã đúng {p}% số câu',
+      AppLanguage.en: '{p}% of items correct',
+    },
+    'path_meaning_prompt': {
+      AppLanguage.vi: 'Chọn nghĩa đúng',
+      AppLanguage.en: 'Pick the right meaning',
+    },
+    'path_continue': {AppLanguage.vi: 'Tiếp tục', AppLanguage.en: 'Continue'},
+    'path_unit_complete': {
+      AppLanguage.vi: 'Hoàn thành Unit!',
+      AppLanguage.en: 'Unit complete!',
+    },
+    'path_session_done': {
+      AppLanguage.vi: 'Xong phiên học',
+      AppLanguage.en: 'Session done',
+    },
+    'path_session_score': {
+      AppLanguage.vi: 'Đúng {c}/{t} câu · Unit đạt {p}%',
+      AppLanguage.en: '{c}/{t} correct · unit at {p}%',
+    },
+    'path_back_to_path': {
+      AppLanguage.vi: 'Về lộ trình',
+      AppLanguage.en: 'Back to path',
+    },
+    'path_entry_subtitle_idle': {
+      AppLanguage.vi: 'Xem các bậc A1 → C1',
+      AppLanguage.en: 'See stages A1 → C1',
+    },
   };
 
   static String t(String key, AppLanguage lang) =>
