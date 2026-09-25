@@ -186,7 +186,8 @@ class _SrsReviewScreenState extends ConsumerState<SrsReviewScreen> {
                             iconSize: 20,
                             tapSize: 44,
                             color: AppColors.blue,
-                            onTap: () => TutorialVoice.shared.speak(card.exampleEn),
+                            onTap: () =>
+                                TutorialVoice.shared.speak(card.exampleEn),
                           ),
                         ],
                       ),
