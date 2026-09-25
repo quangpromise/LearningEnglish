@@ -1422,12 +1422,12 @@
        "id": "a1-u02-grammar-present-simple-1",
        "unitId": "a1-u02",
        "type": "grammar",
-       "prompt": "We ___ every Monday and Thursday.",
+       "prompt": "We usually ___ every Monday and Thursday.",
        "options": [
         "train",
         "trains",
         "training",
-        "trained"
+        "to train"
        ],
        "answerIndex": 0,
        "explanationVi": "Dùng cho thói quen, việc lặp lại. Với I/you/we/they, động từ giữ nguyên.",
@@ -1550,7 +1550,7 @@
       {
        "en": "pick",
        "ipa": "/pɪk/",
-       "vi": "hái, nhổ",
+       "vi": "hái (hoa, quả)",
        "exampleEn": "They picked apples from the tree.",
        "exampleVi": "Họ hái táo từ cây."
       },
@@ -1669,7 +1669,7 @@
        "prompt": "hide",
        "options": [
         "nhảy",
-        "hái, nhổ",
+        "hái (hoa, quả)",
         "trốn, giấu",
         "chỉ"
        ],
@@ -1777,7 +1777,7 @@
        "prompt": "pick",
        "options": [
         "khóc",
-        "hái, nhổ",
+        "hái (hoa, quả)",
         "đọc",
         "đào"
        ],
@@ -1815,7 +1815,7 @@
         "chỉ",
         "khóc",
         "chơi",
-        "hái, nhổ"
+        "hái (hoa, quả)"
        ],
        "answerIndex": 0,
        "wordEn": "point",
@@ -1830,7 +1830,7 @@
        "type": "meaning",
        "prompt": "push",
        "options": [
-        "hái, nhổ",
+        "hái (hoa, quả)",
         "đào",
         "xô, đẩy",
         "cười"
@@ -1931,7 +1931,7 @@
         "drop"
        ],
        "answerIndex": 3,
-       "hintVi": "Chẳng còn giọt nước nào còn sót lại.",
+       "hintVi": "Không còn một giọt nước nào.",
        "sourceRef": "tatoeba:eng#7492804/vie#1555312"
       },
       {
@@ -5696,9 +5696,9 @@
        "prompt": "She forgot ___ water bottle.",
        "options": [
         "her",
-        "his",
         "she",
-        "hers"
+        "hers",
+        "he"
        ],
        "answerIndex": 0,
        "explanationVi": "Đứng trước danh từ để chỉ của ai: I → my, you → your, he → his, she → her, we → our, they → their.",
@@ -5730,9 +5730,9 @@
        "prompt": "He is stretching ___ arms.",
        "options": [
         "his",
-        "her",
         "him",
-        "he"
+        "he",
+        "he's"
        ],
        "answerIndex": 0,
        "explanationVi": "Đứng trước danh từ để chỉ của ai: I → my, you → your, he → his, she → her, we → our, they → their.",
@@ -6468,7 +6468,7 @@
       {
        "en": "foggy",
        "ipa": "/ˈfɒɡ.i/",
-       "vi": "sương mù",
+       "vi": "có sương mù",
        "exampleEn": "Driving is dangerous on a foggy morning.",
        "exampleVi": "Lái xe rất nguy hiểm vào buổi sáng sương mù."
       },
@@ -6598,7 +6598,7 @@
         "nắng",
         "anh hoặc em trai",
         "mưa",
-        "sương mù"
+        "có sương mù"
        ],
        "answerIndex": 3,
        "wordEn": "foggy",
@@ -6669,7 +6669,7 @@
        "options": [
         "trận mưa rào",
         "cô, dì hoặc bác gái",
-        "sương mù",
+        "có sương mù",
         "tuyết, có tuyết rơi"
        ],
        "answerIndex": 3,
@@ -6759,7 +6759,7 @@
        "options": [
         "đứa trẻ, con",
         "ấm áp",
-        "sương mù",
+        "có sương mù",
         "mát mẻ"
        ],
        "answerIndex": 1,
@@ -6796,7 +6796,7 @@
         "mát mẻ",
         "cô, dì hoặc bác gái",
         "mùa hè",
-        "sương mù"
+        "có sương mù"
        ],
        "answerIndex": 1,
        "wordEn": "aunt",
@@ -6814,7 +6814,7 @@
         "tuyết, có tuyết rơi",
         "anh hoặc em trai",
         "đứa trẻ, con",
-        "sương mù"
+        "có sương mù"
        ],
        "answerIndex": 1,
        "wordEn": "brother",
@@ -6896,24 +6896,22 @@
        "hintVi": "nóng"
       },
       {
-       "id": "a1-u10-gapFill-rainy",
+       "id": "a1-u10-listening-rainy",
        "unitId": "a1-u10",
-       "type": "gapFill",
+       "type": "listening",
        "wordEn": "rainy",
        "sourceIds": [
         "cefrj",
-        "tatoeba"
+        "gymtalk-vocab"
        ],
-       "prompt": "There is no telling when the ___ season will be over.",
+       "prompt": "rainy",
        "options": [
-        "snow",
         "rainy",
-        "sunny",
-        "warm"
+        "foggy",
+        "aunt",
+        "hot"
        ],
-       "answerIndex": 1,
-       "hintVi": "Không có dấu hiệu cho thấy mùa mưa sắp kết thúc.",
-       "sourceRef": "tatoeba:eng#26684/vie#13841090"
+       "answerIndex": 0
       },
       {
        "id": "a1-u10-listening-shower",
@@ -7421,11 +7419,11 @@
        "prompt": "swallow",
        "options": [
         "vận động viên",
-        "đánh gôn",
         "dạ dày, bụng",
-        "nuốt"
+        "nuốt",
+        "đánh gôn"
        ],
-       "answerIndex": 3,
+       "answerIndex": 2,
        "wordEn": "swallow",
        "sourceIds": [
         "cefrj",
@@ -7439,11 +7437,11 @@
        "prompt": "sweat",
        "options": [
         "ngực",
-        "nuốt",
         "đổ mồ hôi, mồ hôi",
-        "ngón chân"
+        "ngón chân",
+        "nuốt"
        ],
-       "answerIndex": 2,
+       "answerIndex": 1,
        "wordEn": "sweat",
        "sourceIds": [
         "cefrj",
@@ -7456,12 +7454,12 @@
        "type": "meaning",
        "prompt": "toe",
        "options": [
-        "vận động viên",
         "má",
         "nuốt",
-        "ngón chân"
+        "ngón chân",
+        "vận động viên"
        ],
-       "answerIndex": 3,
+       "answerIndex": 2,
        "wordEn": "toe",
        "sourceIds": [
         "cefrj",
@@ -7528,12 +7526,12 @@
        "type": "meaning",
        "prompt": "championship",
        "options": [
-        "đánh gôn",
-        "giải vô địch",
         "đổ mồ hôi, mồ hôi",
-        "nuốt"
+        "nuốt",
+        "đánh gôn",
+        "giải vô địch"
        ],
-       "answerIndex": 1,
+       "answerIndex": 3,
        "wordEn": "championship",
        "sourceIds": [
         "cefrj",
@@ -8042,12 +8040,12 @@
        "type": "meaning",
        "prompt": "running",
        "options": [
-        "trượt tuyết",
         "chiến lược",
+        "chạy",
         "huy chương",
-        "chạy"
+        "trượt tuyết"
        ],
-       "answerIndex": 3,
+       "answerIndex": 1,
        "wordEn": "running",
        "sourceIds": [
         "cefrj",
@@ -8078,12 +8076,12 @@
        "type": "meaning",
        "prompt": "skiing",
        "options": [
-        "bóng bàn",
         "chiến lược",
-        "trượt tuyết",
-        "khúc côn cầu"
+        "bóng bàn",
+        "khúc côn cầu",
+        "trượt tuyết"
        ],
-       "answerIndex": 2,
+       "answerIndex": 3,
        "wordEn": "skiing",
        "sourceIds": [
         "cefrj",
@@ -8186,12 +8184,12 @@
        "type": "meaning",
        "prompt": "burn",
        "options": [
+        "đau dạ dày",
         "bỏng",
-        "huy chương",
         "khúc côn cầu",
-        "đau dạ dày"
+        "huy chương"
        ],
-       "answerIndex": 0,
+       "answerIndex": 1,
        "wordEn": "burn",
        "sourceIds": [
         "cefrj",
@@ -8240,12 +8238,12 @@
        "type": "meaning",
        "prompt": "stomachache",
        "options": [
-        "đau dạ dày",
         "bóng bàn",
-        "sút, ném",
-        "tình trạng"
+        "đau dạ dày",
+        "tình trạng",
+        "sút, ném"
        ],
-       "answerIndex": 0,
+       "answerIndex": 1,
        "wordEn": "stomachache",
        "sourceIds": [
         "cefrj",
@@ -8577,7 +8575,7 @@
        "id": "a2-u02-grammar-past-simple-irregular-3",
        "unitId": "a2-u02",
        "type": "grammar",
-       "prompt": "We ___ chicken and rice after training.",
+       "prompt": "Yesterday we ___ chicken and rice after training.",
        "options": [
         "ate",
         "eated",
@@ -8753,12 +8751,12 @@
        "type": "meaning",
        "prompt": "escape",
        "options": [
-        "theo sau, đi theo",
         "rót, đổ",
-        "trồng",
-        "trốn thoát"
+        "trốn thoát",
+        "theo sau, đi theo",
+        "trồng"
        ],
-       "answerIndex": 3,
+       "answerIndex": 1,
        "wordEn": "escape",
        "sourceIds": [
         "cefrj",
@@ -8791,10 +8789,10 @@
        "options": [
         "gõ cửa",
         "lôi, kéo",
-        "theo sau, đi theo",
-        "đánh, đập"
+        "đánh, đập",
+        "theo sau, đi theo"
        ],
-       "answerIndex": 2,
+       "answerIndex": 3,
        "wordEn": "follow",
        "sourceIds": [
         "cefrj",
@@ -8807,12 +8805,12 @@
        "type": "meaning",
        "prompt": "hit",
        "options": [
-        "thả ra, buông ra",
         "theo sau, đi theo",
+        "đánh, đập",
         "cúi, uốn cong",
-        "đánh, đập"
+        "thả ra, buông ra"
        ],
-       "answerIndex": 3,
+       "answerIndex": 1,
        "wordEn": "hit",
        "sourceIds": [
         "cefrj",
@@ -8843,12 +8841,12 @@
        "type": "meaning",
        "prompt": "lock",
        "options": [
-        "khóa",
         "may, khâu",
+        "khóa",
         "rót, đổ",
         "xe lăn"
        ],
-       "answerIndex": 0,
+       "answerIndex": 1,
        "wordEn": "lock",
        "sourceIds": [
         "cefrj",
@@ -9248,7 +9246,7 @@
        "id": "a2-u03-grammar-past-simple-questions-1",
        "unitId": "a2-u03",
        "type": "grammar",
-       "prompt": "___ you finish the workout?",
+       "prompt": "___ you finish the workout yesterday?",
        "options": [
         "Did",
         "Do",
@@ -9282,7 +9280,7 @@
        "id": "a2-u03-grammar-past-simple-questions-3",
        "unitId": "a2-u03",
        "type": "grammar",
-       "prompt": "She ___ come to class on Tuesday.",
+       "prompt": "She ___ come to class last Tuesday.",
        "options": [
         "didn't",
         "doesn't",
@@ -9300,23 +9298,9 @@
     {
      "id": "a2-u04",
      "index": 4,
-     "titleEn": "Food · Actions",
-     "titleVi": "Thức ăn · Hành động",
+     "titleEn": "Food",
+     "titleVi": "Thức ăn",
      "words": [
-      {
-       "en": "slide",
-       "ipa": "/slaɪd/",
-       "vi": "trượt",
-       "exampleEn": "The kids slid down the hill on a sled.",
-       "exampleVi": "Bọn trẻ trượt xuống đồi bằng xe trượt."
-      },
-      {
-       "en": "tear",
-       "ipa": "/teər/",
-       "vi": "xé",
-       "exampleEn": "He tore the letter into pieces.",
-       "exampleVi": "Anh ấy xé lá thư thành nhiều mảnh."
-      },
       {
        "en": "barbecue",
        "ipa": "/ˈbɑːr.bɪ.kjuː/",
@@ -9407,6 +9391,20 @@
        "vi": "nướng (lò)",
        "exampleEn": "We roasted a chicken for Sunday lunch.",
        "exampleVi": "Chúng tôi nướng một con gà cho bữa trưa Chủ nhật."
+      },
+      {
+       "en": "salt",
+       "ipa": "/sɔːlt/",
+       "vi": "muối",
+       "exampleEn": "Add a pinch of salt to the soup.",
+       "exampleVi": "Cho một nhúm muối vào món súp."
+      },
+      {
+       "en": "slice",
+       "ipa": "/slaɪs/",
+       "vi": "thái lát",
+       "exampleEn": "He sliced the bread for toast.",
+       "exampleVi": "Anh ấy thái lát bánh mì để làm bánh mì nướng."
       }
      ],
      "grammar": {
@@ -9417,48 +9415,12 @@
      },
      "items": [
       {
-       "id": "a2-u04-meaning-slide",
-       "unitId": "a2-u04",
-       "type": "meaning",
-       "prompt": "slide",
-       "options": [
-        "món tráng miệng",
-        "trượt",
-        "bột",
-        "chiên"
-       ],
-       "answerIndex": 1,
-       "wordEn": "slide",
-       "sourceIds": [
-        "cefrj",
-        "gymtalk-vocab"
-       ]
-      },
-      {
-       "id": "a2-u04-meaning-tear",
-       "unitId": "a2-u04",
-       "type": "meaning",
-       "prompt": "tear",
-       "options": [
-        "xé",
-        "ớt, tiêu",
-        "thức ăn nhanh",
-        "món tráng miệng"
-       ],
-       "answerIndex": 0,
-       "wordEn": "tear",
-       "sourceIds": [
-        "cefrj",
-        "gymtalk-vocab"
-       ]
-      },
-      {
        "id": "a2-u04-meaning-barbecue",
        "unitId": "a2-u04",
        "type": "meaning",
        "prompt": "barbecue",
        "options": [
-        "trượt",
+        "muối",
         "thức ăn nhanh",
         "bột",
         "tiệc nướng ngoài trời"
@@ -9512,7 +9474,7 @@
        "type": "meaning",
        "prompt": "cereal",
        "options": [
-        "xé",
+        "thái lát",
         "ngũ cốc",
         "chiên",
         "thịt đùi xông khói"
@@ -9550,8 +9512,8 @@
        "options": [
         "thức ăn nhanh",
         "củ hành",
-        "chiên",
-        "luộc"
+        "luộc",
+        "chiên"
        ],
        "answerIndex": 0,
        "wordEn": "fast food",
@@ -9621,11 +9583,11 @@
        "prompt": "ham",
        "options": [
         "chiên",
-        "thức ăn nhanh",
-        "xé",
-        "thịt đùi xông khói"
+        "thịt đùi xông khói",
+        "thái lát",
+        "thức ăn nhanh"
        ],
-       "answerIndex": 3,
+       "answerIndex": 1,
        "wordEn": "ham",
        "sourceIds": [
         "cefrj",
@@ -9687,83 +9649,82 @@
        ]
       },
       {
-       "id": "a2-u04-gapFill-slide",
+       "id": "a2-u04-meaning-salt",
        "unitId": "a2-u04",
-       "type": "gapFill",
-       "wordEn": "slide",
-       "sourceIds": [
-        "cefrj",
-        "tatoeba"
-       ],
-       "prompt": "There's a typo on ___ 3.",
+       "type": "meaning",
+       "prompt": "salt",
        "options": [
-        "boil",
-        "slide",
-        "onion",
-        "ham"
+        "luộc",
+        "ngũ cốc",
+        "thái lát",
+        "muối"
        ],
-       "answerIndex": 1,
-       "hintVi": "Có lỗi chính tả ở trang 3.",
-       "sourceRef": "tatoeba:eng#10257337/vie#10257480"
-      },
-      {
-       "id": "a2-u04-listening-tear",
-       "unitId": "a2-u04",
-       "type": "listening",
-       "wordEn": "tear",
+       "answerIndex": 3,
+       "wordEn": "salt",
        "sourceIds": [
         "cefrj",
         "gymtalk-vocab"
-       ],
-       "prompt": "tear",
-       "options": [
-        "fast food",
-        "roast",
-        "tear",
-        "fry"
-       ],
-       "answerIndex": 2
+       ]
       },
       {
-       "id": "a2-u04-wordScramble-barbecue",
+       "id": "a2-u04-meaning-slice",
        "unitId": "a2-u04",
-       "type": "wordScramble",
+       "type": "meaning",
+       "prompt": "slice",
+       "options": [
+        "muối",
+        "ngũ cốc",
+        "thái lát",
+        "món tráng miệng"
+       ],
+       "answerIndex": 2,
+       "wordEn": "slice",
+       "sourceIds": [
+        "cefrj",
+        "gymtalk-vocab"
+       ]
+      },
+      {
+       "id": "a2-u04-gapFill-barbecue",
+       "unitId": "a2-u04",
+       "type": "gapFill",
        "wordEn": "barbecue",
        "sourceIds": [
         "cefrj",
         "gymtalk-vocab"
        ],
-       "prompt": "barbecue",
+       "prompt": "We had a ___ in the backyard.",
        "options": [
-        "barbecue"
+        "fry",
+        "roast",
+        "barbecue",
+        "slice"
        ],
-       "answerIndex": 0,
-       "hintVi": "tiệc nướng ngoài trời"
+       "answerIndex": 2,
+       "hintVi": "Chúng tôi tổ chức tiệc nướng ở sân sau."
       },
       {
-       "id": "a2-u04-gapFill-boil",
+       "id": "a2-u04-listening-boil",
        "unitId": "a2-u04",
-       "type": "gapFill",
+       "type": "listening",
        "wordEn": "boil",
        "sourceIds": [
         "cefrj",
-        "tatoeba"
+        "gymtalk-vocab"
        ],
-       "prompt": "Parents who beat their children really make my blood ___.",
+       "prompt": "boil",
        "options": [
-        "dessert",
-        "pepper",
-        "carrot",
-        "boil"
+        "cereal",
+        "boil",
+        "ham",
+        "roast"
        ],
-       "answerIndex": 3,
-       "hintVi": "Cha mẹ mà đánh con cái làm tôi giận sôi máu.",
-       "sourceRef": "tatoeba:eng#23552/vie#4580261"
+       "answerIndex": 1
       },
       {
-       "id": "a2-u04-listening-carrot",
+       "id": "a2-u04-wordScramble-carrot",
        "unitId": "a2-u04",
-       "type": "listening",
+       "type": "wordScramble",
        "wordEn": "carrot",
        "sourceIds": [
         "cefrj",
@@ -9771,107 +9732,111 @@
        ],
        "prompt": "carrot",
        "options": [
-        "fast food",
-        "carrot",
-        "flour",
-        "ham"
-       ],
-       "answerIndex": 1
-      },
-      {
-       "id": "a2-u04-wordScramble-cereal",
-       "unitId": "a2-u04",
-       "type": "wordScramble",
-       "wordEn": "cereal",
-       "sourceIds": [
-        "cefrj",
-        "gymtalk-vocab"
-       ],
-       "prompt": "cereal",
-       "options": [
-        "cereal"
+        "carrot"
        ],
        "answerIndex": 0,
-       "hintVi": "ngũ cốc"
+       "hintVi": "cà rốt"
       },
       {
-       "id": "a2-u04-gapFill-dessert",
+       "id": "a2-u04-gapFill-cereal",
        "unitId": "a2-u04",
        "type": "gapFill",
-       "wordEn": "dessert",
+       "wordEn": "cereal",
        "sourceIds": [
         "cefrj",
         "tatoeba"
        ],
-       "prompt": "After ___, I was full.",
+       "prompt": "I like to eat ___ with milk.",
        "options": [
-        "fry",
-        "ham",
-        "barbecue",
-        "dessert"
+        "carrot",
+        "cereal",
+        "garlic",
+        "flour"
        ],
-       "answerIndex": 3,
-       "hintVi": "Sau khi tráng miệng, tôi no bụng.",
-       "sourceRef": "tatoeba:eng#13877701/vie#13878098"
+       "answerIndex": 1,
+       "hintVi": "Tôi thích ăn ngũ cốc với sữa.",
+       "sourceRef": "tatoeba:eng#11318231/vie#11318233"
       },
       {
-       "id": "a2-u04-listening-fast-food",
+       "id": "a2-u04-listening-dessert",
        "unitId": "a2-u04",
        "type": "listening",
-       "wordEn": "fast food",
+       "wordEn": "dessert",
        "sourceIds": [
         "cefrj",
         "gymtalk-vocab"
        ],
-       "prompt": "fast food",
+       "prompt": "dessert",
        "options": [
-        "onion",
+        "barbecue",
+        "boil",
+        "salt",
+        "dessert"
+       ],
+       "answerIndex": 3
+      },
+      {
+       "id": "a2-u04-gapFill-fast-food",
+       "unitId": "a2-u04",
+       "type": "gapFill",
+       "wordEn": "fast food",
+       "sourceIds": [
+        "cefrj",
+        "tatoeba"
+       ],
+       "prompt": "I like ___.",
+       "options": [
+        "barbecue",
         "cereal",
         "fast food",
         "pepper"
        ],
-       "answerIndex": 2
+       "answerIndex": 2,
+       "hintVi": "Tôi thích đồ ăn nhanh.",
+       "sourceRef": "tatoeba:eng#13858679/vie#13859156"
       },
       {
-       "id": "a2-u04-wordScramble-flour",
-       "unitId": "a2-u04",
-       "type": "wordScramble",
-       "wordEn": "flour",
-       "sourceIds": [
-        "cefrj",
-        "gymtalk-vocab"
-       ],
-       "prompt": "flour",
-       "options": [
-        "flour"
-       ],
-       "answerIndex": 0,
-       "hintVi": "bột"
-      },
-      {
-       "id": "a2-u04-gapFill-fry",
+       "id": "a2-u04-gapFill-flour",
        "unitId": "a2-u04",
        "type": "gapFill",
-       "wordEn": "fry",
+       "wordEn": "flour",
        "sourceIds": [
         "cefrj",
         "tatoeba"
        ],
-       "prompt": "We use frying pans to ___ food.",
+       "prompt": "We need more ___.",
        "options": [
-        "boil",
-        "fry",
-        "fast food",
-        "carrot"
+        "carrot",
+        "salt",
+        "flour",
+        "roast"
        ],
-       "answerIndex": 1,
-       "hintVi": "Chúng tôi dùng chảo rán để rán đồ ăn.",
-       "sourceRef": "tatoeba:eng#13895358/vie#13896230"
+       "answerIndex": 2,
+       "hintVi": "Chúng ta cần thêm bột mì.",
+       "sourceRef": "tatoeba:eng#6063939/vie#13628472"
       },
       {
-       "id": "a2-u04-listening-garlic",
+       "id": "a2-u04-listening-fry",
        "unitId": "a2-u04",
        "type": "listening",
+       "wordEn": "fry",
+       "sourceIds": [
+        "cefrj",
+        "gymtalk-vocab"
+       ],
+       "prompt": "fry",
+       "options": [
+        "fry",
+        "carrot",
+        "flour",
+        "boil"
+       ],
+       "answerIndex": 0
+      },
+      {
+       "id": "a2-u04-wordScramble-garlic",
+       "unitId": "a2-u04",
+       "type": "wordScramble",
        "wordEn": "garlic",
        "sourceIds": [
         "cefrj",
@@ -9879,52 +9844,53 @@
        ],
        "prompt": "garlic",
        "options": [
-        "tear",
-        "dessert",
-        "boil",
         "garlic"
        ],
-       "answerIndex": 3
+       "answerIndex": 0,
+       "hintVi": "tỏi"
       },
       {
-       "id": "a2-u04-wordScramble-ham",
+       "id": "a2-u04-gapFill-ham",
        "unitId": "a2-u04",
-       "type": "wordScramble",
+       "type": "gapFill",
        "wordEn": "ham",
        "sourceIds": [
         "cefrj",
-        "gymtalk-vocab"
+        "tatoeba"
        ],
-       "prompt": "ham",
+       "prompt": "I like to eat sandwiches with ___ and cheese.",
        "options": [
-        "ham"
+        "ham",
+        "fast food",
+        "cereal",
+        "salt"
        ],
        "answerIndex": 0,
-       "hintVi": "thịt đùi xông khói"
+       "hintVi": "Tôi thích ăn sandwich với giăm bông và phô mai.",
+       "sourceRef": "tatoeba:eng#11399214/vie#11399215"
       },
       {
-       "id": "a2-u04-gapFill-onion",
+       "id": "a2-u04-listening-onion",
        "unitId": "a2-u04",
-       "type": "gapFill",
+       "type": "listening",
        "wordEn": "onion",
        "sourceIds": [
         "cefrj",
         "gymtalk-vocab"
        ],
-       "prompt": "She chopped an ___ for the soup.",
+       "prompt": "onion",
        "options": [
-        "carrot",
+        "slice",
         "onion",
-        "cereal",
-        "garlic"
+        "fry",
+        "roast"
        ],
-       "answerIndex": 1,
-       "hintVi": "Cô ấy băm hành cho món súp."
+       "answerIndex": 1
       },
       {
-       "id": "a2-u04-listening-pepper",
+       "id": "a2-u04-wordScramble-pepper",
        "unitId": "a2-u04",
-       "type": "listening",
+       "type": "wordScramble",
        "wordEn": "pepper",
        "sourceIds": [
         "cefrj",
@@ -9932,28 +9898,64 @@
        ],
        "prompt": "pepper",
        "options": [
-        "pepper",
-        "roast",
-        "garlic",
-        "barbecue"
+        "pepper"
        ],
-       "answerIndex": 0
+       "answerIndex": 0,
+       "hintVi": "ớt, tiêu"
       },
       {
-       "id": "a2-u04-wordScramble-roast",
+       "id": "a2-u04-gapFill-roast",
        "unitId": "a2-u04",
-       "type": "wordScramble",
+       "type": "gapFill",
        "wordEn": "roast",
+       "sourceIds": [
+        "cefrj",
+        "tatoeba"
+       ],
+       "prompt": "I'm going to ___ some chestnuts.",
+       "options": [
+        "garlic",
+        "carrot",
+        "roast",
+        "fry"
+       ],
+       "answerIndex": 2,
+       "hintVi": "Tôi sẽ nướng một ít hạt dẻ.",
+       "sourceRef": "tatoeba:eng#10921659/vie#11406864"
+      },
+      {
+       "id": "a2-u04-listening-salt",
+       "unitId": "a2-u04",
+       "type": "listening",
+       "wordEn": "salt",
        "sourceIds": [
         "cefrj",
         "gymtalk-vocab"
        ],
-       "prompt": "roast",
+       "prompt": "salt",
        "options": [
-        "roast"
+        "pepper",
+        "barbecue",
+        "salt",
+        "carrot"
+       ],
+       "answerIndex": 2
+      },
+      {
+       "id": "a2-u04-wordScramble-slice",
+       "unitId": "a2-u04",
+       "type": "wordScramble",
+       "wordEn": "slice",
+       "sourceIds": [
+        "cefrj",
+        "gymtalk-vocab"
+       ],
+       "prompt": "slice",
+       "options": [
+        "slice"
        ],
        "answerIndex": 0,
-       "hintVi": "nướng (lò)"
+       "hintVi": "thái lát"
       },
       {
        "id": "a2-u04-grammar-going-to-1",
@@ -10014,20 +10016,6 @@
      "titleEn": "Drinks · Time",
      "titleVi": "Thức uống · Thời gian",
      "words": [
-      {
-       "en": "salt",
-       "ipa": "/sɔːlt/",
-       "vi": "muối",
-       "exampleEn": "Add a pinch of salt to the soup.",
-       "exampleVi": "Cho một nhúm muối vào món súp."
-      },
-      {
-       "en": "slice",
-       "ipa": "/slaɪs/",
-       "vi": "thái lát",
-       "exampleEn": "He sliced the bread for toast.",
-       "exampleVi": "Anh ấy thái lát bánh mì để làm bánh mì nướng."
-      },
       {
        "en": "snack",
        "ipa": "/snæk/",
@@ -10118,6 +10106,20 @@
        "vi": "thế kỷ",
        "exampleEn": "The building is over one century old.",
        "exampleVi": "Tòa nhà đã hơn một thế kỷ tuổi."
+      },
+      {
+       "en": "during",
+       "ipa": "/ˈdjʊər.ɪŋ/",
+       "vi": "trong suốt (khoảng thời gian)",
+       "exampleEn": "It rained during the whole trip.",
+       "exampleVi": "Trời mưa suốt cả chuyến đi."
+      },
+      {
+       "en": "instant",
+       "ipa": "/ˈɪn.stənt/",
+       "vi": "khoảnh khắc, tức thì",
+       "exampleEn": "In an instant, the whole room went silent.",
+       "exampleVi": "Trong khoảnh khắc, cả căn phòng im lặng."
       }
      ],
      "grammar": {
@@ -10127,42 +10129,6 @@
       "explanationVi": "will + động từ nguyên mẫu để dự đoán hoặc quyết định ngay lúc nói."
      },
      "items": [
-      {
-       "id": "a2-u05-meaning-salt",
-       "unitId": "a2-u05",
-       "type": "meaning",
-       "prompt": "salt",
-       "options": [
-        "thái lát",
-        "muối",
-        "nước khoáng",
-        "thế kỷ"
-       ],
-       "answerIndex": 1,
-       "wordEn": "salt",
-       "sourceIds": [
-        "cefrj",
-        "gymtalk-vocab"
-       ]
-      },
-      {
-       "id": "a2-u05-meaning-slice",
-       "unitId": "a2-u05",
-       "type": "meaning",
-       "prompt": "slice",
-       "options": [
-        "rượu sâm panh",
-        "thế kỷ",
-        "rượu sake",
-        "thái lát"
-       ],
-       "answerIndex": 3,
-       "wordEn": "slice",
-       "sourceIds": [
-        "cefrj",
-        "gymtalk-vocab"
-       ]
-      },
       {
        "id": "a2-u05-meaning-snack",
        "unitId": "a2-u05",
@@ -10206,11 +10172,11 @@
        "prompt": "champagne",
        "options": [
         "ngày kỷ niệm",
-        "muối",
+        "rượu sâm panh",
         "đồng hồ báo thức",
-        "rượu sâm panh"
+        "nước khoáng"
        ],
-       "answerIndex": 3,
+       "answerIndex": 1,
        "wordEn": "champagne",
        "sourceIds": [
         "cefrj",
@@ -10241,7 +10207,7 @@
        "type": "meaning",
        "prompt": "mineral water",
        "options": [
-        "nước chanh",
+        "trong suốt (khoảng thời gian)",
         "đồng hồ báo thức",
         "ngày kỷ niệm",
         "nước khoáng"
@@ -10260,8 +10226,8 @@
        "prompt": "sake",
        "options": [
         "rượu sake",
-        "nước chanh",
-        "muối",
+        "nước khoáng",
+        "trong suốt (khoảng thời gian)",
         "thế kỷ"
        ],
        "answerIndex": 0,
@@ -10278,11 +10244,11 @@
        "prompt": "soda",
        "options": [
         "rượu sâm panh",
+        "sô-đa",
         "đồng hồ báo thức",
-        "ngày kỷ niệm",
-        "sô-đa"
+        "ngày kỷ niệm"
        ],
-       "answerIndex": 3,
+       "answerIndex": 1,
        "wordEn": "soda",
        "sourceIds": [
         "cefrj",
@@ -10298,7 +10264,7 @@
         "khát nước",
         "đồng hồ báo thức",
         "sô-đa",
-        "thái lát"
+        "rượu sake"
        ],
        "answerIndex": 0,
        "wordEn": "thirsty",
@@ -10332,9 +10298,9 @@
        "prompt": "alarm clock",
        "options": [
         "rượu sâm panh",
-        "rượu sake",
+        "sô-đa",
         "đồng hồ báo thức",
-        "sô-đa"
+        "nước chanh"
        ],
        "answerIndex": 2,
        "wordEn": "alarm clock",
@@ -10398,83 +10364,82 @@
        ]
       },
       {
-       "id": "a2-u05-gapFill-salt",
+       "id": "a2-u05-meaning-during",
        "unitId": "a2-u05",
-       "type": "gapFill",
-       "wordEn": "salt",
-       "sourceIds": [
-        "cefrj",
-        "tatoeba"
-       ],
-       "prompt": "She drinks ___ water.",
+       "type": "meaning",
+       "prompt": "during",
        "options": [
-        "beer",
-        "sake",
-        "champagne",
-        "salt"
+        "bia",
+        "trong suốt (khoảng thời gian)",
+        "khát nước",
+        "bữa ăn nhẹ"
        ],
-       "answerIndex": 3,
-       "hintVi": "Cô ấy uống nước muối.",
-       "sourceRef": "tatoeba:eng#13501272/vie#13502969"
-      },
-      {
-       "id": "a2-u05-listening-slice",
-       "unitId": "a2-u05",
-       "type": "listening",
-       "wordEn": "slice",
+       "answerIndex": 1,
+       "wordEn": "during",
        "sourceIds": [
         "cefrj",
         "gymtalk-vocab"
-       ],
-       "prompt": "slice",
-       "options": [
-        "alarm clock",
-        "thirsty",
-        "slice",
-        "snack"
-       ],
-       "answerIndex": 2
+       ]
       },
       {
-       "id": "a2-u05-wordScramble-snack",
+       "id": "a2-u05-meaning-instant",
        "unitId": "a2-u05",
-       "type": "wordScramble",
+       "type": "meaning",
+       "prompt": "instant",
+       "options": [
+        "nước chanh",
+        "rượu vang",
+        "khoảnh khắc, tức thì",
+        "bia"
+       ],
+       "answerIndex": 2,
+       "wordEn": "instant",
+       "sourceIds": [
+        "cefrj",
+        "gymtalk-vocab"
+       ]
+      },
+      {
+       "id": "a2-u05-gapFill-snack",
+       "unitId": "a2-u05",
+       "type": "gapFill",
        "wordEn": "snack",
        "sourceIds": [
         "cefrj",
         "gymtalk-vocab"
        ],
-       "prompt": "snack",
+       "prompt": "She had a small ___ before dinner.",
        "options": [
-        "snack"
+        "during",
+        "snack",
+        "sake",
+        "soda"
        ],
-       "answerIndex": 0,
-       "hintVi": "bữa ăn nhẹ"
+       "answerIndex": 1,
+       "hintVi": "Cô ấy ăn nhẹ trước bữa tối."
       },
       {
-       "id": "a2-u05-gapFill-beer",
+       "id": "a2-u05-listening-beer",
        "unitId": "a2-u05",
-       "type": "gapFill",
+       "type": "listening",
        "wordEn": "beer",
        "sourceIds": [
         "cefrj",
-        "tatoeba"
+        "gymtalk-vocab"
        ],
-       "prompt": "I only drink ___.",
+       "prompt": "beer",
        "options": [
-        "salt",
         "century",
-        "beer",
-        "lemonade"
+        "snack",
+        "during",
+        "beer"
        ],
-       "answerIndex": 2,
-       "hintVi": "Tôi chỉ uống bia.",
-       "sourceRef": "tatoeba:eng#13907954/vie#13908358"
+       "answerIndex": 3
       },
       {
-       "id": "a2-u05-listening-champagne",
+       "id": "a2-u05-wordScramble-champagne",
        "unitId": "a2-u05",
-       "type": "listening",
+       "type": "wordScramble",
        "wordEn": "champagne",
        "sourceIds": [
         "cefrj",
@@ -10482,53 +10447,53 @@
        ],
        "prompt": "champagne",
        "options": [
-        "champagne",
-        "beer",
-        "century",
-        "snack"
-       ],
-       "answerIndex": 0
-      },
-      {
-       "id": "a2-u05-wordScramble-lemonade",
-       "unitId": "a2-u05",
-       "type": "wordScramble",
-       "wordEn": "lemonade",
-       "sourceIds": [
-        "cefrj",
-        "gymtalk-vocab"
-       ],
-       "prompt": "lemonade",
-       "options": [
-        "lemonade"
+        "champagne"
        ],
        "answerIndex": 0,
-       "hintVi": "nước chanh"
+       "hintVi": "rượu sâm panh"
       },
       {
-       "id": "a2-u05-gapFill-mineral-water",
+       "id": "a2-u05-gapFill-lemonade",
        "unitId": "a2-u05",
        "type": "gapFill",
-       "wordEn": "mineral water",
+       "wordEn": "lemonade",
        "sourceIds": [
         "cefrj",
         "tatoeba"
        ],
-       "prompt": "I prefer ___.",
+       "prompt": "This ___ tastes too sweet.",
        "options": [
-        "mineral water",
+        "snack",
+        "sake",
         "lemonade",
-        "century",
-        "slice"
+        "century"
        ],
-       "answerIndex": 0,
-       "hintVi": "Tôi thích nước khoáng hơn.",
-       "sourceRef": "tatoeba:eng#1009212/vie#13726686"
+       "answerIndex": 2,
+       "hintVi": "Nước chanh này quá ngọt.",
+       "sourceRef": "tatoeba:eng#1609253/vie#8902541"
       },
       {
-       "id": "a2-u05-listening-sake",
+       "id": "a2-u05-listening-mineral-water",
        "unitId": "a2-u05",
        "type": "listening",
+       "wordEn": "mineral water",
+       "sourceIds": [
+        "cefrj",
+        "gymtalk-vocab"
+       ],
+       "prompt": "mineral water",
+       "options": [
+        "lemonade",
+        "mineral water",
+        "beer",
+        "champagne"
+       ],
+       "answerIndex": 1
+      },
+      {
+       "id": "a2-u05-wordScramble-sake",
+       "unitId": "a2-u05",
+       "type": "wordScramble",
        "wordEn": "sake",
        "sourceIds": [
         "cefrj",
@@ -10536,53 +10501,52 @@
        ],
        "prompt": "sake",
        "options": [
-        "thirsty",
-        "soda",
-        "mineral water",
         "sake"
        ],
-       "answerIndex": 3
+       "answerIndex": 0,
+       "hintVi": "rượu sake"
       },
       {
-       "id": "a2-u05-wordScramble-soda",
+       "id": "a2-u05-gapFill-soda",
        "unitId": "a2-u05",
-       "type": "wordScramble",
+       "type": "gapFill",
        "wordEn": "soda",
        "sourceIds": [
         "cefrj",
         "gymtalk-vocab"
        ],
-       "prompt": "soda",
+       "prompt": "He drank a cold ___ after the game.",
        "options": [
+        "snack",
+        "during",
+        "mineral water",
         "soda"
        ],
-       "answerIndex": 0,
-       "hintVi": "sô-đa"
+       "answerIndex": 3,
+       "hintVi": "Anh ấy uống một ly sô-đa lạnh sau trận đấu."
       },
       {
-       "id": "a2-u05-gapFill-thirsty",
+       "id": "a2-u05-listening-thirsty",
        "unitId": "a2-u05",
-       "type": "gapFill",
+       "type": "listening",
        "wordEn": "thirsty",
        "sourceIds": [
         "cefrj",
-        "tatoeba"
+        "gymtalk-vocab"
        ],
-       "prompt": "Right now I'm not ___.",
+       "prompt": "thirsty",
        "options": [
-        "beer",
-        "sake",
-        "salt",
-        "thirsty"
+        "lemonade",
+        "thirsty",
+        "century",
+        "champagne"
        ],
-       "answerIndex": 3,
-       "hintVi": "Giờ mình không khát.",
-       "sourceRef": "tatoeba:eng#5069682/vie#6285769"
+       "answerIndex": 1
       },
       {
-       "id": "a2-u05-listening-wine",
+       "id": "a2-u05-wordScramble-wine",
        "unitId": "a2-u05",
-       "type": "listening",
+       "type": "wordScramble",
        "wordEn": "wine",
        "sourceIds": [
         "cefrj",
@@ -10590,12 +10554,10 @@
        ],
        "prompt": "wine",
        "options": [
-        "anniversary",
-        "snack",
-        "wine",
-        "champagne"
+        "wine"
        ],
-       "answerIndex": 2
+       "answerIndex": 0,
+       "hintVi": "rượu vang"
       },
       {
        "id": "a2-u05-gapFill-alarm-clock",
@@ -10609,37 +10571,35 @@
        "prompt": "Her ___ went off at six.",
        "options": [
         "alarm clock",
-        "slice",
         "sake",
+        "lemonade",
         "wine"
        ],
        "answerIndex": 0,
        "hintVi": "Đồng hồ báo thức của cô ấy reo lúc sáu giờ."
       },
       {
-       "id": "a2-u05-gapFill-anniversary",
+       "id": "a2-u05-listening-anniversary",
        "unitId": "a2-u05",
-       "type": "gapFill",
+       "type": "listening",
        "wordEn": "anniversary",
        "sourceIds": [
         "cefrj",
-        "tatoeba"
+        "gymtalk-vocab"
        ],
-       "prompt": "Let's celebrate the ___ of our first kiss.",
+       "prompt": "anniversary",
        "options": [
+        "thirsty",
+        "beer",
         "anniversary",
-        "champagne",
-        "salt",
-        "lemonade"
+        "wine"
        ],
-       "answerIndex": 0,
-       "hintVi": "Hãy ăn mừng kỷ niệm ngày chúng ta hôn nhau lần đầu.",
-       "sourceRef": "tatoeba:eng#2953169/vie#3481610"
+       "answerIndex": 2
       },
       {
-       "id": "a2-u05-listening-calendar",
+       "id": "a2-u05-wordScramble-calendar",
        "unitId": "a2-u05",
-       "type": "listening",
+       "type": "wordScramble",
        "wordEn": "calendar",
        "sourceIds": [
         "cefrj",
@@ -10647,28 +10607,64 @@
        ],
        "prompt": "calendar",
        "options": [
-        "thirsty",
-        "calendar",
-        "slice",
-        "alarm clock"
+        "calendar"
        ],
-       "answerIndex": 1
+       "answerIndex": 0,
+       "hintVi": "lịch"
       },
       {
-       "id": "a2-u05-wordScramble-century",
+       "id": "a2-u05-gapFill-century",
        "unitId": "a2-u05",
-       "type": "wordScramble",
+       "type": "gapFill",
        "wordEn": "century",
+       "sourceIds": [
+        "cefrj",
+        "tatoeba"
+       ],
+       "prompt": "He died in the 18th ___.",
+       "options": [
+        "lemonade",
+        "sake",
+        "instant",
+        "century"
+       ],
+       "answerIndex": 3,
+       "hintVi": "Anh ấy đã chết vào thế kỉ 18.",
+       "sourceRef": "tatoeba:eng#13903738/vie#13903905"
+      },
+      {
+       "id": "a2-u05-listening-during",
+       "unitId": "a2-u05",
+       "type": "listening",
+       "wordEn": "during",
        "sourceIds": [
         "cefrj",
         "gymtalk-vocab"
        ],
-       "prompt": "century",
+       "prompt": "during",
        "options": [
-        "century"
+        "snack",
+        "anniversary",
+        "soda",
+        "during"
+       ],
+       "answerIndex": 3
+      },
+      {
+       "id": "a2-u05-wordScramble-instant",
+       "unitId": "a2-u05",
+       "type": "wordScramble",
+       "wordEn": "instant",
+       "sourceIds": [
+        "cefrj",
+        "gymtalk-vocab"
+       ],
+       "prompt": "instant",
+       "options": [
+        "instant"
        ],
        "answerIndex": 0,
-       "hintVi": "thế kỷ"
+       "hintVi": "khoảnh khắc, tức thì"
       },
       {
        "id": "a2-u05-grammar-will-1",
@@ -10726,23 +10722,9 @@
     {
      "id": "a2-u06",
      "index": 6,
-     "titleEn": "Time · Clothing",
-     "titleVi": "Thời gian · Quần áo",
+     "titleEn": "Clothing · Time",
+     "titleVi": "Quần áo · Thời gian",
      "words": [
-      {
-       "en": "during",
-       "ipa": "/ˈdjʊər.ɪŋ/",
-       "vi": "trong suốt (khoảng thời gian)",
-       "exampleEn": "It rained during the whole trip.",
-       "exampleVi": "Trời mưa suốt cả chuyến đi."
-      },
-      {
-       "en": "instant",
-       "ipa": "/ˈɪn.stənt/",
-       "vi": "khoảnh khắc, tức thì",
-       "exampleEn": "In an instant, the whole room went silent.",
-       "exampleVi": "Trong khoảnh khắc, cả căn phòng im lặng."
-      },
       {
        "en": "midday",
        "ipa": "/ˌmɪdˈdeɪ/",
@@ -10833,6 +10815,20 @@
        "vi": "khăn quàng cổ",
        "exampleEn": "She wrapped a scarf around her neck.",
        "exampleVi": "Cô ấy quàng khăn quanh cổ."
+      },
+      {
+       "en": "shorts",
+       "ipa": "/ʃɔːrts/",
+       "vi": "quần đùi, quần short",
+       "exampleEn": "He wears shorts when it is hot.",
+       "exampleVi": "Anh ấy mặc quần short khi trời nóng."
+      },
+      {
+       "en": "suit",
+       "ipa": "/suːt/",
+       "vi": "bộ vest",
+       "exampleEn": "He wore a black suit to the interview.",
+       "exampleVi": "Anh ấy mặc bộ vest đen đi phỏng vấn."
       }
      ],
      "grammar": {
@@ -10843,51 +10839,15 @@
      },
      "items": [
       {
-       "id": "a2-u06-meaning-during",
-       "unitId": "a2-u06",
-       "type": "meaning",
-       "prompt": "during",
-       "options": [
-        "lịch trình",
-        "áo mưa",
-        "trong khi",
-        "trong suốt (khoảng thời gian)"
-       ],
-       "answerIndex": 3,
-       "wordEn": "during",
-       "sourceIds": [
-        "cefrj",
-        "gymtalk-vocab"
-       ]
-      },
-      {
-       "id": "a2-u06-meaning-instant",
-       "unitId": "a2-u06",
-       "type": "meaning",
-       "prompt": "instant",
-       "options": [
-        "ngày trong tuần (thứ Hai-Sáu)",
-        "khoảnh khắc, tức thì",
-        "giữa trưa",
-        "thắt lưng"
-       ],
-       "answerIndex": 1,
-       "wordEn": "instant",
-       "sourceIds": [
-        "cefrj",
-        "gymtalk-vocab"
-       ]
-      },
-      {
        "id": "a2-u06-meaning-midday",
        "unitId": "a2-u06",
        "type": "meaning",
        "prompt": "midday",
        "options": [
         "giữa trưa",
-        "áo mưa",
-        "ngày nay",
-        "nửa đêm"
+        "lịch trình",
+        "khăn quàng cổ",
+        "ngày nay"
        ],
        "answerIndex": 0,
        "wordEn": "midday",
@@ -10902,12 +10862,12 @@
        "type": "meaning",
        "prompt": "midnight",
        "options": [
-        "ngày nay",
-        "giữa trưa",
+        "khăn quàng cổ",
         "nửa đêm",
-        "túi xách"
+        "ngày nay",
+        "áo mưa"
        ],
-       "answerIndex": 2,
+       "answerIndex": 1,
        "wordEn": "midnight",
        "sourceIds": [
         "cefrj",
@@ -10922,8 +10882,8 @@
        "options": [
         "thắt lưng",
         "giữa trưa",
-        "lịch trình",
-        "khoảnh khắc, tức thì"
+        "bộ vest",
+        "rộng, lỏng"
        ],
        "answerIndex": 1,
        "wordEn": "noon",
@@ -10939,9 +10899,9 @@
        "prompt": "nowadays",
        "options": [
         "ngày nay",
-        "da (chất liệu)",
-        "rộng, lỏng",
-        "thắt lưng"
+        "khăn quàng cổ",
+        "thắt lưng",
+        "giữa trưa"
        ],
        "answerIndex": 0,
        "wordEn": "nowadays",
@@ -10956,9 +10916,9 @@
        "type": "meaning",
        "prompt": "schedule",
        "options": [
-        "giữa trưa",
-        "túi xách",
-        "khăn quàng cổ",
+        "da (chất liệu)",
+        "quần đùi, quần short",
+        "áo mưa",
         "lịch trình"
        ],
        "answerIndex": 3,
@@ -10974,9 +10934,9 @@
        "type": "meaning",
        "prompt": "weekday",
        "options": [
-        "giữa trưa",
         "áo mưa",
-        "ngày nay",
+        "lịch trình",
+        "khăn quàng cổ",
         "ngày trong tuần (thứ Hai-Sáu)"
        ],
        "answerIndex": 3,
@@ -10993,8 +10953,8 @@
        "prompt": "while",
        "options": [
         "thắt lưng",
-        "áo mưa",
-        "trong suốt (khoảng thời gian)",
+        "lịch trình",
+        "túi xách",
         "trong khi"
        ],
        "answerIndex": 3,
@@ -11010,8 +10970,8 @@
        "type": "meaning",
        "prompt": "belt",
        "options": [
-        "khoảnh khắc, tức thì",
-        "khăn quàng cổ",
+        "rộng, lỏng",
+        "quần đùi, quần short",
         "thắt lưng",
         "giữa trưa"
        ],
@@ -11028,10 +10988,10 @@
        "type": "meaning",
        "prompt": "handbag",
        "options": [
-        "rộng, lỏng",
+        "nửa đêm",
         "trong khi",
         "túi xách",
-        "khăn quàng cổ"
+        "quần đùi, quần short"
        ],
        "answerIndex": 2,
        "wordEn": "handbag",
@@ -11046,12 +11006,12 @@
        "type": "meaning",
        "prompt": "leather",
        "options": [
-        "ngày trong tuần (thứ Hai-Sáu)",
-        "trong khi",
+        "thắt lưng",
         "da (chất liệu)",
-        "thắt lưng"
+        "trong khi",
+        "ngày trong tuần (thứ Hai-Sáu)"
        ],
-       "answerIndex": 2,
+       "answerIndex": 1,
        "wordEn": "leather",
        "sourceIds": [
         "cefrj",
@@ -11064,12 +11024,12 @@
        "type": "meaning",
        "prompt": "loose",
        "options": [
+        "lịch trình",
         "rộng, lỏng",
         "thắt lưng",
-        "áo mưa",
-        "giữa trưa"
+        "áo mưa"
        ],
-       "answerIndex": 0,
+       "answerIndex": 1,
        "wordEn": "loose",
        "sourceIds": [
         "cefrj",
@@ -11085,7 +11045,7 @@
         "áo mưa",
         "thắt lưng",
         "giữa trưa",
-        "ngày nay"
+        "khăn quàng cổ"
        ],
        "answerIndex": 0,
        "wordEn": "raincoat",
@@ -11100,10 +11060,10 @@
        "type": "meaning",
        "prompt": "scarf",
        "options": [
-        "rộng, lỏng",
+        "da (chất liệu)",
         "túi xách",
         "khăn quàng cổ",
-        "trong suốt (khoảng thời gian)"
+        "nửa đêm"
        ],
        "answerIndex": 2,
        "wordEn": "scarf",
@@ -11113,83 +11073,82 @@
        ]
       },
       {
-       "id": "a2-u06-gapFill-during",
+       "id": "a2-u06-meaning-shorts",
        "unitId": "a2-u06",
-       "type": "gapFill",
-       "wordEn": "during",
-       "sourceIds": [
-        "cefrj",
-        "tatoeba"
-       ],
-       "prompt": "He snored loudly ___ his sleep.",
+       "type": "meaning",
+       "prompt": "shorts",
        "options": [
-        "belt",
-        "scarf",
-        "during",
-        "midnight"
+        "da (chất liệu)",
+        "túi xách",
+        "ngày nay",
+        "quần đùi, quần short"
        ],
-       "answerIndex": 2,
-       "hintVi": "Lúc ngủ nó ngáy to.",
-       "sourceRef": "tatoeba:eng#1555006/vie#1555057"
-      },
-      {
-       "id": "a2-u06-listening-instant",
-       "unitId": "a2-u06",
-       "type": "listening",
-       "wordEn": "instant",
+       "answerIndex": 3,
+       "wordEn": "shorts",
        "sourceIds": [
         "cefrj",
         "gymtalk-vocab"
-       ],
-       "prompt": "instant",
-       "options": [
-        "instant",
-        "while",
-        "raincoat",
-        "scarf"
-       ],
-       "answerIndex": 0
+       ]
       },
       {
-       "id": "a2-u06-wordScramble-midday",
+       "id": "a2-u06-meaning-suit",
        "unitId": "a2-u06",
-       "type": "wordScramble",
+       "type": "meaning",
+       "prompt": "suit",
+       "options": [
+        "giữa trưa",
+        "bộ vest",
+        "khăn quàng cổ",
+        "quần đùi, quần short"
+       ],
+       "answerIndex": 1,
+       "wordEn": "suit",
+       "sourceIds": [
+        "cefrj",
+        "gymtalk-vocab"
+       ]
+      },
+      {
+       "id": "a2-u06-gapFill-midday",
+       "unitId": "a2-u06",
+       "type": "gapFill",
        "wordEn": "midday",
        "sourceIds": [
         "cefrj",
         "gymtalk-vocab"
        ],
-       "prompt": "midday",
+       "prompt": "We ate lunch at ___.",
        "options": [
-        "midday"
+        "midnight",
+        "midday",
+        "shorts",
+        "belt"
        ],
-       "answerIndex": 0,
-       "hintVi": "giữa trưa"
+       "answerIndex": 1,
+       "hintVi": "Chúng tôi ăn trưa vào giữa trưa."
       },
       {
-       "id": "a2-u06-gapFill-midnight",
+       "id": "a2-u06-listening-midnight",
        "unitId": "a2-u06",
-       "type": "gapFill",
+       "type": "listening",
        "wordEn": "midnight",
        "sourceIds": [
         "cefrj",
-        "tatoeba"
+        "gymtalk-vocab"
        ],
-       "prompt": "I left at ___.",
+       "prompt": "midnight",
        "options": [
-        "midnight",
-        "scarf",
-        "raincoat",
-        "schedule"
+        "midday",
+        "schedule",
+        "leather",
+        "midnight"
        ],
-       "answerIndex": 0,
-       "hintVi": "Tôi rời đi lúc nửa đêm.",
-       "sourceRef": "tatoeba:eng#5858220/vie#13380094"
+       "answerIndex": 3
       },
       {
-       "id": "a2-u06-listening-noon",
+       "id": "a2-u06-wordScramble-noon",
        "unitId": "a2-u06",
-       "type": "listening",
+       "type": "wordScramble",
        "wordEn": "noon",
        "sourceIds": [
         "cefrj",
@@ -11197,53 +11156,53 @@
        ],
        "prompt": "noon",
        "options": [
-        "while",
-        "loose",
-        "noon",
-        "during"
-       ],
-       "answerIndex": 2
-      },
-      {
-       "id": "a2-u06-wordScramble-nowadays",
-       "unitId": "a2-u06",
-       "type": "wordScramble",
-       "wordEn": "nowadays",
-       "sourceIds": [
-        "cefrj",
-        "gymtalk-vocab"
-       ],
-       "prompt": "nowadays",
-       "options": [
-        "nowadays"
+        "noon"
        ],
        "answerIndex": 0,
-       "hintVi": "ngày nay"
+       "hintVi": "giữa trưa"
       },
       {
-       "id": "a2-u06-gapFill-schedule",
+       "id": "a2-u06-gapFill-nowadays",
        "unitId": "a2-u06",
        "type": "gapFill",
-       "wordEn": "schedule",
+       "wordEn": "nowadays",
        "sourceIds": [
         "cefrj",
         "tatoeba"
        ],
-       "prompt": "I can't change my ___.",
+       "prompt": "___ more and more people prefer country life to city life.",
        "options": [
-        "schedule",
-        "belt",
-        "loose",
+        "scarf",
+        "nowadays",
+        "shorts",
         "midday"
        ],
-       "answerIndex": 0,
-       "hintVi": "Tôi không thể thay đổi lịch trình của mình.",
-       "sourceRef": "tatoeba:eng#6266763/vie#11365345"
+       "answerIndex": 1,
+       "hintVi": "Ngày nay, ngày càng có nhiều người trở nên thích cuộc sống ở nông thôn hơn là cuộc sống ở thành phố.",
+       "sourceRef": "tatoeba:eng#242478/vie#8843228"
       },
       {
-       "id": "a2-u06-listening-weekday",
+       "id": "a2-u06-listening-schedule",
        "unitId": "a2-u06",
        "type": "listening",
+       "wordEn": "schedule",
+       "sourceIds": [
+        "cefrj",
+        "gymtalk-vocab"
+       ],
+       "prompt": "schedule",
+       "options": [
+        "handbag",
+        "schedule",
+        "midday",
+        "scarf"
+       ],
+       "answerIndex": 1
+      },
+      {
+       "id": "a2-u06-wordScramble-weekday",
+       "unitId": "a2-u06",
+       "type": "wordScramble",
        "wordEn": "weekday",
        "sourceIds": [
         "cefrj",
@@ -11251,53 +11210,53 @@
        ],
        "prompt": "weekday",
        "options": [
-        "weekday",
-        "raincoat",
-        "noon",
-        "leather"
-       ],
-       "answerIndex": 0
-      },
-      {
-       "id": "a2-u06-wordScramble-while",
-       "unitId": "a2-u06",
-       "type": "wordScramble",
-       "wordEn": "while",
-       "sourceIds": [
-        "cefrj",
-        "gymtalk-vocab"
-       ],
-       "prompt": "while",
-       "options": [
-        "while"
+        "weekday"
        ],
        "answerIndex": 0,
-       "hintVi": "trong khi"
+       "hintVi": "ngày trong tuần (thứ Hai-Sáu)"
       },
       {
-       "id": "a2-u06-gapFill-belt",
+       "id": "a2-u06-gapFill-while",
        "unitId": "a2-u06",
        "type": "gapFill",
-       "wordEn": "belt",
+       "wordEn": "while",
        "sourceIds": [
         "cefrj",
         "tatoeba"
        ],
-       "prompt": "She girded her waist with a ___.",
+       "prompt": "Do not read ___ walking.",
        "options": [
-        "belt",
-        "midnight",
-        "instant",
-        "loose"
+        "handbag",
+        "while",
+        "loose",
+        "scarf"
        ],
-       "answerIndex": 0,
-       "hintVi": "Cô ta thắt một dải băng quanh eo.",
-       "sourceRef": "tatoeba:eng#313644/vie#3486814"
+       "answerIndex": 1,
+       "hintVi": "Đừng có vừa đi vừa đọc.",
+       "sourceRef": "tatoeba:eng#320505/vie#1542024"
       },
       {
-       "id": "a2-u06-listening-handbag",
+       "id": "a2-u06-listening-belt",
        "unitId": "a2-u06",
        "type": "listening",
+       "wordEn": "belt",
+       "sourceIds": [
+        "cefrj",
+        "gymtalk-vocab"
+       ],
+       "prompt": "belt",
+       "options": [
+        "midnight",
+        "scarf",
+        "shorts",
+        "belt"
+       ],
+       "answerIndex": 3
+      },
+      {
+       "id": "a2-u06-wordScramble-handbag",
+       "unitId": "a2-u06",
+       "type": "wordScramble",
        "wordEn": "handbag",
        "sourceIds": [
         "cefrj",
@@ -11305,52 +11264,52 @@
        ],
        "prompt": "handbag",
        "options": [
-        "loose",
-        "handbag",
-        "nowadays",
-        "raincoat"
+        "handbag"
        ],
-       "answerIndex": 1
+       "answerIndex": 0,
+       "hintVi": "túi xách"
       },
       {
-       "id": "a2-u06-wordScramble-leather",
+       "id": "a2-u06-gapFill-leather",
        "unitId": "a2-u06",
-       "type": "wordScramble",
+       "type": "gapFill",
        "wordEn": "leather",
        "sourceIds": [
         "cefrj",
         "gymtalk-vocab"
        ],
-       "prompt": "leather",
+       "prompt": "He owns a ___ jacket.",
        "options": [
-        "leather"
+        "belt",
+        "leather",
+        "scarf",
+        "shorts"
        ],
-       "answerIndex": 0,
-       "hintVi": "da (chất liệu)"
+       "answerIndex": 1,
+       "hintVi": "Anh ấy sở hữu một chiếc áo khoác da."
       },
       {
-       "id": "a2-u06-gapFill-loose",
+       "id": "a2-u06-listening-loose",
        "unitId": "a2-u06",
-       "type": "gapFill",
+       "type": "listening",
        "wordEn": "loose",
        "sourceIds": [
         "cefrj",
         "gymtalk-vocab"
        ],
-       "prompt": "He prefers ___, comfortable clothes.",
+       "prompt": "loose",
        "options": [
-        "leather",
+        "handbag",
+        "scarf",
         "loose",
-        "schedule",
-        "belt"
+        "while"
        ],
-       "answerIndex": 1,
-       "hintVi": "Anh ấy thích quần áo rộng rãi, thoải mái."
+       "answerIndex": 2
       },
       {
-       "id": "a2-u06-listening-raincoat",
+       "id": "a2-u06-wordScramble-raincoat",
        "unitId": "a2-u06",
-       "type": "listening",
+       "type": "wordScramble",
        "wordEn": "raincoat",
        "sourceIds": [
         "cefrj",
@@ -11358,28 +11317,63 @@
        ],
        "prompt": "raincoat",
        "options": [
-        "belt",
-        "raincoat",
-        "scarf",
-        "while"
+        "raincoat"
        ],
-       "answerIndex": 1
+       "answerIndex": 0,
+       "hintVi": "áo mưa"
       },
       {
-       "id": "a2-u06-wordScramble-scarf",
+       "id": "a2-u06-gapFill-scarf",
        "unitId": "a2-u06",
-       "type": "wordScramble",
+       "type": "gapFill",
        "wordEn": "scarf",
        "sourceIds": [
         "cefrj",
         "gymtalk-vocab"
        ],
-       "prompt": "scarf",
+       "prompt": "She wrapped a ___ around her neck.",
        "options": [
-        "scarf"
+        "belt",
+        "schedule",
+        "scarf",
+        "loose"
+       ],
+       "answerIndex": 2,
+       "hintVi": "Cô ấy quàng khăn quanh cổ."
+      },
+      {
+       "id": "a2-u06-listening-shorts",
+       "unitId": "a2-u06",
+       "type": "listening",
+       "wordEn": "shorts",
+       "sourceIds": [
+        "cefrj",
+        "gymtalk-vocab"
+       ],
+       "prompt": "shorts",
+       "options": [
+        "shorts",
+        "belt",
+        "leather",
+        "raincoat"
+       ],
+       "answerIndex": 0
+      },
+      {
+       "id": "a2-u06-wordScramble-suit",
+       "unitId": "a2-u06",
+       "type": "wordScramble",
+       "wordEn": "suit",
+       "sourceIds": [
+        "cefrj",
+        "gymtalk-vocab"
+       ],
+       "prompt": "suit",
+       "options": [
+        "suit"
        ],
        "answerIndex": 0,
-       "hintVi": "khăn quàng cổ"
+       "hintVi": "bộ vest"
       },
       {
        "id": "a2-u06-grammar-comparatives-1",
@@ -11440,20 +11434,6 @@
      "titleEn": "Clothing · Weather",
      "titleVi": "Quần áo · Thời tiết",
      "words": [
-      {
-       "en": "shorts",
-       "ipa": "/ʃɔːrts/",
-       "vi": "quần đùi, quần short",
-       "exampleEn": "He wears shorts when it is hot.",
-       "exampleVi": "Anh ấy mặc quần short khi trời nóng."
-      },
-      {
-       "en": "suit",
-       "ipa": "/suːt/",
-       "vi": "bộ vest",
-       "exampleEn": "He wore a black suit to the interview.",
-       "exampleVi": "Anh ấy mặc bộ vest đen đi phỏng vấn."
-      },
       {
        "en": "sweater",
        "ipa": "/ˈswet.ər/",
@@ -11544,6 +11524,20 @@
        "vi": "người trưởng thành",
        "exampleEn": "As an adult, he now supports his parents.",
        "exampleVi": "Khi đã trưởng thành, anh ấy giờ chăm sóc cha mẹ."
+      },
+      {
+       "en": "ancestor",
+       "ipa": "/ˈæn.ses.tər/",
+       "vi": "tổ tiên",
+       "exampleEn": "We pray to our ancestors on this holiday.",
+       "exampleVi": "Chúng tôi thắp hương tổ tiên vào ngày lễ này."
+      },
+      {
+       "en": "elderly",
+       "ipa": "/ˈel.dər.li/",
+       "vi": "người cao tuổi",
+       "exampleEn": "We should take good care of the elderly.",
+       "exampleVi": "Chúng ta nên chăm sóc tốt cho người cao tuổi."
       }
      ],
      "grammar": {
@@ -11554,53 +11548,17 @@
      },
      "items": [
       {
-       "id": "a2-u07-meaning-shorts",
-       "unitId": "a2-u07",
-       "type": "meaning",
-       "prompt": "shorts",
-       "options": [
-        "nhiều gió",
-        "quần tất",
-        "ví (nam)",
-        "quần đùi, quần short"
-       ],
-       "answerIndex": 3,
-       "wordEn": "shorts",
-       "sourceIds": [
-        "cefrj",
-        "gymtalk-vocab"
-       ]
-      },
-      {
-       "id": "a2-u07-meaning-suit",
-       "unitId": "a2-u07",
-       "type": "meaning",
-       "prompt": "suit",
-       "options": [
-        "áo len",
-        "ánh sáng ban ngày",
-        "bộ vest",
-        "ví (nam)"
-       ],
-       "answerIndex": 2,
-       "wordEn": "suit",
-       "sourceIds": [
-        "cefrj",
-        "gymtalk-vocab"
-       ]
-      },
-      {
        "id": "a2-u07-meaning-sweater",
        "unitId": "a2-u07",
        "type": "meaning",
        "prompt": "sweater",
        "options": [
+        "áo len",
         "cà vạt",
-        "quần tất",
         "nhiệt độ",
-        "áo len"
+        "quần tất"
        ],
-       "answerIndex": 3,
+       "answerIndex": 0,
        "wordEn": "sweater",
        "sourceIds": [
         "cefrj",
@@ -11616,7 +11574,7 @@
         "đồ bơi",
         "nhiều gió",
         "cà vạt",
-        "bộ vest"
+        "bão"
        ],
        "answerIndex": 0,
        "wordEn": "swimsuit",
@@ -11632,7 +11590,7 @@
        "prompt": "tie",
        "options": [
         "ví (nam)",
-        "quần đùi, quần short",
+        "ánh sáng ban ngày",
         "nhiệt độ",
         "cà vạt"
        ],
@@ -11651,7 +11609,7 @@
        "options": [
         "người trưởng thành",
         "quần tất",
-        "ánh sáng ban ngày",
+        "làn gió nhẹ",
         "cà vạt"
        ],
        "answerIndex": 1,
@@ -11667,12 +11625,12 @@
        "type": "meaning",
        "prompt": "uniform",
        "options": [
-        "người trưởng thành",
-        "bộ vest",
+        "đồng phục",
+        "bão",
         "cà vạt",
-        "đồng phục"
+        "người trưởng thành"
        ],
-       "answerIndex": 3,
+       "answerIndex": 0,
        "wordEn": "uniform",
        "sourceIds": [
         "cefrj",
@@ -11685,9 +11643,9 @@
        "type": "meaning",
        "prompt": "wallet",
        "options": [
-        "bộ vest",
+        "bão",
         "đồng phục",
-        "ánh sáng ban ngày",
+        "làn gió nhẹ",
         "ví (nam)"
        ],
        "answerIndex": 3,
@@ -11703,9 +11661,9 @@
        "type": "meaning",
        "prompt": "wool",
        "options": [
+        "làn gió nhẹ",
         "ánh sáng ban ngày",
-        "quần đùi, quần short",
-        "bộ vest",
+        "bão",
         "len"
        ],
        "answerIndex": 3,
@@ -11739,9 +11697,9 @@
        "type": "meaning",
        "prompt": "daylight",
        "options": [
-        "bão",
+        "người cao tuổi",
         "ánh sáng ban ngày",
-        "quần đùi, quần short",
+        "áo len",
         "đồ bơi"
        ],
        "answerIndex": 1,
@@ -11757,10 +11715,10 @@
        "type": "meaning",
        "prompt": "storm",
        "options": [
-        "len",
+        "người cao tuổi",
         "bão",
-        "nhiều gió",
-        "cà vạt"
+        "cà vạt",
+        "len"
        ],
        "answerIndex": 1,
        "wordEn": "storm",
@@ -11793,12 +11751,12 @@
        "type": "meaning",
        "prompt": "windy",
        "options": [
-        "nhiệt độ",
         "nhiều gió",
-        "ánh sáng ban ngày",
+        "làn gió nhẹ",
+        "nhiệt độ",
         "áo len"
        ],
-       "answerIndex": 1,
+       "answerIndex": 0,
        "wordEn": "windy",
        "sourceIds": [
         "cefrj",
@@ -11824,82 +11782,83 @@
        ]
       },
       {
-       "id": "a2-u07-gapFill-shorts",
+       "id": "a2-u07-meaning-ancestor",
+       "unitId": "a2-u07",
+       "type": "meaning",
+       "prompt": "ancestor",
+       "options": [
+        "đồng phục",
+        "tổ tiên",
+        "đồ bơi",
+        "quần tất"
+       ],
+       "answerIndex": 1,
+       "wordEn": "ancestor",
+       "sourceIds": [
+        "cefrj",
+        "gymtalk-vocab"
+       ]
+      },
+      {
+       "id": "a2-u07-meaning-elderly",
+       "unitId": "a2-u07",
+       "type": "meaning",
+       "prompt": "elderly",
+       "options": [
+        "cà vạt",
+        "người cao tuổi",
+        "bão",
+        "đồ bơi"
+       ],
+       "answerIndex": 1,
+       "wordEn": "elderly",
+       "sourceIds": [
+        "cefrj",
+        "gymtalk-vocab"
+       ]
+      },
+      {
+       "id": "a2-u07-gapFill-sweater",
        "unitId": "a2-u07",
        "type": "gapFill",
-       "wordEn": "shorts",
+       "wordEn": "sweater",
        "sourceIds": [
         "cefrj",
         "tatoeba"
        ],
-       "prompt": "I like to wear ___ in summer.",
+       "prompt": "Try on this ___.",
        "options": [
-        "shorts",
-        "storm",
-        "wallet",
-        "suit"
-       ],
-       "answerIndex": 0,
-       "hintVi": "Tôi thích mặc quần đùi vào mùa hè.",
-       "sourceRef": "tatoeba:eng#11318244/vie#11318246"
-      },
-      {
-       "id": "a2-u07-listening-suit",
-       "unitId": "a2-u07",
-       "type": "listening",
-       "wordEn": "suit",
-       "sourceIds": [
-        "cefrj",
-        "gymtalk-vocab"
-       ],
-       "prompt": "suit",
-       "options": [
-        "suit",
+        "elderly",
         "tie",
-        "swimsuit",
-        "tights"
-       ],
-       "answerIndex": 0
-      },
-      {
-       "id": "a2-u07-wordScramble-sweater",
-       "unitId": "a2-u07",
-       "type": "wordScramble",
-       "wordEn": "sweater",
-       "sourceIds": [
-        "cefrj",
-        "gymtalk-vocab"
-       ],
-       "prompt": "sweater",
-       "options": [
+        "windy",
         "sweater"
        ],
-       "answerIndex": 0,
-       "hintVi": "áo len"
+       "answerIndex": 3,
+       "hintVi": "Bạn mặc thử cái áo len này đi.",
+       "sourceRef": "tatoeba:eng#60937/vie#9415544"
       },
       {
-       "id": "a2-u07-gapFill-swimsuit",
+       "id": "a2-u07-listening-swimsuit",
        "unitId": "a2-u07",
-       "type": "gapFill",
+       "type": "listening",
        "wordEn": "swimsuit",
        "sourceIds": [
         "cefrj",
         "gymtalk-vocab"
        ],
-       "prompt": "She packed a ___ for the beach trip.",
+       "prompt": "swimsuit",
        "options": [
-        "shorts",
-        "wool",
         "swimsuit",
-        "storm"
+        "adult",
+        "elderly",
+        "wool"
        ],
-       "answerIndex": 2,
-       "hintVi": "Cô ấy mang theo đồ bơi cho chuyến đi biển."
+       "answerIndex": 0
       },
       {
-       "id": "a2-u07-listening-tie",
+       "id": "a2-u07-wordScramble-tie",
        "unitId": "a2-u07",
-       "type": "listening",
+       "type": "wordScramble",
        "wordEn": "tie",
        "sourceIds": [
         "cefrj",
@@ -11907,53 +11866,52 @@
        ],
        "prompt": "tie",
        "options": [
-        "breeze",
-        "swimsuit",
-        "shorts",
         "tie"
        ],
-       "answerIndex": 3
+       "answerIndex": 0,
+       "hintVi": "cà vạt"
       },
       {
-       "id": "a2-u07-wordScramble-tights",
+       "id": "a2-u07-gapFill-tights",
        "unitId": "a2-u07",
-       "type": "wordScramble",
+       "type": "gapFill",
        "wordEn": "tights",
        "sourceIds": [
         "cefrj",
         "gymtalk-vocab"
        ],
-       "prompt": "tights",
+       "prompt": "She wore black ___ under her skirt.",
        "options": [
-        "tights"
+        "temperature",
+        "tights",
+        "adult",
+        "wool"
        ],
-       "answerIndex": 0,
-       "hintVi": "quần tất"
+       "answerIndex": 1,
+       "hintVi": "Cô ấy mang quần tất đen bên trong váy."
       },
       {
-       "id": "a2-u07-gapFill-uniform",
+       "id": "a2-u07-listening-uniform",
        "unitId": "a2-u07",
-       "type": "gapFill",
+       "type": "listening",
        "wordEn": "uniform",
        "sourceIds": [
         "cefrj",
-        "tatoeba"
+        "gymtalk-vocab"
        ],
-       "prompt": "Why aren't you in your ___?",
+       "prompt": "uniform",
        "options": [
-        "wallet",
-        "swimsuit",
+        "windy",
         "uniform",
-        "tie"
+        "sweater",
+        "elderly"
        ],
-       "answerIndex": 2,
-       "hintVi": "Tại sao bạn không mặc đồng phục?",
-       "sourceRef": "tatoeba:eng#2642525/vie#11446446"
+       "answerIndex": 1
       },
       {
-       "id": "a2-u07-listening-wallet",
+       "id": "a2-u07-wordScramble-wallet",
        "unitId": "a2-u07",
-       "type": "listening",
+       "type": "wordScramble",
        "wordEn": "wallet",
        "sourceIds": [
         "cefrj",
@@ -11961,52 +11919,53 @@
        ],
        "prompt": "wallet",
        "options": [
-        "wool",
-        "uniform",
-        "wallet",
-        "tights"
+        "wallet"
        ],
-       "answerIndex": 2
+       "answerIndex": 0,
+       "hintVi": "ví (nam)"
       },
       {
-       "id": "a2-u07-wordScramble-wool",
+       "id": "a2-u07-gapFill-wool",
        "unitId": "a2-u07",
-       "type": "wordScramble",
+       "type": "gapFill",
        "wordEn": "wool",
        "sourceIds": [
         "cefrj",
-        "gymtalk-vocab"
+        "tatoeba"
        ],
-       "prompt": "wool",
+       "prompt": "How can you wear a ___ sweater in this heat?",
        "options": [
-        "wool"
+        "uniform",
+        "adult",
+        "wool",
+        "ancestor"
        ],
-       "answerIndex": 0,
-       "hintVi": "len"
+       "answerIndex": 2,
+       "hintVi": "Làm sao bạn có thể mặc áo len giữa nắng nóng như thế này?",
+       "sourceRef": "tatoeba:eng#13884120/vie#13884246"
       },
       {
-       "id": "a2-u07-gapFill-breeze",
+       "id": "a2-u07-listening-breeze",
        "unitId": "a2-u07",
-       "type": "gapFill",
+       "type": "listening",
        "wordEn": "breeze",
        "sourceIds": [
         "cefrj",
         "gymtalk-vocab"
        ],
-       "prompt": "A gentle ___ blew through the trees.",
+       "prompt": "breeze",
        "options": [
-        "shorts",
-        "storm",
+        "tights",
         "temperature",
-        "breeze"
+        "breeze",
+        "tie"
        ],
-       "answerIndex": 3,
-       "hintVi": "Một làn gió nhẹ thổi qua hàng cây."
+       "answerIndex": 2
       },
       {
-       "id": "a2-u07-listening-daylight",
+       "id": "a2-u07-wordScramble-daylight",
        "unitId": "a2-u07",
-       "type": "listening",
+       "type": "wordScramble",
        "wordEn": "daylight",
        "sourceIds": [
         "cefrj",
@@ -12014,53 +11973,53 @@
        ],
        "prompt": "daylight",
        "options": [
-        "temperature",
-        "wool",
-        "wallet",
         "daylight"
        ],
-       "answerIndex": 3
-      },
-      {
-       "id": "a2-u07-wordScramble-storm",
-       "unitId": "a2-u07",
-       "type": "wordScramble",
-       "wordEn": "storm",
-       "sourceIds": [
-        "cefrj",
-        "gymtalk-vocab"
-       ],
-       "prompt": "storm",
-       "options": [
-        "storm"
-       ],
        "answerIndex": 0,
-       "hintVi": "bão"
+       "hintVi": "ánh sáng ban ngày"
       },
       {
-       "id": "a2-u07-gapFill-temperature",
+       "id": "a2-u07-gapFill-storm",
        "unitId": "a2-u07",
        "type": "gapFill",
-       "wordEn": "temperature",
+       "wordEn": "storm",
        "sourceIds": [
         "cefrj",
         "tatoeba"
        ],
-       "prompt": "I took her ___.",
+       "prompt": "A ___ is coming.",
        "options": [
-        "temperature",
-        "adult",
-        "wool",
-        "shorts"
+        "tights",
+        "storm",
+        "daylight",
+        "temperature"
        ],
-       "answerIndex": 0,
-       "hintVi": "Anh ấy đo nhiệt đọ cho cô ấy.",
-       "sourceRef": "tatoeba:eng#6029337/vie#10274133"
+       "answerIndex": 1,
+       "hintVi": "Một cơn bão sắp đến.",
+       "sourceRef": "tatoeba:eng#1948401/vie#1509591"
       },
       {
-       "id": "a2-u07-listening-windy",
+       "id": "a2-u07-listening-temperature",
        "unitId": "a2-u07",
        "type": "listening",
+       "wordEn": "temperature",
+       "sourceIds": [
+        "cefrj",
+        "gymtalk-vocab"
+       ],
+       "prompt": "temperature",
+       "options": [
+        "tie",
+        "temperature",
+        "ancestor",
+        "adult"
+       ],
+       "answerIndex": 1
+      },
+      {
+       "id": "a2-u07-wordScramble-windy",
+       "unitId": "a2-u07",
+       "type": "wordScramble",
        "wordEn": "windy",
        "sourceIds": [
         "cefrj",
@@ -12068,28 +12027,64 @@
        ],
        "prompt": "windy",
        "options": [
-        "breeze",
-        "adult",
-        "windy",
-        "wallet"
+        "windy"
        ],
-       "answerIndex": 2
+       "answerIndex": 0,
+       "hintVi": "nhiều gió"
       },
       {
-       "id": "a2-u07-wordScramble-adult",
+       "id": "a2-u07-gapFill-adult",
        "unitId": "a2-u07",
-       "type": "wordScramble",
+       "type": "gapFill",
        "wordEn": "adult",
+       "sourceIds": [
+        "cefrj",
+        "tatoeba"
+       ],
+       "prompt": "In many countries, over eighteen years old is an ___.",
+       "options": [
+        "temperature",
+        "swimsuit",
+        "uniform",
+        "adult"
+       ],
+       "answerIndex": 3,
+       "hintVi": "Ở nhiều quốc gia, trên mười tám tuổi là người trưởng thành.",
+       "sourceRef": "tatoeba:eng#11311465/vie#11311467"
+      },
+      {
+       "id": "a2-u07-listening-ancestor",
+       "unitId": "a2-u07",
+       "type": "listening",
+       "wordEn": "ancestor",
        "sourceIds": [
         "cefrj",
         "gymtalk-vocab"
        ],
-       "prompt": "adult",
+       "prompt": "ancestor",
        "options": [
-        "adult"
+        "sweater",
+        "breeze",
+        "uniform",
+        "ancestor"
+       ],
+       "answerIndex": 3
+      },
+      {
+       "id": "a2-u07-wordScramble-elderly",
+       "unitId": "a2-u07",
+       "type": "wordScramble",
+       "wordEn": "elderly",
+       "sourceIds": [
+        "cefrj",
+        "gymtalk-vocab"
+       ],
+       "prompt": "elderly",
+       "options": [
+        "elderly"
        ],
        "answerIndex": 0,
-       "hintVi": "người trưởng thành"
+       "hintVi": "người cao tuổi"
       },
       {
        "id": "a2-u07-grammar-superlatives-1",
@@ -12151,20 +12146,6 @@
      "titleVi": "Cảm xúc · Gia đình",
      "words": [
       {
-       "en": "ancestor",
-       "ipa": "/ˈæn.ses.tər/",
-       "vi": "tổ tiên",
-       "exampleEn": "We pray to our ancestors on this holiday.",
-       "exampleVi": "Chúng tôi thắp hương tổ tiên vào ngày lễ này."
-      },
-      {
-       "en": "elderly",
-       "ipa": "/ˈel.dər.li/",
-       "vi": "người cao tuổi",
-       "exampleEn": "We should take good care of the elderly.",
-       "exampleVi": "Chúng ta nên chăm sóc tốt cho người cao tuổi."
-      },
-      {
        "en": "generation",
        "ipa": "/ˌdʒen.əˈreɪ.ʃən/",
        "vi": "thế hệ",
@@ -12181,7 +12162,7 @@
       {
        "en": "granddaughter",
        "ipa": "/ˈɡræn.dɔː.tər/",
-       "vi": "cháu gái",
+       "vi": "cháu gái (nội/ngoại)",
        "exampleEn": "His granddaughter just started school.",
        "exampleVi": "Cháu gái của ông vừa mới đi học."
       },
@@ -12254,6 +12235,20 @@
        "vi": "lo lắng, hồi hộp",
        "exampleEn": "He felt nervous before the interview.",
        "exampleVi": "Anh ấy cảm thấy hồi hộp trước buổi phỏng vấn."
+      },
+      {
+       "en": "sleepy",
+       "ipa": "/ˈsliː.pi/",
+       "vi": "buồn ngủ",
+       "exampleEn": "The baby looks sleepy after lunch.",
+       "exampleVi": "Em bé trông buồn ngủ sau bữa trưa."
+      },
+      {
+       "en": "surprised",
+       "ipa": "/sərˈpraɪzd/",
+       "vi": "ngạc nhiên",
+       "exampleEn": "She was surprised by the party.",
+       "exampleVi": "Cô ấy ngạc nhiên vì bữa tiệc."
       }
      ],
      "grammar": {
@@ -12264,51 +12259,15 @@
      },
      "items": [
       {
-       "id": "a2-u08-meaning-ancestor",
-       "unitId": "a2-u08",
-       "type": "meaning",
-       "prompt": "ancestor",
-       "options": [
-        "thiếu niên",
-        "thất vọng",
-        "tổ tiên",
-        "cháu (nội/ngoại)"
-       ],
-       "answerIndex": 2,
-       "wordEn": "ancestor",
-       "sourceIds": [
-        "cefrj",
-        "gymtalk-vocab"
-       ]
-      },
-      {
-       "id": "a2-u08-meaning-elderly",
-       "unitId": "a2-u08",
-       "type": "meaning",
-       "prompt": "elderly",
-       "options": [
-        "cháu gái",
-        "thất vọng",
-        "người cao tuổi",
-        "thích thú, buồn cười"
-       ],
-       "answerIndex": 2,
-       "wordEn": "elderly",
-       "sourceIds": [
-        "cefrj",
-        "gymtalk-vocab"
-       ]
-      },
-      {
        "id": "a2-u08-meaning-generation",
        "unitId": "a2-u08",
        "type": "meaning",
        "prompt": "generation",
        "options": [
-        "biết ơn",
-        "thất vọng",
+        "thoải mái",
+        "lo âu",
         "thế hệ",
-        "tổ tiên"
+        "buồn ngủ"
        ],
        "answerIndex": 2,
        "wordEn": "generation",
@@ -12323,10 +12282,10 @@
        "type": "meaning",
        "prompt": "grandchild",
        "options": [
-        "cháu gái",
-        "thoải mái",
+        "biết ơn",
+        "lúng túng, bối rối",
         "cháu (nội/ngoại)",
-        "tổ tiên"
+        "lo âu"
        ],
        "answerIndex": 2,
        "wordEn": "grandchild",
@@ -12341,12 +12300,12 @@
        "type": "meaning",
        "prompt": "granddaughter",
        "options": [
-        "cháu gái",
-        "người cao tuổi",
-        "cháu (nội/ngoại)",
-        "thiếu niên"
+        "thiếu niên",
+        "cháu trai",
+        "cháu gái (nội/ngoại)",
+        "buồn ngủ"
        ],
-       "answerIndex": 0,
+       "answerIndex": 2,
        "wordEn": "granddaughter",
        "sourceIds": [
         "cefrj",
@@ -12360,8 +12319,8 @@
        "prompt": "grandson",
        "options": [
         "cháu trai",
-        "biết ơn",
-        "tổ tiên",
+        "buồn ngủ",
+        "lo âu",
         "thiếu niên"
        ],
        "answerIndex": 0,
@@ -12377,8 +12336,8 @@
        "type": "meaning",
        "prompt": "teenager",
        "options": [
-        "cháu trai",
-        "chán",
+        "lo lắng, hồi hộp",
+        "thoải mái",
         "thích thú, buồn cười",
         "thiếu niên"
        ],
@@ -12395,10 +12354,10 @@
        "type": "meaning",
        "prompt": "amused",
        "options": [
-        "thế hệ",
-        "người cao tuổi",
+        "cháu gái (nội/ngoại)",
+        "cháu (nội/ngoại)",
         "thích thú, buồn cười",
-        "chán"
+        "thoải mái"
        ],
        "answerIndex": 2,
        "wordEn": "amused",
@@ -12413,12 +12372,12 @@
        "type": "meaning",
        "prompt": "anxious",
        "options": [
-        "thất vọng",
-        "lo âu",
         "thích thú, buồn cười",
+        "thế hệ",
+        "lo âu",
         "thiếu niên"
        ],
-       "answerIndex": 1,
+       "answerIndex": 2,
        "wordEn": "anxious",
        "sourceIds": [
         "cefrj",
@@ -12432,9 +12391,9 @@
        "prompt": "bored",
        "options": [
         "chán",
-        "biết ơn",
-        "lúng túng, bối rối",
-        "cháu (nội/ngoại)"
+        "thất vọng",
+        "cháu trai",
+        "thoải mái"
        ],
        "answerIndex": 0,
        "wordEn": "bored",
@@ -12449,12 +12408,12 @@
        "type": "meaning",
        "prompt": "comfortable",
        "options": [
-        "cháu (nội/ngoại)",
-        "chán",
-        "cháu gái",
-        "thoải mái"
+        "cháu trai",
+        "thoải mái",
+        "biết ơn",
+        "lúng túng, bối rối"
        ],
-       "answerIndex": 3,
+       "answerIndex": 1,
        "wordEn": "comfortable",
        "sourceIds": [
         "cefrj",
@@ -12468,9 +12427,9 @@
        "prompt": "confused",
        "options": [
         "lúng túng, bối rối",
-        "thoải mái",
-        "cháu gái",
-        "thiếu niên"
+        "biết ơn",
+        "thiếu niên",
+        "ngạc nhiên"
        ],
        "answerIndex": 0,
        "wordEn": "confused",
@@ -12485,12 +12444,12 @@
        "type": "meaning",
        "prompt": "disappointed",
        "options": [
+        "buồn ngủ",
         "thất vọng",
         "thích thú, buồn cười",
-        "biết ơn",
-        "cháu trai"
+        "lo lắng, hồi hộp"
        ],
-       "answerIndex": 0,
+       "answerIndex": 1,
        "wordEn": "disappointed",
        "sourceIds": [
         "cefrj",
@@ -12503,9 +12462,9 @@
        "type": "meaning",
        "prompt": "grateful",
        "options": [
-        "thế hệ",
-        "người cao tuổi",
         "cháu (nội/ngoại)",
+        "cháu trai",
+        "cháu gái (nội/ngoại)",
         "biết ơn"
        ],
        "answerIndex": 3,
@@ -12522,9 +12481,9 @@
        "prompt": "nervous",
        "options": [
         "lo lắng, hồi hộp",
-        "lúng túng, bối rối",
+        "thất vọng",
         "thích thú, buồn cười",
-        "biết ơn"
+        "buồn ngủ"
        ],
        "answerIndex": 0,
        "wordEn": "nervous",
@@ -12534,109 +12493,117 @@
        ]
       },
       {
-       "id": "a2-u08-listening-ancestor",
+       "id": "a2-u08-meaning-sleepy",
        "unitId": "a2-u08",
-       "type": "listening",
-       "wordEn": "ancestor",
+       "type": "meaning",
+       "prompt": "sleepy",
+       "options": [
+        "chán",
+        "biết ơn",
+        "buồn ngủ",
+        "cháu (nội/ngoại)"
+       ],
+       "answerIndex": 2,
+       "wordEn": "sleepy",
        "sourceIds": [
         "cefrj",
         "gymtalk-vocab"
-       ],
-       "prompt": "ancestor",
-       "options": [
-        "generation",
-        "grandchild",
-        "elderly",
-        "ancestor"
-       ],
-       "answerIndex": 3
+       ]
       },
       {
-       "id": "a2-u08-listening-elderly",
+       "id": "a2-u08-meaning-surprised",
        "unitId": "a2-u08",
-       "type": "listening",
-       "wordEn": "elderly",
+       "type": "meaning",
+       "prompt": "surprised",
+       "options": [
+        "lo lắng, hồi hộp",
+        "thiếu niên",
+        "thích thú, buồn cười",
+        "ngạc nhiên"
+       ],
+       "answerIndex": 3,
+       "wordEn": "surprised",
        "sourceIds": [
         "cefrj",
         "gymtalk-vocab"
-       ],
-       "prompt": "elderly",
-       "options": [
-        "elderly",
-        "grateful",
-        "grandchild",
-        "generation"
-       ],
-       "answerIndex": 0
+       ]
       },
       {
-       "id": "a2-u08-wordScramble-generation",
+       "id": "a2-u08-gapFill-generation",
        "unitId": "a2-u08",
-       "type": "wordScramble",
+       "type": "gapFill",
        "wordEn": "generation",
        "sourceIds": [
         "cefrj",
-        "gymtalk-vocab"
+        "tatoeba"
        ],
-       "prompt": "generation",
+       "prompt": "My uncle's views are representative of his ___.",
        "options": [
-        "generation"
+        "grandson",
+        "generation",
+        "comfortable",
+        "surprised"
        ],
-       "answerIndex": 0,
-       "hintVi": "thế hệ"
+       "answerIndex": 1,
+       "hintVi": "Góc nhìn của bác tôi đại diện cho thế hệ của bác ấy.",
+       "sourceRef": "tatoeba:eng#13564553/vie#13565022"
       },
       {
-       "id": "a2-u08-gapFill-grandchild",
+       "id": "a2-u08-listening-grandchild",
        "unitId": "a2-u08",
-       "type": "gapFill",
+       "type": "listening",
        "wordEn": "grandchild",
        "sourceIds": [
         "cefrj",
         "gymtalk-vocab"
        ],
-       "prompt": "She dotes on her only ___.",
+       "prompt": "grandchild",
        "options": [
-        "ancestor",
-        "grandchild",
-        "confused",
-        "generation"
+        "amused",
+        "bored",
+        "sleepy",
+        "grandchild"
        ],
-       "answerIndex": 1,
-       "hintVi": "Bà cưng chiều đứa cháu duy nhất của mình."
+       "answerIndex": 3
       },
       {
-       "id": "a2-u08-listening-granddaughter",
+       "id": "a2-u08-gapFill-granddaughter",
        "unitId": "a2-u08",
-       "type": "listening",
+       "type": "gapFill",
        "wordEn": "granddaughter",
        "sourceIds": [
         "cefrj",
         "gymtalk-vocab"
        ],
-       "prompt": "granddaughter",
+       "prompt": "His ___ just started school.",
        "options": [
-        "granddaughter",
-        "ancestor",
-        "confused",
-        "amused"
+        "bored",
+        "nervous",
+        "grateful",
+        "granddaughter"
        ],
-       "answerIndex": 0
+       "answerIndex": 3,
+       "hintVi": "Cháu gái của ông vừa mới đi học."
       },
       {
-       "id": "a2-u08-wordScramble-grandson",
+       "id": "a2-u08-gapFill-grandson",
        "unitId": "a2-u08",
-       "type": "wordScramble",
+       "type": "gapFill",
        "wordEn": "grandson",
        "sourceIds": [
         "cefrj",
-        "gymtalk-vocab"
+        "tatoeba"
        ],
-       "prompt": "grandson",
+       "prompt": "In this photo, I remember my ___ was only five years old.",
        "options": [
-        "grandson"
+        "generation",
+        "grandchild",
+        "grandson",
+        "granddaughter"
        ],
-       "answerIndex": 0,
-       "hintVi": "cháu trai"
+       "answerIndex": 2,
+       "hintVi": "Trong bức ảnh này, tôi vẫn còn nhớ cháu trai tôi khi ấy mới chỉ năm tuổi.",
+       "sourceRef": "tatoeba:eng#13617793/vie#13619346"
       },
       {
        "id": "a2-u08-listening-teenager",
@@ -12650,16 +12617,16 @@
        "prompt": "teenager",
        "options": [
         "teenager",
-        "grandson",
-        "confused",
-        "generation"
+        "nervous",
+        "disappointed",
+        "granddaughter"
        ],
        "answerIndex": 0
       },
       {
-       "id": "a2-u08-listening-amused",
+       "id": "a2-u08-wordScramble-amused",
        "unitId": "a2-u08",
-       "type": "listening",
+       "type": "wordScramble",
        "wordEn": "amused",
        "sourceIds": [
         "cefrj",
@@ -12667,107 +12634,110 @@
        ],
        "prompt": "amused",
        "options": [
-        "anxious",
-        "elderly",
-        "granddaughter",
         "amused"
        ],
-       "answerIndex": 3
+       "answerIndex": 0,
+       "hintVi": "thích thú, buồn cười"
       },
       {
-       "id": "a2-u08-wordScramble-anxious",
+       "id": "a2-u08-gapFill-anxious",
        "unitId": "a2-u08",
-       "type": "wordScramble",
+       "type": "gapFill",
        "wordEn": "anxious",
        "sourceIds": [
         "cefrj",
         "gymtalk-vocab"
        ],
-       "prompt": "anxious",
+       "prompt": "She felt ___ about the exam results.",
        "options": [
-        "anxious"
-       ],
-       "answerIndex": 0,
-       "hintVi": "lo âu"
-      },
-      {
-       "id": "a2-u08-gapFill-bored",
-       "unitId": "a2-u08",
-       "type": "gapFill",
-       "wordEn": "bored",
-       "sourceIds": [
-        "cefrj",
-        "tatoeba"
-       ],
-       "prompt": "I'm ___ because I have nothing to do.",
-       "options": [
-        "nervous",
-        "bored",
         "comfortable",
-        "teenager"
+        "generation",
+        "anxious",
+        "bored"
        ],
-       "answerIndex": 1,
-       "hintVi": "Tôi chán vì tôi không có gì để làm cả.",
-       "sourceRef": "tatoeba:eng#11356332/vie#11356334"
+       "answerIndex": 2,
+       "hintVi": "Cô ấy cảm thấy lo âu về kết quả kỳ thi."
       },
       {
-       "id": "a2-u08-listening-comfortable",
+       "id": "a2-u08-listening-bored",
        "unitId": "a2-u08",
        "type": "listening",
-       "wordEn": "comfortable",
+       "wordEn": "bored",
        "sourceIds": [
         "cefrj",
         "gymtalk-vocab"
        ],
-       "prompt": "comfortable",
+       "prompt": "bored",
        "options": [
+        "surprised",
+        "bored",
+        "nervous",
+        "comfortable"
+       ],
+       "answerIndex": 1
+      },
+      {
+       "id": "a2-u08-gapFill-comfortable",
+       "unitId": "a2-u08",
+       "type": "gapFill",
+       "wordEn": "comfortable",
+       "sourceIds": [
+        "cefrj",
+        "tatoeba"
+       ],
+       "prompt": "The seats are ___.",
+       "options": [
+        "grandson",
         "comfortable",
-        "amused",
-        "grandchild",
-        "bored"
+        "disappointed",
+        "generation"
+       ],
+       "answerIndex": 1,
+       "hintVi": "Những ghế ngồi rất thoải mái.",
+       "sourceRef": "tatoeba:eng#11295326/vie#11295328"
+      },
+      {
+       "id": "a2-u08-gapFill-confused",
+       "unitId": "a2-u08",
+       "type": "gapFill",
+       "wordEn": "confused",
+       "sourceIds": [
+        "cefrj",
+        "tatoeba"
+       ],
+       "prompt": "They are ___, aren't they?",
+       "options": [
+        "confused",
+        "comfortable",
+        "grateful",
+        "granddaughter"
+       ],
+       "answerIndex": 0,
+       "hintVi": "Họ đang cảm thấy khó hiểu, phải không?",
+       "sourceRef": "tatoeba:eng#306582/vie#8834922"
+      },
+      {
+       "id": "a2-u08-listening-disappointed",
+       "unitId": "a2-u08",
+       "type": "listening",
+       "wordEn": "disappointed",
+       "sourceIds": [
+        "cefrj",
+        "gymtalk-vocab"
+       ],
+       "prompt": "disappointed",
+       "options": [
+        "disappointed",
+        "grateful",
+        "comfortable",
+        "confused"
        ],
        "answerIndex": 0
       },
       {
-       "id": "a2-u08-wordScramble-confused",
+       "id": "a2-u08-wordScramble-grateful",
        "unitId": "a2-u08",
        "type": "wordScramble",
-       "wordEn": "confused",
-       "sourceIds": [
-        "cefrj",
-        "gymtalk-vocab"
-       ],
-       "prompt": "confused",
-       "options": [
-        "confused"
-       ],
-       "answerIndex": 0,
-       "hintVi": "lúng túng, bối rối"
-      },
-      {
-       "id": "a2-u08-gapFill-disappointed",
-       "unitId": "a2-u08",
-       "type": "gapFill",
-       "wordEn": "disappointed",
-       "sourceIds": [
-        "cefrj",
-        "tatoeba"
-       ],
-       "prompt": "She was not ___.",
-       "options": [
-        "amused",
-        "disappointed",
-        "comfortable",
-        "nervous"
-       ],
-       "answerIndex": 1,
-       "hintVi": "Cô ấy đã không thất vọng.",
-       "sourceRef": "tatoeba:eng#1862562/vie#9007746"
-      },
-      {
-       "id": "a2-u08-listening-grateful",
-       "unitId": "a2-u08",
-       "type": "listening",
        "wordEn": "grateful",
        "sourceIds": [
         "cefrj",
@@ -12775,28 +12745,64 @@
        ],
        "prompt": "grateful",
        "options": [
-        "teenager",
-        "ancestor",
-        "grateful",
-        "generation"
+        "grateful"
        ],
-       "answerIndex": 2
+       "answerIndex": 0,
+       "hintVi": "biết ơn"
       },
       {
-       "id": "a2-u08-wordScramble-nervous",
+       "id": "a2-u08-gapFill-nervous",
        "unitId": "a2-u08",
-       "type": "wordScramble",
+       "type": "gapFill",
        "wordEn": "nervous",
+       "sourceIds": [
+        "cefrj",
+        "tatoeba"
+       ],
+       "prompt": "You're making us ___.",
+       "options": [
+        "amused",
+        "confused",
+        "teenager",
+        "nervous"
+       ],
+       "answerIndex": 3,
+       "hintVi": "Bạn làm chúng tôi hồi hộp.",
+       "sourceRef": "tatoeba:eng#3912439/vie#4274426"
+      },
+      {
+       "id": "a2-u08-listening-sleepy",
+       "unitId": "a2-u08",
+       "type": "listening",
+       "wordEn": "sleepy",
        "sourceIds": [
         "cefrj",
         "gymtalk-vocab"
        ],
-       "prompt": "nervous",
+       "prompt": "sleepy",
        "options": [
-        "nervous"
+        "grandson",
+        "sleepy",
+        "grateful",
+        "generation"
+       ],
+       "answerIndex": 1
+      },
+      {
+       "id": "a2-u08-wordScramble-surprised",
+       "unitId": "a2-u08",
+       "type": "wordScramble",
+       "wordEn": "surprised",
+       "sourceIds": [
+        "cefrj",
+        "gymtalk-vocab"
+       ],
+       "prompt": "surprised",
+       "options": [
+        "surprised"
        ],
        "answerIndex": 0,
-       "hintVi": "lo lắng, hồi hộp"
+       "hintVi": "ngạc nhiên"
       },
       {
        "id": "a2-u08-grammar-adverbs-frequency-1",
@@ -12857,20 +12863,6 @@
      "titleEn": "Home & Furniture · Emotions",
      "titleVi": "Nhà cửa & Nội thất · Cảm xúc",
      "words": [
-      {
-       "en": "sleepy",
-       "ipa": "/ˈsliː.pi/",
-       "vi": "buồn ngủ",
-       "exampleEn": "The baby looks sleepy after lunch.",
-       "exampleVi": "Em bé trông buồn ngủ sau bữa trưa."
-      },
-      {
-       "en": "surprised",
-       "ipa": "/sərˈpraɪzd/",
-       "vi": "ngạc nhiên",
-       "exampleEn": "She was surprised by the party.",
-       "exampleVi": "Cô ấy ngạc nhiên vì bữa tiệc."
-      },
       {
        "en": "uneasy",
        "ipa": "/ʌnˈiː.zi/",
@@ -12961,6 +12953,20 @@
        "vi": "đèn",
        "exampleEn": "She turned on the lamp beside her bed.",
        "exampleVi": "Cô ấy bật chiếc đèn cạnh giường."
+      },
+      {
+       "en": "mirror",
+       "ipa": "/ˈmɪr.ər/",
+       "vi": "gương",
+       "exampleEn": "She looked at herself in the mirror.",
+       "exampleVi": "Cô ấy soi mình trong gương."
+      },
+      {
+       "en": "roof",
+       "ipa": "/ruːf/",
+       "vi": "mái nhà",
+       "exampleEn": "The roof leaks whenever it rains heavily.",
+       "exampleVi": "Mái nhà bị dột mỗi khi mưa to."
       }
      ],
      "grammar": {
@@ -12971,42 +12977,6 @@
      },
      "items": [
       {
-       "id": "a2-u09-meaning-sleepy",
-       "unitId": "a2-u09",
-       "type": "meaning",
-       "prompt": "sleepy",
-       "options": [
-        "lo lắng, không yên tâm",
-        "kệ sách",
-        "tủ sách",
-        "buồn ngủ"
-       ],
-       "answerIndex": 3,
-       "wordEn": "sleepy",
-       "sourceIds": [
-        "cefrj",
-        "gymtalk-vocab"
-       ]
-      },
-      {
-       "id": "a2-u09-meaning-surprised",
-       "unitId": "a2-u09",
-       "type": "meaning",
-       "prompt": "surprised",
-       "options": [
-        "lo lắng, không yên tâm",
-        "ban công",
-        "hàng rào",
-        "ngạc nhiên"
-       ],
-       "answerIndex": 3,
-       "wordEn": "surprised",
-       "sourceIds": [
-        "cefrj",
-        "gymtalk-vocab"
-       ]
-      },
-      {
        "id": "a2-u09-meaning-uneasy",
        "unitId": "a2-u09",
        "type": "meaning",
@@ -13014,7 +12984,7 @@
        "options": [
         "lo lắng, không yên tâm",
         "hàng rào",
-        "buồn ngủ",
+        "gương",
         "ga-ra ô tô"
        ],
        "answerIndex": 0,
@@ -13030,7 +13000,7 @@
        "type": "meaning",
        "prompt": "worried",
        "options": [
-        "buồn ngủ",
+        "gương",
         "ban công",
         "lo lắng",
         "tủ sách"
@@ -13048,12 +13018,12 @@
        "type": "meaning",
        "prompt": "balcony",
        "options": [
+        "lo lắng",
         "kệ sách",
         "ngăn kéo",
-        "ban công",
-        "lo lắng"
+        "ban công"
        ],
-       "answerIndex": 2,
+       "answerIndex": 3,
        "wordEn": "balcony",
        "sourceIds": [
         "cefrj",
@@ -13066,7 +13036,7 @@
        "type": "meaning",
        "prompt": "blanket",
        "options": [
-        "buồn ngủ",
+        "gương",
         "cổng",
         "tấm chăn, mền",
         "kệ sách"
@@ -13087,7 +13057,7 @@
         "tủ sách",
         "lo lắng",
         "hàng rào",
-        "buồn ngủ"
+        "gương"
        ],
        "answerIndex": 0,
        "wordEn": "bookcase",
@@ -13177,7 +13147,7 @@
         "đèn",
         "hàng rào",
         "khung (ảnh, cửa)",
-        "ngạc nhiên"
+        "mái nhà"
        ],
        "answerIndex": 2,
        "wordEn": "frame",
@@ -13192,10 +13162,10 @@
        "type": "meaning",
        "prompt": "garage",
        "options": [
-        "lo lắng, không yên tâm",
+        "tấm chăn, mền",
         "ga-ra ô tô",
-        "hàng rào",
-        "tấm chăn, mền"
+        "lo lắng, không yên tâm",
+        "hàng rào"
        ],
        "answerIndex": 1,
        "wordEn": "garage",
@@ -13241,83 +13211,83 @@
        ]
       },
       {
-       "id": "a2-u09-gapFill-sleepy",
+       "id": "a2-u09-meaning-mirror",
        "unitId": "a2-u09",
-       "type": "gapFill",
-       "wordEn": "sleepy",
-       "sourceIds": [
-        "cefrj",
-        "tatoeba"
-       ],
-       "prompt": "You must be ___.",
+       "type": "meaning",
+       "prompt": "mirror",
        "options": [
-        "comb",
-        "sleepy",
-        "fence",
-        "lamp"
+        "hàng rào",
+        "gương",
+        "lo lắng, không yên tâm",
+        "tủ sách"
        ],
        "answerIndex": 1,
-       "hintVi": "Bạn đang buồn ngủ có phải không?",
-       "sourceRef": "tatoeba:eng#2647751/vie#9017205"
-      },
-      {
-       "id": "a2-u09-listening-surprised",
-       "unitId": "a2-u09",
-       "type": "listening",
-       "wordEn": "surprised",
+       "wordEn": "mirror",
        "sourceIds": [
         "cefrj",
         "gymtalk-vocab"
-       ],
-       "prompt": "surprised",
-       "options": [
-        "lamp",
-        "bookcase",
-        "gate",
-        "surprised"
-       ],
-       "answerIndex": 3
+       ]
       },
       {
-       "id": "a2-u09-wordScramble-uneasy",
+       "id": "a2-u09-meaning-roof",
        "unitId": "a2-u09",
-       "type": "wordScramble",
+       "type": "meaning",
+       "prompt": "roof",
+       "options": [
+        "khung (ảnh, cửa)",
+        "mái nhà",
+        "ngăn kéo",
+        "lược"
+       ],
+       "answerIndex": 1,
+       "wordEn": "roof",
+       "sourceIds": [
+        "cefrj",
+        "gymtalk-vocab"
+       ]
+      },
+      {
+       "id": "a2-u09-gapFill-uneasy",
+       "unitId": "a2-u09",
+       "type": "gapFill",
        "wordEn": "uneasy",
        "sourceIds": [
         "cefrj",
-        "gymtalk-vocab"
+        "tatoeba"
        ],
-       "prompt": "uneasy",
+       "prompt": "I felt cold and ___ all night.",
        "options": [
-        "uneasy"
+        "frame",
+        "uneasy",
+        "roof",
+        "worried"
        ],
-       "answerIndex": 0,
-       "hintVi": "lo lắng, không yên tâm"
+       "answerIndex": 1,
+       "hintVi": "Tôi cảm thấy lanh và khó chịu suốt đếm.",
+       "sourceRef": "tatoeba:eng#27294/vie#523163"
       },
       {
-       "id": "a2-u09-gapFill-worried",
+       "id": "a2-u09-listening-worried",
        "unitId": "a2-u09",
-       "type": "gapFill",
+       "type": "listening",
        "wordEn": "worried",
        "sourceIds": [
         "cefrj",
-        "tatoeba"
+        "gymtalk-vocab"
        ],
-       "prompt": "I never ___ about him.",
+       "prompt": "worried",
        "options": [
+        "balcony",
+        "lamp",
         "worried",
-        "bookshelf",
-        "surprised",
-        "comb"
+        "mirror"
        ],
-       "answerIndex": 0,
-       "hintVi": "Tôi chưa bao giờ phải lo lắng về anh ta.",
-       "sourceRef": "tatoeba:eng#3920564/vie#5911220"
+       "answerIndex": 2
       },
       {
-       "id": "a2-u09-listening-balcony",
+       "id": "a2-u09-wordScramble-balcony",
        "unitId": "a2-u09",
-       "type": "listening",
+       "type": "wordScramble",
        "wordEn": "balcony",
        "sourceIds": [
         "cefrj",
@@ -13325,53 +13295,53 @@
        ],
        "prompt": "balcony",
        "options": [
-        "fence",
-        "lamp",
-        "drawer",
         "balcony"
        ],
-       "answerIndex": 3
-      },
-      {
-       "id": "a2-u09-wordScramble-blanket",
-       "unitId": "a2-u09",
-       "type": "wordScramble",
-       "wordEn": "blanket",
-       "sourceIds": [
-        "cefrj",
-        "gymtalk-vocab"
-       ],
-       "prompt": "blanket",
-       "options": [
-        "blanket"
-       ],
        "answerIndex": 0,
-       "hintVi": "tấm chăn, mền"
+       "hintVi": "ban công"
       },
       {
-       "id": "a2-u09-gapFill-bookcase",
+       "id": "a2-u09-gapFill-blanket",
        "unitId": "a2-u09",
        "type": "gapFill",
-       "wordEn": "bookcase",
+       "wordEn": "blanket",
        "sourceIds": [
         "cefrj",
         "tatoeba"
        ],
-       "prompt": "There's a painting over the ___.",
+       "prompt": "I gave him a ___.",
        "options": [
-        "balcony",
-        "bookcase",
-        "comb",
-        "drawer"
+        "uneasy",
+        "blanket",
+        "worried",
+        "comb"
        ],
        "answerIndex": 1,
-       "hintVi": "Có một bức tranh bên trên tủ sách.",
-       "sourceRef": "tatoeba:eng#11377041/vie#11377043"
+       "hintVi": "Tôi đã tặng anh ấy một cái chăn.",
+       "sourceRef": "tatoeba:eng#3916534/vie#8992594"
       },
       {
-       "id": "a2-u09-listening-bookshelf",
+       "id": "a2-u09-listening-bookcase",
        "unitId": "a2-u09",
        "type": "listening",
+       "wordEn": "bookcase",
+       "sourceIds": [
+        "cefrj",
+        "gymtalk-vocab"
+       ],
+       "prompt": "bookcase",
+       "options": [
+        "lamp",
+        "frame",
+        "gate",
+        "bookcase"
+       ],
+       "answerIndex": 3
+      },
+      {
+       "id": "a2-u09-wordScramble-bookshelf",
+       "unitId": "a2-u09",
+       "type": "wordScramble",
        "wordEn": "bookshelf",
        "sourceIds": [
         "cefrj",
@@ -13379,53 +13349,53 @@
        ],
        "prompt": "bookshelf",
        "options": [
-        "surprised",
-        "bookcase",
-        "fence",
         "bookshelf"
        ],
-       "answerIndex": 3
-      },
-      {
-       "id": "a2-u09-wordScramble-comb",
-       "unitId": "a2-u09",
-       "type": "wordScramble",
-       "wordEn": "comb",
-       "sourceIds": [
-        "cefrj",
-        "gymtalk-vocab"
-       ],
-       "prompt": "comb",
-       "options": [
-        "comb"
-       ],
        "answerIndex": 0,
-       "hintVi": "lược"
+       "hintVi": "kệ sách"
       },
       {
-       "id": "a2-u09-gapFill-drawer",
+       "id": "a2-u09-gapFill-comb",
        "unitId": "a2-u09",
        "type": "gapFill",
-       "wordEn": "drawer",
+       "wordEn": "comb",
        "sourceIds": [
         "cefrj",
         "tatoeba"
        ],
-       "prompt": "I'm going to keep this in the top ___.",
+       "prompt": "Where is my ___?",
        "options": [
-        "lamp",
-        "bookshelf",
-        "drawer",
-        "bookcase"
+        "blanket",
+        "worried",
+        "mirror",
+        "comb"
        ],
-       "answerIndex": 2,
-       "hintVi": "Tôi sẽ cất nó ở ngăn tủ trên cùng.",
-       "sourceRef": "tatoeba:eng#7735125/vie#10257769"
+       "answerIndex": 3,
+       "hintVi": "Lược của tôi đâu rồi?",
+       "sourceRef": "tatoeba:eng#3795266/vie#5754879"
       },
       {
-       "id": "a2-u09-listening-fence",
+       "id": "a2-u09-listening-drawer",
        "unitId": "a2-u09",
        "type": "listening",
+       "wordEn": "drawer",
+       "sourceIds": [
+        "cefrj",
+        "gymtalk-vocab"
+       ],
+       "prompt": "drawer",
+       "options": [
+        "uneasy",
+        "drawer",
+        "fence",
+        "balcony"
+       ],
+       "answerIndex": 1
+      },
+      {
+       "id": "a2-u09-wordScramble-fence",
+       "unitId": "a2-u09",
+       "type": "wordScramble",
        "wordEn": "fence",
        "sourceIds": [
         "cefrj",
@@ -13433,53 +13403,53 @@
        ],
        "prompt": "fence",
        "options": [
-        "fence",
-        "sleepy",
-        "frame",
-        "lamp"
-       ],
-       "answerIndex": 0
-      },
-      {
-       "id": "a2-u09-wordScramble-frame",
-       "unitId": "a2-u09",
-       "type": "wordScramble",
-       "wordEn": "frame",
-       "sourceIds": [
-        "cefrj",
-        "gymtalk-vocab"
-       ],
-       "prompt": "frame",
-       "options": [
-        "frame"
+        "fence"
        ],
        "answerIndex": 0,
-       "hintVi": "khung (ảnh, cửa)"
+       "hintVi": "hàng rào"
       },
       {
-       "id": "a2-u09-gapFill-garage",
+       "id": "a2-u09-gapFill-frame",
        "unitId": "a2-u09",
        "type": "gapFill",
-       "wordEn": "garage",
+       "wordEn": "frame",
        "sourceIds": [
         "cefrj",
         "tatoeba"
        ],
-       "prompt": "The car's in the ___.",
+       "prompt": "He has a heavy ___.",
        "options": [
-        "garage",
-        "bookcase",
-        "worried",
-        "drawer"
+        "bookshelf",
+        "balcony",
+        "blanket",
+        "frame"
        ],
-       "answerIndex": 0,
-       "hintVi": "Chiếc ô tô ở trong ga ra.",
-       "sourceRef": "tatoeba:eng#14038205/vie#14039104"
+       "answerIndex": 3,
+       "hintVi": "Ông có một khung tranh rất nặng.",
+       "sourceRef": "tatoeba:eng#2253243/vie#5772448"
       },
       {
-       "id": "a2-u09-listening-gate",
+       "id": "a2-u09-listening-garage",
        "unitId": "a2-u09",
        "type": "listening",
+       "wordEn": "garage",
+       "sourceIds": [
+        "cefrj",
+        "gymtalk-vocab"
+       ],
+       "prompt": "garage",
+       "options": [
+        "lamp",
+        "garage",
+        "bookshelf",
+        "bookcase"
+       ],
+       "answerIndex": 1
+      },
+      {
+       "id": "a2-u09-wordScramble-gate",
+       "unitId": "a2-u09",
+       "type": "wordScramble",
        "wordEn": "gate",
        "sourceIds": [
         "cefrj",
@@ -13487,28 +13457,64 @@
        ],
        "prompt": "gate",
        "options": [
-        "gate",
-        "fence",
-        "sleepy",
-        "garage"
+        "gate"
        ],
-       "answerIndex": 0
+       "answerIndex": 0,
+       "hintVi": "cổng"
       },
       {
-       "id": "a2-u09-wordScramble-lamp",
+       "id": "a2-u09-gapFill-lamp",
        "unitId": "a2-u09",
-       "type": "wordScramble",
+       "type": "gapFill",
        "wordEn": "lamp",
+       "sourceIds": [
+        "cefrj",
+        "tatoeba"
+       ],
+       "prompt": "Remove the ___ from the table.",
+       "options": [
+        "lamp",
+        "comb",
+        "bookcase",
+        "uneasy"
+       ],
+       "answerIndex": 0,
+       "hintVi": "Lấy đèn từ bàn.",
+       "sourceRef": "tatoeba:eng#2959199/vie#10291519"
+      },
+      {
+       "id": "a2-u09-listening-mirror",
+       "unitId": "a2-u09",
+       "type": "listening",
+       "wordEn": "mirror",
        "sourceIds": [
         "cefrj",
         "gymtalk-vocab"
        ],
-       "prompt": "lamp",
+       "prompt": "mirror",
        "options": [
-        "lamp"
+        "mirror",
+        "garage",
+        "lamp",
+        "fence"
+       ],
+       "answerIndex": 0
+      },
+      {
+       "id": "a2-u09-wordScramble-roof",
+       "unitId": "a2-u09",
+       "type": "wordScramble",
+       "wordEn": "roof",
+       "sourceIds": [
+        "cefrj",
+        "gymtalk-vocab"
+       ],
+       "prompt": "roof",
+       "options": [
+        "roof"
        ],
        "answerIndex": 0,
-       "hintVi": "đèn"
+       "hintVi": "mái nhà"
       },
       {
        "id": "a2-u09-grammar-much-many-some-any-1",
@@ -13566,23 +13572,9 @@
     {
      "id": "a2-u10",
      "index": 10,
-     "titleEn": "Shopping · Home & Furniture",
-     "titleVi": "Mua sắm · Nhà cửa & Nội thất",
+     "titleEn": "Shopping",
+     "titleVi": "Mua sắm",
      "words": [
-      {
-       "en": "mirror",
-       "ipa": "/ˈmɪr.ər/",
-       "vi": "gương",
-       "exampleEn": "She looked at herself in the mirror.",
-       "exampleVi": "Cô ấy soi mình trong gương."
-      },
-      {
-       "en": "roof",
-       "ipa": "/ruːf/",
-       "vi": "mái nhà",
-       "exampleEn": "The roof leaks whenever it rains heavily.",
-       "exampleVi": "Mái nhà bị dột mỗi khi mưa to."
-      },
       {
        "en": "advertisement",
        "ipa": "/ədˈvɜː.tɪs.mənt/",
@@ -13673,6 +13665,20 @@
        "vi": "giám đốc, quản lý",
        "exampleEn": "The manager approved my refund request.",
        "exampleVi": "Quản lý đã duyệt yêu cầu hoàn tiền của tôi."
+      },
+      {
+       "en": "quality",
+       "ipa": "/ˈkwɒl.ə.ti/",
+       "vi": "chất lượng",
+       "exampleEn": "The quality of this fabric is excellent.",
+       "exampleVi": "Chất lượng của loại vải này rất tốt."
+      },
+      {
+       "en": "receipt",
+       "ipa": "/rɪˈsiːt/",
+       "vi": "hóa đơn",
+       "exampleEn": "Keep the receipt in case you need a refund.",
+       "exampleVi": "Giữ lại hóa đơn phòng khi bạn cần hoàn tiền."
       }
      ],
      "grammar": {
@@ -13683,53 +13689,17 @@
      },
      "items": [
       {
-       "id": "a2-u10-meaning-mirror",
-       "unitId": "a2-u10",
-       "type": "meaning",
-       "prompt": "mirror",
-       "options": [
-        "rẻ",
-        "giám đốc, quản lý",
-        "mặc cả, món hời",
-        "gương"
-       ],
-       "answerIndex": 3,
-       "wordEn": "mirror",
-       "sourceIds": [
-        "cefrj",
-        "gymtalk-vocab"
-       ]
-      },
-      {
-       "id": "a2-u10-meaning-roof",
-       "unitId": "a2-u10",
-       "type": "meaning",
-       "prompt": "roof",
-       "options": [
-        "trưng bày",
-        "mặc cả, món hời",
-        "mái nhà",
-        "giám đốc, quản lý"
-       ],
-       "answerIndex": 2,
-       "wordEn": "roof",
-       "sourceIds": [
-        "cefrj",
-        "gymtalk-vocab"
-       ]
-      },
-      {
        "id": "a2-u10-meaning-advertisement",
        "unitId": "a2-u10",
        "type": "meaning",
        "prompt": "advertisement",
        "options": [
-        "quảng cáo",
-        "cửa hàng tạp hóa",
         "giám đốc, quản lý",
-        "mái nhà"
+        "quảng cáo",
+        "hóa đơn",
+        "cửa hàng tạp hóa"
        ],
-       "answerIndex": 0,
+       "answerIndex": 1,
        "wordEn": "advertisement",
        "sourceIds": [
         "cefrj",
@@ -13742,12 +13712,12 @@
        "type": "meaning",
        "prompt": "bargain",
        "options": [
-        "rẻ",
-        "mái nhà",
+        "mặc cả, món hời",
+        "hóa đơn",
         "thương hiệu",
-        "mặc cả, món hời"
+        "rẻ"
        ],
-       "answerIndex": 3,
+       "answerIndex": 0,
        "wordEn": "bargain",
        "sourceIds": [
         "cefrj",
@@ -13778,12 +13748,12 @@
        "type": "meaning",
        "prompt": "brand",
        "options": [
+        "tiệm thuốc",
         "thương hiệu",
         "ngân sách",
-        "tiệm thuốc",
         "đổi hàng"
        ],
-       "answerIndex": 0,
+       "answerIndex": 1,
        "wordEn": "brand",
        "sourceIds": [
         "cefrj",
@@ -13815,7 +13785,7 @@
        "prompt": "cheap",
        "options": [
         "rẻ",
-        "mái nhà",
+        "hóa đơn",
         "tiệm thuốc",
         "thương hiệu"
        ],
@@ -13833,7 +13803,7 @@
        "prompt": "customer",
        "options": [
         "giám đốc, quản lý",
-        "mái nhà",
+        "hóa đơn",
         "rẻ",
         "khách hàng"
        ],
@@ -13850,12 +13820,12 @@
        "type": "meaning",
        "prompt": "department store",
        "options": [
-        "trưng bày",
         "quảng cáo",
-        "cửa hàng bách hóa",
-        "giám đốc, quản lý"
+        "giám đốc, quản lý",
+        "trưng bày",
+        "cửa hàng bách hóa"
        ],
-       "answerIndex": 2,
+       "answerIndex": 3,
        "wordEn": "department store",
        "sourceIds": [
         "cefrj",
@@ -13887,11 +13857,11 @@
        "prompt": "drugstore",
        "options": [
         "đổi hàng",
-        "tiệm thuốc",
-        "gương",
-        "rổ, giỏ"
+        "rổ, giỏ",
+        "chất lượng",
+        "tiệm thuốc"
        ],
-       "answerIndex": 1,
+       "answerIndex": 3,
        "wordEn": "drugstore",
        "sourceIds": [
         "cefrj",
@@ -13941,11 +13911,11 @@
        "prompt": "manager",
        "options": [
         "cửa hàng bách hóa",
-        "giám đốc, quản lý",
+        "khách hàng",
         "cửa hàng tạp hóa",
-        "khách hàng"
+        "giám đốc, quản lý"
        ],
-       "answerIndex": 1,
+       "answerIndex": 3,
        "wordEn": "manager",
        "sourceIds": [
         "cefrj",
@@ -13953,42 +13923,40 @@
        ]
       },
       {
-       "id": "a2-u10-gapFill-mirror",
+       "id": "a2-u10-meaning-quality",
        "unitId": "a2-u10",
-       "type": "gapFill",
-       "wordEn": "mirror",
-       "sourceIds": [
-        "cefrj",
-        "tatoeba"
-       ],
-       "prompt": "Writing is reversed in a ___.",
+       "type": "meaning",
+       "prompt": "quality",
        "options": [
-        "mirror",
-        "budget",
-        "manager",
-        "basket"
+        "chất lượng",
+        "ngân sách",
+        "hóa đơn",
+        "mặc cả, món hời"
        ],
        "answerIndex": 0,
-       "hintVi": "Chữ viết bị đảo ngược lại trong gương.",
-       "sourceRef": "tatoeba:eng#11374589/vie#11374595"
-      },
-      {
-       "id": "a2-u10-listening-roof",
-       "unitId": "a2-u10",
-       "type": "listening",
-       "wordEn": "roof",
+       "wordEn": "quality",
        "sourceIds": [
         "cefrj",
         "gymtalk-vocab"
-       ],
-       "prompt": "roof",
+       ]
+      },
+      {
+       "id": "a2-u10-meaning-receipt",
+       "unitId": "a2-u10",
+       "type": "meaning",
+       "prompt": "receipt",
        "options": [
-        "grocery store",
-        "roof",
-        "customer",
-        "drugstore"
+        "hóa đơn",
+        "thương hiệu",
+        "khách hàng",
+        "trưng bày"
        ],
-       "answerIndex": 1
+       "answerIndex": 0,
+       "wordEn": "receipt",
+       "sourceIds": [
+        "cefrj",
+        "gymtalk-vocab"
+       ]
       },
       {
        "id": "a2-u10-gapFill-advertisement",
@@ -14001,38 +13969,37 @@
        ],
        "prompt": "That's not an ___.",
        "options": [
-        "roof",
+        "receipt",
         "basket",
         "advertisement",
-        "mirror"
+        "quality"
        ],
        "answerIndex": 2,
        "hintVi": "Đấy không phải quảng cáo.",
        "sourceRef": "tatoeba:eng#13579162/vie#13581131"
       },
       {
-       "id": "a2-u10-gapFill-bargain",
+       "id": "a2-u10-listening-bargain",
        "unitId": "a2-u10",
-       "type": "gapFill",
+       "type": "listening",
        "wordEn": "bargain",
        "sourceIds": [
         "cefrj",
         "gymtalk-vocab"
        ],
-       "prompt": "She got a great ___ on the shoes.",
+       "prompt": "bargain",
        "options": [
-        "mirror",
-        "exchange",
-        "basket",
-        "bargain"
+        "department store",
+        "bargain",
+        "display",
+        "customer"
        ],
-       "answerIndex": 3,
-       "hintVi": "Cô ấy mua được đôi giày với giá rất hời."
+       "answerIndex": 1
       },
       {
-       "id": "a2-u10-listening-basket",
+       "id": "a2-u10-wordScramble-basket",
        "unitId": "a2-u10",
-       "type": "listening",
+       "type": "wordScramble",
        "wordEn": "basket",
        "sourceIds": [
         "cefrj",
@@ -14040,53 +14007,53 @@
        ],
        "prompt": "basket",
        "options": [
-        "basket",
-        "bargain",
-        "manager",
-        "drugstore"
-       ],
-       "answerIndex": 0
-      },
-      {
-       "id": "a2-u10-wordScramble-brand",
-       "unitId": "a2-u10",
-       "type": "wordScramble",
-       "wordEn": "brand",
-       "sourceIds": [
-        "cefrj",
-        "gymtalk-vocab"
-       ],
-       "prompt": "brand",
-       "options": [
-        "brand"
+        "basket"
        ],
        "answerIndex": 0,
-       "hintVi": "thương hiệu"
+       "hintVi": "rổ, giỏ"
       },
       {
-       "id": "a2-u10-gapFill-budget",
+       "id": "a2-u10-gapFill-brand",
        "unitId": "a2-u10",
        "type": "gapFill",
-       "wordEn": "budget",
+       "wordEn": "brand",
        "sourceIds": [
         "cefrj",
         "tatoeba"
        ],
-       "prompt": "We're facing a ___ crisis.",
+       "prompt": "The overuse of discounts has cheapened the ___'s value over time.",
        "options": [
         "basket",
         "brand",
-        "cheap",
-        "budget"
+        "bargain",
+        "quality"
        ],
-       "answerIndex": 3,
-       "hintVi": "Chúng ta đang đối mặt với khủng hoảng ngân sách.",
-       "sourceRef": "tatoeba:eng#4665389/vie#9010240"
+       "answerIndex": 1,
+       "hintVi": "Việc lạm dụng giảm giá đã làm giảm giá trị nhãn hàng theo thời gian.",
+       "sourceRef": "tatoeba:eng#13872712/vie#13877243"
       },
       {
-       "id": "a2-u10-listening-cheap",
+       "id": "a2-u10-listening-budget",
        "unitId": "a2-u10",
        "type": "listening",
+       "wordEn": "budget",
+       "sourceIds": [
+        "cefrj",
+        "gymtalk-vocab"
+       ],
+       "prompt": "budget",
+       "options": [
+        "budget",
+        "manager",
+        "customer",
+        "cheap"
+       ],
+       "answerIndex": 0
+      },
+      {
+       "id": "a2-u10-wordScramble-cheap",
+       "unitId": "a2-u10",
+       "type": "wordScramble",
        "wordEn": "cheap",
        "sourceIds": [
         "cefrj",
@@ -14094,53 +14061,52 @@
        ],
        "prompt": "cheap",
        "options": [
-        "manager",
-        "brand",
-        "department store",
         "cheap"
        ],
-       "answerIndex": 3
+       "answerIndex": 0,
+       "hintVi": "rẻ"
       },
       {
-       "id": "a2-u10-wordScramble-customer",
+       "id": "a2-u10-gapFill-customer",
        "unitId": "a2-u10",
-       "type": "wordScramble",
+       "type": "gapFill",
        "wordEn": "customer",
        "sourceIds": [
         "cefrj",
         "gymtalk-vocab"
        ],
-       "prompt": "customer",
+       "prompt": "The shop treats every ___ politely.",
        "options": [
-        "customer"
-       ],
-       "answerIndex": 0,
-       "hintVi": "khách hàng"
-      },
-      {
-       "id": "a2-u10-gapFill-department-store",
-       "unitId": "a2-u10",
-       "type": "gapFill",
-       "wordEn": "department store",
-       "sourceIds": [
-        "cefrj",
-        "tatoeba"
-       ],
-       "prompt": "You can see the large exhibition at the ___ anytime.",
-       "options": [
-        "department store",
-        "drugstore",
         "customer",
+        "drugstore",
+        "receipt",
         "exchange"
        ],
        "answerIndex": 0,
-       "hintVi": "Bạn có thể tham quan buổi triển lãm lớn ở cửa hàng bách hoá lúc nào cũng được.",
-       "sourceRef": "tatoeba:eng#39360/vie#13840960"
+       "hintVi": "Cửa hàng đối xử lịch sự với mọi khách hàng."
       },
       {
-       "id": "a2-u10-listening-display",
+       "id": "a2-u10-listening-department-store",
        "unitId": "a2-u10",
        "type": "listening",
+       "wordEn": "department store",
+       "sourceIds": [
+        "cefrj",
+        "gymtalk-vocab"
+       ],
+       "prompt": "department store",
+       "options": [
+        "manager",
+        "grocery store",
+        "brand",
+        "department store"
+       ],
+       "answerIndex": 3
+      },
+      {
+       "id": "a2-u10-wordScramble-display",
+       "unitId": "a2-u10",
+       "type": "wordScramble",
        "wordEn": "display",
        "sourceIds": [
         "cefrj",
@@ -14148,82 +14114,120 @@
        ],
        "prompt": "display",
        "options": [
-        "brand",
-        "cheap",
-        "display",
-        "customer"
+        "display"
        ],
-       "answerIndex": 2
+       "answerIndex": 0,
+       "hintVi": "trưng bày"
       },
       {
-       "id": "a2-u10-wordScramble-drugstore",
+       "id": "a2-u10-gapFill-drugstore",
        "unitId": "a2-u10",
-       "type": "wordScramble",
+       "type": "gapFill",
        "wordEn": "drugstore",
        "sourceIds": [
         "cefrj",
         "gymtalk-vocab"
        ],
-       "prompt": "drugstore",
+       "prompt": "I bought some medicine at the ___.",
        "options": [
-        "drugstore"
+        "quality",
+        "drugstore",
+        "manager",
+        "department store"
        ],
-       "answerIndex": 0,
-       "hintVi": "tiệm thuốc"
+       "answerIndex": 1,
+       "hintVi": "Tôi mua ít thuốc ở tiệm thuốc."
       },
       {
-       "id": "a2-u10-gapFill-exchange",
+       "id": "a2-u10-listening-exchange",
        "unitId": "a2-u10",
-       "type": "gapFill",
+       "type": "listening",
        "wordEn": "exchange",
        "sourceIds": [
         "cefrj",
-        "tatoeba"
+        "gymtalk-vocab"
        ],
-       "prompt": "Can you ___ it for another one?",
+       "prompt": "exchange",
        "options": [
-        "advertisement",
-        "budget",
-        "department store",
+        "drugstore",
+        "display",
+        "receipt",
         "exchange"
        ],
-       "answerIndex": 3,
-       "hintVi": "Anh có thể đổi cho tôi cái khác không?",
-       "sourceRef": "tatoeba:eng#1153914/vie#1598575"
+       "answerIndex": 3
       },
       {
-       "id": "a2-u10-listening-grocery-store",
+       "id": "a2-u10-gapFill-grocery-store",
        "unitId": "a2-u10",
-       "type": "listening",
+       "type": "gapFill",
        "wordEn": "grocery store",
        "sourceIds": [
         "cefrj",
         "gymtalk-vocab"
        ],
-       "prompt": "grocery store",
+       "prompt": "I stopped by the ___ after work.",
        "options": [
-        "department store",
-        "cheap",
+        "advertisement",
+        "bargain",
         "grocery store",
-        "advertisement"
+        "budget"
        ],
-       "answerIndex": 2
+       "answerIndex": 2,
+       "hintVi": "Tôi ghé qua cửa hàng tạp hóa sau giờ làm."
       },
       {
-       "id": "a2-u10-wordScramble-manager",
+       "id": "a2-u10-gapFill-manager",
        "unitId": "a2-u10",
-       "type": "wordScramble",
+       "type": "gapFill",
        "wordEn": "manager",
+       "sourceIds": [
+        "cefrj",
+        "tatoeba"
+       ],
+       "prompt": "That's the new ___.",
+       "options": [
+        "drugstore",
+        "manager",
+        "grocery store",
+        "brand"
+       ],
+       "answerIndex": 1,
+       "hintVi": "Đó là người quản lý mới.",
+       "sourceRef": "tatoeba:eng#3735510/vie#9024398"
+      },
+      {
+       "id": "a2-u10-listening-quality",
+       "unitId": "a2-u10",
+       "type": "listening",
+       "wordEn": "quality",
        "sourceIds": [
         "cefrj",
         "gymtalk-vocab"
        ],
-       "prompt": "manager",
+       "prompt": "quality",
        "options": [
-        "manager"
+        "receipt",
+        "exchange",
+        "quality",
+        "grocery store"
+       ],
+       "answerIndex": 2
+      },
+      {
+       "id": "a2-u10-wordScramble-receipt",
+       "unitId": "a2-u10",
+       "type": "wordScramble",
+       "wordEn": "receipt",
+       "sourceIds": [
+        "cefrj",
+        "gymtalk-vocab"
+       ],
+       "prompt": "receipt",
+       "options": [
+        "receipt"
        ],
        "answerIndex": 0,
-       "hintVi": "giám đốc, quản lý"
+       "hintVi": "hóa đơn"
       },
       {
        "id": "a2-u10-grammar-have-to-must-1",
@@ -14251,7 +14255,7 @@
         "has",
         "have",
         "must",
-        "is"
+        "does"
        ],
        "answerIndex": 0,
        "explanationVi": "have to/has to và must + động từ nguyên mẫu để nói việc bắt buộc; don't have to là không cần.",
@@ -14268,7 +14272,7 @@
         "have",
         "must",
         "has",
-        "need"
+        "having"
        ],
        "answerIndex": 0,
        "explanationVi": "have to/has to và must + động từ nguyên mẫu để nói việc bắt buộc; don't have to là không cần.",
@@ -14281,6 +14285,6 @@
    ]
   }
  ],
- "contentHash": "dba2a4983a44669a49a5d217091e7552ef4337a9214a9a7b04bac2edfd0f3551",
+ "contentHash": "9186b1d703b3be2630495a0a2a714793a79092d872920a528be337c0fac26a53",
  "approval": null
 }

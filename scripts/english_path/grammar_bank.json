@@ -7,9 +7,36 @@
       "titleVi": "Động từ to be ở hiện tại",
       "explanationVi": "I đi với am; he/she/it đi với is; you/we/they đi với are.",
       "items": [
-        {"prompt": "I ___ ready for my workout.", "options": ["am", "is", "are", "be"], "answer": "am"},
-        {"prompt": "The gym ___ open until 10 p.m.", "options": ["is", "are", "am", "be"], "answer": "is"},
-        {"prompt": "My friends ___ at the gym now.", "options": ["are", "is", "am", "be"], "answer": "are"}
+        {
+          "prompt": "I ___ ready for my workout.",
+          "options": [
+            "am",
+            "is",
+            "are",
+            "be"
+          ],
+          "answer": "am"
+        },
+        {
+          "prompt": "The gym ___ open until 10 p.m.",
+          "options": [
+            "is",
+            "are",
+            "am",
+            "be"
+          ],
+          "answer": "is"
+        },
+        {
+          "prompt": "My friends ___ at the gym now.",
+          "options": [
+            "are",
+            "is",
+            "am",
+            "be"
+          ],
+          "answer": "are"
+        }
       ]
     },
     {
@@ -18,9 +45,36 @@
       "titleVi": "Thì hiện tại đơn",
       "explanationVi": "Dùng cho thói quen, việc lặp lại. Với I/you/we/they, động từ giữ nguyên.",
       "items": [
-        {"prompt": "We ___ every Monday and Thursday.", "options": ["train", "trains", "training", "trained"], "answer": "train"},
-        {"prompt": "I ___ water after every set.", "options": ["drink", "drinks", "drinking", "to drink"], "answer": "drink"},
-        {"prompt": "They ___ at seven in the morning.", "options": ["run", "runs", "running", "to run"], "answer": "run"}
+        {
+          "prompt": "We usually ___ every Monday and Thursday.",
+          "options": [
+            "train",
+            "trains",
+            "training",
+            "to train"
+          ],
+          "answer": "train"
+        },
+        {
+          "prompt": "I ___ water after every set.",
+          "options": [
+            "drink",
+            "drinks",
+            "drinking",
+            "to drink"
+          ],
+          "answer": "drink"
+        },
+        {
+          "prompt": "They ___ at seven in the morning.",
+          "options": [
+            "run",
+            "runs",
+            "running",
+            "to run"
+          ],
+          "answer": "run"
+        }
       ]
     },
     {
@@ -29,9 +83,36 @@
       "titleVi": "Hiện tại đơn với he/she/it",
       "explanationVi": "Với he/she/it, thêm -s hoặc -es vào động từ: go → goes, watch → watches.",
       "items": [
-        {"prompt": "She ___ to the gym every day.", "options": ["goes", "go", "going", "gone"], "answer": "goes"},
-        {"prompt": "My coach ___ very loud music.", "options": ["plays", "play", "playing", "to play"], "answer": "plays"},
-        {"prompt": "He ___ his legs on Friday.", "options": ["trains", "train", "training", "to train"], "answer": "trains"}
+        {
+          "prompt": "She ___ to the gym every day.",
+          "options": [
+            "goes",
+            "go",
+            "going",
+            "gone"
+          ],
+          "answer": "goes"
+        },
+        {
+          "prompt": "My coach ___ very loud music.",
+          "options": [
+            "plays",
+            "play",
+            "playing",
+            "to play"
+          ],
+          "answer": "plays"
+        },
+        {
+          "prompt": "He ___ his legs on Friday.",
+          "options": [
+            "trains",
+            "train",
+            "training",
+            "to train"
+          ],
+          "answer": "trains"
+        }
       ]
     },
     {
@@ -40,9 +121,36 @@
       "titleVi": "Câu hỏi và phủ định với do/does",
       "explanationVi": "Câu hỏi và phủ định ở hiện tại đơn dùng do/does; sau does động từ trở về nguyên mẫu.",
       "items": [
-        {"prompt": "___ you like running?", "options": ["Do", "Does", "Are", "Is"], "answer": "Do"},
-        {"prompt": "She ___ eat sugar before training.", "options": ["doesn't", "don't", "isn't", "not"], "answer": "doesn't"},
-        {"prompt": "___ he lift heavy weights?", "options": ["Does", "Do", "Is", "Are"], "answer": "Does"}
+        {
+          "prompt": "___ you like running?",
+          "options": [
+            "Do",
+            "Does",
+            "Are",
+            "Is"
+          ],
+          "answer": "Do"
+        },
+        {
+          "prompt": "She ___ eat sugar before training.",
+          "options": [
+            "doesn't",
+            "don't",
+            "isn't",
+            "not"
+          ],
+          "answer": "doesn't"
+        },
+        {
+          "prompt": "___ he lift heavy weights?",
+          "options": [
+            "Does",
+            "Do",
+            "Is",
+            "Are"
+          ],
+          "answer": "Does"
+        }
       ]
     },
     {
@@ -51,9 +159,36 @@
       "titleVi": "can: diễn tả khả năng",
       "explanationVi": "can + động từ nguyên mẫu để nói ai đó làm được gì; phủ định là can't.",
       "items": [
-        {"prompt": "I can ___ ten push-ups.", "options": ["do", "does", "doing", "to do"], "answer": "do"},
-        {"prompt": "She ___ swim very fast.", "options": ["can", "cans", "can to", "is can"], "answer": "can"},
-        {"prompt": "My knee hurts, so I ___ run today.", "options": ["can't", "don't can", "not can", "cannot to"], "answer": "can't"}
+        {
+          "prompt": "I can ___ ten push-ups.",
+          "options": [
+            "do",
+            "does",
+            "doing",
+            "to do"
+          ],
+          "answer": "do"
+        },
+        {
+          "prompt": "She ___ swim very fast.",
+          "options": [
+            "can",
+            "cans",
+            "can to",
+            "is can"
+          ],
+          "answer": "can"
+        },
+        {
+          "prompt": "My knee hurts, so I ___ run today.",
+          "options": [
+            "can't",
+            "don't can",
+            "not can",
+            "cannot to"
+          ],
+          "answer": "can't"
+        }
       ]
     },
     {
@@ -62,9 +197,36 @@
       "titleVi": "Câu mệnh lệnh",
       "explanationVi": "Dùng động từ nguyên mẫu đứng đầu câu để ra lệnh, hướng dẫn; phủ định dùng Don't.",
       "items": [
-        {"prompt": "___ your back straight.", "options": ["Keep", "Keeps", "Keeping", "To keep"], "answer": "Keep"},
-        {"prompt": "___ hold your breath.", "options": ["Don't", "Doesn't", "Not", "No"], "answer": "Don't"},
-        {"prompt": "___ slowly and count to three.", "options": ["Breathe", "Breathes", "Breathing", "Breathed"], "answer": "Breathe"}
+        {
+          "prompt": "___ your back straight.",
+          "options": [
+            "Keep",
+            "Keeps",
+            "Keeping",
+            "To keep"
+          ],
+          "answer": "Keep"
+        },
+        {
+          "prompt": "___ hold your breath.",
+          "options": [
+            "Don't",
+            "Doesn't",
+            "Not",
+            "No"
+          ],
+          "answer": "Don't"
+        },
+        {
+          "prompt": "___ slowly and count to three.",
+          "options": [
+            "Breathe",
+            "Breathes",
+            "Breathing",
+            "Breathed"
+          ],
+          "answer": "Breathe"
+        }
       ]
     },
     {
@@ -73,9 +235,36 @@
       "titleVi": "There is / There are",
       "explanationVi": "There is + danh từ số ít; There are + danh từ số nhiều: dùng để nói có cái gì ở đâu.",
       "items": [
-        {"prompt": "There ___ a new bike in the gym.", "options": ["is", "are", "am", "be"], "answer": "is"},
-        {"prompt": "There ___ many mats on the floor.", "options": ["are", "is", "am", "has"], "answer": "are"},
-        {"prompt": "There ___ a towel on the bench.", "options": ["is", "are", "have", "has"], "answer": "is"}
+        {
+          "prompt": "There ___ a new bike in the gym.",
+          "options": [
+            "is",
+            "are",
+            "am",
+            "be"
+          ],
+          "answer": "is"
+        },
+        {
+          "prompt": "There ___ many mats on the floor.",
+          "options": [
+            "are",
+            "is",
+            "am",
+            "has"
+          ],
+          "answer": "are"
+        },
+        {
+          "prompt": "There ___ a towel on the bench.",
+          "options": [
+            "is",
+            "are",
+            "have",
+            "has"
+          ],
+          "answer": "is"
+        }
       ]
     },
     {
@@ -84,9 +273,36 @@
       "titleVi": "Tính từ sở hữu",
       "explanationVi": "Đứng trước danh từ để chỉ của ai: I → my, you → your, he → his, she → her, we → our, they → their.",
       "items": [
-        {"prompt": "She forgot ___ water bottle.", "options": ["her", "his", "she", "hers"], "answer": "her"},
-        {"prompt": "We put ___ bags in the locker.", "options": ["our", "us", "we", "ours"], "answer": "our"},
-        {"prompt": "He is stretching ___ arms.", "options": ["his", "her", "him", "he"], "answer": "his"}
+        {
+          "prompt": "She forgot ___ water bottle.",
+          "options": [
+            "her",
+            "she",
+            "hers",
+            "he"
+          ],
+          "answer": "her"
+        },
+        {
+          "prompt": "We put ___ bags in the locker.",
+          "options": [
+            "our",
+            "us",
+            "we",
+            "ours"
+          ],
+          "answer": "our"
+        },
+        {
+          "prompt": "He is stretching ___ arms.",
+          "options": [
+            "his",
+            "him",
+            "he",
+            "he's"
+          ],
+          "answer": "his"
+        }
       ]
     },
     {
@@ -95,9 +311,36 @@
       "titleVi": "Thì hiện tại tiếp diễn",
       "explanationVi": "am/is/are + động từ -ing để nói việc đang diễn ra ngay lúc nói.",
       "items": [
-        {"prompt": "Look! He is ___ the bar.", "options": ["lifting", "lift", "lifts", "lifted"], "answer": "lifting"},
-        {"prompt": "I ___ resting between sets now.", "options": ["am", "is", "are", "do"], "answer": "am"},
-        {"prompt": "They are ___ on the treadmill.", "options": ["running", "run", "runs", "runing"], "answer": "running"}
+        {
+          "prompt": "Look! He is ___ the bar.",
+          "options": [
+            "lifting",
+            "lift",
+            "lifts",
+            "lifted"
+          ],
+          "answer": "lifting"
+        },
+        {
+          "prompt": "I ___ resting between sets now.",
+          "options": [
+            "am",
+            "is",
+            "are",
+            "do"
+          ],
+          "answer": "am"
+        },
+        {
+          "prompt": "They are ___ on the treadmill.",
+          "options": [
+            "running",
+            "run",
+            "runs",
+            "runing"
+          ],
+          "answer": "running"
+        }
       ]
     },
     {
@@ -106,9 +349,36 @@
       "titleVi": "Giới từ chỉ thời gian",
       "explanationVi": "at + giờ; on + ngày trong tuần/ngày tháng; in + buổi, tháng, năm.",
       "items": [
-        {"prompt": "My class starts ___ six o'clock.", "options": ["at", "on", "in", "to"], "answer": "at"},
-        {"prompt": "I go to the gym ___ Monday.", "options": ["on", "in", "at", "to"], "answer": "on"},
-        {"prompt": "I like to run ___ the morning.", "options": ["in", "on", "at", "to"], "answer": "in"}
+        {
+          "prompt": "My class starts ___ six o'clock.",
+          "options": [
+            "at",
+            "on",
+            "in",
+            "to"
+          ],
+          "answer": "at"
+        },
+        {
+          "prompt": "I go to the gym ___ Monday.",
+          "options": [
+            "on",
+            "in",
+            "at",
+            "to"
+          ],
+          "answer": "on"
+        },
+        {
+          "prompt": "I like to run ___ the morning.",
+          "options": [
+            "in",
+            "on",
+            "at",
+            "to"
+          ],
+          "answer": "in"
+        }
       ]
     }
   ],
@@ -119,9 +389,36 @@
       "titleVi": "Quá khứ đơn: động từ có quy tắc",
       "explanationVi": "Thêm -ed vào động từ để nói việc đã xảy ra và kết thúc: train → trained.",
       "items": [
-        {"prompt": "Yesterday I ___ for an hour.", "options": ["trained", "train", "trains", "training"], "answer": "trained"},
-        {"prompt": "Yesterday she ___ her legs after the run.", "options": ["stretched", "stretch", "stretches", "stretching"], "answer": "stretched"},
-        {"prompt": "Last week we ___ to music in the class.", "options": ["danced", "dance", "dances", "dancing"], "answer": "danced"}
+        {
+          "prompt": "Yesterday I ___ for an hour.",
+          "options": [
+            "trained",
+            "train",
+            "trains",
+            "training"
+          ],
+          "answer": "trained"
+        },
+        {
+          "prompt": "Yesterday she ___ her legs after the run.",
+          "options": [
+            "stretched",
+            "stretch",
+            "stretches",
+            "stretching"
+          ],
+          "answer": "stretched"
+        },
+        {
+          "prompt": "Last week we ___ to music in the class.",
+          "options": [
+            "danced",
+            "dance",
+            "dances",
+            "dancing"
+          ],
+          "answer": "danced"
+        }
       ]
     },
     {
@@ -130,9 +427,36 @@
       "titleVi": "Quá khứ đơn: động từ bất quy tắc",
       "explanationVi": "Một số động từ có dạng quá khứ riêng cần học thuộc: go → went, eat → ate, run → ran.",
       "items": [
-        {"prompt": "I ___ to the gym last night.", "options": ["went", "goed", "go", "gone"], "answer": "went"},
-        {"prompt": "He ___ five kilometres this morning.", "options": ["ran", "runned", "run", "runs"], "answer": "ran"},
-        {"prompt": "We ___ chicken and rice after training.", "options": ["ate", "eated", "eat", "eaten"], "answer": "ate"}
+        {
+          "prompt": "I ___ to the gym last night.",
+          "options": [
+            "went",
+            "goed",
+            "go",
+            "gone"
+          ],
+          "answer": "went"
+        },
+        {
+          "prompt": "He ___ five kilometres this morning.",
+          "options": [
+            "ran",
+            "runned",
+            "run",
+            "runs"
+          ],
+          "answer": "ran"
+        },
+        {
+          "prompt": "Yesterday we ___ chicken and rice after training.",
+          "options": [
+            "ate",
+            "eated",
+            "eat",
+            "eaten"
+          ],
+          "answer": "ate"
+        }
       ]
     },
     {
@@ -141,9 +465,36 @@
       "titleVi": "Quá khứ đơn: câu hỏi và phủ định",
       "explanationVi": "Dùng did/didn't + động từ nguyên mẫu: Did you train? I didn't train.",
       "items": [
-        {"prompt": "___ you finish the workout?", "options": ["Did", "Do", "Were", "Does"], "answer": "Did"},
-        {"prompt": "I didn't ___ enough sleep last night.", "options": ["get", "got", "gets", "getting"], "answer": "get"},
-        {"prompt": "She ___ come to class on Tuesday.", "options": ["didn't", "doesn't", "wasn't", "not"], "answer": "didn't"}
+        {
+          "prompt": "___ you finish the workout yesterday?",
+          "options": [
+            "Did",
+            "Do",
+            "Were",
+            "Does"
+          ],
+          "answer": "Did"
+        },
+        {
+          "prompt": "I didn't ___ enough sleep last night.",
+          "options": [
+            "get",
+            "got",
+            "gets",
+            "getting"
+          ],
+          "answer": "get"
+        },
+        {
+          "prompt": "She ___ come to class last Tuesday.",
+          "options": [
+            "didn't",
+            "doesn't",
+            "wasn't",
+            "not"
+          ],
+          "answer": "didn't"
+        }
       ]
     },
     {
@@ -152,9 +503,36 @@
       "titleVi": "be going to: dự định",
       "explanationVi": "am/is/are going to + động từ nguyên mẫu để nói kế hoạch đã định trước.",
       "items": [
-        {"prompt": "I'm going ___ train harder next month.", "options": ["to", "for", "at", "on"], "answer": "to"},
-        {"prompt": "They ___ going to join a running club.", "options": ["are", "is", "am", "be"], "answer": "are"},
-        {"prompt": "She is going to ___ a new program.", "options": ["start", "starts", "started", "starting"], "answer": "start"}
+        {
+          "prompt": "I'm going ___ train harder next month.",
+          "options": [
+            "to",
+            "for",
+            "at",
+            "on"
+          ],
+          "answer": "to"
+        },
+        {
+          "prompt": "They ___ going to join a running club.",
+          "options": [
+            "are",
+            "is",
+            "am",
+            "be"
+          ],
+          "answer": "are"
+        },
+        {
+          "prompt": "She is going to ___ a new program.",
+          "options": [
+            "start",
+            "starts",
+            "started",
+            "starting"
+          ],
+          "answer": "start"
+        }
       ]
     },
     {
@@ -163,9 +541,36 @@
       "titleVi": "will: dự đoán và quyết định tức thì",
       "explanationVi": "will + động từ nguyên mẫu để dự đoán hoặc quyết định ngay lúc nói.",
       "items": [
-        {"prompt": "Don't worry, you ___ feel better after stretching.", "options": ["will", "are", "do", "would to"], "answer": "will"},
-        {"prompt": "I'm tired. I think I ___ rest today.", "options": ["will", "am", "going", "do"], "answer": "will"},
-        {"prompt": "It will ___ easier next week.", "options": ["be", "is", "being", "been"], "answer": "be"}
+        {
+          "prompt": "Don't worry, you ___ feel better after stretching.",
+          "options": [
+            "will",
+            "are",
+            "do",
+            "would to"
+          ],
+          "answer": "will"
+        },
+        {
+          "prompt": "I'm tired. I think I ___ rest today.",
+          "options": [
+            "will",
+            "am",
+            "going",
+            "do"
+          ],
+          "answer": "will"
+        },
+        {
+          "prompt": "It will ___ easier next week.",
+          "options": [
+            "be",
+            "is",
+            "being",
+            "been"
+          ],
+          "answer": "be"
+        }
       ]
     },
     {
@@ -174,9 +579,36 @@
       "titleVi": "So sánh hơn",
       "explanationVi": "Tính từ ngắn thêm -er + than (strong → stronger than); tính từ dài dùng more + than.",
       "items": [
-        {"prompt": "My legs are ___ than last year.", "options": ["stronger", "strongest", "more strong", "strong"], "answer": "stronger"},
-        {"prompt": "Swimming is ___ than walking.", "options": ["more difficult", "difficulter", "most difficult", "difficult"], "answer": "more difficult"},
-        {"prompt": "This dumbbell is heavier ___ that one.", "options": ["than", "that", "then", "as"], "answer": "than"}
+        {
+          "prompt": "My legs are ___ than last year.",
+          "options": [
+            "stronger",
+            "strongest",
+            "more strong",
+            "strong"
+          ],
+          "answer": "stronger"
+        },
+        {
+          "prompt": "Swimming is ___ than walking.",
+          "options": [
+            "more difficult",
+            "difficulter",
+            "most difficult",
+            "difficult"
+          ],
+          "answer": "more difficult"
+        },
+        {
+          "prompt": "This dumbbell is heavier ___ that one.",
+          "options": [
+            "than",
+            "that",
+            "then",
+            "as"
+          ],
+          "answer": "than"
+        }
       ]
     },
     {
@@ -185,9 +617,36 @@
       "titleVi": "So sánh nhất",
       "explanationVi": "the + tính từ ngắn thêm -est (the fastest); tính từ dài dùng the most.",
       "items": [
-        {"prompt": "She is the ___ runner in our club.", "options": ["fastest", "faster", "most fast", "fast"], "answer": "fastest"},
-        {"prompt": "Squats are the ___ exercise for me.", "options": ["most important", "importantest", "more important", "important"], "answer": "most important"},
-        {"prompt": "This is ___ best protein bar I know.", "options": ["the", "a", "more", "most"], "answer": "the"}
+        {
+          "prompt": "She is the ___ runner in our club.",
+          "options": [
+            "fastest",
+            "faster",
+            "most fast",
+            "fast"
+          ],
+          "answer": "fastest"
+        },
+        {
+          "prompt": "Squats are the ___ exercise for me.",
+          "options": [
+            "most important",
+            "importantest",
+            "more important",
+            "important"
+          ],
+          "answer": "most important"
+        },
+        {
+          "prompt": "This is ___ best protein bar I know.",
+          "options": [
+            "the",
+            "a",
+            "more",
+            "most"
+          ],
+          "answer": "the"
+        }
       ]
     },
     {
@@ -196,9 +655,36 @@
       "titleVi": "Trạng từ chỉ tần suất",
       "explanationVi": "always, usually, often, sometimes, never đứng trước động từ thường và sau động từ be.",
       "items": [
-        {"prompt": "I ___ warm up before I run.", "options": ["always", "never always", "am always", "always am"], "answer": "always"},
-        {"prompt": "He is ___ late for class.", "options": ["never", "don't", "not never", "no"], "answer": "never"},
-        {"prompt": "We ___ train on Sundays, maybe once a month.", "options": ["sometimes", "always", "every", "usually always"], "answer": "sometimes"}
+        {
+          "prompt": "I ___ warm up before I run.",
+          "options": [
+            "always",
+            "never always",
+            "am always",
+            "always am"
+          ],
+          "answer": "always"
+        },
+        {
+          "prompt": "He is ___ late for class.",
+          "options": [
+            "never",
+            "don't",
+            "not never",
+            "no"
+          ],
+          "answer": "never"
+        },
+        {
+          "prompt": "We ___ train on Sundays, maybe once a month.",
+          "options": [
+            "sometimes",
+            "always",
+            "every",
+            "usually always"
+          ],
+          "answer": "sometimes"
+        }
       ]
     },
     {
@@ -207,9 +693,36 @@
       "titleVi": "much / many / some / any",
       "explanationVi": "many + danh từ đếm được số nhiều, much + danh từ không đếm được; some cho câu khẳng định, any cho câu hỏi/phủ định.",
       "items": [
-        {"prompt": "How ___ push-ups can you do?", "options": ["many", "much", "any", "some"], "answer": "many"},
-        {"prompt": "I don't drink ___ coffee.", "options": ["much", "many", "a", "some of"], "answer": "much"},
-        {"prompt": "Do you have ___ water left?", "options": ["any", "many", "a", "an"], "answer": "any"}
+        {
+          "prompt": "How ___ push-ups can you do?",
+          "options": [
+            "many",
+            "much",
+            "any",
+            "some"
+          ],
+          "answer": "many"
+        },
+        {
+          "prompt": "I don't drink ___ coffee.",
+          "options": [
+            "much",
+            "many",
+            "a",
+            "some of"
+          ],
+          "answer": "much"
+        },
+        {
+          "prompt": "Do you have ___ water left?",
+          "options": [
+            "any",
+            "many",
+            "a",
+            "an"
+          ],
+          "answer": "any"
+        }
       ]
     },
     {
@@ -218,9 +731,36 @@
       "titleVi": "have to / must: sự bắt buộc",
       "explanationVi": "have to/has to và must + động từ nguyên mẫu để nói việc bắt buộc; don't have to là không cần.",
       "items": [
-        {"prompt": "You ___ wear shoes in the gym.", "options": ["must", "mustn't to", "musts", "are must"], "answer": "must"},
-        {"prompt": "She ___ to wake up early for training.", "options": ["has", "have", "must", "is"], "answer": "has"},
-        {"prompt": "You don't ___ to bring a towel; we have them.", "options": ["have", "must", "has", "need"], "answer": "have"}
+        {
+          "prompt": "You ___ wear shoes in the gym.",
+          "options": [
+            "must",
+            "mustn't to",
+            "musts",
+            "are must"
+          ],
+          "answer": "must"
+        },
+        {
+          "prompt": "She ___ to wake up early for training.",
+          "options": [
+            "has",
+            "have",
+            "must",
+            "does"
+          ],
+          "answer": "has"
+        },
+        {
+          "prompt": "You don't ___ to bring a towel; we have them.",
+          "options": [
+            "have",
+            "must",
+            "has",
+            "having"
+          ],
+          "answer": "have"
+        }
       ]
     }
   ]

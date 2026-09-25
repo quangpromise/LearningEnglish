@@ -131,6 +131,19 @@ class SynonymDistractorTest(unittest.TestCase):
         self.assertTrue(any("blank" in e for e in pp.validate_pack(pack)))
 
 
+class ExclusionsTest(unittest.TestCase):
+    def test_review_exclusions_drop_words_and_sentences_and_fix_vi(self):
+        words, tatoeba = pp.apply_exclusions(WORDS, TATOEBA, {
+            "excludeWords": {"kick": "ly do"},
+            "excludeSentences": {"Can you lift this box?": "ly do"},
+            "fixVietnamese": {"Please hold my bag for a moment.": "Giữ giúp tôi cái túi một lát."},
+        })
+        self.assertNotIn("kick", [w["en"] for w in words])
+        self.assertNotIn("Can you lift this box?", [t["en"] for t in tatoeba])
+        hold = next(t for t in tatoeba if t["en"].startswith("Please hold"))
+        self.assertEqual(hold["vi"], "Giữ giúp tôi cái túi một lát.")
+
+
 class TatoebaFilterTest(unittest.TestCase):
     def test_sentence_filter(self):
         self.assertTrue(pp._usable_sentence("Can you lift this box?"))

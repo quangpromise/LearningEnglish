@@ -1,0 +1,14 @@
+{
+  "_comment": "Loai tru do review (nguoi + Grok) phat hien. Moi muc ghi ly do.",
+  "excludeWords": {
+    "slide": "Xep nham vao chu de Food; nghia 'slide' (trang trinh chieu) de gay nham.",
+    "tear": "Dong tu/danh tu 2 cach doc (nuoc mat / xe) - Listening khong phan biet duoc."
+  },
+  "excludeSentences": {
+    "There is no telling when the rainy season will be over.": "Qua kho so voi A1-A2, ban dich lech nghia.",
+    "There's a typo on slide 3.": "Ban dich ghi 'trang 3' (page) lech voi 'slide'."
+  },
+  "fixVietnamese": {
+    "There's not a drop of water left.": "Không còn một giọt nước nào."
+  }
+}

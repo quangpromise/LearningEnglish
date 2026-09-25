@@ -5607,8 +5607,8 @@ class AppStrings {
       AppLanguage.en: 'Listen and pick the word',
     },
     'rest_game_gap_prompt': {
-      AppLanguage.vi: 'Điền từ vào chỗ trống',
-      AppLanguage.en: 'Fill in the blank',
+      AppLanguage.vi: 'Điền từ đúng theo nghĩa câu tiếng Việt',
+      AppLanguage.en: 'Fill the blank to match the Vietnamese meaning',
     },
     'rest_game_scramble_prompt': {
       AppLanguage.vi: 'Xếp chữ thành từ tiếng Anh',

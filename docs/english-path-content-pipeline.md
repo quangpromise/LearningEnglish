@@ -46,8 +46,14 @@ python scripts/english_path_pipeline.py build
 | `cefrj` | CEFR-J Wordlist 1.5 (Tono Lab, TUFS) | Dùng thương mại miễn phí, bắt buộc trích dẫn | CSV tải lúc chạy, không đưa vào repo. Ghi công trong `ATTRIBUTION.md` |
 | `gymtalk-vocab` | `vocabulary_data.dart` | Nội dung tự soạn của dự án | Cung cấp IPA, nghĩa tiếng Việt và câu ví dụ |
 
+| `tatoeba` | Cặp câu Anh–Việt Tatoeba | CC BY 2.0 FR | Snapshot đã lọc ở `scripts/english_path/data/tatoeba_eng_vie.tsv` (tạo lại bằng `refresh-tatoeba`). Mỗi item giữ số hiệu câu trong `sourceRef` |
+| `gymtalk-grammar` | `scripts/english_path/grammar_bank.json` | Nội dung tự soạn | Mỗi bậc A1/A2 có 10 điểm ngữ pháp × 3 câu, trình tự theo CEFR-J Grammar Profile |
+
+**Sửa lỗi sau review:** ghi vào `scripts/english_path/review/exclusions.json` (bỏ từ, bỏ câu, sửa bản dịch tiếng Việt, kèm lý do). Pipeline tự áp dụng mỗi lần build. Không sửa tay JSON của pack.
+
+**Dạng câu hỏi:** mỗi từ có 1 câu Meaning và 1 câu thực hành xoay vòng Gap-fill / Listening / Word Scramble. Đáp án nhiễu của Meaning không được trùng hoặc giao nghĩa với đáp án đúng (so theo các nghĩa tiếng Việt tách bởi `,` `;` `/`). Gap-fill kèm câu dịch tiếng Việt, người học điền theo nghĩa của câu dịch.
+
 Nguồn sẽ thêm ở các ticket sau:
-- Tatoeba (CC BY 2.0 FR)
 - NGSL/NAWL (CC BY-SA 4.0, để trong asset riêng)
 - Open English WordNet (CC BY 4.0)
 

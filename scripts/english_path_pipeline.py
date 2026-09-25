@@ -45,6 +45,7 @@ REVIEW_CSV = ROOT / "scripts/english_path/review/pack_review.csv"
 STAGING_PACK = ROOT / "scripts/english_path/build/pack.json"
 TATOEBA_SNAPSHOT = ROOT / "scripts/english_path/data/tatoeba_eng_vie.tsv"
 GRAMMAR_BANK = ROOT / "scripts/english_path/grammar_bank.json"
+EXCLUSIONS = ROOT / "scripts/english_path/review/exclusions.json"
 
 PACK_SCHEMA_VERSION = 1
 # Phien ban noi dung - tang moi lan doi quy mo/nguon (Placement luu kem).
@@ -566,8 +567,9 @@ def cmd_build(args) -> int:
         csv_path = str(tmp)
     levels = load_cefr(csv_path)
     words = tag_cefr(parse_vocab_dart(VOCAB_DART.read_text(encoding="utf-8")), levels)
+    words, tatoeba = apply_exclusions(words, load_tatoeba(), load_exclusions())
     pack = build_pack(words, UNITS_PER_STAGE, WORDS_PER_UNIT,
-                      tatoeba=load_tatoeba(), grammar=load_grammar())
+                      tatoeba=tatoeba, grammar=load_grammar())
     errors = validate_pack(pack)
     if errors:
         print("VALIDATION FAILED - pack khong duoc ghi:", *errors, sep="\n  ")
@@ -584,6 +586,26 @@ def cmd_build(args) -> int:
         print(f"CHUA APPROVE -> chi ghi staging {STAGING_PACK}. Review mau 10% + "
               "Grok, roi chay `approve --reviewer <ten> --date YYYY-MM-DD`.")
     return 0
+
+
+def apply_exclusions(words: list[dict], tatoeba: list[dict],
+                     exclusions: dict) -> tuple[list[dict], list[dict]]:
+    """Ap ket qua review (nguoi + Grok): bo tu / cau loi, sua ban dich Viet.
+    Moi sua chua di qua day de chay lai pipeline van giu duoc - KHONG sua
+    tay JSON pack."""
+    bad_words = {w.lower() for w in exclusions.get("excludeWords", {})}
+    bad_sentences = set(exclusions.get("excludeSentences", {}))
+    fixes = exclusions.get("fixVietnamese", {})
+    words = [w for w in words if w["en"].lower() not in bad_words]
+    tatoeba = [dict(t, vi=fixes.get(t["en"], t["vi"])) for t in tatoeba
+               if t["en"] not in bad_sentences]
+    return words, tatoeba
+
+
+def load_exclusions() -> dict:
+    if not EXCLUSIONS.exists():
+        return {}
+    return json.loads(EXCLUSIONS.read_text(encoding="utf-8"))
 
 
 def load_grammar() -> dict:
