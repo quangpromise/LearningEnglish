@@ -5585,6 +5585,70 @@ class AppStrings {
       AppLanguage.vi: 'Bạn đã hoàn thành toàn bộ lộ trình hiện có. Nội dung mới sẽ sớm được cập nhật!',
       AppLanguage.en: 'You have finished the whole path for now. New content is coming soon!',
     },
+    'progress_levels_title': {
+      AppLanguage.vi: 'Cấp độ của bạn',
+      AppLanguage.en: 'Your levels',
+    },
+    'progress_english_hint': {
+      AppLanguage.vi: 'English Level · qua Level Test để lên bậc',
+      AppLanguage.en: 'English Level · pass the Level Test to move up',
+    },
+    'progress_band': {
+      AppLanguage.vi: 'Estimated band gần nhất: {band}',
+      AppLanguage.en: 'Latest estimated band: {band}',
+    },
+    'progress_body_next': {
+      AppLanguage.vi: 'Còn {w} buổi và {k} tuần liên tiếp nữa để lên {level}',
+      AppLanguage.en:
+          '{w} more workouts and {k} more streak weeks to reach {level}',
+    },
+    'progress_body_max': {
+      AppLanguage.vi: 'Bậc cao nhất, giữ phong độ nhé!',
+      AppLanguage.en: 'Top level, keep it up!',
+    },
+    'progress_rank': {
+      AppLanguage.vi: 'GymTalk Rank {n}/{max}',
+      AppLanguage.en: 'GymTalk Rank {n}/{max}',
+    },
+    'progress_rank_body': {
+      AppLanguage.vi: 'Tập đều hơn để lên rank: rank lấy bậc thấp hơn giữa Body và English.',
+      AppLanguage.en: 'Train more consistently to rank up: rank is the lower of Body and English.',
+    },
+    'progress_rank_english': {
+      AppLanguage.vi:
+          'Học thêm để lên rank: rank lấy bậc thấp hơn giữa Body và English.',
+      AppLanguage.en:
+          'Study more to rank up: rank is the lower of Body and English.',
+    },
+    'progress_rank_balanced': {
+      AppLanguage.vi: 'Cân bằng tuyệt vời giữa tập và học!',
+      AppLanguage.en: 'Great balance between training and learning!',
+    },
+    'progress_xp_points': {
+      AppLanguage.vi: '{xp} XP tích luỹ',
+      AppLanguage.en: '{xp} XP earned',
+    },
+    'body_level_rookie': {AppLanguage.vi: 'Rookie', AppLanguage.en: 'Rookie'},
+    'body_level_regular': {
+      AppLanguage.vi: 'Regular',
+      AppLanguage.en: 'Regular',
+    },
+    'body_level_athlete': {
+      AppLanguage.vi: 'Athlete',
+      AppLanguage.en: 'Athlete',
+    },
+    'body_level_pro': {AppLanguage.vi: 'Pro', AppLanguage.en: 'Pro'},
+    'body_level_beast': {AppLanguage.vi: 'Beast', AppLanguage.en: 'Beast'},
+    'progress_body_next_weeks': {
+      AppLanguage.vi:
+          'Còn {k} tuần tập liên tiếp (≥2 buổi/tuần) để lên {level}',
+      AppLanguage.en:
+          '{k} more streak weeks (2+ workouts/week) to reach {level}',
+    },
+    'progress_body_next_workouts': {
+      AppLanguage.vi: 'Còn {w} buổi tập nữa để lên {level}',
+      AppLanguage.en: '{w} more workouts to reach {level}',
+    },
     'rest_game_title': {
       AppLanguage.vi: 'Rest Game',
       AppLanguage.en: 'Rest Game',

@@ -158,11 +158,7 @@ class _RingsCard extends ConsumerWidget {
           if (xp != null) ...[
             const SizedBox(height: 4),
             Text(
-              ref
-                  .tr('today_level')
-                  .replaceFirst('{level}', '${xp.level}')
-                  .replaceFirst('{xp}', '${xp.xpInLevel}')
-                  .replaceFirst('{next}', '${xp.xpInLevel + xp.xpToNext}'),
+              ref.tr('progress_xp_points').replaceFirst('{xp}', '${xp.xp}'),
               style: AppTextStyles.muted(size: 13),
             ),
           ],
