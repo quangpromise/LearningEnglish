@@ -65,6 +65,9 @@ class EnglishPathStore extends ChangeNotifier {
   Future<void> recordCorrect(String unitId, String itemId) =>
       _update(_state.recordCorrect(unitId, itemId));
 
+  Future<void> recordWrong(String itemId) =>
+      _update(_state.recordWrong(itemId));
+
   Future<void> setLevel(CefrLevel level) =>
       _update(_state.copyWith(level: level));
 

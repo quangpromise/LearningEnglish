@@ -5648,6 +5648,38 @@ class AppStrings {
     'progress_body_next_workouts': {
       AppLanguage.vi: 'Còn {w} buổi tập nữa để lên {level}',
       AppLanguage.en: '{w} more workouts to reach {level}',
+    'rest_game_title': {
+      AppLanguage.vi: 'Rest Game',
+      AppLanguage.en: 'Rest Game',
+    },
+    'rest_game_use_cards': {
+      AppLanguage.vi: 'Dùng thẻ từ',
+      AppLanguage.en: 'Use word cards',
+    },
+    'rest_game_use_game': {
+      AppLanguage.vi: 'Chơi Rest Game',
+      AppLanguage.en: 'Play Rest Game',
+    },
+    'rest_game_done': {
+      AppLanguage.vi: 'Xong! Đúng {c}/{t} câu, nghỉ nốt rồi vào set nhé.',
+      AppLanguage.en:
+          'Done! {c}/{t} correct. Finish your rest, then the next set.',
+    },
+    'rest_game_listening_prompt': {
+      AppLanguage.vi: 'Nghe rồi chọn từ đúng',
+      AppLanguage.en: 'Listen and pick the word',
+    },
+    'rest_game_gap_prompt': {
+      AppLanguage.vi: 'Điền từ vào chỗ trống',
+      AppLanguage.en: 'Fill in the blank',
+    },
+    'rest_game_scramble_prompt': {
+      AppLanguage.vi: 'Xếp chữ thành từ tiếng Anh',
+      AppLanguage.en: 'Unscramble the English word',
+    },
+    'rest_game_scramble_hint': {
+      AppLanguage.vi: 'Chạm các chữ cái bên dưới',
+      AppLanguage.en: 'Tap the letters below',
     },
   };
 

@@ -8,8 +8,8 @@ import 'placement.dart';
 /// version se ghi de va lam mat cac truong no khong biet.
 ///
 /// Lich su: v1 level + correctItems; v2 them placement + placementSkipped;
-/// v3 them levelTests.
-const kEnglishPathSchemaVersion = 3;
+/// v3 them levelTests; v4 them wrongItems.
+const kEnglishPathSchemaVersion = 4;
 
 /// Tien do lo trinh tieng Anh cua nguoi hoc (local-first, xem spec #45).
 class EnglishPathState {
@@ -19,6 +19,7 @@ class EnglishPathState {
     this.placement,
     this.placementSkipped = false,
     this.levelTests = const {},
+    this.wrongItems = const {},
   });
 
   /// English Level da xac dinh (Placement/Level Test). null = chua co, dung
@@ -37,31 +38,47 @@ class EnglishPathState {
   /// Lan Level Test gan nhat cua tung Stage.
   final Map<CefrLevel, LevelTestResult> levelTests;
 
+  /// Item tung tra loi sai va CHUA tra loi dung lai - nguon cau on cua
+  /// Rest Game (spec #45: 30% cau on).
+  final Set<String> wrongItems;
+
   EnglishPathState _copy({
     CefrLevel? level,
     Map<String, Set<String>>? correctItems,
     PlacementRecord? placement,
     bool? placementSkipped,
     Map<CefrLevel, LevelTestResult>? levelTests,
+    Set<String>? wrongItems,
   }) => EnglishPathState(
     level: level ?? this.level,
     correctItems: correctItems ?? this.correctItems,
     placement: placement ?? this.placement,
     placementSkipped: placementSkipped ?? this.placementSkipped,
     levelTests: levelTests ?? this.levelTests,
+    wrongItems: wrongItems ?? this.wrongItems,
   );
 
   EnglishPathState copyWith({CefrLevel? level}) => _copy(level: level);
 
   EnglishPathState recordCorrect(String unitId, String itemId) {
-    if (correctItems[unitId]?.contains(itemId) ?? false) return this;
+    final known = correctItems[unitId]?.contains(itemId) ?? false;
+    if (known && !wrongItems.contains(itemId)) return this;
     return _copy(
-      correctItems: {
-        ...correctItems,
-        unitId: {...?correctItems[unitId], itemId},
-      },
+      correctItems: known
+          ? null
+          : {
+              ...correctItems,
+              unitId: {...?correctItems[unitId], itemId},
+            },
+      wrongItems: wrongItems.contains(itemId)
+          ? ({...wrongItems}..remove(itemId))
+          : null,
     );
   }
+
+  EnglishPathState recordWrong(String itemId) => wrongItems.contains(itemId)
+      ? this
+      : _copy(wrongItems: {...wrongItems, itemId});
 
   /// Ket qua Placement la quyet dinh cuoi cung ve English Level (spec #45).
   /// Ghi de English Level hien tai (ke ca khi thap hon) va xoa co "bo qua".
@@ -89,6 +106,7 @@ class EnglishPathState {
     'levelTests': {
       for (final e in levelTests.entries) e.key.code: e.value.toJson(),
     },
+    'wrongItems': (wrongItems.toList()..sort()),
   };
 }
 
@@ -109,8 +127,8 @@ EnglishPathState? migrateEnglishPathState(Object? raw) {
     return null;
   }
   try {
-    // v1 -> v2 -> v3: cac truong moi vang mat (placement, placementSkipped,
-    // levelTests) duoc doc ra gia tri mac dinh (null / false / rong).
+    // v1 -> v4: cac truong moi vang mat (placement, placementSkipped,
+    // levelTests, wrongItems) duoc doc ra gia tri mac dinh (null/false/rong).
     final levelCode = raw['level'] as String?;
     final items = (raw['correctItems'] as Map?) ?? const {};
     final placement = raw['placement'] as Map?;
@@ -130,6 +148,9 @@ EnglishPathState? migrateEnglishPathState(Object? raw) {
             Map<String, dynamic>.from(e.value as Map),
           ),
       },
+      wrongItems: ((raw['wrongItems'] as List?) ?? const [])
+          .cast<String>()
+          .toSet(),
     );
   } catch (_) {
     return null;
