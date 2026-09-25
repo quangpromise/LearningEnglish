@@ -12,6 +12,7 @@ import '../../../core/widgets/pointing_hand_badge.dart';
 import '../../ai_voice_chat/presentation/ai_voice_chat_screen.dart';
 import '../../social/presentation/conversations_screen.dart';
 import '../../grammar/presentation/grammar_topics_screen.dart';
+import '../../english_path/presentation/english_path_entry_card.dart';
 import '../../learning_path/data/learning_path_models.dart';
 import '../../learning_path/presentation/learning_path_accent.dart';
 import '../../learning_path/presentation/learning_path_survey_screen.dart';
@@ -157,6 +158,10 @@ class HomeScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 5),
             const ServiceExpiryBanner(section: AppSection.learnEnglish),
+            // Lo trinh A1 -> C1 (spec #45) - the mong co dinh 48dp, 4 khoi
+            // Expanded ben duoi tu chia lai phan chieu cao con lai.
+            const EnglishPathEntryCard(),
+            const SizedBox(height: 5),
             // The tien do (Lv/XP/chuoi ngay) da BO theo yeu cau.
             //
             // CA 4 khoi deu Expanded, flex = chieu cao THIET KE cua tung khoi

@@ -12,6 +12,12 @@ enum CefrLevel {
   /// Ma CEFR viet hoa dung trong Content Pack, vd "B1".
   final String code;
 
+  /// Bac ke tiep; C1 (bac cuoi) tra ve chinh no.
+  CefrLevel get next => this == values.last ? this : values[index + 1];
+
+  /// Khoa chuoi ten Stage trong AppStrings, vd "path_stage_b1".
+  String get labelKey => 'path_stage_${code.toLowerCase()}';
+
   static CefrLevel fromCode(String code) => CefrLevel.values.firstWhere(
     (s) => s.code == code,
     orElse: () => throw FormatException('Unknown CEFR level: $code'),

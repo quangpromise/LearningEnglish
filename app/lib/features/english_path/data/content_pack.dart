@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart';
 
+import '../../../core/i18n/app_language.dart';
 import 'cefr_level.dart';
 
 /// Content Pack dong goi trong app, sinh offline boi
@@ -146,6 +147,9 @@ class PathUnit {
   final String titleVi;
   final List<PathWord> words;
   final List<PracticeItem> items;
+
+  String titleFor(AppLanguage lang) =>
+      lang == AppLanguage.en ? titleEn : titleVi;
 }
 
 class PathStage {

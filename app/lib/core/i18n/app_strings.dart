@@ -5394,6 +5394,197 @@ class AppStrings {
       AppLanguage.vi: 'Chưa có giấc ngủ nào được ghi.',
       AppLanguage.en: 'No sleep logged yet.',
     },
+    'path_title': {
+      AppLanguage.vi: 'Lộ trình tiếng Anh',
+      AppLanguage.en: 'English path',
+    },
+    'path_load_error': {
+      AppLanguage.vi: 'Không tải được nội dung lộ trình.',
+      AppLanguage.en: 'Couldn\'t load the path content.',
+    },
+    'path_stage_done': {
+      AppLanguage.vi:
+          'Bạn đã hoàn thành mọi Unit của bậc này. Level Test sẽ sớm mở.',
+      AppLanguage.en: 'You\'ve completed every unit of this stage. The Level Test opens soon.',
+    },
+    'path_coming_soon': {
+      AppLanguage.vi: 'Nội dung bậc này đang được soạn, sắp có.',
+      AppLanguage.en: 'Content for this stage is coming soon.',
+    },
+    'path_stage_a1': {
+      AppLanguage.vi: 'A1 · Khởi đầu',
+      AppLanguage.en: 'A1 · Starter',
+    },
+    'path_stage_a2': {
+      AppLanguage.vi: 'A2 · Sơ cấp',
+      AppLanguage.en: 'A2 · Elementary',
+    },
+    'path_stage_b1': {
+      AppLanguage.vi: 'B1 · Trung cấp',
+      AppLanguage.en: 'B1 · Intermediate',
+    },
+    'path_stage_b2': {
+      AppLanguage.vi: 'B2 · Trung cao cấp',
+      AppLanguage.en: 'B2 · Upper-intermediate',
+    },
+    'path_stage_c1': {
+      AppLanguage.vi: 'C1 · Nâng cao',
+      AppLanguage.en: 'C1 · Advanced',
+    },
+    'path_you_are_here': {
+      AppLanguage.vi: 'Bạn ở đây',
+      AppLanguage.en: 'You are here',
+    },
+    'path_soon': {AppLanguage.vi: 'Sắp có', AppLanguage.en: 'Soon'},
+    'path_unit_label': {AppLanguage.vi: 'Unit {n}', AppLanguage.en: 'Unit {n}'},
+    'path_next': {AppLanguage.vi: 'Tiếp theo', AppLanguage.en: 'Up next'},
+    'path_unit_progress': {
+      AppLanguage.vi: 'Đã đúng {p}% số câu',
+      AppLanguage.en: '{p}% of items correct',
+    },
+    'path_meaning_prompt': {
+      AppLanguage.vi: 'Chọn nghĩa đúng',
+      AppLanguage.en: 'Pick the right meaning',
+    },
+    'path_continue': {AppLanguage.vi: 'Tiếp tục', AppLanguage.en: 'Continue'},
+    'path_unit_complete': {
+      AppLanguage.vi: 'Hoàn thành Unit!',
+      AppLanguage.en: 'Unit complete!',
+    },
+    'path_session_done': {
+      AppLanguage.vi: 'Xong phiên học',
+      AppLanguage.en: 'Session done',
+    },
+    'path_session_score': {
+      AppLanguage.vi: 'Đúng {c}/{t} câu · Unit đạt {p}%',
+      AppLanguage.en: '{c}/{t} correct · unit at {p}%',
+    },
+    'path_back_to_path': {
+      AppLanguage.vi: 'Về lộ trình',
+      AppLanguage.en: 'Back to path',
+    },
+    'path_entry_subtitle_idle': {
+      AppLanguage.vi: 'Xem các bậc A1 → C1',
+      AppLanguage.en: 'See stages A1 → C1',
+    },
+    'placement_title': {
+      AppLanguage.vi: 'Bài xếp lớp',
+      AppLanguage.en: 'Placement test',
+    },
+    'placement_intro_title': {
+      AppLanguage.vi: 'Tìm đúng bậc của bạn',
+      AppLanguage.en: 'Find your level',
+    },
+    'placement_intro_body': {
+      AppLanguage.vi: 'Tối đa 15 câu, khoảng 3 phút. Câu hỏi khó dần hoặc dễ dần theo cách bạn trả lời. Không cần chọn bừa: câu nào không biết cứ chọn đáp án bạn nghĩ gần nhất.',
+      AppLanguage.en: 'Up to 15 questions, about 3 minutes. Questions get harder or easier based on your answers. If you don\'t know one, pick the closest answer.',
+    },
+    'placement_start': {
+      AppLanguage.vi: 'Làm bài xếp lớp',
+      AppLanguage.en: 'Take the test',
+    },
+    'placement_skip': {AppLanguage.vi: 'Bỏ qua', AppLanguage.en: 'Skip'},
+    'placement_retake': {
+      AppLanguage.vi: 'Làm lại bài xếp lớp',
+      AppLanguage.en: 'Retake placement test',
+    },
+    'placement_banner_title': {
+      AppLanguage.vi: 'Xếp lớp nhanh',
+      AppLanguage.en: 'Quick placement',
+    },
+    'placement_banner_body': {
+      AppLanguage.vi: 'Tối đa 15 câu (~3 phút) để vào đúng bậc. Bỏ qua thì bắt đầu theo mục tiêu bạn đã chọn.',
+      AppLanguage.en: 'Up to 15 questions (~3 min) to start at the right stage. Skip to start from the goal you picked.',
+    },
+    'placement_result_title': {
+      AppLanguage.vi: 'Kết quả xếp lớp',
+      AppLanguage.en: 'Your placement',
+    },
+    'placement_result_body': {
+      AppLanguage.vi: 'Bạn bắt đầu từ Unit 1 của {stage}.',
+      AppLanguage.en: 'You start at Unit 1 of {stage}.',
+    },
+    'placement_note_no_content': {
+      AppLanguage.vi: 'Nội dung các bậc cao hơn đang được soạn, bạn có thể làm lại bài xếp lớp khi có bản cập nhật.',
+      AppLanguage.en: 'Higher stages are still being written; you can retake the test after an update.',
+    },
+    'placement_note_low_confidence': {
+      AppLanguage.vi: 'Kết quả dựa trên ít câu hỏi. Bạn có thể làm lại bất cứ lúc nào trong Lộ trình.',
+      AppLanguage.en: 'This result is based on few questions. You can retake it any time from the path.',
+    },
+    'placement_go': {
+      AppLanguage.vi: 'Bắt đầu học',
+      AppLanguage.en: 'Start learning',
+    },
+    'placement_progress': {
+      AppLanguage.vi: 'Câu {n} · tối đa {max}',
+      AppLanguage.en: 'Question {n} · max {max}',
+    },
+    'placement_retake_warning': {
+      AppLanguage.vi:
+          'Kết quả mới sẽ thay bậc hiện tại của bạn, kể cả khi thấp hơn.',
+      AppLanguage.en:
+          'The new result replaces your current stage, even if it is lower.',
+    },
+    'level_test_title': {
+      AppLanguage.vi: 'Level Test {stage}',
+      AppLanguage.en: 'Level Test {stage}',
+    },
+    'level_test_ready_body': {
+      AppLanguage.vi:
+          'Bạn đã xong mọi Unit. 20 câu, đạt từ 80% để lên bậc tiếp theo.',
+      AppLanguage.en:
+          'All units done. 20 questions, score 80% or more to move up.',
+    },
+    'level_test_start': {
+      AppLanguage.vi: 'Làm Level Test',
+      AppLanguage.en: 'Take the Level Test',
+    },
+    'level_test_retry_at': {
+      AppLanguage.vi: 'Chưa đạt lần này. Làm lại được từ {time} (sau 24 giờ). Trong lúc chờ, ôn lại các câu sai nhé.',
+      AppLanguage.en: 'Not passed this time. You can retry from {time} (after 24 hours). Review your mistakes meanwhile.',
+    },
+    'level_test_passed': {
+      AppLanguage.vi: 'Lên bậc rồi!',
+      AppLanguage.en: 'Level up!',
+    },
+    'level_test_failed': {
+      AppLanguage.vi: 'Chưa đạt, tập tiếp nào!',
+      AppLanguage.en: 'Not yet, keep training!',
+    },
+    'level_test_score': {
+      AppLanguage.vi: 'Đúng {c}/{t} câu ({p}%)',
+      AppLanguage.en: '{c}/{t} correct ({p}%)',
+    },
+    'level_test_passed_body': {
+      AppLanguage.vi: 'Bạn đã mở khoá bậc tiếp theo và nhận +{xp} XP.',
+      AppLanguage.en: 'You unlocked the next stage and earned +{xp} XP.',
+    },
+    'level_test_failed_body': {
+      AppLanguage.vi:
+          'Cần từ 80% để qua. Ôn các câu sai rồi làm lại sau 24 giờ.',
+      AppLanguage.en: 'You need 80% to pass. Review your mistakes and retry after 24 hours.',
+    },
+    'level_test_band': {
+      AppLanguage.vi: 'Estimated band (IELTS)',
+      AppLanguage.en: 'Estimated band (IELTS)',
+    },
+    'level_test_review_wrong': {
+      AppLanguage.vi: 'Ôn các câu sai',
+      AppLanguage.en: 'Review mistakes',
+    },
+    'level_test_review_title': {
+      AppLanguage.vi: 'Ôn câu sai',
+      AppLanguage.en: 'Review mistakes',
+    },
+    'path_review_score': {
+      AppLanguage.vi: 'Đúng {c}/{t} câu',
+      AppLanguage.en: '{c}/{t} correct',
+    },
+    'path_all_done': {
+      AppLanguage.vi: 'Bạn đã hoàn thành toàn bộ lộ trình hiện có. Nội dung mới sẽ sớm được cập nhật!',
+      AppLanguage.en: 'You have finished the whole path for now. New content is coming soon!',
+    },
   };
 
   static String t(String key, AppLanguage lang) =>
