@@ -225,7 +225,7 @@ void main() {
       expect(s.correctItems['a1-u01'], {'x'});
       expect(s.placement, isNull);
       expect(s.placementSkipped, isFalse);
-      expect(s.toJson()['schemaVersion'], 2);
+      expect(s.toJson()['schemaVersion'], kEnglishPathSchemaVersion);
     });
 
     test('a new placement clears an earlier skip', () {

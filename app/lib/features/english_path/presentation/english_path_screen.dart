@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -12,6 +14,8 @@ import '../data/english_path_progress.dart';
 import '../data/english_path_providers.dart';
 import '../data/english_path_state.dart';
 import '../data/english_path_store.dart';
+import '../data/level_test.dart';
+import 'level_test_screen.dart';
 import 'path_labels.dart';
 import 'placement_screen.dart';
 import 'unit_session_screen.dart';
@@ -158,7 +162,10 @@ class _PathList extends ConsumerWidget {
           isNext: current && unit.id == next?.id,
         ),
       if (current && units.isNotEmpty && next == null)
-        _Note(text: ref.tr('path_stage_done')),
+        if (cefr == CefrLevel.values.last && passedFinalStage(state))
+          _Note(text: ref.tr('path_all_done'))
+        else
+          _LevelTestCard(pack: pack, stage: cefr, state: state),
       if (current && units.isEmpty) _Note(text: ref.tr('path_coming_soon')),
     ];
   }
@@ -345,6 +352,100 @@ class _UnitTile extends ConsumerWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The Level Test khi moi Unit cua Stage hien tai da xong: lam bai, hoac
+/// dem nguoc cooldown 24h kem nut on cau sai. Tu cap nhat khi het cooldown.
+class _LevelTestCard extends ConsumerStatefulWidget {
+  const _LevelTestCard({
+    required this.pack,
+    required this.stage,
+    required this.state,
+  });
+
+  final ContentPack pack;
+  final CefrLevel stage;
+  final EnglishPathState state;
+
+  @override
+  ConsumerState<_LevelTestCard> createState() => _LevelTestCardState();
+}
+
+class _LevelTestCardState extends ConsumerState<_LevelTestCard> {
+  Timer? _unlock;
+
+  @override
+  void dispose() {
+    _unlock?.cancel();
+    super.dispose();
+  }
+
+  /// "10:00 ngay 26/09" - cooldown 24h nen gio lam lai luon la ngay khac.
+  String _retryLabel(DateTime retry) {
+    final l10n = MaterialLocalizations.of(context);
+    return '${l10n.formatTimeOfDay(TimeOfDay.fromDateTime(retry))}'
+        ' · ${l10n.formatShortMonthDay(retry)}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final pack = widget.pack;
+    final stage = widget.stage;
+    final state = widget.state;
+    final now = DateTime.now();
+    final status = levelTestStatus(pack, state, now, stage: stage);
+    final last = state.levelTests[stage];
+    final retry = retryAt(state, stage);
+    _unlock?.cancel();
+    if (status == LevelTestStatus.coolingDown && retry != null) {
+      _unlock = Timer(retry.difference(now), () {
+        if (mounted) setState(() {});
+      });
+    }
+    return Padding(
+      padding: const EdgeInsets.only(left: 20, bottom: 8),
+      child: GlowBox(
+        padding: const EdgeInsets.all(14),
+        border: Border.all(color: AppColors.amber, width: 1.4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              ref.tr('level_test_title').replaceFirst('{stage}', stage.code),
+              style: AppTextStyles.heading(size: 16),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              status == LevelTestStatus.coolingDown && retry != null
+                  ? ref
+                        .tr('level_test_retry_at')
+                        .replaceFirst('{time}', _retryLabel(retry))
+                  : ref.tr('level_test_ready_body'),
+              style: AppTextStyles.muted(size: 13),
+            ),
+            const SizedBox(height: 10),
+            if (status == LevelTestStatus.ready)
+              PillButton(
+                label: ref.tr('level_test_start'),
+                onTap: () => openAppPopup(
+                  context,
+                  LevelTestScreen(pack: pack, stage: stage),
+                  dismissible: false,
+                ),
+              )
+            else if (last != null && last.wrongItemIds.isNotEmpty)
+              PillButton(
+                label: ref.tr('level_test_review_wrong'),
+                filled: false,
+                accentColor: AppColors.blue,
+                onTap: () =>
+                    openAppPopup(context, reviewWrongSession(ref, pack, last)),
+              ),
+          ],
         ),
       ),
     );

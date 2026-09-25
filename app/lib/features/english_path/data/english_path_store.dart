@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'cefr_level.dart';
 import 'english_path_state.dart';
+import 'level_test.dart';
 import 'placement.dart';
 
 const kEnglishPathPrefKey = 'english_path_v1';
@@ -72,6 +73,10 @@ class EnglishPathStore extends ChangeNotifier {
       _update(_state.withPlacement(record));
 
   Future<void> skipPlacement() => _update(_state.skipPlacement());
+
+  /// Luu ket qua Level Test (dat thi len Stage ke tiep).
+  Future<void> recordLevelTest(LevelTestResult result) =>
+      _update(_state.withLevelTest(result));
 
   Future<void> _writeChain = Future.value();
 
