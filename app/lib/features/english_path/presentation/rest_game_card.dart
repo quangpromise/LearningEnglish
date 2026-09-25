@@ -45,7 +45,7 @@ class _RestGameCardState extends ConsumerState<RestGameCard> {
   }
 
   void _answer(PracticeItem item, int option) {
-    if (_waiting) return;
+    if (_waiting || widget.session.current == null) return;
     final correct = widget.session.answer(option);
     widget.onAnswered(item, correct);
     setState(() => _waiting = true);

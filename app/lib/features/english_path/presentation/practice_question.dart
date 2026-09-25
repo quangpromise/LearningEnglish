@@ -46,7 +46,9 @@ class _PracticeQuestionState extends ConsumerState<PracticeQuestion> {
 
   /// Chu cai da bam cho Word Scramble (vi tri trong [_letters]).
   final List<int> _tapped = [];
-  late List<String> _letters = _shuffledLetters();
+  // Moi noi dung PracticeQuestion theo ValueKey(item.id) nen State khong
+  // bao gio bi dung lai cho item khac.
+  late final List<String> _letters = _shuffledLetters();
 
   @override
   void initState() {
@@ -56,25 +58,19 @@ class _PracticeQuestionState extends ConsumerState<PracticeQuestion> {
     }
   }
 
-  @override
-  void didUpdateWidget(PracticeQuestion old) {
-    super.didUpdateWidget(old);
-    if (old.item.id != widget.item.id) {
-      _picked = null;
-      _tapped.clear();
-      _letters = _shuffledLetters();
-      if (widget.item.type == PracticeItemType.listening) _speak();
-    }
-  }
-
   void _speak() => TutorialVoice.shared.speakAndWait(widget.item.prompt);
 
   /// Xao chu cai co dinh theo id (khong trung thu tu dung khi co the).
+  /// Seed tu ma ky tu cua id - String.hashCode khong on dinh giua cac ban.
   List<String> _shuffledLetters() {
-    final word = widget.item.options.first;
+    if (widget.item.type != PracticeItemType.wordScramble) return const [];
+    final word = widget.item.options.first.replaceAll(' ', '');
     final letters = word.split('');
-    if (widget.item.type != PracticeItemType.wordScramble) return letters;
-    final rng = Random(widget.item.id.hashCode);
+    var seed = 17;
+    for (final c in widget.item.id.codeUnits) {
+      seed = (seed * 31 + c) & 0x3fffffff;
+    }
+    final rng = Random(seed);
     for (var i = 0; i < 5; i++) {
       letters.shuffle(rng);
       if (letters.join() != word) break;
@@ -85,10 +81,12 @@ class _PracticeQuestionState extends ConsumerState<PracticeQuestion> {
   void _pick(int option) {
     if (_picked != null) return;
     final right = option == widget.item.answerIndex;
-    if (widget.reveal) {
-      right ? HapticFeedback.lightImpact() : HapticFeedback.heavyImpact();
-    } else {
+    if (!widget.reveal) {
       HapticFeedback.selectionClick();
+    } else if (right) {
+      HapticFeedback.lightImpact();
+    } else {
+      HapticFeedback.heavyImpact();
     }
     setState(() => _picked = option);
     widget.onAnswered(option);
@@ -100,8 +98,8 @@ class _PracticeQuestionState extends ConsumerState<PracticeQuestion> {
     setState(() => _tapped.add(i));
     if (_tapped.length == _letters.length) {
       final built = _tapped.map((j) => _letters[j]).join();
-      final right =
-          built.toLowerCase() == widget.item.options.first.toLowerCase();
+      final target = widget.item.options.first.replaceAll(' ', '');
+      final right = built.toLowerCase() == target.toLowerCase();
       _pick(right ? widget.item.answerIndex : -1);
     }
   }

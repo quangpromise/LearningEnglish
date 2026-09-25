@@ -492,7 +492,8 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
       },
     );
     final plan = planRestGame(
-      restSeconds: controller.restTotalSeconds,
+      // Thoi gian CON LAI (bat Rest Game giua chung gio nghi thi it cau hon).
+      restSeconds: controller.restSecondsRemaining,
       unitItems: src.unit,
       reviewItems: src.review,
       listeningEnabled: true,
@@ -547,16 +548,24 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
     DailyProgressStore.instance.addWordsReviewed();
   }
 
-  /// Tu vung lo trinh theo `wordEn` (IPA/cau vi du cho the Rest Game).
+  /// Tu vung lo trinh theo `wordEn` (IPA/cau vi du cho the Rest Game) -
+  /// dung 1 lan cho moi pack.
   Map<String, PathWord> get _pathWords {
     final pack = ref.read(contentPackProvider).valueOrNull;
     if (pack == null) return const {};
-    return {
-      for (final s in pack.stages)
-        for (final u in s.units)
-          for (final w in u.words) w.en: w,
-    };
+    if (!identical(pack, _pathWordsPack)) {
+      _pathWordsPack = pack;
+      _pathWordsCache = {
+        for (final s in pack.stages)
+          for (final u in s.units)
+            for (final w in u.words) w.en: w,
+      };
+    }
+    return _pathWordsCache;
   }
+
+  ContentPack? _pathWordsPack;
+  Map<String, PathWord> _pathWordsCache = const {};
 
   void _setRestMode(RestLearnMode mode) {
     TutorialVoice.shared.stop();
@@ -576,6 +585,12 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
     if (!enabled) TutorialVoice.shared.stop();
     setState(() => _learnWhileResting = enabled);
     WorkoutPrefs.saveLearnWhileResting(enabled);
+    final controller = _controller;
+    if (!enabled) {
+      _endRestGame();
+    } else if (controller != null && controller.phase == WorkoutPhase.resting) {
+      _startRestGame(controller);
+    }
   }
 
   // ---------------------------------------------------------------------
