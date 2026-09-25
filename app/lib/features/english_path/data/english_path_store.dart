@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'cefr_level.dart';
 import 'english_path_state.dart';
+import 'english_path_sync.dart';
 import 'level_test.dart';
 import 'placement.dart';
 
@@ -62,6 +63,41 @@ class EnglishPathStore extends ChangeNotifier {
     notifyListeners();
   }
 
+  // ---------------------------------------------------------------------
+  // Dong bo tai khoan (GymTalkSyncService, cot user_gymtalk_state.path)
+  // ---------------------------------------------------------------------
+
+  /// Server gan nhat co du lieu do ban app moi hon ghi.
+  bool _remoteNewer = false;
+
+  /// Duoc phep day state tren may len server: khong khi du lieu tren may
+  /// hoac tren server do ban app MOI HON ghi (spec #45).
+  bool get canUpload => !_readOnly && !_remoteNewer;
+
+  Map<String, dynamic> exportJson() => _state.toJson();
+
+  /// Gop state tu server vao may theo luat merge (english_path_sync.dart).
+  Future<RemoteMergeResult> mergeRemote(Object? raw) async {
+    await ensureLoaded();
+    _remoteNewer = false;
+    if (isFromNewerVersion(raw)) {
+      _remoteNewer = true;
+      return RemoteMergeResult.remoteIsNewer;
+    }
+    final remote = migrateEnglishPathState(raw);
+    if (remote == null) return RemoteMergeResult.ignored;
+    await _update(mergeEnglishPathState(_state, remote));
+    return RemoteMergeResult.merged;
+  }
+
+  /// Xoa tien do tren may (dang nhap tai khoan KHAC).
+  Future<void> clearLocal() async {
+    await ensureLoaded();
+    _readOnly = false;
+    _remoteNewer = false;
+    await _update(const EnglishPathState(), force: true);
+  }
+
   Future<void> recordCorrect(String unitId, String itemId) =>
       _update(_state.recordCorrect(unitId, itemId));
 
@@ -83,9 +119,9 @@ class EnglishPathStore extends ChangeNotifier {
 
   Future<void> _writeChain = Future.value();
 
-  Future<void> _update(EnglishPathState next) async {
+  Future<void> _update(EnglishPathState next, {bool force = false}) async {
     await ensureLoaded();
-    if (identical(next, _state)) return;
+    if (identical(next, _state) && !force) return;
     _state = next;
     notifyListeners();
     if (_readOnly) return;
