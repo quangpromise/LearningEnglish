@@ -645,7 +645,7 @@ const kVocabTopics = <VocabTopic>[
       VocabWord(
         en: 'granddaughter',
         ipa: '/ˈɡræn.dɔː.tər/',
-        vi: 'cháu gái',
+        vi: 'cháu gái (nội/ngoại)',
         exampleEn: 'His granddaughter just started school.',
         exampleVi: 'Cháu gái của ông vừa mới đi học.',
         frequency: VocabFrequency.common,
@@ -10574,7 +10574,7 @@ const kVocabTopics = <VocabTopic>[
       VocabWord(
         en: 'foggy',
         ipa: '/ˈfɒɡ.i/',
-        vi: 'sương mù',
+        vi: 'có sương mù',
         exampleEn: 'Driving is dangerous on a foggy morning.',
         exampleVi: 'Lái xe rất nguy hiểm vào buổi sáng sương mù.',
         frequency: VocabFrequency.medium,
@@ -52177,7 +52177,7 @@ const kVocabTopics = <VocabTopic>[
       VocabWord(
         en: 'pick',
         ipa: '/pɪk/',
-        vi: 'hái, nhổ',
+        vi: 'hái (hoa, quả)',
         exampleEn: 'They picked apples from the tree.',
         exampleVi: 'Họ hái táo từ cây.',
         frequency: VocabFrequency.common,

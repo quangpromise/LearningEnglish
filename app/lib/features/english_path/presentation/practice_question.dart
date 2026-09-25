@@ -138,6 +138,14 @@ class _PracticeQuestionState extends ConsumerState<PracticeQuestion> {
                 onTap: () => _pick(i),
               ),
             ),
+        if (_picked != null && widget.reveal && item.explanationVi != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: Text(
+              item.explanationVi!,
+              style: AppTextStyles.body(size: 14, color: AppColors.amber),
+            ),
+          ),
         if (_picked != null && widget.reveal && widget.word != null) ...[
           const SizedBox(height: 6),
           Text(widget.word!.exampleEn, style: AppTextStyles.body(size: 14)),
@@ -187,6 +195,9 @@ class _PracticeQuestionState extends ConsumerState<PracticeQuestion> {
     ],
     PracticeItemType.wordScramble => [
       Text(item.hintVi ?? '', style: AppTextStyles.heading(size: big * 0.8)),
+    ],
+    PracticeItemType.grammar => [
+      Text(item.prompt, style: AppTextStyles.heading(size: big * 0.7)),
     ],
   };
 
@@ -252,6 +263,7 @@ String _promptKey(PracticeItemType type) => switch (type) {
   PracticeItemType.listening => 'rest_game_listening_prompt',
   PracticeItemType.gapFill => 'rest_game_gap_prompt',
   PracticeItemType.wordScramble => 'rest_game_scramble_prompt',
+  PracticeItemType.grammar => 'path_grammar_prompt',
 };
 
 /// O chu cai 48dp cho Word Scramble.

@@ -5671,8 +5671,8 @@ class AppStrings {
       AppLanguage.en: 'Listen and pick the word',
     },
     'rest_game_gap_prompt': {
-      AppLanguage.vi: 'Điền từ vào chỗ trống',
-      AppLanguage.en: 'Fill in the blank',
+      AppLanguage.vi: 'Điền từ đúng theo nghĩa câu tiếng Việt',
+      AppLanguage.en: 'Fill the blank to match the Vietnamese meaning',
     },
     'rest_game_scramble_prompt': {
       AppLanguage.vi: 'Xếp chữ thành từ tiếng Anh',
@@ -5689,6 +5689,14 @@ class AppStrings {
     'rest_game_listening_on': {
       AppLanguage.vi: 'Bật lại dạng Nghe',
       AppLanguage.en: 'Turn Listening back on',
+    },
+    'path_grammar_prompt': {
+      AppLanguage.vi: 'Chọn dạng đúng để điền vào chỗ trống',
+      AppLanguage.en: 'Choose the correct form for the blank',
+    },
+    'path_unit_grammar': {
+      AppLanguage.vi: 'Ngữ pháp: {g}',
+      AppLanguage.en: 'Grammar: {g}',
     },
   };
 

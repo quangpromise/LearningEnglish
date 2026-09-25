@@ -54,3 +54,11 @@ script tải trực tiếp mỗi lần chạy.
   https://github.com/openlanguageprofiles/olp-en-cefrj
 - Điều khoản: được dùng cho nghiên cứu và thương mại miễn phí, với điều kiện
   trích dẫn nguồn như trên. Bản quyền thuộc Tono Laboratory, TUFS.
+
+## Tatoeba — CC BY 2.0 FR
+
+Lộ trình tiếng Anh dùng các cặp câu Anh–Việt từ Tatoeba (https://tatoeba.org) cho dạng câu Gap-fill. Mỗi item giữ số hiệu câu gốc trong trường `sourceRef` (`tatoeba:eng#<id>/vie#<id>`), trỏ tới https://tatoeba.org/en/sentences/show/<id>, là nơi ghi tên người đóng góp từng câu.
+
+- Nguồn: Tatoeba, bản export theo ngôn ngữ (eng, vie, liên kết vie-eng): https://tatoeba.org/en/downloads
+- Giấy phép: Creative Commons Attribution 2.0 France (CC BY 2.0 FR): https://creativecommons.org/licenses/by/2.0/fr/
+- Snapshot đã lọc (câu ≤ 12 từ, không có tên riêng): `scripts/english_path/data/tatoeba_eng_vie.tsv`. Một số bản dịch tiếng Việt được chỉnh lại sau review, ghi trong `scripts/english_path/review/exclusions.json`.

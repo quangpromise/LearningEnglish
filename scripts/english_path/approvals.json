@@ -5,5 +5,12 @@
   "reviewer": "Tùng",
   "approvedAt": "2026-09-25",
   "note": "Tracer A1 Actions: reviewed 10% sample + Grok 15/15 OK"
+ },
+ {
+  "contentHash": "9186b1d703b3be2630495a0a2a714793a79092d872920a528be337c0fac26a53",
+  "packVersion": "0.2.0-a1a2",
+  "reviewer": "Tùng",
+  "approvedAt": "2026-09-25",
+  "note": "A1-A2 pack 0.2.0: reviewed 10% sample + 60 grammar items; Grok 15 findings fixed"
  }
 ]

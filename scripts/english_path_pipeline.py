@@ -43,14 +43,17 @@ PACK_ASSET = ROOT / "app/assets/english_path/pack.json"
 APPROVALS = ROOT / "scripts/english_path/approvals.json"
 REVIEW_CSV = ROOT / "scripts/english_path/review/pack_review.csv"
 STAGING_PACK = ROOT / "scripts/english_path/build/pack.json"
+TATOEBA_SNAPSHOT = ROOT / "scripts/english_path/data/tatoeba_eng_vie.tsv"
+GRAMMAR_BANK = ROOT / "scripts/english_path/grammar_bank.json"
+EXCLUSIONS = ROOT / "scripts/english_path/review/exclusions.json"
 
 PACK_SCHEMA_VERSION = 1
 # Phien ban noi dung - tang moi lan doi quy mo/nguon (Placement luu kem).
-PACK_VERSION = "0.1.0-tracer"
+PACK_VERSION = "0.2.0-a1a2"
 STAGES = ["A1", "A2", "B1", "B2", "C1"]
 REVIEW_SAMPLE_RATE = 0.10
 # Quy mo hien tai cua pack. Ticket #55/#56 nang len A1-B2 x 10 Unit + C1 x 3.
-UNITS_PER_STAGE = {"A1": 1}
+UNITS_PER_STAGE = {"A1": 10, "A2": 10}
 WORDS_PER_UNIT = 15
 
 # Pin CEFR-J vao 1 commit de chay lai luon ra cung du lieu.
@@ -71,6 +74,22 @@ SOURCES = [
         "files": ["cefrj-vocabulary-profile-1.5.csv"],
     },
     {
+        "id": "tatoeba",
+        "name": "Tatoeba English-Vietnamese sentence pairs",
+        "license": "CC BY 2.0 FR (attribution; sentence ids kept in sourceRef)",
+        "url": "https://tatoeba.org/en/downloads",
+        "retrievedAt": "2026-09-25",
+        "files": ["scripts/english_path/data/tatoeba_eng_vie.tsv"],
+    },
+    {
+        "id": "gymtalk-grammar",
+        "name": "GymTalk in-house grammar bank (sequence after CEFR-J Grammar Profile)",
+        "license": "Proprietary - written by the GymTalk team",
+        "url": "scripts/english_path/grammar_bank.json",
+        "retrievedAt": "2026-09-25",
+        "files": ["grammar_bank.json"],
+    },
+    {
         "id": "gymtalk-vocab",
         "name": "GymTalk in-house vocabulary (IPA, Vietnamese meaning, examples)",
         "license": "Proprietary - written by the GymTalk team",
@@ -80,6 +99,17 @@ SOURCES = [
     },
 ]
 WORD_SOURCE_IDS = ["cefrj", "gymtalk-vocab"]
+
+# Chu de uu tien xep len dau lo trinh - hop voi nguoi tap gym.
+TOPIC_PRIORITY = [
+    "Body", "Sports", "Health", "Actions", "Food", "Drinks", "Time",
+    "Clothing", "Weather", "Family", "Emotions", "Home & Furniture",
+]
+# Moi tu co 1 cau Meaning + 1 cau thuc hanh, xoay vong 3 dang nay.
+SECOND_TYPES = ["gapFill", "listening", "wordScramble"]
+ITEM_TYPES = {"meaning", "listening", "gapFill", "wordScramble", "grammar"}
+# Tatoeba: CC BY 2.0 FR - snapshot da loc (cau <= 12 tu, co ban dich Viet).
+TATOEBA_SENTENCE_URL = "https://tatoeba.org/en/sentences/show/"
 
 _STR = r"'((?:[^'\\]|\\.)*)'"
 
@@ -132,13 +162,19 @@ def _has_vietnamese(w: dict) -> bool:
     return bool(w.get("vi", "").strip()) and bool(w.get("exampleVi", "").strip())
 
 
+def _topic_rank(topic: str, size: int) -> tuple:
+    prio = TOPIC_PRIORITY.index(topic) if topic in TOPIC_PRIORITY else len(TOPIC_PRIORITY)
+    return (prio, -size, topic)
+
+
 def _pick_unit_words(pool: list[dict], count: int, n_units: int) -> list[list[dict]]:
-    """Gom tu theo chu de (chu de nhieu tu nhat truoc) roi cat thanh Unit."""
+    """Gom tu theo chu de (chu de gym uu tien, roi chu de nhieu tu) roi cat
+    thanh Unit."""
     by_topic: dict[str, list[dict]] = {}
     for w in pool:
         by_topic.setdefault(w["topic"], []).append(w)
     ordered = []
-    for topic in sorted(by_topic, key=lambda t: (-len(by_topic[t]), t)):
+    for topic in sorted(by_topic, key=lambda t: _topic_rank(t, len(by_topic[t]))):
         ordered.extend(sorted(by_topic[topic], key=lambda w: w["en"].lower()))
     return [ordered[i * count:(i + 1) * count] for i in range(n_units)
             if len(ordered) >= (i + 1) * count]
@@ -151,6 +187,7 @@ def _meaning_item(unit_id: str, word: dict, unit_words: list[dict],
     item_id = f"{unit_id}-meaning-{_slug(word['en'])}"
     rng = random.Random(item_id)
     taken = {_norm(word["vi"])}
+    answer_senses = _senses(word["vi"])
     same_unit = sorted(unit_words, key=lambda w: w["en"].lower())
     rest = sorted(pool, key=lambda w: w["en"].lower())
     rng.shuffle(same_unit)
@@ -158,7 +195,9 @@ def _meaning_item(unit_id: str, word: dict, unit_words: list[dict],
     candidates = same_unit + rest
     distractors = []
     for c in candidates:
-        if _norm(c["vi"]) in taken:
+        # Bo dap an nhieu trung/giao nghia voi dap an dung (vd "giu" vs
+        # "cam, giu") - heuristic nghia tieng Viet, con lai de review nguoi.
+        if _norm(c["vi"]) in taken or _senses(c["vi"]) & answer_senses:
             continue
         taken.add(_norm(c["vi"]))
         distractors.append(c["vi"])
@@ -178,8 +217,142 @@ def _meaning_item(unit_id: str, word: dict, unit_words: list[dict],
     }
 
 
+def _senses(vi: str) -> set[str]:
+    """Cac nghia tach boi , ; / - de phat hien dap an nhieu dong nghia."""
+    return {_norm(p) for p in re.split(r"[,;/]", vi) if _norm(p)}
+
+
+_PRONOUN_CAPS = {"I", "I'm", "I've", "I'll", "I'd"}
+# Ten nhan vat hay gap trong Tatoeba (ca dau cau, khong nhan ra bang chu hoa).
+_TATOEBA_NAMES = {
+    "Tom", "Mary", "John", "Muiriel", "Ken", "Jack", "Bob", "Jane", "Mike",
+    "Alice", "Paul", "Tony", "Lucy", "Maria", "Anna", "Emily", "Jim", "Kate",
+    "Sami", "Layla", "Dan", "Linda", "Bill", "Taro", "Hanako", "Yanni",
+}
+
+
+def _usable_sentence(sentence: str) -> bool:
+    """4-12 tu, khong co ten rieng (chu hoa giua cau) - cau Tatoeba hay co
+    ten Tom/Mary, kho hieu voi nguoi moi hoc."""
+    tokens = sentence.split()
+    if not 4 <= len(tokens) <= 12:
+        return False
+    for n, t in enumerate(tokens):
+        core = t.strip(".,!?;:\"'()").split("'")[0]
+        if core in _TATOEBA_NAMES:
+            return False
+        if n and core and core[0].isupper() and t.strip(".,!?;:\"'()") not in _PRONOUN_CAPS:
+            return False
+    return True
+
+
+def _word_re(word: str):
+    return re.compile(r"\b" + re.escape(word) + r"\b", re.IGNORECASE)
+
+
+def _find_sentence(word: dict, tatoeba: list[dict]) -> dict | None:
+    """Cau cho Gap-fill: uu tien Tatoeba (ngan nhat), khong co thi dung cau
+    vi du tu soan neu chua dung nguyen tu."""
+    rx = _word_re(word["en"])
+    hits = [t for t in tatoeba if rx.search(t["en"]) and _usable_sentence(t["en"])]
+    if hits:
+        best = min(hits, key=lambda t: (len(t["en"]), t["enId"]))
+        return {"en": best["en"], "vi": best["vi"], "source": "tatoeba",
+                "ref": f"tatoeba:eng#{best['enId']}/vie#{best['viId']}"}
+    if rx.search(word["exampleEn"]):
+        return {"en": word["exampleEn"], "vi": word["exampleVi"],
+                "source": "gymtalk-vocab", "ref": None}
+    return None
+
+
+def _en_distractors(item_id: str, word: dict, unit_words: list[dict],
+                    exclude_text: str = "") -> list[str] | None:
+    rng = random.Random(item_id)
+    others = sorted({w["en"] for w in unit_words if w["en"] != word["en"]})
+    rng.shuffle(others)
+    picked = [o for o in others if not _word_re(o).search(exclude_text)][:3]
+    return picked if len(picked) == 3 else None
+
+
+def _second_item(unit_id: str, j: int, word: dict, unit_words: list[dict],
+                 tatoeba: list[dict]) -> dict | None:
+    """Cau thuc hanh thu 2 cua tu: xoay vong Gap-fill / Listening / Scramble,
+    dang nao khong lam duoc thi thu dang ke tiep."""
+    slug = _slug(word["en"])
+    for k in range(len(SECOND_TYPES)):
+        kind = SECOND_TYPES[(j + k) % len(SECOND_TYPES)]
+        item_id = f"{unit_id}-{kind}-{slug}"
+        base = {"id": item_id, "unitId": unit_id, "type": kind,
+                "wordEn": word["en"], "sourceIds": list(WORD_SOURCE_IDS)}
+        if kind == "gapFill":
+            sent = _find_sentence(word, tatoeba)
+            if sent is None:
+                continue
+            distract = _en_distractors(item_id, word, unit_words, sent["en"])
+            if distract is None:
+                continue
+            options = [word["en"]] + distract
+            random.Random(item_id + "o").shuffle(options)
+            item = dict(base, prompt=_word_re(word["en"]).sub("___", sent["en"], count=1),
+                        options=options, answerIndex=options.index(word["en"]),
+                        hintVi=sent["vi"])
+            if sent["source"] == "tatoeba":
+                item["sourceIds"] = ["cefrj", "tatoeba"]
+                item["sourceRef"] = sent["ref"]
+            return item
+        if kind == "listening":
+            distract = _en_distractors(item_id, word, unit_words)
+            if distract is None:
+                continue
+            options = [word["en"]] + distract
+            random.Random(item_id + "o").shuffle(options)
+            return dict(base, prompt=word["en"], options=options,
+                        answerIndex=options.index(word["en"]))
+        if kind == "wordScramble":
+            if not (word["en"].isalpha() and 3 <= len(word["en"]) <= 10):
+                continue
+            return dict(base, prompt=word["en"], options=[word["en"]],
+                        answerIndex=0, hintVi=word["vi"])
+    return None
+
+
+def _grammar_items(unit_id: str, point: dict) -> list[dict]:
+    out = []
+    for k, g in enumerate(point["items"], 1):
+        out.append({
+            "id": f"{unit_id}-grammar-{point['id']}-{k}",
+            "unitId": unit_id,
+            "type": "grammar",
+            "prompt": g["prompt"],
+            "options": list(g["options"]),
+            "answerIndex": g["options"].index(g["answer"]),
+            "explanationVi": point["explanationVi"],
+            "sourceIds": ["gymtalk-grammar"],
+        })
+    return out
+
+
+def _unit_title(unit_words: list[dict]) -> tuple[str, str]:
+    """Tieu de Unit = toi da 2 chu de chiem nhieu tu nhat (Unit cat ngang
+    ranh gioi chu de thi ghi du ca 2, vd "Food · Actions")."""
+    order: list[str] = []
+    counts: dict[str, int] = {}
+    vi: dict[str, str] = {}
+    for w in unit_words:
+        t = w["topic"]
+        if t not in counts:
+            order.append(t)
+            vi[t] = w.get("topicVi", t)
+        counts[t] = counts.get(t, 0) + 1
+    top = sorted(order, key=lambda t: (-counts[t], order.index(t)))[:2]
+    return " · ".join(top), " · ".join(vi[t] for t in top)
+
+
 def build_pack(words: list[dict], units_per_stage: dict[str, int],
-               words_per_unit: int) -> dict:
+               words_per_unit: int, tatoeba: list[dict] | None = None,
+               grammar: dict | None = None) -> dict:
+    tatoeba = tatoeba or []
+    grammar = grammar or {}
     stages = []
     for cefr in STAGES:
         n_units = units_per_stage.get(cefr, 0)
@@ -189,18 +362,30 @@ def build_pack(words: list[dict], units_per_stage: dict[str, int],
         units = []
         for idx, unit_words in enumerate(_pick_unit_words(pool, words_per_unit, n_units), 1):
             unit_id = f"{cefr.lower()}-u{idx:02d}"
-            units.append({
+            title_en, title_vi = _unit_title(unit_words)
+            items = [_meaning_item(unit_id, w, unit_words, pool) for w in unit_words]
+            for j, w in enumerate(unit_words):
+                second = _second_item(unit_id, j, w, unit_words, tatoeba)
+                if second is not None:
+                    items.append(second)
+            unit = {
                 "id": unit_id,
                 "index": idx,
-                "titleEn": unit_words[0]["topic"],
-                "titleVi": unit_words[0].get("topicVi", unit_words[0]["topic"]),
+                "titleEn": title_en,
+                "titleVi": title_vi,
                 "words": [
                     {k: w[k] for k in ("en", "ipa", "vi", "exampleEn", "exampleVi")}
                     for w in unit_words
                 ],
-                "items": [_meaning_item(unit_id, w, unit_words, pool)
-                          for w in unit_words],
-            })
+            }
+            points = grammar.get(cefr, [])
+            if idx <= len(points):
+                point = points[idx - 1]
+                unit["grammar"] = {k: point[k] for k in
+                                   ("id", "titleEn", "titleVi", "explanationVi")}
+                items += _grammar_items(unit_id, point)
+            unit["items"] = items
+            units.append(unit)
         stages.append({"cefr": cefr, "units": units})
     return {
         "schemaVersion": PACK_SCHEMA_VERSION,
@@ -244,6 +429,30 @@ def validate_pack(pack: dict) -> list[str]:
                 normed = [_norm(o) for o in options]
                 if len(set(normed)) != len(normed) or "" in normed:
                     errors.append(f"{iid}: duplicate or empty options")
+                kind = item.get("type")
+                if kind not in ITEM_TYPES:
+                    errors.append(f"{iid}: unknown item type {kind}")
+                if kind == "meaning" and isinstance(ans, int) and 0 <= ans < len(options):
+                    right = _senses(options[ans])
+                    for k, o in enumerate(options):
+                        if k != ans and _senses(o) & right:
+                            errors.append(f"{iid}: synonym distractor '{o}'")
+                if kind in ("gapFill", "grammar") and item.get("prompt", "").count("___") != 1:
+                    errors.append(f"{iid}: prompt needs exactly one ___ blank")
+                if kind == "gapFill" and isinstance(ans, int) and 0 <= ans < len(options):
+                    if _word_re(options[ans]).search(item.get("prompt", "")):
+                        errors.append(f"{iid}: answer still visible in the prompt")
+                if kind in ("gapFill", "wordScramble") and not item.get("hintVi", "").strip():
+                    errors.append(f"{iid}: missing Vietnamese hint")
+                if kind == "grammar" and not item.get("explanationVi", "").strip():
+                    errors.append(f"{iid}: grammar item without Vietnamese explanation")
+                if kind == "wordScramble" and len(options) != 1:
+                    errors.append(f"{iid}: scramble must have exactly one option")
+                if kind == "listening" and item.get("prompt") not in options:
+                    errors.append(f"{iid}: listening prompt is not an option")
+                if "tatoeba" in (item.get("sourceIds") or []) and not str(
+                        item.get("sourceRef", "")).startswith("tatoeba:"):
+                    errors.append(f"{iid}: tatoeba item without sentence ids")
                 src_ids = item.get("sourceIds") or []
                 if not src_ids:
                     errors.append(f"{iid}: missing sourceIds")
@@ -320,12 +529,14 @@ def export_review_csv(pack: dict, path: Path) -> None:
     with path.open("w", encoding="utf-8", newline="") as f:
         w = csv.writer(f)
         w.writerow(["sample", "stage", "unit", "id", "type", "prompt", "options",
-                    "answer", "exampleEn", "exampleVi", "sources", "reviewer_note"])
+                    "answer", "hint", "exampleEn", "exampleVi", "sources",
+                    "reviewer_note"])
         for cefr, unit, word, item in rows:
             w.writerow([
                 "yes" if item["id"] in sampled else "",
                 cefr, unit["id"], item["id"], item["type"], item["prompt"],
                 " | ".join(item["options"]), item["options"][item["answerIndex"]],
+                item.get("hintVi") or item.get("explanationVi") or "",
                 word.get("exampleEn", ""), word.get("exampleVi", ""),
                 ",".join(item["sourceIds"]), "",
             ])
@@ -356,7 +567,9 @@ def cmd_build(args) -> int:
         csv_path = str(tmp)
     levels = load_cefr(csv_path)
     words = tag_cefr(parse_vocab_dart(VOCAB_DART.read_text(encoding="utf-8")), levels)
-    pack = build_pack(words, UNITS_PER_STAGE, WORDS_PER_UNIT)
+    words, tatoeba = apply_exclusions(words, load_tatoeba(), load_exclusions())
+    pack = build_pack(words, UNITS_PER_STAGE, WORDS_PER_UNIT,
+                      tatoeba=tatoeba, grammar=load_grammar())
     errors = validate_pack(pack)
     if errors:
         print("VALIDATION FAILED - pack khong duoc ghi:", *errors, sep="\n  ")
@@ -372,6 +585,78 @@ def cmd_build(args) -> int:
     else:
         print(f"CHUA APPROVE -> chi ghi staging {STAGING_PACK}. Review mau 10% + "
               "Grok, roi chay `approve --reviewer <ten> --date YYYY-MM-DD`.")
+    return 0
+
+
+def apply_exclusions(words: list[dict], tatoeba: list[dict],
+                     exclusions: dict) -> tuple[list[dict], list[dict]]:
+    """Ap ket qua review (nguoi + Grok): bo tu / cau loi, sua ban dich Viet.
+    Moi sua chua di qua day de chay lai pipeline van giu duoc - KHONG sua
+    tay JSON pack."""
+    bad_words = {w.lower() for w in exclusions.get("excludeWords", {})}
+    bad_sentences = set(exclusions.get("excludeSentences", {}))
+    fixes = exclusions.get("fixVietnamese", {})
+    words = [w for w in words if w["en"].lower() not in bad_words]
+    tatoeba = [dict(t, vi=fixes.get(t["en"], t["vi"])) for t in tatoeba
+               if t["en"] not in bad_sentences]
+    return words, tatoeba
+
+
+def load_exclusions() -> dict:
+    if not EXCLUSIONS.exists():
+        return {}
+    return json.loads(EXCLUSIONS.read_text(encoding="utf-8"))
+
+
+def load_grammar() -> dict:
+    data = json.loads(GRAMMAR_BANK.read_text(encoding="utf-8"))
+    return {k: v for k, v in data.items() if not k.startswith("_")}
+
+
+def load_tatoeba() -> list[dict]:
+    """Doc snapshot Tatoeba da loc (commit trong repo -> chay lai ra cung
+    ket qua). Tao lai bang `refresh-tatoeba`."""
+    out = []
+    with TATOEBA_SNAPSHOT.open(encoding="utf-8") as f:
+        for line in f:
+            en_id, vi_id, en, vi = line.rstrip("\n").split("\t")
+            out.append({"enId": en_id, "viId": vi_id, "en": en, "vi": vi})
+    return out
+
+
+def cmd_refresh_tatoeba(args) -> int:
+    """Tai export Tatoeba (eng, vie, links vie-eng), giu cap cau ngan dung
+    duoc, ghi snapshot TSV (enId, viId, en, vi) sap xep theo enId."""
+    import bz2
+    import tempfile
+    import urllib.request
+    base = "https://downloads.tatoeba.org/exports/per_language/"
+    tmp = Path(tempfile.gettempdir()) / "tatoeba"
+    tmp.mkdir(exist_ok=True)
+    files = {"vie": "vie/vie_sentences.tsv.bz2", "links": "vie/vie-eng_links.tsv.bz2",
+             "eng": "eng/eng_sentences.tsv.bz2"}
+    for rel in files.values():
+        dst = tmp / Path(rel).name
+        if not dst.exists():
+            urllib.request.urlretrieve(base + rel, dst)
+
+    def read(name):
+        with bz2.open(tmp / Path(files[name]).name, "rt", encoding="utf-8") as f:
+            for line in f:
+                yield line.rstrip("\n").split("\t")
+    vie = {r[0]: r[2] for r in read("vie")}
+    links = [(r[0], r[1]) for r in read("links")]
+    need = {b for _, b in links}
+    eng = {r[0]: r[2] for r in read("eng") if r[0] in need}
+    rows = sorted({(b, a, eng[b], vie[a]) for a, b in links
+                   if a in vie and b in eng and _usable_sentence(eng[b])
+                   and "\t" not in eng[b] + vie[a]},
+                  key=lambda r: int(r[0]))
+    TATOEBA_SNAPSHOT.parent.mkdir(parents=True, exist_ok=True)
+    with TATOEBA_SNAPSHOT.open("w", encoding="utf-8", newline="\n") as f:
+        for r in rows:
+            f.write("\t".join(r) + "\n")
+    print(f"tatoeba snapshot: {len(rows)} pairs -> {TATOEBA_SNAPSHOT}")
     return 0
 
 
@@ -399,12 +684,14 @@ def main() -> int:
     sub = ap.add_subparsers(dest="cmd", required=True)
     b = sub.add_parser("build")
     b.add_argument("--csv", help="CEFR-J CSV cuc bo (mac dinh tai ban da pin tu GitHub)")
+    sub.add_parser("refresh-tatoeba")
     a = sub.add_parser("approve")
     a.add_argument("--reviewer", required=True)
     a.add_argument("--date", required=True, help="YYYY-MM-DD")
     a.add_argument("--note", default="")
     args = ap.parse_args()
-    return cmd_build(args) if args.cmd == "build" else cmd_approve(args)
+    return {"build": cmd_build, "approve": cmd_approve,
+            "refresh-tatoeba": cmd_refresh_tatoeba}[args.cmd](args)
 
 
 if __name__ == "__main__":
