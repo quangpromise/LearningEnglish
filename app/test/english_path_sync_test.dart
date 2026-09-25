@@ -48,6 +48,17 @@ void main() {
       expect(m.wrongItems, {'i8', 'i9'});
     });
 
+    test('an item fixed on one device does not come back from the other', () {
+      // May A: sai i1 roi sau do tra loi dung.
+      final a = const EnglishPathState()
+          .recordWrong('i1')
+          .recordCorrect('u1', 'i1');
+      // May B: chi thay lan sai cu.
+      final b = const EnglishPathState().recordWrong('i1').recordWrong('i2');
+      expect(mergeEnglishPathState(a, b).wrongItems, {'i2'});
+      expect(mergeEnglishPathState(b, a).wrongItems, {'i2'});
+    });
+
     test('English Level takes the higher stage', () {
       const a = EnglishPathState(level: CefrLevel.a2);
       const b = EnglishPathState(level: CefrLevel.b1);
@@ -131,6 +142,16 @@ void main() {
       final store = EnglishPathStore.forTest();
       await store.ensureLoaded();
       expect(store.canUpload, isFalse);
+    });
+
+    test('local state from a newer app is kept in memory too', () async {
+      SharedPreferences.setMockInitialValues({
+        kEnglishPathPrefKey: jsonEncode({'schemaVersion': 999}),
+      });
+      final store = EnglishPathStore.forTest();
+      final remote = const EnglishPathState(level: CefrLevel.c1).toJson();
+      expect(await store.mergeRemote(remote), RemoteMergeResult.ignored);
+      expect(store.state.level, isNull);
     });
 
     test('clearLocal wipes progress for an account switch', () async {

@@ -140,8 +140,9 @@ class GymTalkSyncService {
             .eq('user_id', userId)
             .maybeSingle();
       } on PostgrestException catch (e) {
-        // 42703 = undefined_column (chua chay migration 0075).
-        if (e.code != '42703' && !e.message.contains('path')) rethrow;
+        // 42703 = undefined_column (chua chay migration 0075). Chi dua vao
+        // ma loi - loi khac van nem ra de lan sau thu lai.
+        if (e.code != '42703') rethrow;
         _pathColumnMissing = true;
       }
     }

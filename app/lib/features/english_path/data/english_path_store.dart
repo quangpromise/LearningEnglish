@@ -80,6 +80,8 @@ class EnglishPathStore extends ChangeNotifier {
   Future<RemoteMergeResult> mergeRemote(Object? raw) async {
     await ensureLoaded();
     _remoteNewer = false;
+    // State tren may do app moi hon ghi: giu nguyen (khong gop, khong ghi).
+    if (_readOnly) return RemoteMergeResult.ignored;
     if (isFromNewerVersion(raw)) {
       _remoteNewer = true;
       return RemoteMergeResult.remoteIsNewer;
@@ -121,7 +123,11 @@ class EnglishPathStore extends ChangeNotifier {
 
   Future<void> _update(EnglishPathState next, {bool force = false}) async {
     await ensureLoaded();
-    if (identical(next, _state) && !force) return;
+    if (!force &&
+        (identical(next, _state) ||
+            jsonEncode(next.toJson()) == jsonEncode(_state.toJson()))) {
+      return;
+    }
     _state = next;
     notifyListeners();
     if (_readOnly) return;
