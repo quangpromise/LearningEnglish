@@ -478,9 +478,14 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
   // Rest Game (spec #45)
   // ---------------------------------------------------------------------
 
+  /// Item da choi trong LAN NGHI nay (len lai ke hoach giua chung khong
+  /// lap lai cau vua lam).
+  final Set<String> _playedThisRest = {};
+
   /// Dau moi lan nghi: len ke hoach cau hoi vua thoi gian nghi tu Unit dang
   /// hoc + cau on. Chua co noi dung lo trinh -> quay ve the tu.
-  void _startRestGame(WorkoutController controller) {
+  void _startRestGame(WorkoutController controller, {bool fresh = true}) {
+    if (fresh) _playedThisRest.clear();
     _restGame = null;
     _restGameCorrect = 0;
     if (!_learnWhileResting || _restMode != RestLearnMode.miniGame) return;
@@ -502,6 +507,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
       reviewItems: src.review,
       listeningEnabled: _restListening,
       random: Random(),
+      exclude: _playedThisRest,
     );
     if (plan.isNotEmpty) _restGame = RestGameSession(plan);
   }
@@ -524,6 +530,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
   }
 
   void _onRestGameAnswer(PracticeItem item, bool correct) {
+    _playedThisRest.add(item.id);
     final store = EnglishPathStore.instance;
     if (correct) {
       _restGameCorrect++;
@@ -571,17 +578,20 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
   ContentPack? _pathWordsPack;
   Map<String, PathWord> _pathWordsCache = const {};
 
-  /// Bat/tat Listening: len lai ke hoach cho phan gio nghi con lai de
-  /// khong con cau Listening nao phat ra loa.
+  /// Bat/tat Listening. Tat: len lai ke hoach cho phan gio nghi con lai
+  /// (bo cau da choi) de khong con cau Listening nao phat ra loa. Bat: chi
+  /// ap dung tu lan nghi sau.
   void _toggleRestListening() {
-    TutorialVoice.shared.stop();
     final enabled = !_restListening;
     WorkoutPrefs.saveRestListening(enabled);
-    _endRestGame();
     setState(() => _restListening = enabled);
+    if (enabled) return;
+    TutorialVoice.shared.stop();
+    _endRestGame();
     final controller = _controller;
     if (controller != null && controller.phase == WorkoutPhase.resting) {
-      _startRestGame(controller);
+      _startRestGame(controller, fresh: false);
+      setState(() {});
     }
   }
 
