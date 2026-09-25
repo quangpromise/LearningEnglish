@@ -6,11 +6,17 @@ import 'package:speech_to_text/speech_to_text.dart' as stt;
 /// Nghe 1 lan (speech_to_text, en_US) va tra ve chuoi nhan dien duoc -
 /// dung chung cho "Luyen noi ranh tay" va "Noi theo" trong trinh phat huong
 /// dan bai tap. Tu dung khi im lang [pauseFor] hoac het [listenFor].
+///
+/// Moi lan [stop]/[dispose] tang [_generation]: 1 lan nghe dang cho (ke ca
+/// dang doi xin quyen mic) se tu huy va tra ve rong thay vi bat mic muon /
+/// hoan tat nham lan nghe sau.
 class SpeechListener {
   final stt.SpeechToText _speech = stt.SpeechToText();
   bool? _available;
   Completer<String>? _done;
   String _heard = '';
+  int _generation = 0;
+  bool _disposed = false;
 
   /// Chuoi dang nhan dien (cap nhat trong luc nghe) - de UI hien truc tiep.
   void Function(String partial)? onPartial;
@@ -32,12 +38,16 @@ class SpeechListener {
     return _available!;
   }
 
-  void _finish() {
+  void _finish([String? value]) {
     final done = _done;
-    if (done != null && !done.isCompleted) done.complete(_heard);
+    _done = null;
+    if (done != null && !done.isCompleted) done.complete(value ?? _heard);
   }
 
-  void _onError(SpeechRecognitionError error) => _finish();
+  void _onError(SpeechRecognitionError error) {
+    _speech.cancel();
+    _finish();
+  }
 
   void _onStatus(String status) {
     if (status == stt.SpeechToText.doneStatus) _finish();
@@ -47,13 +57,16 @@ class SpeechListener {
     Duration listenFor = const Duration(seconds: 8),
     Duration pauseFor = const Duration(seconds: 2),
   }) async {
-    if (!await init()) return '';
+    if (_disposed) return '';
+    final generation = ++_generation;
+    if (!await init() || generation != _generation) return '';
     _heard = '';
     final done = Completer<String>();
     _done = done;
     try {
       await _speech.listen(
         onResult: (result) {
+          if (generation != _generation) return;
           _heard = result.recognizedWords;
           onPartial?.call(_heard);
           if (result.finalResult) _finish();
@@ -68,23 +81,31 @@ class SpeechListener {
     } catch (_) {
       _finish();
     }
+    // Bi dung trong luc dang mo mic -> tat ngay, khong de mic bat.
+    if (generation != _generation) {
+      _speech.cancel();
+      return '';
+    }
     return done.future.timeout(
       listenFor + const Duration(seconds: 2),
       onTimeout: () {
-        _speech.stop();
+        _speech.cancel();
         return _heard;
       },
     );
   }
 
-  /// Dung nghe ngay (tra ket qua dang co cho lan listenOnce dang cho).
+  /// Dung nghe ngay: lan listenOnce dang cho tra ve phan da nghe duoc.
   void stop() {
-    if (_speech.isListening) _speech.stop();
+    _generation++;
+    _speech.stop();
     _finish();
   }
 
   void dispose() {
-    stop();
+    _disposed = true;
+    _generation++;
     _speech.cancel();
+    _finish('');
   }
 }

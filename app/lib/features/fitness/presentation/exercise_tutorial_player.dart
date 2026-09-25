@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -54,7 +53,9 @@ class ExerciseTutorialPlayer extends ConsumerStatefulWidget {
 
 class _ExerciseTutorialPlayerState
     extends ConsumerState<ExerciseTutorialPlayer> {
-  late ExerciseTutorial _tutorial = buildExerciseTutorial(
+  /// Dung 1 LAN luc mo (khong doi giua chung - tranh lech giua giong doc
+  /// va the tu khoa).
+  late final ExerciseTutorial _tutorial = buildExerciseTutorial(
     widget.exercise,
     boxes: SrsStore.instance.boxes,
   );
@@ -82,6 +83,12 @@ class _ExerciseTutorialPlayerState
   final List<int> _scores = [];
   bool _addedToSrs = false;
 
+  /// Tien do chuong dong bang khi tam dung (thanh chuong/cum chu dung yen).
+  double? _frozenElapsed;
+
+  /// Tam dung tu buoc "Noi theo" -> tiep tuc thi hien lai loi moi.
+  bool _pausedAtPrompt = false;
+
   List<TutorialChapter> get _chapters => _tutorial.chapters;
   TutorialChapter get _chapter => _chapters[_index];
 
@@ -90,21 +97,10 @@ class _ExerciseTutorialPlayerState
     super.initState();
     KeepScreenOn.enable();
     _listener.onPartial = (partial) {
-      if (mounted) setState(() => _heard = partial);
-    };
-    // Tai lai bo SRS de chon tu khoa uu tien tu chua thuoc (thuong da tai
-    // san tu man Hom nay/tap - nhanh).
-    SrsStore.instance.ensureLoaded().then((_) {
-      if (!mounted || _index != widget.startChapter) return;
-      if (_phase == _Phase.finished) return;
-      final rebuilt = buildExerciseTutorial(
-        widget.exercise,
-        boxes: SrsStore.instance.boxes,
-      );
-      if (rebuilt.chapters.length == _chapters.length) {
-        setState(() => _tutorial = rebuilt);
+      if (mounted && _phase == _Phase.listening) {
+        setState(() => _heard = partial);
       }
-    });
+    };
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _play(widget.startChapter.clamp(0, _chapters.length - 1));
@@ -140,8 +136,8 @@ class _ExerciseTutorialPlayerState
   Future<void> _play(int index) async {
     final runId = ++_runId;
     _stopAudio();
-    await AppTts.instance.setNarrationRate(AppTts.defaultRate * _speed);
-    if (_stale(runId)) return;
+    // Cap nhat chuong NGAY (truoc moi await) - bam toi/lui lien tiep doc
+    // dung chuong moi nhat.
     setState(() {
       _index = index;
       _phase = _Phase.playing;
@@ -150,7 +146,16 @@ class _ExerciseTutorialPlayerState
       _lastScore = null;
       _chapterDone = false;
       _chapterStartedAt = null;
+      _frozenElapsed = null;
+      _pausedAtPrompt = false;
     });
+    await AppTts.instance.setNarrationRate(AppTts.defaultRate * _speed);
+    if (_stale(runId)) {
+      // Trinh phat da dong trong luc doi toc do -> tra toc do mac dinh cho
+      // ca app (dispose da chay truoc lenh nay).
+      if (!mounted) AppTts.instance.setNarrationRate(AppTts.defaultRate);
+      return;
+    }
     final chapter = _chapters[index];
 
     if (chapter.kind == TutorialChapterKind.keywords) {
@@ -175,16 +180,25 @@ class _ExerciseTutorialPlayerState
     setState(() => _chapterDone = true);
 
     if (chapter.practiceText.isNotEmpty) {
-      setState(() => _phase = _Phase.prompt);
-      // Khong ai tuong tac -> tu sang buoc sau (xem nhu bo qua).
-      _autoAdvance = Timer(const Duration(seconds: 12), () {
-        if (!_stale(runId) && _phase == _Phase.prompt) _next();
-      });
+      _showPrompt(runId);
       return;
     }
     await Future<void>.delayed(const Duration(milliseconds: 700));
     if (_stale(runId)) return;
     _next();
+  }
+
+  /// Loi moi "Noi theo"; khong ai tuong tac 12 giay -> tu sang buoc sau.
+  void _showPrompt(int runId) {
+    setState(() {
+      _phase = _Phase.prompt;
+      _heard = '';
+      _lastScore = null;
+    });
+    _autoAdvance?.cancel();
+    _autoAdvance = Timer(const Duration(seconds: 12), () {
+      if (!_stale(runId) && _phase == _Phase.prompt) _next();
+    });
   }
 
   void _next() {
@@ -204,14 +218,29 @@ class _ExerciseTutorialPlayerState
   }
 
   void _togglePause() {
-    if (_phase == _Phase.paused) {
-      _play(_index); // Phat lai tu dau chuong.
-      return;
+    switch (_phase) {
+      case _Phase.paused:
+        if (_pausedAtPrompt) {
+          _showPrompt(_runId);
+        } else {
+          _play(_index); // Phat lai tu dau chuong.
+        }
+      case _Phase.playing || _Phase.prompt || _Phase.scored:
+        final frozen = _elapsed;
+        final atPrompt = _phase != _Phase.playing;
+        _runId++;
+        _stopAudio();
+        setState(() {
+          _frozenElapsed = frozen;
+          _pausedAtPrompt = atPrompt;
+          _phase = _Phase.paused;
+        });
+      case _Phase.listening:
+        // Dang nghe -> cham giua = nop phan da noi.
+        _listener.stop();
+      case _Phase.finished:
+        break;
     }
-    if (_phase != _Phase.playing) return;
-    _runId++;
-    _stopAudio();
-    setState(() => _phase = _Phase.paused);
   }
 
   void _toggleSpeed() {
@@ -219,9 +248,21 @@ class _ExerciseTutorialPlayerState
     if (_phase == _Phase.playing) _play(_index);
   }
 
+  /// Bam mic: dang moi -> bat dau nghe; dang nghe -> dung va cham.
+  void _onMicTap() {
+    if (_phase == _Phase.prompt) {
+      _practice();
+    } else if (_phase == _Phase.listening) {
+      _listener.stop();
+    }
+  }
+
   Future<void> _practice() async {
-    final runId = _runId;
+    final runId = ++_runId;
     _autoAdvance?.cancel();
+    // Tat giong may truoc khi bat mic - khong cham nham giong doc cua app.
+    await AppTts.instance.stopSpeaking();
+    if (_stale(runId)) return;
     setState(() {
       _phase = _Phase.listening;
       _heard = '';
@@ -229,6 +270,11 @@ class _ExerciseTutorialPlayerState
     });
     final heard = await _listener.listenOnce();
     if (_stale(runId)) return;
+    if (heard.trim().isEmpty) {
+      // Khong nghe thay gi -> quay lai loi moi, khong ghi diem 0.
+      _showPrompt(runId);
+      return;
+    }
     final score = scorePronunciation(
       targetEn: _chapter.practiceText,
       recognized: heard,
@@ -250,6 +296,13 @@ class _ExerciseTutorialPlayerState
     if (_stale(runId)) return;
     _next();
   }
+
+  /// Nghe 1 tu (nut loa) - chi khi trinh phat KHONG dang doc/nghe, tranh
+  /// chong tieng/lam ket thuc som cau dang doc.
+  bool get _canSpeakWord =>
+      _phase == _Phase.paused ||
+      _phase == _Phase.prompt ||
+      _phase == _Phase.finished;
 
   Future<void> _addKeywordsToSrs() async {
     final now = DateTime.now();
@@ -284,6 +337,8 @@ class _ExerciseTutorialPlayerState
   // ---------------------------------------------------------------------
 
   double get _elapsed {
+    final frozen = _frozenElapsed;
+    if (frozen != null) return frozen;
     final start = _chapterStartedAt;
     if (_chapterDone) return double.infinity;
     if (start == null) return 0;
@@ -522,6 +577,7 @@ class _ExerciseTutorialPlayerState
                   word: _tutorial.keywords[k],
                   active: k == _keywordIndex,
                   showVi: _showVi,
+                  canSpeak: _canSpeakWord,
                 ),
                 const SizedBox(height: 12),
               ],
@@ -587,8 +643,6 @@ class _ExerciseTutorialPlayerState
             decorationColor: AppColors.blue,
             decorationThickness: 3,
           ),
-          recognizer: TapGestureRecognizer()
-            ..onTap = () => AppTts.instance.speak(phrase.substring(start, end)),
         ),
       );
       pos = end;
@@ -634,7 +688,9 @@ class _ExerciseTutorialPlayerState
             shape: const CircleBorder(),
             child: InkWell(
               customBorder: const CircleBorder(),
-              onTap: _phase == _Phase.prompt ? _practice : null,
+              onTap: _phase == _Phase.prompt || _phase == _Phase.listening
+                  ? _onMicTap
+                  : null,
               child: SizedBox(
                 width: 60,
                 height: 60,
@@ -719,7 +775,7 @@ class _ExerciseTutorialPlayerState
         ),
         const SizedBox(height: 18),
         for (final word in _tutorial.keywords) ...[
-          _KeywordCard(word: word, active: false, showVi: true),
+          _KeywordCard(word: word, active: false, showVi: true, canSpeak: true),
           const SizedBox(height: 10),
         ],
         const SizedBox(height: 8),
@@ -840,10 +896,14 @@ class _KeywordCard extends StatelessWidget {
     required this.word,
     required this.active,
     required this.showVi,
+    required this.canSpeak,
   });
   final GymWord word;
   final bool active;
   final bool showVi;
+
+  /// Tat nut loa trong luc trinh phat dang tu doc (tranh chong tieng).
+  final bool canSpeak;
 
   @override
   Widget build(BuildContext context) {
@@ -879,10 +939,15 @@ class _KeywordCard extends StatelessWidget {
               ],
             ),
           ),
-          SpeakerButton(
-            tapSize: 48,
-            color: AppColors.blue,
-            onTap: () => AppTts.instance.speak(word.en),
+          Opacity(
+            opacity: canSpeak ? 1 : 0.35,
+            child: SpeakerButton(
+              tapSize: 48,
+              color: AppColors.blue,
+              onTap: () {
+                if (canSpeak) AppTts.instance.speak(word.en);
+              },
+            ),
           ),
         ],
       ),

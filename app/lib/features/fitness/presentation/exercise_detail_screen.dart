@@ -9,6 +9,7 @@ import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/tts/app_tts.dart';
 import '../data/exercise_model.dart';
+import '../../srs/data/srs_store.dart';
 import '../data/exercise_tutorial.dart';
 import '../data/workout_model.dart';
 import 'exercise_photo_animator.dart';
@@ -91,7 +92,10 @@ class ExerciseDetailScreen extends ConsumerWidget {
     final percents = exercise.involvementPercents;
     final showInvolvement =
         percents.isNotEmpty && percents.length == muscles.length;
-    final tutorial = buildExerciseTutorial(exercise);
+    final tutorial = buildExerciseTutorial(
+      exercise,
+      boxes: SrsStore.instance.boxes,
+    );
 
     return ScreenBackground(
       child: Padding(
