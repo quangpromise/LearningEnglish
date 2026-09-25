@@ -37,13 +37,17 @@ công khai trên chính trang bài hát của tác giả, dùng cho mục đích
 theo đúng phạm vi cho phép của CC-BY 4.0 (cho phép sao chép, chuyển thể, dùng
 thương mại, miễn có ghi công như trên).
 
-## CEFR-J Wordlist — dữ liệu tham khảo (không nhúng vào app)
+## CEFR-J Wordlist
 
 Nhãn mức độ từ vựng (Thông dụng/Thường gặp/Ít gặp) trong
 `app/lib/features/vocabulary/data/vocabulary_data.dart` được đối chiếu và
 hiệu chỉnh thủ công với CEFR-J Wordlist bằng `scripts/check_vocab_cefr.py`.
-File dữ liệu CEFR-J không được đưa vào repo hay vào app; script tải trực tiếp
-mỗi lần chạy.
+
+Lộ trình tiếng Anh A1 → C1 dùng cấp CEFR của CEFR-J để xếp từ vựng vào từng
+Stage/Unit trong Content Pack (`app/assets/english_path/pack.json`, sinh bởi
+`scripts/english_path_pipeline.py`). Pack chỉ chứa cấp CEFR của các từ đã
+chọn, không chứa bản sao file CEFR-J. File CSV gốc không được đưa vào repo;
+script tải trực tiếp mỗi lần chạy.
 
 - The CEFR-J Wordlist Version 1.5. Compiled by Yukio Tono, Tokyo University of
   Foreign Studies. http://www.cefr-j.org/ — bản phân phối:
