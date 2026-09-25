@@ -46,14 +46,16 @@ STAGING_PACK = ROOT / "scripts/english_path/build/pack.json"
 TATOEBA_SNAPSHOT = ROOT / "scripts/english_path/data/tatoeba_eng_vie.tsv"
 GRAMMAR_BANK = ROOT / "scripts/english_path/grammar_bank.json"
 EXCLUSIONS = ROOT / "scripts/english_path/review/exclusions.json"
+NAWL_SNAPSHOT = ROOT / "scripts/english_path/data/nawl_headwords.txt"
+IELTS_BANK = ROOT / "scripts/english_path/ielts_micro.json"
 
 PACK_SCHEMA_VERSION = 1
 # Phien ban noi dung - tang moi lan doi quy mo/nguon (Placement luu kem).
-PACK_VERSION = "0.2.0-a1a2"
+PACK_VERSION = "0.3.0-a1c1"
 STAGES = ["A1", "A2", "B1", "B2", "C1"]
 REVIEW_SAMPLE_RATE = 0.10
 # Quy mo hien tai cua pack. Ticket #55/#56 nang len A1-B2 x 10 Unit + C1 x 3.
-UNITS_PER_STAGE = {"A1": 10, "A2": 10}
+UNITS_PER_STAGE = {"A1": 10, "A2": 10, "B1": 10, "B2": 10, "C1": 3}
 WORDS_PER_UNIT = 15
 
 # Pin CEFR-J vao 1 commit de chay lai luon ra cung du lieu.
@@ -90,6 +92,22 @@ SOURCES = [
         "files": ["grammar_bank.json"],
     },
     {
+        "id": "nawl",
+        "name": "New Academic Word List 1.2 (Browne, Culligan & Phillips, 2013)",
+        "license": "CC BY-SA 4.0 (share-alike; headword snapshot kept as a separate file)",
+        "url": "https://www.newgeneralservicelist.com/new-academic-word-list",
+        "retrievedAt": "2026-09-25",
+        "files": ["scripts/english_path/data/nawl_headwords.txt"],
+    },
+    {
+        "id": "gymtalk-ielts",
+        "name": "GymTalk in-house IELTS-style micro exercises (not taken from IELTS papers)",
+        "license": "Proprietary - written by the GymTalk team",
+        "url": "scripts/english_path/ielts_micro.json",
+        "retrievedAt": "2026-09-25",
+        "files": ["ielts_micro.json"],
+    },
+    {
         "id": "gymtalk-vocab",
         "name": "GymTalk in-house vocabulary (IPA, Vietnamese meaning, examples)",
         "license": "Proprietary - written by the GymTalk team",
@@ -107,7 +125,10 @@ TOPIC_PRIORITY = [
 ]
 # Moi tu co 1 cau Meaning + 1 cau thuc hanh, xoay vong 3 dang nay.
 SECOND_TYPES = ["gapFill", "listening", "wordScramble"]
-ITEM_TYPES = {"meaning", "listening", "gapFill", "wordScramble", "grammar"}
+ITEM_TYPES = {"meaning", "listening", "gapFill", "wordScramble", "grammar",
+              "ieltsMicro"}
+IELTS_STAGES = {"B1", "B2", "C1"}
+TFNG_OPTIONS = ["True", "False", "Not Given"]
 # Tatoeba: CC BY 2.0 FR - snapshot da loc (cau <= 12 tu, co ban dich Viet).
 TATOEBA_SENTENCE_URL = "https://tatoeba.org/en/sentences/show/"
 
@@ -138,15 +159,21 @@ def parse_vocab_dart(src: str) -> list[dict]:
     return words
 
 
-def tag_cefr(words: list[dict], levels: dict[str, str]) -> list[dict]:
-    """Gan cap CEFR-J (thap nhat) cho tu; tu khong co trong CEFR-J bi bo."""
+def tag_cefr(words: list[dict], levels: dict[str, str],
+             nawl: set[str] | None = None) -> list[dict]:
+    """Gan cap CEFR-J (thap nhat) cho tu. Tu hoc thuat NAWL nam ngoai CEFR-J
+    A1-B2 duoc xep C1; tu khong co o ca 2 nguon bi bo."""
+    nawl = nawl or set()
     out, seen = [], set()
     for w in words:
         key = w["en"].strip().lower()
-        if key in seen or key not in levels:
+        if key in seen:
+            continue
+        level = levels.get(key) or ("C1" if key in nawl else None)
+        if level is None:
             continue
         seen.add(key)
-        out.append(dict(w, cefr=levels[key]))
+        out.append(dict(w, cefr=level))
     return out
 
 
@@ -178,6 +205,12 @@ def _pick_unit_words(pool: list[dict], count: int, n_units: int) -> list[list[di
         ordered.extend(sorted(by_topic[topic], key=lambda w: w["en"].lower()))
     return [ordered[i * count:(i + 1) * count] for i in range(n_units)
             if len(ordered) >= (i + 1) * count]
+
+
+def _word_sources(word: dict) -> list[str]:
+    """Tu C1 lay cap tu NAWL, con lai tu CEFR-J."""
+    level_src = "nawl" if word.get("cefr") == "C1" else "cefrj"
+    return [level_src, "gymtalk-vocab"]
 
 
 def _meaning_item(unit_id: str, word: dict, unit_words: list[dict],
@@ -213,7 +246,7 @@ def _meaning_item(unit_id: str, word: dict, unit_words: list[dict],
         "options": options,
         "answerIndex": options.index(word["vi"]),
         "wordEn": word["en"],
-        "sourceIds": list(WORD_SOURCE_IDS),
+        "sourceIds": _word_sources(word),
     }
 
 
@@ -229,6 +262,12 @@ _TATOEBA_NAMES = {
     "Alice", "Paul", "Tony", "Lucy", "Maria", "Anna", "Emily", "Jim", "Kate",
     "Sami", "Layla", "Dan", "Linda", "Bill", "Taro", "Hanako", "Yanni",
 }
+
+
+def _is_placeholder_vi(text: str) -> bool:
+    """Ban dich 'gia' trong du lieu nguon (vd Tatoeba co cau dich chi la
+    'tieng viet')."""
+    return text.strip(" .!").lower() in {"tiếng việt", "vietnamese", "tieng viet"}
 
 
 def _usable_sentence(sentence: str) -> bool:
@@ -283,7 +322,7 @@ def _second_item(unit_id: str, j: int, word: dict, unit_words: list[dict],
         kind = SECOND_TYPES[(j + k) % len(SECOND_TYPES)]
         item_id = f"{unit_id}-{kind}-{slug}"
         base = {"id": item_id, "unitId": unit_id, "type": kind,
-                "wordEn": word["en"], "sourceIds": list(WORD_SOURCE_IDS)}
+                "wordEn": word["en"], "sourceIds": _word_sources(word)}
         if kind == "gapFill":
             sent = _find_sentence(word, tatoeba)
             if sent is None:
@@ -297,7 +336,7 @@ def _second_item(unit_id: str, j: int, word: dict, unit_words: list[dict],
                         options=options, answerIndex=options.index(word["en"]),
                         hintVi=sent["vi"])
             if sent["source"] == "tatoeba":
-                item["sourceIds"] = ["cefrj", "tatoeba"]
+                item["sourceIds"] = [_word_sources(word)[0], "tatoeba"]
                 item["sourceRef"] = sent["ref"]
             return item
         if kind == "listening":
@@ -332,6 +371,37 @@ def _grammar_items(unit_id: str, point: dict) -> list[dict]:
     return out
 
 
+def _ielts_items(unit_id: str, ex: dict) -> list[dict]:
+    """1 doan van: 2 cau True/False/Not Given + 1 cau chon tieu de."""
+    items = []
+    for k, t in enumerate(ex["tfng"], 1):
+        items.append({
+            "id": f"{unit_id}-ielts-{ex['id']}-tfng{k}",
+            "unitId": unit_id,
+            "type": "ieltsMicro",
+            "task": "tfng",
+            "passage": ex["passage"],
+            "prompt": t["statement"],
+            "options": list(TFNG_OPTIONS),
+            "answerIndex": TFNG_OPTIONS.index(t["answer"]),
+            "sourceIds": ["gymtalk-ielts"],
+        })
+    headings = list(ex["headings"])
+    random.Random(ex["id"]).shuffle(headings)
+    items.append({
+        "id": f"{unit_id}-ielts-{ex['id']}-heading",
+        "unitId": unit_id,
+        "type": "ieltsMicro",
+        "task": "heading",
+        "passage": ex["passage"],
+        "prompt": "Choose the best heading for the paragraph.",
+        "options": headings,
+        "answerIndex": headings.index(ex["heading"]),
+        "sourceIds": ["gymtalk-ielts"],
+    })
+    return items
+
+
 def _unit_title(unit_words: list[dict]) -> tuple[str, str]:
     """Tieu de Unit = toi da 2 chu de chiem nhieu tu nhat (Unit cat ngang
     ranh gioi chu de thi ghi du ca 2, vd "Food · Actions")."""
@@ -350,9 +420,10 @@ def _unit_title(unit_words: list[dict]) -> tuple[str, str]:
 
 def build_pack(words: list[dict], units_per_stage: dict[str, int],
                words_per_unit: int, tatoeba: list[dict] | None = None,
-               grammar: dict | None = None) -> dict:
+               grammar: dict | None = None, ielts: dict | None = None) -> dict:
     tatoeba = tatoeba or []
     grammar = grammar or {}
+    ielts = ielts or {}
     stages = []
     for cefr in STAGES:
         n_units = units_per_stage.get(cefr, 0)
@@ -384,6 +455,9 @@ def build_pack(words: list[dict], units_per_stage: dict[str, int],
                 unit["grammar"] = {k: point[k] for k in
                                    ("id", "titleEn", "titleVi", "explanationVi")}
                 items += _grammar_items(unit_id, point)
+            passages = ielts.get(cefr, []) if cefr in IELTS_STAGES else []
+            if idx <= len(passages):
+                items += _ielts_items(unit_id, passages[idx - 1])
             unit["items"] = items
             units.append(unit)
         stages.append({"cefr": cefr, "units": units})
@@ -444,8 +518,19 @@ def validate_pack(pack: dict) -> list[str]:
                         errors.append(f"{iid}: answer still visible in the prompt")
                 if kind in ("gapFill", "wordScramble") and not item.get("hintVi", "").strip():
                     errors.append(f"{iid}: missing Vietnamese hint")
+                if _is_placeholder_vi(item.get("hintVi", "")):
+                    errors.append(f"{iid}: Vietnamese hint is a placeholder")
                 if kind == "grammar" and not item.get("explanationVi", "").strip():
                     errors.append(f"{iid}: grammar item without Vietnamese explanation")
+                if kind == "ieltsMicro":
+                    if stage.get("cefr") not in IELTS_STAGES:
+                        errors.append(f"{iid}: IELTS Micro Exercise only allowed in B1-C1")
+                    if not item.get("passage", "").strip():
+                        errors.append(f"{iid}: IELTS item without passage")
+                    if item.get("task") == "tfng" and options != TFNG_OPTIONS:
+                        errors.append(f"{iid}: T/F/NG options must be True/False/Not Given")
+                    if item.get("task") not in ("tfng", "heading"):
+                        errors.append(f"{iid}: unknown IELTS task {item.get('task')}")
                 if kind == "wordScramble" and len(options) != 1:
                     errors.append(f"{iid}: scramble must have exactly one option")
                 if kind == "listening" and item.get("prompt") not in options:
@@ -536,7 +621,8 @@ def export_review_csv(pack: dict, path: Path) -> None:
                 "yes" if item["id"] in sampled else "",
                 cefr, unit["id"], item["id"], item["type"], item["prompt"],
                 " | ".join(item["options"]), item["options"][item["answerIndex"]],
-                item.get("hintVi") or item.get("explanationVi") or "",
+                item.get("hintVi") or item.get("explanationVi")
+                or item.get("passage") or "",
                 word.get("exampleEn", ""), word.get("exampleVi", ""),
                 ",".join(item["sourceIds"]), "",
             ])
@@ -566,10 +652,12 @@ def cmd_build(args) -> int:
             tmp.write_bytes(resp.read())
         csv_path = str(tmp)
     levels = load_cefr(csv_path)
-    words = tag_cefr(parse_vocab_dart(VOCAB_DART.read_text(encoding="utf-8")), levels)
+    words = tag_cefr(parse_vocab_dart(VOCAB_DART.read_text(encoding="utf-8")),
+                     levels, nawl=load_nawl())
     words, tatoeba = apply_exclusions(words, load_tatoeba(), load_exclusions())
     pack = build_pack(words, UNITS_PER_STAGE, WORDS_PER_UNIT,
-                      tatoeba=tatoeba, grammar=load_grammar())
+                      tatoeba=tatoeba, grammar=load_grammar(),
+                      ielts=load_ielts())
     errors = validate_pack(pack)
     if errors:
         print("VALIDATION FAILED - pack khong duoc ghi:", *errors, sep="\n  ")
@@ -599,6 +687,7 @@ def apply_exclusions(words: list[dict], tatoeba: list[dict],
     words = [w for w in words if w["en"].lower() not in bad_words]
     tatoeba = [dict(t, vi=fixes.get(t["en"], t["vi"])) for t in tatoeba
                if t["en"] not in bad_sentences]
+    tatoeba = [t for t in tatoeba if not _is_placeholder_vi(t["vi"])]
     return words, tatoeba
 
 
@@ -606,6 +695,17 @@ def load_exclusions() -> dict:
     if not EXCLUSIONS.exists():
         return {}
     return json.loads(EXCLUSIONS.read_text(encoding="utf-8"))
+
+
+def load_nawl() -> set[str]:
+    """Snapshot headword NAWL (CC BY-SA 4.0, file rieng)."""
+    return {l.strip().lower() for l in NAWL_SNAPSHOT.read_text(encoding="utf-8").splitlines()
+            if l.strip() and not l.startswith("#")}
+
+
+def load_ielts() -> dict:
+    data = json.loads(IELTS_BANK.read_text(encoding="utf-8"))
+    return {k: v for k, v in data.items() if not k.startswith("_")}
 
 
 def load_grammar() -> dict:

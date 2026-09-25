@@ -5698,6 +5698,10 @@ class AppStrings {
       AppLanguage.vi: 'Ngữ pháp: {g}',
       AppLanguage.en: 'Grammar: {g}',
     },
+    'path_ielts_prompt': {
+      AppLanguage.vi: 'Đọc đoạn văn rồi trả lời (dạng IELTS Reading)',
+      AppLanguage.en: 'Read the passage and answer (IELTS Reading style)',
+    },
   };
 
   static String t(String key, AppLanguage lang) =>

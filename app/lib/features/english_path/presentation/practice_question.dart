@@ -199,6 +199,19 @@ class _PracticeQuestionState extends ConsumerState<PracticeQuestion> {
     PracticeItemType.grammar => [
       Text(item.prompt, style: AppTextStyles.heading(size: big * 0.7)),
     ],
+    PracticeItemType.ieltsMicro => [
+      Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.glassFill,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.glassBorder),
+        ),
+        child: Text(item.passage ?? '', style: AppTextStyles.body(size: 14)),
+      ),
+      const SizedBox(height: 10),
+      Text(item.prompt, style: AppTextStyles.heading(size: 17)),
+    ],
   };
 
   Widget _scramble() {
@@ -264,6 +277,7 @@ String _promptKey(PracticeItemType type) => switch (type) {
   PracticeItemType.gapFill => 'rest_game_gap_prompt',
   PracticeItemType.wordScramble => 'rest_game_scramble_prompt',
   PracticeItemType.grammar => 'path_grammar_prompt',
+  PracticeItemType.ieltsMicro => 'path_ielts_prompt',
 };
 
 /// O chu cai 48dp cho Word Scramble.

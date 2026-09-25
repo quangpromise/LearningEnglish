@@ -46,10 +46,26 @@ List<PracticeItem> buildLevelTest(
   Random random,
 ) {
   final units = unitsOf(pack, stage);
-  final queues = [
-    for (final u in units) ([...u.items]..shuffle(random)),
+  // B1+: giu cho 1 bai doc IELTS Micro tron ven (moi cau cua 1 doan van,
+  // spec #45 "B1+ co them 1 bai IELTS Micro Exercise dang doc").
+  final passages = [
+    for (final u in units)
+      [
+        for (final i in u.items)
+          if (i.type == PracticeItemType.ieltsMicro) i,
+      ],
+  ].where((p) => p.isNotEmpty).toList();
+  final out = <PracticeItem>[
+    if (stage.index >= CefrLevel.b1.index && passages.isNotEmpty)
+      ...passages[random.nextInt(passages.length)],
   ];
-  final out = <PracticeItem>[];
+  final queues = [
+    for (final u in units)
+      ([
+        for (final i in u.items)
+          if (i.type != PracticeItemType.ieltsMicro) i,
+      ]..shuffle(random)),
+  ];
   var round = 0;
   while (out.length < kLevelTestQuestions) {
     var added = false;

@@ -49,12 +49,14 @@ python scripts/english_path_pipeline.py build
 | `tatoeba` | Cặp câu Anh–Việt Tatoeba | CC BY 2.0 FR | Snapshot đã lọc ở `scripts/english_path/data/tatoeba_eng_vie.tsv` (tạo lại bằng `refresh-tatoeba`). Mỗi item giữ số hiệu câu trong `sourceRef` |
 | `gymtalk-grammar` | `scripts/english_path/grammar_bank.json` | Nội dung tự soạn | Mỗi bậc A1/A2 có 10 điểm ngữ pháp × 3 câu, trình tự theo CEFR-J Grammar Profile |
 
+| `nawl` | New Academic Word List 1.2 | CC BY-SA 4.0 | Chỉ dùng danh sách headword (file riêng `scripts/english_path/data/nawl_headwords.txt`, giữ nguyên CC BY-SA) để xếp từ học thuật ngoài CEFR-J A1–B2 vào bậc C1 |
+| `gymtalk-ielts` | `scripts/english_path/ielts_micro.json` | Nội dung tự soạn | Bài IELTS Micro cho B1–C1: 1 đoạn văn + 2 câu True/False/Not Given + 1 câu chọn tiêu đề. **Không** lấy từ đề thi hay sách IELTS |
+
 **Sửa lỗi sau review:** ghi vào `scripts/english_path/review/exclusions.json` (bỏ từ, bỏ câu, sửa bản dịch tiếng Việt, kèm lý do). Pipeline tự áp dụng mỗi lần build. Không sửa tay JSON của pack.
 
 **Dạng câu hỏi:** mỗi từ có 1 câu Meaning và 1 câu thực hành xoay vòng Gap-fill / Listening / Word Scramble. Đáp án nhiễu của Meaning không được trùng hoặc giao nghĩa với đáp án đúng (so theo các nghĩa tiếng Việt tách bởi `,` `;` `/`). Gap-fill kèm câu dịch tiếng Việt, người học điền theo nghĩa của câu dịch.
 
 Nguồn sẽ thêm ở các ticket sau:
-- NGSL/NAWL (CC BY-SA 4.0, để trong asset riêng)
 - Open English WordNet (CC BY 4.0)
 
 Nguồn **không dùng** vì license: Oxford 3000/5000, English Vocabulary Profile, AWL, các bộ đề/essay IELTS trên HF/Kaggle, RACE.
