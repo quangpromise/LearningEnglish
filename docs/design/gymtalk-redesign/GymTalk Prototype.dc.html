@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&amp;display=block">
+<style>
+@font-face{font-family:'SpaceGrotesk';src:url('assets/fonts/SpaceGrotesk.ttf');font-weight:300 700;}
+@font-face{font-family:'Manrope';src:url('assets/fonts/Manrope.ttf');font-weight:200 800;}
+@keyframes gtPop{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+@keyframes gtGlow{0%,100%{box-shadow:0 0 0 0 rgba(232,184,74,.5)}50%{box-shadow:0 0 0 18px rgba(232,184,74,0)}}
+@keyframes gtToast{0%{transform:translateY(-12px);opacity:0}15%,85%{transform:none;opacity:1}100%{opacity:0}}
+html,body{margin:0;background:#0B0C0E;}
+*{box-sizing:border-box;}
+*::-webkit-scrollbar{display:none;}
+a{color:#5B8CFF;text-decoration:none;}
+a:hover{color:#8FB0FF;}
+button{font:inherit;}
+</style>
+</helmet>
+<div style="{{ themeVars }}">
+<div style="min-height:100vh;background:var(--page,#0B0C0E);display:flex;justify-content:center;align-items:flex-start;gap:48px;padding:40px 24px;flex-wrap:wrap;font-family:'Manrope',sans-serif;color:var(--tx,#F4F5F7);">
+
+  <div style="width:240px;display:flex;flex-direction:column;gap:20px;padding-top:12px;">
+    <div style="display:flex;flex-direction:column;gap:6px;">
+      <div style="font-family:'SpaceGrotesk';font-size:28px;font-weight:700;letter-spacing:-0.5px;">GymTalk</div>
+      <div style="font-size:14px;line-height:1.5;color:var(--tx2,#A3A8B1);text-wrap:pretty;">Prototype đầy đủ. Bấm trực tiếp trong máy, hoặc nhảy nhanh tới màn bên dưới.</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:4px;">
+      <div style="font-size:11px;font-weight:800;letter-spacing:1.4px;color:var(--tx3,#6E737C);padding:0 10px 6px;">MÀN HÌNH</div>
+      <sc-for list="{{ jumps }}" as="j" hint-placeholder-count="9">
+        <button onClick="{{ j.go }}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;border:none;cursor:pointer;text-align:left;background:{{ j.bg }};color:var(--tx,#F4F5F7);font-size:14px;font-weight:700;">
+          <span style="width:8px;height:8px;border-radius:50%;background:{{ j.dot }};"></span>
+          <span>{{ j.label }}</span>
+        </button>
+      </sc-for>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div style="font-size:11px;font-weight:800;letter-spacing:1.4px;color:var(--tx3,#6E737C);padding:0 10px;">GIAO DIỆN</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border-radius:14px;background:var(--s1,#121418);border:1px solid var(--bd,rgba(255,255,255,0.08));">
+        <button onClick="{{ setDark }}" style="height:36px;border:none;border-radius:10px;cursor:pointer;font-weight:800;font-size:13px;background:{{ darkBtnBg }};color:{{ darkBtnFg }};">Tối</button>
+        <button onClick="{{ setLight }}" style="height:36px;border:none;border-radius:10px;cursor:pointer;font-weight:800;font-size:13px;background:{{ lightBtnBg }};color:{{ lightBtnFg }};">Sáng</button>
+      </div>
+    </div>
+  </div>
+
+  <div style="width:390px;height:844px;border-radius:54px;background:var(--bg,#08090B);position:relative;overflow:hidden;flex-shrink:0;box-shadow:0 0 0 11px #000,0 0 0 12px #2A2C30,0 40px 100px rgba(0,0,0,0.5);">
+
+    <div style="position:absolute;top:0;left:0;right:0;height:50px;z-index:40;display:flex;align-items:center;justify-content:space-between;padding:6px 30px 0 36px;font-family:'SpaceGrotesk';font-weight:700;font-size:16px;color:{{ statusColor }};pointer-events:none;">
+      <span>9:41</span>
+      <div style="position:absolute;left:50%;top:11px;transform:translateX(-50%);width:120px;height:34px;border-radius:20px;background:#000;"></div>
+      <div style="display:flex;gap:4px;align-items:center;">
+        <span style="font-family:'Material Symbols Rounded';font-size:18px;font-variation-settings:'FILL' 1;">signal_cellular_alt</span>
+        <span style="font-family:'Material Symbols Rounded';font-size:18px;font-variation-settings:'FILL' 1;">wifi</span>
+        <span style="font-family:'Material Symbols Rounded';font-size:22px;font-variation-settings:'FILL' 1;">battery_full</span>
+      </div>
+    </div>
+
+    <!-- ONBOARDING 1 -->
+    <sc-if value="{{ isOnb1 }}" hint-placeholder-val="{{ true }}">
+      <div style="position:absolute;inset:0;background:#000;">
+        <img src="assets/img/hero.jpg" style="position:absolute;top:0;right:-260px;height:560px;object-fit:cover;"></img>
+        <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 30%,rgba(0,0,0,0.85) 58%,#000 70%);"></div>
+        <div style="position:absolute;left:0;right:0;bottom:0;padding:0 24px 44px;display:flex;flex-direction:column;gap:22px;color:#fff;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:10px;height:10px;border-radius:50%;background:var(--red,#E5484D);"></div>
+            <span style="font-size:12px;font-weight:800;letter-spacing:2px;">GYMTALK</span>
+          </div>
+          <div style="font-family:'SpaceGrotesk';font-size:44px;line-height:1.02;font-weight:700;letter-spacing:-1.5px;">Khỏe thân.<span style="display:block;height:0;"></span>Giỏi tiếng Anh.<span style="display:block;height:0;"></span><span style="color:var(--red,#E5484D);">Mỗi ngày.</span></div>
+          <div style="font-size:16px;line-height:1.5;color:#B8BCC4;text-wrap:pretty;">Một kế hoạch cho cả cơ bắp và vốn từ. Tập xong một hiệp, học thêm một từ.</div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <button onClick="{{ goOnb2 }}" style="height:58px;border-radius:999px;border:none;background:#fff;color:#000;font-size:17px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">Bắt đầu miễn phí<span style="font-family:'Material Symbols Rounded';font-size:22px;">arrow_forward</span></button>
+            <button onClick="{{ goToday }}" style="height:52px;border-radius:999px;border:none;background:transparent;color:#fff;font-size:15px;font-weight:700;cursor:pointer;">Tôi đã có tài khoản</button>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ONBOARDING 2: goals -->
+    <sc-if value="{{ isOnb2 }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;padding:64px 20px 36px;display:flex;flex-direction:column;gap:24px;background:var(--bg,#08090B);">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <button onClick="{{ goOnb1 }}" style="width:44px;height:44px;border-radius:50%;border:1px solid var(--bd,rgba(255,255,255,0.08));background:var(--s1,#121418);color:var(--tx,#F4F5F7);cursor:pointer;display:flex;align-items:center;justify-content:center;"><span style="font-family:'Material Symbols Rounded';font-size:22px;">arrow_back</span></button>
+          <div style="flex:1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">
+            <div style="height:6px;border-radius:3px;background:var(--tx,#F4F5F7);"></div>
+            <div style="height:6px;border-radius:3px;background:var(--s2,#1B1E23);"></div>
+            <div style="height:6px;border-radius:3px;background:var(--s2,#1B1E23);"></div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="font-size:13px;font-weight:800;letter-spacing:1.4px;color:var(--tx3,#6E737C);">BƯỚC 1 / 3</div>
+          <div style="font-family:'SpaceGrotesk';font-size:32px;line-height:1.1;font-weight:700;letter-spacing:-0.8px;">Bạn muốn đạt được gì?</div>
+          <div style="font-size:15px;color:var(--tx2,#A3A8B1);">Chọn bao nhiêu cũng được.</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <sc-for list="{{ goals }}" as="g" hint-placeholder-count="6">
+            <button onClick="{{ g.toggle }}" style="position:relative;min-height:124px;border-radius:22px;cursor:pointer;text-align:left;padding:16px;display:flex;flex-direction:column;justify-content:space-between;background:var(--s1,#121418);border:2px solid {{ g.border }};color:var(--tx,#F4F5F7);">
+              <span style="font-family:'Material Symbols Rounded';font-size:30px;font-variation-settings:'FILL' 1;color:{{ g.color }};">{{ g.icon }}</span>
+              <div style="display:flex;flex-direction:column;gap:2px;">
+                <span style="font-family:'SpaceGrotesk';font-size:17px;font-weight:700;">{{ g.label }}</span>
+                <span style="font-size:13px;color:var(--tx2,#A3A8B1);">{{ g.sub }}</span>
+              </div>
+              <span style="position:absolute;top:14px;right:14px;font-family:'Material Symbols Rounded';font-size:24px;font-variation-settings:'FILL' 1;color:{{ g.checkColor }};">{{ g.check }}</span>
+            </button>
+          </sc-for>
+        </div>
+        <div style="flex:1;"></div>
+        <button onClick="{{ goOnb3 }}" style="height:58px;border-radius:999px;border:none;background:var(--inv,#F4F5F7);color:var(--oninv,#0B0C0E);font-size:17px;font-weight:800;cursor:pointer;">Tiếp tục</button>
+      </div>
+    </sc-if>
+
+    <!-- ONBOARDING 3: time -->
+    <sc-if value="{{ isOnb3 }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;padding:64px 20px 36px;display:flex;flex-direction:column;gap:24px;background:var(--bg,#08090B);">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <button onClick="{{ goOnb2 }}" style="width:44px;height:44px;border-radius:50%;border:1px solid var(--bd,rgba(255,255,255,0.08));background:var(--s1,#121418);color:var(--tx,#F4F5F7);cursor:pointer;display:flex;align-items:center;justify-content:center;"><span style="font-family:'Material Symbols Rounded';font-size:22px;">arrow_back</span></button>
+          <div style="flex:1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">
+            <div style="height:6px;border-radius:3px;background:var(--tx,#F4F5F7);"></div>
+            <div style="height:6px;border-radius:3px;background:var(--tx,#F4F5F7);"></div>
+            <div style="height:6px;border-radius:3px;background:var(--s2,#1B1E23);"></div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="font-size:13px;font-weight:800;letter-spacing:1.4px;color:var(--tx3,#6E737C);">BƯỚC 2 / 3</div>
+          <div style="font-family:'SpaceGrotesk';font-size:32px;line-height:1.1;font-weight:700;letter-spacing:-0.8px;">Mỗi ngày bạn có bao nhiêu phút?</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <sc-for list="{{ minOpts }}" as="m" hint-placeholder-count="4">
+            <button onClick="{{ m.pick }}" style="display:flex;align-items:center;gap:16px;padding:16px 18px;border-radius:20px;cursor:pointer;text-align:left;background:var(--s1,#121418);border:2px solid {{ m.border }};color:var(--tx,#F4F5F7);">
+              <span style="font-family:'SpaceGrotesk';font-size:30px;font-weight:700;width:56px;letter-spacing:-1px;">{{ m.min }}</span>
+              <div style="flex:1;display:flex;flex-direction:column;gap:2px;">
+                <span style="font-size:15px;font-weight:800;">{{ m.label }}</span>
+                <span style="font-size:13px;color:var(--tx2,#A3A8B1);">{{ m.sub }}</span>
+              </div>
+              <span style="font-family:'Material Symbols Rounded';font-size:24px;font-variation-settings:'FILL' 1;color:{{ m.checkColor }};">{{ m.check }}</span>
+            </button>
+          </sc-for>
+        </div>
+        <div style="padding:16px 18px;border-radius:20px;background:var(--s2,#1B1E23);display:flex;flex-direction:column;gap:10px;">
+          <div style="font-size:12px;font-weight:800;letter-spacing:1.4px;color:var(--tx3,#6E737C);">KẾ HOẠCH CỦA BẠN</div>
+          <div style="display:flex;gap:16px;">
+            <div style="flex:1;display:flex;align-items:center;gap:8px;"><span style="font-family:'Material Symbols Rounded';font-size:22px;font-variation-settings:'FILL' 1;color:var(--red,#E5484D);">fitness_center</span><span style="font-size:14px;font-weight:700;">{{ planTrain }}</span></div>
+            <div style="flex:1;display:flex;align-items:center;gap:8px;"><span style="font-family:'Material Symbols Rounded';font-size:22px;font-variation-settings:'FILL' 1;color:var(--blue,#5B8CFF);">school</span><span style="font-size:14px;font-weight:700;">{{ planLearn }}</span></div>
+          </div>
+        </div>
+        <div style="flex:1;"></div>
+        <button onClick="{{ goPaywall }}" style="height:58px;border-radius:999px;border:none;background:var(--inv,#F4F5F7);color:var(--oninv,#0B0C0E);font-size:17px;font-weight:800;cursor:pointer;">Tạo kế hoạch</button>
+      </div>
+    </sc-if>
+
+    <!-- PAYWALL -->
+    <sc-if value="{{ isPaywall }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;background:#000;overflow-y:auto;scrollbar-width:none;color:#fff;">
+        <div style="position:relative;height:300px;">
+          <img src="assets/img/hero.jpg" style="position:absolute;top:0;right:-230px;height:300px;"></img>
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 40%,#000 100%);"></div>
+          <button onClick="{{ goToday }}" style="position:absolute;top:60px;left:20px;width:40px;height:40px;border-radius:50%;border:none;background:rgba(255,255,255,0.14);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;"><span style="font-family:'Material Symbols Rounded';font-size:22px;">close</span></button>
+          <div style="position:absolute;left:24px;bottom:10px;display:flex;flex-direction:column;gap:8px;">
+            <div style="align-self:flex-start;padding:5px 10px;border-radius:999px;background:var(--gold,#E8B84A);color:#1A1406;font-size:12px;font-weight:800;letter-spacing:1px;">GYMTALK PRO</div>
+            <div style="font-family:'SpaceGrotesk';font-size:34px;line-height:1.05;font-weight:700;letter-spacing:-1px;">Tiến bộ nhanh<span style="display:block;height:0;"></span>gấp đôi.</div>
+          </div>
+        </div>
+        <div style="padding:20px 24px 32px;display:flex;flex-direction:column;gap:22px;">
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <sc-for list="{{ proFeatures }}" as="f" hint-placeholder-count="5">
+              <div style="display:flex;align-items:center;gap:14px;">
+                <span style="width:36px;height:36px;border-radius:12px;background:#15171B;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:20px;font-variation-settings:'FILL' 1;color:var(--gold,#E8B84A);">{{ f.icon }}</span>
+                <span style="font-size:15px;font-weight:700;line-height:1.35;">{{ f.label }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <button onClick="{{ pickYear }}" style="position:relative;display:flex;align-items:center;gap:14px;padding:18px;border-radius:20px;cursor:pointer;text-align:left;background:#101114;border:2px solid {{ yearBorder }};color:#fff;">
+              <span style="font-family:'Material Symbols Rounded';font-size:24px;font-variation-settings:'FILL' 1;color:{{ yearDot }};">{{ yearIcon }}</span>
+              <div style="flex:1;display:flex;flex-direction:column;gap:2px;"><span style="font-size:16px;font-weight:800;">Theo năm</span><span style="font-size:13px;color:#A3A8B1;">899.000 ₫ / năm</span></div>
+              <div style="display:flex;flex-direction:column;align-items:flex-end;"><span style="font-family:'SpaceGrotesk';font-size:20px;font-weight:700;">74.900 ₫</span><span style="font-size:12px;color:#A3A8B1;">/ tháng</span></div>
+              <span style="position:absolute;top:-11px;right:16px;padding:3px 10px;border-radius:999px;background:var(--gold,#E8B84A);color:#1A1406;font-size:11px;font-weight:800;">TIẾT KIỆM 42%</span>
+            </button>
+            <button onClick="{{ pickMonth }}" style="display:flex;align-items:center;gap:14px;padding:18px;border-radius:20px;cursor:pointer;text-align:left;background:#101114;border:2px solid {{ monthBorder }};color:#fff;">
+              <span style="font-family:'Material Symbols Rounded';font-size:24px;font-variation-settings:'FILL' 1;color:{{ monthDot }};">{{ monthIcon }}</span>
+              <div style="flex:1;display:flex;flex-direction:column;gap:2px;"><span style="font-size:16px;font-weight:800;">Theo tháng</span><span style="font-size:13px;color:#A3A8B1;">Hủy bất cứ lúc nào</span></div>
+              <div style="display:flex;flex-direction:column;align-items:flex-end;"><span style="font-family:'SpaceGrotesk';font-size:20px;font-weight:700;">129.000 ₫</span><span style="font-size:12px;color:#A3A8B1;">/ tháng</span></div>
+            </button>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px;align-items:center;">
+            <button onClick="{{ startTrial }}" style="width:100%;height:58px;border-radius:999px;border:none;background:var(--gold,#E8B84A);color:#1A1406;font-size:17px;font-weight:800;cursor:pointer;">Dùng thử 7 ngày miễn phí</button>
+            <span style="font-size:12px;color:#8A8F97;text-align:center;line-height:1.5;">Không trừ tiền hôm nay. Nhắc bạn 2 ngày trước khi hết hạn dùng thử.</span>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- MAIN (tabs) -->
+    <sc-if value="{{ isMain }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;overflow-y:auto;scrollbar-width:none;padding:54px 16px 176px;display:flex;flex-direction:column;gap:14px;background:var(--bg,#08090B);">
+
+        <div style="display:flex;align-items:center;gap:12px;padding:6px 2px 2px;">
+          <div style="position:relative;width:48px;height:48px;flex-shrink:0;">
+            <div style="position:absolute;inset:0;border-radius:50%;background:conic-gradient(var(--gold,#E8B84A) {{ lvlDeg }},var(--s2,#1B1E23) 0);"></div>
+            <div style="position:absolute;inset:3px;border-radius:50%;background:var(--s1,#121418);display:flex;align-items:center;justify-content:center;font-family:'SpaceGrotesk';font-weight:700;font-size:15px;">QH</div>
+            <div style="position:absolute;right:-4px;bottom:-4px;padding:1px 6px;border-radius:999px;background:var(--gold,#E8B84A);color:#1A1406;font-size:10px;font-weight:800;border:2px solid var(--bg,#08090B);">8</div>
+          </div>
+          <div style="flex:1;min-width:0;display:flex;flex-direction:column;">
+            <span style="font-size:13px;color:var(--tx2,#A3A8B1);font-weight:600;">Chào buổi sáng,</span>
+            <span style="font-family:'SpaceGrotesk';font-size:21px;font-weight:700;letter-spacing:-0.3px;">{{ tabTitle }}</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;height:40px;padding:0 12px;border-radius:999px;background:var(--s1,#121418);border:1px solid var(--bd,rgba(255,255,255,0.08));">
+            <span style="font-family:'Material Symbols Rounded';font-size:20px;font-variation-settings:'FILL' 1;color:#FF8A3D;">local_fire_department</span>
+            <span style="font-family:'SpaceGrotesk';font-weight:700;font-size:16px;">{{ streak }}</span>
+          </div>
+          <button onClick="{{ goWealth }}" style="width:40px;height:40px;border-radius:50%;background:var(--s1,#121418);border:1px solid var(--bd,rgba(255,255,255,0.08));color:var(--tx,#F4F5F7);cursor:pointer;display:flex;align-items:center;justify-content:center;"><span style="font-family:'Material Symbols Rounded';font-size:20px;">apps</span></button>
+          <div style="position:relative;width:40px;height:40px;border-radius:50%;background:var(--s1,#121418);border:1px solid var(--bd,rgba(255,255,255,0.08));display:flex;align-items:center;justify-content:center;">
+            <span style="font-family:'Material Symbols Rounded';font-size:20px;">chat_bubble</span>
+            <span style="position:absolute;top:8px;right:8px;width:8px;height:8px;border-radius:50%;background:var(--red,#E5484D);"></span>
+          </div>
+        </div>
+
+        <!-- TODAY -->
+        <sc-if value="{{ isToday }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div style="border-radius:28px;background:var(--s1,#121418);border:1px solid var(--bd,rgba(255,255,255,0.08));padding:20px;display:flex;flex-direction:column;gap:18px;">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;">
+                <span style="font-size:12px;font-weight:800;letter-spacing:1.4px;color:var(--tx3,#6E737C);">MỤC TIÊU HÔM NAY</span>
+                <span style="font-size:13px;font-weight:700;color:var(--tx2,#A3A8B1);">Thứ Năm, 25/9</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:20px;">
+                <div style="position:relative;width:164px;height:164px;flex-shrink:0;">
+                  <svg width="164" height="164" viewBox="0 0 164 164" style="transform:rotate(-90deg);">
+                    <circle cx="82" cy="82" r="72" fill="none" stroke-width="14" style="stroke:var(--redT,rgba(229,72,77,0.18));"></circle>
+                    <circle cx="82" cy="82" r="72" fill="none" stroke-width="14" stroke-linecap="round" style="stroke:var(--red,#E5484D);stroke-dasharray:{{ ringTrain }};transition:stroke-dasharray .6s;"></circle>
+                    <circle cx="82" cy="82" r="55" fill="none" stroke-width="14" style="stroke:var(--blueT,rgba(91,140,255,0.18));"></circle>
+                    <circle cx="82" cy="82" r="55" fill="none" stroke-width="14" stroke-linecap="round" style="stroke:var(--blue,#5B8CFF);stroke-dasharray:{{ ringLearn }};transition:stroke-dasharray .6s;"></circle>
+                    <circle cx="82" cy="82" r="38" fill="none" stroke-width="14" style="stroke:var(--tealT,rgba(61,214,181,0.18));"></circle>
+                    <circle cx="82" cy="82" r="38" fill="none" stroke-width="14" stroke-linecap="round" style="stroke:var(--teal,#3DD6B5);stroke-dasharray:{{ ringSpeak }};transition:stroke-dasharray .6s;"></circle>
+                  </svg>
+                  <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                    <span style="font-family:'SpaceGrotesk';font-size:26px;font-weight:700;letter-spacing:-1px;">{{ dayPct }}</span>
+                  </div>
+                </div>
+                <div style="flex:1;display:flex;flex-direction:column;gap:14px;">
+                  <div style="display:flex;flex-direction:column;gap:1px;">
+                    <span style="font-size:13px;font-weight:800;color:var(--red,#E5484D);">Tập</span>
+                    <span style="font-family:'SpaceGrotesk';font-size:26px;font-weight:700;letter-spacing:-0.5px;line-height:1.1;">{{ trainLabel }}<span style="font-size:14px;color:var(--tx2,#A3A8B1);font-weight:600;"> buổi</span></span>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:1px;">
+                    <span style="font-size:13px;font-weight:800;color:var(--blue,#5B8CFF);">Học</span>
+                    <span style="font-family:'SpaceGrotesk';font-size:26px;font-weight:700;letter-spacing:-0.5px;line-height:1.1;">{{ reviewed }}/12<span style="font-size:14px;color:var(--tx2,#A3A8B1);font-weight:600;"> từ</span></span>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:1px;">
+                    <span style="font-size:13px;font-weight:800;color:var(--teal,#3DD6B5);">Nói</span>
+                    <span style="font-family:'SpaceGrotesk';font-size:26px;font-weight:700;letter-spacing:-0.5px;line-height:1.1;">{{ speak }}/5<span style="font-size:14px;color:var(--tx2,#A3A8B1);font-weight:600;"> câu</span></span>
+                  </div>
+                </div>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;padding-top:14px;border-top:1px solid var(--bd,rgba(255,255,255,0.08));">
+                <sc-for list="{{ week }}" as="d" hint-placeholder-count="7">
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+                    <div style="width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:{{ d.bg }};border:{{ d.border }};">
+                      <span style="font-family:'Material Symbols Rounded';font-size:18px;font-variation-settings:'FILL' 1;color:{{ d.fg }};">{{ d.icon }}</span>
+                    </div>
+                    <span style="font-size:12px;font-weight:700;color:{{ d.labelColor }};">{{ d.label }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="position:relative;border-radius:28px;overflow:hidden;background:#0A0A0A;min-height:220px;color:#fff;">
+              <img src="assets/img/today_plan.jpg" style="position:absolute;right:-120px;top:0;height:100%;"></img>
+              <div style="position:absolute;inset:0;background:linear-gradient(90deg,#0A0A0A 38%,rgba(10,10,10,0.2) 100%);"></div>
+              <div style="position:relative;padding:20px;display:flex;flex-direction:column;gap:14px;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span style="padding:4px 10px;border-radius:999px;background:rgba(229,72,77,0.2);color:#FF6B6F;font-size:12px;font-weight:800;">NGÀY 3 · ĐẨY</span>
+                  <span style="font-size:12px;font-weight:700;color:#A3A8B1;">Tuần 3/8</span>
+                </div>
+                <div style="font-family:'SpaceGrotesk';font-size:26px;line-height:1.1;font-weight:700;letter-spacing:-0.6px;max-width:220px;">Tăng cơ toàn thân 8 tuần</div>
+                <div style="display:flex;gap:16px;font-size:14px;font-weight:700;color:#C9CDD3;">
+                  <span>8 bài</span><span>26 hiệp</span><span>~45 phút</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;">
+                  <button onClick="{{ startWorkout }}" style="height:52px;padding:0 22px;border-radius:999px;border:none;background:{{ trainBtnBg }};color:#fff;font-size:16px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:8px;"><span style="font-family:'Material Symbols Rounded';font-size:24px;font-variation-settings:'FILL' 1;">{{ trainBtnIcon }}</span>{{ trainBtnLabel }}</button>
+                  <span style="font-size:14px;font-weight:800;color:var(--gold,#E8B84A);">+120 XP</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="border-radius:28px;background:var(--s1,#121418);border:1px solid var(--bd,rgba(255,255,255,0.08));padding:20px;display:flex;flex-direction:column;gap:6px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:8px;">
+                <span style="font-family:'SpaceGrotesk';font-size:20px;font-weight:700;">Nhiệm vụ hằng ngày</span>
+                <span style="font-size:13px;font-weight:800;color:var(--tx2,#A3A8B1);">{{ questDone }}/4</span>
+              </div>
+              <sc-for list="{{ quests }}" as="q" hint-placeholder-count="4">
+                <button onClick="{{ q.tap }}" style="display:flex;align-items:center;gap:14px;padding:12px 0;border:none;background:transparent;cursor:pointer;text-align:left;color:var(--tx,#F4F5F7);">
+                  <span style="width:44px;height:44px;border-radius:14px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:{{ q.tint }};font-family:'Material Symbols Rounded';font-size:22px;font-variation-settings:'FILL' 1;color:{{ q.color }};">{{ q.icon }}</span>
+                  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;">
+                    <span style="font-size:15px;font-weight:800;text-decoration:{{ q.strike }};opacity:{{ q.op }};">{{ q.title }}</span>
+                    <span style="font-size:13px;color:var(--tx2,#A3A8B1);">{{ q.sub }}</span>
+                  </div>
+                  <span style="font-size:13px;font-weight:800;color:var(--gold,#E8B84A);">+{{ q.xp }}</span>
+                  <span style="width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:{{ q.checkBg }};border:2px solid {{ q.checkBorder }};font-family:'Material Symbols Rounded';font-size:18px;font-weight:700;color:#0B0C0E;">{{ q.check }}</span>
+                </button>
+              </sc-for>
+              <div style="display:flex;align-items:center;gap:14px;margin-top:8px;padding:14px;border-radius:18px;background:var(--goldT,rgba(232,184,74,0.12));">
+                <span style="font-family:'Material Symbols Rounded';font-size:30px;font-variation-settings:'FILL' 1;color:var(--gold,#E8B84A);">redeem</span>
+                <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+                  <span style="font-size:14px;font-weight:800;">{{ chestLabel }}</span>
+                  <div style="height:8px;border-radius:4px;background:var(--s2,#1B1E23);overflow:hidden;"><div style="height:100%;width:{{ questPct }};background:var(--gold,#E8B84A);border-radius:4px;transition:width .4s;"></div></div>
+                </div>
+                <sc-if value="{{ chestReady }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ openChest }}" style="height:40px;padding:0 16px;border-radius:999px;border:none;background:var(--gold,#E8B84A);color:#1A1406;font-weight:800;font-size:14px;cursor:pointer;">Mở</button>
+                </sc-if>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- TRAIN -->
+        <sc-if value="{{ isTrain }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div style="position:relative;border-radius:28px;overflow:hidden;background:#000;height:250px;color:#fff;">
+              <img src="assets/img/hero.jpg" style="position:absolute;right:-150px;top:0;height:100%;"></img>
+              <div style="position:absolute;inset:0;background:linear-gradient(90deg,#000 30%,rgba(0,0,0,0) 80%);"></div>
+              <div style="position:relative;height:100%;padding:20px;display:flex;flex-direction:column;justify-content:space-between;">
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                  <span style="font-size:12px;font-weight:800;letter-spacing:1.4px;color:#FF6B6F;">CẤP CƠ THỂ 14</span>
+                  <div style="font-family:'SpaceGrotesk';font-size:30px;line-height:1.05;font-weight:700;letter-spacing:-0.8px;">Kỷ luật hôm nay<span style="display:block;height:0;"></span>là kết quả<span style="display:block;height:0;"></span>ngày mai.</div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:8px;max-width:190px;">
+                  <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:#C9CDD3;"><span>Lên cấp 15</span><span>62%</span></div>
+                  <div style="height:6px;border-radius:3px;background:rgba(255,255,255,0.15);"><div style="width:62%;height:100%;border-radius:3px;background:var(--red,#E5484D);"></div></div>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+              <div style="border-radius:22px;background:var(--s1,#121418);border:1px solid var(--bd,rgba(255,255,255,0.08));padding:16px;display:flex;flex-direction:column;gap:6px;">
+                <span style="font-size:13px;font-weight:700;color:var(--tx2,#A3A8B1);">Buổi tập tuần này</span>
+                <span style="font-family:'SpaceGrotesk';font-size:40px;font-weight:700;letter-spacing:-1.5px;line-height:1;">{{ weekSessions }}<span style="font-size:18px;color:var(--tx3,#6E737C);">/4</span></span>
+                <div style="display:flex;gap:4px;"><div style="flex:1;height:5px;border-radius:3px;background:var(--red,#E5484D);"></div><div style="flex:1;height:5px;border-radius:3px;background:var(--red,#E5484D);"></div><div style="flex:1;height:5px;border-radius:3px;background:var(--red,#E5484D);"></div><div style="flex:1;height:5px;border-radius:3px;background:{{ fourthBar }};"></div></div>
+              </div>
+              <div style="border-radius:22px;background:var(--s1,#121418);border:1px solid var(--bd,rgba(255,255,255,0.08));padding:16px;display:flex;flex-direction:column;gap:6px;">
+                <span style="font-size:13px;font-weight:700;color:var(--tx2,#A3A8B1);">Tổng khối lượng</span>
+                <span style="font-family:'SpaceGrotesk';font-size:40px;font-weight:700;letter-spacing:-1.5px;line-height:1;">7.5<span style="font-size:18px;color:var(--tx3,#6E737C);"> tấn</span></span>
+                <span style="font-size:13px;font-weight:800;color:var(--teal,#3DD6B5);">+12% so với tuần trước</span>
+              </div>
+              <div style="border-radius:22px;background:var(--s1,#121418);border:1px solid var(--bd,rgba(255,255,255,0.08));padding:16px;display:flex;flex-direction:column;gap:6px;">
+                <span style="font-size:13px;font-weight:700;color:var(--tx2,#A3A8B1);">Nhịp tim nghỉ</span>
+                <span style="font-family:'SpaceGrotesk';font-size:40px;font-weight:700;letter-spacing:-1.5px;line-height:1;">78<span style="font-size:18px;color:var(--tx3,#6E737C);"> bpm</span></span>
+                <span style="font-size:13px;font-weight:700;color:var(--tx2,#A3A8B1);">Đo bằng camera</span>
+              </div>
+              <div style="border-radius:22px;background:var(--s1,#121418);border:1px solid var(--bd,rgba(255,255,255,0.08));padding:16px;display:flex;flex-direction:column;gap:6px;">
+                <span style="font-size:13px;font-weight:700;color:var(--tx2,#A3A8B1);">Calo nạp vào</span>
+                <span style="font-family:'SpaceGrotesk';font-size:40px;font-weight:700;letter-spacing:-1.5px;line-height:1;">512<span style="font-size:18px;color:var(--tx3,#6E737C);"> kcal</span></span>
+                <div style="height:5px;border-radius:3px;background:var(--s2,#1B1E23);"><div style="width:24%;height:100%;border-radius:3px;background:var(--gold,#E8B84A);"></div></div>
+              </div>
+            </div>
+
+            <div style="border-radius:28px;background:var(--s1,#121418);border:1px solid var(--bd,rgba(255,255,255,0.08));padding:20px;display:flex;flex-direction:column;gap:14px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-family:'SpaceGrotesk';font-size:20px;font-weight:700;">Buổi hôm nay</span>
+                <span style="font-size:13px;font-weight:800;color:var(--red,#E5484D);">Ngày 3 · Đẩy</span>
+              </div>
+              <sc-for list="{{ exPreview }}" as="e" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;gap:14px;">
+                  <span style="width:32px;font-family:'SpaceGrotesk';font-size:18px;font-weight:700;color:var(--tx3,#6E737C);">{{ e.n }}</span>
+                  <div style="flex:1;display:flex;flex-direction:column;gap:1px;"><span style="font-size:15px;font-weight:800;">{{ e.name }}</span><span style="font-size:13px;color:var(--tx2,#A3A8B1);">{{ e.target }}</span></div>
+                  <span style="font-family:'SpaceGrotesk';font-size:16px;font-weight:700;">{{ e.kg }} kg</span>
+                </div>
+              </sc-for>
+              <button onClick="{{ startWorkout }}" style="height:54px;border-radius:999px;border:none;background:var(--red,#E5484D);color:#fff;font-size:16px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;"><span style="font-family:'Material Symbols Rounded';font-size:24px;font-variation-settings:'FILL' 1;">play_arrow</span>Bắt đầu tập</button>
+            </div>
+
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 4px 0;">
+              <span style="font-family:'SpaceGrotesk';font-size:20px;font-weight:700;">Giáo án</span>
+              <span style="font-size:14px;font-weight:700;color:var(--tx2,#A3A8B1);">Xem tất cả</span>
+            </div>
+            <div style="display:flex;gap:10px;overflow-x:auto;margin:0 -16px;padding:0 16px;">
+              <sc-for list="{{ programs }}" as="p" hint-placeholder-count="3">
+                <div style="position:relative;flex-shrink:0;width:150px;height:190px;border-radius:22px;overflow:hidden;background:#111;color:#fff;">
+                  <img src="{{ p.img }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"></img>
+                  <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 35%,rgba(0,0,0,0.92) 100%);"></div>
+                  <div style="position:absolute;left:14px;right:14px;bottom:14px;display:flex;flex-direction:column;gap:3px;">
+                    <span style="font-family:'SpaceGrotesk';font-size:16px;line-height:1.15;font-weight:700;">{{ p.name }}</span>
+                    <span style="font-size:12px;font-weight:700;color:#C9CDD3;">{{ p.level }}</span>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- LEARN -->
+        <sc-if value="{{ isLearn }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div style="border-radius:28px;background:var(--s1,#121418);border:1px solid var(--bd,rgba(255,255,255,0.08));padding:18px 20px;display:flex;align-items:center;gap:16px;">
+              <div style="width:64px;height:64px;border-radius:20px;background:var(--blueT,rgba(91,140,255,0.18));display:flex;align-items:center;justify-content:center;font-family:'SpaceGrotesk';font-size:26px;font-weight:700;color:var(--blue,#5B8CFF);">B1</div>
+              <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+                <div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-family:'SpaceGrotesk';font-size:19px;font-weight:700;">Trung cấp</span><span style="font-size:13px;font-weight:700;color:var(--tx2,#A3A8B1);">Còn 420 XP tới B2</span></div>
+                <div style="height:8px;border-radius:4px;background:var(--s2,#1B1E23);"><div style="width:72%;height:100%;border-radius:4px;background:var(--blue,#5B8CFF);"></div></div>
+              </div>
+            </div>
+
+            <div style="position:relative;border-radius:28px;overflow:hidden;background:#050B16;min-height:236px;color:#fff;">
+              <img src="assets/img/hero_daily_words.jpg" style="position:absolute;right:-70px;top:-10px;height:250px;"></img>
+              <div style="position:absolute;inset:0;background:linear-gradient(90deg,#050B16 35%,rgba(5,11,22,0) 90%);"></div>
+              <div style="position:relative;padding:20px;display:flex;flex-direction:column;gap:12px;">
+                <span style="font-size:12px;font-weight:800;letter-spacing:1.4px;color:#8FB0FF;">TỪ VỰNG HẰNG NGÀY</span>
+                <div style="font-family:'SpaceGrotesk';font-size:30px;line-height:1.05;font-weight:700;letter-spacing:-0.8px;">Học 12 từ<span style="display:block;height:0;"></span>hôm nay</div>
+                <div style="font-size:14px;color:#AFC0DA;max-width:190px;">Chủ đề: Phòng gym. {{ reviewed }}/12 từ đã ôn.</div>
+                <button onClick="{{ startReview }}" style="align-self:flex-start;height:50px;padding:0 22px;border-radius:999px;border:none;background:#fff;color:#050B16;font-size:16px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:8px;"><span style="font-family:'Material Symbols Rounded';font-size:22px;font-variation-settings:'FILL' 1;">play_arrow</span>Tiếp tục</button>
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+              <sc-for list="{{ skills }}" as="s" hint-placeholder-count="4">
+                <div style="border-radius:22px;background:var(--s1,#121418);border:1px solid var(--bd,rgba(255,255,255,0.08));padding:16px;display:flex;flex-direction:column;gap:12px;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <span style="font-family:'Material Symbols Rounded';font-size:26px;color:var(--blue,#5B8CFF);">{{ s.icon }}</span>
+                    <span style="font-family:'SpaceGrotesk';font-size:15px;font-weight:700;color:var(--tx2,#A3A8B1);">{{ s.pct }}</span>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:2px;"><span style="font-size:16px;font-weight:800;">{{ s.name }}</span><span style="font-size:13px;color:var(--tx2,#A3A8B1);">{{ s.sub }}</span></div>
+                  <div style="height:5px;border-radius:3px;background:var(--s2,#1B1E23);"><div style="width:{{ s.pct }};height:100%;border-radius:3px;background:var(--blue,#5B8CFF);"></div></div>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="border-radius:28px;background:var(--s1,#121418);border:1px solid var(--bd,rgba(255,255,255,0.08));padding:20px;display:flex;flex-direction:column;gap:16px;">
+              <div style="display:flex;align-items:center;gap:16px;">
+                <div style="flex:1;display:flex;flex-direction:column;gap:4px;">
+                  <span style="font-size:12px;font-weight:800;letter-spacing:1.4px;color:var(--teal,#3DD6B5);">LUYỆN NÓI</span>
+                  <span style="font-family:'SpaceGrotesk';font-size:22px;font-weight:700;">Nghe kỹ. Nói lại.</span>
+                  <span style="font-size:13px;color:var(--tx2,#A3A8B1);">Chấm điểm phát âm từng âm tiết</span>
+                </div>
+                <button onClick="{{ doSpeak }}" style="width:64px;height:64px;border-radius:50%;border:none;background:var(--teal,#3DD6B5);color:#04201A;cursor:pointer;display:flex;align-items:center;justify-content:center;"><span style="font-family:'Material Symbols Rounded';font-size:30px;font-variation-settings:'FILL' 1;">mic</span></button>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                <sc-for list="{{ speakModes }}" as="m" hint-placeholder-count="4">
+                  <div style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:16px;background:var(--s2,#1B1E23);">
+                    <span style="font-family:'Material Symbols Rounded';font-size:22px;color:var(--teal,#3DD6B5);">{{ m.icon }}</span>
+                    <div style="display:flex;flex-direction:column;"><span style="font-size:14px;font-weight:800;">{{ m.name }}</span><span style="font-size:12px;color:var(--tx2,#A3A8B1);">{{ m.sub }}</span></div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+              <sc-for list="{{ exams }}" as="x" hint-placeholder-count="3">
+                <div style="border-radius:20px;background:var(--s1,#121418);border:1px solid var(--bd,rgba(255,255,255,0.08));padding:14px;display:flex;flex-direction:column;gap:8px;">
+                  <span style="font-family:'Material Symbols Rounded';font-size:24px;color:var(--tx2,#A3A8B1);">{{ x.icon }}</span>
+                  <div style="display:flex;flex-direction:column;"><span style="font-size:15px;font-weight:800;">{{ x.name }}</span><span style="font-size:12px;color:var(--tx2,#A3A8B1);">{{ x.sub }}</span></div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- PROGRESS -->
+        <sc-if value="{{ isProgress }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div style="border-radius:28px;padding:22px 20px;display:flex;flex-direction:column;gap:18px;background:var(--s1,#121418);border:1px solid var(--goldB,rgba(232,184,74,0.35));">
+              <div style="display:flex;align-items:center;gap:16px;">
+                <div style="width:72px;height:72px;border-radius:24px;background:var(--goldT,rgba(232,184,74,0.12));display:flex;align-items:center;justify-content:center;"><span style="font-family:'Material Symbols Rounded';font-size:44px;font-variation-settings:'FILL' 1;color:var(--gold,#E8B84A);">diamond</span></div>
+                <div style="flex:1;display:flex;flex-direction:column;gap:2px;">
+                  <span style="font-size:12px;font-weight:800;letter-spacing:1.4px;color:var(--gold,#E8B84A);">HẠNG CỦA BẠN</span>
+                  <span style="font-family:'SpaceGrotesk';font-size:24px;font-weight:700;">Kim cương III</span>
+                  <span style="font-size:13px;color:var(--tx2,#A3A8B1);">Cấp 8 · {{ xpFmt }} XP</span>
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <div style="height:10px;border-radius:5px;background:var(--s2,#1B1E23);overflow:hidden;"><div style="width:{{ xpPct }};height:100%;border-radius:5px;background:var(--gold,#E8B84A);transition:width .5s;"></div></div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;color:var(--tx2,#A3A8B1);"><span>Cấp 8</span><span>{{ xpLeft }} XP tới cấp 9</span></div>
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+              <div style="border-radius:22px;background:var(--s1,#121418);border:1px solid var(--bd,rgba(255,255,255,0.08));padding:16px;display:flex;flex-direction:column;gap:8px;">
+                <span style="font-family:'Material Symbols Rounded';font-size:24px;font-variation-settings:'FILL' 1;color:var(--red,#E5484D);">fitness_center</span>
+                <span style="font-size:13px;font-weight:700;color:var(--tx2,#A3A8B1);">Cấp cơ thể</span>
+                <span style="font-family:'SpaceGrotesk';font-size:36px;font-weight:700;letter-spacing:-1px;line-height:1;">14</span>
+                <span style="font-size:13px;font-weight:700;">Vận động viên</span>
+              </div>
+              <div style="border-radius:22px;background:var(--s1,#121418);border:1px solid var(--bd,rgba(255,255,255,0.08));padding:16px;display:flex;flex-direction:column;gap:8px;">
+                <span style="font-family:'Material Symbols Rounded';font-size:24px;font-variation-settings:'FILL' 1;color:var(--blue,#5B8CFF);">school</span>
+                <span style="font-size:13px;font-weight:700;color:var(--tx2,#A3A8B1);">Tiếng Anh</span>
+                <span style="font-family:'SpaceGrotesk';font-size:36px;font-weight:700;letter-spacing:-1px;line-height:1;">B1</span>
+                <span style="font-size:13px;font-weight:700;">Trung cấp</span>
+              </div>
+            </div>
+
+            <div style="border-radius:28px;background:var(--s1,#121418);border:1px solid var(--bd,rgba(255,255,255,0.08));padding:20px;display:flex;flex-direction:column;gap:16px;">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;">
+                <span style="font-family:'SpaceGrotesk';font-size:20px;font-weight:700;">Tuần này</span>
+                <span style="font-size:13px;font-weight:700;color:var(--tx2,#A3A8B1);">5 giờ 48 phút</span>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:10px;align-items:end;height:140px;">
+                <sc-for list="{{ chart }}" as="c" hint-placeholder-count="7">
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end;">
+                    <div style="width:100%;display:flex;flex-direction:column;gap:3px;justify-content:flex-end;height:110px;">
+                      <div style="height:{{ c.l }};border-radius:6px;background:var(--blue,#5B8CFF);"></div>
+                      <div style="height:{{ c.t }};border-radius:6px;background:var(--red,#E5484D);"></div>
+                    </div>
+                    <span style="font-size:12px;font-weight:700;color:var(--tx2,#A3A8B1);">{{ c.d }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:flex;gap:18px;font-size:13px;font-weight:700;color:var(--tx2,#A3A8B1);">
+                <span style="display:flex;align-items:center;gap:6px;"><span style="width:10px;height:10px;border-radius:3px;background:var(--red,#E5484D);"></span>Tập</span>
+                <span style="display:flex;align-items:center;gap:6px;"><span style="width:10px;height:10px;border-radius:3px;background:var(--blue,#5B8CFF);"></span>Học</span>
+              </div>
+            </div>
+
+            <div style="border-radius:28px;background:var(--s1,#121418);border:1px solid var(--bd,rgba(255,255,255,0.08));padding:20px;display:flex;flex-direction:column;gap:4px;">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;padding-bottom:8px;">
+                <span style="font-family:'SpaceGrotesk';font-size:20px;font-weight:700;">Giải Kim cương</span>
+                <span style="font-size:13px;font-weight:700;color:var(--tx2,#A3A8B1);">Còn 3 ngày</span>
+              </div>
+              <sc-for list="{{ league }}" as="u" hint-placeholder-count="5">
+                <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;margin:0 -12px;border-radius:16px;background:{{ u.bg }};">
+                  <span style="width:22px;font-family:'SpaceGrotesk';font-size:16px;font-weight:700;color:{{ u.rankColor }};">{{ u.rank }}</span>
+                  <div style="width:36px;height:36px;border-radius:50%;background:var(--s2,#1B1E23);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;">{{ u.ini }}</div>
+                  <span style="flex:1;font-size:15px;font-weight:800;">{{ u.name }}</span>
+                  <span style="font-family:'SpaceGrotesk';font-size:15px;font-weight:700;">{{ u.xp }} XP</span>
+                </div>
+              </sc-for>
+              <div style="font-size:12px;font-weight:700;color:var(--tx3,#6E737C);padding-top:8px;">Top 3 lên hạng Cao thủ</div>
+            </div>
+
+            <div style="border-radius:28px;background:var(--s1,#121418);border:1px solid var(--bd,rgba(255,255,255,0.08));padding:20px;display:flex;flex-direction:column;gap:16px;">
+              <span style="font-family:'SpaceGrotesk';font-size:20px;font-weight:700;">Huy hiệu</span>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">
+                <sc-for list="{{ badges }}" as="b" hint-placeholder-count="6">
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:8px;opacity:{{ b.op }};">
+                    <div style="width:64px;height:64px;border-radius:22px;display:flex;align-items:center;justify-content:center;background:{{ b.bg }};"><span style="font-family:'Material Symbols Rounded';font-size:32px;font-variation-settings:'FILL' 1;color:{{ b.color }};">{{ b.icon }}</span></div>
+                    <span style="font-size:12px;font-weight:800;text-align:center;">{{ b.name }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+
+      <sc-if value="{{ showPlayer }}" hint-placeholder-val="{{ true }}">
+        <div style="position:absolute;left:12px;right:12px;bottom:94px;height:60px;border-radius:20px;z-index:20;display:flex;align-items:center;gap:12px;padding:0 8px 0 8px;background:var(--glass,rgba(26,28,33,0.82));backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--bd,rgba(255,255,255,0.08));overflow:hidden;">
+          <img src="assets/img/hero_daily_words.jpg" style="width:44px;height:44px;border-radius:12px;object-fit:cover;"></img>
+          <div style="flex:1;min-width:0;display:flex;flex-direction:column;">
+            <span style="font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Don't Close Your Eyes</span>
+            <span style="font-size:12px;color:var(--tx2,#A3A8B1);">Josh Woodward · Có lời song ngữ</span>
+          </div>
+          <button onClick="{{ togglePlay }}" style="width:44px;height:44px;border-radius:50%;border:none;background:transparent;color:var(--tx,#F4F5F7);cursor:pointer;display:flex;align-items:center;justify-content:center;"><span style="font-family:'Material Symbols Rounded';font-size:30px;font-variation-settings:'FILL' 1;">{{ playIcon }}</span></button>
+          <div style="position:absolute;left:0;bottom:0;height:2px;width:38%;background:var(--tx,#F4F5F7);"></div>
+        </div>
+      </sc-if>
+
+      <div style="position:absolute;left:0;right:0;bottom:0;height:88px;z-index:21;display:flex;align-items:flex-start;padding:8px 8px 0;background:var(--glass,rgba(18,20,24,0.88));backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--bd,rgba(255,255,255,0.08));">
+        <sc-for list="{{ tabsL }}" as="t" hint-placeholder-count="2">
+          <button onClick="{{ t.go }}" style="flex:1;height:56px;border:none;background:transparent;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:{{ t.color }};">
+            <span style="font-family:'Material Symbols Rounded';font-size:26px;font-variation-settings:'FILL' {{ t.fill }};">{{ t.icon }}</span>
+            <span style="font-size:12px;font-weight:{{ t.weight }};">{{ t.label }}</span>
+          </button>
+        </sc-for>
+        <div style="flex:1;display:flex;justify-content:center;">
+          <button onClick="{{ quickStart }}" style="width:58px;height:58px;margin-top:-18px;border-radius:50%;border:4px solid var(--bg,#08090B);background:var(--inv,#F4F5F7);color:var(--oninv,#0B0C0E);cursor:pointer;display:flex;align-items:center;justify-content:center;"><span style="font-family:'Material Symbols Rounded';font-size:32px;font-variation-settings:'FILL' 1;">bolt</span></button>
+        </div>
+        <sc-for list="{{ tabsR }}" as="t" hint-placeholder-count="2">
+          <button onClick="{{ t.go }}" style="flex:1;height:56px;border:none;background:transparent;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:{{ t.color }};">
+            <span style="font-family:'Material Symbols Rounded';font-size:26px;font-variation-settings:'FILL' {{ t.fill }};">{{ t.icon }}</span>
+            <span style="font-size:12px;font-weight:{{ t.weight }};">{{ t.label }}</span>
+          </button>
+        </sc-for>
+        <div style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:134px;height:5px;border-radius:3px;background:var(--tx,#F4F5F7);opacity:.9;"></div>
+      </div>
+    </sc-if>
+
+    <!-- WORKOUT SESSION -->
+    <sc-if value="{{ isWorkout }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;background:var(--bg,#08090B);overflow-y:auto;scrollbar-width:none;padding-bottom:40px;">
+        <div style="position:relative;height:280px;background:#000;color:#fff;">
+          <img src="assets/img/program_muscle.jpg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"></img>
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0.5) 0%,rgba(0,0,0,0) 35%,rgba(0,0,0,0.9) 100%);"></div>
+          <div style="position:absolute;top:58px;left:16px;right:16px;display:flex;align-items:center;gap:10px;">
+            <button onClick="{{ goMain }}" style="width:40px;height:40px;border-radius:50%;border:none;background:rgba(255,255,255,0.16);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;"><span style="font-family:'Material Symbols Rounded';font-size:22px;">close</span></button>
+            <div style="flex:1;display:grid;grid-template-columns:repeat(8,1fr);gap:4px;">
+              <sc-for list="{{ exDots }}" as="x" hint-placeholder-count="8"><div style="height:4px;border-radius:2px;background:{{ x.bg }};"></div></sc-for>
+            </div>
+            <span style="font-family:'SpaceGrotesk';font-size:15px;font-weight:700;">{{ exNum }}/8</span>
+          </div>
+          <div style="position:absolute;left:20px;right:20px;bottom:18px;display:flex;flex-direction:column;gap:4px;">
+            <span style="font-size:13px;font-weight:700;color:#C9CDD3;">{{ exMuscle }}</span>
+            <span style="font-family:'SpaceGrotesk';font-size:28px;line-height:1.1;font-weight:700;letter-spacing:-0.6px;">{{ exName }}</span>
+          </div>
+        </div>
+        <div style="padding:16px;display:flex;flex-direction:column;gap:14px;">
+          <div style="border-radius:24px;background:var(--s1,#121418);border:1px solid var(--bd,rgba(255,255,255,0.08));padding:8px 16px;">
+            <div style="display:grid;grid-template-columns:52px 1fr 1fr 48px;gap:8px;padding:10px 0;font-size:12px;font-weight:800;letter-spacing:1px;color:var(--tx3,#6E737C);">
+              <span>HIỆP</span><span>KG</span><span>LẦN</span><span></span>
+            </div>
+            <sc-for list="{{ setRows }}" as="r" hint-placeholder-count="4">
+              <div style="display:grid;grid-template-columns:52px 1fr 1fr 48px;gap:8px;align-items:center;padding:8px 0;border-top:1px solid var(--bd,rgba(255,255,255,0.08));">
+                <span style="font-family:'SpaceGrotesk';font-size:18px;font-weight:700;color:var(--tx2,#A3A8B1);">{{ r.n }}</span>
+                <span style="font-family:'SpaceGrotesk';font-size:24px;font-weight:700;">{{ r.kg }}</span>
+                <span style="font-family:'SpaceGrotesk';font-size:24px;font-weight:700;">{{ r.reps }}</span>
+                <button onClick="{{ r.toggle }}" style="width:44px;height:44px;border-radius:14px;border:2px solid {{ r.border }};background:{{ r.bg }};color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;"><span style="font-family:'Material Symbols Rounded';font-size:24px;font-weight:700;">check</span></button>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="border-radius:24px;padding:18px;display:flex;flex-direction:column;gap:12px;background:var(--blueT,rgba(91,140,255,0.14));">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:12px;font-weight:800;letter-spacing:1.4px;color:var(--blue,#5B8CFF);">HỌC TRONG LÚC NGHỈ</span>
+              <span style="font-family:'SpaceGrotesk';font-size:22px;font-weight:700;">01:30</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:14px;">
+              <div style="flex:1;display:flex;flex-direction:column;gap:4px;">
+                <span style="font-family:'SpaceGrotesk';font-size:22px;font-weight:700;">"One more rep!"</span>
+                <span style="font-size:14px;color:var(--tx2,#A3A8B1);">Thêm một lần nữa!</span>
+              </div>
+              <button onClick="{{ doSpeak }}" style="width:52px;height:52px;border-radius:50%;border:none;background:var(--blue,#5B8CFF);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;"><span style="font-family:'Material Symbols Rounded';font-size:26px;font-variation-settings:'FILL' 1;">mic</span></button>
+            </div>
+          </div>
+
+          <button onClick="{{ nextEx }}" style="height:58px;border-radius:999px;border:none;background:{{ nextBg }};color:{{ nextFg }};font-size:17px;font-weight:800;cursor:pointer;">{{ nextLabel }}</button>
+          <button onClick="{{ finishWorkout }}" style="height:48px;border-radius:999px;border:1px solid var(--bd,rgba(255,255,255,0.08));background:transparent;color:var(--tx,#F4F5F7);font-size:15px;font-weight:700;cursor:pointer;">Kết thúc buổi tập</button>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- FLASHCARD REVIEW -->
+    <sc-if value="{{ isReview }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;background:var(--bg,#08090B);padding:58px 20px 36px;display:flex;flex-direction:column;gap:20px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <button onClick="{{ goMain }}" style="width:40px;height:40px;border-radius:50%;border:1px solid var(--bd,rgba(255,255,255,0.08));background:var(--s1,#121418);color:var(--tx,#F4F5F7);cursor:pointer;display:flex;align-items:center;justify-content:center;"><span style="font-family:'Material Symbols Rounded';font-size:22px;">close</span></button>
+          <div style="flex:1;height:8px;border-radius:4px;background:var(--s2,#1B1E23);overflow:hidden;"><div style="height:100%;width:{{ cardPct }};background:var(--blue,#5B8CFF);border-radius:4px;transition:width .3s;"></div></div>
+          <span style="font-family:'SpaceGrotesk';font-size:15px;font-weight:700;">{{ cardNum }}/5</span>
+        </div>
+        <button onClick="{{ flip }}" style="flex:1;border-radius:32px;cursor:pointer;border:1px solid var(--bd,rgba(255,255,255,0.08));background:var(--s1,#121418);color:var(--tx,#F4F5F7);padding:28px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;">
+          <span style="font-size:12px;font-weight:800;letter-spacing:1.4px;color:var(--blue,#5B8CFF);">PHÒNG GYM</span>
+          <span style="font-family:'SpaceGrotesk';font-size:46px;font-weight:700;letter-spacing:-1.5px;line-height:1;">{{ card.word }}</span>
+          <span style="font-size:17px;color:var(--tx2,#A3A8B1);">{{ card.ipa }}</span>
+          <sc-if value="{{ flipped }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:10px;padding-top:18px;margin-top:4px;border-top:1px solid var(--bd,rgba(255,255,255,0.08));">
+              <span style="font-family:'SpaceGrotesk';font-size:26px;font-weight:700;color:var(--blue,#5B8CFF);">{{ card.vi }}</span>
+              <span style="font-size:16px;line-height:1.5;">{{ card.ex }}</span>
+            </div>
+          </sc-if>
+          <sc-if value="{{ notFlipped }}" hint-placeholder-val="{{ true }}">
+            <span style="font-size:14px;font-weight:700;color:var(--tx3,#6E737C);padding-top:24px;">Chạm để xem nghĩa</span>
+          </sc-if>
+        </button>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;opacity:{{ gradeOp }};">
+          <button onClick="{{ gradeAgain }}" style="height:64px;border-radius:20px;border:none;cursor:pointer;background:var(--redT,rgba(229,72,77,0.18));color:var(--red,#E5484D);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;"><span style="font-size:16px;font-weight:800;">Quên</span><span style="font-size:12px;font-weight:700;">1 phút</span></button>
+          <button onClick="{{ gradeHard }}" style="height:64px;border-radius:20px;border:none;cursor:pointer;background:var(--goldT,rgba(232,184,74,0.14));color:var(--gold,#E8B84A);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;"><span style="font-size:16px;font-weight:800;">Khó</span><span style="font-size:12px;font-weight:700;">1 ngày</span></button>
+          <button onClick="{{ gradeGood }}" style="height:64px;border-radius:20px;border:none;cursor:pointer;background:var(--tealT,rgba(61,214,181,0.16));color:var(--teal,#3DD6B5);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;"><span style="font-size:16px;font-weight:800;">Nhớ</span><span style="font-size:12px;font-weight:700;">4 ngày</span></button>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- WEALTH -->
+    <sc-if value="{{ isWealth }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;background:var(--bg,#08090B);overflow-y:auto;scrollbar-width:none;padding:58px 16px 40px;display:flex;flex-direction:column;gap:14px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <button onClick="{{ goMain }}" style="height:40px;padding:0 14px 0 8px;border-radius:999px;border:1px solid var(--bd,rgba(255,255,255,0.08));background:var(--s1,#121418);color:var(--tx,#F4F5F7);cursor:pointer;display:flex;align-items:center;gap:4px;font-size:14px;font-weight:800;"><span style="font-family:'Material Symbols Rounded';font-size:22px;">chevron_left</span>GymTalk</button>
+          <span style="flex:1;text-align:center;font-family:'SpaceGrotesk';font-size:18px;font-weight:700;margin-right:90px;">Tài chính</span>
+        </div>
+        <div style="border-radius:28px;padding:22px 20px;display:flex;flex-direction:column;gap:18px;background:var(--s1,#121418);border:1px solid var(--goldB,rgba(232,184,74,0.35));">
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <span style="font-size:12px;font-weight:800;letter-spacing:1.4px;color:var(--gold,#E8B84A);">TỔNG TÀI SẢN</span>
+            <span style="font-family:'SpaceGrotesk';font-size:38px;font-weight:700;letter-spacing:-1.2px;line-height:1.05;">1.284.500.000<span style="font-size:20px;color:var(--tx2,#A3A8B1);"> ₫</span></span>
+            <span style="font-size:14px;font-weight:800;color:var(--teal,#3DD6B5);">+2,4% tháng này · +30,1 tr ₫</span>
+          </div>
+          <div style="display:flex;height:12px;border-radius:6px;overflow:hidden;gap:3px;">
+            <div style="flex:184;background:var(--tx2,#A3A8B1);"></div>
+            <div style="flex:520;background:var(--gold,#E8B84A);"></div>
+            <div style="flex:96;background:var(--blue,#5B8CFF);"></div>
+            <div style="flex:484;background:#C99A2E;"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;">
+            <sc-for list="{{ assets }}" as="a" hint-placeholder-count="4">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span style="width:10px;height:10px;border-radius:3px;background:{{ a.color }};"></span>
+                <div style="display:flex;flex-direction:column;"><span style="font-size:13px;color:var(--tx2,#A3A8B1);font-weight:700;">{{ a.name }}</span><span style="font-family:'SpaceGrotesk';font-size:17px;font-weight:700;">{{ a.val }}</span></div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+          <sc-for list="{{ wActions }}" as="w" hint-placeholder-count="4">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+              <div style="width:60px;height:60px;border-radius:20px;background:var(--s1,#121418);border:1px solid var(--bd,rgba(255,255,255,0.08));display:flex;align-items:center;justify-content:center;"><span style="font-family:'Material Symbols Rounded';font-size:26px;color:var(--gold,#E8B84A);">{{ w.icon }}</span></div>
+              <span style="font-size:13px;font-weight:800;">{{ w.label }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="border-radius:28px;background:var(--s1,#121418);border:1px solid var(--bd,rgba(255,255,255,0.08));padding:20px;display:flex;flex-direction:column;gap:12px;">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-family:'SpaceGrotesk';font-size:20px;font-weight:700;">Ngân sách tháng 9</span><span style="font-size:13px;font-weight:700;color:var(--tx2,#A3A8B1);">Còn 5 ngày</span></div>
+          <div style="display:flex;align-items:baseline;gap:6px;"><span style="font-family:'SpaceGrotesk';font-size:28px;font-weight:700;">11,2 tr</span><span style="font-size:14px;color:var(--tx2,#A3A8B1);">/ 15 tr ₫</span></div>
+          <div style="height:8px;border-radius:4px;background:var(--s2,#1B1E23);"><div style="width:75%;height:100%;border-radius:4px;background:var(--gold,#E8B84A);"></div></div>
+        </div>
+        <div style="border-radius:28px;background:var(--s1,#121418);border:1px solid var(--bd,rgba(255,255,255,0.08));padding:20px;display:flex;flex-direction:column;gap:4px;">
+          <span style="font-family:'SpaceGrotesk';font-size:20px;font-weight:700;padding-bottom:8px;">Giao dịch gần đây</span>
+          <sc-for list="{{ txns }}" as="t" hint-placeholder-count="4">
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 0;">
+              <div style="width:44px;height:44px;border-radius:14px;background:var(--s2,#1B1E23);display:flex;align-items:center;justify-content:center;"><span style="font-family:'Material Symbols Rounded';font-size:22px;color:var(--tx2,#A3A8B1);">{{ t.icon }}</span></div>
+              <div style="flex:1;display:flex;flex-direction:column;"><span style="font-size:15px;font-weight:800;">{{ t.name }}</span><span style="font-size:12px;color:var(--tx2,#A3A8B1);">{{ t.date }}</span></div>
+              <span style="font-family:'SpaceGrotesk';font-size:16px;font-weight:700;color:{{ t.color }};">{{ t.amt }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- TOAST -->
+    <sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;top:58px;left:0;right:0;z-index:50;display:flex;justify-content:center;pointer-events:none;">
+        {{ toastEl }}
+      </div>
+    </sc-if>
+
+    <!-- CELEBRATION -->
+    <sc-if value="{{ hasCelebrate }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;z-index:60;background:rgba(0,0,0,0.86);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:32px;color:#fff;text-align:center;">
+        {{ celebrateBadge }}
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <span style="font-family:'SpaceGrotesk';font-size:30px;font-weight:700;letter-spacing:-0.6px;">{{ celebrate.title }}</span>
+          <span style="font-size:16px;color:#B8BCC4;line-height:1.5;">{{ celebrate.sub }}</span>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <div style="padding:12px 16px;border-radius:16px;background:rgba(255,255,255,0.08);display:flex;align-items:center;gap:8px;"><span style="font-family:'Material Symbols Rounded';font-size:22px;font-variation-settings:'FILL' 1;color:#FF8A3D;">local_fire_department</span><span style="font-size:15px;font-weight:800;">Chuỗi {{ streak }} ngày</span></div>
+          <div style="padding:12px 16px;border-radius:16px;background:rgba(255,255,255,0.08);display:flex;align-items:center;gap:8px;"><span style="font-family:'Material Symbols Rounded';font-size:22px;font-variation-settings:'FILL' 1;color:#E8B84A;">diamond</span><span style="font-size:15px;font-weight:800;">{{ xpFmt }} XP</span></div>
+        </div>
+        <button onClick="{{ closeCelebrate }}" style="width:100%;height:58px;border-radius:999px;border:none;background:#fff;color:#000;font-size:17px;font-weight:800;cursor:pointer;margin-top:12px;">Tuyệt vời</button>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;dark&quot;,&quot;light&quot;],&quot;default&quot;:&quot;dark&quot;,&quot;tsType&quot;:&quot;'dark'|'light'&quot;},&quot;startScreen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;onb1&quot;,&quot;paywall&quot;,&quot;main&quot;,&quot;workout&quot;,&quot;review&quot;,&quot;wealth&quot;],&quot;default&quot;:&quot;onb1&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;showMiniPlayer&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
+const EX = [
+  { name: 'Đẩy ngực ngang tạ đòn', muscle: 'Ngực · Tay sau', target: '4 hiệp × 8 lần', kg: 50, reps: 8 },
+  { name: 'Đẩy vai tạ đơn', muscle: 'Vai trước', target: '3 hiệp × 10 lần', kg: 16, reps: 10 },
+  { name: 'Đẩy ngực dốc lên', muscle: 'Ngực trên', target: '3 hiệp × 10 lần', kg: 20, reps: 10 },
+  { name: 'Chống đẩy xà kép', muscle: 'Ngực dưới · Tay sau', target: '3 hiệp × 12 lần', kg: 0, reps: 12 },
+  { name: 'Nâng vai ngang', muscle: 'Vai giữa', target: '3 hiệp × 15 lần', kg: 8, reps: 15 },
+  { name: 'Ép ngực cáp', muscle: 'Ngực', target: '3 hiệp × 12 lần', kg: 15, reps: 12 },
+  { name: 'Duỗi tay sau cáp', muscle: 'Tay sau', target: '4 hiệp × 12 lần', kg: 20, reps: 12 },
+  { name: 'Plank', muscle: 'Bụng', target: '3 hiệp × 45 giây', kg: 0, reps: 45 },
+];
+const CARDS = [
+  { word: 'Stamina', ipa: '/ˈstæm.ɪ.nə/', vi: 'Sức bền', ex: 'Running every day builds stamina.' },
+  { word: 'Rep', ipa: '/rep/', vi: 'Lần lặp', ex: 'Do twelve reps per set.' },
+  { word: 'Sore', ipa: '/sɔːr/', vi: 'Đau nhức (cơ)', ex: 'My legs are sore after squats.' },
+  { word: 'Warm up', ipa: '/wɔːm ʌp/', vi: 'Khởi động', ex: 'Always warm up before lifting.' },
+  { word: 'Posture', ipa: '/ˈpɒs.tʃər/', vi: 'Tư thế', ex: 'Keep a straight posture.' },
+];
+const THEMES = {
+  dark: { '--page': '#0B0C0E', '--bg': '#08090B', '--s1': '#121418', '--s2': '#1B1E23', '--bd': 'rgba(255,255,255,0.08)', '--tx': '#F4F5F7', '--tx2': '#A3A8B1', '--tx3': '#6E737C', '--inv': '#F4F5F7', '--oninv': '#0B0C0E', '--glass': 'rgba(18,20,24,0.86)',
+    '--red': 'oklch(0.64 0.22 25)', '--blue': 'oklch(0.68 0.16 262)', '--gold': 'oklch(0.8 0.14 82)', '--teal': 'oklch(0.8 0.13 172)',
+    '--redT': 'oklch(0.64 0.22 25 / 0.18)', '--blueT': 'oklch(0.68 0.16 262 / 0.16)', '--goldT': 'oklch(0.8 0.14 82 / 0.13)', '--tealT': 'oklch(0.8 0.13 172 / 0.16)', '--goldB': 'oklch(0.8 0.14 82 / 0.35)' },
+  light: { '--page': '#E4E4E1', '--bg': '#F4F4F2', '--s1': '#FFFFFF', '--s2': '#ECECE9', '--bd': 'rgba(12,14,18,0.08)', '--tx': '#0C0D10', '--tx2': '#585D66', '--tx3': '#8A8F97', '--inv': '#0C0D10', '--oninv': '#FFFFFF', '--glass': 'rgba(255,255,255,0.86)',
+    '--red': 'oklch(0.56 0.22 25)', '--blue': 'oklch(0.54 0.18 262)', '--gold': 'oklch(0.66 0.14 72)', '--teal': 'oklch(0.58 0.12 172)',
+    '--redT': 'oklch(0.56 0.22 25 / 0.12)', '--blueT': 'oklch(0.54 0.18 262 / 0.1)', '--goldT': 'oklch(0.66 0.14 72 / 0.14)', '--tealT': 'oklch(0.58 0.12 172 / 0.13)', '--goldB': 'oklch(0.66 0.14 72 / 0.45)' },
+};
+const C = r => 2 * Math.PI * r;
+const fmt = n => n.toLocaleString('vi-VN');
+
+class Component extends DCLogic {
+  state = {
+    screen: null, tab: 'today', theme: null, xp: 2480, streak: 7,
+    q: { review: false, speak: false, hands: false, pt: false },
+    reviewed: 8, speak: 2, trained: false, weekSessions: 3,
+    ex: 0, sets: [false, false, false, false], cardI: 0, flipped: false,
+    playing: false, celebrate: null, toast: null, chestOpened: false,
+    goals: { muscle: true, talk: true, fat: false, exam: false }, mins: 30, plan: 'year',
+  };
+
+  toast(msg) {
+    clearTimeout(this._t);
+    this.setState({ toast: msg });
+    this._t = setTimeout(() => this.setState({ toast: null }), 1800);
+  }
+  addXp(n, msg) { this.setState(s => ({ xp: s.xp + n })); this.toast(msg || `+${n} XP`); }
+  go(screen, tab) { this.setState(s => ({ screen, tab: tab || s.tab })); }
+
+  completeQuest(id, xp) {
+    if (this.state.q[id]) return;
+    const extra = id === 'speak' ? { speak: 5 } : {};
+    this.setState(s => ({ q: { ...s.q, [id]: true }, ...extra }));
+    this.addXp(xp);
+  }
+
+  gradeCard() {
+    const s = this.state;
+    if (!s.flipped) return;
+    const next = s.cardI + 1;
+    const reviewed = Math.min(12, s.reviewed + 1);
+    if (next >= CARDS.length) {
+      this.setState(st => ({ cardI: 0, flipped: false, reviewed: 12, xp: st.xp + 30, q: { ...st.q, review: true },
+        celebrate: { title: 'Ôn xong bộ thẻ!', sub: '12/12 từ hôm nay. Vòng Học đã khép lại.', xp: 30, back: 'today' } }));
+    } else this.setState({ cardI: next, flipped: false, reviewed });
+  }
+
+  finishWorkout() {
+    this.setState(s => ({ trained: true, weekSessions: 4, xp: s.xp + 120, streak: s.streak === 7 ? 8 : s.streak,
+      celebrate: { title: 'Hoàn thành buổi tập!', sub: 'Ngày 3 · Đẩy. Vòng Tập đã đầy. Cấp cơ thể +1 tiến độ.', xp: 120, back: 'today' },
+      ex: 0, sets: [false, false, false, false] }));
+  }
+
+  renderVals() {
+    const s = this.state;
+    const theme = s.theme ?? this.props.theme ?? 'dark';
+    const screen = s.screen ?? this.props.startScreen ?? 'onb1';
+    const T = THEMES[theme];
+    const tab = s.tab;
+    const accent = { today: 'var(--tx,#F4F5F7)', train: 'var(--red,#E5484D)', learn: 'var(--blue,#5B8CFF)', progress: 'var(--gold,#E8B84A)' };
+    const tabDefs = [
+      { id: 'today', label: 'Hôm nay', icon: 'wb_sunny' },
+      { id: 'train', label: 'Tập', icon: 'fitness_center' },
+      { id: 'learn', label: 'Học', icon: 'school' },
+      { id: 'progress', label: 'Tiến độ', icon: 'insights' },
+    ].map(t => ({ ...t, go: () => this.go('main', t.id), color: t.id === tab ? accent[t.id] : 'var(--tx3,#6E737C)', fill: t.id === tab ? 1 : 0, weight: t.id === tab ? 800 : 600 }));
+
+    const trainR = s.trained ? 1 : 0, learnR = s.reviewed / 12, speakR = s.speak / 5;
+    const dash = (r, ratio) => `${Math.max(0.001, C(r) * Math.min(1, ratio))} ${C(r)}`;
+    const qd = Object.values(s.q).filter(Boolean).length;
+    const lvlBase = 2000, lvlNext = 3000;
+    const xpPct = Math.min(100, ((s.xp - lvlBase) / (lvlNext - lvlBase)) * 100);
+
+    const questDefs = [
+      { id: 'review', icon: 'style', title: 'Ôn 12 thẻ từ đến hạn', sub: `${s.reviewed}/12 · chủ đề Phòng gym`, xp: 30, color: 'var(--blue,#5B8CFF)', tint: 'var(--blueT,rgba(91,140,255,0.16))' },
+      { id: 'speak', icon: 'record_voice_over', title: 'Luyện phát âm 5 câu', sub: `${s.speak}/5 câu · chấm điểm tự động`, xp: 20, color: 'var(--teal,#3DD6B5)', tint: 'var(--tealT,rgba(61,214,181,0.16))' },
+      { id: 'hands', icon: 'headphones', title: 'Nghe và nhắc lại khi chạy', sub: 'Rảnh tay · 10 phút', xp: 25, color: 'var(--teal,#3DD6B5)', tint: 'var(--tealT,rgba(61,214,181,0.16))' },
+      { id: 'pt', icon: 'sports_gymnastics', title: 'Nói chuyện với PT AI', sub: '3 phút bằng tiếng Anh', xp: 40, color: 'var(--red,#E5484D)', tint: 'var(--redT,rgba(229,72,77,0.18))' },
+    ];
+    const quests = questDefs.map(q => {
+      const done = s.q[q.id];
+      return { ...q, strike: done ? 'line-through' : 'none', op: done ? 0.55 : 1,
+        check: done ? 'check' : '', checkBg: done ? 'var(--gold,#E8B84A)' : 'transparent', checkBorder: done ? 'var(--gold,#E8B84A)' : 'var(--tx3,#6E737C)',
+        tap: () => q.id === 'review' && !done ? this.setState({ screen: 'review', cardI: 0, flipped: false }) : this.completeQuest(q.id, q.xp) };
+    });
+
+    const weekLbl = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+    const week = weekLbl.map((label, i) => {
+      const past = i < 3, today = i === 3;
+      const todayDone = today && s.trained && s.reviewed >= 12;
+      return { label,
+        bg: past || todayDone ? '#FF8A3D' : 'transparent',
+        border: past || todayDone ? 'none' : today ? '2px solid #FF8A3D' : '2px solid var(--bd,rgba(255,255,255,0.08))',
+        fg: past || todayDone ? '#fff' : today ? '#FF8A3D' : 'var(--tx3,#6E737C)',
+        icon: past || today ? 'local_fire_department' : '',
+        labelColor: today ? 'var(--tx,#F4F5F7)' : 'var(--tx3,#6E737C)' };
+    });
+
+    const exCur = EX[s.ex];
+    const allSets = s.sets.every(Boolean);
+    const isLastEx = s.ex === EX.length - 1;
+    const card = CARDS[s.cardI];
+
+    const goalDefs = [
+      { id: 'muscle', icon: 'fitness_center', label: 'Tăng cơ', sub: 'Giáo án 8 tuần', color: 'var(--red,#E5484D)' },
+      { id: 'fat', icon: 'local_fire_department', label: 'Giảm mỡ', sub: 'Cardio + dinh dưỡng', color: '#FF8A3D' },
+      { id: 'talk', icon: 'forum', label: 'Giao tiếp', sub: 'Nói tự tin hơn', color: 'var(--blue,#5B8CFF)' },
+      { id: 'exam', icon: 'workspace_premium', label: 'Thi chứng chỉ', sub: 'TOEIC · IELTS', color: 'var(--gold,#E8B84A)' },
+    ];
+    const goals = goalDefs.map(g => {
+      const on = s.goals[g.id];
+      return { ...g, border: on ? g.color : 'var(--bd,rgba(255,255,255,0.08))', check: on ? 'check_circle' : 'radio_button_unchecked', checkColor: on ? g.color : 'var(--tx3,#6E737C)',
+        toggle: () => this.setState(st => ({ goals: { ...st.goals, [g.id]: !st.goals[g.id] } })) };
+    });
+    const minDefs = [
+      { min: 15, label: 'Nhẹ nhàng', sub: '1 bài tập ngắn + 5 từ' },
+      { min: 30, label: 'Đều đặn', sub: 'Buổi tập gọn + 12 từ' },
+      { min: 45, label: 'Nghiêm túc', sub: 'Buổi tập đầy đủ + 12 từ + nói' },
+      { min: 60, label: 'Hết mình', sub: 'Tập, học, luyện thi' },
+    ];
+    const minOpts = minDefs.map(m => {
+      const on = s.mins === m.min;
+      return { ...m, border: on ? 'var(--tx,#F4F5F7)' : 'var(--bd,rgba(255,255,255,0.08))', check: on ? 'check_circle' : 'radio_button_unchecked', checkColor: on ? 'var(--tx,#F4F5F7)' : 'var(--tx3,#6E737C)', pick: () => this.setState({ mins: m.min }) };
+    });
+    const planMap = { 15: ['3 buổi/tuần', '5 từ/ngày'], 30: ['4 buổi/tuần', '12 từ/ngày'], 45: ['4 buổi/tuần', '12 từ + nói'], 60: ['5 buổi/tuần', '20 từ/ngày'] };
+
+    const jumpDefs = [
+      ['onb1', null, 'Chào mừng', '#8A8F97'], ['onb2', null, 'Chọn mục tiêu', '#8A8F97'], ['onb3', null, 'Thời gian mỗi ngày', '#8A8F97'], ['paywall', null, 'GymTalk Pro', 'var(--gold,#E8B84A)'],
+      ['main', 'today', 'Hôm nay', 'var(--tx,#F4F5F7)'], ['main', 'train', 'Tập', 'var(--red,#E5484D)'], ['main', 'learn', 'Học', 'var(--blue,#5B8CFF)'], ['main', 'progress', 'Tiến độ', 'var(--gold,#E8B84A)'],
+      ['workout', null, 'Buổi tập', 'var(--red,#E5484D)'], ['review', null, 'Ôn thẻ từ', 'var(--blue,#5B8CFF)'], ['wealth', null, 'Tài chính', 'var(--gold,#E8B84A)'],
+    ];
+    const jumps = jumpDefs.map(([sc, tb, label, dot]) => ({ label, dot,
+      bg: screen === sc && (!tb || tb === tab) ? 'var(--s2,#1B1E23)' : 'transparent',
+      go: () => this.setState(st => ({ screen: sc, tab: tb || st.tab, flipped: false })) }));
+
+    const toastEl = s.toast ? React.createElement('div', { key: s.toast + s.xp, style: { animation: 'gtToast 1.8s ease forwards', padding: '10px 18px', borderRadius: 999, background: T['--gold'], color: '#1A1406', fontFamily: 'SpaceGrotesk', fontWeight: 700, fontSize: 16, display: 'flex', alignItems: 'center', gap: 6, boxShadow: '0 10px 30px rgba(0,0,0,0.35)' } }, s.toast) : null;
+    const celebrateBadge = s.celebrate ? React.createElement('div', { style: { width: 150, height: 150, borderRadius: '50%', background: 'radial-gradient(circle at 50% 40%, #F5CE6B, #C9932A)', color: '#1A1406', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', animation: 'gtPop .6s cubic-bezier(.2,1.4,.4,1) both, gtGlow 1.8s ease-out .6s infinite' } },
+      React.createElement('span', { style: { fontFamily: 'SpaceGrotesk', fontSize: 48, fontWeight: 700, letterSpacing: -1.5, lineHeight: 1 } }, `+${s.celebrate.xp}`),
+      React.createElement('span', { style: { fontSize: 14, fontWeight: 800, letterSpacing: 2 } }, 'XP')) : null;
+
+    return {
+      themeVars: T,
+      jumps,
+      setDark: () => this.setState({ theme: 'dark' }), setLight: () => this.setState({ theme: 'light' }),
+      darkBtnBg: theme === 'dark' ? 'var(--inv,#F4F5F7)' : 'transparent', darkBtnFg: theme === 'dark' ? 'var(--oninv,#0B0C0E)' : 'var(--tx2,#A3A8B1)',
+      lightBtnBg: theme === 'light' ? 'var(--inv,#F4F5F7)' : 'transparent', lightBtnFg: theme === 'light' ? 'var(--oninv,#0B0C0E)' : 'var(--tx2,#A3A8B1)',
+      statusColor: ['onb1', 'paywall', 'workout'].includes(screen) || theme === 'dark' ? '#fff' : '#0C0D10',
+
+      isOnb1: screen === 'onb1', isOnb2: screen === 'onb2', isOnb3: screen === 'onb3', isPaywall: screen === 'paywall',
+      isMain: screen === 'main', isWorkout: screen === 'workout', isReview: screen === 'review', isWealth: screen === 'wealth',
+      isToday: tab === 'today', isTrain: tab === 'train', isLearn: tab === 'learn', isProgress: tab === 'progress',
+      goOnb1: () => this.go('onb1'), goOnb2: () => this.go('onb2'), goOnb3: () => this.go('onb3'), goPaywall: () => this.go('paywall'),
+      goToday: () => this.go('main', 'today'), goMain: () => this.go('main'), goWealth: () => this.go('wealth'),
+
+      goals, minOpts, planTrain: planMap[s.mins][0], planLearn: planMap[s.mins][1],
+      proFeatures: [
+        { icon: 'auto_awesome', label: 'Giáo án tự điều chỉnh theo sức bạn' },
+        { icon: 'sports_gymnastics', label: 'PT AI nói tiếng Anh, không giới hạn phút' },
+        { icon: 'graphic_eq', label: 'Chấm phát âm chi tiết từng âm' },
+        { icon: 'workspace_premium', label: 'Toàn bộ đề TOEIC và IELTS' },
+        { icon: 'block', label: 'Không quảng cáo' },
+      ],
+      pickYear: () => this.setState({ plan: 'year' }), pickMonth: () => this.setState({ plan: 'month' }),
+      yearBorder: s.plan === 'year' ? 'var(--gold,#E8B84A)' : '#24272C', monthBorder: s.plan === 'month' ? 'var(--gold,#E8B84A)' : '#24272C',
+      yearIcon: s.plan === 'year' ? 'check_circle' : 'radio_button_unchecked', monthIcon: s.plan === 'month' ? 'check_circle' : 'radio_button_unchecked',
+      yearDot: s.plan === 'year' ? 'var(--gold,#E8B84A)' : '#6E737C', monthDot: s.plan === 'month' ? 'var(--gold,#E8B84A)' : '#6E737C',
+      startTrial: () => { this.go('main', 'today'); this.toast('Đã bật Pro · 7 ngày dùng thử'); },
+
+      tabTitle: 'Quang Hua', streak: s.streak, lvlDeg: `${xpPct * 3.6}deg`,
+      tabsL: tabDefs.slice(0, 2), tabsR: tabDefs.slice(2),
+      quickStart: () => s.trained ? this.setState({ screen: 'review', cardI: 0, flipped: false }) : this.go('workout'),
+      showPlayer: this.props.showMiniPlayer ?? true,
+      playIcon: s.playing ? 'pause' : 'play_arrow', togglePlay: () => this.setState(st => ({ playing: !st.playing })),
+
+      ringTrain: dash(72, trainR), ringLearn: dash(55, learnR), ringSpeak: dash(38, speakR),
+      dayPct: `${Math.round(((trainR + Math.min(1, learnR) + Math.min(1, speakR)) / 3) * 100)}%`,
+      trainLabel: s.trained ? '1/1' : '0/1', reviewed: s.reviewed, speak: s.speak, week,
+      startWorkout: () => s.trained ? this.go('main', 'progress') : this.go('workout'),
+      trainBtnBg: s.trained ? 'var(--teal,#3DD6B5)' : 'var(--red,#E5484D)',
+      trainBtnIcon: s.trained ? 'check' : 'play_arrow', trainBtnLabel: s.trained ? 'Đã tập xong' : 'Bắt đầu tập',
+      quests, questDone: qd, questPct: `${(qd / 4) * 100}%`,
+      chestReady: qd === 4 && !s.chestOpened,
+      chestLabel: s.chestOpened ? 'Đã mở rương hôm nay' : qd === 4 ? 'Rương đã sẵn sàng!' : `Hoàn thành ${4 - qd} nhiệm vụ nữa để mở rương`,
+      openChest: () => this.setState(st => ({ chestOpened: true, xp: st.xp + 100, celebrate: { title: 'Rương hằng ngày', sub: 'Cả 4 nhiệm vụ đã xong. Hẹn bạn ngày mai.', xp: 100 } })),
+
+      weekSessions: s.weekSessions, fourthBar: s.weekSessions >= 4 ? 'var(--red,#E5484D)' : 'var(--s2,#1B1E23)',
+      exPreview: EX.slice(0, 4).map((e, i) => ({ ...e, n: `0${i + 1}`, kg: e.kg || '—' })),
+      programs: [
+        { img: 'assets/img/program_muscle.jpg', name: 'Tăng cơ toàn thân 8 tuần', level: 'Trung cấp' },
+        { img: 'assets/img/program_beginner.jpg', name: 'Sức mạnh cơ bản 5×5', level: 'Mới bắt đầu' },
+        { img: 'assets/img/program_fatloss.jpg', name: 'Giảm mỡ 30 ngày tại nhà', level: 'Mọi trình độ' },
+      ],
+
+      startReview: () => this.setState({ screen: 'review', cardI: 0, flipped: false }),
+      skills: [
+        { icon: 'menu_book', name: 'Từ vựng', sub: '46 chủ đề', pct: '64%' },
+        { icon: 'rule', name: 'Ngữ pháp', sub: 'Dùng đúng', pct: '41%' },
+        { icon: 'auto_stories', name: 'Đọc sách', sub: 'Hiểu sâu', pct: '28%' },
+        { icon: 'edit_note', name: 'Luyện viết', sub: 'Diễn đạt', pct: '17%' },
+      ],
+      speakModes: [
+        { icon: 'graphic_eq', name: 'Phát âm', sub: '12 bài' },
+        { icon: 'headphones', name: 'Rảnh tay', sub: 'Khi chạy bộ' },
+        { icon: 'import_contacts', name: 'Chuyện ngắn', sub: 'Nghe + đọc' },
+        { icon: 'smart_toy', name: 'Trò chuyện AI', sub: 'Nói mọi lúc' },
+      ],
+      doSpeak: () => this.completeQuest('speak', 20),
+      exams: [{ icon: 'description', name: 'TOEIC', sub: 'Đề chuẩn' }, { icon: 'bar_chart', name: 'IELTS', sub: 'Band cao' }, { icon: 'extension', name: 'Đố vui', sub: 'Nhanh gọn' }],
+
+      xpFmt: fmt(s.xp), xpPct: `${xpPct}%`, xpLeft: fmt(Math.max(0, lvlNext - s.xp)),
+      chart: [[40, 15], [0, 20], [45, 12], [s.trained ? 45 : 0, Math.round(s.reviewed * 2)], [0, 0], [0, 0], [0, 0]].map((v, i) => ({ d: weekLbl[i], t: `${v[0] * 1.6}px`, l: `${v[1] * 1.6}px` })),
+      league: [
+        { name: 'Minh Anh', ini: 'MA', xp: '3.420' },
+        { name: 'Quang Hua (bạn)', ini: 'QH', xp: fmt(s.xp), me: true },
+        { name: 'Tuấn Kiệt', ini: 'TK', xp: '2.310' },
+        { name: 'Linh Chi', ini: 'LC', xp: '2.050' },
+        { name: 'Thu Hà', ini: 'TH', xp: '1.880' },
+      ].map((u, i) => ({ ...u, rank: i + 1, bg: u.me ? 'var(--goldT,rgba(232,184,74,0.12))' : 'transparent', rankColor: i < 3 ? 'var(--gold,#E8B84A)' : 'var(--tx3,#6E737C)' })),
+      badges: [
+        { icon: 'local_fire_department', name: 'Chuỗi 7 ngày', color: '#FF8A3D', bg: 'rgba(255,138,61,0.16)', op: 1 },
+        { icon: 'menu_book', name: '100 từ', color: 'var(--blue,#5B8CFF)', bg: 'var(--blueT,rgba(91,140,255,0.16))', op: 1 },
+        { icon: 'fitness_center', name: '10 tấn', color: 'var(--red,#E5484D)', bg: 'var(--redT,rgba(229,72,77,0.18))', op: 1 },
+        { icon: 'graphic_eq', name: 'Giọng chuẩn', color: 'var(--teal,#3DD6B5)', bg: 'var(--tealT,rgba(61,214,181,0.16))', op: 1 },
+        { icon: 'wb_twilight', name: 'Dậy sớm', color: 'var(--tx3,#6E737C)', bg: 'var(--s2,#1B1E23)', op: 0.5 },
+        { icon: 'lock', name: 'Chuỗi 30 ngày', color: 'var(--tx3,#6E737C)', bg: 'var(--s2,#1B1E23)', op: 0.5 },
+      ],
+
+      exDots: EX.map((_, i) => ({ bg: i < s.ex ? '#fff' : i === s.ex ? 'var(--red,#E5484D)' : 'rgba(255,255,255,0.25)' })),
+      exNum: s.ex + 1, exName: exCur.name, exMuscle: exCur.muscle,
+      setRows: s.sets.map((done, i) => ({ n: i + 1, kg: exCur.kg || '—', reps: exCur.reps,
+        bg: done ? 'var(--red,#E5484D)' : 'transparent', border: done ? 'var(--red,#E5484D)' : 'var(--bd,rgba(255,255,255,0.08))',
+        toggle: () => this.setState(st => { const sets = [...st.sets]; sets[i] = !sets[i]; return { sets }; }) })),
+      nextLabel: allSets ? (isLastEx ? 'Hoàn thành buổi tập' : 'Bài tiếp theo') : `Hoàn thành ${s.sets.filter(Boolean).length}/4 hiệp`,
+      nextBg: allSets ? 'var(--red,#E5484D)' : 'var(--s2,#1B1E23)', nextFg: allSets ? '#fff' : 'var(--tx2,#A3A8B1)',
+      nextEx: () => { if (!allSets) return; if (isLastEx) this.finishWorkout(); else this.setState(st => ({ ex: st.ex + 1, sets: [false, false, false, false] })); },
+      finishWorkout: () => this.finishWorkout(),
+
+      card, flipped: s.flipped, notFlipped: !s.flipped, flip: () => this.setState(st => ({ flipped: !st.flipped })),
+      cardNum: s.cardI + 1, cardPct: `${((s.cardI + (s.flipped ? 0.5 : 0)) / CARDS.length) * 100}%`, gradeOp: s.flipped ? 1 : 0.35,
+      gradeAgain: () => this.gradeCard(), gradeHard: () => this.gradeCard(), gradeGood: () => this.gradeCard(),
+
+      assets: [
+        { name: 'Tiền mặt', val: '184,5 tr', color: 'var(--tx2,#A3A8B1)' }, { name: 'Cổ phiếu', val: '520 tr', color: 'var(--gold,#E8B84A)' },
+        { name: 'Crypto', val: '96 tr', color: 'var(--blue,#5B8CFF)' }, { name: 'Vàng', val: '484 tr', color: '#C99A2E' },
+      ],
+      wActions: [{ icon: 'south_west', label: 'Thu' }, { icon: 'north_east', label: 'Chi' }, { icon: 'swap_horiz', label: 'Chuyển' }, { icon: 'qr_code_scanner', label: 'Quét QR' }],
+      txns: [
+        { icon: 'payments', name: 'Lương tháng 9', date: 'Hôm qua', amt: '+32.000.000', color: 'var(--teal,#3DD6B5)' },
+        { icon: 'fitness_center', name: 'Phí phòng gym', date: '22/9', amt: '−650.000', color: 'var(--tx,#F4F5F7)' },
+        { icon: 'show_chart', name: 'Mua ETF VN30', date: '20/9', amt: '−5.000.000', color: 'var(--tx,#F4F5F7)' },
+        { icon: 'restaurant', name: 'Ăn uống', date: '19/9', amt: '−420.000', color: 'var(--tx,#F4F5F7)' },
+      ],
+
+      hasToast: !!s.toast, toastEl,
+      hasCelebrate: !!s.celebrate, celebrate: s.celebrate || { title: '', sub: '' }, celebrateBadge,
+      closeCelebrate: () => this.setState(st => ({ celebrate: null, screen: 'main', tab: st.celebrate && st.celebrate.back ? st.celebrate.back : st.tab })),
+    };
+  }
+}
+</script>
+</body>
+</html>

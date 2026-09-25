@@ -74,3 +74,26 @@ _Avoid_: dataset (khi chưa xác minh license)
 **Content Pack**:
 File JSON đóng gói trong app do pipeline Python offline sinh ra từ các Content Source; không sinh nội dung bằng AI lúc chạy app.
 _Avoid_: question bank, database câu hỏi
+
+### Hằng ngày
+
+**Daily Rings**:
+Ba vòng mục tiêu mỗi ngày: Tập (buổi tập hoặc ngày nghỉ theo giáo án), Học (số từ đã ôn) và Nói (số lượt nói); dữ liệu lấy từ tiến độ hằng ngày.
+_Avoid_: goals, vòng tròn
+
+**Daily Quest**:
+Một trong 4 nhiệm vụ cố định mỗi ngày (ôn thẻ đến hạn, luyện phát âm, nghe và nhắc lại rảnh tay, nói chuyện với PT AI), mỗi nhiệm vụ thưởng XP một lần trong ngày.
+_Avoid_: mission, task, challenge
+
+**Quest Chest**:
+Rương thưởng mở được một lần mỗi ngày, khi đã hoàn thành cả 4 Daily Quest.
+_Avoid_: loot box, reward box
+
+**Quick Start**:
+Nút hành động ở giữa thanh tab: vào buổi tập hôm nay nếu chưa tập, nếu đã tập thì vào ôn thẻ; bản thân nó không phải là một tab.
+_Avoid_: FAB, center tab
+
+**Celebration**:
+Lớp phủ chúc mừng hiện sau một mốc (xong buổi tập, xong bộ thẻ, mở rương), kèm số XP thật vừa được cộng.
+_Avoid_: popup, modal
+
