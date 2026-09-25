@@ -68,6 +68,21 @@ CefrLevel defaultLevelForPersona(LearningPersona? persona) => switch (persona) {
   LearningPersona.ieltsPrep => CefrLevel.b1,
 };
 
+/// Lop tuong thich 3 cap cho cac tinh nang cu (ADR-0001).
+LearnerLevel learnerLevelFor(CefrLevel level) => switch (level) {
+  CefrLevel.a1 || CefrLevel.a2 => LearnerLevel.basic,
+  CefrLevel.b1 => LearnerLevel.intermediate,
+  CefrLevel.b2 || CefrLevel.c1 => LearnerLevel.advanced,
+};
+
+/// Learner Level cho cac tinh nang cu: co English Level da luu (Placement/
+/// Level Test) thi suy tu no; chua co thi GIU hanh vi cu (suy tu Persona,
+/// "Tu hoc"/chua chon = null = khong loc).
+LearnerLevel? projectLearnerLevel({
+  required CefrLevel? stored,
+  required LearningPersona? persona,
+}) => stored != null ? learnerLevelFor(stored) : persona?.level;
+
 /// English Level dang ap dung: da luu thi dung, chua co thi theo Persona.
 CefrLevel effectiveLevel(EnglishPathState state, LearningPersona? persona) =>
     state.level ?? defaultLevelForPersona(persona);

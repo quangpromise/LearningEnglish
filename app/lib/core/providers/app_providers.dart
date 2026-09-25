@@ -30,6 +30,8 @@ import '../../features/social/data/social_repository.dart';
 import '../../features/stats/data/learning_xp_repository.dart';
 import '../../features/stats/data/stats_repository.dart';
 import '../../features/ielts/data/ielts_attempt_repository.dart';
+import '../../features/english_path/data/english_path_progress.dart';
+import '../../features/english_path/data/english_path_providers.dart';
 import '../../features/learning_path/data/learning_path_models.dart';
 import '../../features/learning_path/data/learning_path_repository.dart';
 import '../../features/story/data/lesson_progress_repository.dart';
@@ -185,11 +187,15 @@ final learningPathInteractedProvider = FutureProvider<bool>(
   (ref) => ref.watch(learningPathRepositoryProvider).hasInteracted(),
 );
 
-/// Cap hoc suy tu persona dang chon (null = "Tu hoc"/chua chon -> hien day
-/// du, khong loc, khong goi y) - moi feature chi doc provider nay de loc noi
-/// dung theo cap, xem docs/research-level-based-content.md.
+/// Cap hoc 3 muc cho cac feature cu (loc tu vung, AI Voice Chat, coach...).
+/// Suy tu English Level da luu (ADR-0001); chua co English Level thi giu
+/// hanh vi cu - suy tu persona (null = "Tu hoc"/chua chon -> khong loc).
+/// Moi feature chi doc provider nay, xem docs/research-level-based-content.md.
 final learnerLevelProvider = Provider<LearnerLevel?>(
-  (ref) => ref.watch(learningPathChoiceProvider).valueOrNull?.level,
+  (ref) => projectLearnerLevel(
+    stored: ref.watch(englishPathStateProvider).level,
+    persona: ref.watch(learningPathChoiceProvider).valueOrNull,
+  ),
 );
 
 final leaderboardRepositoryProvider = Provider<LeaderboardRepository>(
