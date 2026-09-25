@@ -1,7 +1,6 @@
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'gt_tokens.dart';
 
@@ -308,7 +307,7 @@ class PillButton extends StatelessWidget {
   }
 }
 
-class ScreenBackground extends ConsumerWidget {
+class ScreenBackground extends StatelessWidget {
   const ScreenBackground({
     super.key,
     required this.child,
@@ -327,7 +326,7 @@ class ScreenBackground extends ConsumerWidget {
   final String? backgroundImage;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final effectiveBackgroundImage = backgroundImage;
     return Stack(
       children: [

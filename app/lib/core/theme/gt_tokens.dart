@@ -107,23 +107,40 @@ class GtTokens extends ThemeExtension<GtTokens> {
   );
 
   @override
-  GtTokens copyWith({Color? bg, Color? s1, Color? s2}) => GtTokens(
+  GtTokens copyWith({
+    Color? bg,
+    Color? s1,
+    Color? s2,
+    Color? bd,
+    Color? tx,
+    Color? tx2,
+    Color? tx3,
+    Color? inv,
+    Color? onInv,
+    Color? glass,
+    Color? red,
+    Color? blue,
+    Color? gold,
+    Color? teal,
+    Color? streak,
+    Color? goldB,
+  }) => GtTokens(
     bg: bg ?? this.bg,
     s1: s1 ?? this.s1,
     s2: s2 ?? this.s2,
-    bd: bd,
-    tx: tx,
-    tx2: tx2,
-    tx3: tx3,
-    inv: inv,
-    onInv: onInv,
-    glass: glass,
-    red: red,
-    blue: blue,
-    gold: gold,
-    teal: teal,
-    streak: streak,
-    goldB: goldB,
+    bd: bd ?? this.bd,
+    tx: tx ?? this.tx,
+    tx2: tx2 ?? this.tx2,
+    tx3: tx3 ?? this.tx3,
+    inv: inv ?? this.inv,
+    onInv: onInv ?? this.onInv,
+    glass: glass ?? this.glass,
+    red: red ?? this.red,
+    blue: blue ?? this.blue,
+    gold: gold ?? this.gold,
+    teal: teal ?? this.teal,
+    streak: streak ?? this.streak,
+    goldB: goldB ?? this.goldB,
   );
 
   @override
@@ -159,16 +176,20 @@ extension GtTokensContext on BuildContext {
 /// Thang chu cua ban redesign: SpaceGrotesk cho tieu de/so, Manrope cho noi
 /// dung. Nho nhat 12.
 abstract final class GtText {
-  static TextStyle _grotesk(double size, double tracking, Color color) =>
-      TextStyle(
-        fontFamily: 'SpaceGrotesk',
-        fontSize: size,
-        fontWeight: FontWeight.w700,
-        letterSpacing: tracking,
-        height: 1.05,
-        color: color,
-        decoration: TextDecoration.none,
-      );
+  static TextStyle _grotesk(
+    double size,
+    double tracking,
+    Color color, {
+    double? height,
+  }) => TextStyle(
+    fontFamily: 'SpaceGrotesk',
+    fontSize: size,
+    fontWeight: FontWeight.w700,
+    letterSpacing: tracking,
+    height: height,
+    color: color,
+    decoration: TextDecoration.none,
+  );
 
   static TextStyle _manrope(double size, FontWeight w, Color color) =>
       TextStyle(
@@ -179,14 +200,27 @@ abstract final class GtText {
         decoration: TextDecoration.none,
       );
 
-  /// Tieu de lon cua man (30).
-  static TextStyle heroTitle(Color c) => _grotesk(30, -0.8, c);
+  /// Tieu de lon cua onboarding (44, lh 1.02).
+  static TextStyle onboardingHero(Color c) =>
+      _grotesk(44, -1.5, c, height: 1.02);
+
+  /// Tieu de buoc onboarding (32, lh 1.1).
+  static TextStyle stepTitle(Color c) => _grotesk(32, -0.8, c, height: 1.1);
+
+  /// Tieu de lon cua man (30, lh 1.05).
+  static TextStyle heroTitle(Color c) => _grotesk(30, -0.8, c, height: 1.05);
 
   /// So lon (40) - vd chi so the thong ke.
   static TextStyle bigStat(Color c) => _grotesk(40, -1.5, c);
 
+  /// Don vi di kem so lon (18, SpaceGrotesk, mau tx3).
+  static TextStyle bigStatUnit(Color c) => _grotesk(18, 0, c);
+
   /// So cua vong muc tieu (26).
   static TextStyle ringStat(Color c) => _grotesk(26, -0.5, c);
+
+  /// Don vi di kem so cua vong (14, Manrope, mau tx2).
+  static TextStyle ringStatUnit(Color c) => _manrope(14, FontWeight.w700, c);
 
   /// Tieu de the (20).
   static TextStyle cardTitle(Color c) => _grotesk(20, 0, c);
@@ -198,8 +232,11 @@ abstract final class GtText {
   static TextStyle rowTitle(Color c) => _manrope(15, FontWeight.w800, c);
 
   /// Noi dung (13-15/600-700).
-  static TextStyle body(Color c, {double size = 14}) =>
-      _manrope(size, FontWeight.w600, c);
+  static TextStyle body(
+    Color c, {
+    double size = 14,
+    FontWeight weight = FontWeight.w600,
+  }) => _manrope(size, weight, c);
 
   /// Nhan tren (12/800/+1.4, VIET HOA khi hien thi).
   static TextStyle overline(Color c) =>

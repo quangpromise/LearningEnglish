@@ -8,6 +8,10 @@ Bản redesign (`docs/design/gymtalk-redesign/`) đưa vào token màu mới (bg
 - **Light theme** đã được định nghĩa và có test, nhưng nút chọn giao diện sáng **tạm khóa** (cờ `kEnableLightTheme = false`). Lý do: màn cũ còn hard-code màu tối, bật lên thì app nửa sáng nửa tối.
 - Toàn bộ redesign được đưa vào sau cờ `kUseRedesign`. Mỗi ticket merge vào main mà app vẫn chạy màn cũ; ticket cuối cùng mới bật cờ và xóa màn cũ đã được thay.
 
+## Consequences
+
+- Màu `tx3` của light theme được đổi từ #8A8F97 (giá trị trong handoff) sang **#878C94**. Giá trị gốc chỉ đạt 2,95:1 trên nền #F4F4F2, dưới mức tối thiểu 3:1 cho nhãn; giá trị mới đạt 3,07:1. Test độ tương phản trong `gt_tokens_test.dart` giữ mọi token ở trên ngưỡng.
+
 ## Considered Options
 
 - Đổi thẳng `AppColors` sang theme động: bị loại vì phải sửa 206 file cùng lúc, không chia nhỏ thành PR xanh được.

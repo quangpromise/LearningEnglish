@@ -23,7 +23,12 @@ void main() {
       expect(t.bg, const Color(0xFF08090B));
       expect(t.s1, const Color(0xFF121418));
       expect(t.s2, const Color(0xFF1B1E23));
+      expect(t.bd, const Color(0x14FFFFFF));
       expect(t.tx, const Color(0xFFF4F5F7));
+      expect(t.inv, const Color(0xFFF4F5F7));
+      expect(t.onInv, const Color(0xFF0B0C0E));
+      expect(t.glass.a, closeTo(0.86, 0.005));
+      expect(t.glass.withValues(alpha: 1), const Color(0xFF121418));
       expect(t.tx2, const Color(0xFFA3A8B1));
       expect(t.tx3, const Color(0xFF6E737C));
       expect(t.red, const Color(0xFFE5484D));
@@ -37,7 +42,17 @@ void main() {
       const t = GtTokens.light;
       expect(t.bg, const Color(0xFFF4F4F2));
       expect(t.s1, const Color(0xFFFFFFFF));
+      expect(t.s2, const Color(0xFFECECE9));
+      expect(t.bd, const Color(0x140C0E12));
       expect(t.tx, const Color(0xFF0C0D10));
+      expect(t.tx2, const Color(0xFF585D66));
+      // Lech co chu dich so voi handoff (#8A8F97) de dat 3:1 - ADR-0004.
+      expect(t.tx3, const Color(0xFF878C94));
+      expect(t.inv, const Color(0xFF0C0D10));
+      expect(t.onInv, const Color(0xFFFFFFFF));
+      expect(t.glass.a, closeTo(0.86, 0.005));
+      expect(t.glass.withValues(alpha: 1), const Color(0xFFFFFFFF));
+      expect(t.streak, const Color(0xFFFF8A3D));
       expect(t.red, const Color(0xFFC8303A));
       expect(t.blue, const Color(0xFF3F63D6));
       expect(t.gold, const Color(0xFFB8862A));
@@ -76,6 +91,13 @@ void main() {
       // Nut do: chu trang dam co lon -> muc large-text 3:1.
       expect(_contrast(t.onRed, t.red), greaterThanOrEqualTo(3));
     });
+  });
+
+  test('copyWith replaces only the given tokens', () {
+    final t = GtTokens.dark.copyWith(gold: const Color(0xFF000001));
+    expect(t.gold, const Color(0xFF000001));
+    expect(t.red, GtTokens.dark.red);
+    expect(t.glass, GtTokens.dark.glass);
   });
 
   test('lerp between themes stays within the two palettes', () {
