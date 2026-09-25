@@ -1,9 +1,5 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:speech_to_text/speech_recognition_error.dart';
-import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
@@ -14,6 +10,7 @@ import '../../../core/widgets/speaker_button.dart';
 import '../../pronunciation/data/pronunciation_scoring.dart';
 import '../../srs/data/srs_store.dart';
 import '../data/hands_free_drill.dart';
+import '../data/speech_listener.dart';
 
 /// "Luyen noi ranh tay": may doc cau tieng Anh, nguoi dung nhac lai, may
 /// cham diem va noi phan hoi - khong can nhin/cham man hinh, dung khi chay
@@ -28,11 +25,9 @@ class HandsFreeDrillScreen extends ConsumerStatefulWidget {
 }
 
 class _HandsFreeDrillScreenState extends ConsumerState<HandsFreeDrillScreen> {
-  final stt.SpeechToText _speech = stt.SpeechToText();
+  final SpeechListener _listener = SpeechListener();
   bool? _micAvailable;
   HandsFreeDrillController? _drill;
-
-  Completer<String>? _listenDone;
   String _heard = '';
 
   @override
@@ -43,15 +38,10 @@ class _HandsFreeDrillScreenState extends ConsumerState<HandsFreeDrillScreen> {
   }
 
   Future<void> _init() async {
-    bool ok;
-    try {
-      ok = await _speech.initialize(
-        onError: _onSttError,
-        onStatus: _onSttStatus,
-      );
-    } catch (_) {
-      ok = false;
-    }
+    _listener.onPartial = (partial) {
+      if (mounted) setState(() => _heard = partial);
+    };
+    final ok = await _listener.init();
     await SrsStore.instance.ensureLoaded();
     if (!mounted) return;
     final items = buildDrillItems(
@@ -80,57 +70,18 @@ class _HandsFreeDrillScreenState extends ConsumerState<HandsFreeDrillScreen> {
     if (mounted) setState(() {});
   }
 
-  // --- Nghe 1 lan -------------------------------------------------------
-
-  void _finishListen() {
-    final done = _listenDone;
-    if (done != null && !done.isCompleted) done.complete(_heard);
-  }
-
-  void _onSttError(SpeechRecognitionError error) => _finishListen();
-
-  void _onSttStatus(String status) {
-    if (status == stt.SpeechToText.doneStatus) _finishListen();
-  }
-
   /// Nghe toi da 8 giay, dung som khi im lang 2 giay.
   Future<String> _listenOnce() async {
     if (_micAvailable != true) return '';
-    _heard = '';
-    final done = Completer<String>();
-    _listenDone = done;
-    try {
-      await _speech.listen(
-        onResult: (result) {
-          _heard = result.recognizedWords;
-          if (mounted) setState(() {});
-          if (result.finalResult) _finishListen();
-        },
-        listenOptions: stt.SpeechListenOptions(
-          localeId: 'en_US',
-          listenFor: const Duration(seconds: 8),
-          pauseFor: const Duration(seconds: 2),
-          listenMode: stt.ListenMode.dictation,
-        ),
-      );
-    } catch (_) {
-      _finishListen();
-    }
-    return done.future.timeout(
-      const Duration(seconds: 10),
-      onTimeout: () {
-        _speech.stop();
-        return _heard;
-      },
-    );
+    if (mounted) setState(() => _heard = '');
+    return _listener.listenOnce();
   }
 
   // --- Dieu khien ----------------------------------------------------------
 
   void _stopAudio() {
     AppTts.instance.stopSpeaking();
-    if (_speech.isListening) _speech.stop();
-    _finishListen();
+    _listener.stop();
   }
 
   void _toggle() {
@@ -157,7 +108,7 @@ class _HandsFreeDrillScreenState extends ConsumerState<HandsFreeDrillScreen> {
     drill?.removeListener(_onDrillChanged);
     drill?.dispose();
     _stopAudio();
-    _speech.cancel();
+    _listener.dispose();
     KeepScreenOn.disable();
     super.dispose();
   }

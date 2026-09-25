@@ -3653,6 +3653,93 @@ class AppStrings {
       AppLanguage.vi: 'Tập một chút, học vài từ, giữ chuỗi ngày của bạn!',
       AppLanguage.en: 'Train a little, learn a few words, keep your streak!',
     },
+    // Trinh phat huong dan bai tap (video dung trong app).
+    'tutorial_open': {
+      AppLanguage.vi: 'Video hướng dẫn · EN',
+      AppLanguage.en: 'Video guide · EN',
+    },
+    'tutorial_two_poses': {
+      AppLanguage.vi: '↻ 2 tư thế',
+      AppLanguage.en: '↻ 2 poses',
+    },
+    'tutorial_chapters_title': {
+      AppLanguage.vi: 'CHƯƠNG VIDEO · BẤM ĐỂ XEM ĐÚNG ĐOẠN',
+      AppLanguage.en: 'VIDEO CHAPTERS · TAP TO JUMP IN',
+    },
+    'tutorial_chapter_overview': {
+      AppLanguage.vi: 'Tổng quan',
+      AppLanguage.en: 'Overview',
+    },
+    'tutorial_chapter_keywords': {
+      AppLanguage.vi: 'Từ khoá',
+      AppLanguage.en: 'Key words',
+    },
+    'tutorial_step': {AppLanguage.vi: 'Bước', AppLanguage.en: 'Step'},
+    'tutorial_keywords_section': {
+      AppLanguage.vi: 'Từ khoá của bài · chạm để nghe',
+      AppLanguage.en: 'Key words · tap to listen',
+    },
+    'tutorial_keywords_title': {
+      AppLanguage.vi: 'Key words · Từ khoá',
+      AppLanguage.en: 'Key words',
+    },
+    'tutorial_say_it': {
+      AppLanguage.vi: 'Nói theo câu này',
+      AppLanguage.en: 'Say it with me',
+    },
+    'tutorial_say_it_sub': {
+      AppLanguage.vi: 'Bấm mic rồi đọc to câu tiếng Anh · +1 vòng Nói',
+      AppLanguage.en: 'Tap the mic and read the sentence aloud',
+    },
+    'tutorial_listening': {
+      AppLanguage.vi: 'Đang nghe…',
+      AppLanguage.en: 'Listening…',
+    },
+    'tutorial_score': {
+      AppLanguage.vi: 'Điểm phát âm: {score}',
+      AppLanguage.en: 'Pronunciation: {score}',
+    },
+    'tutorial_not_heard': {
+      AppLanguage.vi: 'Chưa nghe rõ, thử lại ở lần xem sau nhé',
+      AppLanguage.en: 'Could not hear you clearly',
+    },
+    'tutorial_skip': {AppLanguage.vi: 'Bỏ qua ›', AppLanguage.en: 'Skip ›'},
+    'tutorial_done_title': {
+      AppLanguage.vi: 'Xong video {name}!',
+      AppLanguage.en: 'You finished {name}!',
+    },
+    'tutorial_stat_passed': {
+      AppLanguage.vi: 'câu nói đạt',
+      AppLanguage.en: 'sentences passed',
+    },
+    'tutorial_stat_score': {
+      AppLanguage.vi: 'điểm phát âm TB',
+      AppLanguage.en: 'avg. score',
+    },
+    'tutorial_stat_speak': {
+      AppLanguage.vi: 'lượt Nói',
+      AppLanguage.en: 'speaking reps',
+    },
+    'tutorial_add_srs': {
+      AppLanguage.vi: '+ Thêm {count} từ vào Ôn tập',
+      AppLanguage.en: '+ Add {count} words to Review',
+    },
+    'tutorial_added': {
+      AppLanguage.vi: 'Đã thêm vào Ôn tập ✓',
+      AppLanguage.en: 'Added to Review ✓',
+    },
+    'tutorial_start_workout': {
+      AppLanguage.vi: 'Tập bài này ngay',
+      AppLanguage.en: 'Train this exercise now',
+    },
+    'tutorial_start_workout_short': {
+      AppLanguage.vi: 'Tập bài này',
+      AppLanguage.en: 'Train this exercise',
+    },
+    'tutorial_replay': {
+      AppLanguage.vi: 'Xem lại',
+      AppLanguage.en: 'Watch again',
+    },
     // GymTalk giai doan 3: PT AI, luyen noi ranh tay, giong HLV, thiet lap.
     'voice_chat_pt_title': {
       AppLanguage.vi: 'PT AI (tiếng Anh)',
