@@ -69,13 +69,38 @@ const LEVEL_PROMPTS = {
   },
 };
 
+// Tinh huong hoi thoai (query `scenario` tu app - xem
+// app/lib/features/ai_voice_chat/data/voice_chat_scenario.dart). CHI nhan
+// cac gia tri trong danh sach nay (khong bao gio ghep chuoi tu may khach vao
+// prompt). Khong co/khong hop le -> tro chuyen tu do.
+const SCENARIO_PROMPTS = {
+  free: '',
+  personalTrainer:
+    'ROLE-PLAY: You are Alex, an energetic but kind personal trainer at a ' +
+    'gym. The learner is your gym member. Stay in this role for the whole ' +
+    'conversation. Start by greeting them and asking what they are training ' +
+    'today. Rotate through realistic gym situations, one at a time: asking ' +
+    'how to use a machine, booking a personal training session, describing ' +
+    'a sore muscle or a minor injury, asking about sets, reps and rest time, ' +
+    'talking about fitness goals and diet. Naturally use gym vocabulary ' +
+    '(reps, sets, form, warm up, brace your core, range of motion, spotter) ' +
+    'and briefly explain a word if the learner seems confused. Never give ' +
+    'medical advice beyond "rest and see a doctor if it hurts".',
+};
+
+export function normalizeScenario(scenario) {
+  return Object.hasOwn(SCENARIO_PROMPTS, scenario) ? scenario : 'free';
+}
+
 export function normalizeLevel(level) {
   return Object.hasOwn(LEVEL_PROMPTS, level) ? level : 'intermediate';
 }
 
-export function systemPromptFor(level) {
+export function systemPromptFor(level, scenario = 'free') {
   const { learner, guide } = LEVEL_PROMPTS[normalizeLevel(level)];
-  return `${BASE_PROMPT.replace('{learner}', learner)}\n\n${guide}`;
+  const base = `${BASE_PROMPT.replace('{learner}', learner)}\n\n${guide}`;
+  const extra = SCENARIO_PROMPTS[normalizeScenario(scenario)];
+  return extra ? `${base}\n\n${extra}` : base;
 }
 
 /**
@@ -87,9 +112,10 @@ export function systemPromptFor(level) {
  * phan hoi tu Gemini duoc forward nguoc lai qua onAudioChunk.
  */
 export class GeminiLiveSession {
-  constructor({ apiKey, level, onAudioChunk, onQuotaExceeded, onError }) {
+  constructor({ apiKey, level, scenario, onAudioChunk, onQuotaExceeded, onError }) {
     this.apiKey = apiKey;
     this.level = normalizeLevel(level);
+    this.scenario = normalizeScenario(scenario);
     this.onAudioChunk = onAudioChunk;
     this.onQuotaExceeded = onQuotaExceeded;
     this.onError = onError;
@@ -104,7 +130,7 @@ export class GeminiLiveSession {
       model: MODEL,
       config: {
         responseModalities: [Modality.AUDIO],
-        systemInstruction: systemPromptFor(this.level),
+        systemInstruction: systemPromptFor(this.level, this.scenario),
       },
       callbacks: {
         onopen: () => {

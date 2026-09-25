@@ -7,6 +7,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/speaker_button.dart';
 import '../../fitness/data/program_model.dart';
 import '../../learning_path/presentation/learning_path_survey_screen.dart';
+import '../data/gymtalk_reminders.dart';
 import '../data/program_recommendation.dart';
 
 /// "Thiet lap GymTalk" - mo tu man Hom nay khi chua theo giao an nao: hoi
@@ -45,6 +46,8 @@ class _GymTalkSetupSheetState extends ConsumerState<GymTalkSetupSheet> {
       ref
         ..invalidate(activeProgramIdProvider)
         ..invalidate(todayWorkoutPlanProvider);
+      // Noi dung nhac hang ngay phu thuoc giao an -> dat lai.
+      GymTalkReminders.instance.rescheduleFromPrefs(ref);
       if (mounted) Navigator.of(context).maybePop();
     } catch (_) {
       if (mounted) {

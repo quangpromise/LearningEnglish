@@ -105,7 +105,13 @@ class VoiceChatClient implements VoiceChatSession {
     required this.backendUrl,
     required this.accessToken,
     this.level,
+    this.scenarioName,
   });
+
+  /// Ten tinh huong (VoiceChatScenario.name, vd 'personalTrainer') gui kem
+  /// query `scenario` - backend chi nhan gia tri trong danh sach cua no
+  /// (backend/gemini-proxy/src/geminiClient.js).
+  final String? scenarioName;
 
   /// URL WebSocket cua gemini-proxy, vd wss://your-server.example/voice-chat.
   /// Backend chua duoc deploy san - phai tu chay backend/gemini-proxy roi
@@ -156,7 +162,8 @@ class VoiceChatClient implements VoiceChatSession {
     _stateController.add(VoiceChatState.connecting);
     final uri = Uri.parse(
       '$backendUrl?token=${Uri.encodeQueryComponent(accessToken)}'
-      '${level != null ? '&level=${level!.name}' : ''}',
+      '${level != null ? '&level=${level!.name}' : ''}'
+      '${scenarioName != null ? '&scenario=$scenarioName' : ''}',
     );
     final channel = WebSocketChannel.connect(uri);
     _channel = channel;

@@ -1,10 +1,18 @@
+import 'dart:io';
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/tts/app_tts.dart';
 import '../../planner/presentation/planner_links.dart';
+import '../../today/data/daily_progress_store.dart';
 import '../data/workout_model.dart';
 
 /// Man tong ket sau khi hoan thanh buoi tap - port tu SessionFinishedContent
@@ -16,7 +24,11 @@ class WorkoutFinishedScreen extends ConsumerStatefulWidget {
     super.key,
     required this.controller,
     this.wordsReviewed = 0,
+    this.coachLine,
   });
+
+  /// Cau chuc mung cua giong HLV (null = tat giong HLV).
+  final String? coachLine;
 
   /// Man nay NHAN QUYEN SO HUU controller tu WorkoutSessionScreen (man do
   /// khong dispose khi da chuyen sang day) va tu dispose khi dong.
@@ -33,6 +45,10 @@ class WorkoutFinishedScreen extends ConsumerStatefulWidget {
 class _WorkoutFinishedScreenState extends ConsumerState<WorkoutFinishedScreen> {
   bool _shared = false;
   bool _sharing = false;
+  bool _sharingImage = false;
+
+  /// Vung "the ket qua" duoc chup thanh anh de chia se ra app khac.
+  final _cardKey = GlobalKey();
   bool _statsRefreshed = false;
   late final WorkoutOutbox _outbox = ref.read(workoutOutboxProvider);
 
@@ -48,6 +64,8 @@ class _WorkoutFinishedScreenState extends ConsumerState<WorkoutFinishedScreen> {
         if (mounted) completeFitnessProgramToday(ref, programId);
       });
     }
+    final coachLine = widget.coachLine;
+    if (coachLine != null) AppTts.instance.speak(coachLine);
     _outbox.addListener(_refreshStatsWhenSynced);
     // Khong invalidate provider ngay trong initState (dang build cay widget).
     WidgetsBinding.instance.addPostFrameCallback(
@@ -112,6 +130,36 @@ class _WorkoutFinishedScreenState extends ConsumerState<WorkoutFinishedScreen> {
     }
   }
 
+  /// Chup the ket qua (RepaintBoundary) thanh PNG roi mo bang chia se cua he
+  /// thong (Zalo, Messenger, Instagram...).
+  Future<void> _shareImage() async {
+    if (_sharingImage) return;
+    setState(() => _sharingImage = true);
+    try {
+      final boundary =
+          _cardKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+      if (boundary == null) return;
+      final image = await boundary.toImage(pixelRatio: 3);
+      final data = await image.toByteData(format: ui.ImageByteFormat.png);
+      if (data == null) return;
+      final dir = await getTemporaryDirectory();
+      final file = File(
+        '${dir.path}/gymtalk_${DateTime.now().millisecondsSinceEpoch}.png',
+      );
+      await file.writeAsBytes(data.buffer.asUint8List());
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path, mimeType: 'image/png')],
+          text: AppStrings.t('share_card_text', ref.read(appLanguageProvider)),
+        ),
+      );
+    } catch (e) {
+      debugPrint('share image failed: $e');
+    } finally {
+      if (mounted) setState(() => _sharingImage = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final controller = widget.controller;
@@ -144,32 +192,58 @@ class _WorkoutFinishedScreenState extends ConsumerState<WorkoutFinishedScreen> {
               const SizedBox(height: 10),
               _SyncStatus(controller: controller),
               const SizedBox(height: 18),
-              GlowBox(
-                padding: const EdgeInsets.all(18),
-                borderRadius: 20,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _SummaryTile(
-                      label: ref.tr('fitness_workout_duration'),
-                      value:
-                          '${minutes}p ${seconds.toString().padLeft(2, '0')}s',
-                    ),
-                    _SummaryTile(
-                      label: ref.tr('fitness_workout_total_volume'),
-                      value: '${controller.totalVolumeKg.toStringAsFixed(0)}kg',
-                    ),
-                    _SummaryTile(
-                      label: ref.tr('fitness_workout_total_sets'),
-                      value: '${controller.totalSetsLogged}',
-                    ),
-                    if (widget.wordsReviewed > 0)
-                      _SummaryTile(
-                        label: ref.tr('fitness_workout_words_reviewed'),
-                        value: '${widget.wordsReviewed}',
+              RepaintBoundary(
+                key: _cardKey,
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: AppColors.bgTop,
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.fitness_center_rounded,
+                            color: AppColors.fitnessAccent,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'GymTalk',
+                            style: AppTextStyles.heading(size: 16),
+                          ),
+                          const Spacer(),
+                          Text(
+                            '🔥 ${DailyProgressStore.instance.bodyBrainStreak}'
+                            ' · Body + Brain',
+                            style: AppTextStyles.body(
+                              size: 12,
+                              color: AppColors.amber,
+                            ),
+                          ),
+                        ],
                       ),
-                  ],
+                      const SizedBox(height: 10),
+                      _summaryBox(controller, minutes, seconds),
+                    ],
+                  ),
                 ),
+              ),
+              const SizedBox(height: 10),
+              PillButton(
+                label: ref.tr(
+                  _sharingImage ? 'share_card_preparing' : 'share_card_button',
+                ),
+                accentColor: AppColors.fitnessAccent,
+                filled: false,
+                icon: const Icon(
+                  Icons.image_outlined,
+                  size: 16,
+                  color: AppColors.fitnessAccent,
+                ),
+                onTap: _sharingImage ? null : _shareImage,
               ),
               const SizedBox(height: 16),
               PillButton(
@@ -192,20 +266,40 @@ class _WorkoutFinishedScreenState extends ConsumerState<WorkoutFinishedScreen> {
                 label: ref.tr('fitness_workout_back_home'),
                 accentColor: AppColors.fitnessAccent,
                 filled: false,
-                onTap: () {
-                  // Toan bo luong Giao an/Tap luyen (danh sach -> chi tiet ->
-                  // preview -> session -> man nay) deu la cac popup rieng
-                  // (openAppPopup) CHONG LEN NHAU tren CUNG 1 Navigator goc
-                  // (useRootNavigator: true, khong tao Navigator rieng) - can
-                  // dong het ca chuoi de ve lai dung Home, khong chi 1 pop
-                  // don le. r.isFirst = route dau tien (man Home thuc), giu
-                  // dung quy uoc nhu ielts_result_screen/toeic_result_screen.
-                  Navigator.of(context).popUntil((r) => r.isFirst);
-                },
+                onTap: () => Navigator.of(context).popUntil((r) => r.isFirst),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _summaryBox(WorkoutController controller, int minutes, int seconds) {
+    return GlowBox(
+      padding: const EdgeInsets.all(18),
+      borderRadius: 20,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _SummaryTile(
+            label: ref.tr('fitness_workout_duration'),
+            value: '${minutes}p ${seconds.toString().padLeft(2, '0')}s',
+          ),
+          _SummaryTile(
+            label: ref.tr('fitness_workout_total_volume'),
+            value: '${controller.totalVolumeKg.toStringAsFixed(0)}kg',
+          ),
+          _SummaryTile(
+            label: ref.tr('fitness_workout_total_sets'),
+            value: '${controller.totalSetsLogged}',
+          ),
+          if (widget.wordsReviewed > 0)
+            _SummaryTile(
+              label: ref.tr('fitness_workout_words_reviewed'),
+              value: '${widget.wordsReviewed}',
+            ),
+        ],
       ),
     );
   }

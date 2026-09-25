@@ -230,6 +230,9 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
           backendUrl: kVoiceChatBackendUrl,
           accessToken: token,
           level: ref.read(learnerLevelProvider),
+          scenarioName: widget.scenario == VoiceChatScenario.free
+              ? null
+              : widget.scenario.name,
         );
       }
       _client = client;

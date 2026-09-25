@@ -30,6 +30,7 @@ class SrsCard {
     this.exampleVi = '',
     this.box = 0,
     required this.due,
+    this.reviewedAt,
   });
 
   factory SrsCard.fromJson(Map<String, dynamic> json) => SrsCard(
@@ -41,6 +42,7 @@ class SrsCard {
     exampleVi: json['exVi'] as String? ?? '',
     box: (json['box'] as num?)?.toInt() ?? 0,
     due: DateTime.tryParse(json['due'] as String? ?? '') ?? DateTime(2000),
+    reviewedAt: DateTime.tryParse(json['rev'] as String? ?? ''),
   );
 
   /// Khoa on dinh = tu tieng Anh viet thuong.
@@ -55,9 +57,13 @@ class SrsCard {
   /// Ngay den han on (chi phan ngay co y nghia).
   final DateTime due;
 
+  /// Lan on gan nhat (UTC) - dung de gop giua 2 may: lan on MOI HON thang,
+  /// ke ca khi do la lan "Quen" (han on lui ve hom nay).
+  final DateTime? reviewedAt;
+
   bool isDue(DateTime now) => !srsDateOnly(due).isAfter(srsDateOnly(now));
 
-  SrsCard copyWith({int? box, DateTime? due}) => SrsCard(
+  SrsCard copyWith({int? box, DateTime? due, DateTime? reviewedAt}) => SrsCard(
     key: key,
     en: en,
     vi: vi,
@@ -66,6 +72,7 @@ class SrsCard {
     exampleVi: exampleVi,
     box: box ?? this.box,
     due: due ?? this.due,
+    reviewedAt: reviewedAt ?? this.reviewedAt,
   );
 
   Map<String, dynamic> toJson() => {
@@ -77,6 +84,7 @@ class SrsCard {
     'exVi': exampleVi,
     'box': box,
     'due': srsDateOnly(due).toIso8601String(),
+    if (reviewedAt != null) 'rev': reviewedAt!.toUtc().toIso8601String(),
   };
 }
 
@@ -147,6 +155,7 @@ class SrsStore extends ChangeNotifier {
     exampleVi: card.exampleVi,
     box: card.box,
     due: card.due,
+    reviewedAt: card.reviewedAt,
   );
 
   int boxOf(String key) => _cards[key.toLowerCase()]?.box ?? 0;
@@ -164,6 +173,57 @@ class SrsStore extends ChangeNotifier {
         return byDue != 0 ? byDue : a.box - b.box;
       });
     return due;
+  }
+
+  // ---------------------------------------------------------------------
+  // Dong bo tai khoan (xem gymtalk_sync_service.dart)
+  // ---------------------------------------------------------------------
+
+  /// Toan bo the dang JSON de day len Supabase.
+  List<Map<String, dynamic>> exportJson() => [
+    for (final c in _cards.values) c.toJson(),
+  ];
+
+  /// Gop bo the tu server vao may. Moi khoa giu the co han on MUON hon (vua
+  /// on/nho gan day hon), bang nhau thi hop cao hon - gop nhieu lan van ra
+  /// cung ket qua. Tra ve true neu bo the tren may thay doi.
+  Future<bool> mergeRemote(List<dynamic> remote) async {
+    await ensureLoaded();
+    var changed = false;
+    for (final item in remote) {
+      if (item is! Map) continue;
+      final incoming = SrsCard.fromJson(Map<String, dynamic>.from(item));
+      final key = incoming.key.toLowerCase();
+      final local = _cards[key];
+      if (local == null || _isNewer(incoming, local)) {
+        _cards[key] = incoming.key == key ? incoming : _withKey(incoming, key);
+        changed = true;
+      }
+    }
+    if (changed) {
+      notifyListeners();
+      await _save();
+    }
+    return changed;
+  }
+
+  static bool _isNewer(SrsCard a, SrsCard b) {
+    final ra = a.reviewedAt, rb = b.reviewedAt;
+    if (ra != null || rb != null) {
+      if (ra == null) return false;
+      if (rb == null) return true;
+      return ra.isAfter(rb);
+    }
+    final byDue = srsDateOnly(a.due).compareTo(srsDateOnly(b.due));
+    return byDue != 0 ? byDue > 0 : a.box > b.box;
+  }
+
+  /// Xoa sach bo the tren may (doi sang tai khoan khac).
+  Future<void> clearLocal() async {
+    await ensureLoaded();
+    _cards.clear();
+    notifyListeners();
+    await _save();
   }
 
   int dueCount(DateTime now) => _cards.values.where((c) => c.isDue(now)).length;
@@ -202,6 +262,7 @@ class SrsStore extends ChangeNotifier {
     _cards[lower] = current.copyWith(
       box: box,
       due: srsDateOnly(now).add(Duration(days: kSrsIntervalsDays[box])),
+      reviewedAt: now.toUtc(),
     );
     notifyListeners();
     await _save();

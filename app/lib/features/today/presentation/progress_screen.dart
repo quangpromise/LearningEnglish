@@ -11,6 +11,7 @@ import '../../social/presentation/conversations_screen.dart';
 import '../../srs/data/srs_store.dart';
 import '../data/daily_progress_store.dart';
 import 'daily_rings.dart';
+import 'progress_social_cards.dart';
 
 /// Tab "Tien do": 1 cap do GymTalk XP chung (tap + hoc), chuoi Body + Brain
 /// voi lich su 7 ngay, so lieu tap tuan nay va so lieu hoc tieng Anh.
@@ -55,7 +56,9 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen> {
                   ref
                     ..invalidate(myLearningXpProvider)
                     ..invalidate(myStatsProvider)
-                    ..invalidate(fitnessDashboardStatsProvider);
+                    ..invalidate(fitnessDashboardStatsProvider)
+                    ..invalidate(friendsChallengeProvider);
+                  await ref.read(gymTalkSyncProvider).syncNow();
                 },
                 child: ListenableBuilder(
                   listenable: Listenable.merge([
@@ -72,6 +75,10 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen> {
                       _TrainCard(),
                       SizedBox(height: 14),
                       _LearnCard(),
+                      SizedBox(height: 14),
+                      FriendsChallengeCard(),
+                      SizedBox(height: 14),
+                      ReminderSettingsCard(),
                     ],
                   ),
                 ),

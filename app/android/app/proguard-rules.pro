@@ -15,3 +15,9 @@
 -keep class com.ryanheise.audioservice.** { *; }
 -keep class androidx.media.** { *; }
 -keep class android.support.v4.media.** { *; }
+
+# ML Kit Pose Detection (camera dem rep - GymTalk giai doan 5). Giu class
+# model/JNI de R8 khong xoa khi build release (isMinifyEnabled = true).
+-keep class com.google.mlkit.** { *; }
+-keep class com.google.android.gms.internal.mlkit_vision_** { *; }
+-dontwarn com.google.mlkit.**

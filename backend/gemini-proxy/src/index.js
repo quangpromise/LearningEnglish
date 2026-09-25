@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { WebSocketServer } from 'ws';
 
-import { GeminiLiveSession, normalizeLevel } from './geminiClient.js';
+import { GeminiLiveSession, normalizeLevel, normalizeScenario } from './geminiClient.js';
 import { connectFallback } from './fallbackClient.js';
 import { verifySupabaseToken, RateLimiter } from './auth.js';
 
@@ -38,6 +38,9 @@ wss.on('connection', (clientSocket, request) => {
   // Cap hoc (basic/intermediate/advanced) app gui kem de chon prompt hop
   // trinh do - gia tri la/thieu tu dong ve 'intermediate'.
   const level = normalizeLevel(url.searchParams.get('level'));
+  // Tinh huong nhap vai (vd PT AI cua GymTalk) - chi nhan gia tri trong
+  // danh sach cua geminiClient.js.
+  const scenario = normalizeScenario(url.searchParams.get('scenario'));
 
   console.log(`[gemini-proxy] Client Flutter kết nối (user ${userId}, level ${level})`);
 
@@ -61,6 +64,7 @@ wss.on('connection', (clientSocket, request) => {
     geminiSession = new GeminiLiveSession({
       apiKey: GEMINI_API_KEY,
       level,
+      scenario,
       onAudioChunk: (chunk) => clientSocket.send(chunk),
       onQuotaExceeded: () => switchToFallback('Gemini Live báo lỗi quota/429'),
       onError: (err) => console.error('[gemini] Lỗi:', err.message),

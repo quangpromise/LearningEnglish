@@ -33,6 +33,8 @@ import '../../features/ielts/data/ielts_attempt_repository.dart';
 import '../../features/learning_path/data/learning_path_models.dart';
 import '../../features/learning_path/data/learning_path_repository.dart';
 import '../../features/story/data/lesson_progress_repository.dart';
+import '../../features/today/data/friends_challenge_repository.dart';
+import '../../features/today/data/gymtalk_sync_service.dart';
 import '../../features/toeic/data/toeic_attempt_repository.dart';
 import '../../features/wealth/data/exchange_rate_repository.dart';
 import '../../features/wealth/data/stocks_intl_repository.dart';
@@ -499,6 +501,24 @@ final workoutRepositoryProvider = Provider<WorkoutRepository>(
 );
 
 /// Hang doi ghi buoi tap luu tren may, tu gui lai khi co mang - xem
+/// Dong bo SRS + 3 vong Tap/Hoc/Noi theo tai khoan (migration 0074).
+final gymTalkSyncProvider = Provider<GymTalkSyncService>((ref) {
+  final sync = GymTalkSyncService(supabase: ref.watch(supabaseClientProvider));
+  ref.onDispose(sync.dispose);
+  return sync;
+});
+
+final friendsChallengeRepositoryProvider = Provider<FriendsChallengeRepository>(
+  (ref) => FriendsChallengeRepository(ref.watch(supabaseClientProvider)),
+);
+
+/// Bang "Thu thach tuan Body + Brain" voi ban be (RPC
+/// friends_body_brain_week).
+final friendsChallengeProvider =
+    FutureProvider.autoDispose<List<FriendChallengeEntry>>(
+      (ref) => ref.watch(friendsChallengeRepositoryProvider).fetchWeek(),
+    );
+
 /// workout_outbox.dart. Song suot vong doi app (khong autoDispose) de lenh
 /// dang cho van duoc gui sau khi dong man tap.
 final workoutOutboxProvider = Provider<WorkoutOutbox>((ref) {

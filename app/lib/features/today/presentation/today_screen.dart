@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/navigation/app_popup.dart';
@@ -32,11 +33,39 @@ class TodayScreen extends ConsumerStatefulWidget {
 }
 
 class _TodayScreenState extends ConsumerState<TodayScreen> {
+  static const _setupPromptedKey = 'gymtalk_setup_prompted_v1';
+  bool _setupChecked = false;
+
   @override
   void initState() {
     super.initState();
     DailyProgressStore.instance.ensureLoaded();
     SrsStore.instance.ensureLoaded();
+    // Lan dau: chua theo giao an nao -> tu mo "Thiet lap GymTalk" 1 lan
+    // (60 giay: 4 cau hoi -> co giao an + buoi tap hom nay).
+    ref.listenManual<AsyncValue<TodayWorkoutPlan?>>(todayWorkoutPlanProvider, (
+      _,
+      next,
+    ) {
+      if (next.hasValue && next.value == null) _maybePromptSetup();
+    }, fireImmediately: true);
+  }
+
+  Future<void> _maybePromptSetup() async {
+    if (_setupChecked) return;
+    _setupChecked = true;
+    if (ref.read(supabaseClientProvider).auth.currentUser == null) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (prefs.getBool(_setupPromptedKey) ?? false) return;
+      await prefs.setBool(_setupPromptedKey, true);
+    } catch (_) {
+      return;
+    }
+    if (!mounted) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) openAppPopup(context, const GymTalkSetupSheet());
+    });
   }
 
   @override

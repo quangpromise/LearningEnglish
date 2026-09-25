@@ -114,6 +114,15 @@ dependencies:
   # on-device (khong goi API nao). Chi dung o man "Suc khoe" cua Fitness -
   # anh chup/chon anh o cho khac van dung image_picker nhu cu.
   camera: ^0.11.0
+  # Nhan dien tu the (pose) ON-DEVICE cho tinh nang "Dem rep bang camera"
+  # (GymTalk giai doan 5): tinh goc goi/khuyu/hong tu anh camera truoc de
+  # dem rep va nhac "xuong sau hon". Mien phi, plugin MIT, model ML Kit
+  # dong goi san trong APK (khong goi API mang). Ly do chon: xem
+  # docs/gymtalk-phase4-6.md.
+  google_mlkit_pose_detection: ^0.16.1
+  # Chia se anh "the ket qua buoi tap" ra app khac (Zalo, Messenger...) -
+  # BSD-3, mien phi (GymTalk giai doan 6).
+  share_plus: ^13.3.0
   # Ve bieu do gia (crypto/chung khoan) - MIT, mien phi, chi ve UI thuan tuy
   # (khong tu goi API nao) nen khong anh huong den nguon du lieu da chon.
   # ^1.0.0 (khong phai 0.69 truoc day) vi CandlestickChart (nen xanh/do kieu
