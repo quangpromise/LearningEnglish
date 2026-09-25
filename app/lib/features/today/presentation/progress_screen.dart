@@ -11,9 +11,11 @@ import '../../social/presentation/conversations_screen.dart';
 import '../../srs/data/srs_store.dart';
 import '../data/daily_progress_store.dart';
 import 'daily_rings.dart';
+import 'levels_card.dart';
 import 'progress_social_cards.dart';
 
-/// Tab "Tien do": 1 cap do GymTalk XP chung (tap + hoc), chuoi Body + Brain
+/// Tab "Tien do": English Level + Body Level + GymTalk Rank (XP chi la diem
+/// tich luy, spec #45), chuoi Body + Brain
 /// voi lich su 7 ngay, so lieu tap tuan nay va so lieu hoc tieng Anh.
 class ProgressScreen extends ConsumerStatefulWidget {
   const ProgressScreen({super.key});
@@ -68,7 +70,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen> {
                   builder: (context, _) => ListView(
                     padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
                     children: const [
-                      _XpCard(),
+                      LevelsCard(),
                       SizedBox(height: 14),
                       _StreakCard(),
                       SizedBox(height: 14),
@@ -86,66 +88,6 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _XpCard extends ConsumerWidget {
-  const _XpCard();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final xpAsync = ref.watch(myLearningXpProvider);
-    final xp = xpAsync.valueOrNull;
-    return GlowBox(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            ref.tr('progress_xp_title'),
-            style: AppTextStyles.muted(size: 13),
-          ),
-          const SizedBox(height: 4),
-          if (xp == null)
-            Text(
-              xpAsync.hasError ? ref.tr('progress_load_error') : '…',
-              style: AppTextStyles.body(color: AppColors.textMuted),
-            )
-          else ...[
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  ref
-                      .tr('progress_level')
-                      .replaceFirst('{level}', '${xp.level}'),
-                  style: AppTextStyles.heading(size: 26),
-                ),
-                const Spacer(),
-                Text(
-                  '${xp.xpInLevel}/${xp.xpInLevel + xp.xpToNext} XP',
-                  style: AppTextStyles.body(weight: FontWeight.w800),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(999),
-              child: LinearProgressIndicator(
-                value: xp.xpInLevel / (xp.xpInLevel + xp.xpToNext),
-                minHeight: 10,
-                color: AppColors.blue,
-                backgroundColor: AppColors.glassBorder,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              ref.tr('progress_xp_hint'),
-              style: AppTextStyles.muted(size: 12),
-            ),
-          ],
-        ],
       ),
     );
   }
