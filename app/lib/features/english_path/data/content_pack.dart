@@ -10,13 +10,14 @@ import 'cefr_level.dart';
 /// hash noi dung se lech va pack mat approval.
 const kContentPackAsset = 'assets/english_path/pack.json';
 
-/// Loai Practice Item (grammar, ieltsMicro them cung ticket sinh ra chung):
+/// Loai Practice Item (ieltsMicro them cung ticket sinh ra no - #56):
 /// - meaning: [PracticeItem.prompt] la tu tieng Anh, options la nghia Viet.
 /// - listening: nghe [PracticeItem.prompt] (khong hien chu), chon tu dung.
 /// - gapFill: prompt la cau co "___", options la tu tieng Anh; hintVi la
 ///   ban dich cau.
 /// - wordScramble: xep chu cai thanh tu options[0]; hintVi la nghia Viet.
-enum PracticeItemType { meaning, listening, gapFill, wordScramble }
+/// - grammar: cau co "___" chon dang dung; explanationVi giai thich quy tac.
+enum PracticeItemType { meaning, listening, gapFill, wordScramble, grammar }
 
 class ContentSource {
   const ContentSource({
@@ -94,6 +95,8 @@ class PracticeItem {
     required this.sourceIds,
     this.wordEn,
     this.hintVi,
+    this.explanationVi,
+    this.sourceRef,
   });
 
   factory PracticeItem.fromJson(Map<String, dynamic> json) => PracticeItem(
@@ -106,6 +109,8 @@ class PracticeItem {
     sourceIds: (json['sourceIds'] as List).cast<String>(),
     wordEn: json['wordEn'] as String?,
     hintVi: json['hintVi'] as String?,
+    explanationVi: json['explanationVi'] as String?,
+    sourceRef: json['sourceRef'] as String?,
   );
 
   final String id;
@@ -122,7 +127,35 @@ class PracticeItem {
   /// Goi y tieng Viet (ban dich cau cho gapFill, nghia cho wordScramble).
   final String? hintVi;
 
+  /// Giai thich quy tac (cau grammar), hien sau khi tra loi.
+  final String? explanationVi;
+
+  /// Nguon cu the cua noi dung, vd "tatoeba:eng#123/vie#456" (ghi cong).
+  final String? sourceRef;
+
   String get correctAnswer => options[answerIndex];
+}
+
+/// Diem ngu phap cua 1 Unit.
+class UnitGrammar {
+  const UnitGrammar({
+    required this.id,
+    required this.titleEn,
+    required this.titleVi,
+    required this.explanationVi,
+  });
+
+  factory UnitGrammar.fromJson(Map<String, dynamic> json) => UnitGrammar(
+    id: json['id'] as String,
+    titleEn: json['titleEn'] as String,
+    titleVi: json['titleVi'] as String,
+    explanationVi: json['explanationVi'] as String,
+  );
+
+  final String id;
+  final String titleEn;
+  final String titleVi;
+  final String explanationVi;
 }
 
 class PathUnit {
@@ -133,6 +166,7 @@ class PathUnit {
     required this.titleVi,
     required this.words,
     required this.items,
+    this.grammar,
   });
 
   factory PathUnit.fromJson(Map<String, dynamic> json) => PathUnit(
@@ -148,6 +182,9 @@ class PathUnit {
       for (final i in json['items'] as List)
         PracticeItem.fromJson(i as Map<String, dynamic>),
     ],
+    grammar: json['grammar'] == null
+        ? null
+        : UnitGrammar.fromJson(json['grammar'] as Map<String, dynamic>),
   );
 
   final String id;
@@ -156,6 +193,7 @@ class PathUnit {
   final String titleVi;
   final List<PathWord> words;
   final List<PracticeItem> items;
+  final UnitGrammar? grammar;
 
   String titleFor(AppLanguage lang) =>
       lang == AppLanguage.en ? titleEn : titleVi;

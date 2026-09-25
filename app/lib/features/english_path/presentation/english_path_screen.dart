@@ -333,6 +333,13 @@ class _UnitTile extends ConsumerWidget {
               ),
               const SizedBox(height: 4),
               Text(unit.titleFor(lang), style: AppTextStyles.heading(size: 16)),
+              if (unit.grammar != null)
+                Text(
+                  ref
+                      .tr('path_unit_grammar')
+                      .replaceFirst('{g}', unit.grammar!.titleVi),
+                  style: AppTextStyles.muted(size: 12),
+                ),
               const SizedBox(height: 8),
               ClipRRect(
                 borderRadius: BorderRadius.circular(4),

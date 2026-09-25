@@ -5626,6 +5626,14 @@ class AppStrings {
       AppLanguage.vi: 'Bật lại dạng Nghe',
       AppLanguage.en: 'Turn Listening back on',
     },
+    'path_grammar_prompt': {
+      AppLanguage.vi: 'Chọn dạng đúng để điền vào chỗ trống',
+      AppLanguage.en: 'Choose the correct form for the blank',
+    },
+    'path_unit_grammar': {
+      AppLanguage.vi: 'Ngữ pháp: {g}',
+      AppLanguage.en: 'Grammar: {g}',
+    },
   };
 
   static String t(String key, AppLanguage lang) =>

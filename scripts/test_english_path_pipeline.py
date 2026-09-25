@@ -86,10 +86,11 @@ class BuildPackTest(unittest.TestCase):
         self.assertEqual(stage["cefr"], "A1")
         (unit,) = stage["units"]
         self.assertEqual(len(unit["words"]), 5)
-        self.assertEqual(len(unit["items"]), 5)
-        for item in unit["items"]:
-            self.assertEqual(item["type"], "meaning")
+        meaning = [i for i in unit["items"] if i["type"] == "meaning"]
+        self.assertEqual(len(meaning), 5)
+        for item in meaning:
             self.assertEqual(len(item["options"]), 4)
+        for item in unit["items"]:
             self.assertTrue(set(item["sourceIds"]) <= source_ids)
 
     def test_is_deterministic(self):
@@ -237,7 +238,8 @@ class ReviewCsvTest(unittest.TestCase):
             again = Path(d) / "again.csv"
             pp.export_review_csv(pack, again)
             self.assertEqual(out.read_text(encoding="utf-8"), again.read_text(encoding="utf-8"))
-        self.assertEqual(len(rows), 7)
+        n_items = len(pack["stages"][0]["units"][0]["items"])
+        self.assertEqual(len(rows), n_items)
         sampled = [r for r in rows if r["sample"] == "yes"]
         self.assertGreaterEqual(len(sampled), 1)
         self.assertIn("answer", rows[0])
