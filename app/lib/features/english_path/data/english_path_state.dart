@@ -1,14 +1,22 @@
 import 'cefr_level.dart';
+import 'placement.dart';
 
 /// Phien ban cau truc state lo trinh. BAT BUOC tang (va them 1 buoc migrate
-/// trong [migrateEnglishPathState]) moi khi them/doi truong - vd Placement,
-/// Level Test, che do Rest Game o cac ticket sau. Neu khong, ban app cu doc
-/// state cung version se ghi de va lam mat cac truong no khong biet.
-const kEnglishPathSchemaVersion = 1;
+/// trong [migrateEnglishPathState]) moi khi them/doi truong - vd Level Test,
+/// che do Rest Game o cac ticket sau. Neu khong, ban app cu doc state cung
+/// version se ghi de va lam mat cac truong no khong biet.
+///
+/// Lich su: v1 level + correctItems; v2 them placement + placementSkipped.
+const kEnglishPathSchemaVersion = 2;
 
 /// Tien do lo trinh tieng Anh cua nguoi hoc (local-first, xem spec #45).
 class EnglishPathState {
-  const EnglishPathState({this.level, this.correctItems = const {}});
+  const EnglishPathState({
+    this.level,
+    this.correctItems = const {},
+    this.placement,
+    this.placementSkipped = false,
+  });
 
   /// English Level da xac dinh (Placement/Level Test). null = chua co, dung
   /// Stage mac dinh theo Persona - xem `effectiveLevel`.
@@ -17,13 +25,29 @@ class EnglishPathState {
   /// unitId -> id cac Practice Item da tra loi dung it nhat 1 lan.
   final Map<String, Set<String>> correctItems;
 
-  EnglishPathState copyWith({CefrLevel? level}) =>
-      EnglishPathState(level: level ?? this.level, correctItems: correctItems);
+  /// Lan Placement Test gan nhat (ban ghi audit day du).
+  final PlacementRecord? placement;
+
+  /// Nguoi hoc da bo qua Placement - khong hoi lai, dung Stage theo Persona.
+  final bool placementSkipped;
+
+  EnglishPathState _copy({
+    CefrLevel? level,
+    Map<String, Set<String>>? correctItems,
+    PlacementRecord? placement,
+    bool? placementSkipped,
+  }) => EnglishPathState(
+    level: level ?? this.level,
+    correctItems: correctItems ?? this.correctItems,
+    placement: placement ?? this.placement,
+    placementSkipped: placementSkipped ?? this.placementSkipped,
+  );
+
+  EnglishPathState copyWith({CefrLevel? level}) => _copy(level: level);
 
   EnglishPathState recordCorrect(String unitId, String itemId) {
     if (correctItems[unitId]?.contains(itemId) ?? false) return this;
-    return EnglishPathState(
-      level: level,
+    return _copy(
       correctItems: {
         ...correctItems,
         unitId: {...?correctItems[unitId], itemId},
@@ -31,12 +55,20 @@ class EnglishPathState {
     );
   }
 
+  /// Ket qua Placement la quyet dinh cuoi cung ve English Level (spec #45).
+  EnglishPathState withPlacement(PlacementRecord record) =>
+      _copy(placement: record, level: record.result);
+
+  EnglishPathState skipPlacement() => _copy(placementSkipped: true);
+
   Map<String, dynamic> toJson() => {
     'schemaVersion': kEnglishPathSchemaVersion,
     'level': level?.code,
     'correctItems': {
       for (final e in correctItems.entries) e.key: (e.value.toList()..sort()),
     },
+    'placement': placement?.toJson(),
+    'placementSkipped': placementSkipped,
   };
 }
 
@@ -57,15 +89,21 @@ EnglishPathState? migrateEnglishPathState(Object? raw) {
     return null;
   }
   try {
-    // version == 1 - cac buoc migrate v1 -> v2... them o day khi can.
+    // v1 -> v2: chua co placement (null) va chua bo qua (false) - cac truong
+    // v2 vang mat duoc doc ra dung gia tri mac dinh do.
     final levelCode = raw['level'] as String?;
     final items = (raw['correctItems'] as Map?) ?? const {};
+    final placement = raw['placement'] as Map?;
     return EnglishPathState(
       level: levelCode == null ? null : CefrLevel.fromCode(levelCode),
       correctItems: {
         for (final e in items.entries)
           e.key as String: (e.value as List).cast<String>().toSet(),
       },
+      placement: placement == null
+          ? null
+          : PlacementRecord.fromJson(Map<String, dynamic>.from(placement)),
+      placementSkipped: raw['placementSkipped'] as bool? ?? false,
     );
   } catch (_) {
     return null;

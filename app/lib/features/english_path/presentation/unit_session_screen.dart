@@ -11,6 +11,7 @@ import '../data/english_path_progress.dart';
 import '../data/english_path_providers.dart';
 import '../data/english_path_store.dart';
 import 'path_labels.dart';
+import 'path_option_button.dart';
 
 /// Phien hoc 1 Unit (~5 phut): lan luot cac Practice Item dang chon nghia,
 /// item chua dung truoc. Moi cau dung duoc ghi ngay vao tien do Unit.
@@ -139,9 +140,9 @@ class _UnitSessionScreenState extends ConsumerState<UnitSessionScreen> {
         for (var i = 0; i < item.options.length; i++)
           Padding(
             padding: const EdgeInsets.only(bottom: 10),
-            child: _OptionButton(
+            child: PathOptionButton(
               label: item.options[i],
-              state: _optionState(i, item.answerIndex, picked),
+              state: pathOptionState(i, item.answerIndex, picked),
               onTap: () => _pick(item, i),
             ),
           ),
@@ -154,60 +155,6 @@ class _UnitSessionScreenState extends ConsumerState<UnitSessionScreen> {
         if (picked != null)
           PillButton(label: ref.tr('path_continue'), onTap: _next),
       ],
-    );
-  }
-}
-
-enum _OptionState { idle, right, wrong, dimmed }
-
-_OptionState _optionState(int option, int answer, int? picked) {
-  if (picked == null) return _OptionState.idle;
-  if (option == answer) return _OptionState.right;
-  if (option == picked) return _OptionState.wrong;
-  return _OptionState.dimmed;
-}
-
-/// Nut dap an cao 56dp, bam 1 tay duoc.
-class _OptionButton extends StatelessWidget {
-  const _OptionButton({
-    required this.label,
-    required this.state,
-    required this.onTap,
-  });
-
-  final String label;
-  final _OptionState state;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = switch (state) {
-      _OptionState.right => AppColors.teal,
-      _OptionState.wrong => AppColors.pink,
-      _OptionState.idle || _OptionState.dimmed => AppColors.glassBorder,
-    };
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: state == _OptionState.idle ? onTap : null,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          constraints: const BoxConstraints(minHeight: 56),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          alignment: Alignment.centerLeft,
-          decoration: BoxDecoration(
-            color: color.withValues(
-              alpha: state == _OptionState.idle ? 0.08 : 0.18,
-            ),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: color, width: 1.4),
-          ),
-          child: Opacity(
-            opacity: state == _OptionState.dimmed ? 0.5 : 1,
-            child: Text(label, style: AppTextStyles.body(size: 16)),
-          ),
-        ),
-      ),
     );
   }
 }
