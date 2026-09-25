@@ -27,3 +27,9 @@ HyperFrames vẫn dùng cho **clip marketing/mạng xã hội** (xem `marketing/
 - Tổng quan: "Today's exercise: the {nameEn}. It works your {3 nhóm cơ}."
 - Mỗi bước: "Step one. {instructionsEn[i]}", bản dịch `instructions[i]`, chia cụm tại dấu câu.
 - 3 từ khoá: từ bộ từ vựng gym, **ưu tiên từ xuất hiện trong câu hướng dẫn**, rồi cùng nhóm cơ, từ chưa thuộc trước; không lấy trùng tên bài.
+
+## Giọng đọc Kokoro đóng gói sẵn
+- `scripts/generate_tutorial_audio.py` tạo giọng **Kokoro-82M** (Apache-2.0, voice `am_michael`, tốc độ 0.95) cho **mọi câu cố định** trình phát đọc: tổng quan + từng bước của 155 bài, 68 từ vựng gym, "Great job!" / "Nice try!" – hiện **656 câu, ~22 MB** (mp3 mono 40 kbps) trong `app/assets/tutorial_audio/<fnv1a32>.mp3` + `manifest.json`.
+- App (`core/tts/tutorial_voice.dart`) băm câu cần đọc bằng cùng FNV-1a 32: có file → phát Kokoro (đúng tốc độ 0.75×/1×, thời lượng thật để chữ sáng khớp giọng); không có → AppTts như cũ. Nút loa ở thẻ Học khi nghỉ, 5 từ khởi động, Ôn tập, từ khoá cũng dùng giọng này.
+- `test/tutorial_audio_manifest_test.dart` kiểm tra MỌI câu app sinh ra đều có file + mã băm Dart khớp Python → sửa nội dung bài tập/từ vựng mà quên chạy lại script là CI báo.
+- Chạy lại sau khi sửa nội dung: `python scripts/generate_tutorial_audio.py` (chỉ tạo phần còn thiếu; cần `kokoro_onnx`, `soundfile`, ffmpeg và model trong `~/.cache/hyperframes/tts` – có sau khi chạy `npx hyperframes tts` 1 lần).

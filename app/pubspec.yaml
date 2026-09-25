@@ -198,6 +198,9 @@ flutter:
     - assets/fitness/home/
     - assets/fitness/muscle_groups/
     - assets/fitness/exercise_photos/
+    # Giong doc Kokoro cho huong dan bai tap + tu vung gym - tao bang
+    # scripts/generate_tutorial_audio.py (xem docs/gymtalk-exercise-tutorial.md).
+    - assets/tutorial_audio/
     - assets/home/
     - assets/wealth/
     - assets/toeic/

@@ -7,6 +7,7 @@ import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/tts/app_tts.dart';
+import '../../../core/tts/tutorial_voice.dart';
 import '../../../core/utils/keep_screen_on.dart';
 import '../../../core/widgets/speaker_button.dart';
 import '../../pronunciation/data/pronunciation_scoring.dart';
@@ -61,6 +62,9 @@ class _ExerciseTutorialPlayerState
   );
   final SpeechListener _listener = SpeechListener();
 
+  /// Giong Kokoro dong goi san (roi ve TTS neu thieu file).
+  final TutorialVoice _voice = TutorialVoice();
+
   int _index = 0;
   _Phase _phase = _Phase.playing;
 
@@ -114,7 +118,7 @@ class _ExerciseTutorialPlayerState
     _ticker?.cancel();
     _autoAdvance?.cancel();
     _listener.dispose();
-    AppTts.instance.stopSpeaking();
+    _voice.dispose();
     AppTts.instance.setNarrationRate(AppTts.defaultRate);
     KeepScreenOn.disable();
     super.dispose();
@@ -127,7 +131,7 @@ class _ExerciseTutorialPlayerState
   void _stopAudio() {
     _ticker?.cancel();
     _autoAdvance?.cancel();
-    AppTts.instance.stopSpeaking();
+    _voice.stop();
     _listener.stop();
   }
 
@@ -149,6 +153,7 @@ class _ExerciseTutorialPlayerState
       _frozenElapsed = null;
       _pausedAtPrompt = false;
     });
+    _voice.rate = _speed;
     await AppTts.instance.setNarrationRate(AppTts.defaultRate * _speed);
     if (_stale(runId)) {
       // Trinh phat da dong trong luc doi toc do -> tra toc do mac dinh cho
@@ -161,7 +166,7 @@ class _ExerciseTutorialPlayerState
     if (chapter.kind == TutorialChapterKind.keywords) {
       for (var k = 0; k < _tutorial.keywords.length; k++) {
         setState(() => _keywordIndex = k);
-        await AppTts.instance.speakAndWait(_tutorial.keywords[k].en);
+        await _voice.speakAndWait(_tutorial.keywords[k].en);
         await Future<void>.delayed(const Duration(milliseconds: 600));
         if (_stale(runId)) return;
       }
@@ -174,7 +179,17 @@ class _ExerciseTutorialPlayerState
     _ticker = Timer.periodic(const Duration(milliseconds: 120), (_) {
       if (mounted) setState(() {});
     });
-    await AppTts.instance.speakAndWait(chapter.narration);
+    await _voice.speakAndWait(
+      chapter.narration,
+      onStart: (duration) {
+        if (_stale(runId)) return;
+        // Co file Kokoro -> biet thoi luong THAT, chu sang dung nhip hon.
+        if (duration != null && duration > Duration.zero) {
+          _chapterSeconds = duration.inMilliseconds / 1000;
+        }
+        _chapterStartedAt = DateTime.now();
+      },
+    );
     if (_stale(runId)) return;
     _ticker?.cancel();
     setState(() => _chapterDone = true);
@@ -261,7 +276,7 @@ class _ExerciseTutorialPlayerState
     final runId = ++_runId;
     _autoAdvance?.cancel();
     // Tat giong may truoc khi bat mic - khong cham nham giong doc cua app.
-    await AppTts.instance.stopSpeaking();
+    await _voice.stop();
     if (_stale(runId)) return;
     setState(() {
       _phase = _Phase.listening;
@@ -289,7 +304,7 @@ class _ExerciseTutorialPlayerState
       _scores.add(score);
       _phase = _Phase.scored;
     });
-    await AppTts.instance.speakAndWait(
+    await _voice.speakAndWait(
       score >= _kPassScore ? 'Great job!' : 'Nice try!',
     );
     await Future<void>.delayed(const Duration(milliseconds: 900));
@@ -945,7 +960,7 @@ class _KeywordCard extends StatelessWidget {
               tapSize: 48,
               color: AppColors.blue,
               onTap: () {
-                if (canSpeak) AppTts.instance.speak(word.en);
+                if (canSpeak) TutorialVoice.shared.speak(word.en);
               },
             ),
           ),

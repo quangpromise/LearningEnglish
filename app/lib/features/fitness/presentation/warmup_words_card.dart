@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/tts/app_tts.dart';
+import '../../../core/tts/tutorial_voice.dart';
 import '../../../core/widgets/speaker_button.dart';
 import '../../srs/data/srs_store.dart';
 import '../data/exercise_model.dart';
@@ -33,7 +33,7 @@ class _WarmupWordsCardState extends State<WarmupWordsCard> {
 
   @override
   void dispose() {
-    AppTts.instance.stopSpeaking();
+    TutorialVoice.shared.stop();
     super.dispose();
   }
 
@@ -124,7 +124,7 @@ class _WordRow extends StatelessWidget {
           iconSize: 20,
           tapSize: 44,
           color: AppColors.blue,
-          onTap: () => AppTts.instance.speak(word.en),
+          onTap: () => TutorialVoice.shared.speak(word.en),
         ),
       ],
     );

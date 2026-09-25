@@ -9,6 +9,7 @@ import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/tts/app_tts.dart';
+import '../../../core/tts/tutorial_voice.dart';
 import '../../../core/utils/keep_screen_on.dart';
 import '../../srs/data/srs_store.dart';
 import '../../today/data/daily_progress_store.dart';
@@ -156,7 +157,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
     final phase = controller.phase;
     if (_lastPhase == WorkoutPhase.resting && phase != WorkoutPhase.resting) {
       // Het nghi (tu nhien/bo qua/hoan tac) -> dung doc tu dang phat do.
-      AppTts.instance.stopSpeaking();
+      TutorialVoice.shared.stop();
       _lastRestSecond = null;
     }
     // Vao set moi (het nghi, bo qua nghi, sang bai B cua sieu set) -> HLV
@@ -209,7 +210,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
     final block = controller.currentBlock;
     final pattern = RepPattern.forExercise(block.exercise);
     if (pattern == null) return;
-    AppTts.instance.stopSpeaking();
+    TutorialVoice.shared.stop();
     final reps = await Navigator.of(context).push<int>(
       MaterialPageRoute(
         builder: (_) => RepCameraScreen(
@@ -264,7 +265,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
         ..dispose();
     }
     KeepScreenOn.disable();
-    AppTts.instance.stopSpeaking();
+    TutorialVoice.shared.stop();
     super.dispose();
   }
 
@@ -402,7 +403,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                   onChanged: (enabled) {
                     setSheetState(() {});
                     setState(() => _coachVoice = enabled);
-                    if (!enabled) AppTts.instance.stopSpeaking();
+                    if (!enabled) TutorialVoice.shared.stop();
                     WorkoutPrefs.saveCoachVoice(enabled);
                   },
                 ),
@@ -432,7 +433,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
       content: word.toSrsCard(now),
     );
     DailyProgressStore.instance.addWordsReviewed();
-    AppTts.instance.stopSpeaking();
+    TutorialVoice.shared.stop();
     setState(() {
       _wordsReviewed++;
       if (!known) {
@@ -445,7 +446,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
   }
 
   void _setLearnWhileResting(bool enabled) {
-    if (!enabled) AppTts.instance.stopSpeaking();
+    if (!enabled) TutorialVoice.shared.stop();
     setState(() => _learnWhileResting = enabled);
     WorkoutPrefs.saveLearnWhileResting(enabled);
   }

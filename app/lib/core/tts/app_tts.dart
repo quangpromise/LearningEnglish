@@ -107,6 +107,10 @@ class AppTts {
     } catch (_) {}
   }
 
+  /// Dung chung cho cac trinh phat audio khac (TutorialVoice) - xem
+  /// [_ensureMusicSession].
+  Future<void> ensureMusicSession() => _ensureMusicSession();
+
   /// Gọi 1 lần lúc khởi động app để áp lại giọng đã lưu từ lần trước.
   Future<void> restoreSavedVoice() async {
     final prefs = await SharedPreferences.getInstance();
