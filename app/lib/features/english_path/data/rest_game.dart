@@ -37,20 +37,24 @@ const kRestGameXpPerCorrect = 2;
 const kRestReviewShare = 0.3;
 
 /// Len ke hoach cau hoi cho 1 lan nghi [restSeconds] giay: xoay vong cac
-/// dang co san, ~70% tu Unit hien tai va ~30% cau on, khong vuot thoi gian.
+/// dang co san (bat dau bang Meaning - cau Listening khong bao gio mo dau,
+/// de nguoi tap kip thay nut tat tieng), ~70% tu Unit hien tai va ~30% cau
+/// on, khong vuot thoi gian. [exclude]: item da choi trong lan nghi nay.
 List<PracticeItem> planRestGame({
   required int restSeconds,
   required List<PracticeItem> unitItems,
   required List<PracticeItem> reviewItems,
   required bool listeningEnabled,
   required Random random,
+  Set<String> exclude = const {},
 }) {
   final short = restSeconds < kLongRestSeconds;
   final allowed = {...(short ? kQuickRestFormats : kRestGameFormats)}
     ..removeWhere((t) => t == PracticeItemType.listening && !listeningEnabled);
 
   List<PracticeItem> pool(List<PracticeItem> src) =>
-      [...src.where((i) => allowed.contains(i.type))]..shuffle(random);
+      [...src.where((i) => allowed.contains(i.type) && !exclude.contains(i.id))]
+        ..shuffle(random);
   final unit = pool(unitItems);
   final review = pool(reviewItems);
   final formats = [
