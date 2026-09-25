@@ -4,14 +4,14 @@ import 'package:learn_english_music/features/today/data/shell_presentation.dart'
 
 void main() {
   group('quickStartTarget', () {
-    test('no program yet -> choose a plan', () {
+    test('no program yet -> flashcard review (spec #70 decision 12)', () {
       expect(
         quickStartTarget(
           hasPlan: false,
           isRestDay: false,
           today: const DayProgress(),
         ),
-        QuickStartTarget.choosePlan,
+        QuickStartTarget.review,
       );
     });
 
@@ -52,7 +52,7 @@ void main() {
   group('top bar presentation', () {
     test('avatar ring is the average of the three Daily Rings', () {
       expect(dailyRingsProgress(const DayProgress()), 0);
-      final half = DayProgress(
+      const half = DayProgress(
         workouts: 1,
         wordsReviewed: kDailyLearnGoal ~/ 2,
       );

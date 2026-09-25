@@ -187,20 +187,29 @@ class _RootShellState extends ConsumerState<RootShell>
   /// mo, mini player noi cach thanh tab 6dp, nen phang token `bg`.
   Widget _redesignScaffold(BuildContext context, RootTab tab) {
     final t = context.gt;
-    final barHeight = 64 + MediaQuery.paddingOf(context).bottom;
+    final mq = MediaQuery.of(context);
+    final barHeight = GtTabBar.barHeight + mq.padding.bottom;
+    // Noi dung chay duoi thanh tab (extendBody) -> chua them cho mini player
+    // (60 + 6) de hang cuoi cua danh sach khong bi che.
+    final contentInset = mq.copyWith(
+      padding: mq.padding.copyWith(bottom: barHeight + 66),
+    );
     return Scaffold(
       backgroundColor: t.bg,
       extendBody: true,
       body: Stack(
         children: [
-          IndexedStack(
-            index: tab.index,
-            children: const [
-              TodayScreen(),
-              FitnessHomeScreen(),
-              HomeScreen(),
-              ProgressScreen(),
-            ],
+          MediaQuery(
+            data: contentInset,
+            child: IndexedStack(
+              index: tab.index,
+              children: const [
+                TodayScreen(),
+                FitnessHomeScreen(),
+                HomeScreen(),
+                ProgressScreen(),
+              ],
+            ),
           ),
           Positioned(
             left: 12,

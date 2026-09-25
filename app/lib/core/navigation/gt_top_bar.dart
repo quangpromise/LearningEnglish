@@ -83,7 +83,7 @@ class GtTopBar extends ConsumerWidget {
               const AppSwitcherPill(),
             ],
             const SizedBox(width: 8),
-            _IconButton(
+            _TopIconButton(
               icon: Icons.chat_bubble_outline_rounded,
               dot: unread > 0,
               label: ref.tr('top_messages'),
@@ -130,7 +130,13 @@ class _RingAvatar extends StatelessWidget {
                 child: ColoredBox(
                   color: t.s1,
                   child: url != null
-                      ? Image.network(url, fit: BoxFit.cover)
+                      ? Image.network(
+                          url,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) => Center(
+                            child: Text(initials, style: GtText.rowTitle(t.tx)),
+                          ),
+                        )
                       : Center(
                           child: Text(initials, style: GtText.rowTitle(t.tx)),
                         ),
@@ -223,8 +229,8 @@ class _StreakChip extends StatelessWidget {
   }
 }
 
-class _IconButton extends StatelessWidget {
-  const _IconButton({
+class _TopIconButton extends StatelessWidget {
+  const _TopIconButton({
     required this.icon,
     required this.dot,
     required this.label,

@@ -1,17 +1,17 @@
 import 'daily_progress_store.dart';
 
 /// Noi Quick Start (nut giua thanh tab) dua nguoi dung toi (CONTEXT.md).
-enum QuickStartTarget { todayWorkout, review, choosePlan }
+enum QuickStartTarget { todayWorkout, review }
 
-/// Chua co giao an -> chon giao an; ngay tap chua tap -> buoi tap hom nay;
-/// da tap / ngay nghi -> on the (spec #70).
+/// Co giao an, khong phai ngay nghi, hom nay chua tap -> buoi tap hom nay;
+/// nguoc lai (ke ca chua co giao an) -> on the (spec #70, quyet dinh #12).
+/// Chon giao an nam o the buoi tap cua man Hom nay.
 QuickStartTarget quickStartTarget({
   required bool hasPlan,
   required bool isRestDay,
   required DayProgress today,
 }) {
-  if (!hasPlan) return QuickStartTarget.choosePlan;
-  if (isRestDay || today.workouts >= kDailyTrainGoal) {
+  if (!hasPlan || isRestDay || today.workouts >= kDailyTrainGoal) {
     return QuickStartTarget.review;
   }
   return QuickStartTarget.todayWorkout;
@@ -30,7 +30,8 @@ String nameInitials(String name) {
       .where((p) => p.isNotEmpty)
       .toList();
   if (parts.isEmpty) return '?';
-  final first = parts.first.characters.first;
+  String head(String p) => String.fromCharCode(p.runes.first);
+  final first = head(parts.first);
   if (parts.length == 1) return first.toUpperCase();
-  return (first + parts.last.characters.first).toUpperCase();
+  return (first + head(parts.last)).toUpperCase();
 }
