@@ -67,6 +67,18 @@ D:\Projects\Learn Engligh\
 - **wealth-data-sync** — quy trình gọi Edge Function proxy lấy giá cổ phiếu (Twelve Data quốc tế, SSI FastConnect VN ở Phase 2) cho tính năng Quản lý tài sản, kèm checklist xác minh nguồn dữ liệu mới.
 - **anam-avatar-integration** — kiến trúc + các bug đã gặp khi tích hợp avatar 3D Anam.ai (video WebRTC lipsync theo audio Gemini Live) cho AI Voice Chat, dùng khi cần bật/sửa/nâng cấp tính năng này.
 
+- **Bộ skill kỹ thuật của mattpocock/skills (MIT, xem `.claude/skills/MATTPOCOCK-SKILLS-LICENSE`)** — quy trình cho mỗi phase tính năng lớn: `/grill-with-docs` (phỏng vấn thiết kế + cập nhật `CONTEXT.md`, ADR ở `docs/adr/`) → `/to-spec` (spec thành GitHub issue) → `/to-tickets` (chia ticket dọc, có cạnh chặn) → `/implement` + `/tdd` → `/code-review` → merge qua PR. Các skill `grilling`, `domain-modeling`, `setup-matt-pocock-skills` là skill phụ trợ.
+
+## Agent skills
+
+### Issue tracker
+
+Spec và ticket là GitHub issue của `quangpromise/LearningEnglish` (dùng `gh`). See `docs/agents/issue-tracker.md`.
+
+### Domain docs
+
+Single-context: một `CONTEXT.md` ở gốc repo + `docs/adr/`. See `docs/agents/domain.md`.
+
 ## Quy ước
 - Cấu trúc code theo feature-first (mỗi tính năng 1 thư mục trong `lib/features/`).
 - Mọi package mới thêm vào `pubspec.yaml` phải ghi lý do chọn (miễn phí, license, offline/online) vào `docs/`.
