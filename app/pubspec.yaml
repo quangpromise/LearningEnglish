@@ -201,6 +201,9 @@ flutter:
     # Giong doc Kokoro cho huong dan bai tap + tu vung gym - tao bang
     # scripts/generate_tutorial_audio.py (xem docs/gymtalk-exercise-tutorial.md).
     - assets/tutorial_audio/
+    # Content Pack lo trinh tieng Anh A1 -> C1, sinh offline bang
+    # scripts/english_path_pipeline.py (ADR-0003, docs/english-path-content-pipeline.md).
+    - assets/english_path/
     - assets/home/
     - assets/wealth/
     - assets/toeic/

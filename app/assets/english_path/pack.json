@@ -1,0 +1,419 @@
+{
+ "schemaVersion": 1,
+ "sources": [
+  {
+   "id": "cefrj",
+   "name": "CEFR-J Wordlist Version 1.5 (Yukio Tono, Tokyo University of Foreign Studies)",
+   "license": "Free for research and commercial use with citation",
+   "url": "https://github.com/openlanguageprofiles/olp-en-cefrj",
+   "retrievedAt": "2026-09-25",
+   "files": [
+    "cefrj-vocabulary-profile-1.5.csv"
+   ]
+  },
+  {
+   "id": "gymtalk-vocab",
+   "name": "GymTalk in-house vocabulary (IPA, Vietnamese meaning, examples)",
+   "license": "Proprietary - written by the GymTalk team",
+   "url": "app/lib/features/vocabulary/data/vocabulary_data.dart",
+   "retrievedAt": "2026-09-25",
+   "files": [
+    "vocabulary_data.dart"
+   ]
+  }
+ ],
+ "stages": [
+  {
+   "cefr": "A1",
+   "units": [
+    {
+     "id": "a1-u01",
+     "index": 1,
+     "titleEn": "Actions",
+     "titleVi": "Hành động",
+     "words": [
+      {
+       "en": "break",
+       "ipa": "/breɪk/",
+       "vi": "làm vỡ, bẻ gãy",
+       "exampleEn": "He accidentally broke the glass.",
+       "exampleVi": "Anh ấy lỡ làm vỡ chiếc ly."
+      },
+      {
+       "en": "build",
+       "ipa": "/bɪld/",
+       "vi": "xây dựng",
+       "exampleEn": "They are building a new house next door.",
+       "exampleVi": "Họ đang xây một ngôi nhà mới bên cạnh."
+      },
+      {
+       "en": "carry",
+       "ipa": "/ˈkær.i/",
+       "vi": "mang, vác",
+       "exampleEn": "She carried the heavy bag upstairs.",
+       "exampleVi": "Cô ấy mang chiếc túi nặng lên lầu."
+      },
+      {
+       "en": "catch",
+       "ipa": "/kætʃ/",
+       "vi": "bắt, chụp",
+       "exampleEn": "He caught the ball with one hand.",
+       "exampleVi": "Anh ấy bắt bóng bằng một tay."
+      },
+      {
+       "en": "climb",
+       "ipa": "/klaɪm/",
+       "vi": "leo, trèo",
+       "exampleEn": "The boy climbed the tree to get the kite.",
+       "exampleVi": "Cậu bé trèo lên cây để lấy con diều."
+      },
+      {
+       "en": "cry",
+       "ipa": "/kraɪ/",
+       "vi": "khóc",
+       "exampleEn": "The baby cried all night.",
+       "exampleVi": "Em bé khóc suốt đêm."
+      },
+      {
+       "en": "cut",
+       "ipa": "/kʌt/",
+       "vi": "cắt",
+       "exampleEn": "She cut the paper with scissors.",
+       "exampleVi": "Cô ấy cắt giấy bằng kéo."
+      },
+      {
+       "en": "dig",
+       "ipa": "/dɪɡ/",
+       "vi": "đào",
+       "exampleEn": "The dog dug a hole in the garden.",
+       "exampleVi": "Con chó đào một cái hố trong vườn."
+      },
+      {
+       "en": "drop",
+       "ipa": "/drɒp/",
+       "vi": "làm rơi",
+       "exampleEn": "He dropped his phone on the floor.",
+       "exampleVi": "Anh ấy làm rơi điện thoại xuống sàn."
+      },
+      {
+       "en": "hide",
+       "ipa": "/haɪd/",
+       "vi": "trốn, giấu",
+       "exampleEn": "The children hid behind the curtains.",
+       "exampleVi": "Bọn trẻ trốn sau tấm rèm."
+      },
+      {
+       "en": "hold",
+       "ipa": "/həʊld/",
+       "vi": "cầm, giữ",
+       "exampleEn": "Please hold this bag for a second.",
+       "exampleVi": "Vui lòng cầm giúp tôi túi này một chút."
+      },
+      {
+       "en": "jump",
+       "ipa": "/dʒʌmp/",
+       "vi": "nhảy",
+       "exampleEn": "She jumped over the puddle.",
+       "exampleVi": "Cô ấy nhảy qua vũng nước."
+      },
+      {
+       "en": "kick",
+       "ipa": "/kɪk/",
+       "vi": "đá",
+       "exampleEn": "He kicked the ball into the goal.",
+       "exampleVi": "Anh ấy đá bóng vào khung thành."
+      },
+      {
+       "en": "laugh",
+       "ipa": "/lɑːf/",
+       "vi": "cười",
+       "exampleEn": "The whole class laughed at the joke.",
+       "exampleVi": "Cả lớp cười vì câu chuyện cười đó."
+      },
+      {
+       "en": "paint",
+       "ipa": "/peɪnt/",
+       "vi": "quét sơn",
+       "exampleEn": "He painted the fence over the weekend.",
+       "exampleVi": "Anh ấy sơn hàng rào vào cuối tuần."
+      }
+     ],
+     "items": [
+      {
+       "id": "a1-u01-meaning-break",
+       "unitId": "a1-u01",
+       "type": "meaning",
+       "prompt": "break",
+       "options": [
+        "làm vỡ, bẻ gãy",
+        "quét sơn",
+        "nhảy",
+        "mang, vác"
+       ],
+       "answerIndex": 0,
+       "wordEn": "break",
+       "sourceIds": [
+        "cefrj",
+        "gymtalk-vocab"
+       ]
+      },
+      {
+       "id": "a1-u01-meaning-build",
+       "unitId": "a1-u01",
+       "type": "meaning",
+       "prompt": "build",
+       "options": [
+        "làm rơi",
+        "cười",
+        "cắt",
+        "xây dựng"
+       ],
+       "answerIndex": 3,
+       "wordEn": "build",
+       "sourceIds": [
+        "cefrj",
+        "gymtalk-vocab"
+       ]
+      },
+      {
+       "id": "a1-u01-meaning-carry",
+       "unitId": "a1-u01",
+       "type": "meaning",
+       "prompt": "carry",
+       "options": [
+        "làm vỡ, bẻ gãy",
+        "mang, vác",
+        "leo, trèo",
+        "đá"
+       ],
+       "answerIndex": 1,
+       "wordEn": "carry",
+       "sourceIds": [
+        "cefrj",
+        "gymtalk-vocab"
+       ]
+      },
+      {
+       "id": "a1-u01-meaning-catch",
+       "unitId": "a1-u01",
+       "type": "meaning",
+       "prompt": "catch",
+       "options": [
+        "bắt, chụp",
+        "xây dựng",
+        "mang, vác",
+        "quét sơn"
+       ],
+       "answerIndex": 0,
+       "wordEn": "catch",
+       "sourceIds": [
+        "cefrj",
+        "gymtalk-vocab"
+       ]
+      },
+      {
+       "id": "a1-u01-meaning-climb",
+       "unitId": "a1-u01",
+       "type": "meaning",
+       "prompt": "climb",
+       "options": [
+        "trốn, giấu",
+        "leo, trèo",
+        "cắt",
+        "cầm, giữ"
+       ],
+       "answerIndex": 1,
+       "wordEn": "climb",
+       "sourceIds": [
+        "cefrj",
+        "gymtalk-vocab"
+       ]
+      },
+      {
+       "id": "a1-u01-meaning-cry",
+       "unitId": "a1-u01",
+       "type": "meaning",
+       "prompt": "cry",
+       "options": [
+        "làm rơi",
+        "khóc",
+        "làm vỡ, bẻ gãy",
+        "mang, vác"
+       ],
+       "answerIndex": 1,
+       "wordEn": "cry",
+       "sourceIds": [
+        "cefrj",
+        "gymtalk-vocab"
+       ]
+      },
+      {
+       "id": "a1-u01-meaning-cut",
+       "unitId": "a1-u01",
+       "type": "meaning",
+       "prompt": "cut",
+       "options": [
+        "nhảy",
+        "bắt, chụp",
+        "làm vỡ, bẻ gãy",
+        "cắt"
+       ],
+       "answerIndex": 3,
+       "wordEn": "cut",
+       "sourceIds": [
+        "cefrj",
+        "gymtalk-vocab"
+       ]
+      },
+      {
+       "id": "a1-u01-meaning-dig",
+       "unitId": "a1-u01",
+       "type": "meaning",
+       "prompt": "dig",
+       "options": [
+        "mang, vác",
+        "cắt",
+        "đào",
+        "xây dựng"
+       ],
+       "answerIndex": 2,
+       "wordEn": "dig",
+       "sourceIds": [
+        "cefrj",
+        "gymtalk-vocab"
+       ]
+      },
+      {
+       "id": "a1-u01-meaning-drop",
+       "unitId": "a1-u01",
+       "type": "meaning",
+       "prompt": "drop",
+       "options": [
+        "làm vỡ, bẻ gãy",
+        "bắt, chụp",
+        "làm rơi",
+        "cầm, giữ"
+       ],
+       "answerIndex": 2,
+       "wordEn": "drop",
+       "sourceIds": [
+        "cefrj",
+        "gymtalk-vocab"
+       ]
+      },
+      {
+       "id": "a1-u01-meaning-hide",
+       "unitId": "a1-u01",
+       "type": "meaning",
+       "prompt": "hide",
+       "options": [
+        "mang, vác",
+        "trốn, giấu",
+        "đào",
+        "cười"
+       ],
+       "answerIndex": 1,
+       "wordEn": "hide",
+       "sourceIds": [
+        "cefrj",
+        "gymtalk-vocab"
+       ]
+      },
+      {
+       "id": "a1-u01-meaning-hold",
+       "unitId": "a1-u01",
+       "type": "meaning",
+       "prompt": "hold",
+       "options": [
+        "cầm, giữ",
+        "đá",
+        "làm rơi",
+        "cười"
+       ],
+       "answerIndex": 0,
+       "wordEn": "hold",
+       "sourceIds": [
+        "cefrj",
+        "gymtalk-vocab"
+       ]
+      },
+      {
+       "id": "a1-u01-meaning-jump",
+       "unitId": "a1-u01",
+       "type": "meaning",
+       "prompt": "jump",
+       "options": [
+        "bắt, chụp",
+        "cười",
+        "cắt",
+        "nhảy"
+       ],
+       "answerIndex": 3,
+       "wordEn": "jump",
+       "sourceIds": [
+        "cefrj",
+        "gymtalk-vocab"
+       ]
+      },
+      {
+       "id": "a1-u01-meaning-kick",
+       "unitId": "a1-u01",
+       "type": "meaning",
+       "prompt": "kick",
+       "options": [
+        "đá",
+        "khóc",
+        "làm rơi",
+        "mang, vác"
+       ],
+       "answerIndex": 0,
+       "wordEn": "kick",
+       "sourceIds": [
+        "cefrj",
+        "gymtalk-vocab"
+       ]
+      },
+      {
+       "id": "a1-u01-meaning-laugh",
+       "unitId": "a1-u01",
+       "type": "meaning",
+       "prompt": "laugh",
+       "options": [
+        "bắt, chụp",
+        "nhảy",
+        "xây dựng",
+        "cười"
+       ],
+       "answerIndex": 3,
+       "wordEn": "laugh",
+       "sourceIds": [
+        "cefrj",
+        "gymtalk-vocab"
+       ]
+      },
+      {
+       "id": "a1-u01-meaning-paint",
+       "unitId": "a1-u01",
+       "type": "meaning",
+       "prompt": "paint",
+       "options": [
+        "quét sơn",
+        "xây dựng",
+        "nhảy",
+        "cắt"
+       ],
+       "answerIndex": 0,
+       "wordEn": "paint",
+       "sourceIds": [
+        "cefrj",
+        "gymtalk-vocab"
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "contentHash": "3904f207e5e865a9ac7ab98c7a8b21fb4668642a2cb4593ac835c32e7ae2f33b",
+ "approval": null
+}
