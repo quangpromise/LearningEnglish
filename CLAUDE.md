@@ -84,6 +84,12 @@ Single-context: một `CONTEXT.md` ở gốc repo + `docs/adr/`. See `docs/agent
 - Mọi package mới thêm vào `pubspec.yaml` phải ghi lý do chọn (miễn phí, license, offline/online) vào `docs/`.
 - Không thêm bất kỳ nguồn nhạc/dữ liệu nào chưa xác minh rõ giấy phép thương mại.
 
+## Kênh build tách riêng — BẮT BUỘC (từ 2026-09-25)
+Bản APK + web hiện có (commit `d1a6487`, CI #453) được **giữ nguyên, không bao giờ ghi đè**. Mọi thay đổi từ CI #454 trở đi (nguyent0810) ra **web riêng + APK riêng**, dùng chung Supabase:
+- **APK**: mỗi lần build tạo 1 GitHub Release **riêng**, tag `next-<run_number>` — **không** ghi vào release `latest`, không xoá/sửa release cũ. APK là app khác (`applicationId` thêm `.next`, tên "GymTalk Next"), cài song song, không thay app cũ. Xem đầu `.github/workflows/build-apk.yml`.
+- **Web**: `/LearningEnglish/` luôn build từ `d1a6487` (bản cũ), kênh mới ở `/LearningEnglish/next/`. Xem `.github/workflows/build-web.yml`.
+- Không đổi lại tag `latest`, `STABLE_REF`, hậu tố `.next` hay tiền tố tag `next-` khi chưa được chủ repo đồng ý.
+
 ## Cộng tác nhiều người
 Dự án được thiết kế để nhiều người cùng code song song, hạn chế đụng conflict:
 - **Kiến trúc feature-first**: mỗi người/nhóm nhận trọn 1 thư mục trong `app/lib/features/` (music_player, translation, pronunciation, grammar) để làm việc độc lập; ít khi phải sửa chung 1 file.

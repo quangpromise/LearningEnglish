@@ -38,7 +38,7 @@
          nguoi dung van bam vao duoc nhu truoc). -->
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
     <application
-        android:label="GymTalk"
+        android:label="${appLabel}"
         android:name=".CrashLogApplication"
         android:icon="@mipmap/ic_launcher">
         <activity
