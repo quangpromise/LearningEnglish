@@ -1,4 +1,5 @@
 import 'cefr_level.dart';
+import 'level_test.dart';
 import 'placement.dart';
 
 /// Phien ban cau truc state lo trinh. BAT BUOC tang (va them 1 buoc migrate
@@ -6,8 +7,9 @@ import 'placement.dart';
 /// che do Rest Game o cac ticket sau. Neu khong, ban app cu doc state cung
 /// version se ghi de va lam mat cac truong no khong biet.
 ///
-/// Lich su: v1 level + correctItems; v2 them placement + placementSkipped.
-const kEnglishPathSchemaVersion = 2;
+/// Lich su: v1 level + correctItems; v2 them placement + placementSkipped;
+/// v3 them levelTests.
+const kEnglishPathSchemaVersion = 3;
 
 /// Tien do lo trinh tieng Anh cua nguoi hoc (local-first, xem spec #45).
 class EnglishPathState {
@@ -16,6 +18,7 @@ class EnglishPathState {
     this.correctItems = const {},
     this.placement,
     this.placementSkipped = false,
+    this.levelTests = const {},
   });
 
   /// English Level da xac dinh (Placement/Level Test). null = chua co, dung
@@ -31,16 +34,21 @@ class EnglishPathState {
   /// Nguoi hoc da bo qua Placement - khong hoi lai, dung Stage theo Persona.
   final bool placementSkipped;
 
+  /// Lan Level Test gan nhat cua tung Stage.
+  final Map<CefrLevel, LevelTestResult> levelTests;
+
   EnglishPathState _copy({
     CefrLevel? level,
     Map<String, Set<String>>? correctItems,
     PlacementRecord? placement,
     bool? placementSkipped,
+    Map<CefrLevel, LevelTestResult>? levelTests,
   }) => EnglishPathState(
     level: level ?? this.level,
     correctItems: correctItems ?? this.correctItems,
     placement: placement ?? this.placement,
     placementSkipped: placementSkipped ?? this.placementSkipped,
+    levelTests: levelTests ?? this.levelTests,
   );
 
   EnglishPathState copyWith({CefrLevel? level}) => _copy(level: level);
@@ -62,6 +70,16 @@ class EnglishPathState {
 
   EnglishPathState skipPlacement() => _copy(placementSkipped: true);
 
+  /// Luu ket qua Level Test; dat thi len Stage ke tiep (C1 thi giu C1).
+  EnglishPathState withLevelTest(LevelTestResult result) {
+    final s = result.stage;
+    final next = s == CefrLevel.c1 ? s : CefrLevel.values[s.index + 1];
+    return _copy(
+      levelTests: {...levelTests, s: result},
+      level: result.passed ? next : null,
+    );
+  }
+
   Map<String, dynamic> toJson() => {
     'schemaVersion': kEnglishPathSchemaVersion,
     'level': level?.code,
@@ -70,6 +88,9 @@ class EnglishPathState {
     },
     'placement': placement?.toJson(),
     'placementSkipped': placementSkipped,
+    'levelTests': {
+      for (final e in levelTests.entries) e.key.code: e.value.toJson(),
+    },
   };
 }
 
@@ -90,8 +111,8 @@ EnglishPathState? migrateEnglishPathState(Object? raw) {
     return null;
   }
   try {
-    // v1 -> v2: chua co placement (null) va chua bo qua (false) - cac truong
-    // v2 vang mat duoc doc ra dung gia tri mac dinh do.
+    // v1 -> v2 -> v3: cac truong moi vang mat (placement, placementSkipped,
+    // levelTests) duoc doc ra gia tri mac dinh (null / false / rong).
     final levelCode = raw['level'] as String?;
     final items = (raw['correctItems'] as Map?) ?? const {};
     final placement = raw['placement'] as Map?;
@@ -105,6 +126,12 @@ EnglishPathState? migrateEnglishPathState(Object? raw) {
           ? null
           : PlacementRecord.fromJson(Map<String, dynamic>.from(placement)),
       placementSkipped: raw['placementSkipped'] as bool? ?? false,
+      levelTests: {
+        for (final e in ((raw['levelTests'] as Map?) ?? const {}).entries)
+          CefrLevel.fromCode(e.key as String): LevelTestResult.fromJson(
+            Map<String, dynamic>.from(e.value as Map),
+          ),
+      },
     );
   } catch (_) {
     return null;

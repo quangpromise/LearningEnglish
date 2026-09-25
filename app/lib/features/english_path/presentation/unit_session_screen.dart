@@ -13,23 +13,48 @@ import '../data/english_path_store.dart';
 import 'path_labels.dart';
 import 'path_option_button.dart';
 
-/// Phien hoc 1 Unit (~5 phut): lan luot cac Practice Item dang chon nghia,
-/// item chua dung truoc. Moi cau dung duoc ghi ngay vao tien do Unit.
-class UnitSessionScreen extends ConsumerStatefulWidget {
+/// Phien hoc 1 Unit (~5 phut): item chua dung truoc.
+class UnitSessionScreen extends ConsumerWidget {
   const UnitSessionScreen({super.key, required this.unit});
   final PathUnit unit;
 
   @override
-  ConsumerState<UnitSessionScreen> createState() => _UnitSessionScreenState();
+  Widget build(BuildContext context, WidgetRef ref) => PracticeSessionScreen(
+    title: unitLabel(ref, unit),
+    items: sessionItems(unit, ref.read(englishPathStateProvider)),
+    words: unit.words,
+    unit: unit,
+  );
 }
 
-class _UnitSessionScreenState extends ConsumerState<UnitSessionScreen> {
-  late final List<PracticeItem> _items = sessionItems(
-    widget.unit,
-    ref.read(englishPathStateProvider),
-  );
+/// Phien luyen co phan hoi dung/sai tung cau: dung cho phien hoc Unit va
+/// phien on cau sai sau Level Test. Moi cau dung duoc ghi ngay vao tien do
+/// Unit cua item do.
+class PracticeSessionScreen extends ConsumerStatefulWidget {
+  const PracticeSessionScreen({
+    super.key,
+    required this.title,
+    required this.items,
+    required this.words,
+    this.unit,
+  });
+
+  final String title;
+  final List<PracticeItem> items;
+  final List<PathWord> words;
+
+  /// Co thi man ket thuc hien tien do Unit nay.
+  final PathUnit? unit;
+
+  @override
+  ConsumerState<PracticeSessionScreen> createState() =>
+      _PracticeSessionScreenState();
+}
+
+class _PracticeSessionScreenState extends ConsumerState<PracticeSessionScreen> {
+  late final List<PracticeItem> _items = widget.items;
   late final Map<String, PathWord> _words = {
-    for (final w in widget.unit.words) w.en: w,
+    for (final w in widget.words) w.en: w,
   };
   int _index = 0;
   int _correct = 0;
@@ -73,7 +98,7 @@ class _UnitSessionScreenState extends ConsumerState<UnitSessionScreen> {
                 children: [
                   Expanded(
                     child: Text(
-                      unitLabel(ref, widget.unit),
+                      widget.title,
                       style: AppTextStyles.heading(size: 20),
                     ),
                   ),
@@ -166,15 +191,19 @@ class _Summary extends ConsumerWidget {
     required this.total,
   });
 
-  final PathUnit unit;
+  final PathUnit? unit;
   final int correct;
   final int total;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(englishPathStateProvider);
-    final complete = isUnitComplete(unit, state);
-    final progress = unitPercent(unit, state);
+    final unit = this.unit;
+    final complete = unit != null && isUnitComplete(unit, state);
+    final score = ref
+        .tr('path_review_score')
+        .replaceFirst('{c}', '$correct')
+        .replaceFirst('{t}', '$total');
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -191,11 +220,13 @@ class _Summary extends ConsumerWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          ref
-              .tr('path_session_score')
-              .replaceFirst('{c}', '$correct')
-              .replaceFirst('{t}', '$total')
-              .replaceFirst('{p}', '$progress'),
+          unit == null
+              ? score
+              : ref
+                    .tr('path_session_score')
+                    .replaceFirst('{c}', '$correct')
+                    .replaceFirst('{t}', '$total')
+                    .replaceFirst('{p}', '${unitPercent(unit, state)}'),
           textAlign: TextAlign.center,
           style: AppTextStyles.muted(size: 14),
         ),

@@ -12,6 +12,8 @@ import '../data/english_path_progress.dart';
 import '../data/english_path_providers.dart';
 import '../data/english_path_state.dart';
 import '../data/english_path_store.dart';
+import '../data/level_test.dart';
+import 'level_test_screen.dart';
 import 'path_labels.dart';
 import 'placement_screen.dart';
 import 'unit_session_screen.dart';
@@ -158,7 +160,7 @@ class _PathList extends ConsumerWidget {
           isNext: current && unit.id == next?.id,
         ),
       if (current && units.isNotEmpty && next == null)
-        _Note(text: ref.tr('path_stage_done')),
+        _LevelTestCard(pack: pack, stage: cefr, state: state),
       if (current && units.isEmpty) _Note(text: ref.tr('path_coming_soon')),
     ];
   }
@@ -345,6 +347,74 @@ class _UnitTile extends ConsumerWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The Level Test khi moi Unit cua Stage hien tai da xong: lam bai, hoac
+/// dem nguoc cooldown 24h kem nut on cau sai.
+class _LevelTestCard extends ConsumerWidget {
+  const _LevelTestCard({
+    required this.pack,
+    required this.stage,
+    required this.state,
+  });
+
+  final ContentPack pack;
+  final CefrLevel stage;
+  final EnglishPathState state;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final status = levelTestStatus(pack, state, DateTime.now(), stage: stage);
+    final last = state.levelTests[stage];
+    final retry = retryAt(state, stage);
+    return Padding(
+      padding: const EdgeInsets.only(left: 20, bottom: 8),
+      child: GlowBox(
+        padding: const EdgeInsets.all(14),
+        border: Border.all(color: AppColors.amber, width: 1.4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              ref.tr('level_test_title').replaceFirst('{stage}', stage.code),
+              style: AppTextStyles.heading(size: 16),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              status == LevelTestStatus.coolingDown && retry != null
+                  ? ref
+                        .tr('level_test_retry_at')
+                        .replaceFirst(
+                          '{time}',
+                          MaterialLocalizations.of(context)
+                              .formatTimeOfDay(TimeOfDay.fromDateTime(retry)),
+                        )
+                  : ref.tr('level_test_ready_body'),
+              style: AppTextStyles.muted(size: 13),
+            ),
+            const SizedBox(height: 10),
+            if (status == LevelTestStatus.ready)
+              PillButton(
+                label: ref.tr('level_test_start'),
+                onTap: () => openAppPopup(
+                  context,
+                  LevelTestScreen(pack: pack, stage: stage),
+                  dismissible: false,
+                ),
+              )
+            else if (last != null && last.wrongItemIds.isNotEmpty)
+              PillButton(
+                label: ref.tr('level_test_review_wrong'),
+                filled: false,
+                accentColor: AppColors.blue,
+                onTap: () =>
+                    openAppPopup(context, reviewWrongSession(ref, pack, last)),
+              ),
+          ],
         ),
       ),
     );

@@ -5526,6 +5526,61 @@ class AppStrings {
       AppLanguage.en:
           'The new result replaces your current stage, even if it is lower.',
     },
+    'level_test_title': {
+      AppLanguage.vi: 'Level Test {stage}',
+      AppLanguage.en: 'Level Test {stage}',
+    },
+    'level_test_ready_body': {
+      AppLanguage.vi:
+          'Bạn đã xong mọi Unit. 20 câu, đạt từ 80% để lên bậc tiếp theo.',
+      AppLanguage.en:
+          'All units done. 20 questions, score 80% or more to move up.',
+    },
+    'level_test_start': {
+      AppLanguage.vi: 'Làm Level Test',
+      AppLanguage.en: 'Take the Level Test',
+    },
+    'level_test_retry_at': {
+      AppLanguage.vi: 'Chưa đạt lần này. Làm lại được từ {time} (sau 24 giờ). Trong lúc chờ, ôn lại các câu sai nhé.',
+      AppLanguage.en: 'Not passed this time. You can retry from {time} (after 24 hours). Review your mistakes meanwhile.',
+    },
+    'level_test_passed': {
+      AppLanguage.vi: 'Lên bậc rồi!',
+      AppLanguage.en: 'Level up!',
+    },
+    'level_test_failed': {
+      AppLanguage.vi: 'Chưa đạt, tập tiếp nào!',
+      AppLanguage.en: 'Not yet, keep training!',
+    },
+    'level_test_score': {
+      AppLanguage.vi: 'Đúng {c}/{t} câu ({p}%)',
+      AppLanguage.en: '{c}/{t} correct ({p}%)',
+    },
+    'level_test_passed_body': {
+      AppLanguage.vi: 'Bạn đã mở khoá bậc tiếp theo và nhận +{xp} XP.',
+      AppLanguage.en: 'You unlocked the next stage and earned +{xp} XP.',
+    },
+    'level_test_failed_body': {
+      AppLanguage.vi:
+          'Cần từ 80% để qua. Ôn các câu sai rồi làm lại sau 24 giờ.',
+      AppLanguage.en: 'You need 80% to pass. Review your mistakes and retry after 24 hours.',
+    },
+    'level_test_band': {
+      AppLanguage.vi: 'Estimated band (IELTS)',
+      AppLanguage.en: 'Estimated band (IELTS)',
+    },
+    'level_test_review_wrong': {
+      AppLanguage.vi: 'Ôn các câu sai',
+      AppLanguage.en: 'Review mistakes',
+    },
+    'level_test_review_title': {
+      AppLanguage.vi: 'Ôn câu sai',
+      AppLanguage.en: 'Review mistakes',
+    },
+    'path_review_score': {
+      AppLanguage.vi: 'Đúng {c}/{t} câu',
+      AppLanguage.en: '{c}/{t} correct',
+    },
   };
 
   static String t(String key, AppLanguage lang) =>
