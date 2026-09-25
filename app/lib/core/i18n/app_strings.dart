@@ -5682,6 +5682,14 @@ class AppStrings {
       AppLanguage.vi: 'Chạm các chữ cái bên dưới',
       AppLanguage.en: 'Tap the letters below',
     },
+    'rest_game_listening_off': {
+      AppLanguage.vi: 'Tắt dạng Nghe (không đeo tai nghe)',
+      AppLanguage.en: 'Turn off Listening (no headphones)',
+    },
+    'rest_game_listening_on': {
+      AppLanguage.vi: 'Bật lại dạng Nghe',
+      AppLanguage.en: 'Turn Listening back on',
+    },
   };
 
   static String t(String key, AppLanguage lang) =>

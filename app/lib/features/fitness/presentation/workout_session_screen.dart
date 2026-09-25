@@ -70,6 +70,9 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
   /// Rest Game (mac dinh) hay the tu kieu cu - xem WorkoutPrefs.
   RestLearnMode _restMode = RestLearnMode.miniGame;
 
+  /// Cho phep dang Listening trong Rest Game (xem WorkoutPrefs).
+  bool _restListening = true;
+
   /// Phien Rest Game cua lan nghi hien tai (null khi dung the tu / khong co
   /// noi dung lo trinh).
   RestGameSession? _restGame;
@@ -128,6 +131,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
       _learnWhileResting = prefs.learnWhileResting;
       _coachVoice = prefs.coachVoice;
       _restMode = prefs.restLearnMode;
+      _restListening = prefs.restListening;
       _words = pickGymWords(
         exercises: controller.exercises,
         boxes: SrsStore.instance.boxes,
@@ -474,9 +478,14 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
   // Rest Game (spec #45)
   // ---------------------------------------------------------------------
 
+  /// Item da choi trong LAN NGHI nay (len lai ke hoach giua chung khong
+  /// lap lai cau vua lam).
+  final Set<String> _playedThisRest = {};
+
   /// Dau moi lan nghi: len ke hoach cau hoi vua thoi gian nghi tu Unit dang
   /// hoc + cau on. Chua co noi dung lo trinh -> quay ve the tu.
-  void _startRestGame(WorkoutController controller) {
+  void _startRestGame(WorkoutController controller, {bool fresh = true}) {
+    if (fresh) _playedThisRest.clear();
     _restGame = null;
     _restGameCorrect = 0;
     if (!_learnWhileResting || _restMode != RestLearnMode.miniGame) return;
@@ -496,8 +505,9 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
       restSeconds: controller.restSecondsRemaining,
       unitItems: src.unit,
       reviewItems: src.review,
-      listeningEnabled: true,
+      listeningEnabled: _restListening,
       random: Random(),
+      exclude: _playedThisRest,
     );
     if (plan.isNotEmpty) _restGame = RestGameSession(plan);
   }
@@ -520,6 +530,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
   }
 
   void _onRestGameAnswer(PracticeItem item, bool correct) {
+    _playedThisRest.add(item.id);
     final store = EnglishPathStore.instance;
     if (correct) {
       _restGameCorrect++;
@@ -566,6 +577,23 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
 
   ContentPack? _pathWordsPack;
   Map<String, PathWord> _pathWordsCache = const {};
+
+  /// Bat/tat Listening. Tat: len lai ke hoach cho phan gio nghi con lai
+  /// (bo cau da choi) de khong con cau Listening nao phat ra loa. Bat: chi
+  /// ap dung tu lan nghi sau.
+  void _toggleRestListening() {
+    final enabled = !_restListening;
+    WorkoutPrefs.saveRestListening(enabled);
+    setState(() => _restListening = enabled);
+    if (enabled) return;
+    TutorialVoice.shared.stop();
+    _endRestGame();
+    final controller = _controller;
+    if (controller != null && controller.phase == WorkoutPhase.resting) {
+      _startRestGame(controller, fresh: false);
+      setState(() {});
+    }
+  }
 
   void _setRestMode(RestLearnMode mode) {
     TutorialVoice.shared.stop();
@@ -641,6 +669,8 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                                     onAnswered: _onRestGameAnswer,
                                     onUseCards: () =>
                                         _setRestMode(RestLearnMode.cards),
+                                    listeningEnabled: _restListening,
+                                    onToggleListening: _toggleRestListening,
                                   )
                                 : word == null
                                 ? null
