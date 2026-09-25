@@ -101,6 +101,30 @@ void main() {
     });
   });
 
+  group('nextReminderTimes', () {
+    test('gio hom nay da qua -> bat dau ngay mai, luon du 7 lan', () {
+      final times = nextReminderTimes(
+        now: DateTime(2026, 9, 25, 19),
+        hour: 18,
+        minute: 0,
+        count: 7,
+      );
+      expect(times, hasLength(7));
+      expect(times.first, DateTime(2026, 9, 26, 18));
+      expect(times.last, DateTime(2026, 10, 2, 18));
+    });
+
+    test('gio hom nay chua toi -> nhac ca hom nay', () {
+      final times = nextReminderTimes(
+        now: DateTime(2026, 9, 25, 7),
+        hour: 18,
+        minute: 30,
+        count: 7,
+      );
+      expect(times.first, DateTime(2026, 9, 25, 18, 30));
+    });
+  });
+
   group('reminderFor', () {
     const program = Program(
       id: 1,

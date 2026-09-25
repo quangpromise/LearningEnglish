@@ -3639,6 +3639,20 @@ class AppStrings {
       AppLanguage.vi: 'Tập một chút, học vài từ, giữ chuỗi ngày của bạn!',
       AppLanguage.en: 'Train a little, learn a few words, keep your streak!',
     },
+    'remind_workout_body_later': {
+      AppLanguage.vi:
+          'Ôn 5 từ gym trước khi tập, rồi học tiếp lúc nghỉ giữa set nhé!',
+      AppLanguage.en: 'Review 5 gym words before training, then keep learning between sets!',
+    },
+    'remind_rest_body_later': {
+      AppLanguage.vi: 'Dành 5 phút ôn từ để giữ chuỗi Body + Brain.',
+      AppLanguage.en:
+          'Spend 5 minutes reviewing words to keep your Body + Brain streak.',
+    },
+    'remind_generic_body_later': {
+      AppLanguage.vi: 'Tập một chút, học vài từ, giữ chuỗi ngày của bạn!',
+      AppLanguage.en: 'Train a little, learn a few words, keep your streak!',
+    },
     // GymTalk giai doan 3: PT AI, luyen noi ranh tay, giong HLV, thiet lap.
     'voice_chat_pt_title': {
       AppLanguage.vi: 'PT AI (tiếng Anh)',

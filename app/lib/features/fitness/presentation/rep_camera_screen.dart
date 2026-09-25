@@ -71,7 +71,12 @@ class _RepCameraScreenState extends ConsumerState<RepCameraScreen> {
     _start();
   }
 
+  /// Man hinh da dong - moi buoc bat dong bo phai kiem tra co nay sau khi
+  /// await (dong man giua luc dang mo camera/xu ly khung hinh).
+  bool _disposed = false;
+
   Future<void> _start() async {
+    CameraController? controller;
     try {
       final cameras = await availableCameras();
       if (cameras.isEmpty) throw StateError('no camera');
@@ -79,7 +84,7 @@ class _RepCameraScreenState extends ConsumerState<RepCameraScreen> {
         (c) => c.lensDirection == CameraLensDirection.front,
         orElse: () => cameras.first,
       );
-      final controller = CameraController(
+      controller = CameraController(
         front,
         ResolutionPreset.medium,
         enableAudio: false,
@@ -88,7 +93,7 @@ class _RepCameraScreenState extends ConsumerState<RepCameraScreen> {
             : ImageFormatGroup.bgra8888,
       );
       await controller.initialize();
-      if (!mounted) {
+      if (_disposed) {
         await controller.dispose();
         return;
       }
@@ -96,20 +101,31 @@ class _RepCameraScreenState extends ConsumerState<RepCameraScreen> {
         options: PoseDetectorOptions(model: PoseDetectionModel.base),
       );
       _description = front;
-      setState(() => _camera = controller);
+      _camera = controller;
+      setState(() {});
       await controller.startImageStream(_onFrame);
+      if (_disposed) return; // _teardown() lo phan con lai.
       AppTts.instance.speak(
         "Step back so I can see your whole body. Let's go!",
       );
     } catch (e) {
       debugPrint('RepCameraScreen start failed: $e');
-      if (mounted) setState(() => _errorKey = 'rep_camera_unavailable');
+      // Controller chua duoc giao cho _camera (loi truoc do) -> tu giai
+      // phong de khong khoa camera.
+      if (controller != null && !identical(controller, _camera)) {
+        await controller.dispose().catchError((_) {});
+      }
+      if (!_disposed && mounted) {
+        setState(() => _errorKey = 'rep_camera_unavailable');
+      }
     }
   }
 
   Future<void> _onFrame(CameraImage image) async {
     final now = DateTime.now();
-    if (_busy || now.difference(_lastFrame) < _frameInterval) return;
+    if (_disposed || _busy || now.difference(_lastFrame) < _frameInterval) {
+      return;
+    }
     _busy = true;
     _lastFrame = now;
     try {
@@ -117,7 +133,7 @@ class _RepCameraScreenState extends ConsumerState<RepCameraScreen> {
       final detector = _detector;
       if (input == null || detector == null) return;
       final poses = await detector.processImage(input);
-      if (!mounted) return;
+      if (_disposed || !mounted) return;
       if (poses.isEmpty) {
         if (_personVisible) setState(() => _personVisible = false);
         return;
@@ -236,17 +252,33 @@ class _RepCameraScreenState extends ConsumerState<RepCameraScreen> {
 
   @override
   void dispose() {
-    final camera = _camera;
-    _camera = null;
-    if (camera != null) {
-      camera
-          .stopImageStream()
-          .catchError((_) {})
-          .whenComplete(() => camera.dispose());
-    }
-    _detector?.close();
+    _disposed = true;
     AppTts.instance.stopSpeaking();
+    _teardown();
     super.dispose();
+  }
+
+  /// Dung luong anh -> CHO khung dang xu ly xong (ML Kit dang dung anh) ->
+  /// giai phong camera + dong detector theo dung thu tu.
+  Future<void> _teardown() async {
+    final camera = _camera;
+    final detector = _detector;
+    _camera = null;
+    _detector = null;
+    if (camera != null) {
+      try {
+        if (camera.value.isStreamingImages) await camera.stopImageStream();
+      } catch (_) {}
+    }
+    for (var i = 0; i < 20 && _busy; i++) {
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+    }
+    try {
+      await camera?.dispose();
+    } catch (_) {}
+    try {
+      await detector?.close();
+    } catch (_) {}
   }
 
   @override

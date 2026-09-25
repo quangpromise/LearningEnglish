@@ -67,6 +67,22 @@ ReminderMessage reminderFor({
   );
 }
 
+/// [count] thoi diem nhac SAP TOI luc [hour]:[minute] - neu gio hom nay da
+/// qua thi bat dau tu ngay mai (luon du [count] lan).
+List<DateTime> nextReminderTimes({
+  required DateTime now,
+  required int hour,
+  required int minute,
+  required int count,
+}) {
+  final result = <DateTime>[];
+  for (var i = 0; result.length < count; i++) {
+    final at = DateTime(now.year, now.month, now.day + i, hour, minute);
+    if (at.isAfter(now)) result.add(at);
+  }
+  return result;
+}
+
 /// Nhac tap + hoc hang ngay THEO LICH GIAO AN (7 ngay toi, dat lai moi lan
 /// mo app / doi cai dat). Cham thong bao -> mo tab Hom nay (payload
 /// [payload], xu ly trong chat_push.dart.handleNotificationAction).
@@ -115,25 +131,25 @@ class GymTalkReminders {
   /// app va khi doi cai dat/giao an. Loi (web, thieu quyen...) chi log.
   Future<void> rescheduleFromPrefs(WidgetRef ref) async {
     if (kIsWeb) return;
+    // Doc MOI thu can tu ref NGAY (truoc moi await) - ham co the chay tiep
+    // sau khi widget goi no da bi huy. Doc truc tiep repository thay vi
+    // provider autoDispose de khong bi huy giua chung.
+    final lang = ref.read(appLanguageProvider);
+    final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
+    final workoutRepo = ref.read(workoutRepositoryProvider);
+    final programRepo = ref.read(programRepositoryProvider);
     try {
       final settings = await loadSettings();
-      await _cancelAll();
-      if (!settings.enabled) return;
+      if (!settings.enabled) {
+        await _cancelAll();
+        return;
+      }
 
-      // Doc truc tiep repository (khong qua provider autoDispose de khong
-      // bi huy giua chung khi goi ngoai build).
-      final lang = ref.read(appLanguageProvider);
-      final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
       Program? program;
       if (userId != null) {
-        final activeId = await ref
-            .read(workoutRepositoryProvider)
-            .getActiveProgramId(userId);
+        final activeId = await workoutRepo.getActiveProgramId(userId);
         if (activeId != null) {
-          final programs = await ref
-              .read(programRepositoryProvider)
-              .getAllPrograms();
-          for (final p in programs) {
+          for (final p in await programRepo.getAllPrograms()) {
             if (p.id == activeId) program = p;
           }
         }
@@ -145,7 +161,28 @@ class GymTalkReminders {
         tzdata.initializeTimeZones();
         _tzReady = true;
       }
-      final now = DateTime.now();
+      final times = nextReminderTimes(
+        now: DateTime.now(),
+        hour: settings.hour,
+        minute: settings.minute,
+        count: _days,
+      );
+      // Chuan bi XONG noi dung roi moi huy lich cu + dat lich moi - loi o
+      // buoc doc du lieu (mat mang...) khong lam mat cac nhac dang co.
+      final entries = [
+        for (var i = 0; i < times.length; i++)
+          () {
+            final message = reminderFor(program: program, day: times[i]);
+            return (
+              title: AppStrings.t(message.titleKey, lang),
+              // So tu den han chi chinh xac cho lan nhac GAN NHAT.
+              body: AppStrings.t(
+                i == 0 ? message.bodyKey : '${message.bodyKey}_later',
+                lang,
+              ).replaceFirst('{count}', '$due'),
+            );
+          }(),
+      ];
       const details = NotificationDetails(
         android: AndroidNotificationDetails(
           _channelId,
@@ -155,28 +192,15 @@ class GymTalkReminders {
           priority: Priority.high,
         ),
       );
-      for (var i = 0; i < _days; i++) {
-        final day = DateTime(now.year, now.month, now.day + i);
-        final at = DateTime(
-          day.year,
-          day.month,
-          day.day,
-          settings.hour,
-          settings.minute,
-        );
-        if (!at.isAfter(now)) continue;
-        final message = reminderFor(program: program, day: day);
-        final body = AppStrings.t(
-          message.bodyKey,
-          lang,
-        ).replaceFirst('{count}', '${i == 0 ? due : 5}');
+      await _cancelAll();
+      for (var i = 0; i < times.length; i++) {
         await _schedule(
           id: _idBase + i,
-          title: AppStrings.t(message.titleKey, lang),
-          body: body,
+          title: entries[i].title,
+          body: entries[i].body,
           // TZDateTime.from giu dung THOI DIEM tuyet doi - dung tz.UTC nhu
           // DailyQuizNotifications, khong can biet mui gio may.
-          when: tz.TZDateTime.from(at, tz.UTC),
+          when: tz.TZDateTime.from(times[i], tz.UTC),
           details: details,
         );
       }

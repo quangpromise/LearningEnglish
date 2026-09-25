@@ -54,34 +54,48 @@ class GymTalkSyncService {
     _debounce = Timer(const Duration(seconds: 5), () => syncNow());
   }
 
+  /// Co thay doi tren may TRONG LUC dang dong bo (sau khi da xuat du lieu)
+  /// -> chay them 1 luot khi luot hien tai xong.
+  bool _dirty = false;
+
   /// Dong bo ngay (mo app, quay lai app, sau thay doi). Loi mang chi log -
   /// du lieu van an toan tren may, lan sau thu lai.
-  Future<void> syncNow() => _running ??= _sync().whenComplete(() {
-    _running = null;
-  });
+  Future<void> syncNow() {
+    final running = _running;
+    if (running != null) {
+      _dirty = true;
+      return running;
+    }
+    _dirty = false;
+    return _running = _sync().whenComplete(() {
+      _running = null;
+      if (_dirty) syncNow();
+    });
+  }
 
   Future<void> _sync() async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) return;
-    await _srs.ensureLoaded();
-    await _daily.ensureLoaded();
-
-    final prefs = await SharedPreferences.getInstance();
-    final lastUser = prefs.getString(_lastUserKey);
-    if (lastUser != null && lastUser != userId) {
-      await _applyRemote(() async {
-        await _srs.clearLocal();
-        await _daily.clearLocal();
-      });
-    }
-    await prefs.setString(_lastUserKey, userId);
-
     try {
+      await _srs.ensureLoaded();
+      await _daily.ensureLoaded();
+      final prefs = await SharedPreferences.getInstance();
+      final lastUser = prefs.getString(_lastUserKey);
+
       final row = await _supabase
           .from(_table)
           .select('srs, daily')
           .eq('user_id', userId)
           .maybeSingle();
+
+      // CHI xoa du lieu may (cua tai khoan truoc) SAU khi da doc duoc du
+      // lieu tai khoan moi - mat mang thi giu nguyen, khong day nham len.
+      if (lastUser != null && lastUser != userId) {
+        await _applyRemote(() async {
+          await _srs.clearLocal();
+          await _daily.clearLocal();
+        });
+      }
       if (row != null) {
         await _applyRemote(() async {
           final srs = row['srs'];
@@ -92,6 +106,7 @@ class GymTalkSyncService {
           }
         });
       }
+      await prefs.setString(_lastUserKey, userId);
       await _supabase.from(_table).upsert({
         'user_id': userId,
         'srs': _srs.exportJson(),
@@ -118,6 +133,7 @@ class GymTalkSyncService {
     if (_listening) {
       _srs.removeListener(_onLocalChanged);
       _daily.removeListener(_onLocalChanged);
+      _listening = false;
     }
   }
 }

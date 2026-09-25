@@ -89,4 +89,7 @@ as $$
   order by 1;
 $$;
 
+-- create function mac dinh cap EXECUTE cho PUBLIC (ca anon) - ham nay la
+-- security definer doc du lieu ban be nen CHI cho user da dang nhap.
+revoke all on function public.friends_body_brain_week() from public, anon;
 grant execute on function public.friends_body_brain_week() to authenticated;
