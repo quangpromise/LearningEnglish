@@ -14862,9 +14862,9 @@
        "wordEn": "muscle",
        "sourceIds": [
         "cefrj",
-        "tatoeba"
+        "gymtalk-vocab"
        ],
-       "prompt": "The cat didn't move a ___.",
+       "prompt": "Lifting weights builds ___.",
        "options": [
         "elbow",
         "muscle",
@@ -14872,8 +14872,7 @@
         "thumb"
        ],
        "answerIndex": 1,
-       "hintVi": "Con mèo nó không cử động cơ.",
-       "sourceRef": "tatoeba:eng#35810/vie#3109183"
+       "hintVi": "Tập tạ giúp phát triển cơ bắp."
       },
       {
        "id": "b1-u01-listening-nail",
@@ -15020,7 +15019,7 @@
        "type": "ieltsMicro",
        "task": "tfng",
        "passage": "Many people skip the warm-up because they want to save time. However, a short warm-up of five to ten minutes raises your body temperature and prepares your muscles for harder work. Light jogging or cycling is usually enough. Coaches say that people who warm up properly get injured less often.",
-       "prompt": "A warm-up should last at least thirty minutes.",
+       "prompt": "A five-to-ten-minute warm-up is not enough to prepare your muscles.",
        "options": [
         "True",
         "False",
@@ -15771,7 +15770,7 @@
         "since",
         "for",
         "ago",
-        "before"
+        "during"
        ],
        "answerIndex": 0,
        "explanationVi": "for + khoảng thời gian (for two years); since + mốc thời gian (since 2020).",
@@ -17301,7 +17300,7 @@
        "prompt": "You will hurt your back if you ___ warm up.",
        "options": [
         "don't",
-        "won't",
+        "aren't",
         "didn't",
         "not"
        ],
@@ -18520,9 +18519,9 @@
        "wordEn": "pork",
        "sourceIds": [
         "cefrj",
-        "tatoeba"
+        "gymtalk-vocab"
        ],
-       "prompt": "Is ___ or beef healthier?",
+       "prompt": "She fried some ___ for lunch.",
        "options": [
         "immediately",
         "shrimp",
@@ -18530,8 +18529,7 @@
         "meanwhile"
        ],
        "answerIndex": 2,
-       "hintVi": "Thịt bò hay thịt lợn lành mạnh hơn?",
-       "sourceRef": "tatoeba:eng#13622168/vie#13657117"
+       "hintVi": "Cô ấy chiên thịt heo cho bữa trưa."
       },
       {
        "id": "b1-u06-listening-shrimp",
@@ -19550,7 +19548,7 @@
        "prompt": "Your knee hurts. You ___ see a doctor.",
        "options": [
         "should",
-        "might",
+        "ought",
         "must to",
         "would to"
        ],
@@ -19567,8 +19565,8 @@
        "prompt": "Take an umbrella. It ___ rain later.",
        "options": [
         "might",
-        "should",
-        "must",
+        "does",
+        "must to",
         "ought"
        ],
        "answerIndex": 0,
@@ -20330,7 +20328,7 @@
        "prompt": "She didn't ___ to like running, but now she loves it.",
        "options": [
         "use",
-        "used",
+        "use to",
         "using",
         "uses"
        ],
@@ -22715,7 +22713,7 @@
       {
        "en": "judo",
        "ipa": "/ˈdʒuː.dəʊ/",
-       "vi": "judo",
+       "vi": "môn judo",
        "exampleEn": "She won a bronze medal in judo.",
        "exampleVi": "Cô ấy giành huy chương đồng môn judo."
       },
@@ -22826,7 +22824,7 @@
        "options": [
         "chạy nước rút",
         "lỗi, pha phạm lỗi",
-        "judo",
+        "môn judo",
         "chất kích thích"
        ],
        "answerIndex": 1,
@@ -22842,7 +22840,7 @@
        "type": "meaning",
        "prompt": "judo",
        "options": [
-        "judo",
+        "môn judo",
         "vết thâm",
         "cuộc thi chạy marathon",
         "đối thủ"
@@ -22915,7 +22913,7 @@
        "prompt": "pitch",
        "options": [
         "sân (bóng đá)",
-        "judo",
+        "môn judo",
         "sốt rét",
         "chất kích thích"
        ],
@@ -23043,7 +23041,7 @@
         "đối thủ",
         "việc tiêm",
         "sân (bóng đá)",
-        "judo"
+        "môn judo"
        ],
        "answerIndex": 1,
        "wordEn": "injection",
@@ -24172,7 +24170,7 @@
        "type": "ieltsMicro",
        "task": "tfng",
        "passage": "From around the age of thirty, adults gradually lose muscle mass unless they do regular strength training. This loss can affect balance and increase the risk of falls later in life. Encouragingly, studies have found that people in their seventies and eighties can still build significant strength when they follow a supervised programme.",
-       "prompt": "Older adults cannot build muscle.",
+       "prompt": "Older adults cannot build strength.",
        "options": [
         "True",
         "False",
@@ -24886,9 +24884,9 @@
        "prompt": "\"I am tired.\" → She said that she ___ tired.",
        "options": [
         "was",
-        "is",
+        "be",
         "has been",
-        "be"
+        "being"
        ],
        "answerIndex": 0,
        "explanationVi": "Khi tường thuật, động từ thường lùi một thì: \"I am tired\" → She said she was tired.",
@@ -25817,8 +25815,8 @@
        "en": "heritage",
        "ipa": "/ˈher.ɪ.tɪdʒ/",
        "vi": "di sản, truyền thống gia đình",
-       "exampleEn": "The recipe has been passed down as a family heritage.",
-       "exampleVi": "Công thức này được truyền lại như một di sản gia đình."
+       "exampleEn": "The recipe has been passed down as part of our family heritage.",
+       "exampleVi": "Công thức này được truyền lại như một phần di sản của gia đình chúng tôi."
       },
       {
        "en": "inherit",
@@ -26308,7 +26306,7 @@
         "cefrj",
         "gymtalk-vocab"
        ],
-       "prompt": "The recipe has been passed down as a family ___.",
+       "prompt": "The recipe has been passed down as part of our family ___.",
        "options": [
         "icy",
         "heritage",
@@ -26316,7 +26314,7 @@
         "thermometer"
        ],
        "answerIndex": 1,
-       "hintVi": "Công thức này được truyền lại như một di sản gia đình."
+       "hintVi": "Công thức này được truyền lại như một phần di sản của gia đình chúng tôi."
       },
       {
        "id": "b2-u06-listening-inherit",
@@ -26451,7 +26449,7 @@
        "options": [
         "should",
         "must",
-        "might",
+        "would",
         "can"
        ],
        "answerIndex": 0,
@@ -26489,7 +26487,7 @@
         "False",
         "Not Given"
        ],
-       "answerIndex": 1,
+       "answerIndex": 2,
        "sourceIds": [
         "gymtalk-ielts"
        ]
@@ -26976,7 +26974,7 @@
         "determined"
        ],
        "answerIndex": 3,
-       "hintVi": "tiếng việt",
+       "hintVi": "Anh ấy quyết tâm làm xong công việc bằng mọi giá.",
        "sourceRef": "tatoeba:eng#36667/vie#13224889"
       },
       {
@@ -29536,7 +29534,7 @@
        "type": "ieltsMicro",
        "task": "tfng",
        "passage": "Recovery strategies such as massage, ice baths and compression clothing have become increasingly popular among amateur athletes. The evidence for them is mixed: ice baths may reduce soreness, but some research suggests that using them regularly after strength training could slightly reduce muscle growth. Sleep and nutrition remain the most reliable forms of recovery.",
-       "prompt": "Compression clothing is the most effective recovery method.",
+       "prompt": "Compression clothing is the most reliable form of recovery.",
        "options": [
         "True",
         "False",
@@ -31856,6 +31854,6 @@
    ]
   }
  ],
- "contentHash": "700280531cce3010f0adcb38c2ef26a7387949cb6c621fdbfcb9cc99f046a3a1",
+ "contentHash": "b73f819ffcc2fee8de7429528e9de8e3d8744bb2ae64908291d378f7f1b3c2e5",
  "approval": null
 }

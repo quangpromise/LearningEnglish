@@ -144,6 +144,18 @@ class ExclusionsTest(unittest.TestCase):
         self.assertEqual(hold["vi"], "Giữ giúp tôi cái túi một lát.")
 
 
+class PlaceholderTest(unittest.TestCase):
+    def test_placeholder_translations_are_dropped_and_rejected(self):
+        _, tatoeba = pp.apply_exclusions(WORDS, TATOEBA + [
+            {"en": "Can you run fast?", "vi": "tiếng việt", "enId": "9", "viId": "10"},
+        ], {})
+        self.assertNotIn("Can you run fast?", [t["en"] for t in tatoeba])
+        pack = _pack()
+        gap = _items(pack, "gapFill")[0]
+        gap["hintVi"] = "Tiếng Việt"
+        self.assertTrue(any("placeholder" in e for e in pp.validate_pack(pack)))
+
+
 class TatoebaFilterTest(unittest.TestCase):
     def test_sentence_filter(self):
         self.assertTrue(pp._usable_sentence("Can you lift this box?"))

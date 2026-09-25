@@ -1,124 +1,492 @@
 {
   "_comment": "IELTS Micro Exercise TU SOAN cua GymTalk theo format IELTS Reading (True/False/Not Given, chon tieu de) - KHONG lay tu de thi/sach IELTS. Moi Unit B1-C1: 1 doan van + 2 cau T/F/NG + 1 cau chon tieu de. Doan van dai dan theo bac.",
   "B1": [
-    {"id": "b1-warm-up", "passage": "Many people skip the warm-up because they want to save time. However, a short warm-up of five to ten minutes raises your body temperature and prepares your muscles for harder work. Light jogging or cycling is usually enough. Coaches say that people who warm up properly get injured less often.",
-     "tfng": [
-       {"statement": "A warm-up should last at least thirty minutes.", "answer": "False"},
-       {"statement": "Most people enjoy doing a warm-up.", "answer": "Not Given"}],
-     "headings": ["Why a short warm-up matters", "How to run a marathon", "The best time to eat", "Choosing a gym near your home"], "heading": "Why a short warm-up matters"},
-    {"id": "b1-water", "passage": "Your body loses water when you sweat. If you do not drink enough during exercise, you may feel tired or get a headache. Experts suggest drinking small amounts of water every fifteen to twenty minutes. Sports drinks are only useful for long or very hard sessions.",
-     "tfng": [
-       {"statement": "Not drinking enough water can cause headaches.", "answer": "True"},
-       {"statement": "Sports drinks are better than water for every workout.", "answer": "False"}],
-     "headings": ["Drinking water while you train", "The history of sports drinks", "Why sweating is dangerous", "Cooking healthy meals"], "heading": "Drinking water while you train"},
-    {"id": "b1-sleep", "passage": "Sleep is when your muscles repair themselves after training. Adults usually need seven to nine hours each night. People who sleep less than six hours often find it harder to build strength. Using a phone in bed can make it more difficult to fall asleep.",
-     "tfng": [
-       {"statement": "Muscles repair themselves during sleep.", "answer": "True"},
-       {"statement": "Most gym members sleep nine hours a night.", "answer": "Not Given"}],
-     "headings": ["Sleep and muscle recovery", "The dangers of phones", "Morning training plans", "How to buy a new bed"], "heading": "Sleep and muscle recovery"},
-    {"id": "b1-walking", "passage": "Walking is one of the easiest ways to stay active. It needs no equipment and can be done almost anywhere. Doctors often recommend around 7,000 to 10,000 steps a day. Walking after meals may also help the body control blood sugar.",
-     "tfng": [
-       {"statement": "You need special equipment to start walking.", "answer": "False"},
-       {"statement": "Walking is more popular than running in Vietnam.", "answer": "Not Given"}],
-     "headings": ["A simple way to stay active", "Expensive fitness equipment", "Running faster than your friends", "Why doctors dislike walking"], "heading": "A simple way to stay active"},
-    {"id": "b1-protein", "passage": "Protein helps the body build and repair muscle. Good sources include eggs, fish, chicken, beans and tofu. Many people believe they need protein shakes, but most can get enough protein from normal meals. Shakes are simply a convenient option for busy people.",
-     "tfng": [
-       {"statement": "Tofu is a source of protein.", "answer": "True"},
-       {"statement": "Everyone who trains must drink protein shakes.", "answer": "False"}],
-     "headings": ["Where to find protein", "The problem with eggs", "How to make a milkshake", "Training without food"], "heading": "Where to find protein"},
-    {"id": "b1-rest-days", "passage": "Training hard every day can actually slow down your progress. Muscles grow stronger during rest, not during the workout itself. Most beginners benefit from two or three rest days a week. On rest days, light activities such as stretching or a slow walk are still a good idea.",
-     "tfng": [
-       {"statement": "Muscles become stronger mainly during rest.", "answer": "True"},
-       {"statement": "Professional athletes never take rest days.", "answer": "Not Given"}],
-     "headings": ["Why rest days help you improve", "Training twice a day", "The best stretching music", "How beginners choose a coach"], "heading": "Why rest days help you improve"},
-    {"id": "b1-group-classes", "passage": "Group fitness classes, such as spinning or dance, have become very popular. Training with other people can make exercise more fun and help you stay motivated. An instructor also shows you the correct movements. However, classes can be crowded at busy times of the day.",
-     "tfng": [
-       {"statement": "Group classes are never crowded.", "answer": "False"},
-       {"statement": "Spinning classes burn more calories than dance classes.", "answer": "Not Given"}],
-     "headings": ["The benefits of training together", "Learning to dance alone", "Why instructors are expensive", "Home workouts for families"], "heading": "The benefits of training together"},
-    {"id": "b1-posture", "passage": "Sitting at a desk for many hours can cause back and neck pain. Good posture means keeping your back straight and your shoulders relaxed. Standing up and moving for a few minutes every hour can reduce pain. Some offices now provide desks that let workers stand while they work.",
-     "tfng": [
-       {"statement": "Moving every hour can help reduce back pain.", "answer": "True"},
-       {"statement": "All offices now use standing desks.", "answer": "False"}],
-     "headings": ["Protecting your back at work", "Finding a new office job", "The history of the desk", "Neck exercises for athletes"], "heading": "Protecting your back at work"},
-    {"id": "b1-goals", "passage": "Setting clear goals makes it easier to keep training. A goal such as 'run 5 km in eight weeks' is better than 'get fit', because you can measure it. Writing your progress in a notebook or app helps you see how far you have come. Small rewards can also keep you motivated.",
-     "tfng": [
-       {"statement": "Measurable goals are better than general ones.", "answer": "True"},
-       {"statement": "Most people give up their goals after one month.", "answer": "Not Given"}],
-     "headings": ["How to set useful goals", "The best running shoes", "Why notebooks are old-fashioned", "Winning a 5 km race"], "heading": "How to set useful goals"},
-    {"id": "b1-stretching", "passage": "Stretching after exercise can help your muscles relax. Each stretch should be held for about twenty to thirty seconds, and it should never be painful. Regular stretching may improve flexibility over time. It is best to stretch when your body is already warm.",
-     "tfng": [
-       {"statement": "A good stretch should feel painful.", "answer": "False"},
-       {"statement": "Stretching before sleep improves sleep quality.", "answer": "Not Given"}],
-     "headings": ["Stretching the right way", "Why flexibility is not important", "Cold-weather running", "Painful injuries in football"], "heading": "Stretching the right way"}
+    {
+      "id": "b1-warm-up",
+      "passage": "Many people skip the warm-up because they want to save time. However, a short warm-up of five to ten minutes raises your body temperature and prepares your muscles for harder work. Light jogging or cycling is usually enough. Coaches say that people who warm up properly get injured less often.",
+      "tfng": [
+        {
+          "statement": "A five-to-ten-minute warm-up is not enough to prepare your muscles.",
+          "answer": "False"
+        },
+        {
+          "statement": "Most people enjoy doing a warm-up.",
+          "answer": "Not Given"
+        }
+      ],
+      "headings": [
+        "Why a short warm-up matters",
+        "How to run a marathon",
+        "The best time to eat",
+        "Choosing a gym near your home"
+      ],
+      "heading": "Why a short warm-up matters"
+    },
+    {
+      "id": "b1-water",
+      "passage": "Your body loses water when you sweat. If you do not drink enough during exercise, you may feel tired or get a headache. Experts suggest drinking small amounts of water every fifteen to twenty minutes. Sports drinks are only useful for long or very hard sessions.",
+      "tfng": [
+        {
+          "statement": "Not drinking enough water can cause headaches.",
+          "answer": "True"
+        },
+        {
+          "statement": "Sports drinks are better than water for every workout.",
+          "answer": "False"
+        }
+      ],
+      "headings": [
+        "Drinking water while you train",
+        "The history of sports drinks",
+        "Why sweating is dangerous",
+        "Cooking healthy meals"
+      ],
+      "heading": "Drinking water while you train"
+    },
+    {
+      "id": "b1-sleep",
+      "passage": "Sleep is when your muscles repair themselves after training. Adults usually need seven to nine hours each night. People who sleep less than six hours often find it harder to build strength. Using a phone in bed can make it more difficult to fall asleep.",
+      "tfng": [
+        {
+          "statement": "Muscles repair themselves during sleep.",
+          "answer": "True"
+        },
+        {
+          "statement": "Most gym members sleep nine hours a night.",
+          "answer": "Not Given"
+        }
+      ],
+      "headings": [
+        "Sleep and muscle recovery",
+        "The dangers of phones",
+        "Morning training plans",
+        "How to buy a new bed"
+      ],
+      "heading": "Sleep and muscle recovery"
+    },
+    {
+      "id": "b1-walking",
+      "passage": "Walking is one of the easiest ways to stay active. It needs no equipment and can be done almost anywhere. Doctors often recommend around 7,000 to 10,000 steps a day. Walking after meals may also help the body control blood sugar.",
+      "tfng": [
+        {
+          "statement": "You need special equipment to start walking.",
+          "answer": "False"
+        },
+        {
+          "statement": "Walking is more popular than running in Vietnam.",
+          "answer": "Not Given"
+        }
+      ],
+      "headings": [
+        "A simple way to stay active",
+        "Expensive fitness equipment",
+        "Running faster than your friends",
+        "Why doctors dislike walking"
+      ],
+      "heading": "A simple way to stay active"
+    },
+    {
+      "id": "b1-protein",
+      "passage": "Protein helps the body build and repair muscle. Good sources include eggs, fish, chicken, beans and tofu. Many people believe they need protein shakes, but most can get enough protein from normal meals. Shakes are simply a convenient option for busy people.",
+      "tfng": [
+        {
+          "statement": "Tofu is a source of protein.",
+          "answer": "True"
+        },
+        {
+          "statement": "Everyone who trains must drink protein shakes.",
+          "answer": "False"
+        }
+      ],
+      "headings": [
+        "Where to find protein",
+        "The problem with eggs",
+        "How to make a milkshake",
+        "Training without food"
+      ],
+      "heading": "Where to find protein"
+    },
+    {
+      "id": "b1-rest-days",
+      "passage": "Training hard every day can actually slow down your progress. Muscles grow stronger during rest, not during the workout itself. Most beginners benefit from two or three rest days a week. On rest days, light activities such as stretching or a slow walk are still a good idea.",
+      "tfng": [
+        {
+          "statement": "Muscles become stronger mainly during rest.",
+          "answer": "True"
+        },
+        {
+          "statement": "Professional athletes never take rest days.",
+          "answer": "Not Given"
+        }
+      ],
+      "headings": [
+        "Why rest days help you improve",
+        "Training twice a day",
+        "The best stretching music",
+        "How beginners choose a coach"
+      ],
+      "heading": "Why rest days help you improve"
+    },
+    {
+      "id": "b1-group-classes",
+      "passage": "Group fitness classes, such as spinning or dance, have become very popular. Training with other people can make exercise more fun and help you stay motivated. An instructor also shows you the correct movements. However, classes can be crowded at busy times of the day.",
+      "tfng": [
+        {
+          "statement": "Group classes are never crowded.",
+          "answer": "False"
+        },
+        {
+          "statement": "Spinning classes burn more calories than dance classes.",
+          "answer": "Not Given"
+        }
+      ],
+      "headings": [
+        "The benefits of training together",
+        "Learning to dance alone",
+        "Why instructors are expensive",
+        "Home workouts for families"
+      ],
+      "heading": "The benefits of training together"
+    },
+    {
+      "id": "b1-posture",
+      "passage": "Sitting at a desk for many hours can cause back and neck pain. Good posture means keeping your back straight and your shoulders relaxed. Standing up and moving for a few minutes every hour can reduce pain. Some offices now provide desks that let workers stand while they work.",
+      "tfng": [
+        {
+          "statement": "Moving every hour can help reduce back pain.",
+          "answer": "True"
+        },
+        {
+          "statement": "All offices now use standing desks.",
+          "answer": "False"
+        }
+      ],
+      "headings": [
+        "Protecting your back at work",
+        "Finding a new office job",
+        "The history of the desk",
+        "Neck exercises for athletes"
+      ],
+      "heading": "Protecting your back at work"
+    },
+    {
+      "id": "b1-goals",
+      "passage": "Setting clear goals makes it easier to keep training. A goal such as 'run 5 km in eight weeks' is better than 'get fit', because you can measure it. Writing your progress in a notebook or app helps you see how far you have come. Small rewards can also keep you motivated.",
+      "tfng": [
+        {
+          "statement": "Measurable goals are better than general ones.",
+          "answer": "True"
+        },
+        {
+          "statement": "Most people give up their goals after one month.",
+          "answer": "Not Given"
+        }
+      ],
+      "headings": [
+        "How to set useful goals",
+        "The best running shoes",
+        "Why notebooks are old-fashioned",
+        "Winning a 5 km race"
+      ],
+      "heading": "How to set useful goals"
+    },
+    {
+      "id": "b1-stretching",
+      "passage": "Stretching after exercise can help your muscles relax. Each stretch should be held for about twenty to thirty seconds, and it should never be painful. Regular stretching may improve flexibility over time. It is best to stretch when your body is already warm.",
+      "tfng": [
+        {
+          "statement": "A good stretch should feel painful.",
+          "answer": "False"
+        },
+        {
+          "statement": "Stretching before sleep improves sleep quality.",
+          "answer": "Not Given"
+        }
+      ],
+      "headings": [
+        "Stretching the right way",
+        "Why flexibility is not important",
+        "Cold-weather running",
+        "Painful injuries in football"
+      ],
+      "heading": "Stretching the right way"
+    }
   ],
   "B2": [
-    {"id": "b2-hiit", "passage": "High-intensity interval training (HIIT) alternates short bursts of maximum effort with brief recovery periods. Research suggests that a twenty-minute HIIT session can improve cardiovascular fitness as much as a much longer moderate workout. Nevertheless, because it is so demanding, experts advise beginners to limit HIIT to two or three sessions a week and to build a basic level of fitness first.",
-     "tfng": [
-       {"statement": "Beginners are advised to do HIIT every day.", "answer": "False"},
-       {"statement": "HIIT was invented by professional sprinters.", "answer": "Not Given"}],
-     "headings": ["Short, intense workouts and their limits", "Why long runs are always better", "The origins of sprinting", "Recovery drinks for athletes"], "heading": "Short, intense workouts and their limits"},
-    {"id": "b2-habit", "passage": "Studies on habit formation show that it takes, on average, around two months for a new behaviour to become automatic, although this varies considerably between individuals. Linking a new habit to an existing routine, such as exercising straight after work, appears to speed up the process. Missing a single day, however, does not seem to have a lasting effect.",
-     "tfng": [
-       {"statement": "Everyone needs exactly two months to form a habit.", "answer": "False"},
-       {"statement": "Missing one day seriously damages a new habit.", "answer": "False"}],
-     "headings": ["How new habits take hold", "Why routines are boring", "Working late and its effects", "The science of motivation speeches"], "heading": "How new habits take hold"},
-    {"id": "b2-strength-ageing", "passage": "From around the age of thirty, adults gradually lose muscle mass unless they do regular strength training. This loss can affect balance and increase the risk of falls later in life. Encouragingly, studies have found that people in their seventies and eighties can still build significant strength when they follow a supervised programme.",
-     "tfng": [
-       {"statement": "Older adults cannot build muscle.", "answer": "False"},
-       {"statement": "Loss of muscle can increase the risk of falling.", "answer": "True"}],
-     "headings": ["Staying strong as we age", "Why young people should avoid weights", "The history of retirement", "Balance games for children"], "heading": "Staying strong as we age"},
-    {"id": "b2-wearables", "passage": "Fitness trackers now measure steps, heart rate and even sleep stages. While they can motivate users by making progress visible, their accuracy varies. Heart-rate readings are generally reliable at rest but less precise during intense exercise. Some researchers worry that constant tracking may turn exercise into a source of stress rather than enjoyment.",
-     "tfng": [
-       {"statement": "Trackers measure heart rate equally well in every situation.", "answer": "False"},
-       {"statement": "Most tracker users check their data every hour.", "answer": "Not Given"}],
-     "headings": ["The benefits and limits of fitness trackers", "How to build your own tracker", "Why sleep stages do not exist", "Choosing a smartphone"], "heading": "The benefits and limits of fitness trackers"},
-    {"id": "b2-diet-myths", "passage": "Many popular diet claims are not supported by strong evidence. For example, eating late at night does not in itself cause weight gain; what matters more is the total amount of energy consumed over the day. Similarly, so-called 'detox' products have little scientific basis, since the liver and kidneys already remove waste from the body.",
-     "tfng": [
-       {"statement": "Eating late at night automatically causes weight gain.", "answer": "False"},
-       {"statement": "Detox products are sold mainly online.", "answer": "Not Given"}],
-     "headings": ["Common diet myths examined", "A guide to late-night restaurants", "How the liver was discovered", "Recipes for weight gain"], "heading": "Common diet myths examined"},
-    {"id": "b2-team-sports", "passage": "Team sports offer benefits that go beyond physical fitness. Players regularly practise communication, cooperation and decision-making under pressure. Surveys of young people suggest that those who play team sports report higher self-confidence. Critics note, however, that intense competition can sometimes discourage less skilled players from continuing.",
-     "tfng": [
-       {"statement": "Team sports can improve communication skills.", "answer": "True"},
-       {"statement": "All young players enjoy intense competition.", "answer": "False"}],
-     "headings": ["What team sports teach us", "The richest football clubs", "Why individual sports are dying", "Training alone at night"], "heading": "What team sports teach us"},
-    {"id": "b2-outdoor", "passage": "Exercising outdoors, sometimes called 'green exercise', may offer mental health benefits beyond those of indoor training. Several studies have reported lower stress levels among people who walk or run in parks compared with those who use a treadmill. Researchers are still unsure whether this is due to nature itself, fresh air, or simply the change of scenery.",
-     "tfng": [
-       {"statement": "The reason for the benefits of green exercise is fully understood.", "answer": "False"},
-       {"statement": "Treadmills are more popular than park running.", "answer": "Not Given"}],
-     "headings": ["The mental benefits of training in nature", "How treadmills are made", "Air pollution in cities", "Running competitions in parks"], "heading": "The mental benefits of training in nature"},
-    {"id": "b2-caffeine", "passage": "Caffeine is one of the most widely used performance aids in sport. Moderate doses, taken about an hour before exercise, can reduce the feeling of effort and improve endurance. Nevertheless, its effects differ from person to person, and consuming it late in the day can disturb sleep, which in turn may harm recovery.",
-     "tfng": [
-       {"statement": "Caffeine affects everyone in the same way.", "answer": "False"},
-       {"statement": "Caffeine taken late in the day can affect sleep.", "answer": "True"}],
-     "headings": ["Caffeine as a training aid", "The coffee trade in Vietnam", "Why athletes must avoid drinks", "Sleeping pills and sport"], "heading": "Caffeine as a training aid"},
-    {"id": "b2-screen-time", "passage": "Rising screen time has been linked to lower levels of physical activity, particularly among teenagers. Some schools have responded by introducing short activity breaks between lessons. Early reports indicate that pupils return to class more focused, although it is not yet clear whether these breaks lead to better exam results.",
-     "tfng": [
-       {"statement": "Activity breaks have been proven to raise exam results.", "answer": "False"},
-       {"statement": "Some schools have introduced activity breaks.", "answer": "True"}],
-     "headings": ["Moving more at school", "Why teenagers love screens", "Exam tips for students", "Building a school gym"], "heading": "Moving more at school"},
-    {"id": "b2-recovery", "passage": "Recovery strategies such as massage, ice baths and compression clothing have become increasingly popular among amateur athletes. The evidence for them is mixed: ice baths may reduce soreness, but some research suggests that using them regularly after strength training could slightly reduce muscle growth. Sleep and nutrition remain the most reliable forms of recovery.",
-     "tfng": [
-       {"statement": "Ice baths may slightly reduce muscle growth if used regularly after strength training.", "answer": "True"},
-       {"statement": "Compression clothing is the most effective recovery method.", "answer": "False"}],
-     "headings": ["What really helps recovery", "The history of massage", "Why athletes avoid sleep", "Buying sportswear online"], "heading": "What really helps recovery"}
+    {
+      "id": "b2-hiit",
+      "passage": "High-intensity interval training (HIIT) alternates short bursts of maximum effort with brief recovery periods. Research suggests that a twenty-minute HIIT session can improve cardiovascular fitness as much as a much longer moderate workout. Nevertheless, because it is so demanding, experts advise beginners to limit HIIT to two or three sessions a week and to build a basic level of fitness first.",
+      "tfng": [
+        {
+          "statement": "Beginners are advised to do HIIT every day.",
+          "answer": "False"
+        },
+        {
+          "statement": "HIIT was invented by professional sprinters.",
+          "answer": "Not Given"
+        }
+      ],
+      "headings": [
+        "Short, intense workouts and their limits",
+        "Why long runs are always better",
+        "The origins of sprinting",
+        "Recovery drinks for athletes"
+      ],
+      "heading": "Short, intense workouts and their limits"
+    },
+    {
+      "id": "b2-habit",
+      "passage": "Studies on habit formation show that it takes, on average, around two months for a new behaviour to become automatic, although this varies considerably between individuals. Linking a new habit to an existing routine, such as exercising straight after work, appears to speed up the process. Missing a single day, however, does not seem to have a lasting effect.",
+      "tfng": [
+        {
+          "statement": "Everyone needs exactly two months to form a habit.",
+          "answer": "False"
+        },
+        {
+          "statement": "Missing one day seriously damages a new habit.",
+          "answer": "False"
+        }
+      ],
+      "headings": [
+        "How new habits take hold",
+        "Why routines are boring",
+        "Working late and its effects",
+        "The science of motivation speeches"
+      ],
+      "heading": "How new habits take hold"
+    },
+    {
+      "id": "b2-strength-ageing",
+      "passage": "From around the age of thirty, adults gradually lose muscle mass unless they do regular strength training. This loss can affect balance and increase the risk of falls later in life. Encouragingly, studies have found that people in their seventies and eighties can still build significant strength when they follow a supervised programme.",
+      "tfng": [
+        {
+          "statement": "Older adults cannot build strength.",
+          "answer": "False"
+        },
+        {
+          "statement": "Loss of muscle can increase the risk of falling.",
+          "answer": "True"
+        }
+      ],
+      "headings": [
+        "Staying strong as we age",
+        "Why young people should avoid weights",
+        "The history of retirement",
+        "Balance games for children"
+      ],
+      "heading": "Staying strong as we age"
+    },
+    {
+      "id": "b2-wearables",
+      "passage": "Fitness trackers now measure steps, heart rate and even sleep stages. While they can motivate users by making progress visible, their accuracy varies. Heart-rate readings are generally reliable at rest but less precise during intense exercise. Some researchers worry that constant tracking may turn exercise into a source of stress rather than enjoyment.",
+      "tfng": [
+        {
+          "statement": "Trackers measure heart rate equally well in every situation.",
+          "answer": "False"
+        },
+        {
+          "statement": "Most tracker users check their data every hour.",
+          "answer": "Not Given"
+        }
+      ],
+      "headings": [
+        "The benefits and limits of fitness trackers",
+        "How to build your own tracker",
+        "Why sleep stages do not exist",
+        "Choosing a smartphone"
+      ],
+      "heading": "The benefits and limits of fitness trackers"
+    },
+    {
+      "id": "b2-diet-myths",
+      "passage": "Many popular diet claims are not supported by strong evidence. For example, eating late at night does not in itself cause weight gain; what matters more is the total amount of energy consumed over the day. Similarly, so-called 'detox' products have little scientific basis, since the liver and kidneys already remove waste from the body.",
+      "tfng": [
+        {
+          "statement": "Eating late at night automatically causes weight gain.",
+          "answer": "False"
+        },
+        {
+          "statement": "Detox products are sold mainly online.",
+          "answer": "Not Given"
+        }
+      ],
+      "headings": [
+        "Common diet myths examined",
+        "A guide to late-night restaurants",
+        "How the liver was discovered",
+        "Recipes for weight gain"
+      ],
+      "heading": "Common diet myths examined"
+    },
+    {
+      "id": "b2-team-sports",
+      "passage": "Team sports offer benefits that go beyond physical fitness. Players regularly practise communication, cooperation and decision-making under pressure. Surveys of young people suggest that those who play team sports report higher self-confidence. Critics note, however, that intense competition can sometimes discourage less skilled players from continuing.",
+      "tfng": [
+        {
+          "statement": "Team sports can improve communication skills.",
+          "answer": "True"
+        },
+        {
+          "statement": "All young players enjoy intense competition.",
+          "answer": "Not Given"
+        }
+      ],
+      "headings": [
+        "What team sports teach us",
+        "The richest football clubs",
+        "Why individual sports are dying",
+        "Training alone at night"
+      ],
+      "heading": "What team sports teach us"
+    },
+    {
+      "id": "b2-outdoor",
+      "passage": "Exercising outdoors, sometimes called 'green exercise', may offer mental health benefits beyond those of indoor training. Several studies have reported lower stress levels among people who walk or run in parks compared with those who use a treadmill. Researchers are still unsure whether this is due to nature itself, fresh air, or simply the change of scenery.",
+      "tfng": [
+        {
+          "statement": "The reason for the benefits of green exercise is fully understood.",
+          "answer": "False"
+        },
+        {
+          "statement": "Treadmills are more popular than park running.",
+          "answer": "Not Given"
+        }
+      ],
+      "headings": [
+        "The mental benefits of training in nature",
+        "How treadmills are made",
+        "Air pollution in cities",
+        "Running competitions in parks"
+      ],
+      "heading": "The mental benefits of training in nature"
+    },
+    {
+      "id": "b2-caffeine",
+      "passage": "Caffeine is one of the most widely used performance aids in sport. Moderate doses, taken about an hour before exercise, can reduce the feeling of effort and improve endurance. Nevertheless, its effects differ from person to person, and consuming it late in the day can disturb sleep, which in turn may harm recovery.",
+      "tfng": [
+        {
+          "statement": "Caffeine affects everyone in the same way.",
+          "answer": "False"
+        },
+        {
+          "statement": "Caffeine taken late in the day can affect sleep.",
+          "answer": "True"
+        }
+      ],
+      "headings": [
+        "Caffeine as a training aid",
+        "The coffee trade in Vietnam",
+        "Why athletes must avoid drinks",
+        "Sleeping pills and sport"
+      ],
+      "heading": "Caffeine as a training aid"
+    },
+    {
+      "id": "b2-screen-time",
+      "passage": "Rising screen time has been linked to lower levels of physical activity, particularly among teenagers. Some schools have responded by introducing short activity breaks between lessons. Early reports indicate that pupils return to class more focused, although it is not yet clear whether these breaks lead to better exam results.",
+      "tfng": [
+        {
+          "statement": "Activity breaks have been proven to raise exam results.",
+          "answer": "False"
+        },
+        {
+          "statement": "Some schools have introduced activity breaks.",
+          "answer": "True"
+        }
+      ],
+      "headings": [
+        "Moving more at school",
+        "Why teenagers love screens",
+        "Exam tips for students",
+        "Building a school gym"
+      ],
+      "heading": "Moving more at school"
+    },
+    {
+      "id": "b2-recovery",
+      "passage": "Recovery strategies such as massage, ice baths and compression clothing have become increasingly popular among amateur athletes. The evidence for them is mixed: ice baths may reduce soreness, but some research suggests that using them regularly after strength training could slightly reduce muscle growth. Sleep and nutrition remain the most reliable forms of recovery.",
+      "tfng": [
+        {
+          "statement": "Ice baths may slightly reduce muscle growth if used regularly after strength training.",
+          "answer": "True"
+        },
+        {
+          "statement": "Compression clothing is the most reliable form of recovery.",
+          "answer": "False"
+        }
+      ],
+      "headings": [
+        "What really helps recovery",
+        "The history of massage",
+        "Why athletes avoid sleep",
+        "Buying sportswear online"
+      ],
+      "heading": "What really helps recovery"
+    }
   ],
   "C1": [
-    {"id": "c1-metabolism", "passage": "It is widely assumed that metabolism slows dramatically in middle age, making weight gain almost inevitable. However, a large international study analysing data from thousands of participants found that metabolic rate, once adjusted for body size, remains remarkably stable between the ages of twenty and sixty. Changes in weight during this period are therefore more plausibly explained by shifts in lifestyle, such as reduced activity, than by an inherent metabolic decline.",
-     "tfng": [
-       {"statement": "The study found that metabolism drops sharply at the age of forty.", "answer": "False"},
-       {"statement": "The study was funded by a sports company.", "answer": "Not Given"}],
-     "headings": ["Rethinking metabolism in middle age", "Why weight gain is inevitable", "Designing international surveys", "Dieting tips for teenagers"], "heading": "Rethinking metabolism in middle age"},
-    {"id": "c1-sustainable-fitness", "passage": "The environmental footprint of the fitness industry has attracted growing scrutiny. Gyms consume substantial amounts of electricity for lighting, air conditioning and equipment, while the production of synthetic sportswear relies heavily on fossil fuels. In response, a small but increasing number of facilities have installed machines that convert users' movement into electricity, although the energy generated remains modest relative to overall consumption.",
-     "tfng": [
-       {"statement": "Energy-generating machines now cover most of a gym's electricity use.", "answer": "False"},
-       {"statement": "Synthetic sportswear production depends heavily on fossil fuels.", "answer": "True"}],
-     "headings": ["The environmental cost of keeping fit", "How to save money on gym fees", "The invention of air conditioning", "Choosing natural fabrics for fashion"], "heading": "The environmental cost of keeping fit"},
-    {"id": "c1-chronic-disease", "passage": "Physical inactivity is now recognised as a major risk factor for chronic conditions such as type 2 diabetes and heart disease. Crucially, the relationship is not strictly linear: the greatest reduction in risk is observed when completely sedentary individuals begin even modest activity. This finding has led public health authorities to shift their messaging from demanding ambitious targets towards encouraging any increase in movement.",
-     "tfng": [
-       {"statement": "The biggest health gains come when inactive people start doing a little exercise.", "answer": "True"},
-       {"statement": "Public health authorities now require everyone to exercise for an hour a day.", "answer": "False"}],
-     "headings": ["Why a little activity goes a long way", "A cure for heart disease", "The rise of competitive sport", "How diabetes was first identified"], "heading": "Why a little activity goes a long way"}
+    {
+      "id": "c1-metabolism",
+      "passage": "It is widely assumed that metabolism slows dramatically in middle age, making weight gain almost inevitable. However, a large international study analysing data from thousands of participants found that metabolic rate, once adjusted for body size, remains remarkably stable between the ages of twenty and sixty. Changes in weight during this period are therefore more plausibly explained by shifts in lifestyle, such as reduced activity, than by an inherent metabolic decline.",
+      "tfng": [
+        {
+          "statement": "The study found that metabolism drops sharply at the age of forty.",
+          "answer": "False"
+        },
+        {
+          "statement": "The study was funded by a sports company.",
+          "answer": "Not Given"
+        }
+      ],
+      "headings": [
+        "Rethinking metabolism in middle age",
+        "Why weight gain is inevitable",
+        "Designing international surveys",
+        "Dieting tips for teenagers"
+      ],
+      "heading": "Rethinking metabolism in middle age"
+    },
+    {
+      "id": "c1-sustainable-fitness",
+      "passage": "The environmental footprint of the fitness industry has attracted growing scrutiny. Gyms consume substantial amounts of electricity for lighting, air conditioning and equipment, while the production of synthetic sportswear relies heavily on fossil fuels. In response, a small but increasing number of facilities have installed machines that convert users' movement into electricity, although the energy generated remains modest relative to overall consumption.",
+      "tfng": [
+        {
+          "statement": "Energy-generating machines now cover most of a gym's electricity use.",
+          "answer": "False"
+        },
+        {
+          "statement": "Synthetic sportswear production depends heavily on fossil fuels.",
+          "answer": "True"
+        }
+      ],
+      "headings": [
+        "The environmental cost of keeping fit",
+        "How to save money on gym fees",
+        "The invention of air conditioning",
+        "Choosing natural fabrics for fashion"
+      ],
+      "heading": "The environmental cost of keeping fit"
+    },
+    {
+      "id": "c1-chronic-disease",
+      "passage": "Physical inactivity is now recognised as a major risk factor for chronic conditions such as type 2 diabetes and heart disease. Crucially, the relationship is not strictly linear: the greatest reduction in risk is observed when completely sedentary individuals begin even modest activity. This finding has led public health authorities to shift their messaging from demanding ambitious targets towards encouraging any increase in movement.",
+      "tfng": [
+        {
+          "statement": "The biggest health gains come when inactive people start doing a little exercise.",
+          "answer": "True"
+        },
+        {
+          "statement": "Public health authorities now require everyone to exercise for an hour a day.",
+          "answer": "False"
+        }
+      ],
+      "headings": [
+        "Why a little activity goes a long way",
+        "A cure for heart disease",
+        "The rise of competitive sport",
+        "How diabetes was first identified"
+      ],
+      "heading": "Why a little activity goes a long way"
+    }
   ]
 }

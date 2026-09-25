@@ -7,9 +7,12 @@
   },
   "excludeSentences": {
     "There is no telling when the rainy season will be over.": "Qua kho so voi A1-A2, ban dich lech nghia.",
-    "There's a typo on slide 3.": "Ban dich ghi 'trang 3' (page) lech voi 'slide'."
+    "There's a typo on slide 3.": "Ban dich ghi 'trang 3' (page) lech voi 'slide'.",
+    "The cat didn't move a muscle.": "Thanh ngu 'not move a muscle' - ban dich sai nghia, day nham nghia 'co bap'.",
+    "Is pork or beef healthier?": "Dap an nhieu 'shrimp' cung tu nhien trong cau (Grok)."
   },
   "fixVietnamese": {
-    "There's not a drop of water left.": "Không còn một giọt nước nào."
+    "There's not a drop of water left.": "Không còn một giọt nước nào.",
+    "He was determined to finish the work at any cost.": "Anh ấy quyết tâm làm xong công việc bằng mọi giá."
   }
 }

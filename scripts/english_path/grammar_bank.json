@@ -835,7 +835,7 @@
             "since",
             "for",
             "ago",
-            "before"
+            "during"
           ],
           "answer": "since"
         }
@@ -909,7 +909,7 @@
           "prompt": "You will hurt your back if you ___ warm up.",
           "options": [
             "don't",
-            "won't",
+            "aren't",
             "didn't",
             "not"
           ],
@@ -1003,7 +1003,7 @@
           "prompt": "Your knee hurts. You ___ see a doctor.",
           "options": [
             "should",
-            "might",
+            "ought",
             "must to",
             "would to"
           ],
@@ -1013,8 +1013,8 @@
           "prompt": "Take an umbrella. It ___ rain later.",
           "options": [
             "might",
-            "should",
-            "must",
+            "does",
+            "must to",
             "ought"
           ],
           "answer": "might"
@@ -1051,7 +1051,7 @@
           "prompt": "She didn't ___ to like running, but now she loves it.",
           "options": [
             "use",
-            "used",
+            "use to",
             "using",
             "uses"
           ],
@@ -1271,9 +1271,9 @@
           "prompt": "\"I am tired.\" → She said that she ___ tired.",
           "options": [
             "was",
-            "is",
+            "be",
             "has been",
-            "be"
+            "being"
           ],
           "answer": "was"
         },
@@ -1368,7 +1368,7 @@
           "options": [
             "should",
             "must",
-            "might",
+            "would",
             "can"
           ],
           "answer": "should"
