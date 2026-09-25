@@ -7,7 +7,7 @@ import 'package:flutter/services.dart';
 import 'app_tts.dart';
 
 /// Ma bam FNV-1a 32-bit (UTF-8) cua 1 cau -> ten file audio Kokoro dong goi
-/// san (assets/tutorial_audio/<ma>.mp3). PHAI khop fnv1a32() trong
+/// san (`assets/tutorial_audio/<ma>.mp3`). PHAI khop fnv1a32() trong
 /// scripts/generate_tutorial_audio.py.
 String tutorialAudioKey(String text) {
   var hash = 0x811C9DC5;
