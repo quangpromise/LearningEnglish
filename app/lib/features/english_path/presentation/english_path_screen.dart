@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/i18n/app_language.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
@@ -12,6 +11,7 @@ import '../data/content_pack.dart';
 import '../data/english_path_progress.dart';
 import '../data/english_path_providers.dart';
 import '../data/english_path_state.dart';
+import 'path_labels.dart';
 import 'unit_session_screen.dart';
 
 /// Man "Lo trinh" (tab Hoc): 5 Stage A1 -> C1, Unit cua Stage hien tai kem
@@ -23,7 +23,7 @@ class EnglishPathScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final packAsync = ref.watch(contentPackProvider);
     final level = ref.watch(englishLevelProvider);
-    final state = ref.watch(englishPathStoreProvider).state;
+    final state = ref.watch(englishPathStateProvider);
     return ScreenBackground(
       child: SafeArea(
         top: false,
@@ -108,25 +108,41 @@ class _PathList extends ConsumerWidget {
       padding: const EdgeInsets.only(bottom: 24),
       children: [
         for (final cefr in CefrLevel.values) ...[
-          _StageHeader(
-            cefr: cefr,
-            current: cefr == level,
-            hasContent: stages[cefr]?.units.isNotEmpty ?? false,
-            done:
-                cefr.index < level.index || allUnitsComplete(pack, cefr, state),
-          ),
-          if (cefr == level) ...[
-            for (final unit in stages[cefr]?.units ?? const <PathUnit>[])
-              _UnitTile(unit: unit, state: state, isNext: unit.id == next?.id),
-            if (next == null && (stages[cefr]?.units.isNotEmpty ?? false))
-              _Note(text: ref.tr('path_stage_done')),
-            if (stages[cefr]?.units.isEmpty ?? true)
-              _Note(text: ref.tr('path_coming_soon')),
-          ],
+          ..._stage(ref, cefr, stages[cefr]?.units ?? const [], next),
           const SizedBox(height: 10),
         ],
       ],
     );
+  }
+
+  /// Header + cac Unit cua 1 Stage. Moi Stage co noi dung deu hien Unit (xem
+  /// lai/on duoc, khong khoa); chi Stage hien tai co nhan "Tiep theo".
+  List<Widget> _stage(
+    WidgetRef ref,
+    CefrLevel cefr,
+    List<PathUnit> units,
+    PathUnit? next,
+  ) {
+    final current = cefr == level;
+    return [
+      _StageHeader(
+        cefr: cefr,
+        current: current,
+        hasContent: units.isNotEmpty,
+        // Stage duoi English Level coi nhu da qua (ADR-0001: English Level
+        // la nguon goc duy nhat, ke ca khi den tu Placement).
+        done: cefr.index < level.index || allUnitsComplete(pack, cefr, state),
+      ),
+      for (final unit in units)
+        _UnitTile(
+          unit: unit,
+          state: state,
+          isNext: current && unit.id == next?.id,
+        ),
+      if (current && units.isNotEmpty && next == null)
+        _Note(text: ref.tr('path_stage_done')),
+      if (current && units.isEmpty) _Note(text: ref.tr('path_coming_soon')),
+    ];
   }
 }
 
@@ -220,9 +236,7 @@ class _UnitTile extends ConsumerWidget {
               Row(
                 children: [
                   Text(
-                    ref
-                        .tr('path_unit_label')
-                        .replaceFirst('{n}', '${unit.index}'),
+                    unitLabel(ref, unit),
                     style: AppTextStyles.muted(size: 12),
                   ),
                   const Spacer(),
@@ -243,10 +257,7 @@ class _UnitTile extends ConsumerWidget {
                 ],
               ),
               const SizedBox(height: 4),
-              Text(
-                lang == AppLanguage.en ? unit.titleEn : unit.titleVi,
-                style: AppTextStyles.heading(size: 16),
-              ),
+              Text(unit.titleFor(lang), style: AppTextStyles.heading(size: 16)),
               const SizedBox(height: 8),
               ClipRRect(
                 borderRadius: BorderRadius.circular(4),
@@ -261,7 +272,7 @@ class _UnitTile extends ConsumerWidget {
               Text(
                 ref
                     .tr('path_unit_progress')
-                    .replaceFirst('{p}', '${(progress * 100).round()}'),
+                    .replaceFirst('{p}', '${unitPercent(unit, state)}'),
                 style: AppTextStyles.muted(size: 12),
               ),
             ],

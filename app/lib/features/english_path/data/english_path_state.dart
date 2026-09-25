@@ -1,7 +1,9 @@
 import 'cefr_level.dart';
 
-/// Phien ban cau truc state lo trinh. Tang khi doi cau truc va them 1 buoc
-/// migrate trong [migrateEnglishPathState].
+/// Phien ban cau truc state lo trinh. BAT BUOC tang (va them 1 buoc migrate
+/// trong [migrateEnglishPathState]) moi khi them/doi truong - vd Placement,
+/// Level Test, che do Rest Game o cac ticket sau. Neu khong, ban app cu doc
+/// state cung version se ghi de va lam mat cac truong no khong biet.
 const kEnglishPathSchemaVersion = 1;
 
 /// Tien do lo trinh tieng Anh cua nguoi hoc (local-first, xem spec #45).
@@ -37,6 +39,13 @@ class EnglishPathState {
     },
   };
 }
+
+/// State do ban app MOI HON ghi (schemaVersion la so nguyen lon hon ban
+/// nay): phai giu nguyen, khong bao gio ghi de.
+bool isFromNewerVersion(Object? raw) =>
+    raw is Map &&
+    raw['schemaVersion'] is int &&
+    (raw['schemaVersion'] as int) > kEnglishPathSchemaVersion;
 
 /// Doc state tu JSON (local hoac remote), migrate len phien ban hien tai.
 /// Tra ve null khi du lieu hong hoac do ban app MOI HON ghi (version la) -

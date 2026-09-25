@@ -10,6 +10,7 @@ import '../data/content_pack.dart';
 import '../data/english_path_progress.dart';
 import '../data/english_path_providers.dart';
 import '../data/english_path_store.dart';
+import 'path_labels.dart';
 
 /// Phien hoc 1 Unit (~5 phut): lan luot cac Practice Item dang chon nghia,
 /// item chua dung truoc. Moi cau dung duoc ghi ngay vao tien do Unit.
@@ -24,7 +25,7 @@ class UnitSessionScreen extends ConsumerStatefulWidget {
 class _UnitSessionScreenState extends ConsumerState<UnitSessionScreen> {
   late final List<PracticeItem> _items = sessionItems(
     widget.unit,
-    EnglishPathStore.instance.state,
+    ref.read(englishPathStateProvider),
   );
   late final Map<String, PathWord> _words = {
     for (final w in widget.unit.words) w.en: w,
@@ -71,9 +72,7 @@ class _UnitSessionScreenState extends ConsumerState<UnitSessionScreen> {
                 children: [
                   Expanded(
                     child: Text(
-                      ref
-                          .tr('path_unit_label')
-                          .replaceFirst('{n}', '${widget.unit.index}'),
+                      unitLabel(ref, widget.unit),
                       style: AppTextStyles.heading(size: 20),
                     ),
                   ),
@@ -142,13 +141,7 @@ class _UnitSessionScreenState extends ConsumerState<UnitSessionScreen> {
             padding: const EdgeInsets.only(bottom: 10),
             child: _OptionButton(
               label: item.options[i],
-              state: picked == null
-                  ? _OptionState.idle
-                  : i == item.answerIndex
-                  ? _OptionState.right
-                  : i == picked
-                  ? _OptionState.wrong
-                  : _OptionState.dimmed,
+              state: _optionState(i, item.answerIndex, picked),
               onTap: () => _pick(item, i),
             ),
           ),
@@ -166,6 +159,13 @@ class _UnitSessionScreenState extends ConsumerState<UnitSessionScreen> {
 }
 
 enum _OptionState { idle, right, wrong, dimmed }
+
+_OptionState _optionState(int option, int answer, int? picked) {
+  if (picked == null) return _OptionState.idle;
+  if (option == answer) return _OptionState.right;
+  if (option == picked) return _OptionState.wrong;
+  return _OptionState.dimmed;
+}
 
 /// Nut dap an cao 56dp, bam 1 tay duoc.
 class _OptionButton extends StatelessWidget {
@@ -225,9 +225,9 @@ class _Summary extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(englishPathStoreProvider).state;
+    final state = ref.watch(englishPathStateProvider);
     final complete = isUnitComplete(unit, state);
-    final progress = (unitProgress(unit, state) * 100).round();
+    final progress = unitPercent(unit, state);
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [

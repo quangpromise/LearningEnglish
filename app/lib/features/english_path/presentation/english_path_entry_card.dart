@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/i18n/app_language.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
@@ -9,6 +8,7 @@ import '../../../core/theme/app_theme.dart';
 import '../data/english_path_progress.dart';
 import '../data/english_path_providers.dart';
 import 'english_path_screen.dart';
+import 'path_labels.dart';
 
 /// The mong o dau tab Hoc: English Level + Unit ke tiep, bam mo man Lo trinh.
 class EnglishPathEntryCard extends ConsumerWidget {
@@ -17,15 +17,14 @@ class EnglishPathEntryCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final level = ref.watch(englishLevelProvider);
-    final state = ref.watch(englishPathStoreProvider).state;
+    final state = ref.watch(englishPathStateProvider);
     final pack = ref.watch(contentPackProvider).valueOrNull;
     final lang = ref.watch(appLanguageProvider);
     final next = pack == null ? null : nextUnit(pack, level, state);
     final subtitle = next == null
         ? ref.tr('path_entry_subtitle_idle')
-        : '${ref.tr('path_unit_label').replaceFirst('{n}', '${next.index}')}'
-              ' · ${lang == AppLanguage.en ? next.titleEn : next.titleVi}'
-              ' · ${(unitProgress(next, state) * 100).round()}%';
+        : '${unitLabel(ref, next)} · ${next.titleFor(lang)}'
+              ' · ${unitPercent(next, state)}%';
     return GestureDetector(
       onTap: () => openAppPopup(context, const EnglishPathScreen()),
       child: Container(

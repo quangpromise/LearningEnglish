@@ -61,13 +61,25 @@ void main() {
     });
 
     test('is complete at exactly 80%, not at 70%', () {
-      expect(isUnitComplete(unit, _withCorrect('a1-u01', range(7))), isFalse);
-      expect(isUnitComplete(unit, _withCorrect('a1-u01', range(8))), isTrue);
+      expect(isUnitComplete(unit, _withCorrect('a1-u01', _range(7))), isFalse);
+      expect(isUnitComplete(unit, _withCorrect('a1-u01', _range(8))), isTrue);
+    });
+
+    test('boundary on a real 15-item unit: 12/15 done, 11/15 not', () {
+      final unit15 = _unit('a1-u09', 9, items: 15);
+      expect(
+        isUnitComplete(unit15, _withCorrect('a1-u09', _range(11))),
+        isFalse,
+      );
+      expect(
+        isUnitComplete(unit15, _withCorrect('a1-u09', _range(12))),
+        isTrue,
+      );
     });
 
     test('does not need correct answers in a row', () {
       // Sai giua chung khong lam mat cac cau da dung truoc do.
-      var s = _withCorrect('a1-u01', range(5));
+      var s = _withCorrect('a1-u01', _range(5));
       s = s.recordCorrect('a1-u01', 'a1-u01-i5');
       s = s.recordCorrect('a1-u01', 'a1-u01-i6');
       s = s.recordCorrect('a1-u01', 'a1-u01-i7');
@@ -75,7 +87,7 @@ void main() {
     });
 
     test('ignores correct answers from other units', () {
-      final s = _withCorrect('a1-u02', range(10));
+      final s = _withCorrect('a1-u02', _range(10));
       expect(unitProgress(unit, s), 0);
     });
   });
@@ -86,13 +98,13 @@ void main() {
         nextUnit(_pack, CefrLevel.a1, const EnglishPathState())?.id,
         'a1-u01',
       );
-      final s = _withCorrect('a1-u01', range(8));
+      final s = _withCorrect('a1-u01', _range(8));
       expect(nextUnit(_pack, CefrLevel.a1, s)?.id, 'a1-u02');
     });
 
     test('is null when every unit of the stage is complete', () {
-      var s = _withCorrect('a1-u01', range(8));
-      for (final i in range(10)) {
+      var s = _withCorrect('a1-u01', _range(8));
+      for (final i in _range(10)) {
         s = s.recordCorrect('a1-u02', 'a1-u02-i$i');
       }
       expect(nextUnit(_pack, CefrLevel.a1, s), isNull);
@@ -165,6 +177,13 @@ void main() {
 
     test('missing version is treated as broken, not as v1', () {
       expect(migrateEnglishPathState({'level': 'A1'}), isNull);
+      expect(isFromNewerVersion({'level': 'A1'}), isFalse);
+    });
+
+    test('only a higher integer version counts as written by a newer app', () {
+      expect(isFromNewerVersion({'schemaVersion': 999}), isTrue);
+      expect(isFromNewerVersion({'schemaVersion': 1}), isFalse);
+      expect(isFromNewerVersion('garbage'), isFalse);
     });
   });
 
@@ -183,6 +202,19 @@ void main() {
       expect(again.state.correctItems['a1-u01'], {'a1-u01-i0'});
     });
 
+    test('resets corrupt local data but keeps a backup copy', () async {
+      SharedPreferences.setMockInitialValues({kEnglishPathPrefKey: '{oops'});
+      final store = EnglishPathStore.forTest();
+      await store.ensureLoaded();
+      await store.recordCorrect('a1-u01', 'a1-u01-i0');
+
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString(kEnglishPathCorruptBackupKey), '{oops');
+      final again = EnglishPathStore.forTest();
+      await again.ensureLoaded();
+      expect(again.state.correctItems['a1-u01'], {'a1-u01-i0'});
+    });
+
     test('never overwrites state written by a newer app version', () async {
       final newer = jsonEncode({'schemaVersion': 999, 'future': true});
       SharedPreferences.setMockInitialValues({kEnglishPathPrefKey: newer});
@@ -197,4 +229,4 @@ void main() {
   });
 }
 
-Iterable<int> range(int n) => Iterable<int>.generate(n);
+Iterable<int> _range(int n) => Iterable<int>.generate(n);

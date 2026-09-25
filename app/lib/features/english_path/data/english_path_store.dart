@@ -8,6 +8,9 @@ import 'english_path_state.dart';
 
 const kEnglishPathPrefKey = 'english_path_v1';
 
+/// Ban sao du lieu hong truoc khi reset, de con cuu duoc neu can.
+const kEnglishPathCorruptBackupKey = 'english_path_v1_corrupt';
+
 /// Luu state lo trinh tieng Anh tren may (SharedPreferences). Singleton de
 /// man Lo trinh, phien hoc Unit va Rest Game cung ghi 1 cho; UI nghe thay
 /// doi qua ChangeNotifier.
@@ -23,7 +26,8 @@ class EnglishPathStore extends ChangeNotifier {
   Future<void>? _loading;
 
   /// true khi tren may co state do ban app MOI HON ghi: giu nguyen du lieu
-  /// do, khong bao gio ghi de (spec #45 - version la bo qua an toan).
+  /// do, khong bao gio ghi de (spec #45 - version la bo qua an toan). Du
+  /// lieu HONG thi khac: sao luu roi bat dau lai tu dau.
   bool _readOnly = false;
 
   EnglishPathState get state => _state;
@@ -35,15 +39,22 @@ class EnglishPathStore extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       final raw = prefs.getString(kEnglishPathPrefKey);
       if (raw != null) {
-        final migrated = migrateEnglishPathState(jsonDecode(raw));
-        if (migrated == null) {
+        Object? decoded;
+        try {
+          decoded = jsonDecode(raw);
+        } on FormatException {
+          decoded = null;
+        }
+        final migrated = migrateEnglishPathState(decoded);
+        if (migrated != null) {
+          _state = migrated;
+        } else if (isFromNewerVersion(decoded)) {
           _readOnly = true;
         } else {
-          _state = migrated;
+          await prefs.setString(kEnglishPathCorruptBackupKey, raw);
         }
       }
     } catch (e) {
-      _readOnly = true;
       debugPrint('EnglishPathStore load failed: $e');
     }
     notifyListeners();

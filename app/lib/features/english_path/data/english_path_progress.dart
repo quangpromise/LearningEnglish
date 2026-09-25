@@ -13,6 +13,10 @@ bool isUnitComplete(PathUnit unit, EnglishPathState state) =>
 double unitProgress(PathUnit unit, EnglishPathState state) =>
     unit.items.isEmpty ? 0 : _correctCount(unit, state) / unit.items.length;
 
+/// % tien do lam tron de hien thi.
+int unitPercent(PathUnit unit, EnglishPathState state) =>
+    (unitProgress(unit, state) * 100).round();
+
 int _correctCount(PathUnit unit, EnglishPathState state) {
   final done = state.correctItems[unit.id] ?? const <String>{};
   return unit.items.where((i) => done.contains(i.id)).length;

@@ -5420,16 +5420,16 @@ class AppStrings {
       AppLanguage.en: 'A2 · Elementary',
     },
     'path_stage_b1': {
-      AppLanguage.vi: 'B1 · Trung cấp (IELTS ~4.0–5.0)',
-      AppLanguage.en: 'B1 · Intermediate (IELTS ~4.0–5.0)',
+      AppLanguage.vi: 'B1 · Trung cấp',
+      AppLanguage.en: 'B1 · Intermediate',
     },
     'path_stage_b2': {
-      AppLanguage.vi: 'B2 · Trung cao cấp (IELTS ~5.5–6.5)',
-      AppLanguage.en: 'B2 · Upper-intermediate (IELTS ~5.5–6.5)',
+      AppLanguage.vi: 'B2 · Trung cao cấp',
+      AppLanguage.en: 'B2 · Upper-intermediate',
     },
     'path_stage_c1': {
-      AppLanguage.vi: 'C1 · Nâng cao (IELTS ~7.0+)',
-      AppLanguage.en: 'C1 · Advanced (IELTS ~7.0+)',
+      AppLanguage.vi: 'C1 · Nâng cao',
+      AppLanguage.en: 'C1 · Advanced',
     },
     'path_you_are_here': {
       AppLanguage.vi: 'Bạn ở đây',
