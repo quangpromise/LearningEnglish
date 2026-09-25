@@ -2,6 +2,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'workout_model.dart';
 
+/// Cach hoc trong gio nghi: Rest Game (mac dinh) hoac the tu (kieu cu).
+enum RestLearnMode { miniGame, cards }
+
 /// Tuy chon man dang tap cua nguoi dung, luu tren may: thoi gian nghi mac
 /// dinh, bat/tat the "Hoc khi nghi" va giong HLV tieng Anh.
 class WorkoutPrefs {
@@ -9,17 +12,21 @@ class WorkoutPrefs {
     required this.restSeconds,
     required this.learnWhileResting,
     this.coachVoice = true,
+    this.restLearnMode = RestLearnMode.miniGame,
   });
 
   static const _restKey = 'fitness_rest_seconds';
   static const _learnKey = 'fitness_learn_while_resting';
   static const _coachKey = 'fitness_coach_voice';
+  static const _modeKey = 'fitness_rest_learn_mode';
 
   final int restSeconds;
   final bool learnWhileResting;
 
   /// Giong HLV doc cau nhac tieng Anh luc bat dau/het gio nghi.
   final bool coachVoice;
+
+  final RestLearnMode restLearnMode;
 
   static Future<WorkoutPrefs> load() async {
     try {
@@ -31,6 +38,10 @@ class WorkoutPrefs {
             : kDefaultRestSeconds,
         learnWhileResting: prefs.getBool(_learnKey) ?? true,
         coachVoice: prefs.getBool(_coachKey) ?? true,
+        restLearnMode: RestLearnMode.values.firstWhere(
+          (m) => m.name == prefs.getString(_modeKey),
+          orElse: () => RestLearnMode.miniGame,
+        ),
       );
     } catch (_) {
       return const WorkoutPrefs(
@@ -51,6 +62,13 @@ class WorkoutPrefs {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_coachKey, enabled);
+    } catch (_) {}
+  }
+
+  static Future<void> saveRestLearnMode(RestLearnMode mode) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_modeKey, mode.name);
     } catch (_) {}
   }
 

@@ -169,6 +169,20 @@ void main() {
       expect(back.correctItems['a1-u01'], {'a1-u01-i0', 'a1-u01-i3'});
     });
 
+    test('tracks wrong items until they are answered correctly', () {
+      var s = const EnglishPathState().recordWrong('a1-u01-i3');
+      expect(s.wrongItems, {'a1-u01-i3'});
+      final back = migrateEnglishPathState(jsonDecode(jsonEncode(s.toJson())))!;
+      expect(back.wrongItems, {'a1-u01-i3'});
+      s = s.recordCorrect('a1-u01', 'a1-u01-i3');
+      expect(s.wrongItems, isEmpty);
+      expect(s.correctItems['a1-u01'], {'a1-u01-i3'});
+      // Sai lai 1 cau da tung dung: vao danh sach on, tien do Unit giu nguyen.
+      s = s.recordWrong('a1-u01-i3');
+      expect(s.wrongItems, {'a1-u01-i3'});
+      expect(s.correctItems['a1-u01'], {'a1-u01-i3'});
+    });
+
     test('ignores a newer or unknown schema version', () {
       expect(migrateEnglishPathState({'schemaVersion': 999}), isNull);
       expect(migrateEnglishPathState({'schemaVersion': 'x'}), isNull);

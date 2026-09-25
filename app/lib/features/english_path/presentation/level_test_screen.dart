@@ -15,7 +15,7 @@ import '../data/content_pack.dart';
 import '../data/english_path_progress.dart';
 import '../data/english_path_store.dart';
 import '../data/level_test.dart';
-import 'path_option_button.dart';
+import 'practice_question.dart';
 import 'unit_session_screen.dart';
 
 /// XP thuong khi qua Level Test (spec #45).
@@ -58,7 +58,6 @@ class _LevelTestScreenState extends ConsumerState<LevelTestScreen> {
 
   void _pick(int option) {
     if (_chosen != null || _result != null) return;
-    HapticFeedback.selectionClick();
     _answers.add(option);
     if (_answers.length == _items.length) _finish();
     setState(() => _chosen = option);
@@ -144,27 +143,13 @@ class _LevelTestScreenState extends ConsumerState<LevelTestScreen> {
     );
   }
 
-  Widget _question(PracticeItem item) => Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      Text(ref.tr('path_meaning_prompt'), style: AppTextStyles.muted(size: 13)),
-      const SizedBox(height: 8),
-      Text(item.prompt, style: AppTextStyles.heading(size: 32)),
-      const SizedBox(height: 20),
-      for (var i = 0; i < item.options.length; i++)
-        Padding(
-          padding: const EdgeInsets.only(bottom: 10),
-          child: PathOptionButton(
-            label: item.options[i],
-            state: _chosen == null
-                ? PathOptionState.idle
-                : (_chosen == i
-                      ? PathOptionState.selected
-                      : PathOptionState.dimmed),
-            onTap: () => _pick(i),
-          ),
-        ),
-    ],
+  Widget _question(PracticeItem item) => SingleChildScrollView(
+    child: PracticeQuestion(
+      key: ValueKey(item.id),
+      item: item,
+      reveal: false,
+      onAnswered: _pick,
+    ),
   );
 }
 
