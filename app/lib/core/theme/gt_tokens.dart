@@ -145,7 +145,8 @@ class GtTokens extends ThemeExtension<GtTokens> {
 
   @override
   GtTokens lerp(GtTokens? other, double t) {
-    if (other == null) return this;
+    if (other == null || t <= 0) return this;
+    if (t >= 1) return other;
     Color l(Color a, Color b) => Color.lerp(a, b, t)!;
     return GtTokens(
       bg: l(bg, other.bg),

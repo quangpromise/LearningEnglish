@@ -104,6 +104,8 @@ void main() {
     final mid = GtTokens.dark.lerp(GtTokens.light, 0.5);
     expect(mid.bg, Color.lerp(GtTokens.dark.bg, GtTokens.light.bg, 0.5));
     expect(GtTokens.dark.lerp(null, 0.5), same(GtTokens.dark));
+    expect(GtTokens.dark.lerp(GtTokens.light, 1), same(GtTokens.light));
+    expect(GtTokens.dark.lerp(GtTokens.light, 0), same(GtTokens.dark));
   });
 
   testWidgets('context.gt reads the theme extension, dark by default', (
@@ -121,7 +123,9 @@ void main() {
         ),
       ),
     );
-    expect(seen, same(GtTokens.light));
+    // MaterialApp co the noi suy (lerp) theme -> so theo gia tri.
+    expect(seen.bg, GtTokens.light.bg);
+    expect(seen.tx, GtTokens.light.tx);
 
     await tester.pumpWidget(
       MaterialApp(
@@ -133,6 +137,6 @@ void main() {
         ),
       ),
     );
-    expect(seen, same(GtTokens.dark));
+    expect(seen.bg, GtTokens.dark.bg);
   });
 }
