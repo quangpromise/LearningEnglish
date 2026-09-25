@@ -56,6 +56,7 @@ void main() {
         for (final chapter in buildExerciseTutorial(exercise).chapters)
           if (chapter.kind != TutorialChapterKind.keywords) chapter.narration,
       for (final word in kGymWords) word.en,
+      for (final word in kGymWords) word.exampleEn,
       'Great job!',
       'Nice try!',
     };

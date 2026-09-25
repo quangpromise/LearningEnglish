@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="vi" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1280, height=720" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Space+Grotesk:wght@600;700&display=block"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      :root {
+        --bg: #0a0d0a;
+        --card: #121612;
+        --red: #e50914;
+        --red-bright: #ff2028;
+        --blue: #5b8cff;
+        --teal: #5be0d0;
+        --amber: #ffb23c;
+        --text: #eef1fb;
+        --muted: rgba(238, 241, 251, 0.62);
+        --dim: rgba(238, 241, 251, 0.38);
+        --border: rgba(255, 255, 255, 0.14);
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1280px;
+        height: 720px;
+        overflow: hidden;
+        background: var(--bg);
+        color: var(--text);
+        font-family: Manrope, system-ui, sans-serif;
+      }
+      #root {
+        position: relative;
+        width: 1280px;
+        height: 720px;
+        overflow: hidden;
+      }
+      .clip {
+        position: absolute;
+        inset: 0;
+      }
+      .sg {
+        font-family: 'Space Grotesk', sans-serif;
+      }
+
+      /* Thanh tren cung (co dinh ca video) */
+      #topbar {
+        height: 64px;
+        bottom: auto;
+        display: flex;
+        align-items: center;
+        padding: 0 40px;
+        gap: 14px;
+        border-bottom: 1px solid var(--border);
+      }
+      #topbar .brand {
+        font-weight: 700;
+        font-size: 24px;
+      }
+      #topbar .name {
+        margin-left: auto;
+        color: var(--muted);
+        font-size: 20px;
+        font-weight: 700;
+      }
+
+      /* Canh 1 */
+      #s1 {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+      #s1 .en {
+        font-size: 110px;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+      }
+      #s1 .vi {
+        margin-top: 6px;
+        font-size: 34px;
+        color: var(--muted);
+        font-weight: 700;
+      }
+      .chips {
+        margin-top: 40px;
+        display: flex;
+        gap: 16px;
+      }
+      .chip {
+        padding: 12px 26px;
+        border-radius: 999px;
+        font-size: 24px;
+        font-weight: 800;
+        border: 2px solid var(--border);
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      /* Canh 2: nhom co */
+      #s2 {
+        padding: 120px 140px 0;
+      }
+      #s2 h2 {
+        font-size: 48px;
+        font-weight: 700;
+      }
+      #s2 .sub {
+        color: var(--muted);
+        font-size: 24px;
+        font-weight: 700;
+        margin-top: 4px;
+      }
+      .bars {
+        margin-top: 40px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      .bar-row {
+        display: grid;
+        grid-template-columns: 330px 1fr 80px;
+        align-items: center;
+        gap: 20px;
+        font-size: 26px;
+        font-weight: 800;
+      }
+      .bar-row .lbl small {
+        color: var(--muted);
+        font-weight: 700;
+        font-size: 20px;
+        margin-left: 8px;
+      }
+      .track {
+        height: 22px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+        overflow: hidden;
+      }
+      .fill {
+        height: 100%;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #e50914, #ff2028);
+        transform-origin: left center;
+      }
+      .fill.sec {
+        background: rgba(229, 9, 20, 0.55);
+      }
+      .pct {
+        text-align: right;
+        color: var(--red-bright);
+      }
+
+      /* Canh buoc */
+      .step {
+        display: grid;
+        grid-template-columns: 580px 1fr;
+        gap: 50px;
+        align-items: center;
+        padding: 64px 60px 30px;
+      }
+      .photo {
+        position: relative;
+        width: 580px;
+        height: 387px;
+        border-radius: 28px;
+        overflow: hidden;
+        border: 2px solid var(--border);
+      }
+      .photo img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .photo .pose {
+        position: absolute;
+        left: 18px;
+        bottom: 18px;
+        background: rgba(0, 0, 0, 0.72);
+        border-radius: 999px;
+        padding: 8px 18px;
+        font-size: 20px;
+        font-weight: 800;
+        color: var(--teal);
+      }
+      .badge {
+        display: inline-block;
+        padding: 8px 20px;
+        border-radius: 999px;
+        background: rgba(229, 9, 20, 0.18);
+        color: var(--red-bright);
+        font-weight: 800;
+        font-size: 22px;
+        letter-spacing: 0.08em;
+      }
+      .en-text {
+        margin-top: 22px;
+        font-size: 36px;
+        line-height: 1.35;
+        font-weight: 800;
+      }
+      .en-text .ph {
+        color: var(--dim);
+      }
+      .en-text .kw {
+        text-decoration: underline;
+        text-decoration-color: var(--blue);
+        text-decoration-thickness: 4px;
+        text-underline-offset: 6px;
+      }
+      .vi-text {
+        margin-top: 22px;
+        font-size: 24px;
+        line-height: 1.4;
+        color: var(--muted);
+        font-weight: 700;
+      }
+      .dots {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 34px;
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+      }
+      .dot {
+        width: 44px;
+        height: 8px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.15);
+      }
+      .dot.on {
+        background: var(--red);
+      }
+
+      /* Canh tu khoa */
+      #s6 {
+        padding: 110px 80px 0;
+      }
+      #s6 h2 {
+        font-size: 44px;
+        font-weight: 700;
+      }
+      #s6 h2 span {
+        color: var(--blue);
+      }
+      .words {
+        margin-top: 44px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 28px;
+      }
+      .word {
+        border: 2px solid rgba(91, 140, 255, 0.5);
+        border-radius: 28px;
+        padding: 30px 28px;
+        background: rgba(91, 140, 255, 0.07);
+      }
+      .word .w {
+        font-size: 46px;
+        font-weight: 700;
+      }
+      .word .ipa {
+        color: var(--muted);
+        font-size: 24px;
+        margin-top: 6px;
+      }
+      .word .m {
+        color: var(--teal);
+        font-size: 26px;
+        font-weight: 800;
+        margin-top: 14px;
+      }
+
+      /* Canh ket */
+      #s7 {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+      #s7 .big {
+        font-size: 92px;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+      }
+      #s7 .big span {
+        color: var(--red-bright);
+      }
+      #s7 .rest {
+        margin-top: 10px;
+        font-size: 30px;
+        color: var(--muted);
+        font-weight: 700;
+      }
+      #s7 .cta {
+        margin-top: 44px;
+        padding: 22px 48px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #e50914, #ff2028);
+        font-size: 30px;
+        font-weight: 800;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="45"
+      data-width="1280"
+      data-height="720"
+    >
+      <audio id="vo1" src="assets/vo/v1.wav" data-start="0.5" data-duration="2.84"></audio>
+      <audio id="vo2" src="assets/vo/v2.wav" data-start="4.3" data-duration="2.71"></audio>
+      <audio id="vo3" src="assets/vo/v3.wav" data-start="8.4" data-duration="6.55"></audio>
+      <audio id="vo4" src="assets/vo/v4.wav" data-start="16.0" data-duration="7.98"></audio>
+      <audio id="vo5" src="assets/vo/v5.wav" data-start="25.0" data-duration="6.78"></audio>
+      <audio id="vo6" src="assets/vo/v6.wav" data-start="33.1" data-duration="0.88"></audio>
+      <audio id="vo7" src="assets/vo/v7.wav" data-start="35.5" data-duration="1.22"></audio>
+      <audio id="vo8" src="assets/vo/v8.wav" data-start="37.9" data-duration="1.16"></audio>
+      <audio id="vo9" src="assets/vo/v9.wav" data-start="40.0" data-duration="3.5"></audio>
+
+      <div id="topbar" class="clip" data-start="0" data-duration="45">
+        <span class="brand sg"><span style="color: #ff2028">Gym</span><span style="color: #5b8cff">Talk</span></span>
+        <span class="name">Goblet Squat · Squat ôm tạ ấm</span>
+      </div>
+
+      <!-- 1. Gioi thieu -->
+      <section id="s1" class="clip" data-start="0" data-duration="4">
+        <div class="en sg" id="s1-en">Goblet Squat</div>
+        <div class="vi" id="s1-vi">Squat ôm tạ ấm</div>
+        <div class="chips" id="s1-chips">
+          <div class="chip">Cơ bản · Beginner</div>
+          <div class="chip">Tạ ấm · Kettlebell</div>
+          <div class="chip" style="color: #ff2028; border-color: rgba(229, 9, 20, 0.6)">3 × 12–15 reps</div>
+        </div>
+      </section>
+
+      <!-- 2. Nhom co -->
+      <section id="s2" class="clip" data-start="4" data-duration="4">
+        <h2 class="sg">Muscles worked</h2>
+        <div class="sub">Nhóm cơ tác động</div>
+        <div class="bars">
+          <div class="bar-row"><div class="lbl">Quads<small>đùi trước</small></div><div class="track"><div class="fill" id="f1" style="width: 100%"></div></div><div class="pct">45%</div></div>
+          <div class="bar-row"><div class="lbl">Glutes<small>mông</small></div><div class="track"><div class="fill sec" id="f2" style="width: 31%"></div></div><div class="pct">14%</div></div>
+          <div class="bar-row"><div class="lbl">Hamstrings<small>đùi sau</small></div><div class="track"><div class="fill sec" id="f3" style="width: 31%"></div></div><div class="pct">14%</div></div>
+          <div class="bar-row"><div class="lbl">Calves<small>bắp chân</small></div><div class="track"><div class="fill sec" id="f4" style="width: 31%"></div></div><div class="pct">14%</div></div>
+          <div class="bar-row"><div class="lbl">Shoulders<small>vai</small></div><div class="track"><div class="fill sec" id="f5" style="width: 29%"></div></div><div class="pct">13%</div></div>
+        </div>
+      </section>
+
+      <!-- 3-5. Cac buoc -->
+      <section id="s3" class="clip step" data-start="8" data-duration="7.6">
+        <div class="photo">
+          <img src="assets/img/goblet_squat_0.jpg" alt="" />
+          <div class="pose">Start position</div>
+        </div>
+        <div>
+          <div class="badge">STEP 1 / 3</div>
+          <div class="en-text" id="t3"></div>
+          <div class="vi-text">Đứng thẳng, ôm tạ ấm sát ngực bằng hai tay, chân rộng bằng vai.</div>
+        </div>
+        <div class="dots"><div class="dot on"></div><div class="dot"></div><div class="dot"></div></div>
+      </section>
+
+      <section id="s4" class="clip step" data-start="15.6" data-duration="9">
+        <div class="photo">
+          <img id="s4a" src="assets/img/goblet_squat_0.jpg" alt="" />
+          <img id="s4b" src="assets/img/goblet_squat_1.jpg" alt="" />
+          <div class="pose">Down · Up</div>
+        </div>
+        <div>
+          <div class="badge">STEP 2 / 3</div>
+          <div class="en-text" id="t4"></div>
+          <div class="vi-text">Squat xuống giữa hai chân tới khi đùi sau chạm bắp chân, giữ ngực và đầu thẳng, lưng thẳng.</div>
+        </div>
+        <div class="dots"><div class="dot on"></div><div class="dot on"></div><div class="dot"></div></div>
+      </section>
+
+      <section id="s5" class="clip step" data-start="24.6" data-duration="7.8">
+        <div class="photo">
+          <img src="assets/img/goblet_squat_1.jpg" alt="" />
+          <div class="pose">Bottom position</div>
+        </div>
+        <div>
+          <div class="badge">STEP 3 / 3</div>
+          <div class="en-text" id="t5"></div>
+          <div class="vi-text">Dùng khuỷu tay đẩy nhẹ gối ra ngoài ở đáy, sau đó đứng thẳng dậy trở về vị trí ban đầu.</div>
+        </div>
+        <div class="dots"><div class="dot on"></div><div class="dot on"></div><div class="dot on"></div></div>
+      </section>
+
+      <!-- 6. Tu khoa -->
+      <section id="s6" class="clip" data-start="32.4" data-duration="7.2">
+        <h2 class="sg">Key words · <span>Từ khoá của bài</span></h2>
+        <div class="words">
+          <div class="word" id="k1"><div class="w sg">squat</div><div class="ipa">/skwɑːt/</div><div class="m">ngồi xuống (gánh đùi)</div></div>
+          <div class="word" id="k2"><div class="w sg">hamstrings</div><div class="ipa">/ˈhæmstrɪŋz/</div><div class="m">cơ đùi sau</div></div>
+          <div class="word" id="k3"><div class="w sg">kettlebell</div><div class="ipa">/ˈketlbel/</div><div class="m">tạ ấm</div></div>
+        </div>
+      </section>
+
+      <!-- 7. Ket -->
+      <section id="s7" class="clip" data-start="39.6" data-duration="5.4">
+        <div class="big sg" id="s7-big"><span>3</span> sets × <span>12–15</span> reps</div>
+        <div class="rest" id="s7-rest">Nghỉ 60 giây giữa các set · Rest 60 s</div>
+        <div class="cta" id="s7-cta">Tập cùng GymTalk</div>
+      </section>
+    </div>
+
+    <script>
+      // Cau huong dan chia thanh cum (theo dau cau) - moi cum sang dan theo
+      // giong doc. Thoi diem tinh theo so ky tu (giong doc Kokoro gan deu),
+      // bo qua phan "Step N." dau cau audio.
+      const STEPS = [
+        {
+          el: 't3',
+          voStart: 8.4,
+          voDur: 6.55,
+          lead: 'Step one. ',
+          phrases: [
+            'Stand tall ',
+            'holding a <span class="kw">kettlebell</span> against your chest, ',
+            'with your feet shoulder-width apart.',
+          ],
+        },
+        {
+          el: 't4',
+          voStart: 16.0,
+          voDur: 7.98,
+          lead: 'Step two. ',
+          phrases: [
+            '<span class="kw">Squat</span> down between your legs ',
+            'until your <span class="kw">hamstrings</span> touch your calves. ',
+            'Keep your chest up ',
+            'and your back flat.',
+          ],
+        },
+        {
+          el: 't5',
+          voStart: 25.0,
+          voDur: 6.78,
+          lead: 'Step three. ',
+          phrases: [
+            'Use your elbows ',
+            'to push your knees gently outward at the bottom, ',
+            'then stand back up.',
+          ],
+        },
+      ];
+      const plain = (html) => html.replace(/<[^>]+>/g, '');
+      const phraseTimes = [];
+      STEPS.forEach((s, si) => {
+        const box = document.getElementById(s.el);
+        const total = (s.lead + s.phrases.map(plain).join('')).length;
+        let chars = s.lead.length;
+        s.phrases.forEach((p, pi) => {
+          const span = document.createElement('span');
+          span.className = 'ph';
+          span.id = `ph-${si}-${pi}`;
+          span.innerHTML = p;
+          box.appendChild(span);
+          phraseTimes.push({ id: span.id, t: s.voStart + (chars / total) * s.voDur });
+          chars += plain(p).length;
+        });
+      });
+
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // 1. Gioi thieu
+      tl.fromTo('#s1-en', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }, 0.2);
+      tl.fromTo('#s1-vi', { opacity: 0 }, { opacity: 1, duration: 0.5 }, 0.6);
+      tl.fromTo('#s1-chips .chip', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4, stagger: 0.15 }, 1.0);
+      tl.to('#s1', { opacity: 0, duration: 0.3 }, 3.7);
+
+      // 2. Nhom co
+      tl.fromTo('#s2 h2, #s2 .sub', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4 }, 4.0);
+      ['#f1', '#f2', '#f3', '#f4', '#f5'].forEach((id, i) => {
+        tl.fromTo(id, { scaleX: 0 }, { scaleX: 1, duration: 0.6, ease: 'power2.out' }, 4.3 + i * 0.25);
+      });
+      tl.to('#s2', { opacity: 0, duration: 0.3 }, 7.7);
+
+      // 3-5. Buoc: hien canh, sang dan tung cum theo giong doc
+      [
+        ['#s3', 8.0, 7.6],
+        ['#s4', 15.6, 9.0],
+        ['#s5', 24.6, 7.8],
+      ].forEach(([id, start, dur]) => {
+        tl.fromTo(`${id} .photo`, { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.5, ease: 'power3.out' }, start + 0.05);
+        tl.fromTo(`${id} .badge`, { opacity: 0 }, { opacity: 1, duration: 0.4 }, start + 0.15);
+        tl.fromTo(`${id} .vi-text`, { opacity: 0 }, { opacity: 1, duration: 0.5 }, start + 0.6);
+        tl.to(id, { opacity: 0, duration: 0.3 }, start + dur - 0.3);
+      });
+      phraseTimes.forEach(({ id, t }) => {
+        tl.to(`#${id}`, { color: '#eef1fb', duration: 0.25 }, t);
+      });
+      // Buoc 2: anh xuong/len lap lai minh hoa dong tac
+      gsap.set('#s4b', { opacity: 0 });
+      [16.6, 18.6, 20.6, 22.6].forEach((t) => {
+        tl.to('#s4b', { opacity: 1, duration: 0.35 }, t);
+        tl.to('#s4b', { opacity: 0, duration: 0.35 }, t + 1.0);
+      });
+
+      // 6. Tu khoa: moi the sang khi giong doc tu do
+      tl.fromTo('#s6 h2', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4 }, 32.5);
+      [
+        ['#k1', 32.9],
+        ['#k2', 35.3],
+        ['#k3', 37.7],
+      ].forEach(([id, t]) => {
+        tl.fromTo(id, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.45, ease: 'back.out(1.6)' }, t);
+        tl.fromTo(id, { borderColor: 'rgba(91,140,255,1)' }, { borderColor: 'rgba(91,140,255,0.5)', duration: 1.2 }, t + 0.2);
+      });
+      tl.to('#s6', { opacity: 0, duration: 0.3 }, 39.3);
+
+      // 7. Ket
+      tl.fromTo('#s7-big', { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.6)' }, 39.7);
+      tl.fromTo('#s7-rest', { opacity: 0 }, { opacity: 1, duration: 0.5 }, 40.3);
+      tl.fromTo('#s7-cta', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5 }, 41.2);
+
+      window.__timelines['main'] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

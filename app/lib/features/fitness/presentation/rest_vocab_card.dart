@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/tts/app_tts.dart';
 import '../../../core/tts/tutorial_voice.dart';
 import '../../../core/widgets/speaker_button.dart';
 import '../data/gym_vocabulary.dart';
@@ -182,7 +181,7 @@ class _Meaning extends StatelessWidget {
                 iconSize: 20,
                 tapSize: 44,
                 color: AppColors.blue,
-                onTap: () => AppTts.instance.speak(word.exampleEn),
+                onTap: () => TutorialVoice.shared.speak(word.exampleEn),
               ),
             ],
           ),
