@@ -62,3 +62,12 @@ Lộ trình tiếng Anh dùng các cặp câu Anh–Việt từ Tatoeba (https:/
 - Nguồn: Tatoeba, bản export theo ngôn ngữ (eng, vie, liên kết vie-eng): https://tatoeba.org/en/downloads
 - Giấy phép: Creative Commons Attribution 2.0 France (CC BY 2.0 FR): https://creativecommons.org/licenses/by/2.0/fr/
 - Snapshot đã lọc (câu ≤ 12 từ, không có tên riêng): `scripts/english_path/data/tatoeba_eng_vie.tsv`. Một số bản dịch tiếng Việt được chỉnh lại sau review, ghi trong `scripts/english_path/review/exclusions.json`.
+
+## New Academic Word List (NAWL) — CC BY-SA 4.0
+
+Bậc C1 của lộ trình tiếng Anh gồm các từ học thuật có trong NAWL nhưng nằm ngoài danh sách A1–B2 của CEFR-J. Nghĩa tiếng Việt, IPA và câu ví dụ của các từ này là nội dung tự soạn của GymTalk; NAWL chỉ được dùng để chọn từ.
+
+- Browne, C., Culligan, B., & Phillips, J. (2013). *New Academic Word List 1.2*. https://www.newgeneralservicelist.com/new-academic-word-list
+- Giấy phép: Creative Commons Attribution-ShareAlike 4.0 (https://creativecommons.org/licenses/by-sa/4.0/).
+- Danh sách headword được lưu **trong một file riêng** là `scripts/english_path/data/nawl_headwords.txt`, và file đó giữ nguyên giấy phép CC BY-SA 4.0.
+

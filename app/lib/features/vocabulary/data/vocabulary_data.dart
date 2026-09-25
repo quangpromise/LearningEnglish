@@ -437,8 +437,9 @@ const kVocabTopics = <VocabTopic>[
         en: 'heritage',
         ipa: '/ˈher.ɪ.tɪdʒ/',
         vi: 'di sản, truyền thống gia đình',
-        exampleEn: 'The recipe has been passed down as a family heritage.',
-        exampleVi: 'Công thức này được truyền lại như một di sản gia đình.',
+        exampleEn:
+            'The recipe has been passed down as part of our family heritage.',
+        exampleVi: 'Công thức này được truyền lại như một phần di sản của gia đình chúng tôi.',
         frequency: VocabFrequency.rare,
         partOfSpeech: VocabPartOfSpeech.noun,
       ),
@@ -26430,7 +26431,7 @@ const kVocabTopics = <VocabTopic>[
       VocabWord(
         en: 'judo',
         ipa: '/ˈdʒuː.dəʊ/',
-        vi: 'judo',
+        vi: 'môn judo',
         exampleEn: 'She won a bronze medal in judo.',
         exampleVi: 'Cô ấy giành huy chương đồng môn judo.',
         frequency: VocabFrequency.rare,

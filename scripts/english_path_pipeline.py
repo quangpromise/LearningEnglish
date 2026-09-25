@@ -264,6 +264,12 @@ _TATOEBA_NAMES = {
 }
 
 
+def _is_placeholder_vi(text: str) -> bool:
+    """Ban dich 'gia' trong du lieu nguon (vd Tatoeba co cau dich chi la
+    'tieng viet')."""
+    return text.strip(" .!").lower() in {"tiếng việt", "vietnamese", "tieng viet"}
+
+
 def _usable_sentence(sentence: str) -> bool:
     """4-12 tu, khong co ten rieng (chu hoa giua cau) - cau Tatoeba hay co
     ten Tom/Mary, kho hieu voi nguoi moi hoc."""
@@ -512,6 +518,8 @@ def validate_pack(pack: dict) -> list[str]:
                         errors.append(f"{iid}: answer still visible in the prompt")
                 if kind in ("gapFill", "wordScramble") and not item.get("hintVi", "").strip():
                     errors.append(f"{iid}: missing Vietnamese hint")
+                if _is_placeholder_vi(item.get("hintVi", "")):
+                    errors.append(f"{iid}: Vietnamese hint is a placeholder")
                 if kind == "grammar" and not item.get("explanationVi", "").strip():
                     errors.append(f"{iid}: grammar item without Vietnamese explanation")
                 if kind == "ieltsMicro":
@@ -679,6 +687,7 @@ def apply_exclusions(words: list[dict], tatoeba: list[dict],
     words = [w for w in words if w["en"].lower() not in bad_words]
     tatoeba = [dict(t, vi=fixes.get(t["en"], t["vi"])) for t in tatoeba
                if t["en"] not in bad_sentences]
+    tatoeba = [t for t in tatoeba if not _is_placeholder_vi(t["vi"])]
     return words, tatoeba
 
 
