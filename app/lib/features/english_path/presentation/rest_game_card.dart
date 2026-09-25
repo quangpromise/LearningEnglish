@@ -19,6 +19,8 @@ class RestGameCard extends ConsumerStatefulWidget {
     required this.words,
     required this.onAnswered,
     required this.onUseCards,
+    required this.listeningEnabled,
+    required this.onToggleListening,
   });
 
   final RestGameSession session;
@@ -29,6 +31,10 @@ class RestGameCard extends ConsumerStatefulWidget {
 
   /// Doi sang che do the tu kieu cu.
   final VoidCallback onUseCards;
+
+  /// Dang Listening dang bat (tai nghe); bam de bat/tat.
+  final bool listeningEnabled;
+  final VoidCallback onToggleListening;
 
   @override
   ConsumerState<RestGameCard> createState() => _RestGameCardState();
@@ -87,6 +93,22 @@ class _RestGameCardState extends ConsumerState<RestGameCard> {
               Text(
                 '${answers.length}/${session.plan.length}',
                 style: AppTextStyles.muted(size: 13),
+              ),
+              IconButton(
+                tooltip: ref.tr(
+                  widget.listeningEnabled
+                      ? 'rest_game_listening_off'
+                      : 'rest_game_listening_on',
+                ),
+                onPressed: widget.onToggleListening,
+                icon: Icon(
+                  widget.listeningEnabled
+                      ? Icons.headphones_rounded
+                      : Icons.headset_off_rounded,
+                  color: widget.listeningEnabled
+                      ? AppColors.textPrimary
+                      : AppColors.textMuted,
+                ),
               ),
               IconButton(
                 tooltip: ref.tr('rest_game_use_cards'),

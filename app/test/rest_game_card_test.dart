@@ -28,6 +28,7 @@ void main() {
     ]);
     final answered = <(String, bool)>[];
     var usedCards = false;
+    var toggledListening = false;
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp(
@@ -38,6 +39,8 @@ void main() {
                 words: const {},
                 onAnswered: (item, correct) => answered.add((item.id, correct)),
                 onUseCards: () => usedCards = true,
+                listeningEnabled: true,
+                onToggleListening: () => toggledListening = true,
               ),
             ),
           ),
@@ -63,5 +66,7 @@ void main() {
 
     await tester.tap(find.byIcon(Icons.style_rounded));
     expect(usedCards, isTrue);
+    await tester.tap(find.byIcon(Icons.headphones_rounded));
+    expect(toggledListening, isTrue);
   });
 }

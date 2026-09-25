@@ -70,6 +70,9 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
   /// Rest Game (mac dinh) hay the tu kieu cu - xem WorkoutPrefs.
   RestLearnMode _restMode = RestLearnMode.miniGame;
 
+  /// Cho phep dang Listening trong Rest Game (xem WorkoutPrefs).
+  bool _restListening = true;
+
   /// Phien Rest Game cua lan nghi hien tai (null khi dung the tu / khong co
   /// noi dung lo trinh).
   RestGameSession? _restGame;
@@ -128,6 +131,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
       _learnWhileResting = prefs.learnWhileResting;
       _coachVoice = prefs.coachVoice;
       _restMode = prefs.restLearnMode;
+      _restListening = prefs.restListening;
       _words = pickGymWords(
         exercises: controller.exercises,
         boxes: SrsStore.instance.boxes,
@@ -496,7 +500,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
       restSeconds: controller.restSecondsRemaining,
       unitItems: src.unit,
       reviewItems: src.review,
-      listeningEnabled: true,
+      listeningEnabled: _restListening,
       random: Random(),
     );
     if (plan.isNotEmpty) _restGame = RestGameSession(plan);
@@ -566,6 +570,20 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
 
   ContentPack? _pathWordsPack;
   Map<String, PathWord> _pathWordsCache = const {};
+
+  /// Bat/tat Listening: len lai ke hoach cho phan gio nghi con lai de
+  /// khong con cau Listening nao phat ra loa.
+  void _toggleRestListening() {
+    TutorialVoice.shared.stop();
+    final enabled = !_restListening;
+    WorkoutPrefs.saveRestListening(enabled);
+    _endRestGame();
+    setState(() => _restListening = enabled);
+    final controller = _controller;
+    if (controller != null && controller.phase == WorkoutPhase.resting) {
+      _startRestGame(controller);
+    }
+  }
 
   void _setRestMode(RestLearnMode mode) {
     TutorialVoice.shared.stop();
@@ -641,6 +659,8 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                                     onAnswered: _onRestGameAnswer,
                                     onUseCards: () =>
                                         _setRestMode(RestLearnMode.cards),
+                                    listeningEnabled: _restListening,
+                                    onToggleListening: _toggleRestListening,
                                   )
                                 : word == null
                                 ? null
