@@ -31855,5 +31855,11 @@
   }
  ],
  "contentHash": "b73f819ffcc2fee8de7429528e9de8e3d8744bb2ae64908291d378f7f1b3c2e5",
- "approval": null
+ "approval": {
+  "contentHash": "b73f819ffcc2fee8de7429528e9de8e3d8744bb2ae64908291d378f7f1b3c2e5",
+  "packVersion": "0.3.0-a1c1",
+  "reviewer": "Tùng",
+  "approvedAt": "2026-09-25",
+  "note": "A1-C1 pack 0.3.0: reviewed B1-C1 sample + all grammar/IELTS items; Grok 16 findings fixed"
+ }
 }
