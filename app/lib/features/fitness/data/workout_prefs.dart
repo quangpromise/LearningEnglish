@@ -13,12 +13,14 @@ class WorkoutPrefs {
     required this.learnWhileResting,
     this.coachVoice = true,
     this.restLearnMode = RestLearnMode.miniGame,
+    this.restListening = true,
   });
 
   static const _restKey = 'fitness_rest_seconds';
   static const _learnKey = 'fitness_learn_while_resting';
   static const _coachKey = 'fitness_coach_voice';
   static const _modeKey = 'fitness_rest_learn_mode';
+  static const _listeningKey = 'fitness_rest_listening';
 
   final int restSeconds;
   final bool learnWhileResting;
@@ -27,6 +29,10 @@ class WorkoutPrefs {
   final bool coachVoice;
 
   final RestLearnMode restLearnMode;
+
+  /// Cho phep dang Listening trong Rest Game (tat khi khong deo tai nghe -
+  /// khong phat tieng ra loa giua phong gym).
+  final bool restListening;
 
   static Future<WorkoutPrefs> load() async {
     try {
@@ -42,6 +48,7 @@ class WorkoutPrefs {
           (m) => m.name == prefs.getString(_modeKey),
           orElse: () => RestLearnMode.miniGame,
         ),
+        restListening: prefs.getBool(_listeningKey) ?? true,
       );
     } catch (_) {
       return const WorkoutPrefs(
@@ -69,6 +76,13 @@ class WorkoutPrefs {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_modeKey, mode.name);
+    } catch (_) {}
+  }
+
+  static Future<void> saveRestListening(bool enabled) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_listeningKey, enabled);
     } catch (_) {}
   }
 

@@ -102,6 +102,37 @@ void main() {
       expect(_plan(90, unit: const [], review: const []), isEmpty);
     });
 
+    test('Listening never opens a session', () {
+      for (var seed = 0; seed < 20; seed++) {
+        final plan = planRestGame(
+          restSeconds: 120,
+          unitItems: _items('unit'),
+          reviewItems: _items('review'),
+          listeningEnabled: true,
+          random: Random(seed),
+        );
+        expect(plan.first.type, isNot(PracticeItemType.listening));
+      }
+    });
+
+    test('skips items already played in this rest', () {
+      final first = _plan(60);
+      final again = planRestGame(
+        restSeconds: 60,
+        unitItems: _items('unit'),
+        reviewItems: _items('review'),
+        listeningEnabled: false,
+        random: Random(7),
+        exclude: {for (final i in first) i.id},
+      );
+      expect(
+        again.map((i) => i.id).toSet().intersection({
+          for (final i in first) i.id,
+        }),
+        isEmpty,
+      );
+    });
+
     test('never repeats an item', () {
       final plan = _plan(120);
       expect(plan.map((i) => i.id).toSet().length, plan.length);
