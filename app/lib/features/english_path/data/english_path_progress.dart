@@ -75,13 +75,18 @@ LearnerLevel learnerLevelFor(CefrLevel level) => switch (level) {
   CefrLevel.b2 || CefrLevel.c1 => LearnerLevel.advanced,
 };
 
-/// Learner Level cho cac tinh nang cu: co English Level da luu (Placement/
-/// Level Test) thi suy tu no; chua co thi GIU hanh vi cu (suy tu Persona,
-/// "Tu hoc"/chua chon = null = khong loc).
+/// Learner Level cho cac tinh nang cu (spec #48):
+/// - "Tu hoc"/chua chon Persona: null = khong loc, ke ca khi co English Level.
+/// - Co English Level da luu (Placement/Level Test): suy tu no.
+/// - Chua co: GIU mapping cu theo Persona (ADR-0001, muc Consequences) de
+///   khong doi hanh vi cua nguoi dung hien tai.
 LearnerLevel? projectLearnerLevel({
-  required CefrLevel? stored,
+  required CefrLevel? englishLevel,
   required LearningPersona? persona,
-}) => stored != null ? learnerLevelFor(stored) : persona?.level;
+}) {
+  if (persona == null) return null;
+  return englishLevel != null ? learnerLevelFor(englishLevel) : persona.level;
+}
 
 /// English Level dang ap dung: da luu thi dung, chua co thi theo Persona.
 CefrLevel effectiveLevel(EnglishPathState state, LearningPersona? persona) =>

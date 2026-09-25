@@ -193,7 +193,7 @@ final learningPathInteractedProvider = FutureProvider<bool>(
 /// Moi feature chi doc provider nay, xem docs/research-level-based-content.md.
 final learnerLevelProvider = Provider<LearnerLevel?>(
   (ref) => projectLearnerLevel(
-    stored: ref.watch(englishPathStateProvider).level,
+    englishLevel: ref.watch(englishPathStateProvider).level,
     persona: ref.watch(learningPathChoiceProvider).valueOrNull,
   ),
 );
