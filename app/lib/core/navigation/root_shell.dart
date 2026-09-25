@@ -11,6 +11,7 @@ import '../../features/music_player/presentation/center_media_button.dart';
 import '../../features/music_player/presentation/home_screen.dart';
 import '../../features/today/data/gymtalk_reminders.dart';
 import '../../features/today/presentation/progress_screen.dart';
+import '../../features/today/presentation/gt_today_screen.dart';
 import '../../features/today/presentation/today_screen.dart';
 import '../../features/update/presentation/update_dialog.dart';
 import '../config/gymtalk_flags.dart';
@@ -204,7 +205,7 @@ class _RootShellState extends ConsumerState<RootShell>
             child: IndexedStack(
               index: tab.index,
               children: const [
-                TodayScreen(),
+                GtTodayScreen(),
                 FitnessHomeScreen(),
                 HomeScreen(),
                 ProgressScreen(),

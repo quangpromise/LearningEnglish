@@ -5721,6 +5721,37 @@ class AppStrings {
       AppLanguage.vi: 'Bật lại trong Tiến độ → Cài đặt',
       AppLanguage.en: 'Turn it back on in Progress → Settings',
     },
+    'gt_unit_session': {AppLanguage.vi: 'buổi', AppLanguage.en: 'session'},
+    'gt_unit_words': {AppLanguage.vi: 'từ', AppLanguage.en: 'words'},
+    'gt_unit_sentences': {AppLanguage.vi: 'câu', AppLanguage.en: 'sentences'},
+    'gt_weekday_short': {
+      AppLanguage.vi: 'T2,T3,T4,T5,T6,T7,CN',
+      AppLanguage.en: 'M,T,W,T,F,S,S',
+    },
+    'gt_today_session_chip': {
+      AppLanguage.vi: 'BUỔI {n}/{total} TUẦN NÀY',
+      AppLanguage.en: 'SESSION {n}/{total} THIS WEEK',
+    },
+    'gt_today_workout_meta': {
+      AppLanguage.vi: '{exercises} bài · {sets} hiệp · ~{minutes} phút',
+      AppLanguage.en: '{exercises} exercises · {sets} sets · ~{minutes} min',
+    },
+    'gt_today_cta_start': {
+      AppLanguage.vi: 'Bắt đầu tập',
+      AppLanguage.en: 'Start workout',
+    },
+    'gt_today_cta_done': {
+      AppLanguage.vi: 'Đã tập xong',
+      AppLanguage.en: 'Workout done',
+    },
+    'gt_today_cta_review': {
+      AppLanguage.vi: 'Ôn từ vựng',
+      AppLanguage.en: 'Review words',
+    },
+    'gt_today_cta_choose': {
+      AppLanguage.vi: 'Chọn giáo án',
+      AppLanguage.en: 'Choose a program',
+    },
   };
 
   static String t(String key, AppLanguage lang) =>
