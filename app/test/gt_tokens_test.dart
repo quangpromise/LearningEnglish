@@ -127,6 +127,8 @@ void main() {
     expect(seen.bg, GtTokens.light.bg);
     expect(seen.tx, GtTokens.light.tx);
 
+    // Cay moi (khong noi suy tu theme cu) -> khong co extension -> dark.
+    await tester.pumpWidget(const SizedBox());
     await tester.pumpWidget(
       MaterialApp(
         home: Builder(
