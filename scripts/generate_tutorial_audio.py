@@ -6,6 +6,8 @@ exercise_tutorial.dart):
   - Tung buoc: "Step one. {instructionsEn[i]}"
   - Tung tu vung gym (the tu khoa) + cau vi du cua tu (the Hoc khi nghi,
     On tap, Luyen noi ranh tay) + cau phan hoi "Great job!" / "Nice try!"
+  - Tung tu cua lo trinh tieng Anh A1-C1 (Content Pack: dang Listening va
+    nut loa cua Meaning - spec #45, ticket #57). Cau vi du dai dung TTS may.
 
 Moi cau -> app/assets/tutorial_audio/<fnv1a32(cau)>.mp3. App tinh cung ma
 bam tu cau can doc: co file thi phat giong Kokoro, khong co thi quay ve TTS
@@ -99,6 +101,18 @@ def exercise_texts(ex: dict, muscle_en: dict) -> list:
     return texts
 
 
+def path_words(app_dir: Path) -> list:
+    """Tu cua Content Pack. Uu tien pack o staging (ban sap dong goi), khong
+    co thi lay pack trong assets."""
+    staging = app_dir.parent / 'scripts/english_path/build/pack.json'
+    asset = app_dir / 'assets/english_path/pack.json'
+    pack_path = staging if staging.exists() else asset
+    if not pack_path.exists():
+        return []
+    pack = json.loads(pack_path.read_text(encoding='utf-8'))
+    return [w['en'] for st in pack['stages'] for u in st['units'] for w in u['words']]
+
+
 def all_texts(app_dir: Path) -> list:
     exercises = json.loads(
         (app_dir / 'assets/fitness/exercises_seed.json').read_text(encoding='utf-8'),
@@ -111,6 +125,7 @@ def all_texts(app_dir: Path) -> list:
     texts += load_gym_words(vocab)
     texts += load_gym_examples(vocab)
     texts += FEEDBACK
+    texts += path_words(app_dir)
     seen, unique = set(), []
     for t in texts:
         if t not in seen:

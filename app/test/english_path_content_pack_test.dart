@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:learn_english_music/core/tts/tutorial_voice.dart';
 import 'package:learn_english_music/features/english_path/data/cefr_level.dart';
 import 'package:learn_english_music/features/english_path/data/content_pack.dart';
 
@@ -153,6 +154,57 @@ void main() {
         }
       }
       expect(count, greaterThan(0));
+    });
+  });
+
+  group('v1 completeness (ticket #57)', () {
+    test('A1-B2 have 10 units each, C1 has 3 sample units', () {
+      final pack = _bundledPack();
+      final units = {for (final s in pack.stages) s.stage: s.units.length};
+      for (final s in [
+        CefrLevel.a1,
+        CefrLevel.a2,
+        CefrLevel.b1,
+        CefrLevel.b2,
+      ]) {
+        expect(units[s], 10, reason: s.code);
+      }
+      expect(units[CefrLevel.c1], 3);
+    });
+
+    test('about 600 words and 1,300 practice items', () {
+      final pack = _bundledPack();
+      final units = [for (final s in pack.stages) ...s.units];
+      final words = units.fold<int>(0, (n, u) => n + u.words.length);
+      final items = units.fold<int>(0, (n, u) => n + u.items.length);
+      expect(words, greaterThanOrEqualTo(580));
+      expect(items, greaterThanOrEqualTo(1300));
+    });
+
+    test('IELTS Micro Exercises only from B1 upwards', () {
+      for (final s in _bundledPack().stages) {
+        final hasIelts = s.units.any(
+          (u) => u.items.any((i) => i.type == PracticeItemType.ieltsMicro),
+        );
+        expect(
+          hasIelts,
+          s.stage.index >= CefrLevel.b1.index,
+          reason: s.stage.code,
+        );
+      }
+    });
+
+    test('every path word has Kokoro audio in the manifest', () {
+      final manifest = (jsonDecode(
+        File('assets/tutorial_audio/manifest.json').readAsStringSync(),
+      ) as Map).cast<String, String>();
+      final missing = [
+        for (final s in _bundledPack().stages)
+          for (final u in s.units)
+            for (final w in u.words)
+              if (manifest[tutorialAudioKey(w.en)] != w.en) w.en,
+      ];
+      expect(missing, isEmpty);
     });
   });
 }
