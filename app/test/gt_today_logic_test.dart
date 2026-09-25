@@ -57,6 +57,25 @@ void main() {
       ]);
     });
 
+    test('Sunday is the last cell; the week starts on Monday', () {
+      final strip = weekStreakStrip(
+        (d) => const DayProgress(),
+        DateTime(2026, 9, 27, 23, 59),
+      );
+      expect(strip.last, StreakCell.today);
+      expect(strip.take(6), everyElement(StreakCell.missed));
+    });
+
+    test('a week spanning two months reads the right dates', () {
+      final seen = <DateTime>[];
+      weekStreakStrip((d) {
+        seen.add(d);
+        return const DayProgress();
+      }, DateTime(2026, 10, 1, 8));
+      expect(seen.first, DateTime(2026, 9, 28));
+      expect(seen.last, DateTime(2026, 10, 4));
+    });
+
     test('today fills once body + brain is done', () {
       final strip = weekStreakStrip((d) => _done(), _thursday);
       expect(strip[3], StreakCell.todayDone);

@@ -99,7 +99,10 @@ class _GtTodayScreenState extends ConsumerState<GtTodayScreen> {
                   date: now,
                 ),
                 const SizedBox(height: 16),
-                const _TodayWorkout(),
+                _TodayWorkout(
+                  today: store.today,
+                  dueCount: SrsStore.instance.dueCount(now),
+                ),
               ],
             );
           },
@@ -160,16 +163,27 @@ class GtRingsCard extends ConsumerWidget {
               SizedBox(
                 width: 164,
                 height: 164,
-                child: TweenAnimationBuilder<double>(
-                  tween: Tween(begin: 0, end: 1),
+                // Tween toi gia tri moi -> lan dau chay tu 0, sau do moi lan
+                // tien do doi cung chay 600ms tu gia tri cu.
+                child: TweenAnimationBuilder<Offset>(
+                  tween: Tween(
+                    begin: Offset.zero,
+                    end: Offset(day.trainRatio, day.learnRatio),
+                  ),
                   duration: const Duration(milliseconds: 600),
                   curve: Curves.easeOutCubic,
-                  builder: (context, k, _) => CustomPaint(
-                    painter: GtRingsPainter(
-                      train: day.trainRatio * k,
-                      learn: day.learnRatio * k,
-                      speak: day.speakRatio * k,
-                      tokens: t,
+                  builder: (context, tl, _) => TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0, end: day.speakRatio),
+                    duration: const Duration(milliseconds: 600),
+                    curve: Curves.easeOutCubic,
+                    builder: (context, speak, child) => CustomPaint(
+                      painter: GtRingsPainter(
+                        train: tl.dx,
+                        learn: tl.dy,
+                        speak: speak,
+                        tokens: t,
+                      ),
+                      child: child,
                     ),
                     child: Center(
                       child: Text(
@@ -386,14 +400,18 @@ class _StreakDot extends StatelessWidget {
 // ---------------------------------------------------------------------------
 // The buoi tap hom nay
 
+/// Nhan [today]/[dueCount] tu ListenableBuilder cha (khong `const`) de the
+/// doi sang "Da tap xong" ngay khi buoi tap ket thuc.
 class _TodayWorkout extends ConsumerWidget {
-  const _TodayWorkout();
+  const _TodayWorkout({required this.today, required this.dueCount});
+
+  final DayProgress today;
+  final int dueCount;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final planAsync = ref.watch(todayWorkoutPlanProvider);
     final plan = planAsync.valueOrNull;
-    final today = DailyProgressStore.instance.today;
     final state = todayCardState(
       loading: planAsync.isLoading && !planAsync.hasValue,
       error: planAsync.hasError && !planAsync.hasValue,
@@ -410,7 +428,7 @@ class _TodayWorkout extends ConsumerWidget {
     return GtWorkoutCard(
       state: state,
       plan: plan,
-      dueCount: SrsStore.instance.dueCount(DateTime.now()),
+      dueCount: dueCount,
       onTap: () {
         switch (state) {
           case TodayCardState.loading:
@@ -557,7 +575,7 @@ class GtWorkoutCard extends ConsumerWidget {
                         child: Text(
                           chip,
                           style: GtText.overline(_chipText)
-                              .copyWith(fontSize: 11),
+                              .copyWith(fontSize: 12),
                         ),
                       ),
                     if (chip != null) const SizedBox(height: 10),
@@ -609,7 +627,14 @@ class GtWorkoutCard extends ConsumerWidget {
                                   children: [
                                     Icon(ctaIcon, color: ctaFg, size: 22),
                                     const SizedBox(width: 8),
-                                    Text(cta, style: GtText.rowTitle(ctaFg)),
+                                    Flexible(
+                                      child: Text(
+                                        cta,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: GtText.rowTitle(ctaFg),
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
