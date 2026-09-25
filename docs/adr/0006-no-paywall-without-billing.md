@@ -1,0 +1,3 @@
+# Không dựng Paywall/Pro và Wealth trong phase redesign
+
+Handoff có màn Paywall "GymTalk Pro" (giá, dùng thử 7 ngày) và màn Wealth. Nhưng app chưa có billing (không có `in_app_purchase`, không có backend xác nhận giao dịch), giá chỉ là placeholder, còn Wealth đang bị ẩn bằng `kShowWealthSection = false`. Một Paywall không thu được tiền sẽ đánh lừa người dùng ("Không trừ tiền hôm nay…") và vi phạm quy tắc không dựng form thanh toán giả. Vì vậy phase này **không** làm Paywall và Wealth. Luồng onboarding đi thẳng từ bước chọn thời gian sang tạo kế hoạch. Paywall chỉ làm khi có quyết định kinh doanh và tích hợp billing thật.
