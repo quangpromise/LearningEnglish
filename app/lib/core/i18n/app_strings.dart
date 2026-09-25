@@ -5467,6 +5467,65 @@ class AppStrings {
       AppLanguage.vi: 'Xem các bậc A1 → C1',
       AppLanguage.en: 'See stages A1 → C1',
     },
+    'placement_title': {
+      AppLanguage.vi: 'Bài xếp lớp',
+      AppLanguage.en: 'Placement test',
+    },
+    'placement_intro_title': {
+      AppLanguage.vi: 'Tìm đúng bậc của bạn',
+      AppLanguage.en: 'Find your level',
+    },
+    'placement_intro_body': {
+      AppLanguage.vi: 'Tối đa 15 câu, khoảng 3 phút. Câu hỏi khó dần hoặc dễ dần theo cách bạn trả lời. Không cần chọn bừa: câu nào không biết cứ chọn đáp án bạn nghĩ gần nhất.',
+      AppLanguage.en: 'Up to 15 questions, about 3 minutes. Questions get harder or easier based on your answers. If you don\'t know one, pick the closest answer.',
+    },
+    'placement_start': {
+      AppLanguage.vi: 'Làm bài xếp lớp',
+      AppLanguage.en: 'Take the test',
+    },
+    'placement_skip': {AppLanguage.vi: 'Bỏ qua', AppLanguage.en: 'Skip'},
+    'placement_retake': {
+      AppLanguage.vi: 'Làm lại bài xếp lớp',
+      AppLanguage.en: 'Retake placement test',
+    },
+    'placement_banner_title': {
+      AppLanguage.vi: 'Xếp lớp nhanh',
+      AppLanguage.en: 'Quick placement',
+    },
+    'placement_banner_body': {
+      AppLanguage.vi: 'Tối đa 15 câu (~3 phút) để vào đúng bậc. Bỏ qua thì bắt đầu theo mục tiêu bạn đã chọn.',
+      AppLanguage.en: 'Up to 15 questions (~3 min) to start at the right stage. Skip to start from the goal you picked.',
+    },
+    'placement_result_title': {
+      AppLanguage.vi: 'Kết quả xếp lớp',
+      AppLanguage.en: 'Your placement',
+    },
+    'placement_result_body': {
+      AppLanguage.vi: 'Bạn bắt đầu từ Unit 1 của {stage}.',
+      AppLanguage.en: 'You start at Unit 1 of {stage}.',
+    },
+    'placement_note_no_content': {
+      AppLanguage.vi: 'Nội dung các bậc cao hơn đang được soạn, bạn có thể làm lại bài xếp lớp khi có bản cập nhật.',
+      AppLanguage.en: 'Higher stages are still being written; you can retake the test after an update.',
+    },
+    'placement_note_low_confidence': {
+      AppLanguage.vi: 'Kết quả dựa trên ít câu hỏi. Bạn có thể làm lại bất cứ lúc nào trong Lộ trình.',
+      AppLanguage.en: 'This result is based on few questions. You can retake it any time from the path.',
+    },
+    'placement_go': {
+      AppLanguage.vi: 'Bắt đầu học',
+      AppLanguage.en: 'Start learning',
+    },
+    'placement_progress': {
+      AppLanguage.vi: 'Câu {n} · tối đa {max}',
+      AppLanguage.en: 'Question {n} · max {max}',
+    },
+    'placement_retake_warning': {
+      AppLanguage.vi:
+          'Kết quả mới sẽ thay bậc hiện tại của bạn, kể cả khi thấp hơn.',
+      AppLanguage.en:
+          'The new result replaces your current stage, even if it is lower.',
+    },
   };
 
   static String t(String key, AppLanguage lang) =>

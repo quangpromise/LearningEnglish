@@ -11,7 +11,9 @@ import '../data/content_pack.dart';
 import '../data/english_path_progress.dart';
 import '../data/english_path_providers.dart';
 import '../data/english_path_state.dart';
+import '../data/english_path_store.dart';
 import 'path_labels.dart';
+import 'placement_screen.dart';
 import 'unit_session_screen.dart';
 
 /// Man "Lo trinh" (tab Hoc): 5 Stage A1 -> C1, Unit cua Stage hien tai kem
@@ -41,6 +43,20 @@ class EnglishPathScreen extends ConsumerWidget {
                     ),
                   ),
                   _LevelChip(level: level),
+                  if (packAsync.valueOrNull != null &&
+                      (state.placement != null || state.placementSkipped))
+                    Tooltip(
+                      message: ref.tr('placement_retake'),
+                      child: SpeakerButton(
+                        icon: Icons.restart_alt_rounded,
+                        tapSize: 44,
+                        color: AppColors.textPrimary,
+                        onTap: () => openAppPopup(
+                          context,
+                          PlacementScreen(pack: packAsync.requireValue),
+                        ),
+                      ),
+                    ),
                   SpeakerButton(
                     icon: Icons.close_rounded,
                     tapSize: 44,
@@ -107,6 +123,8 @@ class _PathList extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.only(bottom: 24),
       children: [
+        if (state.level == null && !state.placementSkipped)
+          _PlacementBanner(pack: pack),
         for (final cefr in CefrLevel.values) ...[
           ..._stage(ref, cefr, stages[cefr]?.units ?? const [], next),
           const SizedBox(height: 10),
@@ -144,6 +162,56 @@ class _PathList extends ConsumerWidget {
       if (current && units.isEmpty) _Note(text: ref.tr('path_coming_soon')),
     ];
   }
+}
+
+/// Moi lam bai xep lop khi chua co English Level va chua bo qua.
+class _PlacementBanner extends ConsumerWidget {
+  const _PlacementBanner({required this.pack});
+  final ContentPack pack;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) => Padding(
+    padding: const EdgeInsets.only(bottom: 14),
+    child: GlowBox(
+      padding: const EdgeInsets.all(16),
+      border: Border.all(color: AppColors.blue, width: 1.4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            ref.tr('placement_banner_title'),
+            style: AppTextStyles.heading(size: 16),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            ref.tr('placement_banner_body'),
+            style: AppTextStyles.muted(size: 13),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: PillButton(
+                  label: ref.tr('placement_start'),
+                  onTap: () =>
+                      openAppPopup(context, PlacementScreen(pack: pack)),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: PillButton(
+                  label: ref.tr('placement_skip'),
+                  filled: false,
+                  accentColor: AppColors.blue,
+                  onTap: EnglishPathStore.instance.skipPlacement,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    ),
+  );
 }
 
 class _StageHeader extends ConsumerWidget {
@@ -184,7 +252,7 @@ class _StageHeader extends ConsumerWidget {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              ref.tr('path_stage_${cefr.code.toLowerCase()}'),
+              ref.tr(cefr.labelKey),
               style: current
                   ? AppTextStyles.heading(size: 16)
                   : AppTextStyles.muted(size: 14),
