@@ -5702,6 +5702,25 @@ class AppStrings {
       AppLanguage.vi: 'Đọc đoạn văn rồi trả lời (dạng IELTS Reading)',
       AppLanguage.en: 'Read the passage and answer (IELTS Reading style)',
     },
+    'tab_quick_start': {
+      AppLanguage.vi: 'Bắt đầu nhanh',
+      AppLanguage.en: 'Quick start',
+    },
+    'top_messages': {AppLanguage.vi: 'Tin nhắn', AppLanguage.en: 'Messages'},
+    'mini_player_bilingual': {
+      AppLanguage.vi: 'Có lời song ngữ',
+      AppLanguage.en: 'Bilingual lyrics',
+    },
+    'mini_player_play': {AppLanguage.vi: 'Phát', AppLanguage.en: 'Play'},
+    'mini_player_pause': {AppLanguage.vi: 'Tạm dừng', AppLanguage.en: 'Pause'},
+    'mini_player_hide': {
+      AppLanguage.vi: 'Ẩn trình phát nhạc',
+      AppLanguage.en: 'Hide music player',
+    },
+    'mini_player_hide_sub': {
+      AppLanguage.vi: 'Bật lại trong Tiến độ → Cài đặt',
+      AppLanguage.en: 'Turn it back on in Progress → Settings',
+    },
   };
 
   static String t(String key, AppLanguage lang) =>

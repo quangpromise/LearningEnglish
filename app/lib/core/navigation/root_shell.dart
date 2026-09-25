@@ -13,6 +13,10 @@ import '../../features/today/data/gymtalk_reminders.dart';
 import '../../features/today/presentation/progress_screen.dart';
 import '../../features/today/presentation/today_screen.dart';
 import '../../features/update/presentation/update_dialog.dart';
+import '../config/gymtalk_flags.dart';
+import '../theme/gt_tokens.dart';
+import 'gt_mini_player.dart';
+import 'gt_tab_bar.dart';
 import 'root_tabs.dart';
 
 /// Man goc GymTalk: 4 tab Hom nay | Tap | Hoc | Tien do (xem root_tabs.dart)
@@ -154,6 +158,7 @@ class _RootShellState extends ConsumerState<RootShell>
     final tab = ref.watch(rootTabProvider);
     // Popup thong bao tin nhan moi kieu Messenger - da chuyen len _AuthGate
     // trong main.dart (xem giai thich o do) de hoat dong o CA 3 app.
+    if (kUseRedesign) return _redesignScaffold(context, tab);
     return Scaffold(
       backgroundColor: AppColors.bgTop,
       body: IndexedStack(
@@ -175,6 +180,46 @@ class _RootShellState extends ConsumerState<RootShell>
           const GymTalkTabBar(),
         ],
       ),
+    );
+  }
+
+  /// Shell cua ban redesign (spec #70): noi dung chay duoi thanh tab kinh
+  /// mo, mini player noi cach thanh tab 6dp, nen phang token `bg`.
+  Widget _redesignScaffold(BuildContext context, RootTab tab) {
+    final t = context.gt;
+    final mq = MediaQuery.of(context);
+    final barHeight = GtTabBar.barHeight + mq.padding.bottom;
+    // Noi dung chay duoi thanh tab (extendBody) -> chua them cho mini player
+    // (60 + 6) de hang cuoi cua danh sach khong bi che.
+    final contentInset = mq.copyWith(
+      padding: mq.padding.copyWith(bottom: barHeight + 66),
+    );
+    return Scaffold(
+      backgroundColor: t.bg,
+      extendBody: true,
+      body: Stack(
+        children: [
+          MediaQuery(
+            data: contentInset,
+            child: IndexedStack(
+              index: tab.index,
+              children: const [
+                TodayScreen(),
+                FitnessHomeScreen(),
+                HomeScreen(),
+                ProgressScreen(),
+              ],
+            ),
+          ),
+          Positioned(
+            left: 12,
+            right: 12,
+            bottom: barHeight + 6,
+            child: const GtMiniPlayer(),
+          ),
+        ],
+      ),
+      bottomNavigationBar: const GtTabBar(),
     );
   }
 }
