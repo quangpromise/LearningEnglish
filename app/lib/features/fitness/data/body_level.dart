@@ -32,10 +32,10 @@ class BodyStats {
   final int currentWeekStreak;
 }
 
-DateTime _weekStart(DateTime d) {
-  final day = DateTime(d.year, d.month, d.day);
-  return day.subtract(Duration(days: day.weekday - DateTime.monday));
-}
+/// Thu Hai dau tuan luc 00:00 - dung constructor theo ngay (khong tru
+/// Duration) de khong lech gio khi qua doi gio mua he (DST).
+DateTime _weekStart(DateTime d) =>
+    DateTime(d.year, d.month, d.day - (d.weekday - DateTime.monday));
 
 /// So tuan giua 2 ngay Thu Hai (lam tron de khong lech vi doi gio mua he).
 int _weeksBetween(DateTime a, DateTime b) =>

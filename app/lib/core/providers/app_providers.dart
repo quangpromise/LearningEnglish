@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -569,10 +570,14 @@ final fitnessDashboardStatsProvider =
 final bodyStatsProvider = FutureProvider.autoDispose<BodyStats>((ref) async {
   final userId = ref.watch(supabaseClientProvider).auth.currentUser?.id;
   if (userId == null) return const BodyStats(0, 0, 0);
-  final times = await ref
-      .watch(workoutRepositoryProvider)
-      .getCompletedWorkoutTimes(userId);
-  return computeBodyStats(times, now: DateTime.now());
+  final repo = ref.watch(workoutRepositoryProvider);
+  try {
+    final times = await repo.getCompletedWorkoutTimes(userId);
+    return computeBodyStats(times, now: DateTime.now());
+  } catch (e) {
+    debugPrint('bodyStatsProvider failed: $e');
+    return const BodyStats(0, 0, 0);
+  }
 });
 
 // --- Fitness (Phase 3: Dinh duong - port tu FitViet) ---

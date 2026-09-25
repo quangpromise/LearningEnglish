@@ -5639,6 +5639,16 @@ class AppStrings {
     },
     'body_level_pro': {AppLanguage.vi: 'Pro', AppLanguage.en: 'Pro'},
     'body_level_beast': {AppLanguage.vi: 'Beast', AppLanguage.en: 'Beast'},
+    'progress_body_next_weeks': {
+      AppLanguage.vi:
+          'Còn {k} tuần tập liên tiếp (≥2 buổi/tuần) để lên {level}',
+      AppLanguage.en:
+          '{k} more streak weeks (2+ workouts/week) to reach {level}',
+    },
+    'progress_body_next_workouts': {
+      AppLanguage.vi: 'Còn {w} buổi tập nữa để lên {level}',
+      AppLanguage.en: '{w} more workouts to reach {level}',
+    },
   };
 
   static String t(String key, AppLanguage lang) =>

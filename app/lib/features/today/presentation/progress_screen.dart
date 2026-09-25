@@ -14,7 +14,8 @@ import 'daily_rings.dart';
 import 'levels_card.dart';
 import 'progress_social_cards.dart';
 
-/// Tab "Tien do": 1 cap do GymTalk XP chung (tap + hoc), chuoi Body + Brain
+/// Tab "Tien do": English Level + Body Level + GymTalk Rank (XP chi la diem
+/// tich luy, spec #45), chuoi Body + Brain
 /// voi lich su 7 ngay, so lieu tap tuan nay va so lieu hoc tieng Anh.
 class ProgressScreen extends ConsumerStatefulWidget {
   const ProgressScreen({super.key});

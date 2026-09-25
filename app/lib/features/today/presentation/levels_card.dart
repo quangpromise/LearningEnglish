@@ -24,11 +24,12 @@ class LevelsCard extends ConsumerWidget {
     final xp = ref.watch(myLearningXpProvider).valueOrNull;
     final body = bodyStats == null ? null : bodyLevelFor(bodyStats);
     final next = bodyStats == null ? null : nextBodyTarget(bodyStats);
-    final bands = [
+    // Band GAN NHAT (spec #45) - Level Test dat moi nhat co band.
+    final withBand = [
       for (final r in pathState.levelTests.values)
-        if (r.estimatedBand != null) r.estimatedBand!,
-    ];
-    final band = bands.isEmpty ? null : bands.reduce((a, b) => a > b ? a : b);
+        if (r.estimatedBand != null) r,
+    ]..sort((a, b) => b.takenAt.compareTo(a.takenAt));
+    final band = withBand.isEmpty ? null : withBand.first.estimatedBand;
     final rank = body == null ? null : gymTalkRank(body, english);
 
     return GlowBox(
@@ -68,7 +69,11 @@ class LevelsCard extends ConsumerWidget {
             subtitle: next == null
                 ? (body == null ? '' : ref.tr('progress_body_max'))
                 : ref
-                      .tr('progress_body_next')
+                      .tr(switch ((next.workoutsNeeded, next.weeksNeeded)) {
+                        (0, _) => 'progress_body_next_weeks',
+                        (_, 0) => 'progress_body_next_workouts',
+                        _ => 'progress_body_next',
+                      })
                       .replaceFirst('{w}', '${next.workoutsNeeded}')
                       .replaceFirst('{k}', '${next.weeksNeeded}')
                       .replaceFirst(
