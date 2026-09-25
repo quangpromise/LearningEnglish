@@ -8,12 +8,14 @@ const kPlacementItemsPerStage = 3;
 const kPlacementPassCount = 2;
 
 /// Toi da 5 Stage x 3 cau.
-const kPlacementMaxQuestions = 15;
+final kPlacementMaxQuestions =
+    CefrLevel.values.length * kPlacementItemsPerStage;
 
 /// Ly do dung Placement Test (luu vao ban ghi de audit).
 /// - bracketed: da kep giua 1 Stage dat va 1 Stage khong dat.
 /// - floorA1 / ceilingC1: cham bien duoi / bien tren.
-/// - noContent: Stage ke tiep chua co noi dung trong Content Pack.
+/// - noContent: Stage ke tiep chua co noi dung trong Content Pack (bo sung
+///   ngoai spec #45 vi pack chua du 5 Stage - ghi nhan o issue #49).
 enum PlacementStopReason { bracketed, floorA1, ceilingC1, noContent }
 
 enum PlacementConfidence { high, low }
@@ -119,14 +121,17 @@ class PlacementSession {
   }) : _pool = pool,
        _random = random ?? Random(),
        _clock = clock ?? DateTime.now {
-    _startedAt = _clock();
-    // Bat dau o Stage cao nhat <= [start] co du noi dung.
-    var s = start;
-    while (!_hasContent(s) && s.index > 0) {
-      s = CefrLevel.values[s.index - 1];
+    if (!canRunPlacement(pool)) {
+      throw StateError('Content Pack has no stage with enough items');
     }
-    _startStage = s;
-    _enter(s);
+    _startedAt = _clock();
+    // Stage xuat phat theo Persona; neu Stage do chua co noi dung thi lui
+    // xuong Stage cao nhat co noi dung (hoac len, neu duoi khong con Stage
+    // nao) - startStage trong ban ghi la Stage thuc su bat dau.
+    final withContent = CefrLevel.values.where(_hasContent).toList();
+    final atOrBelow = withContent.where((s) => s.index <= start.index);
+    _startStage = atOrBelow.isNotEmpty ? atOrBelow.last : withContent.first;
+    _enter(_startStage);
   }
 
   final Map<CefrLevel, List<PracticeItem>> _pool;
@@ -188,21 +193,30 @@ class PlacementSession {
     final passed = _stageCorrect >= kPlacementPassCount;
     _results[s] = passed;
     if (passed) {
-      if (s == CefrLevel.c1) return _finish(s, PlacementStopReason.ceilingC1);
-      final up = CefrLevel.values[s.index + 1];
-      if (_results[up] == false) {
-        return _finish(s, PlacementStopReason.bracketed);
+      final up = s == CefrLevel.c1 ? null : CefrLevel.values[s.index + 1];
+      if (up == null) {
+        _finish(s, PlacementStopReason.ceilingC1);
+      } else if (_results[up] == false) {
+        _finish(s, PlacementStopReason.bracketed);
+      } else if (!_hasContent(up)) {
+        _finish(s, PlacementStopReason.noContent);
+      } else {
+        _enter(up);
       }
-      if (!_hasContent(up)) return _finish(s, PlacementStopReason.noContent);
-      return _enter(up);
+      return;
     }
-    if (s == CefrLevel.a1) return _finish(s, PlacementStopReason.floorA1);
-    final down = CefrLevel.values[s.index - 1];
-    if (_results[down] == true) {
-      return _finish(down, PlacementStopReason.bracketed);
+    final down = s == CefrLevel.a1 ? null : CefrLevel.values[s.index - 1];
+    if (down == null) {
+      _finish(s, PlacementStopReason.floorA1);
+    } else if (_results[down] == true) {
+      _finish(down, PlacementStopReason.bracketed);
+    } else if (!_hasContent(down)) {
+      // Khong con Stage thap hon de kiem tra: xep vao Stage thap nhat co
+      // noi dung (chinh Stage vua lam), confidence thap.
+      _finish(s, PlacementStopReason.noContent);
+    } else {
+      _enter(down);
     }
-    if (!_hasContent(down)) return _finish(down, PlacementStopReason.noContent);
-    _enter(down);
   }
 
   void _finish(CefrLevel result, PlacementStopReason reason) {
@@ -222,6 +236,25 @@ class PlacementSession {
       finishedAt: _clock(),
     );
   }
+}
+
+/// Co it nhat 1 Stage du cau hoi de lam Placement.
+bool canRunPlacement(Map<CefrLevel, List<PracticeItem>> pool) =>
+    pool.values.any((items) => items.length >= kPlacementItemsPerStage);
+
+/// So cau dung / so cau da hoi cua tung Stage (de hien ket qua).
+Map<CefrLevel, ({int correct, int asked})> placementStageScores(
+  PlacementRecord record,
+) {
+  final out = <CefrLevel, ({int correct, int asked})>{};
+  for (final a in record.answers) {
+    final prev = out[a.stage] ?? (correct: 0, asked: 0);
+    out[a.stage] = (
+      correct: prev.correct + (a.correct ? 1 : 0),
+      asked: prev.asked + 1,
+    );
+  }
+  return out;
 }
 
 /// Pool cau hoi Placement tu Content Pack: moi Practice Item cua tung Stage.

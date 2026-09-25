@@ -5516,6 +5516,16 @@ class AppStrings {
       AppLanguage.vi: 'Bắt đầu học',
       AppLanguage.en: 'Start learning',
     },
+    'placement_progress': {
+      AppLanguage.vi: 'Câu {n} · tối đa {max}',
+      AppLanguage.en: 'Question {n} · max {max}',
+    },
+    'placement_retake_warning': {
+      AppLanguage.vi:
+          'Kết quả mới sẽ thay bậc hiện tại của bạn, kể cả khi thấp hơn.',
+      AppLanguage.en:
+          'The new result replaces your current stage, even if it is lower.',
+    },
   };
 
   static String t(String key, AppLanguage lang) =>

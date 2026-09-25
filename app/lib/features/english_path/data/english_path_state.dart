@@ -56,8 +56,9 @@ class EnglishPathState {
   }
 
   /// Ket qua Placement la quyet dinh cuoi cung ve English Level (spec #45).
+  /// Ghi de English Level hien tai (ke ca khi thap hon) va xoa co "bo qua".
   EnglishPathState withPlacement(PlacementRecord record) =>
-      _copy(placement: record, level: record.result);
+      _copy(placement: record, level: record.result, placementSkipped: false);
 
   EnglishPathState skipPlacement() => _copy(placementSkipped: true);
 

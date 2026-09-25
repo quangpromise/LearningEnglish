@@ -4,8 +4,10 @@ import 'dart:math';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:learn_english_music/features/english_path/data/cefr_level.dart';
 import 'package:learn_english_music/features/english_path/data/content_pack.dart';
+import 'package:learn_english_music/features/english_path/data/english_path_progress.dart';
 import 'package:learn_english_music/features/english_path/data/english_path_state.dart';
 import 'package:learn_english_music/features/english_path/data/placement.dart';
+import 'package:learn_english_music/features/learning_path/data/learning_path_models.dart';
 
 /// 6 item moi Stage, dap an dung luon la option 0.
 Map<CefrLevel, List<PracticeItem>> _pool({
@@ -140,6 +142,27 @@ void main() {
       );
     });
 
+    test('starts at the persona starting stage', () {
+      final s = _session(defaultLevelForPersona(LearningPersona.ieltsPrep));
+      expect(s.currentStage, CefrLevel.b1);
+      final beginner = _session(
+        defaultLevelForPersona(LearningPersona.beginner),
+      );
+      expect(beginner.currentStage, CefrLevel.a1);
+    });
+
+    test('cannot run without enough items for any stage', () {
+      expect(canRunPlacement(_pool(stages: [])), isFalse);
+      expect(canRunPlacement(_pool(stages: [CefrLevel.b1])), isTrue);
+    });
+
+    test('failing the lowest stage with content returns that stage', () {
+      final onlyB1 = _pool(stages: [CefrLevel.b1, CefrLevel.b2]);
+      final r = _run(_session(CefrLevel.b1, pool: onlyB1), {});
+      expect(r.result, CefrLevel.b1);
+      expect(r.stopReason, PlacementStopReason.noContent);
+    });
+
     test('only asks stages that have content (pack v1 is A1 only)', () {
       final onlyA1 = _pool(stages: [CefrLevel.a1]);
       final s = _session(CefrLevel.b1, pool: onlyA1);
@@ -203,6 +226,12 @@ void main() {
       expect(s.placement, isNull);
       expect(s.placementSkipped, isFalse);
       expect(s.toJson()['schemaVersion'], 2);
+    });
+
+    test('a new placement clears an earlier skip', () {
+      final r = _run(_session(CefrLevel.a1), {CefrLevel.a1: 3});
+      final s = const EnglishPathState().skipPlacement().withPlacement(r);
+      expect(s.placementSkipped, isFalse);
     });
 
     test('skipping placement is remembered without setting a level', () {

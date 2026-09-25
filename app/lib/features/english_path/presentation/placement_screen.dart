@@ -8,8 +8,10 @@ import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/speaker_button.dart';
+import '../data/cefr_level.dart';
 import '../data/content_pack.dart';
 import '../data/english_path_progress.dart';
+import '../data/english_path_providers.dart';
 import '../data/english_path_store.dart';
 import '../data/placement.dart';
 import 'path_option_button.dart';
@@ -26,16 +28,20 @@ class PlacementScreen extends ConsumerStatefulWidget {
 
 class _PlacementScreenState extends ConsumerState<PlacementScreen> {
   PlacementSession? _session;
-  int? _picked;
-  Timer? _advance;
+
+  /// Cau vua tra loi + dap an da chon - giu to sang 350ms roi moi hien cau
+  /// tiep theo (hoac man ket qua).
+  ({PracticeItem item, int option})? _justAnswered;
+  Timer? _clearHighlight;
 
   @override
   void dispose() {
-    _advance?.cancel();
+    _clearHighlight?.cancel();
     super.dispose();
   }
 
   void _start() {
+    if (_session != null) return;
     final persona = ref.read(learningPathChoiceProvider).valueOrNull;
     setState(() {
       _session = PlacementSession(
@@ -46,16 +52,18 @@ class _PlacementScreenState extends ConsumerState<PlacementScreen> {
     });
   }
 
-  void _pick(int option) {
-    if (_picked != null) return;
+  /// Ghi nhan NGAY (dong man giua chung cung khong mat cau/ket qua); chi
+  /// phan to sang la tre 350ms.
+  void _pick(PracticeItem item, int option) {
+    if (_justAnswered != null) return;
     HapticFeedback.selectionClick();
-    setState(() => _picked = option);
-    _advance = Timer(const Duration(milliseconds: 350), () {
-      final session = _session!;
-      session.answer(option);
-      final record = session.record;
-      if (record != null) EnglishPathStore.instance.completePlacement(record);
-      if (mounted) setState(() => _picked = null);
+    final session = _session!;
+    session.answer(option);
+    final record = session.record;
+    if (record != null) EnglishPathStore.instance.completePlacement(record);
+    setState(() => _justAnswered = (item: item, option: option));
+    _clearHighlight = Timer(const Duration(milliseconds: 350), () {
+      if (mounted) setState(() => _justAnswered = null);
     });
   }
 
@@ -80,7 +88,10 @@ class _PlacementScreenState extends ConsumerState<PlacementScreen> {
                   ),
                   if (session != null && !session.isFinished)
                     Text(
-                      '${session.asked + 1}/$kPlacementMaxQuestions',
+                      ref
+                          .tr('placement_progress')
+                          .replaceFirst('{n}', '${session.asked + 1}')
+                          .replaceFirst('{max}', '$kPlacementMaxQuestions'),
                       style: AppTextStyles.muted(size: 14),
                     ),
                   SpeakerButton(
@@ -92,13 +103,7 @@ class _PlacementScreenState extends ConsumerState<PlacementScreen> {
                 ],
               ),
               const SizedBox(height: 16),
-              Expanded(
-                child: session == null
-                    ? _Intro(onStart: _start)
-                    : session.isFinished
-                    ? _Result(record: session.record!)
-                    : _question(session.current!),
-              ),
+              Expanded(child: _body(session)),
             ],
           ),
         ),
@@ -106,7 +111,15 @@ class _PlacementScreenState extends ConsumerState<PlacementScreen> {
     );
   }
 
-  Widget _question(PracticeItem item) => Column(
+  Widget _body(PlacementSession? session) {
+    if (session == null) return _Intro(onStart: _start);
+    final answered = _justAnswered;
+    if (answered != null) return _question(answered.item, answered.option);
+    if (session.isFinished) return _Result(record: session.record!);
+    return _question(session.current!, null);
+  }
+
+  Widget _question(PracticeItem item, int? chosen) => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
       Text(ref.tr('path_meaning_prompt'), style: AppTextStyles.muted(size: 13)),
@@ -118,12 +131,12 @@ class _PlacementScreenState extends ConsumerState<PlacementScreen> {
           padding: const EdgeInsets.only(bottom: 10),
           child: PathOptionButton(
             label: item.options[i],
-            state: _picked == null
+            state: chosen == null
                 ? PathOptionState.idle
-                : (_picked == i
+                : (chosen == i
                       ? PathOptionState.selected
                       : PathOptionState.dimmed),
-            onTap: () => _pick(i),
+            onTap: () => _pick(item, i),
           ),
         ),
     ],
@@ -135,26 +148,38 @@ class _Intro extends ConsumerWidget {
   final VoidCallback onStart;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) => Column(
-    mainAxisAlignment: MainAxisAlignment.center,
-    children: [
-      const Icon(Icons.explore_rounded, size: 64, color: AppColors.blue),
-      const SizedBox(height: 12),
-      Text(
-        ref.tr('placement_intro_title'),
-        textAlign: TextAlign.center,
-        style: AppTextStyles.heading(size: 22),
-      ),
-      const SizedBox(height: 8),
-      Text(
-        ref.tr('placement_intro_body'),
-        textAlign: TextAlign.center,
-        style: AppTextStyles.muted(size: 14),
-      ),
-      const SizedBox(height: 24),
-      PillButton(label: ref.tr('placement_start'), onTap: onStart),
-    ],
-  );
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Lam lai: ket qua moi se THAY bac hien tai (ke ca khi thap hon).
+    final retake = ref.watch(englishPathStateProvider).level != null;
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(Icons.explore_rounded, size: 64, color: AppColors.blue),
+        const SizedBox(height: 12),
+        Text(
+          ref.tr('placement_intro_title'),
+          textAlign: TextAlign.center,
+          style: AppTextStyles.heading(size: 22),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          ref.tr('placement_intro_body'),
+          textAlign: TextAlign.center,
+          style: AppTextStyles.muted(size: 14),
+        ),
+        if (retake) ...[
+          const SizedBox(height: 8),
+          Text(
+            ref.tr('placement_retake_warning'),
+            textAlign: TextAlign.center,
+            style: AppTextStyles.body(size: 13, color: AppColors.amber),
+          ),
+        ],
+        const SizedBox(height: 24),
+        PillButton(label: ref.tr('placement_start'), onTap: onStart),
+      ],
+    );
+  }
 }
 
 class _Result extends ConsumerWidget {
@@ -172,45 +197,94 @@ class _Result extends ConsumerWidget {
       if (record.confidence == PlacementConfidence.low)
         ref.tr('placement_note_low_confidence'),
     ];
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          width: 96,
-          height: 96,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: AppColors.blue.withValues(alpha: 0.2),
-            border: Border.all(color: AppColors.blue, width: 2),
-          ),
-          child: Text(
-            record.result.code,
-            style: AppTextStyles.heading(size: 34),
-          ),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          ref.tr('placement_result_title'),
-          textAlign: TextAlign.center,
-          style: AppTextStyles.heading(size: 22),
-        ),
-        const SizedBox(height: 8),
-        for (final n in notes)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 6),
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          const SizedBox(height: 24),
+          Container(
+            width: 96,
+            height: 96,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.blue.withValues(alpha: 0.2),
+              border: Border.all(color: AppColors.blue, width: 2),
+            ),
             child: Text(
-              n,
-              textAlign: TextAlign.center,
-              style: AppTextStyles.muted(size: 14),
+              record.result.code,
+              style: AppTextStyles.heading(size: 34),
             ),
           ),
-        const SizedBox(height: 18),
-        PillButton(
-          label: ref.tr('placement_go'),
-          onTap: () => Navigator.of(context).maybePop(),
-        ),
-      ],
+          const SizedBox(height: 16),
+          Text(
+            ref.tr('placement_result_title'),
+            textAlign: TextAlign.center,
+            style: AppTextStyles.heading(size: 22),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 8,
+            runSpacing: 6,
+            children: [
+              for (final e in placementStageScores(record).entries)
+                _StageScoreChip(
+                  stage: e.key,
+                  correct: e.value.correct,
+                  asked: e.value.asked,
+                  passed: record.stageResults[e.key] ?? false,
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          for (final note in notes)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Text(
+                note,
+                textAlign: TextAlign.center,
+                style: AppTextStyles.muted(size: 14),
+              ),
+            ),
+          const SizedBox(height: 18),
+          PillButton(
+            label: ref.tr('placement_go'),
+            onTap: () => Navigator.of(context).maybePop(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// "B1 ✓ 3/3" - ket qua tung Stage da danh gia.
+class _StageScoreChip extends StatelessWidget {
+  const _StageScoreChip({
+    required this.stage,
+    required this.correct,
+    required this.asked,
+    required this.passed,
+  });
+
+  final CefrLevel stage;
+  final int correct;
+  final int asked;
+  final bool passed;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = passed ? AppColors.teal : AppColors.pink;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color),
+      ),
+      child: Text(
+        '${stage.code} ${passed ? '✓' : '✗'} $correct/$asked',
+        style: AppTextStyles.body(size: 13),
+      ),
     );
   }
 }
