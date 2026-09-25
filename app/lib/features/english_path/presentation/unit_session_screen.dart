@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
@@ -11,7 +10,7 @@ import '../data/english_path_progress.dart';
 import '../data/english_path_providers.dart';
 import '../data/english_path_store.dart';
 import 'path_labels.dart';
-import 'path_option_button.dart';
+import 'practice_question.dart';
 
 /// Phien hoc 1 Unit (~5 phut): item chua dung truoc.
 class UnitSessionScreen extends ConsumerWidget {
@@ -68,13 +67,11 @@ class _PracticeSessionScreenState extends ConsumerState<PracticeSessionScreen> {
 
   void _pick(PracticeItem item, int option) {
     if (_picked != null) return;
-    final right = option == item.answerIndex;
-    if (right) {
-      HapticFeedback.lightImpact();
+    if (option == item.answerIndex) {
       _correct++;
       EnglishPathStore.instance.recordCorrect(item.unitId, item.id);
     } else {
-      HapticFeedback.heavyImpact();
+      EnglishPathStore.instance.recordWrong(item.id);
     }
     setState(() => _picked = option);
   }
@@ -139,49 +136,23 @@ class _PracticeSessionScreenState extends ConsumerState<PracticeSessionScreen> {
     );
   }
 
-  Widget _question(PracticeItem item) {
-    final word = _words[item.wordEn];
-    final picked = _picked;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          ref.tr('path_meaning_prompt'),
-          style: AppTextStyles.muted(size: 13),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Expanded(
-              child: Text(item.prompt, style: AppTextStyles.heading(size: 32)),
-            ),
-            SpeakerButton(
-              onTap: () => TutorialVoice.shared.speakAndWait(item.prompt),
-            ),
-          ],
-        ),
-        if (word != null) Text(word.ipa, style: AppTextStyles.muted(size: 15)),
-        const SizedBox(height: 20),
-        for (var i = 0; i < item.options.length; i++)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: PathOptionButton(
-              label: item.options[i],
-              state: pathOptionState(i, item.answerIndex, picked),
-              onTap: () => _pick(item, i),
-            ),
+  Widget _question(PracticeItem item) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Expanded(
+        child: SingleChildScrollView(
+          child: PracticeQuestion(
+            key: ValueKey(item.id),
+            item: item,
+            word: _words[item.wordEn],
+            onAnswered: (option) => _pick(item, option),
           ),
-        if (picked != null && word != null) ...[
-          const SizedBox(height: 6),
-          Text(word.exampleEn, style: AppTextStyles.body(size: 14)),
-          Text(word.exampleVi, style: AppTextStyles.muted(size: 13)),
-        ],
-        const Spacer(),
-        if (picked != null)
-          PillButton(label: ref.tr('path_continue'), onTap: _next),
-      ],
-    );
-  }
+        ),
+      ),
+      if (_picked != null)
+        PillButton(label: ref.tr('path_continue'), onTap: _next),
+    ],
+  );
 }
 
 class _Summary extends ConsumerWidget {

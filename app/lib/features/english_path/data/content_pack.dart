@@ -10,9 +10,13 @@ import 'cefr_level.dart';
 /// hash noi dung se lech va pack mat approval.
 const kContentPackAsset = 'assets/english_path/pack.json';
 
-/// Loai Practice Item. Cac loai khac (listening, gapFill, wordScramble,
-/// grammar, ieltsMicro) duoc them cung ticket sinh ra chung.
-enum PracticeItemType { meaning }
+/// Loai Practice Item (grammar, ieltsMicro them cung ticket sinh ra chung):
+/// - meaning: [PracticeItem.prompt] la tu tieng Anh, options la nghia Viet.
+/// - listening: nghe [PracticeItem.prompt] (khong hien chu), chon tu dung.
+/// - gapFill: prompt la cau co "___", options la tu tieng Anh; hintVi la
+///   ban dich cau.
+/// - wordScramble: xep chu cai thanh tu options[0]; hintVi la nghia Viet.
+enum PracticeItemType { meaning, listening, gapFill, wordScramble }
 
 class ContentSource {
   const ContentSource({
@@ -89,6 +93,7 @@ class PracticeItem {
     required this.answerIndex,
     required this.sourceIds,
     this.wordEn,
+    this.hintVi,
   });
 
   factory PracticeItem.fromJson(Map<String, dynamic> json) => PracticeItem(
@@ -100,6 +105,7 @@ class PracticeItem {
     answerIndex: json['answerIndex'] as int,
     sourceIds: (json['sourceIds'] as List).cast<String>(),
     wordEn: json['wordEn'] as String?,
+    hintVi: json['hintVi'] as String?,
   );
 
   final String id;
@@ -112,6 +118,9 @@ class PracticeItem {
 
   /// Tu vung ma item nay luyen (neu co) - de noi voi SRS/audio.
   final String? wordEn;
+
+  /// Goi y tieng Viet (ban dich cau cho gapFill, nghia cho wordScramble).
+  final String? hintVi;
 
   String get correctAnswer => options[answerIndex];
 }

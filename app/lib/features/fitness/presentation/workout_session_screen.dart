@@ -11,7 +11,13 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/tts/app_tts.dart';
 import '../../../core/tts/tutorial_voice.dart';
 import '../../../core/utils/keep_screen_on.dart';
+import '../../english_path/data/content_pack.dart';
+import '../../english_path/data/english_path_providers.dart';
+import '../../english_path/data/english_path_store.dart';
+import '../../english_path/data/rest_game.dart';
+import '../../english_path/presentation/rest_game_card.dart';
 import '../../srs/data/srs_store.dart';
+import '../../stats/data/learning_xp_repository.dart';
 import '../../today/data/daily_progress_store.dart';
 import '../data/coach_script.dart';
 import '../data/gym_vocabulary.dart';
@@ -61,6 +67,18 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
   WorkoutPhase? _lastPhase;
   int? _lastRestSecond;
 
+  /// Rest Game (mac dinh) hay the tu kieu cu - xem WorkoutPrefs.
+  RestLearnMode _restMode = RestLearnMode.miniGame;
+
+  /// Phien Rest Game cua lan nghi hien tai (null khi dung the tu / khong co
+  /// noi dung lo trinh).
+  RestGameSession? _restGame;
+  int _restGameCorrect = 0;
+
+  /// Lay san luc initState - [_endRestGame] con chay trong dispose, luc do
+  /// khong nen doc provider nua.
+  late final LearningXpRepository _xpRepo;
+
   /// Nguoi dung da tu chon thoi gian nghi -> khong de tuy chon luu tren may
   /// (doc bat dong bo, co the ve muon) ghi de len.
   bool _restPickedByUser = false;
@@ -81,6 +99,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
   @override
   void initState() {
     super.initState();
+    _xpRepo = ref.read(learningXpRepositoryProvider);
     final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
     if (userId == null || widget.blocks.isEmpty) return;
     final controller = WorkoutController(
@@ -108,6 +127,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
       _prefsLoaded = true;
       _learnWhileResting = prefs.learnWhileResting;
       _coachVoice = prefs.coachVoice;
+      _restMode = prefs.restLearnMode;
       _words = pickGymWords(
         exercises: controller.exercises,
         boxes: SrsStore.instance.boxes,
@@ -159,6 +179,10 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
       // Het nghi (tu nhien/bo qua/hoan tac) -> dung doc tu dang phat do.
       TutorialVoice.shared.stop();
       _lastRestSecond = null;
+      _endRestGame();
+    }
+    if (_lastPhase != WorkoutPhase.resting && phase == WorkoutPhase.resting) {
+      _startRestGame(controller);
     }
     // Vao set moi (het nghi, bo qua nghi, sang bai B cua sieu set) -> HLV
     // gioi thieu set do.
@@ -266,6 +290,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
     }
     KeepScreenOn.disable();
     TutorialVoice.shared.stop();
+    _endRestGame();
     super.dispose();
   }
 
@@ -445,10 +470,127 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
     });
   }
 
+  // ---------------------------------------------------------------------
+  // Rest Game (spec #45)
+  // ---------------------------------------------------------------------
+
+  /// Dau moi lan nghi: len ke hoach cau hoi vua thoi gian nghi tu Unit dang
+  /// hoc + cau on. Chua co noi dung lo trinh -> quay ve the tu.
+  void _startRestGame(WorkoutController controller) {
+    _restGame = null;
+    _restGameCorrect = 0;
+    if (!_learnWhileResting || _restMode != RestLearnMode.miniGame) return;
+    final pack = ref.read(contentPackProvider).valueOrNull;
+    if (pack == null) return;
+    final now = DateTime.now();
+    final src = restGameSources(
+      pack,
+      ref.read(englishLevelProvider),
+      ref.read(englishPathStateProvider),
+      dueWords: {
+        for (final c in SrsStore.instance.dueCards(now)) c.en.toLowerCase(),
+      },
+    );
+    final plan = planRestGame(
+      // Thoi gian CON LAI (bat Rest Game giua chung gio nghi thi it cau hon).
+      restSeconds: controller.restSecondsRemaining,
+      unitItems: src.unit,
+      reviewItems: src.review,
+      listeningEnabled: true,
+      random: Random(),
+    );
+    if (plan.isNotEmpty) _restGame = RestGameSession(plan);
+  }
+
+  /// Het gio nghi: dong phien, cong XP cho cac cau dung (+2 moi cau).
+  void _endRestGame() {
+    final session = _restGame;
+    if (session == null) return;
+    session.close();
+    _restGame = null;
+    final xp = _restGameCorrect * kRestGameXpPerCorrect;
+    _restGameCorrect = 0;
+    if (xp <= 0) return;
+    unawaited(
+      _xpRepo
+          .addBonusXp(xp)
+          .then<void>((_) {})
+          .catchError((Object e) => debugPrint('Rest Game XP failed: $e')),
+    );
+  }
+
+  void _onRestGameAnswer(PracticeItem item, bool correct) {
+    final store = EnglishPathStore.instance;
+    if (correct) {
+      _restGameCorrect++;
+      store.recordCorrect(item.unitId, item.id);
+    } else {
+      store.recordWrong(item.id);
+    }
+    final word = _pathWords[item.wordEn];
+    if (word != null) {
+      final now = DateTime.now();
+      SrsStore.instance.review(
+        word.en,
+        known: correct,
+        now: now,
+        content: SrsCard(
+          key: word.en,
+          en: word.en,
+          vi: word.vi,
+          ipa: word.ipa,
+          exampleEn: word.exampleEn,
+          exampleVi: word.exampleVi,
+          due: now,
+        ),
+      );
+    }
+    DailyProgressStore.instance.addWordsReviewed();
+  }
+
+  /// Tu vung lo trinh theo `wordEn` (IPA/cau vi du cho the Rest Game) -
+  /// dung 1 lan cho moi pack.
+  Map<String, PathWord> get _pathWords {
+    final pack = ref.read(contentPackProvider).valueOrNull;
+    if (pack == null) return const {};
+    if (!identical(pack, _pathWordsPack)) {
+      _pathWordsPack = pack;
+      _pathWordsCache = {
+        for (final s in pack.stages)
+          for (final u in s.units)
+            for (final w in u.words) w.en: w,
+      };
+    }
+    return _pathWordsCache;
+  }
+
+  ContentPack? _pathWordsPack;
+  Map<String, PathWord> _pathWordsCache = const {};
+
+  void _setRestMode(RestLearnMode mode) {
+    TutorialVoice.shared.stop();
+    setState(() => _restMode = mode);
+    WorkoutPrefs.saveRestLearnMode(mode);
+    final controller = _controller;
+    if (mode == RestLearnMode.miniGame &&
+        controller != null &&
+        controller.phase == WorkoutPhase.resting) {
+      _startRestGame(controller);
+    } else {
+      _endRestGame();
+    }
+  }
+
   void _setLearnWhileResting(bool enabled) {
     if (!enabled) TutorialVoice.shared.stop();
     setState(() => _learnWhileResting = enabled);
     WorkoutPrefs.saveLearnWhileResting(enabled);
+    final controller = _controller;
+    if (!enabled) {
+      _endRestGame();
+    } else if (controller != null && controller.phase == WorkoutPhase.resting) {
+      _startRestGame(controller);
+    }
   }
 
   // ---------------------------------------------------------------------
@@ -491,19 +633,46 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                                 ? _EnableLearnButton(
                                     onTap: () => _setLearnWhileResting(true),
                                   )
+                                : _restGame != null
+                                ? RestGameCard(
+                                    key: ObjectKey(_restGame),
+                                    session: _restGame!,
+                                    words: _pathWords,
+                                    onAnswered: _onRestGameAnswer,
+                                    onUseCards: () =>
+                                        _setRestMode(RestLearnMode.cards),
+                                  )
                                 : word == null
                                 ? null
-                                : RestVocabCard(
-                                    // Moi the 1 key rieng: tu "Chua nho"
-                                    // gap lai ngay the sau van bat dau o
-                                    // trang thai an nghia.
-                                    key: ValueKey(_wordIndex),
-                                    word: word,
-                                    onKnown: () => _answerWord(known: true),
-                                    onStillLearning: () =>
-                                        _answerWord(known: false),
-                                    onTurnOff: () =>
-                                        _setLearnWhileResting(false),
+                                : Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      RestVocabCard(
+                                        // Moi the 1 key rieng: tu "Chua
+                                        // nho" gap lai ngay the sau van bat
+                                        // dau o trang thai an nghia.
+                                        key: ValueKey(_wordIndex),
+                                        word: word,
+                                        onKnown: () => _answerWord(known: true),
+                                        onStillLearning: () =>
+                                            _answerWord(known: false),
+                                        onTurnOff: () =>
+                                            _setLearnWhileResting(false),
+                                      ),
+                                      if (_restMode == RestLearnMode.cards)
+                                        TextButton.icon(
+                                          onPressed: () => _setRestMode(
+                                            RestLearnMode.miniGame,
+                                          ),
+                                          icon: const Icon(
+                                            Icons.sports_esports_rounded,
+                                          ),
+                                          label: Text(
+                                            ref.tr('rest_game_use_game'),
+                                          ),
+                                        ),
+                                    ],
                                   ),
                           )
                         : _LoggingView(

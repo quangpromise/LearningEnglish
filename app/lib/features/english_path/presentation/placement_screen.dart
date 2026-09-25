@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
@@ -14,7 +13,7 @@ import '../data/english_path_progress.dart';
 import '../data/english_path_providers.dart';
 import '../data/english_path_store.dart';
 import '../data/placement.dart';
-import 'path_option_button.dart';
+import 'practice_question.dart';
 
 /// Placement Test (~3 phut, toi da 15 cau). Khong hien dung/sai tung cau -
 /// chi ghi nhan va chuyen cau. Ket qua ghi de English Level (spec #45).
@@ -31,7 +30,7 @@ class _PlacementScreenState extends ConsumerState<PlacementScreen> {
 
   /// Cau vua tra loi + dap an da chon - giu to sang 350ms roi moi hien cau
   /// tiep theo (hoac man ket qua).
-  ({PracticeItem item, int option})? _justAnswered;
+  PracticeItem? _justAnswered;
   Timer? _clearHighlight;
 
   @override
@@ -56,12 +55,11 @@ class _PlacementScreenState extends ConsumerState<PlacementScreen> {
   /// phan to sang la tre 350ms.
   void _pick(PracticeItem item, int option) {
     if (_justAnswered != null) return;
-    HapticFeedback.selectionClick();
     final session = _session!;
     session.answer(option);
     final record = session.record;
     if (record != null) EnglishPathStore.instance.completePlacement(record);
-    setState(() => _justAnswered = (item: item, option: option));
+    setState(() => _justAnswered = item);
     _clearHighlight = Timer(const Duration(milliseconds: 350), () {
       if (mounted) setState(() => _justAnswered = null);
     });
@@ -114,32 +112,18 @@ class _PlacementScreenState extends ConsumerState<PlacementScreen> {
   Widget _body(PlacementSession? session) {
     if (session == null) return _Intro(onStart: _start);
     final answered = _justAnswered;
-    if (answered != null) return _question(answered.item, answered.option);
+    if (answered != null) return _question(answered);
     if (session.isFinished) return _Result(record: session.record!);
-    return _question(session.current!, null);
+    return _question(session.current!);
   }
 
-  Widget _question(PracticeItem item, int? chosen) => Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      Text(ref.tr('path_meaning_prompt'), style: AppTextStyles.muted(size: 13)),
-      const SizedBox(height: 8),
-      Text(item.prompt, style: AppTextStyles.heading(size: 32)),
-      const SizedBox(height: 20),
-      for (var i = 0; i < item.options.length; i++)
-        Padding(
-          padding: const EdgeInsets.only(bottom: 10),
-          child: PathOptionButton(
-            label: item.options[i],
-            state: chosen == null
-                ? PathOptionState.idle
-                : (chosen == i
-                      ? PathOptionState.selected
-                      : PathOptionState.dimmed),
-            onTap: () => _pick(item, i),
-          ),
-        ),
-    ],
+  Widget _question(PracticeItem item) => SingleChildScrollView(
+    child: PracticeQuestion(
+      key: ValueKey(item.id),
+      item: item,
+      reveal: false,
+      onAnswered: (option) => _pick(item, option),
+    ),
   );
 }
 

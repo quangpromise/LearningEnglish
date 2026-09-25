@@ -205,7 +205,7 @@ void main() {
   test('level test results survive the state round-trip (schema v3)', () {
     final s = _a1Done().withLevelTest(_result(CefrLevel.a1, 10, at: _t0));
     final json = jsonDecode(jsonEncode(s.toJson()));
-    expect(json['schemaVersion'], 3);
+    expect(json['schemaVersion'], kEnglishPathSchemaVersion);
     final back = migrateEnglishPathState(json)!;
     final r = back.levelTests[CefrLevel.a1]!;
     expect(r.passed, isFalse);
