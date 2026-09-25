@@ -32,6 +32,7 @@ import '../../features/stats/data/stats_repository.dart';
 import '../../features/ielts/data/ielts_attempt_repository.dart';
 import '../../features/english_path/data/english_path_progress.dart';
 import '../../features/english_path/data/english_path_providers.dart';
+import '../../features/fitness/data/body_level.dart';
 import '../../features/learning_path/data/learning_path_models.dart';
 import '../../features/learning_path/data/learning_path_repository.dart';
 import '../../features/story/data/lesson_progress_repository.dart';
@@ -562,6 +563,17 @@ final fitnessDashboardStatsProvider =
       }
       return ref.watch(workoutRepositoryProvider).getDashboardStats(userId);
     });
+
+/// Body Level (spec #45): tinh tu moi buoi da hoan thanh. Chua dang nhap
+/// hoac loi mang -> Rookie (0 buoi); autoDispose de mo lai la tinh lai.
+final bodyStatsProvider = FutureProvider.autoDispose<BodyStats>((ref) async {
+  final userId = ref.watch(supabaseClientProvider).auth.currentUser?.id;
+  if (userId == null) return const BodyStats(0, 0, 0);
+  final times = await ref
+      .watch(workoutRepositoryProvider)
+      .getCompletedWorkoutTimes(userId);
+  return computeBodyStats(times, now: DateTime.now());
+});
 
 // --- Fitness (Phase 3: Dinh duong - port tu FitViet) ---
 

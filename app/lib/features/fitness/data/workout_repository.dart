@@ -113,6 +113,22 @@ class WorkoutRepository {
     return weight?.toDouble();
   }
 
+  /// Thoi diem hoan thanh cua MOI buoi tap da xong - nguon tinh Body Level
+  /// (tong so buoi + chuoi tuan dai nhat, xem body_level.dart). Chi lay 1
+  /// cot nen nhe du voi nhieu nam lich su.
+  Future<List<DateTime>> getCompletedWorkoutTimes(String userId) async {
+    final rows = await _supabase
+        .from('workout_sessions')
+        .select('completed_at')
+        .eq('user_id', userId)
+        .not('completed_at', 'is', null)
+        .order('completed_at');
+    return [
+      for (final row in rows as List)
+        DateTime.parse((row as Map)['completed_at'] as String).toLocal(),
+    ];
+  }
+
   /// So buoi tap DA HOAN THANH tu [sinceDate] - dung cho "X/Y buoi tuan nay",
   /// dung y het gioi han da biet cua FitViet: tong so buoi trong tuan so voi
   /// muc tieu, KHONG doi chieu tung ngay lich cu the.
