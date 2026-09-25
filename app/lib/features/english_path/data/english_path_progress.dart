@@ -22,17 +22,18 @@ int _correctCount(PathUnit unit, EnglishPathState state) {
   return unit.items.where((i) => done.contains(i.id)).length;
 }
 
-PathStage? _stageOf(ContentPack pack, CefrLevel level) {
+/// Cac Unit cua Stage [level] trong pack (rong neu chua co noi dung).
+List<PathUnit> unitsOf(ContentPack pack, CefrLevel level) {
   for (final s in pack.stages) {
-    if (s.stage == level) return s;
+    if (s.stage == level) return s.units;
   }
-  return null;
+  return const [];
 }
 
 /// Unit dau tien chua hoan thanh cua Stage [level]; null khi da xong het
 /// (den luc lam Level Test) hoac pack chua co noi dung cho Stage do.
 PathUnit? nextUnit(ContentPack pack, CefrLevel level, EnglishPathState state) {
-  for (final unit in _stageOf(pack, level)?.units ?? const <PathUnit>[]) {
+  for (final unit in unitsOf(pack, level)) {
     if (!isUnitComplete(unit, state)) return unit;
   }
   return null;
@@ -44,7 +45,7 @@ bool allUnitsComplete(
   CefrLevel level,
   EnglishPathState state,
 ) {
-  final units = _stageOf(pack, level)?.units ?? const <PathUnit>[];
+  final units = unitsOf(pack, level);
   return units.isNotEmpty && units.every((u) => isUnitComplete(u, state));
 }
 

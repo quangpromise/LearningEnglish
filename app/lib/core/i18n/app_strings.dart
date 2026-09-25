@@ -5581,6 +5581,10 @@ class AppStrings {
       AppLanguage.vi: 'Đúng {c}/{t} câu',
       AppLanguage.en: '{c}/{t} correct',
     },
+    'path_all_done': {
+      AppLanguage.vi: 'Bạn đã hoàn thành toàn bộ lộ trình hiện có. Nội dung mới sẽ sớm được cập nhật!',
+      AppLanguage.en: 'You have finished the whole path for now. New content is coming soon!',
+    },
   };
 
   static String t(String key, AppLanguage lang) =>

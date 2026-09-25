@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -160,7 +162,10 @@ class _PathList extends ConsumerWidget {
           isNext: current && unit.id == next?.id,
         ),
       if (current && units.isNotEmpty && next == null)
-        _LevelTestCard(pack: pack, stage: cefr, state: state),
+        if (cefr == CefrLevel.values.last && passedFinalStage(state))
+          _Note(text: ref.tr('path_all_done'))
+        else
+          _LevelTestCard(pack: pack, stage: cefr, state: state),
       if (current && units.isEmpty) _Note(text: ref.tr('path_coming_soon')),
     ];
   }
@@ -354,8 +359,8 @@ class _UnitTile extends ConsumerWidget {
 }
 
 /// The Level Test khi moi Unit cua Stage hien tai da xong: lam bai, hoac
-/// dem nguoc cooldown 24h kem nut on cau sai.
-class _LevelTestCard extends ConsumerWidget {
+/// dem nguoc cooldown 24h kem nut on cau sai. Tu cap nhat khi het cooldown.
+class _LevelTestCard extends ConsumerStatefulWidget {
   const _LevelTestCard({
     required this.pack,
     required this.stage,
@@ -367,10 +372,40 @@ class _LevelTestCard extends ConsumerWidget {
   final EnglishPathState state;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final status = levelTestStatus(pack, state, DateTime.now(), stage: stage);
+  ConsumerState<_LevelTestCard> createState() => _LevelTestCardState();
+}
+
+class _LevelTestCardState extends ConsumerState<_LevelTestCard> {
+  Timer? _unlock;
+
+  @override
+  void dispose() {
+    _unlock?.cancel();
+    super.dispose();
+  }
+
+  /// "10:00 ngay 26/09" - cooldown 24h nen gio lam lai luon la ngay khac.
+  String _retryLabel(DateTime retry) {
+    final l10n = MaterialLocalizations.of(context);
+    return '${l10n.formatTimeOfDay(TimeOfDay.fromDateTime(retry))}'
+        ' · ${l10n.formatShortMonthDay(retry)}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final pack = widget.pack;
+    final stage = widget.stage;
+    final state = widget.state;
+    final now = DateTime.now();
+    final status = levelTestStatus(pack, state, now, stage: stage);
     final last = state.levelTests[stage];
     final retry = retryAt(state, stage);
+    _unlock?.cancel();
+    if (status == LevelTestStatus.coolingDown && retry != null) {
+      _unlock = Timer(retry.difference(now), () {
+        if (mounted) setState(() {});
+      });
+    }
     return Padding(
       padding: const EdgeInsets.only(left: 20, bottom: 8),
       child: GlowBox(
@@ -388,11 +423,7 @@ class _LevelTestCard extends ConsumerWidget {
               status == LevelTestStatus.coolingDown && retry != null
                   ? ref
                         .tr('level_test_retry_at')
-                        .replaceFirst(
-                          '{time}',
-                          MaterialLocalizations.of(context)
-                              .formatTimeOfDay(TimeOfDay.fromDateTime(retry)),
-                        )
+                        .replaceFirst('{time}', _retryLabel(retry))
                   : ref.tr('level_test_ready_body'),
               style: AppTextStyles.muted(size: 13),
             ),

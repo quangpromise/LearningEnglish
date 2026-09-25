@@ -12,6 +12,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/speaker_button.dart';
 import '../data/cefr_level.dart';
 import '../data/content_pack.dart';
+import '../data/english_path_progress.dart';
 import '../data/english_path_store.dart';
 import '../data/level_test.dart';
 import 'path_option_button.dart';
@@ -49,6 +50,9 @@ class _LevelTestScreenState extends ConsumerState<LevelTestScreen> {
   @override
   void dispose() {
     _next?.cancel();
+    // Thoat giua chung van tinh la 1 lan lam (cau chua tra loi = sai) - de
+    // khong "ne" duoc cooldown 24h khi dang lam kem. Khong cong XP o day.
+    if (_result == null && _answers.isNotEmpty) _finish(awardXp: false);
     super.dispose();
   }
 
@@ -64,7 +68,7 @@ class _LevelTestScreenState extends ConsumerState<LevelTestScreen> {
   }
 
   /// Cham + luu ngay khi tra loi cau cuoi (dong man cung khong mat ket qua).
-  void _finish() {
+  void _finish({bool awardXp = true}) {
     final result = scoreLevelTest(
       stage: widget.stage,
       items: _items,
@@ -73,7 +77,7 @@ class _LevelTestScreenState extends ConsumerState<LevelTestScreen> {
     );
     _result = result;
     EnglishPathStore.instance.recordLevelTest(result);
-    if (result.passed) {
+    if (result.passed && awardXp) {
       HapticFeedback.heavyImpact();
       // XP la diem tich luy tren server - loi mang/chua dang nhap thi bo qua.
       // myLearningXpProvider la autoDispose nen tu tai lai khi mo Tien do.
@@ -271,10 +275,7 @@ Widget reviewWrongSession(
   LevelTestResult result,
 ) {
   final wrong = result.wrongItemIds.toSet();
-  final units = [
-    for (final s in pack.stages)
-      if (s.stage == result.stage) ...s.units,
-  ];
+  final units = unitsOf(pack, result.stage);
   return PracticeSessionScreen(
     title: ref.tr('level_test_review_title'),
     items: [

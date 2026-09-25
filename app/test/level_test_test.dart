@@ -83,10 +83,18 @@ void main() {
     test('opens only when every unit of the stage is complete', () {
       final pack = _pack();
       expect(
-        levelTestStatus(pack, const EnglishPathState(level: CefrLevel.a1), _t0),
+        levelTestStatus(
+          pack,
+          const EnglishPathState(level: CefrLevel.a1),
+          _t0,
+          stage: CefrLevel.a1,
+        ),
         LevelTestStatus.locked,
       );
-      expect(levelTestStatus(pack, _a1Done(), _t0), LevelTestStatus.ready);
+      expect(
+        levelTestStatus(pack, _a1Done(), _t0, stage: CefrLevel.a1),
+        LevelTestStatus.ready,
+      );
     });
 
     test('has 20 questions spread over every unit of the stage', () {
@@ -119,9 +127,25 @@ void main() {
       expect(s.levelTests[CefrLevel.a1]!.passed, isTrue);
     });
 
-    test('passing C1 keeps the learner at C1', () {
+    test('passing C1 keeps the learner at C1 and ends the path', () {
       const s = EnglishPathState(level: CefrLevel.c1);
-      expect(s.withLevelTest(_result(CefrLevel.c1, 20)).level, CefrLevel.c1);
+      expect(passedFinalStage(s), isFalse);
+      final done = s.withLevelTest(_result(CefrLevel.c1, 20));
+      expect(done.level, CefrLevel.c1);
+      expect(passedFinalStage(done), isTrue);
+    });
+
+    test('quitting mid-test counts unanswered questions as wrong', () {
+      final r = scoreLevelTest(
+        stage: CefrLevel.a1,
+        items: buildLevelTest(_pack(), CefrLevel.a1, Random(1)),
+        answers: [0, 0, 0],
+        takenAt: _t0,
+      );
+      expect(r.correct, 3);
+      expect(r.total, 20);
+      expect(r.passed, isFalse);
+      expect(r.wrongItemIds.length, 17);
     });
 
     test('failing keeps the level and starts a 24 h cooldown', () {
@@ -129,10 +153,16 @@ void main() {
       final s = _a1Done().withLevelTest(_result(CefrLevel.a1, 10, at: _t0));
       expect(s.level, CefrLevel.a1);
       final almost = _t0.add(const Duration(hours: 23, minutes: 59));
-      expect(levelTestStatus(pack, s, almost), LevelTestStatus.coolingDown);
+      expect(
+        levelTestStatus(pack, s, almost, stage: CefrLevel.a1),
+        LevelTestStatus.coolingDown,
+      );
       expect(retryAt(s, CefrLevel.a1), _t0.add(kLevelTestCooldown));
       final later = _t0.add(const Duration(hours: 24));
-      expect(levelTestStatus(pack, s, later), LevelTestStatus.ready);
+      expect(
+        levelTestStatus(pack, s, later, stage: CefrLevel.a1),
+        LevelTestStatus.ready,
+      );
     });
   });
 

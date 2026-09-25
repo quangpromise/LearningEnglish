@@ -1,5 +1,5 @@
 import 'cefr_level.dart';
-import 'level_test.dart';
+import 'level_test_result.dart';
 import 'placement.dart';
 
 /// Phien ban cau truc state lo trinh. BAT BUOC tang (va them 1 buoc migrate
@@ -72,11 +72,9 @@ class EnglishPathState {
 
   /// Luu ket qua Level Test; dat thi len Stage ke tiep (C1 thi giu C1).
   EnglishPathState withLevelTest(LevelTestResult result) {
-    final s = result.stage;
-    final next = s == CefrLevel.c1 ? s : CefrLevel.values[s.index + 1];
     return _copy(
-      levelTests: {...levelTests, s: result},
-      level: result.passed ? next : null,
+      levelTests: {...levelTests, result.stage: result},
+      level: result.passed ? result.stage.next : null,
     );
   }
 
