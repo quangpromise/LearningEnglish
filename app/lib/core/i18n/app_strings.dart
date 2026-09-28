@@ -5921,10 +5921,6 @@ class AppStrings {
       AppLanguage.vi: '{done}/{total} từ đã học hôm nay',
       AppLanguage.en: '{done}/{total} words learned today',
     },
-    'gt_learn_continue': {
-      AppLanguage.vi: 'Tiếp tục',
-      AppLanguage.en: 'Continue',
-    },
     'gt_learn_vocab_cards': {
       AppLanguage.vi: '{n} thẻ trong bộ ôn',
       AppLanguage.en: '{n} cards in your deck',
@@ -5936,6 +5932,18 @@ class AppStrings {
     'gt_learn_speaking_title': {
       AppLanguage.vi: 'Nghe kỹ. Nói lại.',
       AppLanguage.en: 'Listen. Say it back.',
+    },
+    'gt_learn_daily_title_plain': {
+      AppLanguage.vi: 'Học từ mới hôm nay',
+      AppLanguage.en: 'Learn new words today',
+    },
+    'gt_learn_level_test_cooldown': {
+      AppLanguage.vi: 'Đã xong các Unit — Level Test sẽ mở lại sớm',
+      AppLanguage.en: 'All units done — the Level Test reopens soon',
+    },
+    'gt_learn_speaking_sub': {
+      AppLanguage.vi: 'Phát âm, luyện rảnh tay và trò chuyện cùng AI',
+      AppLanguage.en: 'Pronunciation, hands-free drills and AI chat',
     },
   };
 

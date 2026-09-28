@@ -3,6 +3,7 @@ import 'package:learn_english_music/features/english_path/data/cefr_level.dart';
 import 'package:learn_english_music/features/english_path/data/content_pack.dart';
 import 'package:learn_english_music/features/english_path/data/english_path_state.dart';
 import 'package:learn_english_music/features/english_path/data/learn_presentation.dart';
+import 'package:learn_english_music/features/english_path/data/level_test_result.dart';
 
 PracticeItem _item(String unitId, int i) => PracticeItem(
   id: '$unitId-i$i',
@@ -70,6 +71,55 @@ void main() {
       )!;
       expect(p.ready, isTrue);
       expect(p.fraction, 1);
+    });
+
+    test('card state follows the Level Test status', () {
+      final now = DateTime(2026, 9, 28, 10);
+      final allDone = _correct({'a1-u01': 10, 'a1-u02': 10, 'a1-u03': 10});
+      expect(
+        levelCardState(_pack, CefrLevel.a1, const EnglishPathState(), now),
+        LevelCardState.learning,
+      );
+      expect(
+        levelCardState(_pack, CefrLevel.a1, allDone, now),
+        LevelCardState.testReady,
+      );
+      // Truot 1 gio truoc -> dang cho lam lai, khong bao "lam Level Test".
+      final failed = allDone.withLevelTest(
+        LevelTestResult(
+          stage: CefrLevel.a1,
+          correct: 1,
+          total: 10,
+          takenAt: now.subtract(const Duration(hours: 1)),
+          wrongItemIds: const [],
+        ),
+      );
+      expect(
+        levelCardState(_pack, CefrLevel.a1, failed, now),
+        LevelCardState.coolingDown,
+      );
+      expect(
+        levelCardState(null, CefrLevel.a1, allDone, now),
+        LevelCardState.noContent,
+      );
+      expect(
+        levelCardState(_pack, CefrLevel.b2, allDone, now),
+        LevelCardState.noContent,
+      );
+      // Da qua Level Test C1 -> het lo trinh.
+      final finished = const EnglishPathState().withLevelTest(
+        LevelTestResult(
+          stage: CefrLevel.c1,
+          correct: 10,
+          total: 10,
+          takenAt: now,
+          wrongItemIds: const [],
+        ),
+      );
+      expect(
+        levelCardState(_pack, CefrLevel.c1, finished, now),
+        LevelCardState.allDone,
+      );
     });
 
     test('no content for the stage -> null (no fake bar)', () {

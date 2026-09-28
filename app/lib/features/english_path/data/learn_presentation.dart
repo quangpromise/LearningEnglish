@@ -2,6 +2,28 @@ import 'cefr_level.dart';
 import 'content_pack.dart';
 import 'english_path_progress.dart';
 import 'english_path_state.dart';
+import 'level_test.dart';
+
+/// Loi nhan cua the English Level - khop voi man Lo trinh (khong bao "lam
+/// Level Test" khi dang cho lam lai hoac da xong C1).
+enum LevelCardState { noContent, learning, testReady, coolingDown, allDone }
+
+LevelCardState levelCardState(
+  ContentPack? pack,
+  CefrLevel level,
+  EnglishPathState state,
+  DateTime now,
+) {
+  if (passedFinalStage(state)) return LevelCardState.allDone;
+  if (pack == null) return LevelCardState.noContent;
+  final progress = levelTestProgress(pack, level, state);
+  if (progress == null) return LevelCardState.noContent;
+  if (!progress.ready) return LevelCardState.learning;
+  return switch (levelTestStatus(pack, state, now, stage: level)) {
+    LevelTestStatus.coolingDown => LevelCardState.coolingDown,
+    _ => LevelCardState.testReady,
+  };
+}
 
 /// Tien do toi Level Test cua Stage [level] (the English Level o tab Hoc):
 /// so Unit da xong / tong Unit, [fraction] cong them phan le cua Unit dang

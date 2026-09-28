@@ -31,6 +31,18 @@ import '../data/english_path_providers.dart';
 import '../data/learn_presentation.dart';
 import 'english_path_screen.dart';
 
+/// Tom tat tu vung hang ngay cho hero - tach khoi [DailyWordsController]
+/// (controller dat thong bao/Timer) de test override duoc.
+final dailyWordsSummaryProvider =
+    Provider<({int learned, int total, bool loaded})>((ref) {
+      final d = ref.watch(dailyWordsControllerProvider);
+      return (
+        learned: d.learnedTodayEnLower.length,
+        total: d.words.length,
+        loaded: d.loaded,
+      );
+    });
+
 /// Tab "Hoc" cua ban redesign (spec #70, #76; README §7): the English Level
 /// + tien do toi Level Test, hero tu vung hang ngay, 4 ky nang, luyen noi,
 /// luyen thi. Thay `HomeScreen` (tieng Anh) khi bat `kUseRedesign`.
@@ -112,14 +124,17 @@ class GtLevelCard extends ConsumerWidget {
     final progress = pack == null
         ? null
         : levelTestProgress(pack, level, state);
-    final sub = progress == null
-        ? ref.tr('path_entry_subtitle_idle')
-        : progress.ready
-        ? ref.tr('gt_learn_level_test_ready')
-        : ref
-              .tr('gt_learn_units_to_test')
-              .replaceFirst('{done}', '${progress.done}')
-              .replaceFirst('{total}', '${progress.total}');
+    final sub = switch (levelCardState(pack, level, state, DateTime.now())) {
+      LevelCardState.allDone => ref.tr('path_all_done'),
+      LevelCardState.noContent => ref.tr('path_entry_subtitle_idle'),
+      LevelCardState.testReady => ref.tr('gt_learn_level_test_ready'),
+      LevelCardState.coolingDown => ref.tr('gt_learn_level_test_cooldown'),
+      LevelCardState.learning =>
+        ref
+            .tr('gt_learn_units_to_test')
+            .replaceFirst('{done}', '${progress?.done ?? 0}')
+            .replaceFirst('{total}', '${progress?.total ?? 0}'),
+    };
     return Material(
       color: t.s1,
       borderRadius: BorderRadius.circular(24),
@@ -193,9 +208,11 @@ class _DailyWordsHero extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final daily = ref.watch(dailyWordsControllerProvider);
-    final total = daily.words.length;
-    final learned = daily.learnedTodayEnLower.length.clamp(0, total);
+    final daily = ref.watch(dailyWordsSummaryProvider);
+    // Chua tai xong / chua co tu -> khong hien so (khong "Hoc 0 tu").
+    final hasCount = daily.loaded && daily.total > 0;
+    final total = daily.total;
+    final learned = daily.learned.clamp(0, total);
     return ClipRRect(
       borderRadius: BorderRadius.circular(28),
       child: Container(
@@ -236,9 +253,11 @@ class _DailyWordsHero extends ConsumerWidget {
                   FractionallySizedBox(
                     widthFactor: 0.7,
                     child: Text(
-                      ref
-                          .tr('gt_learn_daily_title')
-                          .replaceFirst('{n}', '$total'),
+                      hasCount
+                          ? ref
+                                .tr('gt_learn_daily_title')
+                                .replaceFirst('{n}', '$total')
+                          : ref.tr('gt_learn_daily_title_plain'),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: GtText.cardTitle(Colors.white)
@@ -246,7 +265,7 @@ class _DailyWordsHero extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  if (total > 0)
+                  if (hasCount)
                     Text(
                       ref
                           .tr('gt_learn_daily_sub')
@@ -269,7 +288,7 @@ class _DailyWordsHero extends ConsumerWidget {
                     onPressed: () => openDailyWordsPopup(context),
                     icon: const Icon(Icons.play_arrow_rounded),
                     label: Text(
-                      ref.tr('gt_learn_continue'),
+                      ref.tr('home_continue'),
                       style: GtText.rowTitle(const Color(0xFF0B0C0E)),
                     ),
                   ),
@@ -498,6 +517,8 @@ class _SpeakingCard extends ConsumerWidget {
                   children: [
                     Text(
                       ref.tr('gt_learn_speaking_overline'),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: GtText.overline(t.teal),
                     ),
                     const SizedBox(height: 4),
@@ -508,7 +529,7 @@ class _SpeakingCard extends ConsumerWidget {
                       style: GtText.cardTitle(t.tx),
                     ),
                     Text(
-                      ref.tr('home_listening_speaking_sub'),
+                      ref.tr('gt_learn_speaking_sub'),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: GtText.body(t.tx2, size: 13),

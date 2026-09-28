@@ -59,7 +59,15 @@ void main() {
     return '$error\n${flexes.join('\n')}';
   }
 
-  Future<void> pump(WidgetTester tester, ContentPack pack) async {
+  Future<void> pump(
+    WidgetTester tester,
+    ContentPack pack, {
+    ({int learned, int total, bool loaded}) daily = (
+      learned: 3,
+      total: 12,
+      loaded: true,
+    ),
+  }) async {
     tester.view.physicalSize = const Size(390 * 3, 787 * 3);
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.reset);
@@ -86,6 +94,8 @@ void main() {
           englishLevelProvider.overrideWithValue(CefrLevel.a1),
           englishPathStateProvider.overrideWithValue(const EnglishPathState()),
           contentPackProvider.overrideWith((ref) async => pack),
+          // Controller that dat thong bao/Timer -> dung tom tat co dinh.
+          dailyWordsSummaryProvider.overrideWithValue(daily),
         ],
         child: MaterialApp(
           theme: ThemeData(extensions: const [GtTokens.dark]),
@@ -111,13 +121,21 @@ void main() {
     expect(overflowReport(tester), isEmpty);
     expect(find.text('A1'), findsOneWidget);
     expect(find.text('0/2 Unit tới Level Test'), findsOneWidget);
+    expect(find.text('Học 12 từ hôm nay'), findsOneWidget);
+    expect(find.text('3/12 từ đã học hôm nay'), findsOneWidget);
     expect(find.byType(LinearProgressIndicator), findsOneWidget);
     // Huy cay -> huy DailyWordsController (Timer nua dem).
     await tester.pumpWidget(const SizedBox());
   });
 
   testWidgets('no content for the stage: no progress bar', (tester) async {
-    await pump(tester, _pack(const []));
+    await pump(
+      tester,
+      _pack(const []),
+      daily: (learned: 0, total: 0, loaded: false),
+    );
+    // Chua tai tu vung -> khong hien so "Hoc 0 tu".
+    expect(find.text('Học từ mới hôm nay'), findsOneWidget);
     expect(overflowReport(tester), isEmpty);
     expect(find.byType(LinearProgressIndicator), findsNothing);
     // Huy cay -> huy DailyWordsController (Timer nua dem).
