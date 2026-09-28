@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:learn_english_music/core/providers/app_providers.dart';
@@ -47,16 +48,21 @@ ContentPack _pack(List<PathStage> stages) => ContentPack(
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  final layoutErrors = <String>[];
+  /// Loi tran bo cuc kem chuoi widget tao ra khoi bi tran.
+  String overflowReport(WidgetTester tester) {
+    final error = tester.takeException();
+    if (error == null) return '';
+    final flexes = tester.allRenderObjects
+        .whereType<RenderFlex>()
+        .where((r) => r.toStringShort().contains('OVERFLOWING'))
+        .map((r) => '${r.toStringShort()} size=${r.size} <- ${r.debugCreator}');
+    return '$error\n${flexes.join('\n')}';
+  }
 
   Future<void> pump(WidgetTester tester, ContentPack pack) async {
     tester.view.physicalSize = const Size(390 * 3, 787 * 3);
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.reset);
-    layoutErrors.clear();
-    final previous = FlutterError.onError;
-    FlutterError.onError = (details) => layoutErrors.add(details.toString());
-    addTearDown(() => FlutterError.onError = previous);
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -102,7 +108,7 @@ void main() {
         ),
       ]),
     );
-    expect(layoutErrors, isEmpty, reason: layoutErrors.join('\n'));
+    expect(overflowReport(tester), isEmpty);
     expect(find.text('A1'), findsOneWidget);
     expect(find.text('0/2 Unit tới Level Test'), findsOneWidget);
     expect(find.byType(LinearProgressIndicator), findsOneWidget);
@@ -112,7 +118,7 @@ void main() {
 
   testWidgets('no content for the stage: no progress bar', (tester) async {
     await pump(tester, _pack(const []));
-    expect(layoutErrors, isEmpty, reason: layoutErrors.join('\n'));
+    expect(overflowReport(tester), isEmpty);
     expect(find.byType(LinearProgressIndicator), findsNothing);
     // Huy cay -> huy DailyWordsController (Timer nua dem).
     await tester.pumpWidget(const SizedBox());
@@ -122,7 +128,7 @@ void main() {
     await pump(tester, _pack(const []));
     await tester.drag(find.byType(ListView).first, const Offset(0, -2000));
     await tester.pumpAndSettle();
-    expect(layoutErrors, isEmpty, reason: layoutErrors.join('\n'));
+    expect(overflowReport(tester), isEmpty);
     expect(find.text('LUYỆN NÓI'), findsOneWidget);
     expect(find.text('TOEIC'), findsOneWidget);
     // Huy cay -> huy DailyWordsController (Timer nua dem).
