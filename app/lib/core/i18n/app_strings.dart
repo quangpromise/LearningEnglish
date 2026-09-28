@@ -5897,6 +5897,46 @@ class AppStrings {
       AppLanguage.vi: '{n} tuần liên tiếp',
       AppLanguage.en: '{n}-week streak',
     },
+    'gt_learn_survey_link': {
+      AppLanguage.vi: 'Đổi mục tiêu học (khảo sát)',
+      AppLanguage.en: 'Change learning goal (survey)',
+    },
+    'gt_learn_level_test_ready': {
+      AppLanguage.vi: 'Đã xong các Unit — làm Level Test để lên cấp',
+      AppLanguage.en: 'All units done — take the Level Test to level up',
+    },
+    'gt_learn_units_to_test': {
+      AppLanguage.vi: '{done}/{total} Unit tới Level Test',
+      AppLanguage.en: '{done}/{total} units to the Level Test',
+    },
+    'gt_learn_daily_overline': {
+      AppLanguage.vi: 'TỪ VỰNG HẰNG NGÀY',
+      AppLanguage.en: 'DAILY WORDS',
+    },
+    'gt_learn_daily_title': {
+      AppLanguage.vi: 'Học {n} từ hôm nay',
+      AppLanguage.en: 'Learn {n} words today',
+    },
+    'gt_learn_daily_sub': {
+      AppLanguage.vi: '{done}/{total} từ đã học hôm nay',
+      AppLanguage.en: '{done}/{total} words learned today',
+    },
+    'gt_learn_continue': {
+      AppLanguage.vi: 'Tiếp tục',
+      AppLanguage.en: 'Continue',
+    },
+    'gt_learn_vocab_cards': {
+      AppLanguage.vi: '{n} thẻ trong bộ ôn',
+      AppLanguage.en: '{n} cards in your deck',
+    },
+    'gt_learn_speaking_overline': {
+      AppLanguage.vi: 'LUYỆN NÓI',
+      AppLanguage.en: 'SPEAKING',
+    },
+    'gt_learn_speaking_title': {
+      AppLanguage.vi: 'Nghe kỹ. Nói lại.',
+      AppLanguage.en: 'Listen. Say it back.',
+    },
   };
 
   static String t(String key, AppLanguage lang) =>

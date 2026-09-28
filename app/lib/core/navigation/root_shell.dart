@@ -8,6 +8,7 @@ import '../providers/app_providers.dart';
 import '../theme/app_theme.dart';
 import '../../features/fitness/presentation/fitness_home_screen.dart';
 import '../../features/fitness/presentation/gt_train_screen.dart';
+import '../../features/english_path/presentation/gt_learn_screen.dart';
 import '../../features/music_player/presentation/center_media_button.dart';
 import '../../features/music_player/presentation/home_screen.dart';
 import '../../features/today/data/gymtalk_reminders.dart';
@@ -208,7 +209,7 @@ class _RootShellState extends ConsumerState<RootShell>
               children: const [
                 GtTodayScreen(),
                 GtTrainScreen(),
-                HomeScreen(),
+                GtLearnScreen(),
                 ProgressScreen(),
               ],
             ),
