@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:learn_english_music/core/providers/app_providers.dart';
@@ -8,7 +9,6 @@ import 'package:learn_english_music/features/fitness/data/exercise_model.dart';
 import 'package:learn_english_music/features/fitness/data/heart_rate_model.dart';
 import 'package:learn_english_music/features/fitness/data/meal_model.dart';
 import 'package:learn_english_music/features/fitness/data/program_model.dart';
-import 'package:learn_english_music/features/fitness/data/program_repository.dart';
 import 'package:learn_english_music/features/fitness/data/workout_repository.dart';
 import 'package:learn_english_music/features/fitness/presentation/gt_train_screen.dart';
 import 'package:learn_english_music/features/music_player/presentation/home_screen.dart'
@@ -24,17 +24,32 @@ void main() {
 
   /// Giao an 1 voi ngay tap (hoac nghi) co dinh - khong phu thuoc thu
   /// trong tuan luc chay test.
-  Future<TodayWorkoutPlan> planFor({required bool restDay}) async {
-    final programs = await ProgramRepository().getAllPrograms();
-    final p = programs.firstWhere((p) => p.id == 1);
-    final days = p.days.where((d) => d.isRestDay == restDay);
-    return TodayWorkoutPlan(
-      program: p,
-      day: days.isEmpty
-          ? const ProgramDay(dayOfWeek: 7, exercises: [])
-          : days.first,
-    );
-  }
+  /// Giao an dung san (khong doc asset bat dong bo) - 1 ngay tap, 1 ngay
+  /// nghi; khong phu thuoc thu trong tuan luc chay test.
+  const exercise = ProgramExerciseRef(
+    exerciseId: 1,
+    targetSets: 4,
+    targetRepsMin: 8,
+    targetRepsMax: 12,
+    orderIndex: 0,
+  );
+  const program = Program(
+    id: 1,
+    titleVi: 'Tăng cơ toàn thân 8 tuần',
+    titleEn: 'Full-body muscle, 8 weeks',
+    level: 'beginner',
+    equipment: 'gym',
+    sessionsPerWeek: 3,
+    durationWeeks: 8,
+    tags: [],
+    days: [
+      ProgramDay(dayOfWeek: 1, exercises: [exercise, exercise]),
+      ProgramDay(dayOfWeek: 2, exercises: []),
+    ],
+  );
+
+  Future<TodayWorkoutPlan> planFor({required bool restDay}) async =>
+      TodayWorkoutPlan(program: program, day: program.days[restDay ? 1 : 0]);
 
   List<Override> overrides({
     double lastWeekKg = 6100,
@@ -90,25 +105,27 @@ void main() {
           ),
       ],
     ),
-    programListProvider.overrideWith(
-      (ref) => ProgramRepository().getAllPrograms(),
-    ),
+    programListProvider.overrideWith((ref) async => const [program]),
     activeProgramIdProvider.overrideWith((ref) async => 1),
     learningPathChoiceProvider.overrideWith((ref) async => null),
   ];
 
-  /// Loi bo cuc (vd tran) kem mo ta day du widget gay loi - de CI chi ra
-  /// dung cho can sua thay vi chi "overflowed by N pixels".
-  final layoutErrors = <String>[];
+  /// Loi tran bo cuc kem chuoi widget tao ra khoi bi tran - de CI chi dung
+  /// cho can sua thay vi chi "overflowed by N pixels".
+  String overflowReport(WidgetTester tester) {
+    final error = tester.takeException();
+    if (error == null) return '';
+    final flexes = tester.allRenderObjects
+        .whereType<RenderFlex>()
+        .where((r) => r.toStringShort().contains('OVERFLOWING'))
+        .map((r) => '${r.toStringShort()} size=${r.size} <- ${r.debugCreator}');
+    return '$error\n${flexes.join('\n')}';
+  }
 
   Future<void> pump(WidgetTester tester, List<Override> o) async {
     tester.view.physicalSize = const Size(390 * 3, 787 * 3);
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.reset);
-    layoutErrors.clear();
-    final previous = FlutterError.onError;
-    FlutterError.onError = (details) => layoutErrors.add(details.toString());
-    addTearDown(() => FlutterError.onError = previous);
     await tester.pumpWidget(
       ProviderScope(
         overrides: o,
@@ -123,7 +140,7 @@ void main() {
 
   testWidgets('Train tab fits 390x787 with real-shaped data', (tester) async {
     await pump(tester, overrides());
-    expect(layoutErrors, isEmpty, reason: layoutErrors.join('\n'));
+    expect(overflowReport(tester), isEmpty);
     expect(find.text('CẤP CƠ THỂ · REGULAR'), findsOneWidget);
     // 13 buoi, 3 tuan -> thieu 7 buoi va 1 tuan lien tiep (ADR-0005).
     expect(
@@ -142,7 +159,7 @@ void main() {
     tester,
   ) async {
     await pump(tester, overrides(lastWeekKg: 0, measured: false));
-    expect(layoutErrors, isEmpty, reason: layoutErrors.join('\n'));
+    expect(overflowReport(tester), isEmpty);
     expect(find.textContaining('so với tuần trước'), findsNothing);
     expect(find.textContaining('-- bpm'), findsOneWidget);
   });
@@ -153,15 +170,26 @@ void main() {
     await pump(tester, overrides());
     await tester.drag(find.byType(ListView).first, const Offset(0, -2000));
     await tester.pumpAndSettle();
-    expect(layoutErrors, isEmpty, reason: layoutErrors.join('\n'));
+    expect(overflowReport(tester), isEmpty);
     expect(find.text('Giáo án'), findsOneWidget);
     expect(find.text('Cộng đồng'), findsOneWidget);
   });
 
   testWidgets('rest day: review CTA instead of start', (tester) async {
     await pump(tester, overrides(restDay: true));
-    expect(layoutErrors, isEmpty, reason: layoutErrors.join('\n'));
-    expect(find.text('Ôn từ vựng'), findsOneWidget);
+    expect(overflowReport(tester), isEmpty);
+    await tester.drag(find.byType(ListView).first, const Offset(0, -400));
+    await tester.pumpAndSettle();
+    final buttons = find.descendant(
+      of: find.byType(FilledButton),
+      matching: find.byType(Text),
+    );
+    expect(
+      find.text('Ôn từ vựng'),
+      findsOneWidget,
+      reason: [for (final e in buttons.evaluate()) (e.widget as Text).data]
+          .join(', '),
+    );
     expect(find.text('Bắt đầu tập'), findsNothing);
   });
 }

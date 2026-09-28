@@ -63,6 +63,9 @@ class GtTopBar extends ConsumerWidget {
                 children: [
                   Text(
                     '${ref.tr(greetingKey)},',
+                    // 1 dong: may hep / chu to khong day cot ra khoi 56dp.
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: GtText.body(t.tx2, size: 13),
                   ),
                   Text(
