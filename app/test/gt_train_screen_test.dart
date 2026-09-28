@@ -128,7 +128,7 @@ void main() {
 
   testWidgets('Train tab fits 390x787 with real-shaped data', (tester) async {
     await pump(tester, overrides());
-    expect(layoutErrors, isEmpty, reason: layoutErrors.join('\n'));
+    expect(overflowReport(tester), isEmpty);
     expect(find.text('CẤP CƠ THỂ · REGULAR'), findsOneWidget);
     // 13 buoi, 3 tuan -> thieu 7 buoi va 1 tuan lien tiep (ADR-0005).
     expect(
@@ -147,7 +147,7 @@ void main() {
     tester,
   ) async {
     await pump(tester, overrides(lastWeekKg: 0, measured: false));
-    expect(layoutErrors, isEmpty, reason: layoutErrors.join('\n'));
+    expect(overflowReport(tester), isEmpty);
     expect(find.textContaining('so với tuần trước'), findsNothing);
     expect(find.textContaining('-- bpm'), findsOneWidget);
   });
@@ -158,14 +158,14 @@ void main() {
     await pump(tester, overrides());
     await tester.drag(find.byType(ListView).first, const Offset(0, -2000));
     await tester.pumpAndSettle();
-    expect(layoutErrors, isEmpty, reason: layoutErrors.join('\n'));
+    expect(overflowReport(tester), isEmpty);
     expect(find.text('Giáo án'), findsOneWidget);
     expect(find.text('Cộng đồng'), findsOneWidget);
   });
 
   testWidgets('rest day: review CTA instead of start', (tester) async {
     await pump(tester, overrides(restDay: true));
-    expect(layoutErrors, isEmpty, reason: layoutErrors.join('\n'));
+    expect(overflowReport(tester), isEmpty);
     expect(find.text('Ôn từ vựng'), findsOneWidget);
     expect(find.text('Bắt đầu tập'), findsNothing);
   });
