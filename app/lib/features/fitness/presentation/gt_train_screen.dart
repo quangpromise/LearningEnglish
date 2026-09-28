@@ -6,6 +6,8 @@ import '../../../core/navigation/app_popup.dart';
 import '../../../core/navigation/gt_top_bar.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/gt_tokens.dart';
+import '../../srs/presentation/srs_review_screen.dart';
+import '../../wealth/presentation/service_expiry_banner.dart';
 import '../../music_player/presentation/home_screen.dart'
     show greetingKeyProvider;
 import '../data/body_level.dart';
@@ -41,7 +43,14 @@ class GtTrainScreen extends ConsumerWidget {
             ..invalidate(fitnessDashboardStatsProvider)
             ..invalidate(todayMealsProvider)
             ..invalidate(heartRateHistoryProvider)
+            ..invalidate(activeProgramIdProvider)
             ..invalidate(todayWorkoutPlanProvider);
+          // Giu vong xoay den khi so lieu tai xong (loi thi van tat).
+          await Future.wait<Object?>([
+            ref.read(bodyStatsProvider.future),
+            ref.read(fitnessDashboardStatsProvider.future),
+            ref.read(todayWorkoutPlanProvider.future),
+          ]).catchError((Object _) => const <Object?>[]);
         },
         child: ListView(
           padding: EdgeInsets.fromLTRB(
@@ -53,6 +62,9 @@ class GtTrainScreen extends ConsumerWidget {
           children: [
             GtTopBar(greetingKey: ref.watch(greetingKeyProvider)),
             const SizedBox(height: 14),
+            // Nhac han goi tap (tu an khi khong co goi sap het han) - giu
+            // tu Trang chu Fitness cu.
+            const ServiceExpiryBanner(section: AppSection.fitness),
             const GtBodyHero(),
             const SizedBox(height: 12),
             const _StatGrid(),
@@ -91,6 +103,19 @@ class GtBodyHero extends ConsumerWidget {
               .tr('gt_train_next_level')
               .replaceFirst('{level}', ref.tr('body_level_${next.level.name}'))
               .replaceFirst('{pct}', '${(progress * 100).round()}');
+    // ADR-0005: noi ro con thieu bao nhieu buoi / tuan lien tiep.
+    final missing = next == null
+        ? ''
+        : [
+            if (next.workoutsNeeded > 0)
+              ref
+                  .tr('gt_train_need_sessions')
+                  .replaceFirst('{n}', '${next.workoutsNeeded}'),
+            if (next.weeksNeeded > 0)
+              ref
+                  .tr('gt_train_need_weeks')
+                  .replaceFirst('{n}', '${next.weeksNeeded}'),
+          ].join(' · ');
     return ClipRRect(
       borderRadius: BorderRadius.circular(28),
       child: SizedBox(
@@ -126,21 +151,25 @@ class GtBodyHero extends ConsumerWidget {
                   ),
                   const SizedBox(height: 8),
                   Expanded(
-                    child: FractionallySizedBox(
-                      widthFactor: 0.7,
+                    // Co chu tu thu nho de 3 dong luon vua (ban tieng Anh
+                    // dai hon), khong bi cat mat dong cuoi.
+                    child: Align(
                       alignment: Alignment.topLeft,
-                      child: Text(
-                        ref.tr('gt_train_hero_title'),
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
-                        style: GtText.heroTitle(Colors.white)
-                            .copyWith(fontSize: 26),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.topLeft,
+                        child: Text(
+                          ref.tr('gt_train_hero_title'),
+                          style: GtText.heroTitle(Colors.white),
+                        ),
                       ),
                     ),
                   ),
                   if (footer.isNotEmpty) ...[
                     Text(
-                      footer,
+                      missing.isEmpty ? footer : '$footer · $missing',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: GtText.body(const Color(0xFFD4D6DA), size: 13),
                     ),
                     const SizedBox(height: 8),
@@ -181,7 +210,8 @@ class _StatGrid extends ConsumerWidget {
     final heartRate = ref.watch(latestHeartRateProvider);
     final meals = ref.watch(todayMealsProvider).valueOrNull ?? const [];
     final kcal = meals.fold<int>(0, (sum, m) => sum + m.kcal);
-    final goal = plan?.program.sessionsPerWeek ?? 4;
+    // Chua co giao an -> khong co muc tieu tuan, khong bia so.
+    final goal = plan?.program.sessionsPerWeek ?? 0;
     final done = stats?.sessionsThisWeek ?? 0;
     final change = volumeChangePercent(
       stats?.totalVolumeThisWeekKg ?? 0,
@@ -205,7 +235,7 @@ class _StatGrid extends ConsumerWidget {
           _StatTile(
             label: ref.tr('gt_train_stat_sessions'),
             value: '$done',
-            unit: '/$goal',
+            unit: goal > 0 ? '/$goal' : ref.tr('gt_unit_session'),
             onTap: () => openAppPopup(context, const FitnessStatisticsScreen()),
             footer: Row(
               children: [
@@ -411,19 +441,24 @@ class _TodaySession extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(16),
                 ),
               ),
+              // Ngay nghi -> on tu (giong the buoi tap o Hom nay).
               onPressed: () => openAppPopup(
                 context,
-                ProgramsListScreen(initialProgramId: plan?.program.id),
+                plan != null && plan.isRestDay
+                    ? const SrsReviewScreen()
+                    : ProgramsListScreen(initialProgramId: plan?.program.id),
               ),
-              icon: Icon(
-                plan == null
-                    ? Icons.fitness_center_rounded
-                    : Icons.play_arrow_rounded,
-              ),
+              icon: Icon(switch (plan) {
+                null => Icons.fitness_center_rounded,
+                final p when p.isRestDay => Icons.style_rounded,
+                _ => Icons.play_arrow_rounded,
+              }),
               label: Text(
-                ref.tr(
-                  plan == null ? 'gt_today_cta_choose' : 'gt_today_cta_start',
-                ),
+                ref.tr(switch (plan) {
+                  null => 'gt_today_cta_choose',
+                  final p when p.isRestDay => 'gt_today_cta_review',
+                  _ => 'gt_today_cta_start',
+                }),
                 style: GtText.rowTitle(t.onRed),
               ),
             ),

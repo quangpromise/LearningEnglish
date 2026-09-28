@@ -5850,8 +5850,8 @@ class AppStrings {
       AppLanguage.en: '{pct}% vs last week',
     },
     'gt_train_stat_heart_rate': {
-      AppLanguage.vi: 'Nhịp tim nghỉ',
-      AppLanguage.en: 'Resting heart rate',
+      AppLanguage.vi: 'Nhịp tim gần nhất',
+      AppLanguage.en: 'Latest heart rate',
     },
     'gt_train_heart_rate_sub': {
       AppLanguage.vi: 'Đo bằng camera',
@@ -5888,6 +5888,14 @@ class AppStrings {
     'gt_train_shortcut_community': {
       AppLanguage.vi: 'Cộng đồng',
       AppLanguage.en: 'Community',
+    },
+    'gt_train_need_sessions': {
+      AppLanguage.vi: 'còn {n} buổi',
+      AppLanguage.en: '{n} more workouts',
+    },
+    'gt_train_need_weeks': {
+      AppLanguage.vi: '{n} tuần liên tiếp',
+      AppLanguage.en: '{n}-week streak',
     },
   };
 
