@@ -11,8 +11,7 @@ import 'package:learn_english_music/features/fitness/data/meal_model.dart';
 import 'package:learn_english_music/features/fitness/data/program_model.dart';
 import 'package:learn_english_music/features/fitness/data/workout_repository.dart';
 import 'package:learn_english_music/features/fitness/presentation/gt_train_screen.dart';
-import 'package:learn_english_music/features/music_player/presentation/home_screen.dart'
-    show greetingKeyProvider;
+import 'package:learn_english_music/core/i18n/greeting.dart';
 import 'package:learn_english_music/features/profile/data/profile_repository.dart';
 import 'package:learn_english_music/features/wealth/data/recurring_service_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';

@@ -11,8 +11,7 @@ import '../../ai_voice_chat/presentation/ai_voice_chat_screen.dart';
 import '../../grammar/presentation/grammar_topics_screen.dart';
 import '../../ielts/presentation/ielts_home_screen.dart';
 import '../../learning_path/presentation/learning_path_survey_screen.dart';
-import '../../music_player/presentation/home_screen.dart'
-    show greetingKeyProvider;
+import '../../../core/i18n/greeting.dart';
 import '../../profile/presentation/profile_screen.dart'
     show openDailyWordsPopup;
 import '../../pronunciation/presentation/phonics_lessons_screen.dart';
@@ -45,7 +44,7 @@ final dailyWordsSummaryProvider =
 
 /// Tab "Hoc" cua ban redesign (spec #70, #76; README §7): the English Level
 /// + tien do toi Level Test, hero tu vung hang ngay, 4 ky nang, luyen noi,
-/// luyen thi. Thay `HomeScreen` (tieng Anh) khi bat `kUseRedesign`.
+/// luyen thi.
 class GtLearnScreen extends ConsumerStatefulWidget {
   const GtLearnScreen({super.key});
 

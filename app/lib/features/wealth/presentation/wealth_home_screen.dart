@@ -10,8 +10,7 @@ import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_format.dart';
 import '../../music_player/presentation/center_media_button.dart';
-import '../../music_player/presentation/home_screen.dart'
-    show greetingKeyForNow;
+import '../../../core/i18n/greeting.dart';
 import '../../social/presentation/conversations_screen.dart';
 import '../data/wealth_balance_entry_model.dart';
 import '../data/wealth_report_data.dart';

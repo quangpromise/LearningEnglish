@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/config/gymtalk_flags.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
@@ -681,96 +680,13 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
     if (controller == null) {
       return _SignedOutView(onBack: () => Navigator.of(context).pop());
     }
-    // Ban redesign (spec #70, #79): cung controller/outbox/Rest Game.
-    if (kUseRedesign) return _redesignBuild(controller);
-    final resting = controller.phase == WorkoutPhase.resting;
-
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) _confirmExit();
-      },
-      child: ScreenBackground(
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _Header(
-                  controller: controller,
-                  onClose: _confirmExit,
-                  onPickRest: _pickRestDuration,
-                ),
-                const SizedBox(height: 12),
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: resting
-                        ? _RestingView(
-                            controller: controller,
-                            vocabCard: _restLearnCard(),
-                          )
-                        : _LoggingView(
-                            controller: controller,
-                            onOpenCamera:
-                                RepPattern.forExercise(
-                                      controller.currentBlock.exercise,
-                                    ) ==
-                                    null
-                                ? null
-                                : _openRepCamera,
-                          ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                if (resting)
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _BigButton(
-                          label: ref.tr('fitness_workout_add_rest'),
-                          filled: false,
-                          onTap: () => controller.addRestSeconds(15),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        flex: 2,
-                        child: _BigButton(
-                          label: ref.tr('fitness_workout_skip_rest'),
-                          onTap: controller.skipRest,
-                        ),
-                      ),
-                    ],
-                  )
-                else
-                  _BigButton(
-                    label: ref.tr('fitness_workout_complete_set'),
-                    icon: Icons.check_rounded,
-                    onTap: controller.completeSet,
-                  ),
-                if (controller.canUndo)
-                  TextButton.icon(
-                    onPressed: controller.undoLastSet,
-                    style: TextButton.styleFrom(
-                      minimumSize: const Size.fromHeight(44),
-                      foregroundColor: AppColors.fitnessTextSecondary,
-                    ),
-                    icon: const Icon(Icons.undo_rounded, size: 18),
-                    label: Text(ref.tr('fitness_workout_undo_set')),
-                  ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
+    return _sessionView(controller);
   }
 
-  /// Man buoi tap ban redesign (README §9): header anh + vach tien do bai,
+  /// Man buoi tap (spec #70, README §9): header anh + vach tien do bai,
   /// bang hiep, the "Hoc trong luc nghi" (Rest Game san co), nut chinh theo
   /// [sessionAction]. Moi hanh dong van goi dung [WorkoutController].
-  Widget _redesignBuild(WorkoutController controller) {
+  Widget _sessionView(WorkoutController controller) {
     final t = context.gt;
     final resting = controller.phase == WorkoutPhase.resting;
     final action = sessionAction(
@@ -821,9 +737,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                           const SizedBox(height: 14),
                           _StepperRow(
                             label: ref.tr('fitness_workout_weight_kg'),
-                            value: _LoggingView._formatKg(
-                              controller.currentWeightKg,
-                            ),
+                            value: _formatKg(controller.currentWeightKg),
                             onMinus: () => controller.adjustWeight(-2.5),
                             onPlus: () => controller.adjustWeight(2.5),
                           ),
@@ -933,183 +847,6 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
       ),
     );
   }
-}
-
-class _Header extends ConsumerWidget {
-  const _Header({
-    required this.controller,
-    required this.onClose,
-    required this.onPickRest,
-  });
-  final WorkoutController controller;
-  final VoidCallback onClose;
-  final VoidCallback onPickRest;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Row(
-      children: [
-        _RoundIconButton(icon: Icons.close_rounded, onTap: onClose),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      ref
-                          .tr('fitness_workout_exercise_progress')
-                          .replaceFirst(
-                            '{current}',
-                            '${controller.groupIndex + 1}',
-                          )
-                          .replaceFirst(
-                            '{total}',
-                            '${controller.groups.length}',
-                          ),
-                      style: AppTextStyles.body(weight: FontWeight.w800),
-                    ),
-                  ),
-                  _ElapsedText(controller: controller),
-                ],
-              ),
-              const SizedBox(height: 6),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(999),
-                child: LinearProgressIndicator(
-                  value: controller.progress,
-                  minHeight: 6,
-                  backgroundColor: AppColors.fitnessDivider,
-                  color: AppColors.fitnessAccent,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(width: 12),
-        _RoundIconButton(icon: Icons.timer_outlined, onTap: onPickRest),
-      ],
-    );
-  }
-}
-
-/// Dong ho tong thoi gian buoi tap - tu rebuild moi giay, tach rieng de
-/// khong phai rebuild ca man hinh.
-class _ElapsedText extends StatefulWidget {
-  const _ElapsedText({required this.controller});
-  final WorkoutController controller;
-
-  @override
-  State<_ElapsedText> createState() => _ElapsedTextState();
-}
-
-class _ElapsedTextState extends State<_ElapsedText> {
-  late final Timer _timer;
-
-  @override
-  void initState() {
-    super.initState();
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) => setState(() {}));
-  }
-
-  @override
-  void dispose() {
-    _timer.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final elapsed = widget.controller.elapsed;
-    final minutes = elapsed.inMinutes.toString().padLeft(2, '0');
-    final seconds = (elapsed.inSeconds % 60).toString().padLeft(2, '0');
-    return Text(
-      '$minutes:$seconds',
-      style: AppTextStyles.body(
-        weight: FontWeight.w700,
-        color: AppColors.fitnessTextSecondary,
-      ).copyWith(fontFeatures: const [FontFeature.tabularFigures()]),
-    );
-  }
-}
-
-class _LoggingView extends ConsumerWidget {
-  const _LoggingView({required this.controller, this.onOpenCamera});
-  final WorkoutController controller;
-
-  /// Mo "Dem rep bang camera" - null khi bai nay chua ho tro (plank...).
-  final VoidCallback? onOpenCamera;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final block = controller.currentBlock;
-    final exercise = block.exercise;
-    final lang = ref.watch(appLanguageProvider);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        ExercisePhotoAnimator(
-          key: ValueKey(exercise.id),
-          assets: exercise.photoAssets,
-          height: 170,
-        ),
-        const SizedBox(height: 14),
-        Text(
-          exercise.nameFor(lang),
-          textAlign: TextAlign.center,
-          style: AppTextStyles.heading(size: 24),
-        ),
-        Text(
-          exercise.altNameFor(lang),
-          textAlign: TextAlign.center,
-          style: AppTextStyles.muted(size: 14),
-        ),
-        const SizedBox(height: 10),
-        Center(child: _SetBadge(controller: controller)),
-        const SizedBox(height: 6),
-        Text(
-          ref
-              .tr('fitness_workout_target_reps')
-              .replaceFirst('{min}', '${block.targetRepsMin}')
-              .replaceFirst('{max}', '${block.targetRepsMax}'),
-          textAlign: TextAlign.center,
-          style: AppTextStyles.muted(size: 13),
-        ),
-        const SizedBox(height: 18),
-        _StepperRow(
-          label: ref.tr('fitness_workout_weight_kg'),
-          value: _formatKg(controller.currentWeightKg),
-          onMinus: () => controller.adjustWeight(-2.5),
-          onPlus: () => controller.adjustWeight(2.5),
-        ),
-        const SizedBox(height: 12),
-        _StepperRow(
-          label: ref.tr('fitness_workout_reps'),
-          value: '${controller.currentReps}',
-          onMinus: () => controller.adjustReps(-1),
-          onPlus: () => controller.adjustReps(1),
-        ),
-        if (onOpenCamera != null) ...[
-          const SizedBox(height: 8),
-          TextButton.icon(
-            onPressed: onOpenCamera,
-            style: TextButton.styleFrom(
-              minimumSize: const Size.fromHeight(48),
-              foregroundColor: AppColors.fitnessAccentBright,
-            ),
-            icon: const Icon(Icons.videocam_rounded),
-            label: Text(ref.tr('rep_camera_open')),
-          ),
-        ],
-      ],
-    );
-  }
-
-  /// 20.0 -> "20", 22.5 -> "22.5".
-  static String _formatKg(double kg) =>
-      kg == kg.roundToDouble() ? kg.toStringAsFixed(0) : kg.toStringAsFixed(1);
 }
 
 class _SetBadge extends ConsumerWidget {
@@ -1325,56 +1062,6 @@ class _EnableLearnButton extends ConsumerWidget {
       ),
       icon: const Icon(Icons.school_rounded, size: 18),
       label: Text(ref.tr('fitness_rest_learn_enable')),
-    );
-  }
-}
-
-/// Nut hanh dong chinh co dinh o day man hinh - cao 60dp, chu to.
-class _BigButton extends StatelessWidget {
-  const _BigButton({
-    required this.label,
-    required this.onTap,
-    this.filled = true,
-    this.icon,
-  });
-  final String label;
-  final VoidCallback onTap;
-  final bool filled;
-  final IconData? icon;
-
-  @override
-  Widget build(BuildContext context) {
-    final foreground = filled ? Colors.white : AppColors.fitnessAccentBright;
-    return Material(
-      color: filled
-          ? AppColors.fitnessAccent
-          : AppColors.fitnessAccent.withValues(alpha: 0.14),
-      borderRadius: BorderRadius.circular(18),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(18),
-        onTap: onTap,
-        child: SizedBox(
-          height: 60,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (icon != null) ...[
-                Icon(icon, color: foreground, size: 24),
-                const SizedBox(width: 8),
-              ],
-              Flexible(
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.heading(size: 18)
-                      .copyWith(color: foreground),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }
@@ -1619,9 +1306,9 @@ class _GtSetsTable extends ConsumerWidget {
                   Expanded(
                     child: cell(
                       logged[n] != null
-                          ? _LoggingView._formatKg(logged[n]!.weightKg)
+                          ? _formatKg(logged[n]!.weightKg)
                           : n == current
-                          ? _LoggingView._formatKg(controller.currentWeightKg)
+                          ? _formatKg(controller.currentWeightKg)
                           : '-',
                       color: n == current ? t.tx : t.tx2,
                     ),
@@ -1772,3 +1459,7 @@ class _GtButton extends StatelessWidget {
     );
   }
 }
+
+/// 20.0 -> "20", 22.5 -> "22.5".
+String _formatKg(double kg) =>
+    kg == kg.roundToDouble() ? kg.toStringAsFixed(0) : kg.toStringAsFixed(1);

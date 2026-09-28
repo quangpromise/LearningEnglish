@@ -27,7 +27,6 @@ import 'features/auth/presentation/reset_password_screen.dart';
 import 'features/auth/presentation/sign_in_screen.dart';
 import 'features/onboarding/data/onboarding_repository.dart';
 import 'features/onboarding/presentation/gt_onboarding_screen.dart';
-import 'features/onboarding/presentation/onboarding_screen.dart';
 import 'core/navigation/planner_source_openers.dart';
 import 'features/planner/data/planner_notification_service.dart';
 import 'features/planner/presentation/planner_accent.dart';
@@ -393,13 +392,8 @@ class _AuthGate extends ConsumerWidget {
     return seenAsync.when(
       data: (seen) => seen
           ? const RootShell()
-          // Ban redesign: onboarding 3 buoc (spec #70, #80), cung co "da xem".
-          : kUseRedesign
-          ? GtOnboardingScreen(
-              userId: userId,
-              onDone: () => ref.invalidate(onboardingSeenProvider(userId)),
-            )
-          : OnboardingScreen(
+          // Onboarding 3 buoc (spec #70, #80) - cung co "da xem" voi carousel cu.
+          : GtOnboardingScreen(
               userId: userId,
               onDone: () => ref.invalidate(onboardingSeenProvider(userId)),
             ),

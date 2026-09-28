@@ -503,75 +503,10 @@ class TileLabelText extends StatelessWidget {
   }
 }
 
-/// Nen rieng cho 2 man Home da thiet ke lai (Hoc Tieng Anh / Quan ly tai san).
-///
-/// KHONG dung [ScreenBackground]: nen do phu anh chup that (toa nha, van da...)
-/// cua tung khu vuc, ma toan bo bang mau cua ban thiet ke moi duoc do tren NEN
-/// GAN DEN - the la kinh mo alpha ~0.085, chi ra dung mau #0D1622 khi nam tren
-/// nen den. Dat cung bang mau do len anh chup thi anh xuyen qua the, mau bi
-/// bech va man hinh khong con giong thiet ke.
-///
-/// Nen nay gom 3 lop dung nhu file thiet ke:
-///   1. Doc gan den, hoi xanh o tren, tat han o day
-///   2. Quang sang mo o goc tren-phai
-///   3. Vanh sang hanh tinh - cung tron tam (452, 434) ban kinh 379 tren khung
-///      390px, do bang cach do vet diem sang nhat theo tung cot tren anh goc
-class HomeDesignBackground extends StatelessWidget {
-  const HomeDesignBackground({
-    super.key,
-    required this.child,
-    this.glow = const Color(0xFF68A6FF),
-  });
-
-  final Widget child;
-
-  /// Mau quang sang + vanh sang. Xanh cho Hoc Tieng Anh, vang cho Tai san.
-  final Color glow;
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        const Positioned.fill(
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color(0xFF070C18),
-                  Color(0xFF040B15),
-                  Color(0xFF02070F),
-                  Color(0xFF01050C),
-                  Color(0xFF000206),
-                ],
-                stops: [0, 0.18, 0.5, 0.78, 1],
-              ),
-            ),
-          ),
-        ),
-        Positioned.fill(
-          child: IgnorePointer(
-            child: CustomPaint(painter: _PlanetLimbPainter(glow)),
-          ),
-        ),
-        // SafeArea CHI boc noi dung, KHONG boc 2 lop nen phia tren: nen van
-        // trai het man (chay ca duoi thanh trang thai/notch) nhu thiet ke,
-        // nhung chu + the khong con bi thanh trang thai cua may che mat.
-        // [ScreenBackground] da lam dung viec nay, 2 nen Home moi thi quen -
-        // do la ly do man Home bi "de" o tren con cac man khac thi khong.
-        // bottom: false - thanh nhac o day do Scaffold.bottomNavigationBar
-        // dam nhiem (Scaffold tu cong le an toan duoi cho no).
-        Positioned.fill(child: SafeArea(bottom: false, child: child)),
-      ],
-    );
-  }
-}
-
-/// Nen man Quan ly tai san - KHAC [HomeDesignBackground]: ban thiet ke vang
+/// Nen man Quan ly tai san - KHAC nen phang cua ban redesign: ban thiet ke vang
 /// khong co vanh hanh tinh, chi la nen den sau voi 2 quang vang rat nhe (goc
 /// tren-phai manh hon, day man rat mo) de cac the vien vang noi len. Dung
-/// chung HomeDesignBackground voi glow vang tung lam man nay bi am xanh navy
+/// chung nen Home cu voi glow vang tung lam man nay bi am xanh navy
 /// vi doc nen va vanh sang deu nga xanh.
 class WealthDesignBackground extends StatelessWidget {
   const WealthDesignBackground({super.key, required this.child});
@@ -647,7 +582,7 @@ class WealthDesignBackground extends StatelessWidget {
             ),
           ),
         ),
-        // Nhu [HomeDesignBackground]: nen trai het man, rieng noi dung duoc
+        // Nen trai het man, rieng noi dung duoc
         // day xuong duoi thanh trang thai. O day GIU ca le duoi vi thanh nhac
         // cua man Tai san nam TRONG than trang (xem wealth_home_screen.dart)
         // chu khong phai bottomNavigationBar, nen phai tu tranh vach cu chi.

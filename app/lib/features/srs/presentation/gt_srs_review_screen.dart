@@ -12,8 +12,7 @@ import '../data/srs_store.dart';
 
 /// On the ban redesign (spec #70, #78; README §10): the lon lat duoc, 3 nut
 /// Quen / Kho / Nho kem khoang on that, thanh tien do. Het bo the -> cong
-/// XP nhiem vu (neu vua dat) va Celebration. `SrsReviewScreen` chuyen sang
-/// man nay khi bat `kUseRedesign`.
+/// XP nhiem vu (neu vua dat) va Celebration. Mo qua `SrsReviewScreen`.
 class GtSrsReviewScreen extends ConsumerStatefulWidget {
   const GtSrsReviewScreen({
     super.key,

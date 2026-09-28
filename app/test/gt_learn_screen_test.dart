@@ -10,8 +10,7 @@ import 'package:learn_english_music/features/english_path/data/english_path_prov
 import 'package:learn_english_music/features/english_path/data/english_path_state.dart';
 import 'package:learn_english_music/features/english_path/presentation/gt_learn_screen.dart';
 import 'package:learn_english_music/features/fitness/data/body_level.dart';
-import 'package:learn_english_music/features/music_player/presentation/home_screen.dart'
-    show greetingKeyProvider;
+import 'package:learn_english_music/core/i18n/greeting.dart';
 import 'package:learn_english_music/features/profile/data/profile_repository.dart';
 import 'package:learn_english_music/features/wealth/data/recurring_service_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
