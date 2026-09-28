@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/config/gymtalk_flags.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/tts/tutorial_voice.dart';
 import '../../../core/widgets/speaker_button.dart';
 import '../../today/data/daily_progress_store.dart';
 import '../data/srs_store.dart';
+import 'gt_srs_review_screen.dart';
 
 /// On tap tu den han (SRS) - mo dang popup tu man Hom nay. Moi the: nghe
 /// phat am (chi khi bam), "Hien nghia", roi tu danh gia Quen/Nho. Toi da
@@ -63,6 +65,8 @@ class _SrsReviewScreenState extends ConsumerState<SrsReviewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Ban redesign (spec #70, #78): 3 muc cham + the lat.
+    if (kUseRedesign) return GtSrsReviewScreen(maxCards: widget.maxCards);
     final queue = _queue;
     return ScreenBackground(
       child: SafeArea(

@@ -220,10 +220,18 @@ class _GtCelebrationState extends State<GtCelebration>
                             ),
                           ],
                         ),
-                        child: Text(
-                          '+${widget.xp} XP',
-                          style: GtText.ringStat(t.onGold),
-                        ),
+                        // Khong co XP that (vd nhiem vu da nhan truoc do) ->
+                        // dau tick, khong bia so.
+                        child: widget.xp > 0
+                            ? Text(
+                                '+${widget.xp} XP',
+                                style: GtText.ringStat(t.onGold),
+                              )
+                            : Icon(
+                                Icons.check_rounded,
+                                color: t.onGold,
+                                size: 64,
+                              ),
                       ),
                     );
                   },
