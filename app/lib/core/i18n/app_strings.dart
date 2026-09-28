@@ -5752,6 +5752,71 @@ class AppStrings {
       AppLanguage.vi: 'Chọn giáo án',
       AppLanguage.en: 'Choose a program',
     },
+    'gt_quests_title': {
+      AppLanguage.vi: 'Nhiệm vụ hằng ngày',
+      AppLanguage.en: 'Daily quests',
+    },
+    'gt_quest_review_title': {
+      AppLanguage.vi: 'Ôn {goal} thẻ từ',
+      AppLanguage.en: 'Review {goal} word cards',
+    },
+    'gt_quest_review_sub': {
+      AppLanguage.vi: 'Thẻ đến hạn trong bộ của bạn',
+      AppLanguage.en: 'Due cards in your deck',
+    },
+    'gt_quest_pronunciation_title': {
+      AppLanguage.vi: 'Luyện phát âm {goal} câu',
+      AppLanguage.en: 'Practise {goal} sentences aloud',
+    },
+    'gt_quest_pronunciation_sub': {
+      AppLanguage.vi: 'Được chấm điểm từng câu',
+      AppLanguage.en: 'Each sentence gets a score',
+    },
+    'gt_quest_handsFree_title': {
+      AppLanguage.vi: 'Nghe và nhắc lại',
+      AppLanguage.en: 'Listen and repeat',
+    },
+    'gt_quest_handsFree_sub': {
+      AppLanguage.vi: 'Rảnh tay khi chạy bộ, đạp xe',
+      AppLanguage.en: 'Hands-free while running or cycling',
+    },
+    'gt_quest_trainerChat_title': {
+      AppLanguage.vi: 'Nói chuyện với PT AI',
+      AppLanguage.en: 'Talk to your AI coach',
+    },
+    'gt_quest_trainerChat_sub': {
+      AppLanguage.vi: 'Nói ít nhất {goal} câu bằng tiếng Anh',
+      AppLanguage.en: 'Say at least {goal} lines in English',
+    },
+    'gt_chest_locked': {
+      AppLanguage.vi: 'Hoàn thành {n} nhiệm vụ nữa để mở rương',
+      AppLanguage.en: 'Finish {n} more quests to open the chest',
+    },
+    'gt_chest_ready': {
+      AppLanguage.vi: 'Rương đã sẵn sàng!',
+      AppLanguage.en: 'Your chest is ready!',
+    },
+    'gt_chest_opened': {
+      AppLanguage.vi: 'Đã mở rương hôm nay',
+      AppLanguage.en: 'Chest opened today',
+    },
+    'gt_chest_open': {AppLanguage.vi: 'Mở', AppLanguage.en: 'Open'},
+    'gt_chest_celebration_title': {
+      AppLanguage.vi: 'Xong cả 4 nhiệm vụ!',
+      AppLanguage.en: 'All 4 quests done!',
+    },
+    'gt_chest_celebration_sub': {
+      AppLanguage.vi: 'Hôm nay bạn đã tập, học và nói đều tay.',
+      AppLanguage.en: 'You trained, learned and spoke today.',
+    },
+    'gt_celebration_cta': {
+      AppLanguage.vi: 'Tuyệt vời',
+      AppLanguage.en: 'Awesome',
+    },
+    'gt_celebration_streak_chip': {
+      AppLanguage.vi: 'Chuỗi {days} ngày',
+      AppLanguage.en: '{days}-day streak',
+    },
   };
 
   static String t(String key, AppLanguage lang) =>

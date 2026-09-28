@@ -9,6 +9,7 @@ import '../../../core/utils/keep_screen_on.dart';
 import '../../../core/widgets/speaker_button.dart';
 import '../../pronunciation/data/pronunciation_scoring.dart';
 import '../../srs/data/srs_store.dart';
+import '../../today/data/daily_progress_store.dart';
 import '../data/hands_free_drill.dart';
 import '../data/speech_listener.dart';
 
@@ -68,6 +69,13 @@ class _HandsFreeDrillScreenState extends ConsumerState<HandsFreeDrillScreen> {
   }
 
   void _onDrillChanged() {
+    final drill = _drill;
+    // Nhiem vu "Nghe va nhac lai": xong 1 luot co it nhat 1 cau dat.
+    if (drill != null &&
+        drill.phase == DrillPhase.finished &&
+        drill.passed > 0) {
+      DailyProgressStore.instance.markHandsFreeDone();
+    }
     if (mounted) setState(() {});
   }
 

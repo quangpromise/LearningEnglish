@@ -25,6 +25,8 @@ import '../data/gemini_voices.dart';
 import '../data/spatius_session_api.dart';
 import '../data/voice_chat_client.dart';
 import '../data/voice_chat_config.dart';
+import '../../today/data/daily_progress_store.dart';
+import '../../today/data/daily_quests.dart';
 import '../data/voice_chat_scenario.dart';
 import '../../translation/presentation/word_popup_sheet.dart';
 import 'anam_live_avatar.dart';
@@ -406,6 +408,12 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
     // cua co che "Correction:" cua Gemini).
     if (toAdd.role == ChatRole.user) {
       unawaited(_checkGrammar(toAdd));
+      // Nhiem vu "Noi chuyen voi PT AI": du so luot nguoi dung noi.
+      if (widget.scenario == VoiceChatScenario.personalTrainer &&
+          _messages.where((m) => m.role == ChatRole.user).length >=
+              kTrainerChatQuestTurns) {
+        unawaited(DailyProgressStore.instance.markTrainerChatDone());
+      }
     }
   }
 

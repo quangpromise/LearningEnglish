@@ -10,12 +10,15 @@ import '../../../core/navigation/gt_top_bar.dart';
 import '../../../core/navigation/root_tabs.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/gt_tokens.dart';
+import '../../../core/widgets/gt_celebration.dart';
 import '../../fitness/presentation/programs_list_screen.dart';
 import '../../music_player/presentation/home_screen.dart';
 import '../../srs/data/srs_store.dart';
 import '../../srs/presentation/srs_review_screen.dart';
 import '../data/daily_progress_store.dart';
+import '../data/daily_quests.dart';
 import '../data/today_presentation.dart';
+import 'gt_quests_card.dart';
 import 'gymtalk_setup_sheet.dart';
 
 /// Tab "Hom nay" cua ban redesign (spec #70, #73): top bar -> the Daily
@@ -38,6 +41,9 @@ class _GtTodayScreenState extends ConsumerState<GtTodayScreen> {
     super.initState();
     DailyProgressStore.instance.ensureLoaded();
     SrsStore.instance.ensureLoaded();
+    // Nhiem vu vua xong (o bat ky man nao) -> cong XP 1 lan + toast.
+    DailyProgressStore.instance.addListener(_claimQuestXp);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _claimQuestXp());
     // Lan dau chua co giao an -> tu mo "Thiet lap GymTalk" 1 lan (giu hanh
     // vi cu cho toi khi co onboarding moi - UI-10).
     ref.listenManual<AsyncValue<TodayWorkoutPlan?>>(todayWorkoutPlanProvider, (
@@ -46,6 +52,28 @@ class _GtTodayScreenState extends ConsumerState<GtTodayScreen> {
     ) {
       if (next.hasValue && next.value == null) _maybePromptSetup();
     }, fireImmediately: true);
+  }
+
+  bool _claiming = false;
+
+  Future<void> _claimQuestXp() async {
+    if (_claiming || !mounted) return;
+    if (pendingQuestRewards(DailyProgressStore.instance.today).isEmpty) return;
+    _claiming = true;
+    try {
+      final xp = await ref
+          .read(questRewardServiceProvider)
+          .claimPendingQuests();
+      if (xp > 0) showXpToast(xp);
+    } finally {
+      _claiming = false;
+    }
+  }
+
+  @override
+  void dispose() {
+    DailyProgressStore.instance.removeListener(_claimQuestXp);
+    super.dispose();
   }
 
   Future<void> _maybePromptSetup() async {
@@ -103,6 +131,8 @@ class _GtTodayScreenState extends ConsumerState<GtTodayScreen> {
                   today: store.today,
                   dueCount: SrsStore.instance.dueCount(now),
                 ),
+                const SizedBox(height: 16),
+                GtQuestsCard(day: store.today),
               ],
             );
           },
