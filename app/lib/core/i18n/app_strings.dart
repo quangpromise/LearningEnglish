@@ -5989,6 +5989,34 @@ class AppStrings {
       AppLanguage.vi: 'Hiện thanh nhạc nhỏ phía trên thanh tab',
       AppLanguage.en: 'Show the small music bar above the tabs',
     },
+    'gt_srs_done_title': {
+      AppLanguage.vi: 'Xong bộ thẻ!',
+      AppLanguage.en: 'Deck done!',
+    },
+    'gt_srs_done_sub': {
+      AppLanguage.vi: 'Bạn vừa ôn {n} thẻ từ vựng.',
+      AppLanguage.en: 'You just reviewed {n} word cards.',
+    },
+    'gt_srs_interval_today': {
+      AppLanguage.vi: 'Hôm nay',
+      AppLanguage.en: 'Today',
+    },
+    'gt_srs_interval_days': {
+      AppLanguage.vi: '{n} ngày',
+      AppLanguage.en: '{n} d',
+    },
+    'gt_srs_tap_to_flip': {
+      AppLanguage.vi: 'Chạm để xem nghĩa',
+      AppLanguage.en: 'Tap to see the meaning',
+    },
+    'gt_srs_overline': {
+      AppLanguage.vi: 'TỪ VỰNG',
+      AppLanguage.en: 'VOCABULARY',
+    },
+    'gt_srs_listen': {AppLanguage.vi: 'Nghe phát âm', AppLanguage.en: 'Listen'},
+    'gt_srs_forgot': {AppLanguage.vi: 'Quên', AppLanguage.en: 'Forgot'},
+    'gt_srs_hard': {AppLanguage.vi: 'Khó', AppLanguage.en: 'Hard'},
+    'gt_srs_know': {AppLanguage.vi: 'Nhớ', AppLanguage.en: 'Know'},
   };
 
   static String t(String key, AppLanguage lang) =>

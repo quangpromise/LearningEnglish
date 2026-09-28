@@ -1,18 +1,11 @@
 import 'dart:convert';
-import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Khoang cach on (ngay) theo hop Leitner: hop 0 on ngay trong hom, hop 1
-/// sau 1 ngay, ... hop 5 sau 35 ngay.
-const kSrsIntervalsDays = [0, 1, 3, 7, 16, 35];
+import 'srs_grading.dart';
 
-/// Hop tu duoc coi la "da thuoc" (xep cuoi khi chon tu moi cho buoi tap).
-const kSrsMasteredBox = 4;
-
-/// Hop cao nhat (= so phan tu [kSrsIntervalsDays] - 1).
-const kSrsMaxBox = 5;
+export 'srs_grading.dart';
 
 /// Ngay (khong gio) theo gio may - moc tinh han on.
 DateTime srsDateOnly(DateTime t) => DateTime(t.year, t.month, t.day);
@@ -240,12 +233,25 @@ class SrsStore extends ChangeNotifier {
     await _save();
   }
 
-  /// Ghi nhan 1 lan on: [known] -> len 1 hop, han on lui theo khoang cach
-  /// cua hop moi; quen -> ve hop 0, on lai ngay trong hom. [content] dung
-  /// khi the chua co trong bo (vd lan dau gap tu gym luc nghi).
+  /// Ghi nhan 1 lan on (API cu): [known] -> Nho, khong -> Quen. Giu nguyen
+  /// cho cac noi goi cu (Rest Game, man tap...).
   Future<void> review(
     String key, {
     required bool known,
+    required DateTime now,
+    SrsCard? content,
+  }) => grade(
+    key,
+    gradeFromKnown(known: known),
+    now: now,
+    content: content,
+  );
+
+  /// Cham 1 the 3 muc (spec #70, xem [nextSchedule]). [content] dung khi the
+  /// chua co trong bo (vd lan dau gap tu gym luc nghi).
+  Future<void> grade(
+    String key,
+    SrsGrade grade, {
     required DateTime now,
     SrsCard? content,
   }) async {
@@ -258,13 +264,17 @@ class SrsStore extends ChangeNotifier {
             ? content
             : _withKey(content, lower));
     if (current == null) return;
-    final box = known ? min(current.box + 1, kSrsMaxBox) : 0;
+    final next = nextSchedule(current.box, grade);
     _cards[lower] = current.copyWith(
-      box: box,
-      due: srsDateOnly(now).add(Duration(days: kSrsIntervalsDays[box])),
+      box: next.box,
+      due: srsDateOnly(now).add(Duration(days: next.days)),
       reviewedAt: now.toUtc(),
     );
     notifyListeners();
     await _save();
   }
+
+  /// Hop hien tai cua [card] -> so ngay neu cham [grade] (nhan tren nut).
+  int nextIntervalDays(SrsCard card, SrsGrade grade) =>
+      nextSchedule(boxOf(card.key), grade).days;
 }
