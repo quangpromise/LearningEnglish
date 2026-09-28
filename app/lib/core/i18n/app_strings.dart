@@ -6052,6 +6052,147 @@ class AppStrings {
       AppLanguage.vi: '{sets} hiệp · {min} phút',
       AppLanguage.en: '{sets} sets · {min} min',
     },
+    'gt_onb_hero_1': {
+      AppLanguage.vi: 'Khỏe thân.',
+      AppLanguage.en: 'Stronger body.',
+    },
+    'gt_onb_hero_2': {
+      AppLanguage.vi: 'Giỏi tiếng Anh.',
+      AppLanguage.en: 'Better English.',
+    },
+    'gt_onb_hero_3': {
+      AppLanguage.vi: 'Mỗi ngày.',
+      AppLanguage.en: 'Every day.',
+    },
+    'gt_onb_welcome_body': {
+      AppLanguage.vi: 'Một kế hoạch cho cả cơ bắp và vốn từ. Tập xong một hiệp, học thêm một từ.',
+      AppLanguage.en: 'One plan for your muscles and your vocabulary. Finish a set, learn a word.',
+    },
+    'gt_onb_start': {AppLanguage.vi: 'Bắt đầu', AppLanguage.en: 'Get started'},
+    'gt_onb_skip': {
+      AppLanguage.vi: 'Bỏ qua, vào app luôn',
+      AppLanguage.en: 'Skip for now',
+    },
+    'gt_onb_step': {
+      AppLanguage.vi: 'BƯỚC {n} / {total}',
+      AppLanguage.en: 'STEP {n} / {total}',
+    },
+    'gt_onb_continue': {AppLanguage.vi: 'Tiếp tục', AppLanguage.en: 'Continue'},
+    'gt_onb_make_plan': {
+      AppLanguage.vi: 'Tạo kế hoạch',
+      AppLanguage.en: 'Create my plan',
+    },
+    'gt_onb_follow': {
+      AppLanguage.vi: 'Theo giáo án này',
+      AppLanguage.en: 'Follow this program',
+    },
+    'gt_onb_later': {AppLanguage.vi: 'Để sau', AppLanguage.en: 'Maybe later'},
+    'gt_onb_goals_title': {
+      AppLanguage.vi: 'Bạn muốn đạt được gì?',
+      AppLanguage.en: 'What do you want to achieve?',
+    },
+    'gt_onb_goals_sub': {
+      AppLanguage.vi: 'Chọn bao nhiêu cũng được.',
+      AppLanguage.en: 'Pick as many as you like.',
+    },
+    'gt_onb_goal_muscle': {
+      AppLanguage.vi: 'Tăng cơ',
+      AppLanguage.en: 'Build muscle',
+    },
+    'gt_onb_goal_muscle_sub': {
+      AppLanguage.vi: 'Giáo án 8 tuần',
+      AppLanguage.en: '8-week program',
+    },
+    'gt_onb_goal_fat': {AppLanguage.vi: 'Giảm mỡ', AppLanguage.en: 'Lose fat'},
+    'gt_onb_goal_fat_sub': {
+      AppLanguage.vi: 'Cardio + dinh dưỡng',
+      AppLanguage.en: 'Cardio + nutrition',
+    },
+    'gt_onb_goal_talk': {
+      AppLanguage.vi: 'Giao tiếp',
+      AppLanguage.en: 'Speak confidently',
+    },
+    'gt_onb_goal_talk_sub': {
+      AppLanguage.vi: 'Nói tự tin hơn',
+      AppLanguage.en: 'Everyday conversation',
+    },
+    'gt_onb_goal_exam': {
+      AppLanguage.vi: 'Thi chứng chỉ',
+      AppLanguage.en: 'Pass an exam',
+    },
+    'gt_onb_goal_exam_sub': {
+      AppLanguage.vi: 'TOEIC · IELTS',
+      AppLanguage.en: 'TOEIC · IELTS',
+    },
+    'gt_onb_minutes_title': {
+      AppLanguage.vi: 'Mỗi ngày bạn có bao nhiêu phút?',
+      AppLanguage.en: 'How many minutes a day do you have?',
+    },
+    'gt_onb_min_15_label': {
+      AppLanguage.vi: 'Nhẹ nhàng',
+      AppLanguage.en: 'Light',
+    },
+    'gt_onb_min_15_sub': {
+      AppLanguage.vi: '1 bài tập ngắn + 5 từ',
+      AppLanguage.en: 'A short workout + 5 words',
+    },
+    'gt_onb_min_30_label': {
+      AppLanguage.vi: 'Đều đặn',
+      AppLanguage.en: 'Steady',
+    },
+    'gt_onb_min_30_sub': {
+      AppLanguage.vi: 'Buổi tập gọn + 12 từ',
+      AppLanguage.en: 'A compact workout + 12 words',
+    },
+    'gt_onb_min_45_label': {
+      AppLanguage.vi: 'Nghiêm túc',
+      AppLanguage.en: 'Serious',
+    },
+    'gt_onb_min_45_sub': {
+      AppLanguage.vi: 'Buổi tập đầy đủ + 12 từ + nói',
+      AppLanguage.en: 'A full workout + 12 words + speaking',
+    },
+    'gt_onb_min_60_label': {
+      AppLanguage.vi: 'Hết mình',
+      AppLanguage.en: 'All in',
+    },
+    'gt_onb_min_60_sub': {
+      AppLanguage.vi: 'Tập, học, luyện thi',
+      AppLanguage.en: 'Train, learn and prep for exams',
+    },
+    'gt_onb_plan_overline': {
+      AppLanguage.vi: 'KẾ HOẠCH CỦA BẠN',
+      AppLanguage.en: 'YOUR PLAN',
+    },
+    'gt_onb_plan_sessions': {
+      AppLanguage.vi: '{n} buổi tập/tuần',
+      AppLanguage.en: '{n} workouts a week',
+    },
+    'gt_onb_plan_words': {
+      AppLanguage.vi: '{n} từ/ngày',
+      AppLanguage.en: '{n} words a day',
+    },
+    'gt_onb_plan_speak': {
+      AppLanguage.vi: ' + luyện nói',
+      AppLanguage.en: ' + speaking',
+    },
+    'gt_onb_reco_title': {
+      AppLanguage.vi: 'Giáo án gợi ý cho bạn',
+      AppLanguage.en: 'Your suggested program',
+    },
+    'gt_onb_reco_sub': {
+      AppLanguage.vi: 'Đổi bất cứ lúc nào ở tab Tập.',
+      AppLanguage.en: 'Change it anytime in the Train tab.',
+    },
+    'gt_onb_reco_none': {
+      AppLanguage.vi: 'Chưa tải được giáo án — bạn có thể chọn sau ở tab Tập.',
+      AppLanguage.en:
+          'Couldn\'t load programs — you can pick one later in the Train tab.',
+    },
+    'gt_onb_reco_meta': {
+      AppLanguage.vi: '{n} buổi/tuần · {w} tuần',
+      AppLanguage.en: '{n} sessions/week · {w} weeks',
+    },
   };
 
   static String t(String key, AppLanguage lang) =>
