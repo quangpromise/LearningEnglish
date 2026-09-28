@@ -358,9 +358,17 @@ class ScreenBackground extends StatelessWidget {
             // Material o xa hon - nghi ngo day la nguyen nhan gach chan vang
             // xuat hien khap noi trong app du khong co dong code nao chu
             // dong "set" no.
-            child: DefaultTextStyle.merge(
-              style: const TextStyle(decoration: TextDecoration.none),
-              child: child,
+            // Material trong suot: man goc (dang nhap, dat lai mat khau) khong
+            // nam trong Scaffold/popup nen TextField/InkWell khong co Material
+            // to tien -> ban debug bao "No Material widget found". Trong suot
+            // nen khong ve gi; dat NGOAI DefaultTextStyle.merge ben duoi vi
+            // Material tu dat kieu chu mac dinh theo theme.
+            child: Material(
+              type: MaterialType.transparency,
+              child: DefaultTextStyle.merge(
+                style: const TextStyle(decoration: TextDecoration.none),
+                child: child,
+              ),
             ),
           ),
         ),
