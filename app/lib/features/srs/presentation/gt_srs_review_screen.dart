@@ -6,6 +6,7 @@ import '../../../core/theme/gt_tokens.dart';
 import '../../../core/tts/tutorial_voice.dart';
 import '../../../core/widgets/gt_celebration.dart';
 import '../../today/data/daily_progress_store.dart';
+import '../../today/data/daily_quests.dart';
 import '../../today/presentation/gt_quests_card.dart';
 import '../data/srs_store.dart';
 
@@ -43,6 +44,9 @@ class _GtSrsReviewScreenState extends ConsumerState<GtSrsReviewScreen> {
   @override
   void initState() {
     super.initState();
+    _reviewPaidBefore = DailyProgressStore.instance.today.rewarded.contains(
+      DailyQuestId.review.rewardKey,
+    );
     final given = widget.cards;
     if (given != null) {
       _queue = given;
@@ -70,19 +74,26 @@ class _GtSrsReviewScreenState extends ConsumerState<GtSrsReviewScreen> {
     super.dispose();
   }
 
-  Future<void> _grade(SrsCard card, SrsGrade grade) async {
+  /// Nhiem vu "On the" da duoc tra truoc phien nay chua - de chi chuc mung
+  /// XP ma CHINH phien nay vua mo.
+  late final bool _reviewPaidBefore;
+
+  Future<void> _grade(SrsGrade grade) async {
+    final queue = _queue;
+    // Chi cham khi the dang hien da lat (chan cham dup truoc frame moi).
+    if (queue == null || _index >= queue.length || !_flipped) return;
+    final card = queue[_index];
     _stopVoice();
-    final queue = _queue!;
     SrsStore.instance.grade(card.key, grade, now: DateTime.now());
+    final next = requeueAfterGrade(queue, index: _index, grade: grade);
     // "Quen" lan dau trong phien: gap lai o cuoi -> khong tinh 2 lan.
     final repeat = queue.take(_index).any((c) => c.key == card.key);
-    if (!repeat) DailyProgressStore.instance.addWordsReviewed();
-    final next = requeueAfterGrade(queue, index: _index, grade: grade);
     setState(() {
       _queue = next;
       _index++;
       _flipped = false;
     });
+    if (!repeat) await DailyProgressStore.instance.addWordsReviewed();
     if (_index >= next.length) await _finish(_uniqueCount(next));
   }
 
@@ -93,22 +104,36 @@ class _GtSrsReviewScreenState extends ConsumerState<GtSrsReviewScreen> {
   Future<void> _finish(int count) async {
     if (_finished) return;
     _finished = true;
-    // Nhiem vu "On the" co the vua dat -> cong XP that (khoa chong trung o
-    // server) roi chuc mung voi dung so do.
-    final xp = await ref
+    // Nhiem vu "On the" co the vua dat -> tra XP (khoa chong trung o server;
+    // man Hom nay co the da tra giua phien). Chi hien XP cua nhiem vu nay va
+    // chi khi no duoc tra trong phien nay - khong gop XP nhiem vu khac.
+    await ref
         .read(questRewardServiceProvider)
         .claimPendingQuests()
         .catchError((Object _) => 0);
     if (!mounted) return;
-    if (xp > 0) {
-      await showCelebration(
-        context,
-        xp: xp,
-        title: ref.tr('gt_srs_done_title'),
-        subtitle: ref.tr('gt_srs_done_sub').replaceFirst('{n}', '$count'),
-        ctaLabel: ref.tr('gt_celebration_cta'),
-      );
-    }
+    final paidNow =
+        !_reviewPaidBefore &&
+        DailyProgressStore.instance.today.rewarded.contains(
+          DailyQuestId.review.rewardKey,
+        );
+    await showCelebration(
+      context,
+      xp: paidNow ? DailyQuestId.review.xp : 0,
+      title: ref.tr('gt_srs_done_title'),
+      subtitle: ref.tr('gt_srs_done_sub').replaceFirst('{n}', '$count'),
+      ctaLabel: ref.tr('gt_celebration_cta'),
+      chips: [
+        ref
+            .tr('gt_celebration_streak_chip')
+            .replaceFirst(
+              '{days}',
+              '${DailyProgressStore.instance.bodyBrainStreak}',
+            ),
+      ],
+    );
+    // "Tuyet voi" -> ve man truoc (Hom nay).
+    if (mounted) Navigator.of(context).maybePop();
   }
 
   @override
@@ -204,7 +229,7 @@ class _GtSrsReviewScreenState extends ConsumerState<GtSrsReviewScreen> {
                 days: ref.tr('gt_srs_interval_days'),
               ),
           },
-          onGrade: (g) => _grade(card, g),
+          onGrade: _grade,
         ),
       ],
     );

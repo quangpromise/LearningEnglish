@@ -105,7 +105,15 @@ void main() {
     await tester.tap(find.text('lift'));
     await tester.pump();
     await tester.tap(find.text('Khó'));
-    await tester.pumpAndSettle();
+    // Celebration co vong sang lap vo han -> pump co dinh, khong settle.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 800));
+    expect(find.text('Xong bộ thẻ!'), findsOneWidget);
+    // Nhiem vu chua dat trong test -> khong co so XP, chi dau tick.
+    expect(find.textContaining('XP'), findsNothing);
+    await tester.tap(find.text('Tuyệt vời'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
     expect(find.text('3/3'), findsOneWidget);
     expect(find.text('Bạn vừa ôn 2 thẻ từ vựng.'), findsOneWidget);
   });
