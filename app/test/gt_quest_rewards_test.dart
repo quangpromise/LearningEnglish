@@ -274,7 +274,8 @@ void main() {
     showXpToast(55, overlay: overlay);
     await tester.pump(const Duration(milliseconds: 500));
     expect(find.text('+55 XP'), findsOneWidget);
-    await tester.pump(const Duration(milliseconds: 1500));
+    // Ticker bat dau o frame dau -> doi qua 1.8s tinh tu do.
+    await tester.pump(const Duration(milliseconds: 2000));
     await tester.pump();
     expect(find.text('+55 XP'), findsNothing);
   });
