@@ -270,6 +270,14 @@ class WorkoutController extends ChangeNotifier {
 
   bool get canUndo => _history.isNotEmpty && phase != WorkoutPhase.finished;
 
+  /// Cac hiep DA log cua bai dang tap (nhom + bai A/B hien tai) - chi doc,
+  /// de ban redesign ve bang hiep; khong doi logic ghi set.
+  List<({int set, double weightKg, int reps})> get loggedSetsInCurrentGroup => [
+    for (final s in _history)
+      if (s.groupIndex == groupIndex && s.subIndex == subIndex)
+        (set: s.setOrRoundIndex + 1, weightKg: s.weightKg, reps: s.reps),
+  ];
+
   WorkoutSyncState get syncState => _outbox.stateFor(localSessionId);
 
   /// Bat dau buoi tap: xep lenh tao dong workout_sessions (khong chan giao

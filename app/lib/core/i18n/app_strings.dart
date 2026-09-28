@@ -6017,6 +6017,41 @@ class AppStrings {
     'gt_srs_forgot': {AppLanguage.vi: 'Quên', AppLanguage.en: 'Forgot'},
     'gt_srs_hard': {AppLanguage.vi: 'Khó', AppLanguage.en: 'Hard'},
     'gt_srs_know': {AppLanguage.vi: 'Nhớ', AppLanguage.en: 'Know'},
+    'gt_workout_finish': {
+      AppLanguage.vi: 'Hoàn thành buổi tập',
+      AppLanguage.en: 'Finish workout',
+    },
+    'gt_workout_next_exercise': {
+      AppLanguage.vi: 'Xong hiệp · Bài tiếp theo',
+      AppLanguage.en: 'Done · Next exercise',
+    },
+    'gt_workout_complete_set': {
+      AppLanguage.vi: 'Hoàn thành hiệp {n}/{total}',
+      AppLanguage.en: 'Complete set {n}/{total}',
+    },
+    'gt_workout_end': {
+      AppLanguage.vi: 'Kết thúc buổi tập',
+      AppLanguage.en: 'End workout',
+    },
+    'gt_workout_col_set': {AppLanguage.vi: 'HIỆP', AppLanguage.en: 'SET'},
+    'gt_workout_col_kg': {AppLanguage.vi: 'KG', AppLanguage.en: 'KG'},
+    'gt_workout_col_reps': {AppLanguage.vi: 'LẦN', AppLanguage.en: 'REPS'},
+    'gt_workout_tick_set': {
+      AppLanguage.vi: 'Hoàn thành hiệp',
+      AppLanguage.en: 'Complete set',
+    },
+    'gt_workout_learn_overline': {
+      AppLanguage.vi: 'HỌC TRONG LÚC NGHỈ',
+      AppLanguage.en: 'LEARN WHILE RESTING',
+    },
+    'gt_workout_done_title': {
+      AppLanguage.vi: 'Xong buổi tập!',
+      AppLanguage.en: 'Workout done!',
+    },
+    'gt_workout_done_sub': {
+      AppLanguage.vi: '{sets} hiệp · {min} phút',
+      AppLanguage.en: '{sets} sets · {min} min',
+    },
   };
 
   static String t(String key, AppLanguage lang) =>

@@ -7,13 +7,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../../core/config/gymtalk_flags.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/tts/app_tts.dart';
+import '../../../core/widgets/gt_celebration.dart';
 import '../../planner/presentation/planner_links.dart';
 import '../../today/data/daily_progress_store.dart';
 import '../data/workout_model.dart';
+import '../data/workout_presentation.dart';
 
 /// Man tong ket sau khi hoan thanh buoi tap - port tu SessionFinishedContent
 /// cua FitViet (Gate 4), rut gon con 3 chi so (thoi luong/tong kg/so set) +
@@ -24,8 +27,12 @@ class WorkoutFinishedScreen extends ConsumerStatefulWidget {
     super.key,
     required this.controller,
     this.wordsReviewed = 0,
+    this.restGameXp = 0,
     this.coachLine,
   });
+
+  /// XP Rest Game da cong trong buoi (Celebration ban redesign).
+  final int restGameXp;
 
   /// Cau chuc mung cua giong HLV (null = tat giong HLV).
   final String? coachLine;
@@ -55,6 +62,43 @@ class _WorkoutFinishedScreenState extends ConsumerState<WorkoutFinishedScreen> {
   @override
   void initState() {
     super.initState();
+    // Ban redesign (spec #70, #79): chuc mung voi XP that cua buoi - +25 khi
+    // buoi luu hoan thanh (migration 0073) + XP Rest Game da cong.
+    if (kUseRedesign) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        final c = widget.controller;
+        // +25 chi la that khi buoi da len server (completed_at) - cho dong bo
+        // toi da vai giay; mat mang thi khong hien so chua duoc cong.
+        for (var i = 0; i < 12; i++) {
+          if (c.syncState == WorkoutSyncState.synced) break;
+          await Future<void>.delayed(const Duration(milliseconds: 250));
+          if (!mounted) return;
+        }
+        if (!mounted) return;
+        final synced = c.syncState == WorkoutSyncState.synced;
+        showCelebration(
+          context,
+          xp: workoutXpEarned(
+            setsLogged: synced ? c.totalSetsLogged : 0,
+            restGameXp: widget.restGameXp,
+          ),
+          title: ref.tr('gt_workout_done_title'),
+          subtitle: ref
+              .tr('gt_workout_done_sub')
+              .replaceFirst('{sets}', '${c.totalSetsLogged}')
+              .replaceFirst('{min}', '${c.elapsed.inMinutes}'),
+          ctaLabel: ref.tr('gt_celebration_cta'),
+          chips: [
+            ref
+                .tr('gt_celebration_streak_chip')
+                .replaceFirst(
+                  '{days}',
+                  '${DailyProgressStore.instance.bodyBrainStreak}',
+                ),
+          ],
+        );
+      });
+    }
     // Xong buoi tap -> tu tick "Hoan thanh" lan tap hom nay trong Lap ke
     // hoach (neu chuong trinh da duoc them vao ke hoach). KHONG tick khi
     // nguoi dung "Luu & ket thuc" som giua chung.

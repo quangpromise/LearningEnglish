@@ -5,9 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/config/gymtalk_flags.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/gt_tokens.dart';
 import '../../../core/tts/app_tts.dart';
 import '../../../core/tts/tutorial_voice.dart';
 import '../../../core/utils/keep_screen_on.dart';
@@ -20,10 +22,12 @@ import '../../srs/data/srs_store.dart';
 import '../../stats/data/learning_xp_repository.dart';
 import '../../today/data/daily_progress_store.dart';
 import '../data/coach_script.dart';
+import '../data/exercise_i18n.dart';
 import '../data/gym_vocabulary.dart';
 import '../data/rep_counter.dart';
 import '../data/workout_model.dart';
 import '../data/workout_prefs.dart';
+import '../data/workout_presentation.dart';
 import 'exercise_photo_animator.dart';
 import 'rep_camera_screen.dart';
 import 'rest_vocab_card.dart';
@@ -77,6 +81,9 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
   /// noi dung lo trinh).
   RestGameSession? _restGame;
   int _restGameCorrect = 0;
+
+  /// Tong XP Rest Game da cong trong buoi (hien o Celebration cuoi buoi).
+  int _restGameXpTotal = 0;
 
   /// Lay san luc initState - [_endRestGame] con chay trong dispose, luc do
   /// khong nen doc provider nua.
@@ -271,6 +278,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
         builder: (_) => WorkoutFinishedScreen(
           controller: controller,
           wordsReviewed: _wordsReviewed,
+          restGameXp: _restGameXpTotal,
           // Doc o man tong ket (man nay tat TTS khi dong).
           coachLine: _coachVoice
               ? _script.workoutDone(
@@ -524,7 +532,8 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
     unawaited(
       _xpRepo
           .addBonusXp(xp)
-          .then<void>((_) {})
+          // Chi tinh vao Celebration khi server da cong that.
+          .then<void>((_) => _restGameXpTotal += xp)
           .catchError((Object e) => debugPrint('Rest Game XP failed: $e')),
     );
   }
@@ -625,14 +634,56 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
   // Giao dien
   // ---------------------------------------------------------------------
 
+  /// The hoc trong luc nghi (Rest Game / the tu / nut bat) - dung chung cho
+  /// giao dien cu va ban redesign.
+  Widget? _restLearnCard() {
+    final word = _currentWord;
+    return !_learnWhileResting
+        ? _EnableLearnButton(onTap: () => _setLearnWhileResting(true))
+        : _restGame != null
+        ? RestGameCard(
+            key: ObjectKey(_restGame),
+            session: _restGame!,
+            words: _pathWords,
+            onAnswered: _onRestGameAnswer,
+            onUseCards: () => _setRestMode(RestLearnMode.cards),
+            listeningEnabled: _restListening,
+            onToggleListening: _toggleRestListening,
+          )
+        : word == null
+        ? null
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              RestVocabCard(
+                // Moi the 1 key rieng: tu "Chua
+                // nho" gap lai ngay the sau van bat
+                // dau o trang thai an nghia.
+                key: ValueKey(_wordIndex),
+                word: word,
+                onKnown: () => _answerWord(known: true),
+                onStillLearning: () => _answerWord(known: false),
+                onTurnOff: () => _setLearnWhileResting(false),
+              ),
+              if (_restMode == RestLearnMode.cards)
+                TextButton.icon(
+                  onPressed: () => _setRestMode(RestLearnMode.miniGame),
+                  icon: const Icon(Icons.sports_esports_rounded),
+                  label: Text(ref.tr('rest_game_use_game')),
+                ),
+            ],
+          );
+  }
+
   @override
   Widget build(BuildContext context) {
     final controller = _controller;
     if (controller == null) {
       return _SignedOutView(onBack: () => Navigator.of(context).pop());
     }
+    // Ban redesign (spec #70, #79): cung controller/outbox/Rest Game.
+    if (kUseRedesign) return _redesignBuild(controller);
     final resting = controller.phase == WorkoutPhase.resting;
-    final word = _currentWord;
 
     return PopScope(
       canPop: false,
@@ -657,53 +708,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                     child: resting
                         ? _RestingView(
                             controller: controller,
-                            vocabCard: !_learnWhileResting
-                                ? _EnableLearnButton(
-                                    onTap: () => _setLearnWhileResting(true),
-                                  )
-                                : _restGame != null
-                                ? RestGameCard(
-                                    key: ObjectKey(_restGame),
-                                    session: _restGame!,
-                                    words: _pathWords,
-                                    onAnswered: _onRestGameAnswer,
-                                    onUseCards: () =>
-                                        _setRestMode(RestLearnMode.cards),
-                                    listeningEnabled: _restListening,
-                                    onToggleListening: _toggleRestListening,
-                                  )
-                                : word == null
-                                ? null
-                                : Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.stretch,
-                                    children: [
-                                      RestVocabCard(
-                                        // Moi the 1 key rieng: tu "Chua
-                                        // nho" gap lai ngay the sau van bat
-                                        // dau o trang thai an nghia.
-                                        key: ValueKey(_wordIndex),
-                                        word: word,
-                                        onKnown: () => _answerWord(known: true),
-                                        onStillLearning: () =>
-                                            _answerWord(known: false),
-                                        onTurnOff: () =>
-                                            _setLearnWhileResting(false),
-                                      ),
-                                      if (_restMode == RestLearnMode.cards)
-                                        TextButton.icon(
-                                          onPressed: () => _setRestMode(
-                                            RestLearnMode.miniGame,
-                                          ),
-                                          icon: const Icon(
-                                            Icons.sports_esports_rounded,
-                                          ),
-                                          label: Text(
-                                            ref.tr('rest_game_use_game'),
-                                          ),
-                                        ),
-                                    ],
-                                  ),
+                            vocabCard: _restLearnCard(),
                           )
                         : _LoggingView(
                             controller: controller,
@@ -757,6 +762,173 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  /// Man buoi tap ban redesign (README §9): header anh + vach tien do bai,
+  /// bang hiep, the "Hoc trong luc nghi" (Rest Game san co), nut chinh theo
+  /// [sessionAction]. Moi hanh dong van goi dung [WorkoutController].
+  Widget _redesignBuild(WorkoutController controller) {
+    final t = context.gt;
+    final resting = controller.phase == WorkoutPhase.resting;
+    final action = sessionAction(
+      resting: resting,
+      setNumber: controller.currentSetNumber,
+      totalSets: controller.currentTotalSets,
+      isLastGroup: controller.isLastGroup,
+      isPaired: controller.isPairedGroup,
+      pairSubIndex: controller.pairSubIndex,
+    );
+    // Sieu hiep: danh dau dang o bai A hay B cua vong.
+    final pairTag = controller.isPairedGroup
+        ? ' · ${controller.pairSubIndex == 0 ? 'A' : 'B'}'
+        : '';
+    final learn = _restLearnCard();
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _confirmExit();
+      },
+      child: Scaffold(
+        backgroundColor: t.bg,
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _GtSessionHeader(
+              controller: controller,
+              onClose: _confirmExit,
+              onPickRest: _pickRestDuration,
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+                child: resting
+                    ? _RestingView(
+                        controller: controller,
+                        vocabCard: learn == null
+                            ? null
+                            : _GtRestLearnFrame(child: learn),
+                      )
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _GtSetsTable(
+                            controller: controller,
+                            onTick: controller.completeSet,
+                          ),
+                          const SizedBox(height: 14),
+                          _StepperRow(
+                            label: ref.tr('fitness_workout_weight_kg'),
+                            value: _LoggingView._formatKg(
+                              controller.currentWeightKg,
+                            ),
+                            onMinus: () => controller.adjustWeight(-2.5),
+                            onPlus: () => controller.adjustWeight(2.5),
+                          ),
+                          const SizedBox(height: 10),
+                          _StepperRow(
+                            label: ref.tr('fitness_workout_reps'),
+                            value: '${controller.currentReps}',
+                            onMinus: () => controller.adjustReps(-1),
+                            onPlus: () => controller.adjustReps(1),
+                          ),
+                          if (RepPattern.forExercise(
+                                controller.currentBlock.exercise,
+                              ) !=
+                              null)
+                            TextButton.icon(
+                              onPressed: _openRepCamera,
+                              icon: Icon(Icons.videocam_rounded, color: t.red),
+                              label: Text(
+                                ref.tr('rep_camera_open'),
+                                style: GtText.body(t.red),
+                              ),
+                            ),
+                        ],
+                      ),
+              ),
+            ),
+            SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (resting)
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _GtButton(
+                              label: ref.tr('fitness_workout_add_rest'),
+                              outline: true,
+                              onTap: () => controller.addRestSeconds(15),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            flex: 2,
+                            child: _GtButton(
+                              label: ref.tr('fitness_workout_skip_rest'),
+                              onTap: controller.skipRest,
+                            ),
+                          ),
+                        ],
+                      )
+                    else
+                      _GtButton(
+                        label: switch (action) {
+                          SessionAction.finishWorkout => ref.tr(
+                            'gt_workout_finish',
+                          ),
+                          SessionAction.nextExercise => ref.tr(
+                            'gt_workout_next_exercise',
+                          ),
+                          _ =>
+                            ref
+                                .tr('gt_workout_complete_set')
+                                .replaceFirst(
+                                  '{n}',
+                                  '${controller.currentSetNumber}',
+                                )
+                                .replaceFirst(
+                                  '{total}',
+                                  '${controller.currentTotalSets}$pairTag',
+                                ),
+                        },
+                        onTap: controller.completeSet,
+                      ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        if (controller.canUndo)
+                          Expanded(
+                            child: TextButton.icon(
+                              onPressed: controller.undoLastSet,
+                              icon: Icon(Icons.undo_rounded, color: t.tx2),
+                              label: Text(
+                                ref.tr('fitness_workout_undo_set'),
+                                style: GtText.body(t.tx2, size: 13),
+                              ),
+                            ),
+                          ),
+                        Expanded(
+                          // README §9: nut vien "Ket thuc buoi tap".
+                          child: _GtButton(
+                            label: ref.tr('gt_workout_end'),
+                            outline: true,
+                            onTap: _confirmExit,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -1266,6 +1438,337 @@ class _SignedOutView extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Ban redesign (spec #70, #79)
+
+class _GtSessionHeader extends ConsumerWidget {
+  const _GtSessionHeader({
+    required this.controller,
+    required this.onClose,
+    required this.onPickRest,
+  });
+
+  final WorkoutController controller;
+  final VoidCallback onClose;
+  final VoidCallback onPickRest;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = context.gt;
+    final exercise = controller.currentBlock.exercise;
+    final lang = ref.watch(appLanguageProvider);
+    final segments = exerciseSegments(
+      count: controller.groups.length,
+      currentIndex: controller.groupIndex,
+    );
+    final top = MediaQuery.paddingOf(context).top;
+    return SizedBox(
+      height: 240 + top,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          const ColoredBox(color: Color(0xFF0A0A0A)),
+          ExercisePhotoAnimator(
+            key: ValueKey(exercise.id),
+            assets: exercise.photoAssets,
+            height: 240 + top,
+          ),
+          const DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0x99000000),
+                  Color(0x00000000),
+                  Color(0xE6000000),
+                ],
+                stops: [0, 0.4, 1],
+              ),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(12, top + 8, 12, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    _RoundIconButton(icon: Icons.close_rounded, onTap: onClose),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          for (final (i, seg) in segments.indexed) ...[
+                            if (i > 0) const SizedBox(width: 4),
+                            Expanded(
+                              child: Container(
+                                height: 4,
+                                decoration: BoxDecoration(
+                                  color: switch (seg) {
+                                    SegmentState.done => Colors.white,
+                                    SegmentState.current => t.red,
+                                    SegmentState.todo =>
+                                      Colors.white.withValues(alpha: 0.25),
+                                  },
+                                  borderRadius: BorderRadius.circular(999),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      '${controller.groupIndex + 1}/${controller.groups.length}',
+                      style: GtText.body(Colors.white, weight: FontWeight.w800),
+                    ),
+                    const SizedBox(width: 6),
+                    _RoundIconButton(
+                      icon: Icons.timer_outlined,
+                      onTap: onPickRest,
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                Text(
+                  // README §9: nhom co chinh o tren ten bai.
+                  exerciseMuscleLabel(exercise.primaryMuscle, lang),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GtText.body(const Color(0xFFD4D6DA), size: 13),
+                ),
+                Text(
+                  exercise.nameFor(lang),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: GtText.cardTitle(Colors.white)
+                      .copyWith(fontSize: 28, height: 1.1),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Bang hiep: HIEP / KG / LAN / tick 44dp (README §9). Hiep da xong lay tu
+/// [WorkoutController.loggedSetsInCurrentGroup]; hiep dang tap hien gia tri
+/// dang chinh, tick = hoan thanh hiep.
+class _GtSetsTable extends ConsumerWidget {
+  const _GtSetsTable({required this.controller, required this.onTick});
+
+  final WorkoutController controller;
+  final VoidCallback onTick;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = context.gt;
+    final logged = {
+      for (final s in controller.loggedSetsInCurrentGroup) s.set: s,
+    };
+    final current = controller.currentSetNumber;
+    Widget cell(String text, {Color? color, double size = 24}) => Center(
+      child: Text(
+        text,
+        maxLines: 1,
+        style: GtText.ringStat(color ?? t.tx).copyWith(fontSize: size),
+      ),
+    );
+    Widget header(String key) => Center(
+      child: Text(
+        ref.tr(key),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: GtText.overline(t.tx3),
+      ),
+    );
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 14, 12, 8),
+      decoration: BoxDecoration(
+        color: t.s1,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              SizedBox(width: 52, child: header('gt_workout_col_set')),
+              Expanded(child: header('gt_workout_col_kg')),
+              Expanded(child: header('gt_workout_col_reps')),
+              const SizedBox(width: 48),
+            ],
+          ),
+          const SizedBox(height: 6),
+          for (var n = 1; n <= controller.currentTotalSets; n++)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 52,
+                    child: cell('$n', color: t.tx3, size: 18),
+                  ),
+                  Expanded(
+                    child: cell(
+                      logged[n] != null
+                          ? _LoggingView._formatKg(logged[n]!.weightKg)
+                          : n == current
+                          ? _LoggingView._formatKg(controller.currentWeightKg)
+                          : '-',
+                      color: n == current ? t.tx : t.tx2,
+                    ),
+                  ),
+                  Expanded(
+                    child: cell(
+                      logged[n] != null
+                          ? '${logged[n]!.reps}'
+                          : n == current
+                          ? '${controller.currentReps}'
+                          : '-',
+                      color: n == current ? t.tx : t.tx2,
+                    ),
+                  ),
+                  SizedBox(
+                    width: 48,
+                    child: _GtTick(
+                      done: logged[n] != null,
+                      active:
+                          n == current &&
+                          controller.phase == WorkoutPhase.logging,
+                      onTap: onTick,
+                      label: ref.tr('gt_workout_tick_set'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _GtTick extends StatelessWidget {
+  const _GtTick({
+    required this.done,
+    required this.active,
+    required this.onTap,
+    required this.label,
+  });
+
+  final bool done;
+  final bool active;
+  final VoidCallback onTap;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.gt;
+    return Semantics(
+      button: active,
+      checked: done,
+      label: label,
+      child: GestureDetector(
+        onTap: active ? onTap : null,
+        child: Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: done ? t.red : (active ? t.s2 : null),
+            borderRadius: BorderRadius.circular(14),
+            border: done
+                ? null
+                : Border.all(color: active ? t.red : t.bd, width: 2),
+          ),
+          child: Icon(
+            Icons.check_rounded,
+            color: done ? t.onRed : (active ? t.red : t.tx3),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Khung "HOC TRONG LUC NGHI" (blueT) boc the Rest Game / the tu san co.
+class _GtRestLearnFrame extends ConsumerWidget {
+  const _GtRestLearnFrame({required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = context.gt;
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: t.blueT,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            ref.tr('gt_workout_learn_overline'),
+            style: GtText.overline(t.blue),
+          ),
+          const SizedBox(height: 10),
+          child,
+        ],
+      ),
+    );
+  }
+}
+
+class _GtButton extends StatelessWidget {
+  const _GtButton({
+    required this.label,
+    required this.onTap,
+    this.outline = false,
+  });
+
+  final String label;
+  final VoidCallback onTap;
+  final bool outline;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.gt;
+    final shape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(18),
+    );
+    final text = Text(
+      label,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: GtText.rowTitle(outline ? t.tx : t.onRed),
+    );
+    return SizedBox(
+      height: 56,
+      child: outline
+          ? OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                shape: shape,
+                side: BorderSide(color: t.bd, width: 2),
+              ),
+              onPressed: onTap,
+              child: text,
+            )
+          : FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: t.red,
+                shape: shape,
+              ),
+              onPressed: onTap,
+              child: text,
+            ),
     );
   }
 }
