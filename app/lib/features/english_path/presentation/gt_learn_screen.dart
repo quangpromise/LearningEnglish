@@ -193,7 +193,6 @@ class _DailyWordsHero extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final t = context.gt;
     final daily = ref.watch(dailyWordsControllerProvider);
     final total = daily.words.length;
     final learned = daily.learnedTodayEnLower.length.clamp(0, total);
