@@ -148,44 +148,48 @@ class _ReminderSettingsCardState extends ConsumerState<ReminderSettingsCard> {
     ).format(context);
     return GlowBox(
       padding: const EdgeInsets.fromLTRB(16, 6, 8, 6),
-      child: Column(
-        children: [
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            value: settings.enabled,
-            activeThumbColor: AppColors.blue,
-            title: Text(
-              ref.tr('remind_setting_title'),
-              style: AppTextStyles.body(weight: FontWeight.w800),
-            ),
-            subtitle: Text(
-              ref.tr('remind_setting_sub'),
-              style: AppTextStyles.muted(),
-            ),
-            onChanged: (enabled) => _update(
-              ReminderSettings(
-                enabled: enabled,
-                hour: settings.hour,
-                minute: settings.minute,
-              ),
-            ),
-          ),
-          if (settings.enabled)
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(
-                Icons.schedule_rounded,
-                color: AppColors.blue,
-              ),
-              title: Text(
-                ref.tr('remind_setting_time'),
-                style: AppTextStyles.body(),
-              ),
-              trailing: Text(time, style: AppTextStyles.heading(size: 18)),
-              onTap: () => _pickTime(settings),
-            ),
-        ],
+      // Material trong suot: ListTile ve hieu ung cham len day, khong bi nen
+      // cua GlowBox che (Flutter canh bao neu thieu).
+      child: Material(
+        type: MaterialType.transparency,
+        child: _tiles(settings, time),
       ),
     );
   }
+
+  Widget _tiles(ReminderSettings settings, String time) => Column(
+    children: [
+      SwitchListTile(
+        contentPadding: EdgeInsets.zero,
+        value: settings.enabled,
+        activeThumbColor: AppColors.blue,
+        title: Text(
+          ref.tr('remind_setting_title'),
+          style: AppTextStyles.body(weight: FontWeight.w800),
+        ),
+        subtitle: Text(
+          ref.tr('remind_setting_sub'),
+          style: AppTextStyles.muted(),
+        ),
+        onChanged: (enabled) => _update(
+          ReminderSettings(
+            enabled: enabled,
+            hour: settings.hour,
+            minute: settings.minute,
+          ),
+        ),
+      ),
+      if (settings.enabled)
+        ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: const Icon(Icons.schedule_rounded, color: AppColors.blue),
+          title: Text(
+            ref.tr('remind_setting_time'),
+            style: AppTextStyles.body(),
+          ),
+          trailing: Text(time, style: AppTextStyles.heading(size: 18)),
+          onTap: () => _pickTime(settings),
+        ),
+    ],
+  );
 }

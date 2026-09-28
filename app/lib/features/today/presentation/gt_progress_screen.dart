@@ -8,6 +8,7 @@ import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/gt_tokens.dart';
 import '../../english_path/data/cefr_level.dart';
 import '../../english_path/data/english_path_providers.dart';
+import '../../english_path/data/learn_presentation.dart';
 import '../../fitness/data/body_level.dart';
 import '../../music_player/presentation/home_screen.dart'
     show greetingKeyProvider;
@@ -201,6 +202,31 @@ class _LevelTiles extends ConsumerWidget {
     final body = stats == null ? null : bodyLevelFor(stats);
     final next = stats == null ? null : nextBodyTarget(stats);
     final english = ref.watch(englishLevelProvider);
+    final pathState = ref.watch(englishPathStateProvider);
+    final pack = ref.watch(contentPackProvider).valueOrNull;
+    final units = pack == null
+        ? null
+        : levelTestProgress(pack, english, pathState);
+    // Band gan nhat (spec #45) tu Level Test da lam - chi hien khi co.
+    final withBand = [
+      for (final r in pathState.levelTests.values)
+        if (r.estimatedBand != null) r,
+    ]..sort((a, b) => b.takenAt.compareTo(a.takenAt));
+    final englishSub = [
+      ref.tr(english.labelKey),
+      if (units != null)
+        ref
+            .tr('gt_learn_units_to_test')
+            .replaceFirst('{done}', '${units.done}')
+            .replaceFirst('{total}', '${units.total}'),
+      if (withBand.isNotEmpty)
+        ref
+            .tr('progress_band')
+            .replaceFirst(
+              '{band}',
+              withBand.first.estimatedBand!.toStringAsFixed(1),
+            ),
+    ].join('\n');
     final bodySub = next == null
         ? (body == null ? '' : ref.tr('progress_body_max'))
         : ref
@@ -230,7 +256,7 @@ class _LevelTiles extends ConsumerWidget {
               color: t.blue,
               overline: ref.tr('gt_progress_english_overline'),
               title: english.code,
-              sub: ref.tr(english.labelKey),
+              sub: englishSub,
             ),
           ),
         ],
@@ -280,7 +306,7 @@ class _LevelTile extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             sub,
-            maxLines: 3,
+            maxLines: 4,
             overflow: TextOverflow.ellipsis,
             style: GtText.body(t.tx2, size: 12),
           ),
@@ -308,7 +334,10 @@ class GtWeekChartCard extends ConsumerWidget {
         ? weeklyChart(
             learnSeconds: learn.value!,
             trainSeconds: train.value!,
-            today: DateTime.now(),
+            // RPC dung current_date cua Postgres (UTC) cho cua so 7 ngay va
+            // ngay ghi nhan -> "hom nay" cua bieu do cung theo ngay UTC, neu
+            // khong 0h-7h o VN cot hom nay trong va mat ngay cu nhat.
+            today: DateTime.now().toUtc(),
           )
         : const <WeekColumn>[];
     final total = splitHoursMinutes(weeklyTotalMinutes(cols));
@@ -316,7 +345,8 @@ class GtWeekChartCard extends ConsumerWidget {
       final v = c.learnMin + c.trainMin;
       return v > m ? v : m;
     });
-    final scale = chartScale(maxDayMinutes: maxDay, plotHeight: plotHeight);
+    // Chua cho khe 3px giua 2 doan va 2 doan toi thieu 3px.
+    final scale = chartScale(maxDayMinutes: maxDay, plotHeight: plotHeight - 9);
     final labels = ref.tr('gt_weekday_short').split(',');
 
     return Container(
@@ -360,35 +390,41 @@ class GtWeekChartCard extends ConsumerWidget {
               ),
             )
           else
-            SizedBox(
-              height: plotHeight + 24,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  for (final (i, c) in cols.indexed) ...[
-                    if (i > 0) const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          if (c.learnMin > 0)
-                            _Bar(height: c.learnMin * scale, color: t.blue),
-                          if (c.learnMin > 0 && c.trainMin > 0)
-                            const SizedBox(height: 3),
-                          if (c.trainMin > 0)
-                            _Bar(height: c.trainMin * scale, color: t.red),
-                          const SizedBox(height: 6),
-                          Text(
-                            labels[c.day.weekday - 1],
-                            maxLines: 1,
-                            style: GtText.body(t.tx3, size: 12),
+            Row(
+              children: [
+                for (final (i, c) in cols.indexed) ...[
+                  if (i > 0) const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        // Vung cot co dinh; nhan thu nam ngoai, cao tu nhien
+                        // (khong tran khi chu to / font that cao hon).
+                        SizedBox(
+                          height: plotHeight,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              if (c.learnMin > 0)
+                                _Bar(height: c.learnMin * scale, color: t.blue),
+                              if (c.learnMin > 0 && c.trainMin > 0)
+                                const SizedBox(height: 3),
+                              if (c.trainMin > 0)
+                                _Bar(height: c.trainMin * scale, color: t.red),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          labels[c.day.weekday - 1],
+                          maxLines: 1,
+                          overflow: TextOverflow.clip,
+                          style: GtText.body(t.tx3, size: 12),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ],
-              ),
+              ],
             ),
           const SizedBox(height: 12),
           Row(
