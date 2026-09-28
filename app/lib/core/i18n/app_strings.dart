@@ -5826,12 +5826,8 @@ class AppStrings {
       AppLanguage.en: 'BODY LEVEL · {level}',
     },
     'gt_train_hero_title': {
-      AppLanguage.vi: 'Kỷ luật hôm nay
-là kết quả
-ngày mai.',
-      AppLanguage.en: 'Today\'s discipline
-is tomorrow\'s
-result.',
+      AppLanguage.vi: 'Kỷ luật hôm nay\nlà kết quả\nngày mai.',
+      AppLanguage.en: "Today's discipline\nis tomorrow's\nresult.",
     },
     'gt_train_next_level': {
       AppLanguage.vi: 'Lên {level} · {pct}%',
