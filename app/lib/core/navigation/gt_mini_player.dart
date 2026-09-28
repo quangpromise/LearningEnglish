@@ -57,7 +57,9 @@ class GtMiniPlayer extends ConsumerWidget {
       initialData: service.queue,
       builder: (context, queueSnap) {
         final queue = queueSnap.data ?? const <Song>[];
-        if (queue.isEmpty) return const SizedBox.shrink();
+        // Chua phat bai nao: van hien loi vao nghe nhac (tinh nang cot loi
+        // - truoc la trang thai cho cua CenterMediaButton).
+        if (queue.isEmpty) return const _IdleBar();
         return StreamBuilder<int?>(
           stream: service.currentIndexStream,
           initialData: service.currentIndex,
@@ -96,7 +98,7 @@ class _Bar extends ConsumerWidget {
               Positioned.fill(
                 child: InkWell(
                   onTap: () => openAppPopup(context, const PlayerScreen()),
-                  onLongPress: () => _confirmHide(context, ref),
+                  onLongPress: () => confirmHide(context, ref),
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
                     child: Row(
@@ -189,7 +191,7 @@ class _Bar extends ConsumerWidget {
     );
   }
 
-  Future<void> _confirmHide(BuildContext context, WidgetRef ref) async {
+  static Future<void> confirmHide(BuildContext context, WidgetRef ref) async {
     final hide = await showModalBottomSheet<bool>(
       context: context,
       useRootNavigator: true,
@@ -203,5 +205,80 @@ class _Bar extends ConsumerWidget {
       ),
     );
     if (hide == true) ref.read(miniPlayerVisibleProvider.notifier).set(false);
+  }
+}
+
+/// Mo trinh phat: chua co hang doi thi phat danh sach bai hat tu dau roi mo
+/// man Dang phat (dung chung cho mini player va o "Hoc qua bai hat").
+Future<void> openMusicPlayer(BuildContext context) async {
+  final service = NowPlayingService.instance;
+  if (service.queue.isEmpty) await service.setQueueAndPlay(kSongs, 0);
+  if (context.mounted) await openAppPopup(context, const PlayerScreen());
+}
+
+/// Mini player khi chua co bai nao: cham de bat dau nghe (lyric song ngu).
+class _IdleBar extends ConsumerWidget {
+  const _IdleBar();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = context.gt;
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: BackdropFilter(
+        filter: ui.ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        child: Material(
+          color: t.glass,
+          child: InkWell(
+            onTap: () => openMusicPlayer(context),
+            onLongPress: () => _Bar.confirmHide(context, ref),
+            child: Container(
+              height: 60,
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: t.bd),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: t.blueT,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(Icons.music_note_rounded, color: t.blue),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          ref.tr('mini_player_idle_title'),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GtText.body(t.tx, weight: FontWeight.w800),
+                        ),
+                        Text(
+                          ref.tr('mini_player_bilingual'),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GtText.body(t.tx2, size: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(Icons.play_arrow_rounded, size: 30, color: t.tx),
+                  const SizedBox(width: 6),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

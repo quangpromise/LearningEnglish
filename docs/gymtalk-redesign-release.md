@@ -6,6 +6,7 @@ Từ bản này giao diện mới là giao diện duy nhất (cờ `kUseRedesign
 
 ## Người dùng thấy gì
 
+- **Nghe nhạc học tiếng Anh:** mini player luôn có lối vào — chưa phát bài nào thì chạm để bắt đầu (lời song ngữ, chạm từ tra nghĩa); tab Học có ô **Học qua bài hát**.
 - **Khung app mới:** thanh trên có avatar với vòng tiến độ hôm nay + huy hiệu GymTalk Rank, chuỗi ngày, tin nhắn; thanh tab kính mờ 4 tab + nút **Quick Start** ở giữa (vào buổi tập hôm nay, hoặc ôn thẻ nếu đã tập / ngày nghỉ / chưa có giáo án); mini player nổi (tắt/bật ở Tiến độ → Cài đặt).
 - **Hôm nay:** 3 vòng Tập/Học/Nói, dải chuỗi 7 ngày, thẻ buổi tập theo trạng thái, **4 nhiệm vụ hằng ngày** tự đánh dấu (ôn thẻ, phát âm, rảnh tay, PT AI) + **rương** khi đủ 4/4; toast XP và màn chúc mừng chỉ hiện XP thật.
 - **Tập:** Body Level + còn thiếu bao nhiêu buổi/tuần để lên bậc, 4 chỉ số tuần (không bịa số), buổi hôm nay, giáo án, lối tắt tiện ích.
@@ -27,6 +28,9 @@ Chạy trên Supabase (SQL Editor), theo thứ tự, nếu chưa chạy:
 Màn Hôm nay / Tiến độ / Trang chủ Fitness / Home tiếng Anh cũ, `FitnessShell`, carousel giới thiệu, thanh tab cũ, `HomeDesignBackground`, `PointingHandBadge`, golden `fitness_home.png` (thay bằng widget test chống tràn ở 390×787 cho từng tab mới).
 
 ## Biết trước / để sau
+
+- Bỏ phần tô sáng thẻ theo persona của Home tiếng Anh cũ (persona vẫn dùng cho cấp độ và lộ trình; khảo sát mở ở cuối tab Học).
+- Còn ~80 chuỗi i18n chỉ màn cũ dùng và vài widget/tiện ích mồ côi (`mini_app_bottom_nav.dart`, `FitnessPressable`) — dọn ở lượt sau, không ảnh hưởng chạy.
 
 - Vài widget cũ còn dùng bên trong màn mới (stepper, vòng nghỉ và Rest Game ở buổi tập, thẻ bạn bè và nhắc nhở ở Tiến độ) vẫn theo style tối cũ — ổn vì chưa mở giao diện sáng.
 - Chưa có badges và giải đấu thăng/giáng hạng (chưa có mô hình dữ liệu, spec #70).

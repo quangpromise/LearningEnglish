@@ -16,3 +16,7 @@ Bản redesign (`docs/design/gymtalk-redesign/`) đưa vào token màu mới (bg
 
 - Đổi thẳng `AppColors` sang theme động: bị loại vì phải sửa 206 file cùng lúc, không chia nhỏ thành PR xanh được.
 - Bật light theme ngay: bị loại vì các màn chưa redesign sẽ vỡ giao diện.
+
+## Cập nhật (UI-11, #81)
+
+Ticket cuối **bỏ hẳn** cờ `kUseRedesign` thay vì đặt `true`: giao diện mới là đường duy nhất và các màn cũ đã xoá, nên giữ cờ chỉ để lại nhánh code chết. Muốn quay lại giao diện cũ thì revert PR #94. `kEnableLightTheme` vẫn `false`.

@@ -6194,6 +6194,18 @@ class AppStrings {
       AppLanguage.en: '{n} sessions/week · {w} weeks',
     },
     'gt_onb_retry': {AppLanguage.vi: 'Thử lại', AppLanguage.en: 'Try again'},
+    'mini_player_idle_title': {
+      AppLanguage.vi: 'Học tiếng Anh qua bài hát',
+      AppLanguage.en: 'Learn English with songs',
+    },
+    'gt_learn_music_title': {
+      AppLanguage.vi: 'Học qua bài hát',
+      AppLanguage.en: 'Learn with songs',
+    },
+    'gt_learn_music_sub': {
+      AppLanguage.vi: 'Lời song ngữ chạy theo nhạc, chạm từ để tra nghĩa',
+      AppLanguage.en: 'Bilingual lyrics in sync — tap a word for its meaning',
+    },
   };
 
   static String t(String key, AppLanguage lang) =>
