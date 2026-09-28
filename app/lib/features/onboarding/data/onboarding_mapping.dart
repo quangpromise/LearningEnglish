@@ -17,14 +17,6 @@ int sessionsPerWeekFor(int minutes) => switch (minutes) {
   _ => 5,
 };
 
-/// So tu/ngay chi de hien "Ke hoach cua ban" (README §3): 15->5, 30/45->12,
-/// 60->20. Muc tieu vong Hoc van la kDailyLearnGoal.
-int wordsPerDayFor(int minutes) => switch (minutes) {
-  <= 15 => 5,
-  <= 45 => 12,
-  _ => 20,
-};
-
 /// Co luyen noi trong ke hoach (45 va 60 phut).
 bool includesSpeakingFor(int minutes) => minutes >= 45;
 

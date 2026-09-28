@@ -566,7 +566,7 @@ class AppStrings {
     },
     'learning_survey_goal_daily': {
       AppLanguage.vi: 'Giao tiếp hằng ngày',
-      AppLanguage.en: 'Everyday conversation',
+      AppLanguage.en: 'Speak more confidently',
     },
     'learning_survey_goal_office': {
       AppLanguage.vi: 'Tiếng Anh công sở',
@@ -6110,7 +6110,7 @@ class AppStrings {
     },
     'gt_onb_goal_talk': {
       AppLanguage.vi: 'Giao tiếp',
-      AppLanguage.en: 'Speak confidently',
+      AppLanguage.en: 'Conversation',
     },
     'gt_onb_goal_talk_sub': {
       AppLanguage.vi: 'Nói tự tin hơn',
@@ -6165,7 +6165,7 @@ class AppStrings {
       AppLanguage.en: 'YOUR PLAN',
     },
     'gt_onb_plan_sessions': {
-      AppLanguage.vi: '{n} buổi tập/tuần',
+      AppLanguage.vi: '{n} buổi/tuần',
       AppLanguage.en: '{n} workouts a week',
     },
     'gt_onb_plan_words': {
@@ -6193,6 +6193,7 @@ class AppStrings {
       AppLanguage.vi: '{n} buổi/tuần · {w} tuần',
       AppLanguage.en: '{n} sessions/week · {w} weeks',
     },
+    'gt_onb_retry': {AppLanguage.vi: 'Thử lại', AppLanguage.en: 'Try again'},
   };
 
   static String t(String key, AppLanguage lang) =>

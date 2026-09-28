@@ -11,11 +11,7 @@ void main() {
     );
   });
 
-  test('plan summary: words per day and speaking', () {
-    expect(
-      [for (final m in kOnboardingMinutes) wordsPerDayFor(m)],
-      [5, 12, 12, 20],
-    );
+  test('plan summary: speaking from 45 minutes', () {
     expect(includesSpeakingFor(30), isFalse);
     expect(includesSpeakingFor(45), isTrue);
   });

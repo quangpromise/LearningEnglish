@@ -6,6 +6,8 @@ import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/gt_tokens.dart';
 import '../../fitness/data/program_model.dart';
+import '../../today/data/daily_progress_store.dart';
+import '../../today/data/gymtalk_reminders.dart';
 import '../../today/data/program_recommendation.dart';
 import '../data/onboarding_mapping.dart';
 import '../data/onboarding_repository.dart';
@@ -38,33 +40,88 @@ class _GtOnboardingScreenState extends ConsumerState<GtOnboardingScreen> {
   int _minutes = kDefaultOnboardingMinutes;
   bool _saving = false;
 
+  static const _timeout = Duration(seconds: 8);
+
+  /// Doc gia tri hien co tren server (co het gio); loi -> null.
+  Future<T?> _existing<T>(Future<T?> future) async {
+    try {
+      return await future.timeout(_timeout);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Luu lua chon roi vao app. KHONG ghi de giao an / persona da co (vd
+  /// nguoi dung cu cai lai app thay onboarding lai - co "da xem" chi luu
+  /// tren may). Moi buoc ghi rieng, loi thi bao va van vao app.
   Future<void> _finish({Program? follow}) async {
     if (_saving) return;
     setState(() => _saving = true);
+    var failed = false;
+    var programSet = false;
     try {
       if (follow != null) {
-        await ref
-            .read(workoutRepositoryProvider)
-            .setActiveProgramId(widget.userId, follow.id);
-        ref
-          ..invalidate(activeProgramIdProvider)
-          ..invalidate(todayWorkoutPlanProvider);
+        final current = await _existing(
+          ref.read(activeProgramIdProvider.future),
+        );
+        if (current != null) {
+          programSet = true;
+        } else {
+          try {
+            await ref
+                .read(workoutRepositoryProvider)
+                .setActiveProgramId(widget.userId, follow.id)
+                .timeout(_timeout);
+            programSet = true;
+            ref
+              ..invalidate(activeProgramIdProvider)
+              ..invalidate(todayWorkoutPlanProvider);
+            // Noi dung nhac hang ngay phu thuoc giao an -> dat lai.
+            GymTalkReminders.instance.rescheduleFromPrefs(ref);
+          } catch (_) {
+            failed = true;
+          }
+        }
       }
       final persona = personaFor(_goals);
       if (persona != null) {
-        await ref.read(learningPathRepositoryProvider).choosePersona(persona);
-        ref.invalidate(learningPathChoiceProvider);
+        final current = await _existing(
+          ref.read(learningPathChoiceProvider.future),
+        );
+        if (current == null) {
+          try {
+            await ref
+                .read(learningPathRepositoryProvider)
+                .choosePersona(persona)
+                .timeout(_timeout);
+            ref.invalidate(learningPathChoiceProvider);
+          } catch (_) {
+            failed = true;
+          }
+        }
       }
-    } catch (_) {
-      // Luu giao an/persona loi van cho vao app; chon lai sau o Thiet lap.
+      // Chi tat loi nhac "Thiet lap GymTalk" o Hom nay khi DA co giao an -
+      // bo qua / de sau / loi thi Hom nay van nhac chon giao an.
+      if (programSet) {
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool(_setupPromptedKey, true);
+        } catch (_) {}
+      }
+      if (failed && mounted) {
+        ScaffoldMessenger.maybeOf(
+          context,
+        )?.showSnackBar(SnackBar(content: Text(ref.tr('setup_save_failed'))));
+      }
+    } finally {
+      try {
+        await OnboardingRepository.markSeen(widget.userId);
+      } catch (_) {}
+      if (mounted) {
+        setState(() => _saving = false);
+        widget.onDone();
+      }
     }
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool(_setupPromptedKey, true);
-    } catch (_) {}
-    await OnboardingRepository.markSeen(widget.userId);
-    if (!mounted) return;
-    widget.onDone();
   }
 
   void _back() => setState(() => _step = (_step - 1).clamp(0, 3));
@@ -73,6 +130,13 @@ class _GtOnboardingScreenState extends ConsumerState<GtOnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final t = context.gt;
+    // Giao an goi y chi can o buoc 3 (danh sach giao an tai luc do).
+    final recommended = _step == 3
+        ? recommendProgram(
+            ref.watch(programListProvider).valueOrNull ?? const [],
+            setupAnswersFor(_goals, _minutes),
+          )
+        : null;
     return PopScope(
       canPop: _step == 0,
       onPopInvokedWithResult: (didPop, _) {
@@ -109,15 +173,10 @@ class _GtOnboardingScreenState extends ConsumerState<GtOnboardingScreen> {
             onBack: _back,
             ctaLabel: ref.tr('gt_onb_follow'),
             busy: _saving,
-            onCta: () {
-              final programs =
-                  ref.read(programListProvider).valueOrNull ?? const [];
-              _finish(
-                follow: recommendProgram(
-                  programs,
-                  setupAnswersFor(_goals, _minutes),
-                ),
-              );
+            // Chua co goi y (dang tai / loi) -> khong cho bam "Theo giao an".
+            onCta: switch (recommended) {
+              final Program p => () => _finish(follow: p),
+              null => null,
             },
             secondaryLabel: ref.tr('gt_onb_later'),
             onSecondary: () => _finish(),
@@ -167,84 +226,92 @@ class _Welcome extends ConsumerWidget {
           ),
         ),
         SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Spacer(),
-                Row(
-                  children: [
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: t.red,
-                        shape: BoxShape.circle,
+          // Cuon duoc tren may nho / chu to; Spacer day noi dung xuong day.
+          child: CustomScrollView(
+            slivers: [
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Spacer(),
+                      Row(
+                        children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: t.red,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'GYMTALK',
+                            style: GtText.overline(Colors.white)
+                                .copyWith(letterSpacing: 2),
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'GYMTALK',
-                      style: GtText.overline(Colors.white)
-                          .copyWith(letterSpacing: 2),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Text.rich(
-                    TextSpan(
-                      style: GtText.onboardingHero(Colors.white),
-                      children: [
-                        TextSpan(text: ref.tr('gt_onb_hero_1')),
-                        const TextSpan(text: '\n'),
-                        TextSpan(text: ref.tr('gt_onb_hero_2')),
-                        const TextSpan(text: '\n'),
-                        TextSpan(
-                          text: ref.tr('gt_onb_hero_3'),
-                          style: TextStyle(color: t.red),
+                      const SizedBox(height: 16),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text.rich(
+                          TextSpan(
+                            style: GtText.onboardingHero(Colors.white),
+                            children: [
+                              TextSpan(text: ref.tr('gt_onb_hero_1')),
+                              const TextSpan(text: '\n'),
+                              TextSpan(text: ref.tr('gt_onb_hero_2')),
+                              const TextSpan(text: '\n'),
+                              TextSpan(
+                                text: ref.tr('gt_onb_hero_3'),
+                                style: TextStyle(color: t.red),
+                              ),
+                            ],
+                          ),
                         ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        ref.tr('gt_onb_welcome_body'),
+                        style: GtText.body(const Color(0xFFB8BCC4), size: 16),
+                      ),
+                      const SizedBox(height: 22),
+                      SizedBox(
+                        height: 58,
+                        child: FilledButton(
+                          style: FilledButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: Colors.black,
+                            shape: const StadiumBorder(),
+                          ),
+                          onPressed: onStart,
+                          child: Text(
+                            '${ref.tr('gt_onb_start')} →',
+                            style: GtText.rowTitle(Colors.black),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        height: 52,
+                        child: TextButton(
+                          onPressed: onSkip,
+                          child: Text(
+                            ref.tr('gt_onb_skip'),
+                            style: GtText.body(const Color(0xFFB8BCC4)),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  ref.tr('gt_onb_welcome_body'),
-                  style: GtText.body(const Color(0xFFB8BCC4), size: 16),
-                ),
-                const SizedBox(height: 22),
-                SizedBox(
-                  height: 58,
-                  child: FilledButton(
-                    style: FilledButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.black,
-                      shape: const StadiumBorder(),
-                    ),
-                    onPressed: onStart,
-                    child: Text(
-                      '${ref.tr('gt_onb_start')} →',
-                      style: GtText.rowTitle(Colors.black),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                SizedBox(
-                  height: 52,
-                  child: TextButton(
-                    onPressed: onSkip,
-                    child: Text(
-                      ref.tr('gt_onb_skip'),
-                      style: GtText.body(const Color(0xFFB8BCC4)),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ],
@@ -270,7 +337,7 @@ class _Step extends ConsumerWidget {
   final int index;
   final VoidCallback onBack;
   final String ctaLabel;
-  final VoidCallback onCta;
+  final VoidCallback? onCta;
   final Widget child;
   final bool busy;
   final String? secondaryLabel;
@@ -564,7 +631,7 @@ class _Minutes extends ConsumerWidget {
                 text:
                     ref
                         .tr('gt_onb_plan_words')
-                        .replaceFirst('{n}', '${wordsPerDayFor(minutes)}') +
+                        .replaceFirst('{n}', '$kDailyLearnGoal') +
                     (includesSpeakingFor(minutes)
                         ? ref.tr('gt_onb_plan_speak')
                         : ''),
@@ -616,8 +683,11 @@ class _Recommendation extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final t = context.gt;
     final lang = ref.watch(appLanguageProvider);
-    final programs = ref.watch(programListProvider).valueOrNull ?? const [];
-    final program = recommendProgram(programs, setupAnswersFor(goals, minutes));
+    final programsAsync = ref.watch(programListProvider);
+    final program = recommendProgram(
+      programsAsync.valueOrNull ?? const [],
+      setupAnswersFor(goals, minutes),
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -625,9 +695,20 @@ class _Recommendation extends ConsumerWidget {
         const SizedBox(height: 6),
         Text(ref.tr('gt_onb_reco_sub'), style: GtText.body(t.tx2)),
         const SizedBox(height: 20),
-        if (program == null)
-          Text(ref.tr('gt_onb_reco_none'), style: GtText.body(t.tx2))
-        else
+        if (program == null && programsAsync.isLoading)
+          Center(child: CircularProgressIndicator(color: t.tx))
+        else if (program == null) ...[
+          Text(ref.tr('gt_onb_reco_none'), style: GtText.body(t.tx2)),
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: () => ref.invalidate(programListProvider),
+              icon: Icon(Icons.refresh_rounded, color: t.tx),
+              label: Text(ref.tr('gt_onb_retry'), style: GtText.body(t.tx)),
+            ),
+          ),
+        ] else
           Container(
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(

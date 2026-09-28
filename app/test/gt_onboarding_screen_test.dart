@@ -66,12 +66,13 @@ void main() {
     await tester.pump();
     expect(find.text('BƯỚC 2 / 3'), findsOneWidget);
     // Mac dinh 30 phut -> 4 buoi/tuan, 12 tu/ngay.
-    expect(find.text('4 buổi tập/tuần'), findsOneWidget);
-    expect(find.text('12 từ/ngày'), findsOneWidget);
+    expect(find.text('4 buổi/tuần'), findsOneWidget);
+    // Muc tieu tu/ngay that cua vong Hoc (khong doi theo so phut).
+    expect(find.text('10 từ/ngày'), findsOneWidget);
     await tester.tap(find.text('Hết mình'));
     await tester.pump();
-    expect(find.text('5 buổi tập/tuần'), findsOneWidget);
-    expect(find.text('20 từ/ngày + luyện nói'), findsOneWidget);
+    expect(find.text('5 buổi/tuần'), findsOneWidget);
+    expect(find.text('10 từ/ngày + luyện nói'), findsOneWidget);
     expect(overflowReport(tester), isEmpty);
 
     await tester.tap(find.text('Tạo kế hoạch'));
