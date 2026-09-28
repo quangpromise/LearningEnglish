@@ -166,7 +166,18 @@ void main() {
   testWidgets('rest day: review CTA instead of start', (tester) async {
     await pump(tester, overrides(restDay: true));
     expect(overflowReport(tester), isEmpty);
-    expect(find.text('Ôn từ vựng'), findsOneWidget);
+    await tester.drag(find.byType(ListView).first, const Offset(0, -400));
+    await tester.pumpAndSettle();
+    final buttons = find.descendant(
+      of: find.byType(FilledButton),
+      matching: find.byType(Text),
+    );
+    expect(
+      find.text('Ôn từ vựng'),
+      findsOneWidget,
+      reason: [for (final e in buttons.evaluate()) (e.widget as Text).data]
+          .join(', '),
+    );
     expect(find.text('Bắt đầu tập'), findsNothing);
   });
 }
