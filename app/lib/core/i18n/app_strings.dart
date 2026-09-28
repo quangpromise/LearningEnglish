@@ -5945,6 +5945,50 @@ class AppStrings {
       AppLanguage.vi: 'Phát âm, luyện rảnh tay và trò chuyện cùng AI',
       AppLanguage.en: 'Pronunciation, hands-free drills and AI chat',
     },
+    'gt_progress_settings': {
+      AppLanguage.vi: 'Cài đặt',
+      AppLanguage.en: 'Settings',
+    },
+    'gt_progress_rank_overline': {
+      AppLanguage.vi: 'HẠNG CỦA BẠN',
+      AppLanguage.en: 'YOUR RANK',
+    },
+    'gt_progress_body_overline': {
+      AppLanguage.vi: 'CẤP CƠ THỂ',
+      AppLanguage.en: 'BODY LEVEL',
+    },
+    'gt_progress_english_overline': {
+      AppLanguage.vi: 'TIẾNG ANH',
+      AppLanguage.en: 'ENGLISH',
+    },
+    'gt_progress_week_title': {
+      AppLanguage.vi: 'Tuần này',
+      AppLanguage.en: 'This week',
+    },
+    'gt_progress_week_total': {
+      AppLanguage.vi: '{h} giờ {m} phút',
+      AppLanguage.en: '{h} h {m} min',
+    },
+    'gt_progress_week_error': {
+      AppLanguage.vi: 'Chưa tải được hoạt động tuần',
+      AppLanguage.en: 'Couldn\'t load this week\'s activity',
+    },
+    'gt_progress_legend_learn': {
+      AppLanguage.vi: 'Phút học',
+      AppLanguage.en: 'Learning minutes',
+    },
+    'gt_progress_legend_train': {
+      AppLanguage.vi: 'Phút tập',
+      AppLanguage.en: 'Training minutes',
+    },
+    'gt_progress_mini_player': {
+      AppLanguage.vi: 'Mini player',
+      AppLanguage.en: 'Mini player',
+    },
+    'gt_progress_mini_player_sub': {
+      AppLanguage.vi: 'Hiện thanh nhạc nhỏ phía trên thanh tab',
+      AppLanguage.en: 'Show the small music bar above the tabs',
+    },
   };
 
   static String t(String key, AppLanguage lang) =>
