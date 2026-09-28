@@ -5821,6 +5821,82 @@ class AppStrings {
       AppLanguage.vi: 'Chưa mở được rương, thử lại sau nhé',
       AppLanguage.en: 'Could not open the chest, try again later',
     },
+    'gt_train_level_overline': {
+      AppLanguage.vi: 'CẤP CƠ THỂ · {level}',
+      AppLanguage.en: 'BODY LEVEL · {level}',
+    },
+    'gt_train_hero_title': {
+      AppLanguage.vi: 'Kỷ luật hôm nay\nlà kết quả\nngày mai.',
+      AppLanguage.en: "Today's discipline\nis tomorrow's\nresult.",
+    },
+    'gt_train_next_level': {
+      AppLanguage.vi: 'Lên {level} · {pct}%',
+      AppLanguage.en: 'To {level} · {pct}%',
+    },
+    'gt_train_top_level': {
+      AppLanguage.vi: 'Bậc cao nhất — giữ phong độ!',
+      AppLanguage.en: 'Top level — keep it up!',
+    },
+    'gt_train_stat_sessions': {
+      AppLanguage.vi: 'Buổi tập tuần này',
+      AppLanguage.en: 'Workouts this week',
+    },
+    'gt_train_stat_volume': {
+      AppLanguage.vi: 'Tổng khối lượng',
+      AppLanguage.en: 'Total volume',
+    },
+    'gt_train_vs_last_week': {
+      AppLanguage.vi: '{pct}% so với tuần trước',
+      AppLanguage.en: '{pct}% vs last week',
+    },
+    'gt_train_stat_heart_rate': {
+      AppLanguage.vi: 'Nhịp tim gần nhất',
+      AppLanguage.en: 'Latest heart rate',
+    },
+    'gt_train_heart_rate_sub': {
+      AppLanguage.vi: 'Đo bằng camera',
+      AppLanguage.en: 'Measured with the camera',
+    },
+    'gt_train_stat_kcal': {
+      AppLanguage.vi: 'Calo nạp vào',
+      AppLanguage.en: 'Calories eaten',
+    },
+    'gt_train_today_title': {
+      AppLanguage.vi: 'Buổi hôm nay',
+      AppLanguage.en: 'Today\'s session',
+    },
+    'gt_train_programs': {
+      AppLanguage.vi: 'Giáo án',
+      AppLanguage.en: 'Programs',
+    },
+    'gt_train_see_all': {
+      AppLanguage.vi: 'Xem tất cả',
+      AppLanguage.en: 'See all',
+    },
+    'gt_train_shortcut_library': {
+      AppLanguage.vi: 'Bài tập',
+      AppLanguage.en: 'Exercises',
+    },
+    'gt_train_shortcut_nutrition': {
+      AppLanguage.vi: 'Dinh dưỡng',
+      AppLanguage.en: 'Nutrition',
+    },
+    'gt_train_shortcut_sleep': {
+      AppLanguage.vi: 'Giấc ngủ',
+      AppLanguage.en: 'Sleep',
+    },
+    'gt_train_shortcut_community': {
+      AppLanguage.vi: 'Cộng đồng',
+      AppLanguage.en: 'Community',
+    },
+    'gt_train_need_sessions': {
+      AppLanguage.vi: 'còn {n} buổi',
+      AppLanguage.en: '{n} more workouts',
+    },
+    'gt_train_need_weeks': {
+      AppLanguage.vi: '{n} tuần liên tiếp',
+      AppLanguage.en: '{n}-week streak',
+    },
   };
 
   static String t(String key, AppLanguage lang) =>
