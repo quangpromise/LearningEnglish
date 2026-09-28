@@ -9,7 +9,6 @@ import 'package:learn_english_music/features/fitness/data/exercise_model.dart';
 import 'package:learn_english_music/features/fitness/data/heart_rate_model.dart';
 import 'package:learn_english_music/features/fitness/data/meal_model.dart';
 import 'package:learn_english_music/features/fitness/data/program_model.dart';
-import 'package:learn_english_music/features/fitness/data/program_repository.dart';
 import 'package:learn_english_music/features/fitness/data/workout_repository.dart';
 import 'package:learn_english_music/features/fitness/presentation/gt_train_screen.dart';
 import 'package:learn_english_music/features/music_player/presentation/home_screen.dart'
@@ -25,17 +24,32 @@ void main() {
 
   /// Giao an 1 voi ngay tap (hoac nghi) co dinh - khong phu thuoc thu
   /// trong tuan luc chay test.
-  Future<TodayWorkoutPlan> planFor({required bool restDay}) async {
-    final programs = await ProgramRepository().getAllPrograms();
-    final p = programs.firstWhere((p) => p.id == 1);
-    final days = p.days.where((d) => d.isRestDay == restDay);
-    return TodayWorkoutPlan(
-      program: p,
-      day: days.isEmpty
-          ? const ProgramDay(dayOfWeek: 7, exercises: [])
-          : days.first,
-    );
-  }
+  /// Giao an dung san (khong doc asset bat dong bo) - 1 ngay tap, 1 ngay
+  /// nghi; khong phu thuoc thu trong tuan luc chay test.
+  const exercise = ProgramExerciseRef(
+    exerciseId: 1,
+    targetSets: 4,
+    targetRepsMin: 8,
+    targetRepsMax: 12,
+    orderIndex: 0,
+  );
+  const program = Program(
+    id: 1,
+    titleVi: 'Tăng cơ toàn thân 8 tuần',
+    titleEn: 'Full-body muscle, 8 weeks',
+    level: 'beginner',
+    equipment: 'gym',
+    sessionsPerWeek: 3,
+    durationWeeks: 8,
+    tags: [],
+    days: [
+      ProgramDay(dayOfWeek: 1, exercises: [exercise, exercise]),
+      ProgramDay(dayOfWeek: 2, exercises: []),
+    ],
+  );
+
+  Future<TodayWorkoutPlan> planFor({required bool restDay}) async =>
+      TodayWorkoutPlan(program: program, day: program.days[restDay ? 1 : 0]);
 
   List<Override> overrides({
     double lastWeekKg = 6100,
@@ -91,9 +105,7 @@ void main() {
           ),
       ],
     ),
-    programListProvider.overrideWith(
-      (ref) => ProgramRepository().getAllPrograms(),
-    ),
+    programListProvider.overrideWith((ref) async => const [program]),
     activeProgramIdProvider.overrideWith((ref) async => 1),
     learningPathChoiceProvider.overrideWith((ref) async => null),
   ];
