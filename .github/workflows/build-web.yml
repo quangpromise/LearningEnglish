@@ -2,11 +2,17 @@ name: Build & Deploy Web
 
 # Khac voi build-apk.yml (chi build khi co "[build]" - phat hanh APK la
 # hanh dong co chu dich, ban thu cong tai mang), ban Web CHI la 1 trang tinh
-# luon phan anh dung code moi nhat tren main - deploy lai MOI LAN push (nhu
-# CI analyze-and-test) khong can cho tag rieng, vi khong ton chi phi/rui ro:
-# GitHub Pages + Actions mien phi khong gioi han cho repo public, va deploy
-# moi chi la ghi de 1 trang web tinh, khong phat sinh file tai ve moi cho
-# nguoi dung nhu APK.
+# deploy lai MOI LAN push (nhu CI analyze-and-test) khong can cho tag rieng,
+# vi khong ton chi phi/rui ro: GitHub Pages + Actions mien phi khong gioi
+# han cho repo public, va deploy moi chi la ghi de 1 trang web tinh.
+#
+# QUY TAC (2026-09-25): GitHub Pages chi co 1 site/repo nen moi lan deploy
+# build CA 2 kenh vao chung 1 artifact:
+#   /LearningEnglish/       ban cu GIU NGUYEN - luon build tu STABLE_REF
+#                           (d1a6487, CI #453), khong nhan code moi tren main
+#   /LearningEnglish/next/  kenh moi - code tren main (thay doi tu CI #454,
+#                           nguyent0810), dung chung Supabase
+# Xem them quy tac tuong tu cho APK o dau build-apk.yml.
 
 permissions:
   contents: read
@@ -25,38 +31,67 @@ concurrency:
   group: "pages"
   cancel-in-progress: false
 
+env:
+  STABLE_REF: d1a64875119a9978df2805ed39c2aaa3e10a6f55
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: app
     steps:
       - uses: actions/checkout@v4
+
+      - name: Checkout ban cu (giu nguyen)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.STABLE_REF }}
+          path: stable
 
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
 
-      - name: Install dependencies
-        run: flutter pub get
-
-      - name: Build web release
+      - name: Build web - ban cu tai /LearningEnglish/
+        working-directory: stable/app
         env:
           SB_URL: ${{ secrets.SUPABASE_URL }}
           SB_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
           GG_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID }}
           GIPHY_KEY: ${{ secrets.GIPHY_API_KEY }}
         run: |
+          flutter pub get
           CLEAN_URL=$(printf '%s' "$SB_URL" | tr -d '\n\r')
           CLEAN_ANON_KEY=$(printf '%s' "$SB_ANON_KEY" | tr -d '\n\r')
           CLEAN_CLIENT_ID=$(printf '%s' "$GG_CLIENT_ID" | tr -d '\n\r')
           CLEAN_GIPHY_KEY=$(printf '%s' "$GIPHY_KEY" | tr -d '\n\r')
           flutter build web --release --base-href /LearningEnglish/ --dart-define=SUPABASE_URL="$CLEAN_URL" --dart-define=SUPABASE_ANON_KEY="$CLEAN_ANON_KEY" --dart-define=GOOGLE_WEB_CLIENT_ID="$CLEAN_CLIENT_ID" --dart-define=GIPHY_API_KEY="$CLEAN_GIPHY_KEY"
 
+      - name: Build web - kenh moi tai /LearningEnglish/next/
+        working-directory: app
+        env:
+          SB_URL: ${{ secrets.SUPABASE_URL }}
+          SB_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          GG_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID }}
+          GIPHY_KEY: ${{ secrets.GIPHY_API_KEY }}
+        # WEB_REDIRECT_URL: dang nhap Google xong quay ve dung kenh moi (xem
+        # auth_repository.dart) - URL nay phai co trong Supabase Dashboard >
+        # Authentication > URL Configuration > Redirect URLs.
+        run: |
+          flutter pub get
+          CLEAN_URL=$(printf '%s' "$SB_URL" | tr -d '\n\r')
+          CLEAN_ANON_KEY=$(printf '%s' "$SB_ANON_KEY" | tr -d '\n\r')
+          CLEAN_CLIENT_ID=$(printf '%s' "$GG_CLIENT_ID" | tr -d '\n\r')
+          CLEAN_GIPHY_KEY=$(printf '%s' "$GIPHY_KEY" | tr -d '\n\r')
+          flutter build web --release --base-href /LearningEnglish/next/ --dart-define=SUPABASE_URL="$CLEAN_URL" --dart-define=SUPABASE_ANON_KEY="$CLEAN_ANON_KEY" --dart-define=GOOGLE_WEB_CLIENT_ID="$CLEAN_CLIENT_ID" --dart-define=GIPHY_API_KEY="$CLEAN_GIPHY_KEY" --dart-define=WEB_REDIRECT_URL=https://quangpromise.github.io/LearningEnglish/next/
+
+      - name: Gop 2 kenh vao 1 site
+        run: |
+          mkdir -p site/next
+          cp -r stable/app/build/web/. site/
+          cp -r app/build/web/. site/next/
+
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: app/build/web
+          path: site
 
   deploy:
     needs: build

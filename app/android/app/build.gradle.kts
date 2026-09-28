@@ -41,7 +41,13 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.learnenglishmusic.learn_english_music"
+        // Kenh build tach rieng (xem build-apk.yml): CI dat APP_ID_SUFFIX
+        // (vd ".next") de APK moi la 1 app KHAC, cai song song va KHONG ghi
+        // de app dang cai; APP_LABEL doi ten hien tren man hinh chinh. Build
+        // local khong dat bien nao -> giu nguyen id/ten goc.
+        applicationId = "com.learnenglishmusic.learn_english_music" +
+            (System.getenv("APP_ID_SUFFIX") ?: "")
+        manifestPlaceholders["appLabel"] = System.getenv("APP_LABEL") ?: "GymTalk"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

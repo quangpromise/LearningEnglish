@@ -3,17 +3,16 @@ name: Build & Publish APK
 permissions:
   contents: write
 
-# Nhieu lan push kem "[build]" gan nhau (vd sua nhieu loi lien tiep trong 1
-# buoi) co the khien 2 lan chay CUNG GHI vao 1 release "latest" duy nhat -
-# neu lan chay cua commit CU hoan tat SAU lan chay cua commit MOI (do thoi
-# gian cho hang doi runner khac nhau, khong lien quan gi den thu tu commit),
-# no se GHI DE APK/mo ta cua ban MOI bang noi dung CU hon, khien nguoi dung
-# cai lai van thay ban cu ma khong biet. cancel-in-progress: true dam bao khi
-# co lan chay MOI hon bat dau, lan chay CU dang do se bi huy ngay - chi con
-# lan MOI NHAT duoc phep hoan tat va publish, khong con tranh chap thu tu.
+# QUY TAC (2026-09-25): release "latest" (APK ban cu, commit d1a6487 - CI
+# #453) duoc GIU NGUYEN, workflow nay KHONG BAO GIO ghi vao no nua. Moi thay
+# doi tu CI #454 tro di (nguyent0810) ra kenh moi: moi lan build tao 1
+# release RIENG tag "next-<run_number>", APK la 1 app KHAC (applicationId
+# them ".next", ten "GymTalk Next") nen cai song song, khong thay app cu.
+# Dung chung Supabase. Vi moi lan chay ghi vao release rieng, khong con tranh
+# chap ghi de -> khong huy lan chay dang do.
 concurrency:
   group: build-apk-release
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 on:
   push:
@@ -86,6 +85,20 @@ jobs:
         run: |
           if [ -n "$GS_JSON_B64" ]; then
             printf '%s' "$GS_JSON_B64" | tr -d '\n\r' | base64 -d > android/app/google-services.json
+            # File Firebase chi khai bao package cu - them 1 client trung lap
+            # mang package kenh moi, neu khong plugin google-services bao
+            # "No matching client" va build hong.
+            python3 -c "
+          import copy, json
+          p = 'android/app/google-services.json'
+          d = json.load(open(p))
+          pkg = 'com.learnenglishmusic.learn_english_music.next'
+          if all(c['client_info']['android_client_info']['package_name'] != pkg for c in d['client']):
+              c = copy.deepcopy(d['client'][0])
+              c['client_info']['android_client_info']['package_name'] = pkg
+              d['client'].append(c)
+          json.dump(d, open(p, 'w'))
+          "
           fi
 
       # --obfuscate --split-debug-info: tach thong tin debug (ten ham/bien
@@ -112,6 +125,9 @@ jobs:
           GEMINI_DIRECT_KEY: ${{ secrets.GEMINI_API_KEY_DIRECT }}
           GIPHY_KEY: ${{ secrets.GIPHY_API_KEY }}
           ANAM_DIRECT_KEY: ${{ secrets.ANAM_API_KEY_DIRECT }}
+          # Kenh moi - app rieng, cai song song voi app cu (build.gradle.kts).
+          APP_ID_SUFFIX: ".next"
+          APP_LABEL: "GymTalk Next"
         run: |
           CLEAN_URL=$(printf '%s' "$SB_URL" | tr -d '\n\r')
           CLEAN_ANON_KEY=$(printf '%s' "$SB_ANON_KEY" | tr -d '\n\r')
@@ -161,17 +177,20 @@ jobs:
           # gio thuc te cua chinh lan chay nay cho chinh xac.
           echo "BUILD_TIME_UTC=$(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> "$GITHUB_ENV"
 
-      - name: Publish to rolling "latest" release
+      # KHONG dung tag "latest" - xem quy tac o dau file. allowUpdates: false
+      # de neu tag da ton tai thi job fail chu khong ghi de.
+      - name: Publish to separate release (next-<run_number>)
         uses: ncipollo/release-action@v1
         with:
-          tag: latest
-          name: "Bản build mới nhất (tự động)"
+          tag: next-${{ github.run_number }}
+          commit: ${{ github.sha }}
+          name: "GymTalk Next - build #${{ github.run_number }}"
           body: |
             Build tự động từ commit ${{ github.sha }} — ${{ github.event.head_commit.message || 'workflow_dispatch (bam thu cong)' }}
             Cập nhật lúc: ${{ env.BUILD_TIME_UTC }}
+            App riêng "GymTalk Next" (com.learnenglishmusic.learn_english_music.next) - cài song song, không thay app cũ.
           prerelease: true
-          allowUpdates: true
-          removeArtifacts: true
+          allowUpdates: false
           artifacts: |
             app/build/app/outputs/flutter-apk/app-release.apk
             app/build/app/outputs/flutter-apk/version.txt

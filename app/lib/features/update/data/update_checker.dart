@@ -13,7 +13,25 @@ class UpdateInfo {
 
 const _repo = 'quangpromise/LearningEnglish';
 
-/// Kiểm tra xem GitHub Release "latest" có phải bản mới hơn bản app đang
+/// Moi lan build APK tao 1 release RIENG co tag `next-<so lan chay>` (xem
+/// .github/workflows/build-apk.yml) - release "latest" cua ban cu duoc giu
+/// nguyen, khong con ghi de. App kenh moi lay release moi nhat co tien to nay.
+const _kReleaseTagPrefix = 'next-';
+
+/// GitHub tra danh sach release moi nhat truoc - lay release dau tien (khong
+/// phai nhap) thuoc kenh nay.
+Map<String, dynamic>? _newestChannelRelease(String body) {
+  final releases = (jsonDecode(body) as List).cast<Map<String, dynamic>>();
+  return releases
+      .where(
+        (r) =>
+            r['draft'] != true &&
+            (r['tag_name'] as String? ?? '').startsWith(_kReleaseTagPrefix),
+      )
+      .firstOrNull;
+}
+
+/// Kiểm tra xem GitHub Release mới nhất của kênh (tag `next-*`) có phải bản mới hơn bản app đang
 /// chạy không, bằng cách so commit SHA đóng gói sẵn trong app (BUILD_SHA)
 /// với SHA của bản build mới nhất (file version.txt đính kèm trong release —
 /// xem .github/workflows/build-apk.yml).
@@ -28,12 +46,13 @@ Future<UpdateInfo?> checkForUpdate() async {
   try {
     final releaseRes = await http
         .get(
-          Uri.parse('https://api.github.com/repos/$_repo/releases/tags/latest'),
+          Uri.parse('https://api.github.com/repos/$_repo/releases?per_page=20'),
         )
         .timeout(const Duration(seconds: 8));
     if (releaseRes.statusCode != 200) return null;
 
-    final release = jsonDecode(releaseRes.body) as Map<String, dynamic>;
+    final release = _newestChannelRelease(releaseRes.body);
+    if (release == null) return null;
     final assets = (release['assets'] as List).cast<Map<String, dynamic>>();
 
     final versionAsset = assets
@@ -87,7 +106,7 @@ Future<String> debugCheckForUpdate() async {
   try {
     final releaseRes = await http
         .get(
-          Uri.parse('https://api.github.com/repos/$_repo/releases/tags/latest'),
+          Uri.parse('https://api.github.com/repos/$_repo/releases?per_page=20'),
         )
         .timeout(const Duration(seconds: 8));
     if (releaseRes.statusCode != 200) {
@@ -95,7 +114,10 @@ Future<String> debugCheckForUpdate() async {
           '${releaseRes.statusCode == 403 ? "Rất có thể do bị rate-limit (mạng của bạn gọi API GitHub không xác thực quá nhiều lần trong 1 giờ)." : releaseRes.body}';
     }
 
-    final release = jsonDecode(releaseRes.body) as Map<String, dynamic>;
+    final release = _newestChannelRelease(releaseRes.body);
+    if (release == null) {
+      return 'Chưa có release nào của kênh "$_kReleaseTagPrefix*" trên GitHub.';
+    }
     final assets = (release['assets'] as List).cast<Map<String, dynamic>>();
     final versionAsset = assets
         .where((a) => a['name'] == 'version.txt')
@@ -104,7 +126,7 @@ Future<String> debugCheckForUpdate() async {
         .where((a) => a['name'] == 'app-release.apk')
         .firstOrNull;
     if (versionAsset == null || apkAsset == null) {
-      return 'Release "latest" trên GitHub thiếu file version.txt hoặc APK.';
+      return 'Release "${release['tag_name']}" trên GitHub thiếu file version.txt hoặc APK.';
     }
 
     final shaRes = await http
