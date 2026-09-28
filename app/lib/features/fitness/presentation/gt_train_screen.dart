@@ -8,8 +8,7 @@ import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/gt_tokens.dart';
 import '../../srs/presentation/srs_review_screen.dart';
 import '../../wealth/presentation/service_expiry_banner.dart';
-import '../../music_player/presentation/home_screen.dart'
-    show greetingKeyProvider;
+import '../../../core/i18n/greeting.dart';
 import '../data/body_level.dart';
 import '../data/exercise_model.dart';
 import '../data/meal_model.dart';
@@ -25,7 +24,6 @@ import 'sleep_screen.dart';
 
 /// Tab "Tap" cua ban redesign (spec #70, #75; README §6): hero Body Level,
 /// luoi 2x2 so lieu tuan, buoi hom nay, hang giao an, loi tat tien ich.
-/// Thay `FitnessHomeScreen` khi bat `kUseRedesign`.
 class GtTrainScreen extends ConsumerWidget {
   const GtTrainScreen({super.key});
 

@@ -8,8 +8,7 @@ import 'package:learn_english_music/core/theme/gt_tokens.dart';
 import 'package:learn_english_music/features/english_path/data/cefr_level.dart';
 import 'package:learn_english_music/features/english_path/data/english_path_providers.dart';
 import 'package:learn_english_music/features/fitness/data/body_level.dart';
-import 'package:learn_english_music/features/music_player/presentation/home_screen.dart'
-    show greetingKeyProvider;
+import 'package:learn_english_music/core/i18n/greeting.dart';
 import 'package:learn_english_music/features/profile/data/profile_repository.dart';
 import 'package:learn_english_music/features/stats/data/learning_xp_repository.dart';
 import 'package:learn_english_music/features/today/data/friends_challenge_repository.dart';

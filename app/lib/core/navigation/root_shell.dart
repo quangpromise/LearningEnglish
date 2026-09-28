@@ -5,29 +5,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../notifications/chat_push.dart';
 import '../providers/app_providers.dart';
-import '../theme/app_theme.dart';
-import '../../features/fitness/presentation/fitness_home_screen.dart';
 import '../../features/fitness/presentation/gt_train_screen.dart';
 import '../../features/english_path/presentation/gt_learn_screen.dart';
-import '../../features/music_player/presentation/center_media_button.dart';
-import '../../features/music_player/presentation/home_screen.dart';
 import '../../features/today/data/gymtalk_reminders.dart';
-import '../../features/today/presentation/progress_screen.dart';
 import '../../features/today/presentation/gt_today_screen.dart';
 import '../../features/today/presentation/gt_progress_screen.dart';
-import '../../features/today/presentation/today_screen.dart';
 import '../../features/update/presentation/update_dialog.dart';
-import '../config/gymtalk_flags.dart';
 import '../theme/gt_tokens.dart';
 import 'gt_mini_player.dart';
 import 'gt_tab_bar.dart';
 import 'root_tabs.dart';
 
 /// Man goc GymTalk: 4 tab Hom nay | Tap | Hoc | Tien do (xem root_tabs.dart)
-/// + thanh nhac o tren thanh tab. Tab "Tap" la FitnessHomeScreen va tab "Hoc"
-/// la HomeScreen tieng Anh - truoc day la 2 "app con" rieng (Fitness duoc
-/// push len bang FitnessShell qua AppSwitcherPill). Moi tinh nang con van mo
-/// dang POPUP (app_popup.dart) nhu cu. Wealth van la app rieng (WealthShell).
+/// + mini player noi tren thanh tab (ban redesign, spec #70). Moi tinh nang
+/// con van mo dang POPUP (app_popup.dart). Wealth van la app rieng
+/// (WealthShell).
 ///
 /// IndexedStack giu nguyen trang thai tung tab khi chuyen qua lai.
 class RootShell extends ConsumerStatefulWidget {
@@ -162,34 +154,12 @@ class _RootShellState extends ConsumerState<RootShell>
     final tab = ref.watch(rootTabProvider);
     // Popup thong bao tin nhan moi kieu Messenger - da chuyen len _AuthGate
     // trong main.dart (xem giai thich o do) de hoat dong o CA 3 app.
-    if (kUseRedesign) return _redesignScaffold(context, tab);
-    return Scaffold(
-      backgroundColor: AppColors.bgTop,
-      body: IndexedStack(
-        index: tab.index,
-        children: const [
-          TodayScreen(),
-          FitnessHomeScreen(),
-          HomeScreen(),
-          ProgressScreen(),
-        ],
-      ),
-      bottomNavigationBar: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
-            child: CenterMediaButton(accentColor: tab.accent),
-          ),
-          const GymTalkTabBar(),
-        ],
-      ),
-    );
+    return _scaffold(context, tab);
   }
 
-  /// Shell cua ban redesign (spec #70): noi dung chay duoi thanh tab kinh
+  /// Shell GymTalk (spec #70): noi dung chay duoi thanh tab kinh
   /// mo, mini player noi cach thanh tab 6dp, nen phang token `bg`.
-  Widget _redesignScaffold(BuildContext context, RootTab tab) {
+  Widget _scaffold(BuildContext context, RootTab tab) {
     final t = context.gt;
     final mq = MediaQuery.of(context);
     final barHeight = GtTabBar.barHeight + mq.padding.bottom;

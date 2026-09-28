@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/navigation/app_popup.dart';
+import '../../../core/navigation/gt_mini_player.dart';
 import '../../../core/navigation/gt_top_bar.dart';
 import '../../../core/navigation/nav_keys.dart';
 import '../../../core/providers/app_providers.dart';
@@ -11,8 +12,7 @@ import '../../ai_voice_chat/presentation/ai_voice_chat_screen.dart';
 import '../../grammar/presentation/grammar_topics_screen.dart';
 import '../../ielts/presentation/ielts_home_screen.dart';
 import '../../learning_path/presentation/learning_path_survey_screen.dart';
-import '../../music_player/presentation/home_screen.dart'
-    show greetingKeyProvider;
+import '../../../core/i18n/greeting.dart';
 import '../../profile/presentation/profile_screen.dart'
     show openDailyWordsPopup;
 import '../../pronunciation/presentation/phonics_lessons_screen.dart';
@@ -45,7 +45,7 @@ final dailyWordsSummaryProvider =
 
 /// Tab "Hoc" cua ban redesign (spec #70, #76; README §7): the English Level
 /// + tien do toi Level Test, hero tu vung hang ngay, 4 ky nang, luyen noi,
-/// luyen thi. Thay `HomeScreen` (tieng Anh) khi bat `kUseRedesign`.
+/// luyen thi.
 class GtLearnScreen extends ConsumerStatefulWidget {
   const GtLearnScreen({super.key});
 
@@ -80,6 +80,8 @@ class _GtLearnScreenState extends ConsumerState<GtLearnScreen> {
           const GtLevelCard(),
           const SizedBox(height: 14),
           const _DailyWordsHero(),
+          const SizedBox(height: 14),
+          const _MusicCard(),
           const SizedBox(height: 14),
           const _SkillGrid(),
           const SizedBox(height: 14),
@@ -627,6 +629,63 @@ class _ExamRow extends ConsumerWidget {
           ),
         ],
       ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Hoc qua bai hat - loi vao trinh phat (lyric song ngu, cham tu tra nghia)
+
+class _MusicCard extends ConsumerWidget {
+  const _MusicCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = context.gt;
+    return Material(
+      color: t.s1,
+      borderRadius: BorderRadius.circular(22),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(22),
+        onTap: () => openMusicPlayer(context),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: t.blueT,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Icon(Icons.library_music_rounded, color: t.blue),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      ref.tr('gt_learn_music_title'),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GtText.rowTitle(t.tx).copyWith(fontSize: 16),
+                    ),
+                    Text(
+                      ref.tr('gt_learn_music_sub'),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GtText.body(t.tx2, size: 12),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.play_circle_fill_rounded, color: t.blue, size: 32),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

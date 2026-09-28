@@ -12,7 +12,7 @@ import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/gt_tokens.dart';
 import '../../../core/widgets/gt_celebration.dart';
 import '../../fitness/presentation/programs_list_screen.dart';
-import '../../music_player/presentation/home_screen.dart';
+import '../../../core/i18n/greeting.dart';
 import '../../srs/data/srs_store.dart';
 import '../../srs/presentation/srs_review_screen.dart';
 import '../data/daily_progress_store.dart';
@@ -22,8 +22,7 @@ import 'gt_quests_card.dart';
 import 'gymtalk_setup_sheet.dart';
 
 /// Tab "Hom nay" cua ban redesign (spec #70, #73): top bar -> the Daily
-/// Rings -> the buoi tap hom nay (-> the nhiem vu, UI-04). Thay
-/// `TodayScreen` khi bat `kUseRedesign`.
+/// Rings -> the buoi tap hom nay -> the nhiem vu.
 class GtTodayScreen extends ConsumerStatefulWidget {
   const GtTodayScreen({super.key});
 

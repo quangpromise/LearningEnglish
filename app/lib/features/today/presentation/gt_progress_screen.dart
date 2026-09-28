@@ -10,8 +10,7 @@ import '../../english_path/data/cefr_level.dart';
 import '../../english_path/data/english_path_providers.dart';
 import '../../english_path/data/learn_presentation.dart';
 import '../../fitness/data/body_level.dart';
-import '../../music_player/presentation/home_screen.dart'
-    show greetingKeyProvider;
+import '../../../core/i18n/greeting.dart';
 import '../data/gymtalk_rank.dart';
 import '../data/progress_presentation.dart';
 import 'progress_social_cards.dart';
@@ -30,8 +29,7 @@ final weeklyActivitySecondsProvider = FutureProvider.autoDispose
 
 /// Tab "Tien do" cua ban redesign (spec #70, #77; README §8, ADR-0005):
 /// the GymTalk Rank, 2 o Body/English Level, bieu do tuan, ban be tuan nay,
-/// cai dat (mini player + nhac nho). Thay `ProgressScreen` khi bat
-/// `kUseRedesign`.
+/// cai dat (mini player + nhac nho).
 class GtProgressScreen extends ConsumerWidget {
   const GtProgressScreen({super.key});
 
