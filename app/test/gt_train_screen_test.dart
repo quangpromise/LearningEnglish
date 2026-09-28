@@ -97,10 +97,18 @@ void main() {
     learningPathChoiceProvider.overrideWith((ref) async => null),
   ];
 
+  /// Loi bo cuc (vd tran) kem mo ta day du widget gay loi - de CI chi ra
+  /// dung cho can sua thay vi chi "overflowed by N pixels".
+  final layoutErrors = <String>[];
+
   Future<void> pump(WidgetTester tester, List<Override> o) async {
     tester.view.physicalSize = const Size(390 * 3, 787 * 3);
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.reset);
+    layoutErrors.clear();
+    final previous = FlutterError.onError;
+    FlutterError.onError = (details) => layoutErrors.add(details.toString());
+    addTearDown(() => FlutterError.onError = previous);
     await tester.pumpWidget(
       ProviderScope(
         overrides: o,
@@ -115,7 +123,7 @@ void main() {
 
   testWidgets('Train tab fits 390x787 with real-shaped data', (tester) async {
     await pump(tester, overrides());
-    expect(tester.takeException(), isNull);
+    expect(layoutErrors, isEmpty, reason: layoutErrors.join('\n'));
     expect(find.text('CẤP CƠ THỂ · REGULAR'), findsOneWidget);
     // 13 buoi, 3 tuan -> thieu 7 buoi va 1 tuan lien tiep (ADR-0005).
     expect(
@@ -134,7 +142,7 @@ void main() {
     tester,
   ) async {
     await pump(tester, overrides(lastWeekKg: 0, measured: false));
-    expect(tester.takeException(), isNull);
+    expect(layoutErrors, isEmpty, reason: layoutErrors.join('\n'));
     expect(find.textContaining('so với tuần trước'), findsNothing);
     expect(find.textContaining('-- bpm'), findsOneWidget);
   });
@@ -145,14 +153,14 @@ void main() {
     await pump(tester, overrides());
     await tester.drag(find.byType(ListView).first, const Offset(0, -2000));
     await tester.pumpAndSettle();
-    expect(tester.takeException(), isNull);
+    expect(layoutErrors, isEmpty, reason: layoutErrors.join('\n'));
     expect(find.text('Giáo án'), findsOneWidget);
     expect(find.text('Cộng đồng'), findsOneWidget);
   });
 
   testWidgets('rest day: review CTA instead of start', (tester) async {
     await pump(tester, overrides(restDay: true));
-    expect(tester.takeException(), isNull);
+    expect(layoutErrors, isEmpty, reason: layoutErrors.join('\n'));
     expect(find.text('Ôn từ vựng'), findsOneWidget);
     expect(find.text('Bắt đầu tập'), findsNothing);
   });
