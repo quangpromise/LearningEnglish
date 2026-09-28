@@ -9,7 +9,7 @@ const kDailyTrainGoal = 1;
 const kDailyLearnGoal = 10;
 const kDailySpeakGoal = 5;
 
-/// So lieu 1 ngay cua 3 vong Tap - Hoc - Noi.
+/// So lieu 1 ngay cua 3 vong Tap - Hoc - Noi + Daily Quest (spec #70).
 @immutable
 class DayProgress {
   const DayProgress({
@@ -17,6 +17,10 @@ class DayProgress {
     this.wordsReviewed = 0,
     this.speakAttempts = 0,
     this.restDay = false,
+    this.handsFree = false,
+    this.trainerChat = false,
+    this.chestOpened = false,
+    this.rewarded = const {},
   });
 
   factory DayProgress.fromJson(Map<String, dynamic> json) => DayProgress(
@@ -24,6 +28,24 @@ class DayProgress {
     wordsReviewed: (json['l'] as num?)?.toInt() ?? 0,
     speakAttempts: (json['s'] as num?)?.toInt() ?? 0,
     restDay: json['r'] as bool? ?? false,
+    handsFree: json['hf'] as bool? ?? false,
+    trainerChat: json['tc'] as bool? ?? false,
+    chestOpened: json['co'] as bool? ?? false,
+    rewarded: {for (final k in (json['rk'] as List?) ?? const []) k.toString()},
+  );
+
+  /// Gop 2 ban cua cung 1 ngay (dong bo nhieu may): bo dem lay MAX, co
+  /// lay OR, khoa thuong lay hop - khong bao gio lam giam, gop lai nhieu
+  /// lan van ra cung ket qua.
+  static DayProgress merge(DayProgress a, DayProgress b) => DayProgress(
+    workouts: max(a.workouts, b.workouts),
+    wordsReviewed: max(a.wordsReviewed, b.wordsReviewed),
+    speakAttempts: max(a.speakAttempts, b.speakAttempts),
+    restDay: a.restDay || b.restDay,
+    handsFree: a.handsFree || b.handsFree,
+    trainerChat: a.trainerChat || b.trainerChat,
+    chestOpened: a.chestOpened || b.chestOpened,
+    rewarded: {...a.rewarded, ...b.rewarded},
   );
 
   /// So buoi tap da ket thuc (luu) trong ngay.
@@ -37,6 +59,19 @@ class DayProgress {
 
   /// Ngay nghi theo giao an dang theo -> vong Tap tinh la xong.
   final bool restDay;
+
+  /// Da xong 1 luot "Nghe va nhac lai" ranh tay (quest).
+  final bool handsFree;
+
+  /// Da tro chuyen voi PT AI du so luot (quest).
+  final bool trainerChat;
+
+  /// Da mo Quest Chest hom nay.
+  final bool chestOpened;
+
+  /// Khoa phan thuong XP da cong hom nay (vd `quest_review`, `chest`) -
+  /// moi khoa chi cong 1 lan/ngay.
+  final Set<String> rewarded;
 
   double get trainRatio =>
       restDay ? 1 : (workouts / kDailyTrainGoal).clamp(0.0, 1.0).toDouble();
@@ -59,19 +94,60 @@ class DayProgress {
     int? wordsReviewed,
     int? speakAttempts,
     bool? restDay,
+    bool? handsFree,
+    bool? trainerChat,
+    bool? chestOpened,
+    Set<String>? rewarded,
   }) => DayProgress(
     workouts: workouts ?? this.workouts,
     wordsReviewed: wordsReviewed ?? this.wordsReviewed,
     speakAttempts: speakAttempts ?? this.speakAttempts,
     restDay: restDay ?? this.restDay,
+    handsFree: handsFree ?? this.handsFree,
+    trainerChat: trainerChat ?? this.trainerChat,
+    chestOpened: chestOpened ?? this.chestOpened,
+    rewarded: rewarded ?? this.rewarded,
   );
+
+  /// Them 1 khoa thuong (idempotent).
+  DayProgress withRewarded(String key) =>
+      rewarded.contains(key) ? this : copyWith(rewarded: {...rewarded, key});
 
   Map<String, dynamic> toJson() => {
     'w': workouts,
     'l': wordsReviewed,
     's': speakAttempts,
     'r': restDay,
+    if (handsFree) 'hf': true,
+    if (trainerChat) 'tc': true,
+    if (chestOpened) 'co': true,
+    if (rewarded.isNotEmpty) 'rk': [...rewarded]..sort(),
   };
+
+  @override
+  bool operator ==(Object other) =>
+      other is DayProgress &&
+      other.workouts == workouts &&
+      other.wordsReviewed == wordsReviewed &&
+      other.speakAttempts == speakAttempts &&
+      other.restDay == restDay &&
+      other.handsFree == handsFree &&
+      other.trainerChat == trainerChat &&
+      other.chestOpened == chestOpened &&
+      other.rewarded.length == rewarded.length &&
+      other.rewarded.containsAll(rewarded);
+
+  @override
+  int get hashCode => Object.hash(
+    workouts,
+    wordsReviewed,
+    speakAttempts,
+    restDay,
+    handsFree,
+    trainerChat,
+    chestOpened,
+    Object.hashAllUnordered(rewarded),
+  );
 }
 
 /// Dem tien do 3 vong Tap - Hoc - Noi theo tung ngay, luu tren may
@@ -97,6 +173,10 @@ class DailyProgressStore extends ChangeNotifier {
   final DateTime Function() _clock;
   final Map<String, DayProgress> _days = {};
   Future<void>? _loading;
+
+  /// Khoa ngay 'yyyy-mm-dd' (theo gio may) - cung dung lam tien to khoa
+  /// thuong tren server.
+  static String keyOf(DateTime d) => _keyOf(d);
 
   static String _keyOf(DateTime d) =>
       '${d.year.toString().padLeft(4, '0')}-'
@@ -151,8 +231,7 @@ class DailyProgressStore extends ChangeNotifier {
     for (final e in _days.entries) e.key: e.value.toJson(),
   };
 
-  /// Gop so lieu tu server: moi ngay lay MAX tung bo dem, ngay nghi = OR
-  /// (khong bao gio lam giam so lieu, gop nhieu lan van ra cung ket qua).
+  /// Gop so lieu tu server theo tung ngay bang [DayProgress.merge].
   /// Tra ve true neu du lieu tren may thay doi.
   Future<bool> mergeRemote(Map<String, dynamic> remote) async {
     await ensureLoaded();
@@ -163,17 +242,8 @@ class DailyProgressStore extends ChangeNotifier {
         Map<String, dynamic>.from(e.value as Map),
       );
       final local = _days[e.key] ?? const DayProgress();
-      final merged = DayProgress(
-        workouts: max(local.workouts, incoming.workouts),
-        wordsReviewed: max(local.wordsReviewed, incoming.wordsReviewed),
-        speakAttempts: max(local.speakAttempts, incoming.speakAttempts),
-        restDay: local.restDay || incoming.restDay,
-      );
-      if (merged.workouts != local.workouts ||
-          merged.wordsReviewed != local.wordsReviewed ||
-          merged.speakAttempts != local.speakAttempts ||
-          merged.restDay != local.restDay ||
-          !_days.containsKey(e.key)) {
+      final merged = DayProgress.merge(local, incoming);
+      if (merged != local || !_days.containsKey(e.key)) {
         _days[e.key] = merged;
         changed = true;
       }
@@ -220,6 +290,40 @@ class DailyProgressStore extends ChangeNotifier {
     await ensureLoaded();
     if (today.restDay == restDay) return;
     await _update((d) => d.copyWith(restDay: restDay));
+  }
+
+  /// Man Ranh tay goi khi xong 1 luot co it nhat 1 cau dat (quest).
+  Future<void> markHandsFreeDone() async {
+    await ensureLoaded();
+    if (today.handsFree) return;
+    await _update((d) => d.copyWith(handsFree: true));
+  }
+
+  /// Man PT AI goi khi nguoi dung da noi du so luot (quest).
+  Future<void> markTrainerChatDone() async {
+    await ensureLoaded();
+    if (today.trainerChat) return;
+    await _update((d) => d.copyWith(trainerChat: true));
+  }
+
+  /// Ghi nhan phan thuong [key] cua ngay [day] da duoc tra (va, voi ruong,
+  /// danh dau da mo). Kiem tra va ghi DONG BO (khong await o giua) -> 2 lan
+  /// goi song song chi 1 lan tra ve true. Ngay truyen vao (khong doc lai
+  /// dong ho) de lan nhan thuong vat qua nua dem van ghi dung ngay.
+  Future<bool> markRewarded(
+    DateTime day,
+    String key, {
+    bool openChest = false,
+  }) async {
+    await ensureLoaded();
+    final dayKey = _keyOf(day);
+    final current = _days[dayKey] ?? const DayProgress();
+    if (current.rewarded.contains(key)) return false;
+    final next = current.withRewarded(key);
+    _days[dayKey] = openChest ? next.copyWith(chestOpened: true) : next;
+    notifyListeners();
+    await _save();
+    return true;
   }
 
   /// [count] ngay gan nhat, phan tu CUOI la hom nay.
