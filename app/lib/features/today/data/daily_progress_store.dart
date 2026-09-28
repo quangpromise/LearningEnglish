@@ -174,6 +174,10 @@ class DailyProgressStore extends ChangeNotifier {
   final Map<String, DayProgress> _days = {};
   Future<void>? _loading;
 
+  /// Khoa ngay 'yyyy-mm-dd' (theo gio may) - cung dung lam tien to khoa
+  /// thuong tren server.
+  static String keyOf(DateTime d) => _keyOf(d);
+
   static String _keyOf(DateTime d) =>
       '${d.year.toString().padLeft(4, '0')}-'
       '${d.month.toString().padLeft(2, '0')}-'
@@ -302,32 +306,24 @@ class DailyProgressStore extends ChangeNotifier {
     await _update((d) => d.copyWith(trainerChat: true));
   }
 
-  /// Ghi khoa thuong + (tuy chon) danh dau da mo ruong, TRUOC khi goi RPC
-  /// cong XP - de 2 lan cham lien tiep khong cong trung. Tra ve false neu
-  /// khoa da co (da thuong roi).
-  Future<bool> claimReward(String key, {bool openChest = false}) async {
+  /// Ghi nhan phan thuong [key] cua ngay [day] da duoc tra (va, voi ruong,
+  /// danh dau da mo). Kiem tra va ghi DONG BO (khong await o giua) -> 2 lan
+  /// goi song song chi 1 lan tra ve true. Ngay truyen vao (khong doc lai
+  /// dong ho) de lan nhan thuong vat qua nua dem van ghi dung ngay.
+  Future<bool> markRewarded(
+    DateTime day,
+    String key, {
+    bool openChest = false,
+  }) async {
     await ensureLoaded();
-    // Kiem tra va ghi DONG BO (khong await o giua) -> 2 lan goi song song
-    // chi 1 lan thang.
-    final dayKey = _keyOf(_clock());
-    final day = _days[dayKey] ?? const DayProgress();
-    if (day.rewarded.contains(key)) return false;
-    final next = day.withRewarded(key);
+    final dayKey = _keyOf(day);
+    final current = _days[dayKey] ?? const DayProgress();
+    if (current.rewarded.contains(key)) return false;
+    final next = current.withRewarded(key);
     _days[dayKey] = openChest ? next.copyWith(chestOpened: true) : next;
     notifyListeners();
     await _save();
     return true;
-  }
-
-  /// Hoan tac [claimReward] khi RPC that bai -> lan sau thu lai.
-  Future<void> releaseReward(String key, {bool closeChest = false}) async {
-    await ensureLoaded();
-    await _update(
-      (d) => d.copyWith(
-        rewarded: {...d.rewarded}..remove(key),
-        chestOpened: closeChest ? false : d.chestOpened,
-      ),
-    );
   }
 
   /// [count] ngay gan nhat, phan tu CUOI la hom nay.

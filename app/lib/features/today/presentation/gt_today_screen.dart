@@ -54,20 +54,12 @@ class _GtTodayScreenState extends ConsumerState<GtTodayScreen> {
     }, fireImmediately: true);
   }
 
-  bool _claiming = false;
-
   Future<void> _claimQuestXp() async {
-    if (_claiming || !mounted) return;
+    if (!mounted) return;
     if (pendingQuestRewards(DailyProgressStore.instance.today).isEmpty) return;
-    _claiming = true;
-    try {
-      final xp = await ref
-          .read(questRewardServiceProvider)
-          .claimPendingQuests();
-      if (xp > 0) showXpToast(xp);
-    } finally {
-      _claiming = false;
-    }
+    // Dich vu tu chong goi chong (khoa dang tra) va lap den khi het.
+    final xp = await ref.read(questRewardServiceProvider).claimPendingQuests();
+    if (xp > 0) showXpToast(xp);
   }
 
   @override

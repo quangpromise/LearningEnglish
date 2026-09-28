@@ -410,7 +410,11 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
       unawaited(_checkGrammar(toAdd));
       // Nhiem vu "Noi chuyen voi PT AI": du so luot nguoi dung noi.
       if (widget.scenario == VoiceChatScenario.personalTrainer &&
-          _messages.where((m) => m.role == ChatRole.user).length >=
+          _messages
+                  .where(
+                    (m) => m.role == ChatRole.user && m.text.trim().isNotEmpty,
+                  )
+                  .length >=
               kTrainerChatQuestTurns) {
         unawaited(DailyProgressStore.instance.markTrainerChatDone());
       }

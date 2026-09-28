@@ -16,7 +16,13 @@ void showXpToast(int xp, {OverlayState? overlay}) {
   if (state == null) return;
   late final OverlayEntry entry;
   entry = OverlayEntry(
-    builder: (_) => _XpToast(xp: xp, onDone: () => entry.remove()),
+    builder: (_) => _XpToast(
+      xp: xp,
+      onDone: () {
+        entry.remove();
+        entry.dispose();
+      },
+    ),
   );
   state.insert(entry);
 }
@@ -62,7 +68,9 @@ class _XpToastState extends State<_XpToast>
                 : v > 0.8
                 ? (1 - v) / 0.2
                 : 1.0;
-            final dy = v < 0.15 ? -12 * (1 - v / 0.15) : 0.0;
+            // Giam chuyen dong: chi hien/mo, khong truot.
+            final still = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+            final dy = still || v >= 0.15 ? 0.0 : -12 * (1 - v / 0.15);
             return Opacity(
               opacity: opacity.clamp(0.0, 1.0),
               child: Transform.translate(offset: Offset(0, dy), child: child),

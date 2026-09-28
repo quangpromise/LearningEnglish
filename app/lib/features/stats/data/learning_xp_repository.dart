@@ -82,6 +82,27 @@ class LearningXpRepository {
     }
   }
 
+  /// Cộng XP thưởng gắn với [key] đúng 1 lần trên server (migration 0076,
+  /// `claim_learning_xp`). Trả về số XP cộng ở lần gọi này: [amount] lần đầu,
+  /// 0 nếu khóa đã được nhận (máy khác / lần gọi trước).
+  ///
+  /// Ném [XpRewardKeysUnavailable] khi server chưa chạy migration 0076 — nơi
+  /// gọi tự quyết định có dùng [addBonusXp] (không chống trùng) hay không.
+  Future<int> claimXpOnce(String key, int amount) async {
+    try {
+      final added = await _supabase.rpc(
+        'claim_learning_xp',
+        params: {'p_key': key, 'p_amount': amount},
+      );
+      return (added as num).toInt();
+    } on PostgrestException catch (e) {
+      if (e.code == '42883' || e.code == 'PGRST202') {
+        throw const XpRewardKeysUnavailable();
+      }
+      rethrow;
+    }
+  }
+
   /// Cộng XP thưởng thêm (sự kiện, mốc thành tích). XP từ hoạt động thường
   /// ngày KHÔNG đi qua đây — nó được tính thẳng từ dữ liệu hoạt động ở server.
   Future<int> addBonusXp(int amount) async {
@@ -91,4 +112,9 @@ class LearningXpRepository {
     );
     return (total as num).toInt();
   }
+}
+
+/// Server chưa có `claim_learning_xp` (chưa chạy migration 0076).
+class XpRewardKeysUnavailable implements Exception {
+  const XpRewardKeysUnavailable();
 }

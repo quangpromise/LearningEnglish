@@ -17,15 +17,21 @@ import '../data/daily_quests.dart';
 import '../data/quest_rewards.dart';
 
 /// Dich vu cong XP nhiem vu/ruong qua `add_learning_xp` (ADR-0005).
-final questRewardServiceProvider = Provider<QuestRewardService>(
-  (ref) => QuestRewardService(
+final questRewardServiceProvider = Provider<QuestRewardService>((ref) {
+  final repo = ref.read(learningXpRepositoryProvider);
+  return QuestRewardService(
     store: DailyProgressStore.instance,
-    addXp: (amount) async {
-      await ref.read(learningXpRepositoryProvider).addBonusXp(amount);
+    claimOnce: (key, amount) async {
+      final added = await repo.claimXpOnce(key, amount);
+      if (added > 0) ref.invalidate(myLearningXpProvider);
+      return added;
+    },
+    addLegacy: (amount) async {
+      await repo.addBonusXp(amount);
       ref.invalidate(myLearningXpProvider);
     },
-  ),
-);
+  );
+});
 
 /// The "Nhiem vu hang ngay" (README §5): 4 dong nhiem vu + hop ruong.
 class GtQuestsCard extends ConsumerWidget {
@@ -81,8 +87,18 @@ class GtQuestsCard extends ConsumerWidget {
   }
 
   Future<void> _openChest(BuildContext context, WidgetRef ref) async {
-    final xp = await ref.read(questRewardServiceProvider).openChest();
-    if (xp == null || !context.mounted) return;
+    final int? xp;
+    try {
+      xp = await ref.read(questRewardServiceProvider).openChest();
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.maybeOf(context)
+            ?.showSnackBar(SnackBar(content: Text(ref.tr('gt_chest_failed'))));
+      }
+      return;
+    }
+    // 0 = da nhan tren may khac: ruong mo, khong chuc mung lan nua.
+    if (xp == null || xp == 0 || !context.mounted) return;
     await showCelebration(
       context,
       xp: xp,

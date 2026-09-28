@@ -5761,8 +5761,8 @@ class AppStrings {
       AppLanguage.en: 'Review {goal} word cards',
     },
     'gt_quest_review_sub': {
-      AppLanguage.vi: 'Thẻ đến hạn trong bộ của bạn',
-      AppLanguage.en: 'Due cards in your deck',
+      AppLanguage.vi: 'Ôn thẻ hoặc học từ lúc nghỉ tập',
+      AppLanguage.en: 'Review cards or learn words between sets',
     },
     'gt_quest_pronunciation_title': {
       AppLanguage.vi: 'Luyện phát âm {goal} câu',
@@ -5816,6 +5816,10 @@ class AppStrings {
     'gt_celebration_streak_chip': {
       AppLanguage.vi: 'Chuỗi {days} ngày',
       AppLanguage.en: '{days}-day streak',
+    },
+    'gt_chest_failed': {
+      AppLanguage.vi: 'Chưa mở được rương, thử lại sau nhé',
+      AppLanguage.en: 'Could not open the chest, try again later',
     },
   };
 

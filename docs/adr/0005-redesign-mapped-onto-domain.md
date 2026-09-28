@@ -7,3 +7,7 @@ Handoff có dùng số mẫu kiểu "Cấp 8 · 2.480 XP", "Kim cương III", "C
 - **"Cấp cơ thể"** hiển thị Body Level kèm mục tiêu kế tiếp (số buổi và số tuần). **"Cấp tiếng Anh"** hiển thị English Level kèm tiến độ Unit tới Level Test.
 - **XP thưởng** (nhiệm vụ, rương) được cộng qua RPC `add_learning_xp` hiện có. Mỗi phần thưởng có khóa theo ngày để không cộng trùng. Số XP hiển thị luôn là số thật; con số mẫu trong design không được dùng.
 - **League:** chỉ là bảng bạn bè trong tuần (RPC `friends_body_brain_week`), không có hạng thăng/giáng.
+
+## Cập nhật (UI-04, #74): khóa thưởng nằm ở server
+
+Khóa theo ngày chỉ lưu trên máy thì không đủ: hai máy cùng nhận thưởng trước khi đồng bộ sẽ cộng trùng, còn RPC lỗi sau khi khóa đã đồng bộ thì mất thưởng (luồng gộp chỉ cộng dồn, không gỡ khóa được). Vì vậy migration 0076 thêm bảng `learning_xp_rewards (user_id, reward_key)` và RPC `claim_learning_xp(p_key, p_amount)`: khóa `yyyy-mm-dd:<tên>` chỉ được cộng một lần, gọi lại trả về 0. `DayProgress.rewarded` chỉ còn là bản ghi "đã xác nhận trả" để khỏi gọi lại. Khi server chưa chạy 0076, app dùng `add_learning_xp` cũ và ghi khóa trước khi gọi (tối đa một lần trên mỗi máy).

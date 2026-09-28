@@ -6,23 +6,65 @@ import 'package:learn_english_music/core/widgets/gt_celebration.dart';
 import 'package:learn_english_music/features/today/data/daily_progress_store.dart';
 import 'package:learn_english_music/features/today/data/daily_quests.dart';
 import 'package:learn_english_music/features/today/data/quest_rewards.dart';
+import 'package:learn_english_music/features/stats/data/learning_xp_repository.dart';
 import 'package:learn_english_music/features/today/presentation/gt_quests_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+/// Gia lap `claim_learning_xp`: 1 bang khoa dung chung cho moi "may".
+class _FakeServer {
+  final keys = <String>{};
+  var xp = 0;
+  var failing = false;
+  var legacyOnly = false;
+
+  Future<int> claimOnce(String key, int amount) async {
+    await Future<void>.delayed(Duration.zero);
+    if (legacyOnly) throw const XpRewardKeysUnavailable();
+    if (failing) throw Exception('offline');
+    if (!keys.add(key)) return 0;
+    xp += amount;
+    return amount;
+  }
+
+  Future<void> addLegacy(int amount) async {
+    if (failing) throw Exception('offline');
+    xp += amount;
+  }
+}
+
+final _now = DateTime(2026, 9, 24, 10);
 
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
   DailyProgressStore newStore() =>
-      DailyProgressStore.forTest(clock: () => DateTime(2026, 9, 24, 10));
+      DailyProgressStore.forTest(clock: () => _now);
+
+  QuestRewardService serviceFor(
+    DailyProgressStore store,
+    _FakeServer server, {
+    DateTime Function()? clock,
+  }) => QuestRewardService(
+    store: store,
+    claimOnce: server.claimOnce,
+    addLegacy: server.addLegacy,
+    clock: clock ?? () => _now,
+  );
+
+  Future<void> finishAllQuests(DailyProgressStore store) async {
+    await store.addWordsReviewed(kDailyLearnGoal);
+    for (var i = 0; i < kDailySpeakGoal; i++) {
+      await store.addSpeakAttempt();
+    }
+    await store.markHandsFreeDone();
+    await store.markTrainerChatDone();
+  }
 
   group('QuestRewardService', () {
-    test('awards each done quest once, even when claimed twice', () async {
+    test('pays each done quest once with a dated server key', () async {
       final store = newStore();
-      final added = <int>[];
-      final service = QuestRewardService(
-        store: store,
-        addXp: (a) async => added.add(a),
-      );
+      final server = _FakeServer();
+      final service = serviceFor(store, server);
       await store.addWordsReviewed(kDailyLearnGoal);
       await store.markHandsFreeDone();
 
@@ -31,41 +73,78 @@ void main() {
         service.claimPendingQuests(),
       ]);
       expect(results.fold<int>(0, (a, b) => a + b), 30 + 25);
-      expect(added..sort(), [25, 30]);
+      expect(server.xp, 55);
+      expect(server.keys, {
+        '2026-09-24:quest_review',
+        '2026-09-24:quest_handsFree',
+      });
       expect(await service.claimPendingQuests(), 0);
       expect(store.today.rewarded, {'quest_review', 'quest_handsFree'});
     });
 
-    test('a failed RPC releases the key so it is retried', () async {
-      final store = newStore();
-      var fail = true;
-      final service = QuestRewardService(
-        store: store,
-        addXp: (a) async {
-          if (fail) throw Exception('offline');
-        },
-      );
-      await store.markTrainerChatDone();
-      expect(await service.claimPendingQuests(), 0);
-      expect(store.today.rewarded, isEmpty);
-      fail = false;
-      expect(await service.claimPendingQuests(), DailyQuestId.trainerChat.xp);
+    test('two devices never double-pay the same quest', () async {
+      final server = _FakeServer();
+      final a = newStore();
+      final b = newStore();
+      await a.markTrainerChatDone();
+      SharedPreferences.setMockInitialValues({}); // may khac
+      await b.markTrainerChatDone();
+      await serviceFor(a, server).claimPendingQuests();
+      await serviceFor(b, server).claimPendingQuests();
+      expect(server.xp, DailyQuestId.trainerChat.xp);
+      // Ca 2 may deu ghi nhan da tra.
+      expect(b.today.rewarded, {'quest_trainerChat'});
     });
 
-    test('chest opens only at 4/4 and only once a day', () async {
+    test(
+      'a failed RPC keeps the quest pending, retried after backoff',
+      () async {
+        final store = newStore();
+        final server = _FakeServer()..failing = true;
+        var now = _now;
+        final service = serviceFor(store, server, clock: () => now);
+        await store.markTrainerChatDone();
+        expect(await service.claimPendingQuests(), 0);
+        expect(store.today.rewarded, isEmpty);
+        server.failing = false;
+        // Van trong thoi gian tam dung -> khong goi lai.
+        expect(await service.claimPendingQuests(), 0);
+        now = now.add(const Duration(minutes: 2));
+        expect(await service.claimPendingQuests(), DailyQuestId.trainerChat.xp);
+      },
+    );
+
+    test('a quest finished during a claim is paid in the same run', () async {
       final store = newStore();
-      final added = <int>[];
-      final service = QuestRewardService(
-        store: store,
-        addXp: (a) async => added.add(a),
-      );
-      expect(await service.openChest(), isNull);
-      await store.addWordsReviewed(kDailyLearnGoal);
-      for (var i = 0; i < kDailySpeakGoal; i++) {
-        await store.addSpeakAttempt();
-      }
+      final server = _FakeServer();
+      final service = serviceFor(store, server);
       await store.markHandsFreeDone();
+      final run = service.claimPendingQuests();
       await store.markTrainerChatDone();
+      expect(await run, 25 + 40);
+    });
+
+    test(
+      'without migration 0076: legacy RPC, at most once per device',
+      () async {
+        final store = newStore();
+        final server = _FakeServer()..legacyOnly = true;
+        final service = serviceFor(store, server);
+        await store.markHandsFreeDone();
+        await Future.wait([
+          service.claimPendingQuests(),
+          service.claimPendingQuests(),
+        ]);
+        expect(server.xp, 25);
+      },
+    );
+
+    test('chest opens only at 4/4 and pays once across devices', () async {
+      final server = _FakeServer();
+      final store = newStore();
+      final service = serviceFor(store, server);
+      expect(await service.openChest(), isNull);
+      await finishAllQuests(store);
 
       final both = await Future.wait([
         service.openChest(),
@@ -74,24 +153,35 @@ void main() {
       expect(both.whereType<int>(), [kChestXp]);
       expect(store.today.chestOpened, isTrue);
       expect(await service.openChest(), isNull);
-      expect(added, [kChestXp]);
+
+      SharedPreferences.setMockInitialValues({}); // may khac
+      final other = newStore();
+      await finishAllQuests(other);
+      expect(await serviceFor(other, server).openChest(), 0);
+      expect(other.today.chestOpened, isTrue);
+      expect(server.xp, kChestXp);
     });
 
-    test('a failed chest RPC closes the chest again', () async {
+    test('a failed chest RPC leaves the chest ready', () async {
       final store = newStore();
-      final service = QuestRewardService(
-        store: store,
-        addXp: (a) async => throw Exception('offline'),
-      );
-      await store.addWordsReviewed(kDailyLearnGoal);
-      for (var i = 0; i < kDailySpeakGoal; i++) {
-        await store.addSpeakAttempt();
-      }
-      await store.markHandsFreeDone();
-      await store.markTrainerChatDone();
-      expect(await service.openChest(), isNull);
-      expect(store.today.chestOpened, isFalse);
+      final server = _FakeServer()..failing = true;
+      await finishAllQuests(store);
+      await expectLater(serviceFor(store, server).openChest(), throwsException);
       expect(chestState(store.today), ChestState.ready);
+    });
+
+    test('store sync merge keeps quest flags and paid keys', () async {
+      final a = newStore();
+      await a.markHandsFreeDone();
+      await a.markRewarded(_now, 'quest_handsFree');
+      SharedPreferences.setMockInitialValues({}); // may khac
+      final b = newStore();
+      await b.markTrainerChatDone();
+      expect(await b.mergeRemote(a.exportJson()), isTrue);
+      expect(b.today.handsFree, isTrue);
+      expect(b.today.trainerChat, isTrue);
+      expect(b.today.rewarded, {'quest_handsFree'});
+      expect(await b.mergeRemote(a.exportJson()), isFalse);
     });
   });
 
@@ -185,6 +275,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
     expect(find.text('+55 XP'), findsOneWidget);
     await tester.pump(const Duration(milliseconds: 1500));
+    await tester.pump();
     expect(find.text('+55 XP'), findsNothing);
   });
 }
