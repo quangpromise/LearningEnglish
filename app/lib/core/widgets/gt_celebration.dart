@@ -148,7 +148,7 @@ class _GtCelebrationState extends State<GtCelebration>
   late final AnimationController _pop = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 600),
-  )..forward();
+  );
   late final AnimationController _glow = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 1800),
@@ -159,7 +159,7 @@ class _GtCelebrationState extends State<GtCelebration>
     super.initState();
     // Toa sang lap lai sau khi bat len xong; tat khi he thong giam chuyen
     // dong.
-    _pop.whenComplete(() {
+    _pop.forward().whenCompleteOrCancel(() {
       if (!mounted) return;
       if (MediaQuery.maybeDisableAnimationsOf(context) ?? false) return;
       _glow.repeat();
