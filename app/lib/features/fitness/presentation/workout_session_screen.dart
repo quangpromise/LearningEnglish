@@ -22,6 +22,7 @@ import '../../srs/data/srs_store.dart';
 import '../../stats/data/learning_xp_repository.dart';
 import '../../today/data/daily_progress_store.dart';
 import '../data/coach_script.dart';
+import '../data/exercise_i18n.dart';
 import '../data/gym_vocabulary.dart';
 import '../data/rep_counter.dart';
 import '../data/workout_model.dart';
@@ -528,11 +529,11 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
     final xp = _restGameCorrect * kRestGameXpPerCorrect;
     _restGameCorrect = 0;
     if (xp <= 0) return;
-    _restGameXpTotal += xp;
     unawaited(
       _xpRepo
           .addBonusXp(xp)
-          .then<void>((_) {})
+          // Chi tinh vao Celebration khi server da cong that.
+          .then<void>((_) => _restGameXpTotal += xp)
           .catchError((Object e) => debugPrint('Rest Game XP failed: $e')),
     );
   }
@@ -777,7 +778,13 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
       setNumber: controller.currentSetNumber,
       totalSets: controller.currentTotalSets,
       isLastGroup: controller.isLastGroup,
+      isPaired: controller.isPairedGroup,
+      pairSubIndex: controller.pairSubIndex,
     );
+    // Sieu hiep: danh dau dang o bai A hay B cua vong.
+    final pairTag = controller.isPairedGroup
+        ? ' · ${controller.pairSubIndex == 0 ? 'A' : 'B'}'
+        : '';
     final learn = _restLearnCard();
     return PopScope(
       canPop: false,
@@ -888,7 +895,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                                 )
                                 .replaceFirst(
                                   '{total}',
-                                  '${controller.currentTotalSets}',
+                                  '${controller.currentTotalSets}$pairTag',
                                 ),
                         },
                         onTap: controller.completeSet,
@@ -908,12 +915,11 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                             ),
                           ),
                         Expanded(
-                          child: TextButton(
-                            onPressed: _confirmExit,
-                            child: Text(
-                              ref.tr('gt_workout_end'),
-                              style: GtText.body(t.tx2, size: 13),
-                            ),
+                          // README §9: nut vien "Ket thuc buoi tap".
+                          child: _GtButton(
+                            label: ref.tr('gt_workout_end'),
+                            outline: true,
+                            onTap: _confirmExit,
                           ),
                         ),
                       ],
@@ -1531,7 +1537,8 @@ class _GtSessionHeader extends ConsumerWidget {
                 ),
                 const Spacer(),
                 Text(
-                  exercise.altNameFor(lang),
+                  // README §9: nhom co chinh o tren ten bai.
+                  exerciseMuscleLabel(exercise.primaryMuscle, lang),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: GtText.body(const Color(0xFFD4D6DA), size: 13),

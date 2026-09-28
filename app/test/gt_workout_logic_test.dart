@@ -39,6 +39,42 @@ void main() {
       );
     });
 
+    test('superset: exercise A of the last round only moves to B', () {
+      expect(
+        sessionAction(
+          resting: false,
+          setNumber: 3,
+          totalSets: 3,
+          isLastGroup: true,
+          isPaired: true,
+          pairSubIndex: 0,
+        ),
+        SessionAction.completeSet,
+      );
+      expect(
+        sessionAction(
+          resting: false,
+          setNumber: 3,
+          totalSets: 3,
+          isLastGroup: true,
+          isPaired: true,
+          pairSubIndex: 1,
+        ),
+        SessionAction.finishWorkout,
+      );
+      expect(
+        sessionAction(
+          resting: false,
+          setNumber: 3,
+          totalSets: 3,
+          isLastGroup: false,
+          isPaired: true,
+          pairSubIndex: 1,
+        ),
+        SessionAction.nextExercise,
+      );
+    });
+
     test('last set of the last exercise -> finish workout', () {
       expect(
         sessionAction(

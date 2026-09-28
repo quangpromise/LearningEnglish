@@ -6,13 +6,18 @@ const kWorkoutCompletedXp = 25;
 /// `WorkoutController`.
 enum SessionAction { completeSet, nextExercise, finishWorkout, skipRest }
 
+/// Sieu hiep (PairedBlock): [setNumber]/[totalSets] la VONG; bai A
+/// ([pairSubIndex] 0) chi chuyen sang bai B, chi bai B moi het vong.
 SessionAction sessionAction({
   required bool resting,
   required int setNumber,
   required int totalSets,
   required bool isLastGroup,
+  bool isPaired = false,
+  int pairSubIndex = 0,
 }) {
   if (resting) return SessionAction.skipRest;
+  if (isPaired && pairSubIndex == 0) return SessionAction.completeSet;
   if (setNumber < totalSets) return SessionAction.completeSet;
   return isLastGroup ? SessionAction.finishWorkout : SessionAction.nextExercise;
 }

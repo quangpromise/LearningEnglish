@@ -65,13 +65,21 @@ class _WorkoutFinishedScreenState extends ConsumerState<WorkoutFinishedScreen> {
     // Ban redesign (spec #70, #79): chuc mung voi XP that cua buoi - +25 khi
     // buoi luu hoan thanh (migration 0073) + XP Rest Game da cong.
     if (kUseRedesign) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
         final c = widget.controller;
+        // +25 chi la that khi buoi da len server (completed_at) - cho dong bo
+        // toi da vai giay; mat mang thi khong hien so chua duoc cong.
+        for (var i = 0; i < 12; i++) {
+          if (c.syncState == WorkoutSyncState.synced) break;
+          await Future<void>.delayed(const Duration(milliseconds: 250));
+          if (!mounted) return;
+        }
+        if (!mounted) return;
+        final synced = c.syncState == WorkoutSyncState.synced;
         showCelebration(
           context,
           xp: workoutXpEarned(
-            setsLogged: c.totalSetsLogged,
+            setsLogged: synced ? c.totalSetsLogged : 0,
             restGameXp: widget.restGameXp,
           ),
           title: ref.tr('gt_workout_done_title'),
