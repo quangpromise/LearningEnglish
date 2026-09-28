@@ -18,7 +18,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:learn_english_music/core/theme/app_theme.dart';
-import 'package:learn_english_music/features/music_player/presentation/home_screen.dart';
+import 'package:learn_english_music/features/english_path/presentation/gt_learn_screen.dart';
 import 'package:learn_english_music/features/wealth/presentation/wealth_home_screen.dart';
 
 /// Kich thuoc khung chup - lay theo dung khung anh thiet ke goc (390 rong).
@@ -216,7 +216,7 @@ void main() {
     await _shoot(tester, 'wealth_home', const WealthHomeScreen());
   });
 
-  testWidgets('english home', (tester) async {
-    await _shoot(tester, 'english_home', const HomeScreen());
+  testWidgets('learn tab', (tester) async {
+    await _shoot(tester, 'learn_tab', const GtLearnScreen());
   });
 }
