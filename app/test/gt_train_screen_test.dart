@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:learn_english_music/core/providers/app_providers.dart';
@@ -97,18 +98,22 @@ void main() {
     learningPathChoiceProvider.overrideWith((ref) async => null),
   ];
 
-  /// Loi bo cuc (vd tran) kem mo ta day du widget gay loi - de CI chi ra
-  /// dung cho can sua thay vi chi "overflowed by N pixels".
-  final layoutErrors = <String>[];
+  /// Loi tran bo cuc kem chuoi widget tao ra khoi bi tran - de CI chi dung
+  /// cho can sua thay vi chi "overflowed by N pixels".
+  String overflowReport(WidgetTester tester) {
+    final error = tester.takeException();
+    if (error == null) return '';
+    final flexes = tester.allRenderObjects
+        .whereType<RenderFlex>()
+        .where((r) => r.toStringShort().contains('OVERFLOWING'))
+        .map((r) => '${r.toStringShort()} size=${r.size} <- ${r.debugCreator}');
+    return '$error\n${flexes.join('\n')}';
+  }
 
   Future<void> pump(WidgetTester tester, List<Override> o) async {
     tester.view.physicalSize = const Size(390 * 3, 787 * 3);
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.reset);
-    layoutErrors.clear();
-    final previous = FlutterError.onError;
-    FlutterError.onError = (details) => layoutErrors.add(details.toString());
-    addTearDown(() => FlutterError.onError = previous);
     await tester.pumpWidget(
       ProviderScope(
         overrides: o,
