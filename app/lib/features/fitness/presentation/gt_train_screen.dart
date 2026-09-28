@@ -147,6 +147,8 @@ class GtBodyHero extends ConsumerWidget {
                     ref
                         .tr('gt_train_level_overline')
                         .replaceFirst('{level}', levelName),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: GtText.overline(t.red),
                   ),
                   const SizedBox(height: 8),
@@ -628,6 +630,8 @@ class _ProgramCard extends StatelessWidget {
                     ),
                     Text(
                       level,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: GtText.body(const Color(0xFFD4D6DA), size: 12),
                     ),
                   ],
