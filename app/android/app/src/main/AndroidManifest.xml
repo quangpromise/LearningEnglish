@@ -58,13 +58,10 @@
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
               />
-            <!-- Tat Impeller (renderer moi cua Flutter): nghi ngo la nguyen nhan
-                 ke vang xuat hien duoi moi dong text tren thiet bi that (bug render
-                 da biet cua Impeller tren mot so dong GPU/driver Android) - quay ve
-                 Skia (renderer cu, on dinh hon) de kiem chung. -->
-            <meta-data
-              android:name="io.flutter.embedding.android.EnableImpeller"
-              android:value="false" />
+            <!-- Impeller (renderer mac dinh cua Flutter) BAT - spec #96, ticket
+                 #98. Truoc day tung tat vi nghi gay ke vang duoi chu; that ra do
+                 man goc thieu Material (kieu chu du phong cua Flutter), da sua o
+                 PR #95. Flutter da bo dan Skia tren Android nen khong opt-out. -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
