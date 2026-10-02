@@ -56,4 +56,17 @@ void main() {
       ['a', 'b', 'a'],
     );
   });
+
+  test('cards fly left / down / right by grade', () {
+    expect(flyDirection(SrsGrade.forgot), (dx: -1.0, dy: 0.0));
+    expect(flyDirection(SrsGrade.hard), (dx: 0.0, dy: 1.0));
+    expect(flyDirection(SrsGrade.know), (dx: 1.0, dy: 0.0));
+  });
+
+  test('a grade counts only once the card is revealed', () {
+    expect(acceptsGrade(index: 0, length: 2, revealed: false), isFalse);
+    expect(acceptsGrade(index: 0, length: 2, revealed: true), isTrue);
+    // Het bo the: khong con gi de cham.
+    expect(acceptsGrade(index: 2, length: 2, revealed: true), isFalse);
+  });
 }
