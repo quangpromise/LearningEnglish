@@ -89,6 +89,9 @@ List<bool> lcsMatch(List<String> target, List<String> said) {
   return matched;
 }
 
+/// Diem tu dat thi rung vua (spec #96, quyet dinh #4).
+const kPronunciationGoodScore = 80;
+
 class PronunciationScore {
   const PronunciationScore({
     required this.score,

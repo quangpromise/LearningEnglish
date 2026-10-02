@@ -1,27 +1,38 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/theme/gt_haptics.dart';
+import '../../../core/theme/gt_motion.dart';
 import '../../../core/theme/gt_tokens.dart';
 import '../../../core/tts/tutorial_voice.dart';
 import '../../../core/widgets/gt_celebration.dart';
+import '../../../core/widgets/gt_count_up.dart';
 import '../../today/data/daily_progress_store.dart';
-import '../../today/data/daily_quests.dart';
 import '../../today/presentation/gt_quests_card.dart';
 import '../data/srs_store.dart';
 
-/// On the ban redesign (spec #70, #78; README §10): the lon lat duoc, 3 nut
-/// Quen / Kho / Nho kem khoang on that, thanh tien do. Het bo the -> cong
-/// XP nhiem vu (neu vua dat) va Celebration. Mo qua `SrsReviewScreen`.
+/// On the ban redesign (spec #70, #78; README §10): the lon lat 3D, 3 nut
+/// Quen / Kho / Nho kem khoang on that, the bay ra theo muc cham, thanh tien
+/// do chay muot. Het bo the -> man "xong" tai cho (so the dem len) + XP
+/// Toast neu vua cong XP nhiem vu - khong Celebration (ADR-0008). Mo qua
+/// `SrsReviewScreen`.
 class GtSrsReviewScreen extends ConsumerStatefulWidget {
   const GtSrsReviewScreen({
     super.key,
     this.maxCards = 20,
     this.cards,
     this.stopVoice,
+    this.progress,
   });
 
   final int maxCards;
+
+  /// Noi ghi tien do ngay (mac dinh [DailyProgressStore.instance]); test
+  /// truyen store rieng.
+  final DailyProgressStore? progress;
 
   /// Dung giong doc (mac dinh [TutorialVoice]); test truyen ham rong vi
   /// TutorialVoice dung plugin am thanh.
@@ -34,18 +45,40 @@ class GtSrsReviewScreen extends ConsumerStatefulWidget {
   ConsumerState<GtSrsReviewScreen> createState() => _GtSrsReviewScreenState();
 }
 
-class _GtSrsReviewScreenState extends ConsumerState<GtSrsReviewScreen> {
+/// 1 the vua cham dang bay ra, giu co cua vung the luc cham (vung nay
+/// rong ra khi het bo the - the dang bay khong bi keo gian theo).
+class _Flying {
+  _Flying(this.card, this.grade, this.controller, this.size);
+
+  final SrsCard card;
+  final SrsGrade grade;
+  final AnimationController controller;
+  final Size size;
+}
+
+class _GtSrsReviewScreenState extends ConsumerState<GtSrsReviewScreen>
+    with TickerProviderStateMixin {
   List<SrsCard>? _queue;
   int _index = 0;
+
+  /// Da cham vao the (bat dau lat).
   bool _flipped = false;
+
+  /// Lat xong: nut cham sang va moi nhan cham.
+  bool _revealed = false;
   bool _finished = false;
+
+  late final AnimationController _flip = AnimationController(vsync: this)
+    ..addListener(_maybeReveal);
+  Curve _flipCurve = Curves.linear;
+  final List<_Flying> _flying = [];
+
+  /// Co vung the o lan dung gan nhat.
+  Size _cardArea = Size.zero;
 
   @override
   void initState() {
     super.initState();
-    _reviewPaidBefore = DailyProgressStore.instance.today.rewarded.contains(
-      DailyQuestId.review.rewardKey,
-    );
     final given = widget.cards;
     if (given != null) {
       _queue = given;
@@ -70,69 +103,102 @@ class _GtSrsReviewScreenState extends ConsumerState<GtSrsReviewScreen> {
   @override
   void dispose() {
     _stopVoice();
+    _flip.dispose();
+    for (final f in _flying) {
+      f.controller.dispose();
+    }
     super.dispose();
   }
 
-  /// Nhiem vu "On the" da duoc tra truoc phien nay chua - de chi chuc mung
-  /// XP ma CHINH phien nay vua mo.
-  late final bool _reviewPaidBefore;
+  /// Lat the theo truc doc (~320 ms, lo xo standard); giam chuyen dong: hien
+  /// mat sau ngay.
+  void _flipCard() {
+    if (_flipped) return;
+    final motion = gtMotion(context, GtMotionKind.standard);
+    setState(() => _flipped = true);
+    _flipCurve = motion.curve;
+    if (motion.duration == Duration.zero) {
+      _flip.value = 1;
+      return;
+    }
+    _flip
+      ..duration = motion.duration
+      ..forward(from: 0);
+  }
+
+  /// The trong gan nhu phang (con < 4 do) la cho cham - khong bat cho lo xo
+  /// lang han.
+  void _maybeReveal() {
+    if (_flipped && !_revealed && _flipCurve.transform(_flip.value) >= 0.98) {
+      setState(() => _revealed = true);
+    }
+  }
 
   Future<void> _grade(SrsGrade grade) async {
     final queue = _queue;
-    // Chi cham khi the dang hien da lat (chan cham dup truoc frame moi).
-    if (queue == null || _index >= queue.length || !_flipped) return;
+    if (queue == null ||
+        !acceptsGrade(
+          index: _index,
+          length: queue.length,
+          revealed: _revealed,
+        )) {
+      return;
+    }
     final card = queue[_index];
     _stopVoice();
+    GtHaptics.play(GtHapticEvent.cardGraded);
     SrsStore.instance.grade(card.key, grade, now: DateTime.now());
     final next = requeueAfterGrade(queue, index: _index, grade: grade);
     // "Quen" lan dau trong phien: gap lai o cuoi -> khong tinh 2 lan.
     final repeat = queue.take(_index).any((c) => c.key == card.key);
+    _flyOut(card, grade);
     setState(() {
       _queue = next;
       _index++;
       _flipped = false;
+      _revealed = false;
+      _flip.value = 0;
     });
-    if (!repeat) await DailyProgressStore.instance.addWordsReviewed();
-    if (_index >= next.length) await _finish(_uniqueCount(next));
+    // Tinh truoc await: the sau co the da duoc cham trong luc cho.
+    final last = _index >= next.length;
+    if (!repeat) {
+      await (widget.progress ?? DailyProgressStore.instance).addWordsReviewed();
+    }
+    if (last) await _finish();
+  }
+
+  /// The vua cham bay ra theo muc cham; giam chuyen dong: doi the tuc thi.
+  void _flyOut(SrsCard card, SrsGrade grade) {
+    final duration = gtMotion(context, GtMotionKind.standard).duration;
+    if (duration == Duration.zero) return;
+    final controller = AnimationController(vsync: this, duration: duration);
+    final flying = _Flying(card, grade, controller, _cardArea);
+    _flying.add(flying);
+    controller.forward().whenCompleteOrCancel(() {
+      if (!mounted) return;
+      setState(() => _flying.remove(flying));
+      controller.dispose();
+    });
   }
 
   /// So the khac nhau da on (the quen gap lai khong tinh 2 lan).
   int _uniqueCount(List<SrsCard> queue) =>
       queue.map((c) => c.key).toSet().length;
 
-  Future<void> _finish(int count) async {
+  Future<void> _finish() async {
     if (_finished) return;
     _finished = true;
-    // Nhiem vu "On the" co the vua dat -> tra XP (khoa chong trung o server;
-    // man Hom nay co the da tra giua phien). Chi hien XP cua nhiem vu nay va
-    // chi khi no duoc tra trong phien nay - khong gop XP nhiem vu khac.
-    await ref
+    // Nhiem vu "On the" co the vua dat -> tra XP (khoa chong trung o server).
+    // Chi bao XP ma CHINH lan goi nay vua cong: neu man Hom nay da tra (va
+    // da hien toast) giua phien thi o day = 0, khong bao lai. Lay overlay
+    // goc truoc khi cho: dong popup giua chung van bao XP da cong that.
+    final overlay = Overlay.maybeOf(context, rootOverlay: true);
+    final xp = await ref
         .read(questRewardServiceProvider)
         .claimPendingQuests()
         .catchError((Object _) => 0);
-    if (!mounted) return;
-    final paidNow =
-        !_reviewPaidBefore &&
-        DailyProgressStore.instance.today.rewarded.contains(
-          DailyQuestId.review.rewardKey,
-        );
-    await showCelebration(
-      context,
-      xp: paidNow ? DailyQuestId.review.xp : 0,
-      title: ref.tr('gt_srs_done_title'),
-      subtitle: ref.tr('gt_srs_done_sub').replaceFirst('{n}', '$count'),
-      ctaLabel: ref.tr('gt_celebration_cta'),
-      chips: [
-        ref
-            .tr('gt_celebration_streak_chip')
-            .replaceFirst(
-              '{days}',
-              '${DailyProgressStore.instance.bodyBrainStreak}',
-            ),
-      ],
-    );
-    // "Tuyet voi" -> ve man truoc (Hom nay).
-    if (mounted) Navigator.of(context).maybePop();
+    if (overlay == null || !overlay.mounted) return;
+    showXpToast(xp, overlay: overlay);
   }
 
   @override
@@ -140,6 +206,7 @@ class _GtSrsReviewScreenState extends ConsumerState<GtSrsReviewScreen> {
     final t = context.gt;
     final queue = _queue;
     final total = queue?.length ?? 0;
+    final bar = gtMotion(context, GtMotionKind.standard);
     return Scaffold(
       backgroundColor: t.bg,
       body: SafeArea(
@@ -160,11 +227,16 @@ class _GtSrsReviewScreenState extends ConsumerState<GtSrsReviewScreen> {
                   Expanded(
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(999),
-                      child: LinearProgressIndicator(
-                        value: total == 0 ? 0 : _index / total,
-                        minHeight: 8,
-                        color: t.blue,
-                        backgroundColor: t.s2,
+                      child: TweenAnimationBuilder<double>(
+                        tween: Tween(end: total == 0 ? 0 : _index / total),
+                        duration: bar.duration,
+                        curve: bar.curve,
+                        builder: (context, value, _) => LinearProgressIndicator(
+                          value: value.clamp(0.0, 1.0),
+                          minHeight: 8,
+                          color: t.blue,
+                          backgroundColor: t.s2,
+                        ),
                       ),
                     ),
                   ),
@@ -196,41 +268,142 @@ class _GtSrsReviewScreenState extends ConsumerState<GtSrsReviewScreen> {
         body: ref.tr('srs_review_empty_body'),
       );
     }
-    if (_index >= queue.length) {
-      return _Message(
-        icon: Icons.check_circle_rounded,
-        title: ref.tr('srs_review_done_title'),
-        body: ref
-            .tr('gt_srs_done_sub')
-            .replaceFirst('{n}', '${_uniqueCount(queue)}'),
-        onClose: () => Navigator.of(context).maybePop(),
-      );
-    }
-    final card = queue[_index];
+    final done = _index >= queue.length;
+    final current = done
+        ? _DeckDone(
+            count: _uniqueCount(queue),
+            onClose: () => Navigator.of(context).maybePop(),
+          )
+        : _currentCard(queue[_index]);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Expanded(
-          child: GtFlashcard(
-            card: card,
-            flipped: _flipped,
-            onFlip: () => setState(() => _flipped = true),
+          child: LayoutBuilder(
+            builder: (context, box) {
+              _cardArea = box.biggest;
+              return Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Positioned.fill(child: current),
+                  for (final f in _flying)
+                    Positioned(
+                      left: 0,
+                      top: 0,
+                      width: f.size.width,
+                      height: f.size.height,
+                      child: ExcludeSemantics(
+                        child: IgnorePointer(child: _FlyingCard(flying: f)),
+                      ),
+                    ),
+                ],
+              );
+            },
           ),
         ),
-        const SizedBox(height: 16),
-        GtGradeButtons(
-          enabled: _flipped,
-          labels: {
-            for (final g in SrsGrade.values)
-              g: intervalLabel(
-                SrsStore.instance.nextIntervalDays(card, g),
-                today: ref.tr('gt_srs_interval_today'),
-                days: ref.tr('gt_srs_interval_days'),
-              ),
-          },
-          onGrade: _grade,
-        ),
+        if (!done) ...[
+          const SizedBox(height: 16),
+          GtGradeButtons(
+            enabled: _revealed,
+            labels: {
+              for (final g in SrsGrade.values)
+                g: intervalLabel(
+                  SrsStore.instance.nextIntervalDays(queue[_index], g),
+                  today: ref.tr('gt_srs_interval_today'),
+                  days: ref.tr('gt_srs_interval_days'),
+                ),
+            },
+            onGrade: _grade,
+          ),
+        ],
       ],
+    );
+  }
+
+  /// The hien tai: phong nhe vao (tru the dau; lo xo standard - viec thuong
+  /// ngay, khong nay), lat 3D khi cham.
+  Widget _currentCard(SrsCard card) {
+    final enter = gtMotion(context, GtMotionKind.standard, GtMotionSpeed.fast);
+    return TweenAnimationBuilder<double>(
+      key: ValueKey(_index),
+      tween: Tween(begin: _index == 0 ? 1 : 0, end: 1),
+      duration: enter.duration,
+      curve: enter.curve,
+      builder: (context, v, child) => Opacity(
+        opacity: v.clamp(0.0, 1.0),
+        child: Transform.scale(scale: 0.94 + 0.06 * v, child: child),
+      ),
+      child: AnimatedBuilder(
+        animation: _flip,
+        builder: (context, _) {
+          final angle = _flipCurve.transform(_flip.value) * pi;
+          final back = angle > pi / 2;
+          return Transform(
+            alignment: Alignment.center,
+            transform: Matrix4.identity()
+              ..setEntry(3, 2, 0.0012)
+              ..rotateY(back ? angle - pi : angle),
+            child: GtFlashcard(card: card, flipped: back, onFlip: _flipCard),
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// The vua cham bay ra: Quen trai (do), Kho xuong (vang), Nho phai (ngoc).
+/// Mau muc cham hien ngay tu dau, the chi mo dan o doan sau de mau kip thay.
+class _FlyingCard extends StatelessWidget {
+  const _FlyingCard({required this.flying});
+
+  final _Flying flying;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.gt;
+    final dir = flyDirection(flying.grade);
+    final tint = switch (flying.grade) {
+      SrsGrade.forgot => t.red,
+      SrsGrade.hard => t.gold,
+      SrsGrade.know => t.teal,
+    };
+    final card = GtFlashcard(card: flying.card, flipped: true, onFlip: () {});
+    return AnimatedBuilder(
+      animation: flying.controller,
+      builder: (context, child) {
+        final v = flying.controller.value;
+        // Roi di theo kieu "ra khoi man": tang toc dan (exit M3), ra het
+        // mep man - ngang 1.15 be rong, doc 0.9 chieu cao vung the.
+        final p = Curves.easeInCubic.transform(v);
+        final size = flying.size;
+        final tintAlpha = 0.45 * (v * 3).clamp(0.0, 1.0);
+        final fade = ((v - 0.35) / 0.65).clamp(0.0, 1.0);
+        return Transform.translate(
+          offset: Offset(
+            dir.dx * size.width * 1.15 * p,
+            dir.dy * size.height * 0.9 * p,
+          ),
+          child: Transform.rotate(
+            angle: dir.dx * 0.22 * p,
+            child: Opacity(
+              opacity: 1 - fade,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  child!,
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: tint.withValues(alpha: tintAlpha),
+                      borderRadius: BorderRadius.circular(32),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+      child: card,
     );
   }
 }
@@ -316,7 +489,7 @@ class GtFlashcard extends ConsumerWidget {
 }
 
 /// 3 nut cham (64h, bo 20): Quen do, Kho vang, Nho ngoc; mo 35% cho toi khi
-/// lat the.
+/// lat the xong roi sang dan len.
 class GtGradeButtons extends ConsumerWidget {
   const GtGradeButtons({
     super.key,
@@ -337,8 +510,11 @@ class GtGradeButtons extends ConsumerWidget {
       (SrsGrade.hard, 'gt_srs_hard', t.gold, t.goldT),
       (SrsGrade.know, 'gt_srs_know', t.teal, t.tealT),
     ];
-    return Opacity(
+    final fade = gtMotion(context, GtMotionKind.effects);
+    return AnimatedOpacity(
       opacity: enabled ? 1 : 0.35,
+      duration: fade.duration,
+      curve: fade.curve,
       child: Row(
         children: [
           for (final (i, (grade, key, fg, bg)) in specs.indexed) ...[
@@ -380,18 +556,56 @@ class GtGradeButtons extends ConsumerWidget {
   }
 }
 
+/// Man "xong bo the" tai cho (ADR-0008): dau tick, tieu de, so the dem len.
+class _DeckDone extends ConsumerWidget {
+  const _DeckDone({required this.count, required this.onClose});
+
+  final int count;
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = context.gt;
+    final sentence = ref.tr('gt_srs_done_sub');
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.check_circle_rounded, color: t.gold, size: 56),
+          const SizedBox(height: 14),
+          Text(
+            ref.tr('gt_srs_done_title'),
+            textAlign: TextAlign.center,
+            style: GtText.cardTitle(t.tx),
+          ),
+          const SizedBox(height: 6),
+          GtCountUp(
+            value: count,
+            format: (n) => sentence.replaceFirst('{n}', '$n'),
+            textAlign: TextAlign.center,
+            style: GtText.body(t.tx2),
+          ),
+          const SizedBox(height: 20),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: t.inv,
+              foregroundColor: t.onInv,
+            ),
+            onPressed: onClose,
+            child: Text(MaterialLocalizations.of(context).closeButtonLabel),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _Message extends StatelessWidget {
-  const _Message({
-    required this.icon,
-    required this.title,
-    required this.body,
-    this.onClose,
-  });
+  const _Message({required this.icon, required this.title, required this.body});
 
   final IconData icon;
   final String title;
   final String body;
-  final VoidCallback? onClose;
 
   @override
   Widget build(BuildContext context) {
@@ -409,17 +623,6 @@ class _Message extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(body, textAlign: TextAlign.center, style: GtText.body(t.tx2)),
-          if (onClose != null) ...[
-            const SizedBox(height: 20),
-            FilledButton(
-              style: FilledButton.styleFrom(
-                backgroundColor: t.inv,
-                foregroundColor: t.onInv,
-              ),
-              onPressed: onClose,
-              child: Text(MaterialLocalizations.of(context).closeButtonLabel),
-            ),
-          ],
         ],
       ),
     );

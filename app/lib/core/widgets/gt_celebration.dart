@@ -110,6 +110,8 @@ class _XpToastState extends State<_XpToast>
 
 /// Man chuc mung (README "Interactions"): nen den 86% + blur 8, huy hieu
 /// vang "+N XP" bat len roi toa sang, tieu de, dong phu, chip, nut trang.
+/// [haptic] = false khi noi goi da rung cho chinh khoanh khac nay (vd nap
+/// ruong bat len ngay truoc do) - khong rung 2 lan lien tiep.
 Future<void> showCelebration(
   BuildContext context, {
   required int xp,
@@ -117,8 +119,9 @@ Future<void> showCelebration(
   required String subtitle,
   required String ctaLabel,
   List<String> chips = const [],
+  bool haptic = true,
 }) {
-  GtHaptics.play(GtHapticEvent.celebration);
+  if (haptic) GtHaptics.play(GtHapticEvent.celebration);
   return showGeneralDialog<void>(
     context: context,
     useRootNavigator: true,
