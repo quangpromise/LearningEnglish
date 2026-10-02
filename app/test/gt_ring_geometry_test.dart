@@ -52,4 +52,9 @@ void main() {
       expect(arcsJustCompleted([0.2, 0.4, 0.6], [0.3, 0.5, 0.9]), isEmpty);
     });
   });
+
+  test('a rest day filling the Train arc is not celebrated', () {
+    expect(arcsToCelebrate([0, 0.5, 0], [1, 1, 0]), {0, 1});
+    expect(arcsToCelebrate([0, 0.5, 0], [1, 1, 0], trainByRestDay: true), {1});
+  });
 }

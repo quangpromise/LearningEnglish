@@ -100,4 +100,67 @@ void main() {
     await tester.pumpAndSettle();
     expect(haptics, hasLength(1));
   });
+
+  testWidgets('the buzz lands when the arc closes, not when it starts', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _card(const DayProgress(wordsReviewed: kDailyLearnGoal - 1)),
+    );
+    await tester.pumpAndSettle();
+    await tester.pumpWidget(
+      _card(const DayProgress(wordsReviewed: kDailyLearnGoal)),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(haptics, isEmpty);
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(haptics, hasLength(1));
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('reduced motion: an arc reaching 100% buzzes at once, no glow', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _card(
+        const DayProgress(wordsReviewed: kDailyLearnGoal - 1),
+        reduce: true,
+      ),
+    );
+    await tester.pumpWidget(
+      _card(const DayProgress(wordsReviewed: kDailyLearnGoal), reduce: true),
+    );
+    await tester.pump();
+    expect(haptics, hasLength(1));
+    final painter = tester
+        .widgetList<CustomPaint>(find.byType(CustomPaint))
+        .map((p) => p.painter)
+        .whereType<GtRingsPainter>()
+        .single;
+    expect(painter.glow, 0);
+    expect(tester.hasRunningAnimations, isFalse);
+  });
+
+  testWidgets('a rest day filling the Train arc does not buzz', (tester) async {
+    await tester.pumpWidget(_card(const DayProgress()));
+    await tester.pumpAndSettle();
+    await tester.pumpWidget(_card(const DayProgress(restDay: true)));
+    await tester.pumpAndSettle();
+    expect(haptics, isEmpty);
+  });
+
+  testWidgets('fits a 390x787 phone with full rings', (tester) async {
+    tester.view.physicalSize = const Size(390, 787);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      _card(
+        const DayProgress(workouts: 3, wordsReviewed: 999, speakAttempts: 999),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    expect(find.text('100%'), findsOneWidget);
+  });
 }

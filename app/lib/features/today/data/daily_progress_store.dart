@@ -178,6 +178,12 @@ class DailyProgressStore extends ChangeNotifier {
   /// Da doc xong du lieu da luu - truoc do [today] chi la ngay rong.
   bool get isLoaded => _loaded;
 
+  int _revision = 0;
+
+  /// Tang moi khi so lieu den tu NGOAI may nay (dong bo tai khoan, doi tai
+  /// khoan) - man Hom nay coi do la moc moi, khong chuc mung nhu vua lam.
+  int get revision => _revision;
+
   /// Khoa ngay 'yyyy-mm-dd' (theo gio may) - cung dung lam tien to khoa
   /// thuong tren server.
   static String keyOf(DateTime d) => _keyOf(d);
@@ -254,6 +260,7 @@ class DailyProgressStore extends ChangeNotifier {
       }
     }
     if (changed) {
+      _revision++;
       notifyListeners();
       await _save();
     }
@@ -264,6 +271,7 @@ class DailyProgressStore extends ChangeNotifier {
   Future<void> clearLocal() async {
     await ensureLoaded();
     _days.clear();
+    _revision++;
     notifyListeners();
     await _save();
   }

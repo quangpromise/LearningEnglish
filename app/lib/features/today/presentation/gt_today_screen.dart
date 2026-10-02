@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
@@ -8,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/navigation/app_popup.dart';
 import '../../../core/navigation/gt_top_bar.dart';
+import '../../../core/navigation/nav_keys.dart';
 import '../../../core/navigation/root_tabs.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/gt_tokens.dart';
@@ -100,6 +102,16 @@ class _GtTodayScreenState extends ConsumerState<GtTodayScreen> {
     final onScreen =
         ref.watch(rootTabProvider) == RootTab.today &&
         (ModalRoute.isCurrentOf(context) ?? true);
+    // Doi popup / trang vua dong lui het (trang 450 ms > sheet 200 ms); giam
+    // chuyen dong thi hien ngay.
+    final settle = gtReduceMotion(context)
+        ? Duration.zero
+        : Duration(
+            milliseconds: max(
+              kGtOnScreenSettle.inMilliseconds,
+              topRouteObserver.lastExit.inMilliseconds + 40,
+            ),
+          );
     return ColoredBox(
       color: t.bg,
       child: RefreshIndicator(
@@ -125,32 +137,40 @@ class _GtTodayScreenState extends ConsumerState<GtTodayScreen> {
                 const SizedBox(height: 14),
                 // Tien do lam o popup / tab khac hien ra khi nguoi dung quay
                 // lai Hom nay -> vong cham 100%, nhiem vu xong chay truoc
-                // mat ho. Doc xong du lieu da luu thi dung lai the: tien do
-                // co tu truoc khi mo app khong tinh la "vua xong".
+                // mat ho. Doc xong du lieu da luu / nhan so lieu dong bo thi
+                // dung lai the: tien do khong do chinh nguoi dung vua lam
+                // tren may nay thi khong chuc mung.
                 GtWhenOnScreen<DayProgress>(
-                  key: ValueKey(store.isLoaded),
+                  key: ValueKey((store.isLoaded, store.revision)),
                   value: store.today,
                   onScreen: onScreen,
+                  settle: settle,
                   builder: (context, day, visit) => Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      GtRingsCard(
-                        day: day,
-                        strip: weekStreakStrip(
-                          (d) => DateUtils.isSameDay(d, now)
-                              ? day
-                              : store.dayOf(d),
-                          now,
+                      // Moi the 1 lop ve rieng: hoat anh the nay khong ve
+                      // lai 2 the kia.
+                      RepaintBoundary(
+                        child: GtRingsCard(
+                          day: day,
+                          strip: weekStreakStrip(
+                            (d) => DateUtils.isSameDay(d, now)
+                                ? day
+                                : store.dayOf(d),
+                            now,
+                          ),
+                          date: now,
                         ),
-                        date: now,
                       ),
                       const SizedBox(height: 16),
-                      _TodayWorkout(
-                        today: day,
-                        dueCount: SrsStore.instance.dueCount(now),
+                      RepaintBoundary(
+                        child: _TodayWorkout(
+                          today: day,
+                          dueCount: SrsStore.instance.dueCount(now),
+                        ),
                       ),
                       const SizedBox(height: 16),
-                      GtQuestsCard(day: day),
+                      RepaintBoundary(child: GtQuestsCard(day: day)),
                     ],
                   ),
                 ),
@@ -194,25 +214,64 @@ List<double> _ratiosOf(DayProgress d) => [
 
 class _GtRingsCardState extends ConsumerState<GtRingsCard>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _glow = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 700),
-  );
+  late final AnimationController _glow = AnimationController(vsync: this);
   Set<int> _glowing = const {};
+
+  /// Cung vua day dang cho lo xo cham 100% de rung + loe.
+  final Set<int> _reaching = {};
+  Timer? _reach;
 
   @override
   void didUpdateWidget(GtRingsCard old) {
     super.didUpdateWidget(old);
-    final done = arcsJustCompleted(_ratiosOf(old.day), _ratiosOf(widget.day));
+    final day = widget.day;
+    final done = arcsToCelebrate(
+      _ratiosOf(old.day),
+      _ratiosOf(day),
+      trainByRestDay: day.restDay && day.workouts < kDailyTrainGoal,
+    );
     if (done.isEmpty) return;
+    if (gtReduceMotion(context)) {
+      // Khong lap / loe: rung ngay.
+      GtHaptics.play(GtHapticEvent.ringCompleted);
+      return;
+    }
+    // Rung + loe dung luc cung cham 100% (lo xo toi dich lan dau, truoc khi
+    // nay qua roi lang lai), khong phai luc bat dau lap.
+    _reaching.addAll(done);
+    _reach?.cancel();
+    _reach = Timer(
+      Duration(
+        milliseconds: springReachMs(
+          gtSpringToken(GtMotionKind.expressive, GtMotionSpeed.normal),
+        ),
+      ),
+      _celebrate,
+    );
+  }
+
+  void _celebrate() {
+    if (!mounted) return;
     GtHaptics.play(GtHapticEvent.ringCompleted);
-    if (gtReduceMotion(context)) return;
-    _glowing = done;
-    _glow.forward(from: 0);
+    setState(() {
+      // Cung khac vua day trong luc dang loe: loe cung luc, khong cat ngang.
+      _glowing = {if (_glow.isAnimating) ..._glowing, ..._reaching};
+      _reaching.clear();
+    });
+    _glow
+      ..duration = Duration(
+        milliseconds: motionDurationMs(
+          GtMotionKind.expressive,
+          GtMotionSpeed.slow,
+          reduce: false,
+        ),
+      )
+      ..forward(from: 0);
   }
 
   @override
   void dispose() {
+    _reach?.cancel();
     _glow.dispose();
     super.dispose();
   }
@@ -268,8 +327,8 @@ class _GtRingsCardState extends ConsumerState<GtRingsCard>
                       painter: GtRingsPainter(
                         ratios: [ratios.$1, ratios.$2, ratios.$3],
                         glowing: _glowing,
-                        // 0 -> 1 -> 0 trong 1 lan loe.
-                        glow: sin(_glow.value * pi),
+                        // 0 -> 1 -> 0 trong 1 lan loe; tat han khi xong.
+                        glow: _glow.isAnimating ? sin(_glow.value * pi) : 0,
                         tokens: t,
                       ),
                       child: child,
@@ -279,7 +338,10 @@ class _GtRingsCardState extends ConsumerState<GtRingsCard>
                     child: GtCountUp(
                       value: ringsPercent(day),
                       format: (v) => '$v%',
-                      style: GtText.ringStat(t.tx),
+                      style: GtText.ringStat(t.tx).copyWith(
+                        // Chu so deu rong: so dang dem khong lam chu nhay.
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
                     ),
                   ),
                 ),
@@ -384,25 +446,31 @@ class _RingStat extends StatelessWidget {
           label,
           style: GtText.body(color, size: 13, weight: FontWeight.w800),
         ),
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          alignment: Alignment.centerLeft,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            children: [
-              if (value == null)
-                Text(text ?? '', style: GtText.ringStat(t.tx))
-              else
-                GtCountUp(
-                  value: value,
-                  format: (v) => '$v/$goal',
-                  style: GtText.ringStat(t.tx),
-                ),
-              if (unit != null)
-                Text(' $unit', style: GtText.ringStatUnit(t.tx2)),
-            ],
+        // 1 diem doc cho trinh doc man hinh ("5/10 tu"), khong tach 2.
+        MergeSemantics(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                if (value == null)
+                  Text(text ?? '', style: GtText.ringStat(t.tx))
+                else
+                  GtCountUp(
+                    value: value,
+                    format: (v) => '$v/$goal',
+                    // Chu so deu rong: FittedBox khong co gian theo so dem.
+                    style: GtText.ringStat(t.tx).copyWith(
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                if (unit != null)
+                  Text(' $unit', style: GtText.ringStatUnit(t.tx2)),
+              ],
+            ),
           ),
         ),
       ],
@@ -412,7 +480,8 @@ class _RingStat extends StatelessWidget {
 
 /// MOT vong chia 3 cung (ADR-0007): Tap (do) -> Hoc (xanh) -> Noi (ngoc), tu
 /// 12 gio theo chieu kim dong ho; net 14, dau tron, ranh = mau nhat cua
-/// chinh cung. Cung trong [glowing] loe sang theo [glow] (0..1).
+/// chinh cung. Cung trong [glowing] loe sang theo [glow] (0..1) bang quang
+/// nhieu lop net rong dan, KHONG blur (spec #96 quyet dinh #10).
 class GtRingsPainter extends CustomPainter {
   GtRingsPainter({
     required this.ratios,
@@ -446,24 +515,39 @@ class GtRingsPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = stroke
       ..strokeCap = StrokeCap.round;
+    // Thu tu: moi ranh -> moi quang -> moi phan day, de quang cua cung nay
+    // khong de len phan day cua cung ben canh.
     for (final (i, arc) in arcs.indexed) {
-      final (color, track) = colors[i % colors.length];
+      final (_, track) = colors[i % colors.length];
       canvas.drawArc(rect, arc.start, arc.span, false, paint..color = track);
-      if (arc.fill <= 0) continue;
-      if (glowing.contains(i) && glow > 0) {
-        canvas.drawArc(
-          rect,
-          arc.start,
-          arc.fill,
-          false,
-          Paint()
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = stroke * (1 + 0.6 * glow)
-            ..strokeCap = StrokeCap.round
-            ..color = color.withValues(alpha: 0.55 * glow)
-            ..maskFilter = MaskFilter.blur(BlurStyle.normal, 10 * glow),
-        );
+    }
+    if (glow > 0) {
+      for (final (i, arc) in arcs.indexed) {
+        if (!glowing.contains(i) || arc.fill <= 0) continue;
+        final (color, _) = colors[i % colors.length];
+        // Quang: 3 net rong dan, mo dan ra ngoai.
+        for (final (widen, alpha) in const [
+          (1.9, 0.12),
+          (1.55, 0.2),
+          (1.25, 0.3),
+        ]) {
+          canvas.drawArc(
+            rect,
+            arc.start,
+            arc.fill,
+            false,
+            Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeCap = StrokeCap.round
+              ..strokeWidth = stroke * (1 + (widen - 1) * glow)
+              ..color = color.withValues(alpha: alpha * glow),
+          );
+        }
       }
+    }
+    for (final (i, arc) in arcs.indexed) {
+      if (arc.fill <= 0) continue;
+      final (color, _) = colors[i % colors.length];
       canvas.drawArc(rect, arc.start, arc.fill, false, paint..color = color);
     }
   }
