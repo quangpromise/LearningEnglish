@@ -5,6 +5,7 @@ import 'package:record/record.dart' as rec;
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../../learning_path/data/learning_path_models.dart';
+import 'pt_voice_state.dart';
 
 /// Trang thai 1 phien AI Voice Chat. [thinking] = nguoi dung da dung ghi am
 /// (goi [VoiceChatSession.endTurn]), dang cho AI xu ly va tra loi.
@@ -93,6 +94,10 @@ abstract class VoiceChatSession {
   /// hieu nay de goi endAnamTurn() ben JS, bao Anam khong con audio nao them
   /// cho cau tra loi vua roi. Mac dinh rong, cung ly do voi liveAudioChunks.
   Stream<void> get turnAudioEnd => const Stream<void>.empty();
+
+  /// Muc am mic 0..1 (pcm16Level) cua tung doan dang gui di trong luc
+  /// nguoi dung noi - cho vong mic o man PT AI (spec #96, MO-09).
+  Stream<double> get micLevel => const Stream<double>.empty();
 }
 
 /// Ket noi toi backend/gemini-proxy (xem backend/README.md): mo WebSocket,
@@ -130,6 +135,10 @@ class VoiceChatClient implements VoiceChatSession {
   final _stateController = StreamController<VoiceChatState>.broadcast();
   @override
   Stream<VoiceChatState> get stateStream => _stateController.stream;
+
+  final _micLevelController = StreamController<double>.broadcast();
+  @override
+  Stream<double> get micLevel => _micLevelController.stream;
 
   /// Moi event la 1 file WAV hoan chinh (1 luot AI noi) - san sang de phat
   /// truc tiep qua AudioPlayer.setFilePath sau khi ghi ra file tam.
@@ -200,7 +209,10 @@ class VoiceChatClient implements VoiceChatSession {
       ),
     );
     _stateController.add(VoiceChatState.listening);
-    _micSub = micStream.listen((chunk) => _channel?.sink.add(chunk));
+    _micSub = micStream.listen((chunk) {
+      _channel?.sink.add(chunk);
+      _micLevelController.add(pcm16Level(chunk));
+    });
   }
 
   @override
@@ -223,6 +235,7 @@ class VoiceChatClient implements VoiceChatSession {
     stop();
     _stateController.close();
     _audioController.close();
+    _micLevelController.close();
     _recorder.dispose();
   }
 }

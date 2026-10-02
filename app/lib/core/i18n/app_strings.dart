@@ -138,6 +138,10 @@ class AppStrings {
       AppLanguage.vi: 'Đang suy nghĩ...',
       AppLanguage.en: 'Thinking...',
     },
+    'voice_chat_speaking': {
+      AppLanguage.vi: 'PT đang nói...',
+      AppLanguage.en: 'Your coach is speaking...',
+    },
     'voice_chat_error_generic': {
       AppLanguage.vi: 'Đã xảy ra lỗi',
       AppLanguage.en: 'Something went wrong',

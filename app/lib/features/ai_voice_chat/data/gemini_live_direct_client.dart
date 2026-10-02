@@ -7,6 +7,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../../learning_path/data/learning_path_models.dart';
 import 'gemini_voices.dart' show kDefaultGeminiVoiceName;
+import 'pt_voice_state.dart';
 import 'voice_chat_client.dart'
     show ChatRole, TranscriptEvent, VoiceChatSession, VoiceChatState;
 
@@ -147,6 +148,10 @@ class GeminiLiveDirectClient implements VoiceChatSession {
   @override
   Stream<Uint8List> get liveAudioChunks => _liveAudioController.stream;
 
+  final _micLevelController = StreamController<double>.broadcast();
+  @override
+  Stream<double> get micLevel => _micLevelController.stream;
+
   final _turnAudioEndController = StreamController<void>.broadcast();
   @override
   Stream<void> get turnAudioEnd => _turnAudioEndController.stream;
@@ -253,6 +258,7 @@ class GeminiLiveDirectClient implements VoiceChatSession {
     );
     _stateController.add(VoiceChatState.listening);
     _micSub = micStream.listen((chunk) {
+      _micLevelController.add(pcm16Level(chunk));
       _channel?.sink.add(
         jsonEncode({
           'realtimeInput': {
@@ -437,6 +443,7 @@ class GeminiLiveDirectClient implements VoiceChatSession {
     _transcriptController.close();
     _liveAudioController.close();
     _turnAudioEndController.close();
+    _micLevelController.close();
     _recorder.dispose();
   }
 }
