@@ -267,6 +267,9 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
   void _goToFinished(WorkoutController controller) {
     if (_handedOff) return;
     _handedOff = true;
+    // Dem TRUOC khi cong buoi nay: chua co buoi nao = buoi dau tien hom nay
+    // (Celebration chi cho buoi dau, ADR-0008).
+    final firstToday = DailyProgressStore.instance.today.workouts == 0;
     // Vong "Tap" o man Hom nay.
     DailyProgressStore.instance.addWorkout();
     controller
@@ -276,6 +279,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
       MaterialPageRoute(
         builder: (_) => WorkoutFinishedScreen(
           controller: controller,
+          firstToday: firstToday,
           wordsReviewed: _wordsReviewed,
           restGameXp: _restGameXpTotal,
           // Doc o man tong ket (man nay tat TTS khi dong).

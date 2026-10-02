@@ -2,13 +2,14 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/feedback/gt_feedback_tier.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/gt_celebration.dart';
 import '../../../core/widgets/speaker_button.dart';
 import '../data/cefr_level.dart';
 import '../data/content_pack.dart';
@@ -27,6 +28,43 @@ const kEstimatedBandDisclaimer =
 
 /// Level Test cuoi Stage: 20 cau, khong hien dung/sai tung cau; cham xong
 /// moi hien ket qua, band (B1+) va nut on cau sai khi truot.
+/// Qua Level Test la Milestone (ADR-0008): cong XP roi hien Celebration voi
+/// XP THAT da cong - loi mang / chua dang nhap thi hien dau tick, khong bia
+/// so. Cho it nhat [minDelay] de nguoi dung kip thay cau tra loi cuoi.
+Future<void> celebrateLevelTestPass(
+  BuildContext context, {
+  required Future<void> Function() awardXp,
+  required String title,
+  required String subtitle,
+  required String ctaLabel,
+  Duration minDelay = const Duration(milliseconds: 600),
+}) async {
+  var xp = 0;
+  Future<void> award() async {
+    try {
+      await awardXp();
+      xp = kLevelTestPassXp;
+    } catch (e) {
+      debugPrint('Level Test XP failed: $e');
+    }
+  }
+
+  await Future.wait([award(), Future<void>.delayed(minDelay)]);
+  if (!context.mounted) return;
+  await showTieredFeedback(
+    context,
+    GtFeedbackEvent.levelTestPassed,
+    xp: xp,
+    celebration: () => showCelebration(
+      context,
+      xp: xp,
+      title: title,
+      subtitle: subtitle,
+      ctaLabel: ctaLabel,
+    ),
+  );
+}
+
 class LevelTestScreen extends ConsumerStatefulWidget {
   const LevelTestScreen({super.key, required this.pack, required this.stage});
   final ContentPack pack;
@@ -77,15 +115,21 @@ class _LevelTestScreenState extends ConsumerState<LevelTestScreen> {
     _result = result;
     EnglishPathStore.instance.recordLevelTest(result);
     if (result.passed && awardXp) {
-      HapticFeedback.heavyImpact();
       // XP la diem tich luy tren server - loi mang/chua dang nhap thi bo qua.
       // myLearningXpProvider la autoDispose nen tu tai lai khi mo Tien do.
+      final repo = ref.read(learningXpRepositoryProvider);
       unawaited(
-        ref
-            .read(learningXpRepositoryProvider)
-            .addBonusXp(kLevelTestPassXp)
-            .then<void>((_) {})
-            .catchError((Object e) => debugPrint('Level Test XP failed: $e')),
+        celebrateLevelTestPass(
+          context,
+          awardXp: () => repo.addBonusXp(kLevelTestPassXp),
+          title: ref.tr('level_test_passed'),
+          subtitle: ref
+              .tr('level_test_score')
+              .replaceFirst('{c}', '${result.correct}')
+              .replaceFirst('{t}', '${result.total}')
+              .replaceFirst('{p}', '${result.correct * 100 ~/ result.total}'),
+          ctaLabel: ref.tr('gt_celebration_cta'),
+        ),
       );
     }
   }
