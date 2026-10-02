@@ -154,7 +154,7 @@ class DayProgress {
 const kWorkoutCelebratedKey = 'celebrated_workout';
 
 /// Dem tien do 3 vong Tap - Hoc - Noi theo tung ngay, luu tren may
-/// (SharedPreferences, giu 60 ngay). Singleton de cac noi ghi nhan (man tap,
+/// (SharedPreferences, giu 400 ngay). Singleton de cac noi ghi nhan (man tap,
 /// the tu, luyen phat am...) goi truc tiep ma khong can WidgetRef; man Hom
 /// nay/Tien do nghe thay doi qua ChangeNotifier.
 ///
@@ -171,7 +171,9 @@ class DailyProgressStore extends ChangeNotifier {
       DailyProgressStore._(clock: clock);
 
   static const _prefKey = 'daily_progress_v1';
-  static const _keepDays = 60;
+  // Giu > 365 ngay: chuoi Body + Brain 100 / 365 ngay (Milestone, spec
+  // #96) phai dem duoc ca tren may moi sau khi dong bo.
+  static const _keepDays = 400;
 
   final DateTime Function() _clock;
   final Map<String, DayProgress> _days = {};

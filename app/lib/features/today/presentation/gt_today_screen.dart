@@ -18,6 +18,9 @@ import '../../../core/theme/gt_motion.dart';
 import '../../../core/widgets/gt_celebration.dart';
 import '../../../core/widgets/gt_when_on_screen.dart';
 import '../../../core/widgets/gt_count_up.dart';
+import '../../english_path/data/cefr_level.dart';
+import '../../english_path/data/english_path_providers.dart';
+import '../../fitness/data/body_level.dart';
 import '../../fitness/presentation/programs_list_screen.dart';
 import '../../../core/i18n/greeting.dart';
 import '../../srs/data/srs_store.dart';
@@ -27,6 +30,7 @@ import '../data/daily_quests.dart';
 import '../data/ring_geometry.dart';
 import '../data/today_presentation.dart';
 import 'gt_quests_card.dart';
+import 'milestone_watcher.dart';
 import 'gymtalk_setup_sheet.dart';
 
 /// Tab "Hom nay" cua ban redesign (spec #70, #73): top bar -> the Daily
@@ -104,6 +108,11 @@ class _GtTodayScreenState extends ConsumerState<GtTodayScreen> {
         (ModalRoute.isCurrentOf(context) ?? true);
     // Doi popup / trang vua dong lui het (trang 450 ms > sheet 200 ms); giam
     // chuyen dong thi hien ngay.
+    // So lieu cho Milestone (MO-06): Body Level chua tai -> null.
+    final bodyStats = ref.watch(bodyStatsProvider).valueOrNull;
+    final bodyLevel = bodyStats == null ? null : bodyLevelFor(bodyStats);
+    final english = ref.watch(englishLevelProvider);
+    final userId = ref.watch(supabaseClientProvider).auth.currentUser?.id;
     final settle = gtReduceMotion(context)
         ? Duration.zero
         : Duration(
@@ -174,6 +183,25 @@ class _GtTodayScreenState extends ConsumerState<GtTodayScreen> {
                     ],
                   ),
                 ),
+                // Milestone moi (chuoi 7/30/100/365, len Body Level, len
+                // Rank) chuc mung khi nguoi dung quay lai Hom nay (MO-06).
+                GtWhenOnScreen<_MilestoneInputs>(
+                  key: ValueKey((store.isLoaded, store.revision)),
+                  value: (
+                    streak: store.bodyBrainStreak,
+                    body: bodyLevel,
+                    english: english,
+                  ),
+                  onScreen: onScreen,
+                  settle: settle,
+                  builder: (context, inputs, visit) => GtMilestoneWatcher(
+                    userId: userId,
+                    visit: visit,
+                    streak: inputs.streak,
+                    bodyLevel: inputs.body,
+                    english: inputs.english,
+                  ),
+                ),
               ],
             );
           },
@@ -182,6 +210,9 @@ class _GtTodayScreenState extends ConsumerState<GtTodayScreen> {
     );
   }
 }
+
+/// So lieu de kiem Milestone, giu nguyen trong luc Hom nay bi che.
+typedef _MilestoneInputs = ({int streak, BodyLevel? body, CefrLevel english});
 
 // ---------------------------------------------------------------------------
 // The Daily Rings

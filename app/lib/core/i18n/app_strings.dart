@@ -5821,6 +5821,30 @@ class AppStrings {
       AppLanguage.vi: 'Chuỗi {days} ngày',
       AppLanguage.en: '{days}-day streak',
     },
+    'gt_milestone_streak_title': {
+      AppLanguage.vi: 'Chuỗi {n} ngày!',
+      AppLanguage.en: '{n}-day streak!',
+    },
+    'gt_milestone_streak_sub': {
+      AppLanguage.vi: 'Bạn đã giữ Body + Brain {n} ngày liên tiếp.',
+      AppLanguage.en: 'Body + Brain, {n} days in a row.',
+    },
+    'gt_milestone_body_title': {
+      AppLanguage.vi: 'Lên Body Level!',
+      AppLanguage.en: 'Body Level up!',
+    },
+    'gt_milestone_body_sub': {
+      AppLanguage.vi: 'Giờ bạn là {level}. Cứ đều đặn như vậy nhé.',
+      AppLanguage.en: "You're {level} now. Keep it steady.",
+    },
+    'gt_milestone_rank_title': {
+      AppLanguage.vi: 'Lên GymTalk Rank!',
+      AppLanguage.en: 'GymTalk Rank up!',
+    },
+    'gt_milestone_rank_sub': {
+      AppLanguage.vi: 'Bậc {tier}: {body} · {english}',
+      AppLanguage.en: 'Tier {tier}: {body} · {english}',
+    },
     'gt_chest_failed': {
       AppLanguage.vi: 'Chưa mở được rương, thử lại sau nhé',
       AppLanguage.en: 'Could not open the chest, try again later',
