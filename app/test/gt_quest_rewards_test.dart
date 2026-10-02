@@ -73,7 +73,8 @@ void main() {
         service.claimPendingQuests(),
         service.claimPendingQuests(),
       ]);
-      expect(results.fold<int>(0, (a, b) => a + b), 30 + 25);
+      // Lan goi thu 2 cho lan dau xong: chi 1 noi bao XP.
+      expect(results, [30 + 25, 0]);
       expect(server.xp, 55);
       expect(server.keys, {
         '2026-09-24:quest_review',
@@ -81,6 +82,20 @@ void main() {
       });
       expect(await service.claimPendingQuests(), 0);
       expect(store.today.rewarded, {'quest_review', 'quest_handsFree'});
+    });
+
+    test('a quest done while a claim runs is reported once', () async {
+      final store = newStore();
+      final server = _FakeServer();
+      final service = serviceFor(store, server);
+      await store.addWordsReviewed(kDailyLearnGoal);
+      // Hom nay dang tra thi xong them 1 nhiem vu, On the cung goi tra.
+      final today = service.claimPendingQuests();
+      await store.markHandsFreeDone();
+      final review = service.claimPendingQuests();
+      expect(await today, 30 + 25);
+      expect(await review, 0);
+      expect(server.xp, 55);
     });
 
     test('two devices never double-pay the same quest', () async {

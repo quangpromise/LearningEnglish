@@ -85,6 +85,16 @@ Exercise _exercise(int id, {String group = 'CHEST'}) => Exercise(
   photoSlug: 'x',
 );
 
+/// Cung [_block] nhung ghep sieu set (cap ke nhau cung nhom).
+WorkoutExerciseBlock _paired(WorkoutExerciseBlock b) => WorkoutExerciseBlock(
+  exercise: b.exercise,
+  targetSets: b.targetSets,
+  targetRepsMin: b.targetRepsMin,
+  targetRepsMax: b.targetRepsMax,
+  recommendedWeightKg: b.recommendedWeightKg,
+  supersetGroup: 'A',
+);
+
 WorkoutExerciseBlock _block(int id, {int sets = 2, double weight = 20}) =>
     WorkoutExerciseBlock(
       exercise: _exercise(id),
@@ -136,12 +146,18 @@ void main() {
     c.completeSet();
   }
 
+  /// Bam "Bo qua nghi" - cach lan ghi hiep 1s (khong phai cham dup).
+  void skip(WorkoutController c) {
+    now = now.add(const Duration(seconds: 1));
+    c.skipRest();
+  }
+
   test('offline: chuyen set ngay, gui lai dung thu tu khi co mang', () async {
     repo.offline = true;
     final c = makeController([_block(1, sets: 2)]);
     tap(c);
     expect(c.phase, WorkoutPhase.resting);
-    c.skipRest();
+    skip(c);
     tap(c);
     expect(c.phase, WorkoutPhase.finished);
     expect(c.completedAllSets, isTrue);
@@ -180,13 +196,32 @@ void main() {
   });
 
   test('cham dup trong 700ms chi log 1 set', () async {
-    final c = makeController([_block(1, sets: 3)]);
+    // Sieu set: xong bai A sang thang bai B, khong qua man nghi.
+    final c = makeController([
+      _paired(_block(1, sets: 3)),
+      _paired(_block(2, sets: 3)),
+    ]);
     now = now.add(const Duration(seconds: 1));
     c.completeSet();
-    c.skipRest();
+    expect(c.phase, WorkoutPhase.logging);
     now = now.add(const Duration(milliseconds: 200));
     c.completeSet();
     expect(c.totalSetsLogged, 1);
+    c.dispose();
+  });
+
+  test('cham dup "Hoan thanh hiep" khong bo qua luon gio nghi', () {
+    final c = makeController([_block(1, sets: 3)]);
+    tap(c);
+    expect(c.phase, WorkoutPhase.resting);
+    // Cham thu 2 roi vao nut "Bo qua nghi" vua hien.
+    now = now.add(const Duration(milliseconds: 300));
+    c.skipRest();
+    expect(c.phase, WorkoutPhase.resting);
+    // Bam "Bo qua" that su (sau khoang cham dup) van bo qua duoc.
+    now = now.add(const Duration(milliseconds: 500));
+    c.skipRest();
+    expect(c.phase, WorkoutPhase.logging);
     c.dispose();
   });
 
@@ -236,7 +271,8 @@ void main() {
 
     // Bam "Bo qua" khong tinh la het gio tu nhien.
     tap(c);
-    c.skipRest();
+    skip(c);
+    expect(c.phase, WorkoutPhase.logging);
     expect(elapsedCalls, 1);
     c.dispose();
   });
@@ -254,7 +290,7 @@ void main() {
     final c = makeController([_block(1, sets: 3, weight: 20)]);
     c.adjustWeight(5);
     tap(c);
-    c.skipRest();
+    skip(c);
     expect(c.currentWeightKg, 25);
     c.dispose();
   });

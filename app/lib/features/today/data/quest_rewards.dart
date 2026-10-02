@@ -67,31 +67,38 @@ class QuestRewardService {
     }
   }
 
+  /// Lan nhan thuong gan nhat - cac lan goi [claimPendingQuests] xep hang.
+  Future<void> _claimTail = Future.value();
+
   /// Cong XP cho moi nhiem vu da xong ma chua tra. Lap lai den khi het -
   /// nhiem vu xong trong luc dang tra cung duoc tra ngay. Tra ve tong XP
-  /// cong that.
-  Future<int> claimPendingQuests() async {
+  /// cong that o LAN GOI NAY.
+  ///
+  /// Cac lan goi xep hang: lan sau chi chay khi lan truoc xong nen chi tra
+  /// phan con lai - moi nhiem vu chi 1 noi tra va bao toast (Hom nay va On
+  /// the goi cung luc khong hien 2 toast chong nhau).
+  Future<int> claimPendingQuests() {
+    final run = _claimTail.then((_) => _claimQueued());
+    _claimTail = run.then<void>((_) {}, onError: (Object _) {});
+    return run;
+  }
+
+  Future<int> _claimQueued() async {
     await store.ensureLoaded();
     final day = _today();
     var total = 0;
     while (true) {
       final paused = _pausedUntil;
       if (paused != null && _clock().isBefore(paused)) return total;
-      final pending = [
-        for (final q in pendingQuestRewards(store.dayOf(day)))
-          if (!_inFlight.contains(q.rewardKey)) q,
-      ];
+      final pending = pendingQuestRewards(store.dayOf(day));
       if (pending.isEmpty) return total;
       for (final quest in pending) {
-        _inFlight.add(quest.rewardKey);
         try {
           total += await _pay(day, quest.rewardKey, quest.xp);
         } catch (e) {
           debugPrint('Quest XP failed (${quest.name}): $e');
           _pausedUntil = _clock().add(retryAfter);
           return total;
-        } finally {
-          _inFlight.remove(quest.rewardKey);
         }
       }
     }
