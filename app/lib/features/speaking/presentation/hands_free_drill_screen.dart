@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/audio/sound_level.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
@@ -11,11 +12,9 @@ import '../../../core/widgets/gt_count_up.dart';
 import '../../../core/widgets/gt_mic_ring.dart';
 import '../../../core/widgets/speaker_button.dart';
 import '../../pronunciation/data/pronunciation_scoring.dart';
-import '../../pronunciation/presentation/pronunciation_result_card.dart';
 import '../../srs/data/srs_store.dart';
 import '../../today/data/daily_progress_store.dart';
 import '../data/hands_free_drill.dart';
-import '../data/sound_level.dart';
 import '../data/speech_listener.dart';
 
 /// "Luyen noi ranh tay": may doc cau tieng Anh, nguoi dung nhac lai, may
@@ -255,17 +254,26 @@ class _HandsFreeDrillScreenState extends ConsumerState<HandsFreeDrillScreen> {
                               active: drill.phase == DrillPhase.listening,
                               level: _level,
                               color: AppColors.teal,
-                              child: Container(
-                                width: 36,
-                                height: 36,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: AppColors.teal.withValues(alpha: 0.18),
-                                ),
-                                child: const Icon(
-                                  Icons.mic_rounded,
-                                  size: 20,
-                                  color: AppColors.teal,
+                              // Het nghe (dang doc / da cham): mic mo di.
+                              child: AnimatedOpacity(
+                                opacity: drill.phase == DrillPhase.listening
+                                    ? 1
+                                    : 0.35,
+                                duration: const Duration(milliseconds: 150),
+                                child: Container(
+                                  width: 36,
+                                  height: 36,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: AppColors.teal.withValues(
+                                      alpha: 0.18,
+                                    ),
+                                  ),
+                                  child: const Icon(
+                                    Icons.mic_rounded,
+                                    size: 20,
+                                    color: AppColors.teal,
+                                  ),
                                 ),
                               ),
                             ),
@@ -284,8 +292,6 @@ class _HandsFreeDrillScreenState extends ConsumerState<HandsFreeDrillScreen> {
                       if (score != null) ...[
                         const SizedBox(height: 10),
                         GtCountUp(
-                          // Cau moi -> dem lai tu 0.
-                          key: ValueKey(drill.index),
                           value: score,
                           format: (v) =>
                               scoreText.replaceFirst('{score}', '$v'),

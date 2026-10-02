@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_theme.dart';
@@ -6,13 +8,11 @@ import '../../../core/theme/gt_motion.dart';
 import '../../../core/widgets/gt_count_up.dart';
 import '../data/pronunciation_scoring.dart';
 
-/// Diem tu dat thi rung vua (spec #96, quyet dinh #4).
-const kPronunciationGoodScore = 80;
-
 /// Ket qua 1 lan phat am (spec #96): vong diem chay toi diem + so dem len,
 /// cac tu hien lan luot 40 ms/tu theo mau dung / sai; dat tu
-/// [kPronunciationGoodScore] thi rung vua, diem thap khong rung. Giam chuyen
-/// dong: hien ngay ca diem lan cac tu.
+/// [kPronunciationGoodScore] thi rung vua dung luc vong diem cham toi diem,
+/// diem thap khong rung. Giam chuyen dong: hien ngay ca diem lan cac tu
+/// (van rung).
 class PronunciationResultCard extends StatefulWidget {
   const PronunciationResultCard({super.key, required this.result});
 
@@ -28,12 +28,34 @@ const _kWordStepMs = 40;
 const _kWordFadeMs = 200;
 
 class _PronunciationResultCardState extends State<PronunciationResultCard> {
+  Timer? _buzz;
+  var _started = false;
+
   @override
-  void initState() {
-    super.initState();
-    if (widget.result.score >= kPronunciationGoodScore) {
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_started) return;
+    _started = true;
+    if (widget.result.score < kPronunciationGoodScore) return;
+    if (gtReduceMotion(context)) {
       GtHaptics.play(GtHapticEvent.pronunciationGood);
+      return;
     }
+    // Rung luc vong diem (lo xo expressive cham) cham toi diem.
+    _buzz = Timer(
+      Duration(
+        milliseconds: springReachMs(
+          gtSpringToken(GtMotionKind.expressive, GtMotionSpeed.slow),
+        ),
+      ),
+      () => GtHaptics.play(GtHapticEvent.pronunciationGood),
+    );
+  }
+
+  @override
+  void dispose() {
+    _buzz?.cancel();
+    super.dispose();
   }
 
   @override
@@ -41,7 +63,7 @@ class _PronunciationResultCardState extends State<PronunciationResultCard> {
     final result = widget.result;
     final ring = gtMotion(context, GtMotionKind.expressive, GtMotionSpeed.slow);
     final words = result.targetWords.length;
-    final revealMs = ring.duration == Duration.zero
+    final revealMs = gtReduceMotion(context)
         ? 0
         : _kWordStepMs * words + _kWordFadeMs;
     return GlowBox(
@@ -70,16 +92,23 @@ class _PronunciationResultCardState extends State<PronunciationResultCard> {
                     ),
                   ),
                 ),
-                GtCountUp(
-                  value: result.score,
-                  format: (v) => '$v%',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 13,
-                    height: 1.0,
-                    color: Colors.black,
-                    fontFeatures: [FontFeature.tabularFigures()],
+                // Chu he thong to: thu nho vua vong, khong bi cat.
+                Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: GtCountUp(
+                      value: result.score,
+                      format: (v) => '$v%',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 13,
+                        height: 1.0,
+                        color: Colors.black,
+                        fontFeatures: [FontFeature.tabularFigures()],
+                      ),
+                    ),
                   ),
                 ),
               ],
