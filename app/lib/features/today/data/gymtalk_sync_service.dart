@@ -47,7 +47,20 @@ class GymTalkSyncService {
   Timer? _debounce;
   bool _listening = false;
   bool _applyingRemote = false;
+  bool _disposed = false;
   Future<void>? _running;
+
+  final _settledUser = ValueNotifier<String?>(null);
+
+  /// Tai khoan ma du lieu tren may (SRS, 3 vong, lo trinh) da thuoc ve sau 1
+  /// luot dong bo trong phien nay - null = chua co luot nao xong. Milestone
+  /// (MO-06) chi lay moc tu luc nay: truoc do so lieu co the con cua lan cai
+  /// cu, cua tai khoan truoc, hoac chua keo ve.
+  ValueListenable<String?> get settledUser => _settledUser;
+
+  void _settle(String userId) {
+    if (!_disposed) _settledUser.value = userId;
+  }
 
   /// Bat dau nghe thay doi tren may (tu day len sau 5 giay) - goi 1 lan.
   void start() {
@@ -86,12 +99,15 @@ class GymTalkSyncService {
   Future<void> _sync() async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) return;
+    String? lastUser;
+    var lastUserRead = false;
     try {
       await _srs.ensureLoaded();
       await _daily.ensureLoaded();
       await _path.ensureLoaded();
       final prefs = await SharedPreferences.getInstance();
-      final lastUser = prefs.getString(_lastUserKey);
+      lastUser = prefs.getString(_lastUserKey);
+      lastUserRead = true;
 
       final row = await _selectRow(userId);
 
@@ -118,6 +134,7 @@ class GymTalkSyncService {
         });
       }
       await prefs.setString(_lastUserKey, userId);
+      _settle(userId);
       await _supabase.from(_table).upsert({
         'user_id': userId,
         'srs': _srs.exportJson(),
@@ -128,6 +145,9 @@ class GymTalkSyncService {
       }, onConflict: 'user_id');
     } catch (e) {
       debugPrint('GymTalkSyncService sync failed: $e');
+      if (lastUserRead && localDataBelongsTo(userId, lastUser: lastUser)) {
+        _settle(userId);
+      }
     }
   }
 
@@ -164,6 +184,9 @@ class GymTalkSyncService {
   }
 
   void dispose() {
+    if (_disposed) return;
+    _disposed = true;
+    _settledUser.dispose();
     _debounce?.cancel();
     if (_listening) {
       _srs.removeListener(_onLocalChanged);
@@ -173,3 +196,11 @@ class GymTalkSyncService {
     }
   }
 }
+
+/// Luot dong bo loi (vd mat mang) thi du lieu tren may co dung tam cho tai
+/// khoan [userId] khong: co neu do la du lieu cua chinh tai khoan nay hoac
+/// may chua dong bo lan nao; khong neu con la du lieu tai khoan truoc (chi
+/// xoa sau khi keo duoc du lieu tai khoan moi).
+@visibleForTesting
+bool localDataBelongsTo(String userId, {required String? lastUser}) =>
+    lastUser == null || lastUser == userId;

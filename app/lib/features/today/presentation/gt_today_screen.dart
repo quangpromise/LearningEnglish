@@ -18,8 +18,8 @@ import '../../../core/theme/gt_motion.dart';
 import '../../../core/widgets/gt_celebration.dart';
 import '../../../core/widgets/gt_when_on_screen.dart';
 import '../../../core/widgets/gt_count_up.dart';
-import '../../english_path/data/cefr_level.dart';
 import '../../english_path/data/english_path_providers.dart';
+import '../../english_path/data/english_path_store.dart';
 import '../../fitness/data/body_level.dart';
 import '../../fitness/presentation/programs_list_screen.dart';
 import '../../../core/i18n/greeting.dart';
@@ -108,11 +108,6 @@ class _GtTodayScreenState extends ConsumerState<GtTodayScreen> {
         (ModalRoute.isCurrentOf(context) ?? true);
     // Doi popup / trang vua dong lui het (trang 450 ms > sheet 200 ms); giam
     // chuyen dong thi hien ngay.
-    // So lieu cho Milestone (MO-06): Body Level chua tai -> null.
-    final bodyStats = ref.watch(bodyStatsProvider).valueOrNull;
-    final bodyLevel = bodyStats == null ? null : bodyLevelFor(bodyStats);
-    final english = ref.watch(englishLevelProvider);
-    final userId = ref.watch(supabaseClientProvider).auth.currentUser?.id;
     final settle = gtReduceMotion(context)
         ? Duration.zero
         : Duration(
@@ -123,98 +118,140 @@ class _GtTodayScreenState extends ConsumerState<GtTodayScreen> {
           );
     return ColoredBox(
       color: t.bg,
-      child: RefreshIndicator(
-        color: t.tx,
-        onRefresh: () async {
-          ref
-            ..invalidate(todayWorkoutPlanProvider)
-            ..invalidate(myLearningXpProvider);
-        },
-        child: ListenableBuilder(
-          listenable: Listenable.merge([store, SrsStore.instance]),
-          builder: (context, _) {
-            final now = DateTime.now();
-            return ListView(
-              padding: EdgeInsets.fromLTRB(
-                16,
-                padding.top + 4,
-                16,
-                padding.bottom + 16,
-              ),
-              children: [
-                GtTopBar(greetingKey: ref.watch(greetingKeyProvider)),
-                const SizedBox(height: 14),
-                // Tien do lam o popup / tab khac hien ra khi nguoi dung quay
-                // lai Hom nay -> vong cham 100%, nhiem vu xong chay truoc
-                // mat ho. Doc xong du lieu da luu / nhan so lieu dong bo thi
-                // dung lai the: tien do khong do chinh nguoi dung vua lam
-                // tren may nay thi khong chuc mung.
-                GtWhenOnScreen<DayProgress>(
-                  key: ValueKey((store.isLoaded, store.revision)),
-                  value: store.today,
-                  onScreen: onScreen,
-                  settle: settle,
-                  builder: (context, day, visit) => Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Moi the 1 lop ve rieng: hoat anh the nay khong ve
-                      // lai 2 the kia.
-                      RepaintBoundary(
-                        child: GtRingsCard(
-                          day: day,
-                          strip: weekStreakStrip(
-                            (d) => DateUtils.isSameDay(d, now)
-                                ? day
-                                : store.dayOf(d),
-                            now,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          RefreshIndicator(
+            color: t.tx,
+            onRefresh: () async {
+              ref
+                ..invalidate(todayWorkoutPlanProvider)
+                ..invalidate(myLearningXpProvider);
+            },
+            child: ListenableBuilder(
+              listenable: Listenable.merge([store, SrsStore.instance]),
+              builder: (context, _) {
+                final now = DateTime.now();
+                return ListView(
+                  padding: EdgeInsets.fromLTRB(
+                    16,
+                    padding.top + 4,
+                    16,
+                    padding.bottom + 16,
+                  ),
+                  children: [
+                    GtTopBar(greetingKey: ref.watch(greetingKeyProvider)),
+                    const SizedBox(height: 14),
+                    // Tien do lam o popup / tab khac hien ra khi nguoi dung
+                    // quay lai Hom nay -> vong cham 100%, nhiem vu xong chay
+                    // truoc mat ho. Doc xong du lieu da luu / nhan so lieu
+                    // dong bo thi dung lai the: tien do khong do chinh nguoi
+                    // dung vua lam tren may nay thi khong chuc mung.
+                    GtWhenOnScreen<DayProgress>(
+                      key: ValueKey((store.isLoaded, store.revision)),
+                      value: store.today,
+                      onScreen: onScreen,
+                      settle: settle,
+                      builder: (context, day, visit) => Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Moi the 1 lop ve rieng: hoat anh the nay khong ve
+                          // lai 2 the kia.
+                          RepaintBoundary(
+                            child: GtRingsCard(
+                              day: day,
+                              strip: weekStreakStrip(
+                                (d) => DateUtils.isSameDay(d, now)
+                                    ? day
+                                    : store.dayOf(d),
+                                now,
+                              ),
+                              date: now,
+                            ),
                           ),
-                          date: now,
-                        ),
+                          const SizedBox(height: 16),
+                          RepaintBoundary(
+                            child: _TodayWorkout(
+                              today: day,
+                              dueCount: SrsStore.instance.dueCount(now),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          RepaintBoundary(
+                            child: GtQuestsCard(day: day, visit: visit),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 16),
-                      RepaintBoundary(
-                        child: _TodayWorkout(
-                          today: day,
-                          dueCount: SrsStore.instance.dueCount(now),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      RepaintBoundary(
-                        child: GtQuestsCard(day: day, visit: visit),
-                      ),
-                    ],
-                  ),
-                ),
-                // Milestone moi (chuoi 7/30/100/365, len Body Level, len
-                // Rank) chuc mung khi nguoi dung quay lai Hom nay (MO-06).
-                GtWhenOnScreen<_MilestoneInputs>(
-                  key: ValueKey((store.isLoaded, store.revision)),
-                  value: (
-                    streak: store.bodyBrainStreak,
-                    body: bodyLevel,
-                    english: english,
-                  ),
-                  onScreen: onScreen,
-                  settle: settle,
-                  builder: (context, inputs, visit) => GtMilestoneWatcher(
-                    userId: userId,
-                    visit: visit,
-                    streak: inputs.streak,
-                    bodyLevel: inputs.body,
-                    english: inputs.english,
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+          // Ngoai ListView: ListView chi dung con dang (sap) hien - con cuoi
+          // danh sach tren man thap se khong bao gio duoc dung.
+          Positioned(
+            left: 0,
+            top: 0,
+            child: _TodayMilestones(onScreen: onScreen, settle: settle),
+          ),
+        ],
       ),
     );
   }
 }
 
-/// So lieu de kiem Milestone, giu nguyen trong luc Hom nay bi che.
-typedef _MilestoneInputs = ({int streak, BodyLevel? body, CefrLevel english});
+/// Milestone moi (chuoi 7/30/100/365, len Body Level, len Rank) chuc mung
+/// khi nguoi dung quay lai Hom nay (MO-06). Moi nguon chi duoc tinh khi da
+/// on dinh - khong lay moc goc / chuc mung tu so lieu tam:
+/// - chuoi: store da doc xong VA da dong bo xong 1 luot cho chinh tai khoan
+///   nay (truoc do co the con so lieu may cu / tai khoan truoc);
+/// - English Level: nhu tren (lo trinh dong bo cung luot) VA da tai xong
+///   lua chon Persona (chua tai -> tam roi ve A1);
+/// - Body Level: tai thanh cong (loi mang -> null, khong phai Rookie).
+class _TodayMilestones extends ConsumerWidget {
+  const _TodayMilestones({required this.onScreen, required this.settle});
+
+  final bool onScreen;
+  final Duration settle;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userId = ref.watch(currentUserIdProvider);
+    final synced =
+        userId != null && ref.watch(gymTalkSettledUserProvider) == userId;
+    final stats = ref.watch(bodyStatsProvider).valueOrNull;
+    final persona = ref.watch(learningPathChoiceProvider);
+    final english = ref.watch(englishLevelProvider);
+    final daily = DailyProgressStore.instance;
+    final path = EnglishPathStore.instance;
+    return ListenableBuilder(
+      listenable: Listenable.merge([daily, path]),
+      builder: (context, _) {
+        final settled = synced && daily.isLoaded;
+        return GtWhenOnScreen<MilestoneInputs>(
+          value: (
+            streak: settled ? daily.bodyBrainStreak : null,
+            body: stats == null ? null : bodyLevelFor(stats),
+            english: settled && persona.hasValue && !persona.hasError
+                ? english
+                : null,
+            dailyRevision: daily.revision,
+            pathRevision: path.revision,
+          ),
+          onScreen: onScreen,
+          settle: settle,
+          builder: (context, inputs, visit) => GtMilestoneWatcher(
+            userId: userId,
+            visit: visit,
+            onScreen: onScreen,
+            inputs: inputs,
+          ),
+        );
+      },
+    );
+  }
+}
 
 // ---------------------------------------------------------------------------
 // The Daily Rings

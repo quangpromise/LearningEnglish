@@ -10,22 +10,46 @@ typedef Milestone = ({MilestoneKind kind, int value});
 /// Moc da chuc mung (hoac moc goc) tren may nay, theo tai khoan. null = chi
 /// so do chua tung duoc ghi nhan (lan dau / may moi / chua tai xong).
 class MilestoneRecord {
-  const MilestoneRecord({this.streak, this.bodyLevel, this.rank});
+  const MilestoneRecord({
+    this.streak,
+    this.streakOn,
+    this.bodyLevel,
+    this.rank,
+  });
 
   /// Moc chuoi cao nhat da dat (0, 7, 30, 100, 365).
   final int? streak;
+
+  /// Ngay ghi [streak] ('yyyy-mm-dd'): chuoi tut trong CHINH ngay do (vd bo
+  /// co ngay nghi sau khi doi giao an) khong ha moc - len lai khong chuc
+  /// mung lan 2.
+  final String? streakOn;
   final int? bodyLevel;
   final int? rank;
+
+  MilestoneRecord copyWith({
+    int? streak,
+    String? streakOn,
+    int? bodyLevel,
+    int? rank,
+  }) => MilestoneRecord(
+    streak: streak ?? this.streak,
+    streakOn: streakOn ?? this.streakOn,
+    bodyLevel: bodyLevel ?? this.bodyLevel,
+    rank: rank ?? this.rank,
+  );
 
   factory MilestoneRecord.fromJson(Map<String, dynamic> json) =>
       MilestoneRecord(
         streak: (json['streak'] as num?)?.toInt(),
+        streakOn: json['streak_on'] as String?,
         bodyLevel: (json['body'] as num?)?.toInt(),
         rank: (json['rank'] as num?)?.toInt(),
       );
 
   Map<String, dynamic> toJson() => {
     'streak': ?streak,
+    'streak_on': ?streakOn,
     'body': ?bodyLevel,
     'rank': ?rank,
   };
@@ -34,70 +58,97 @@ class MilestoneRecord {
   bool operator ==(Object other) =>
       other is MilestoneRecord &&
       other.streak == streak &&
+      other.streakOn == streakOn &&
       other.bodyLevel == bodyLevel &&
       other.rank == rank;
 
   @override
-  int get hashCode => Object.hash(streak, bodyLevel, rank);
+  int get hashCode => Object.hash(streak, streakOn, bodyLevel, rank);
 
   @override
   String toString() =>
-      'MilestoneRecord(streak: $streak, body: $bodyLevel, rank: $rank)';
+      'MilestoneRecord(streak: $streak on $streakOn, body: $bodyLevel, '
+      'rank: $rank)';
 }
 
 /// Moc chuoi cao nhat <= [streak] (0 neu chua toi moc dau).
 int streakMarkFor(int streak) =>
     kStreakMilestones.lastWhere((m) => m <= streak, orElse: () => 0);
 
-/// Phat hien Milestone moi (spec #96 quyet dinh #11):
+/// Ket qua 1 lan kiem. [celebrate]: theo thu tu hien - chuoi -> Body Level
+/// -> Rank (len Body Level thuong keo Rank len theo). [base]: ban ghi chi
+/// gom phan KHONG chuc mung (moc goc, ha moc, so lieu den tu dong bo) - luu
+/// ngay; moi Milestone ghi them bang [applyMilestone] ngay truoc khi hien,
+/// de bi ngat giua chung thi lan kiem sau hien tiep phan con lai.
+typedef MilestoneCheck = ({List<Milestone> celebrate, MilestoneRecord base});
+
+/// Phat hien Milestone moi (spec #96 quyet dinh #11); [today] la khoa ngay
+/// 'yyyy-mm-dd' hien tai:
 /// - chi so chua co trong ban ghi -> chi lap moc goc, KHONG chuc mung bu;
-/// - chuoi vuot moc -> chuc mung tung moc vua vuot (tang dan); chuoi dut
-///   (tut duoi moc) -> ha moc trong ban ghi, dat lai thi chuc mung lai;
+/// - chuoi vuot moc -> chuc mung MOC CAO NHAT vua vuot (0 -> 35 ngay: chi
+///   "Chuoi 30 ngay"); chuoi dut (tut duoi moc, khac ngay ghi moc) -> ha
+///   moc, dat lai thi chuc mung lai;
 /// - Body Level / Rank chi chuc mung khi TANG; tut roi len lai khong chuc
-///   mung lai.
+///   mung lai;
+/// - loai trong [quiet] (so lieu vua den tu may khac qua dong bo, khong phai
+///   nguoi dung vua lam tren may nay): ghi nhan, khong chuc mung.
 /// Gia tri dau vao null = chua biet -> giu nguyen phan do cua ban ghi.
-/// Thu tu hien: chuoi -> Body Level -> Rank (len Body Level thuong keo
-/// Rank len theo).
-({List<Milestone> celebrate, MilestoneRecord record}) detectMilestones(
+MilestoneCheck detectMilestones(
   MilestoneRecord record, {
+  required String today,
   int? streak,
   int? bodyLevel,
   int? rank,
+  Set<MilestoneKind> quiet = const {},
 }) {
   final celebrate = <Milestone>[];
+  var base = record;
 
-  var nextStreak = record.streak;
   if (streak != null) {
     final reached = streakMarkFor(streak);
     final known = record.streak;
-    if (known != null && reached > known) {
-      for (final m in kStreakMilestones) {
-        if (m > known && m <= reached) {
-          celebrate.add((kind: MilestoneKind.streak, value: m));
-        }
-      }
+    if (known != null &&
+        reached > known &&
+        !quiet.contains(MilestoneKind.streak)) {
+      celebrate.add((kind: MilestoneKind.streak, value: reached));
+    } else if (known == null ||
+        reached > known ||
+        (reached < known && record.streakOn != today)) {
+      base = base.copyWith(streak: reached, streakOn: today);
     }
-    nextStreak = reached;
   }
 
-  int? rise(MilestoneKind kind, int? known, int? now) {
-    if (now == null) return known;
-    if (known == null) return now;
-    if (now > known) {
+  void rise(
+    MilestoneKind kind,
+    int? known,
+    int? now,
+    MilestoneRecord Function(int value) write,
+  ) {
+    if (now == null || (known != null && now <= known)) return;
+    if (known == null || quiet.contains(kind)) {
+      base = write(now);
+    } else {
       celebrate.add((kind: kind, value: now));
-      return now;
     }
-    return known;
   }
 
-  final nextBody = rise(MilestoneKind.bodyLevel, record.bodyLevel, bodyLevel);
-  final nextRank = rise(MilestoneKind.rank, record.rank, rank);
-  return (
-    celebrate: celebrate,
-    record: MilestoneRecord(
-      streak: nextStreak,
-      bodyLevel: nextBody,
-      rank: nextRank,
-    ),
+  rise(
+    MilestoneKind.bodyLevel,
+    record.bodyLevel,
+    bodyLevel,
+    (v) => base.copyWith(bodyLevel: v),
   );
+  rise(MilestoneKind.rank, record.rank, rank, (v) => base.copyWith(rank: v));
+  return (celebrate: celebrate, base: base);
 }
+
+/// Ghi nhan Milestone [m] (da chuc mung) vao ban ghi.
+MilestoneRecord applyMilestone(
+  MilestoneRecord record,
+  Milestone m, {
+  required String today,
+}) => switch (m.kind) {
+  MilestoneKind.streak => record.copyWith(streak: m.value, streakOn: today),
+  MilestoneKind.bodyLevel => record.copyWith(bodyLevel: m.value),
+  MilestoneKind.rank => record.copyWith(rank: m.value),
+};

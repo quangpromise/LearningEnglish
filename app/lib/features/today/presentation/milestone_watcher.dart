@@ -9,9 +9,22 @@ import '../../../core/providers/app_providers.dart';
 import '../../../core/widgets/gt_celebration.dart';
 import '../../english_path/data/cefr_level.dart';
 import '../../fitness/data/body_level.dart';
+import '../data/daily_progress_store.dart';
 import '../data/gymtalk_rank.dart';
 import '../data/milestone_store.dart';
 import '../data/milestones.dart';
+
+/// So lieu de kiem Milestone. null = chua chac chan (chua dong bo xong lan
+/// dau, dang tai, loi mang) -> giu nguyen phan do cua ban ghi.
+/// [dailyRevision] / [pathRevision]: tang khi so lieu 3 vong / lo trinh den
+/// tu NGOAI may nay (dong bo tai khoan).
+typedef MilestoneInputs = ({
+  int? streak,
+  BodyLevel? body,
+  CefrLevel? english,
+  int dailyRevision,
+  int pathRevision,
+});
 
 /// Kiem Milestone moi - chuoi Body + Brain 7 / 30 / 100 / 365, len Body
 /// Level, len GymTalk Rank (spec #96, ADR-0008) - moi lan tab Hom nay hien
@@ -22,45 +35,64 @@ class GtMilestoneWatcher extends ConsumerStatefulWidget {
     super.key,
     required this.userId,
     required this.visit,
-    required this.streak,
-    required this.bodyLevel,
-    required this.english,
+    required this.onScreen,
+    required this.inputs,
     this.delay = const Duration(milliseconds: 900),
+    this.clock = DateTime.now,
   });
 
   /// null = chua dang nhap -> khong kiem.
   final String? userId;
   final int visit;
-  final int streak;
 
-  /// null = chua tai xong -> giu nguyen phan Body Level / Rank.
-  final BodyLevel? bodyLevel;
-  final CefrLevel english;
+  /// Hom nay dang that su hien. Bi che (popup, tab khac) -> bo lan kiem
+  /// dang cho; lan quay lai sau kiem lai.
+  final bool onScreen;
+  final MilestoneInputs inputs;
 
   /// Cho hieu ung tien do (vong, nhiem vu) chay xong truoc khi chuc mung.
   final Duration delay;
+  final DateTime Function() clock;
 
   @override
   ConsumerState<GtMilestoneWatcher> createState() => _GtMilestoneWatcherState();
 }
 
 class _GtMilestoneWatcherState extends ConsumerState<GtMilestoneWatcher> {
+  /// Doi man Celebration truoc dong han (200 ms) roi moi hien man sau: 2 lop
+  /// nen mo khong chong len nhau.
+  static const _gap = Duration(milliseconds: 220);
+
   Timer? _pending;
   bool _running = false;
+  bool _again = false;
+
+  /// `revision` 2 nguon o lan kiem truoc (null = chua kiem trong phien nay):
+  /// doi tu do toi nay = so lieu moi den tu may khac -> ghi nhan, khong chuc
+  /// mung.
+  int? _dailySeen;
+  int? _pathSeen;
 
   @override
   void didUpdateWidget(GtMilestoneWatcher old) {
     super.didUpdateWidget(old);
+    if (!widget.onScreen) {
+      _pending?.cancel();
+      _pending = null;
+      return;
+    }
     // visit 0 = Hom nay chua hien lan nao.
     if (widget.visit == 0) return;
     if (old.visit != widget.visit ||
-        old.streak != widget.streak ||
-        old.bodyLevel != widget.bodyLevel ||
-        old.english != widget.english ||
+        old.inputs != widget.inputs ||
         old.userId != widget.userId) {
-      _pending?.cancel();
-      _pending = Timer(widget.delay, _check);
+      _schedule();
     }
+  }
+
+  void _schedule() {
+    _pending?.cancel();
+    _pending = Timer(widget.delay, _check);
   }
 
   @override
@@ -70,25 +102,65 @@ class _GtMilestoneWatcherState extends ConsumerState<GtMilestoneWatcher> {
   }
 
   Future<void> _check() async {
+    _pending = null;
+    if (_running) {
+      // Dang hien dot truoc: kiem lai ngay sau.
+      _again = true;
+      return;
+    }
     final userId = widget.userId;
-    if (userId == null || _running || !mounted) return;
+    if (userId == null || !mounted || !widget.onScreen) return;
     _running = true;
     try {
-      final body = widget.bodyLevel;
-      final found = detectMilestones(
-        await MilestoneStore.load(userId),
-        streak: widget.streak,
-        bodyLevel: body?.index,
-        rank: body == null ? null : gymTalkRank(body, widget.english).tier,
-      );
-      // Luu truoc khi hien: tat app giua chung cung khong chuc mung lai.
-      await MilestoneStore.save(userId, found.record);
-      for (final milestone in found.celebrate) {
-        if (!mounted) return;
-        await _celebrate(milestone);
-      }
+      await _run(userId);
     } finally {
       _running = false;
+      if (_again && mounted) {
+        _again = false;
+        _schedule();
+      }
+    }
+  }
+
+  Future<void> _run(String userId) async {
+    final inputs = widget.inputs;
+    final today = DailyProgressStore.keyOf(widget.clock());
+    final body = inputs.body;
+    final english = inputs.english;
+    final rank = body == null || english == null
+        ? null
+        : gymTalkRank(body, english).tier;
+    final loaded = await MilestoneStore.load(userId);
+    // Bi che / doi tai khoan trong luc doc: de lan quay lai sau.
+    if (!mounted || !widget.onScreen || widget.userId != userId) return;
+    final quiet = {
+      if (inputs.streak != null &&
+          _dailySeen != null &&
+          _dailySeen != inputs.dailyRevision)
+        MilestoneKind.streak,
+      if (rank != null && _pathSeen != null && _pathSeen != inputs.pathRevision)
+        MilestoneKind.rank,
+    };
+    if (inputs.streak != null) _dailySeen = inputs.dailyRevision;
+    if (rank != null) _pathSeen = inputs.pathRevision;
+    final found = detectMilestones(
+      loaded,
+      today: today,
+      streak: inputs.streak,
+      bodyLevel: body?.index,
+      rank: rank,
+      quiet: quiet,
+    );
+    var record = found.base;
+    if (record != loaded) await MilestoneStore.save(userId, record);
+    for (final (i, milestone) in found.celebrate.indexed) {
+      if (i > 0) await Future<void>.delayed(_gap);
+      // Watcher bi huy (vd dang xuat): phan con lai CHUA ghi -> lan sau hien.
+      if (!mounted) return;
+      record = applyMilestone(record, milestone, today: today);
+      await MilestoneStore.save(userId, record);
+      if (!mounted) return;
+      await _celebrate(milestone);
     }
   }
 

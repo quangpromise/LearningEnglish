@@ -140,6 +140,8 @@ class _WorkoutFinishedScreenState extends ConsumerState<WorkoutFinishedScreen> {
     ref
       ..invalidate(fitnessDashboardStatsProvider)
       ..invalidate(fitnessHistorySeriesProvider)
+      // Body Level moi (va Rank keo theo) -> Milestone khi quay lai Hom nay.
+      ..invalidate(bodyStatsProvider)
       // Buoi tap hoan thanh duoc cong vao GymTalk XP (migration 0073).
       ..invalidate(myLearningXpProvider);
   }

@@ -1,0 +1,107 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:learn_english_music/core/i18n/greeting.dart';
+import 'package:learn_english_music/core/providers/app_providers.dart';
+import 'package:learn_english_music/core/theme/gt_tokens.dart';
+import 'package:learn_english_music/features/english_path/data/cefr_level.dart';
+import 'package:learn_english_music/features/english_path/data/english_path_providers.dart';
+import 'package:learn_english_music/features/fitness/data/body_level.dart';
+import 'package:learn_english_music/features/profile/data/profile_repository.dart';
+import 'package:learn_english_music/features/today/data/daily_progress_store.dart';
+import 'package:learn_english_music/features/today/data/today_presentation.dart';
+import 'package:learn_english_music/features/today/presentation/gt_today_screen.dart';
+import 'package:learn_english_music/features/today/presentation/milestone_watcher.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+void main() {
+  setUp(() => SharedPreferences.setMockInitialValues({}));
+
+  // 1 test duy nhat: man Hom nay dung store singleton - future tao trong zone
+  // cua test truoc se treo o test sau.
+  testWidgets('Today always mounts the Milestone watcher and keeps its cards', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390 * 3, 787 * 3);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          greetingKeyProvider.overrideWithValue('home_greeting_morning'),
+          myProfileProvider.overrideWith(
+            (ref) async => const MyProfile(
+              email: 'quang@example.com',
+              displayName: 'Quang Hua',
+              username: null,
+              avatarUrl: null,
+            ),
+          ),
+          unreadMessageCountProvider.overrideWith((ref) => Stream.value(0)),
+          bodyStatsProvider.overrideWith(
+            (ref) async => const BodyStats(20, 4, 2),
+          ),
+          englishLevelProvider.overrideWithValue(CefrLevel.b1),
+          learningPathChoiceProvider.overrideWith((ref) async => null),
+          // Giao an dang tai: the buoi tap o trang thai cho.
+          todayWorkoutPlanProvider.overrideWith(
+            (ref) => Completer<TodayWorkoutPlan?>().future,
+          ),
+          currentUserIdProvider.overrideWithValue('u1'),
+          gymTalkSettledUserProvider.overrideWithValue('u1'),
+        ],
+        child: MaterialApp(
+          theme: ThemeData(extensions: const [GtTokens.dark]),
+          home: const Scaffold(body: GtTodayScreen()),
+        ),
+      ),
+    );
+    // Doc xong store (the duoc dung lai 1 lan), Hom nay "den" (240 ms).
+    for (var i = 0; i < 5; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    expect(tester.takeException(), isNull);
+    // Man 390x787: watcher van duoc dung (nam ngoai ListView luoi).
+    expect(
+      find.byType(GtMilestoneWatcher, skipOffstage: false),
+      findsOneWidget,
+    );
+
+    // Man cao: dung het cac the trong ListView.
+    tester.view.physicalSize = const Size(390 * 3, 1800 * 3);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    final rings = tester.state(find.byType(GtRingsCard));
+
+    // Store bao doi (tien do moi): the vong giu nguyen State.
+    unawaited(DailyProgressStore.instance.addWordsReviewed(1));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(tester.state(find.byType(GtRingsCard)), same(rings));
+
+    // Popup che Hom nay roi dong lai: van State cu.
+    final navigator = tester.state<NavigatorState>(find.byType(Navigator));
+    unawaited(
+      navigator.push(
+        MaterialPageRoute<void>(
+          builder: (_) => const Scaffold(body: Text('popup')),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
+    navigator.pop();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(tester.state(find.byType(GtRingsCard)), same(rings));
+    expect(
+      find.byType(GtMilestoneWatcher, skipOffstage: false),
+      findsOneWidget,
+    );
+    // Cho lan kiem Milestone + hieu ung chay xong.
+    await tester.pump(const Duration(seconds: 2));
+    expect(tester.takeException(), isNull);
+  });
+}

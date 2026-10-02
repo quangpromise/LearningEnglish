@@ -86,6 +86,13 @@ final authStateProvider = StreamProvider<AuthState>(
   (ref) => ref.watch(authRepositoryProvider).authStateChanges,
 );
 
+/// Id tai khoan dang dang nhap (null = chua) - tinh lai moi lan dang nhap /
+/// dang xuat.
+final currentUserIdProvider = Provider<String?>((ref) {
+  ref.watch(authStateProvider);
+  return ref.watch(supabaseClientProvider).auth.currentUser?.id;
+});
+
 /// true sau khi người dùng đã đặt xong mật khẩu mới từ link "quên mật khẩu"
 /// - dùng để _AuthGate (main.dart) ngừng hiện ResetPasswordScreen dù event
 /// AuthChangeEvent.passwordRecovery vẫn là giá trị cuối cùng của stream.
@@ -516,6 +523,17 @@ final gymTalkSyncProvider = Provider<GymTalkSyncService>((ref) {
   return sync;
 });
 
+/// Tai khoan ma du lieu GymTalk tren may da thuoc ve sau 1 luot dong bo
+/// trong phien nay (GymTalkSyncService.settledUser) - null = chua co luot
+/// nao xong.
+final gymTalkSettledUserProvider = Provider<String?>((ref) {
+  final settled = ref.watch(gymTalkSyncProvider).settledUser;
+  void onChange() => ref.invalidateSelf();
+  settled.addListener(onChange);
+  ref.onDispose(() => settled.removeListener(onChange));
+  return settled.value;
+});
+
 final friendsChallengeRepositoryProvider = Provider<FriendsChallengeRepository>(
   (ref) => FriendsChallengeRepository(ref.watch(supabaseClientProvider)),
 );
@@ -565,18 +583,20 @@ final fitnessDashboardStatsProvider =
       return ref.watch(workoutRepositoryProvider).getDashboardStats(userId);
     });
 
-/// Body Level (spec #45): tinh tu moi buoi da hoan thanh. Chua dang nhap
-/// hoac loi mang -> Rookie (0 buoi); autoDispose de mo lai la tinh lai.
-final bodyStatsProvider = FutureProvider.autoDispose<BodyStats>((ref) async {
+/// Body Level (spec #45): tinh tu moi buoi da hoan thanh; autoDispose de mo
+/// lai la tinh lai. null = chua dang nhap hoac loi mang - KHONG gia la
+/// Rookie: man hien "…" nhu luc dang tai, Milestone (MO-06) khong lay moc
+/// tu so lieu sai.
+final bodyStatsProvider = FutureProvider.autoDispose<BodyStats?>((ref) async {
   final userId = ref.watch(supabaseClientProvider).auth.currentUser?.id;
-  if (userId == null) return const BodyStats(0, 0, 0);
+  if (userId == null) return null;
   final repo = ref.watch(workoutRepositoryProvider);
   try {
     final times = await repo.getCompletedWorkoutTimes(userId);
     return computeBodyStats(times, now: DateTime.now());
   } catch (e) {
     debugPrint('bodyStatsProvider failed: $e');
-    return const BodyStats(0, 0, 0);
+    return null;
   }
 });
 
