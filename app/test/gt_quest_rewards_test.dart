@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -129,6 +131,29 @@ void main() {
         expect(await service.claimPendingQuests(), DailyQuestId.trainerChat.xp);
       },
     );
+
+    test('a stuck RPC times out instead of holding up the queue', () async {
+      final store = newStore();
+      final server = _FakeServer();
+      var now = _now;
+      var stuck = true;
+      final service = QuestRewardService(
+        store: store,
+        // Socket chet: khong bao gio tra loi.
+        claimOnce: (key, amount) =>
+            stuck ? Completer<int>().future : server.claimOnce(key, amount),
+        addLegacy: server.addLegacy,
+        clock: () => now,
+        requestTimeout: const Duration(milliseconds: 20),
+      );
+      await store.markTrainerChatDone();
+      expect(await service.claimPendingQuests(), 0);
+      expect(store.today.rewarded, isEmpty);
+      // Lan goi sau khong ket sau lan treo; het tam dung thi tra duoc.
+      stuck = false;
+      now = now.add(const Duration(minutes: 2));
+      expect(await service.claimPendingQuests(), DailyQuestId.trainerChat.xp);
+    });
 
     test('a quest finished during a claim is paid in the same run', () async {
       final store = newStore();

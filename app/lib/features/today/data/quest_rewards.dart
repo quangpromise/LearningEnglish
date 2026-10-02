@@ -21,6 +21,7 @@ class QuestRewardService {
     required this.addLegacy,
     DateTime Function()? clock,
     this.retryAfter = const Duration(minutes: 1),
+    this.requestTimeout = const Duration(seconds: 15),
   }) : _clock = clock ?? DateTime.now;
 
   final DailyProgressStore store;
@@ -35,6 +36,11 @@ class QuestRewardService {
   /// Loi (mat mang, chua dang nhap) -> tam dung thu lai trong khoang nay de
   /// khong goi RPC moi lan bo dem thay doi.
   final Duration retryAfter;
+
+  /// 1 lan goi server qua lau (vd socket chet khi doi Wi-Fi sang 4G) tinh la
+  /// loi -> tam dung roi thu lai, khong de ca hang doi nhan thuong treo theo.
+  /// Server thuc ra da cong thi lan thu lai tra 0 nho khoa.
+  final Duration requestTimeout;
 
   final DateTime Function() _clock;
   final Set<String> _inFlight = {};
@@ -56,13 +62,13 @@ class QuestRewardService {
       final added = await claimOnce(
         '${DailyProgressStore.keyOf(day)}:$key',
         amount,
-      );
+      ).timeout(requestTimeout);
       // Da tra (lan nay hoac truoc do) -> ghi nhan.
       await store.markRewarded(day, key, openChest: chest);
       return added;
     } on XpRewardKeysUnavailable {
       if (!await store.markRewarded(day, key, openChest: chest)) return 0;
-      await addLegacy(amount);
+      await addLegacy(amount).timeout(requestTimeout);
       return amount;
     }
   }

@@ -225,6 +225,20 @@ void main() {
     c.dispose();
   });
 
+  test('cham dup "Hoan thanh hiep" khong cong them gio nghi', () {
+    final c = makeController([_block(1, sets: 3)]);
+    tap(c);
+    // Cham thu 2 roi vao nut "+15s" vua hien.
+    now = now.add(const Duration(milliseconds: 300));
+    c.addRestSeconds(15);
+    expect(c.restTotalSeconds, 60);
+    // Bam "+15s" that su van cong duoc.
+    now = now.add(const Duration(milliseconds: 500));
+    c.addRestSeconds(15);
+    expect(c.restTotalSeconds, 75);
+    c.dispose();
+  });
+
   test('hoan tac set chua gui -> go khoi hang doi', () async {
     repo.offline = true;
     final c = makeController([_block(1, sets: 3)]);
@@ -260,6 +274,7 @@ void main() {
     c.onRestElapsed = () => elapsedCalls++;
     tap(c);
     expect(c.restSecondsRemaining, 60);
+    now = now.add(const Duration(seconds: 1));
     c.addRestSeconds(15);
     expect(c.restTotalSeconds, 75);
 

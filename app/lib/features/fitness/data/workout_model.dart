@@ -474,6 +474,9 @@ class WorkoutController extends ChangeNotifier {
   void addRestSeconds(int seconds) {
     final endsAt = _restEndsAt;
     if (phase != WorkoutPhase.resting || endsAt == null) return;
+    // Cham thu 2 cua cu cham dup "Hoan thanh hiep" roi dung nut "+15s" vua
+    // hien o cho do: bo qua, khong tu dung nghi them.
+    if (_justCompleted(_clock())) return;
     _restEndsAt = endsAt.add(Duration(seconds: seconds));
     notifyListeners();
   }

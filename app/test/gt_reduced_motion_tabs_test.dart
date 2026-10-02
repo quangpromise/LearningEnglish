@@ -67,6 +67,8 @@ void main() {
     await tester.tap(find.text('B'));
     await tester.pump();
     expect(_controller(tester).index, 1);
+    // Thanh chi bao cung da o tab B.
+    expect(_controller(tester).animation!.value, 1);
     expect(_pageLeft(tester, 'page B'), 0);
     await tester.pumpAndSettle();
   });
@@ -77,8 +79,11 @@ void main() {
     await tester.pumpWidget(_app());
     await tester.tap(find.text('B'));
     await tester.pumpAndSettle();
+    final old = _controller(tester);
     await tester.pumpWidget(_app(reduce: true));
     await tester.pump();
+    // Controller cu da huy.
+    expect(old.animation, isNull);
     expect(_controller(tester).index, 1);
     expect(_controller(tester).animationDuration, Duration.zero);
     expect(_pageLeft(tester, 'page B'), 0);
@@ -87,5 +92,21 @@ void main() {
     expect(_controller(tester).index, 0);
     expect(_pageLeft(tester, 'page A'), 0);
     await tester.pumpAndSettle();
+  });
+
+  testWidgets('turning reduced motion off again: tabs slide again', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_app(reduce: true));
+    await tester.pumpWidget(_app());
+    await tester.pump();
+    expect(_controller(tester).animationDuration, kTabScrollDuration);
+    await tester.tap(find.text('B'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(_pageLeft(tester, 'page B'), greaterThan(0));
+    await tester.pumpAndSettle();
+    expect(_controller(tester).index, 1);
+    expect(_pageLeft(tester, 'page B'), 0);
   });
 }
