@@ -186,15 +186,18 @@ void main() {
     expect(find.text('1/2'), findsOneWidget);
   });
 
-  testWidgets('deck done shows an XP Toast only for XP really credited', (
-    tester,
-  ) async {
-    // Nhiem vu On the da dat tren "server" gia -> lan claim nay cong XP.
+  testWidgets('the card that completes the review quest: XP Toast, no '
+      'Celebration', (tester) async {
+    // 1 the nua la dat nhiem vu On the -> lan claim cuoi bo the cong XP.
     final store = DailyProgressStore.forTest();
-    await store.addWordsReviewed(kDailyLearnGoal);
+    await store.addWordsReviewed(kDailyLearnGoal - 1);
     await pump(
       tester,
-      GtSrsReviewScreen(cards: [_card('lift', 'nang')], stopVoice: () {}),
+      GtSrsReviewScreen(
+        cards: [_card('lift', 'nang')],
+        stopVoice: () {},
+        progress: store,
+      ),
       rewards: QuestRewardService(
         store: store,
         claimOnce: (key, amount) async => amount,
@@ -209,6 +212,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
     await tester.pump(const Duration(milliseconds: 700));
+    expect(store.today.wordsReviewed, kDailyLearnGoal);
     expect(find.text('+${DailyQuestId.review.xp} XP'), findsOneWidget);
     expect(find.byType(GtCelebration), findsNothing);
     await tester.pumpAndSettle();

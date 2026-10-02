@@ -25,9 +25,14 @@ class GtSrsReviewScreen extends ConsumerStatefulWidget {
     this.maxCards = 20,
     this.cards,
     this.stopVoice,
+    this.progress,
   });
 
   final int maxCards;
+
+  /// Noi ghi tien do ngay (mac dinh [DailyProgressStore.instance]); test
+  /// truyen store rieng.
+  final DailyProgressStore? progress;
 
   /// Dung giong doc (mac dinh [TutorialVoice]); test truyen ham rong vi
   /// TutorialVoice dung plugin am thanh.
@@ -146,7 +151,9 @@ class _GtSrsReviewScreenState extends ConsumerState<GtSrsReviewScreen>
       _revealed = false;
       _flip.value = 0;
     });
-    if (!repeat) await DailyProgressStore.instance.addWordsReviewed();
+    if (!repeat) {
+      await (widget.progress ?? DailyProgressStore.instance).addWordsReviewed();
+    }
     if (_index >= next.length) await _finish();
   }
 
