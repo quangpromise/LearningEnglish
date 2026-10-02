@@ -103,4 +103,38 @@ void main() {
     expect(workoutXpEarned(setsLogged: 0, restGameXp: 0), 0);
     expect(workoutXpEarned(setsLogged: 1, restGameXp: 0), kWorkoutCompletedXp);
   });
+
+  group('exercise slide position', () {
+    int pos(int g, {bool paired = false, int round = 0, int sub = 0}) =>
+        exerciseSlidePosition(
+          groupIndex: g,
+          paired: paired,
+          roundIndex: round,
+          subIndex: sub,
+        );
+
+    test('solo sets keep their position, the next exercise moves on', () {
+      expect(pos(0), pos(0));
+      expect(pos(1), greaterThan(pos(0)));
+    });
+
+    test('a superset always moves forward: A1 B1 A2 B2 A3 B3, then next', () {
+      final seq = [
+        for (var round = 0; round < 3; round++)
+          for (var sub = 0; sub < 2; sub++)
+            pos(0, paired: true, round: round, sub: sub),
+        pos(1),
+      ];
+      for (var i = 1; i < seq.length; i++) {
+        expect(seq[i], greaterThan(seq[i - 1]), reason: 'step $i');
+      }
+    });
+
+    test('undo inside a superset moves back', () {
+      expect(
+        pos(0, paired: true, round: 1, sub: 0),
+        lessThan(pos(0, paired: true, round: 1, sub: 1)),
+      );
+    });
+  });
 }
