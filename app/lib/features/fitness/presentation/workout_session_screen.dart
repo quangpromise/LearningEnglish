@@ -212,7 +212,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
           second == previous - 1 &&
           second >= 1 &&
           second <= 3) {
-        HapticFeedback.selectionClick();
+        GtHaptics.play(GtHapticEvent.restCountdown);
       }
       // Giua gio nghi: 1 cau HLV (chi khi TAT the tu - tranh noi chen
       // luc nguoi dung dang nghe tu).
@@ -234,7 +234,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
   }
 
   void _onRestElapsed() {
-    HapticFeedback.heavyImpact();
+    GtHaptics.play(GtHapticEvent.restEnded);
     SystemSound.play(SystemSoundType.alert);
     // Loi HLV cho set tiep theo do _announceSet doc (listener).
   }

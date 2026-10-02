@@ -2,7 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
-/// Su kien co rung phan hoi (spec #96, quyet dinh #4).
+/// Su kien co rung phan hoi (spec #96, quyet dinh #4). Moi cho rung trong
+/// app deu di qua day de theo co mic va khoang tro (#124).
 enum GtHapticEvent {
   cardGraded,
   setTicked,
@@ -11,18 +12,43 @@ enum GtHapticEvent {
   pronunciationGood,
   chestOpened,
   celebration,
+
+  /// Nut ⚡ Quick Start o thanh tab.
+  quickStart,
+
+  /// Chon dap an (chua cham) / cham 1 chu khi xep tu.
+  answerPicked,
+  answerRight,
+  answerWrong,
+
+  /// Camera dem rep vua dem 1 rep.
+  repCounted,
+
+  /// 3-2-1 cuoi gio nghi.
+  restCountdown,
+
+  /// Het gio nghi.
+  restEnded,
 }
 
 enum GtHapticLevel { selection, light, medium, heavy }
 
 /// Muc rung cua tung su kien.
 GtHapticLevel gtHapticLevel(GtHapticEvent event) => switch (event) {
-  GtHapticEvent.cardGraded => GtHapticLevel.selection,
-  GtHapticEvent.setTicked => GtHapticLevel.light,
+  GtHapticEvent.cardGraded ||
+  GtHapticEvent.answerPicked ||
+  GtHapticEvent.restCountdown => GtHapticLevel.selection,
+  GtHapticEvent.setTicked ||
+  GtHapticEvent.answerRight ||
+  GtHapticEvent.repCounted => GtHapticLevel.light,
   GtHapticEvent.questCompleted ||
   GtHapticEvent.ringCompleted ||
-  GtHapticEvent.pronunciationGood => GtHapticLevel.medium,
-  GtHapticEvent.chestOpened || GtHapticEvent.celebration => GtHapticLevel.heavy,
+  GtHapticEvent.pronunciationGood ||
+  GtHapticEvent.quickStart => GtHapticLevel.medium,
+  GtHapticEvent.chestOpened ||
+  GtHapticEvent.celebration ||
+  GtHapticEvent.answerWrong ||
+  GtHapticEvent.restEnded => GtHapticLevel.heavy,
 };
 
 /// Rung phan hoi dung chung. Khong rung khi dang co phien thu mic (rung lot
@@ -56,7 +82,8 @@ abstract final class GtHaptics {
 
   /// Sau 1 lan rung, su kien KHONG manh hon trong khoang nay bi bo: 1 viec
   /// (vd xong nhiem vu On the va vong Hoc cham 100% ~0.2 s sau) chi rung 1
-  /// lan. Su kien manh hon van rung.
+  /// lan. Su kien manh hon van rung. Rieng chuoi nhip nhe lien tiep (vd cham
+  /// tung chu) thi moi cham 1 nhip.
   static const refractory = Duration(milliseconds: 350);
 
   @visibleForTesting
@@ -102,7 +129,13 @@ abstract final class GtHaptics {
           at.difference(lastAt) < refractory &&
           !frameGap.isNegative &&
           frameGap < refractory;
-      if (recent && lastLevel != null && strongest.index <= lastLevel.index) {
+      final tapAfterTap =
+          strongest == GtHapticLevel.selection &&
+          lastLevel == GtHapticLevel.selection;
+      if (recent &&
+          !tapAfterTap &&
+          lastLevel != null &&
+          strongest.index <= lastLevel.index) {
         return;
       }
       _lastAt = at;

@@ -1,11 +1,11 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/gt_haptics.dart';
 import '../../../core/tts/tutorial_voice.dart';
 import '../../../core/widgets/speaker_button.dart';
 import '../data/content_pack.dart';
@@ -81,20 +81,20 @@ class _PracticeQuestionState extends ConsumerState<PracticeQuestion> {
   void _pick(int option) {
     if (_picked != null) return;
     final right = option == widget.item.answerIndex;
-    if (!widget.reveal) {
-      HapticFeedback.selectionClick();
-    } else if (right) {
-      HapticFeedback.lightImpact();
-    } else {
-      HapticFeedback.heavyImpact();
-    }
+    GtHaptics.play(
+      !widget.reveal
+          ? GtHapticEvent.answerPicked
+          : right
+          ? GtHapticEvent.answerRight
+          : GtHapticEvent.answerWrong,
+    );
     setState(() => _picked = option);
     widget.onAnswered(option);
   }
 
   void _tapLetter(int i) {
     if (_picked != null || _tapped.contains(i)) return;
-    HapticFeedback.selectionClick();
+    GtHaptics.play(GtHapticEvent.answerPicked);
     setState(() => _tapped.add(i));
     if (_tapped.length == _letters.length) {
       final built = _tapped.map((j) => _letters[j]).join();

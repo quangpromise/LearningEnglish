@@ -179,6 +179,42 @@ void main() {
       expect(gtHapticLevel(GtHapticEvent.celebration), GtHapticLevel.heavy);
     });
 
+    test('former direct haptics keep their level (#124)', () {
+      expect(gtHapticLevel(GtHapticEvent.quickStart), GtHapticLevel.medium);
+      expect(
+        gtHapticLevel(GtHapticEvent.answerPicked),
+        GtHapticLevel.selection,
+      );
+      expect(gtHapticLevel(GtHapticEvent.answerRight), GtHapticLevel.light);
+      expect(gtHapticLevel(GtHapticEvent.answerWrong), GtHapticLevel.heavy);
+      expect(gtHapticLevel(GtHapticEvent.repCounted), GtHapticLevel.light);
+      expect(
+        gtHapticLevel(GtHapticEvent.restCountdown),
+        GtHapticLevel.selection,
+      );
+      expect(gtHapticLevel(GtHapticEvent.restEnded), GtHapticLevel.heavy);
+    });
+
+    test(
+      'quick taps each get a tick, unless a stronger buzz just played',
+      () async {
+        var at = DateTime(2026, 10, 2, 9);
+        GtHaptics.now = () => at;
+        await GtHaptics.play(GtHapticEvent.answerPicked);
+        at = at.add(const Duration(milliseconds: 150));
+        await GtHaptics.play(GtHapticEvent.answerPicked);
+        at = at.add(const Duration(milliseconds: 150));
+        await GtHaptics.play(GtHapticEvent.questCompleted);
+        at = at.add(const Duration(milliseconds: 150));
+        await GtHaptics.play(GtHapticEvent.answerPicked);
+        expect(calls.map((c) => c.arguments), [
+          'HapticFeedbackType.selectionClick',
+          'HapticFeedbackType.selectionClick',
+          'HapticFeedbackType.mediumImpact',
+        ]);
+      },
+    );
+
     test('plays the platform haptic for the level', () async {
       await GtHaptics.play(GtHapticEvent.cardGraded);
       await GtHaptics.play(GtHapticEvent.setTicked);

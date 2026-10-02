@@ -8,6 +8,7 @@ import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
 
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/gt_haptics.dart';
 import '../../../core/tts/app_tts.dart';
 import '../data/exercise_model.dart';
 import '../data/rep_counter.dart';
@@ -145,7 +146,7 @@ class _RepCameraScreenState extends ConsumerState<RepCameraScreen> {
       }
       final event = _counter.addAngle(angle);
       if (event == RepEvent.rep) {
-        HapticFeedback.lightImpact();
+        GtHaptics.play(GtHapticEvent.repCounted);
         AppTts.instance.speak(repWord(_counter.reps));
         _cue = null;
       } else if (event == RepEvent.shallowRep) {
