@@ -130,30 +130,42 @@ void main() {
       expect(r.celebrate, [(kind: MilestoneKind.bodyLevel, value: 4)]);
     });
 
-    test('values that came from another device are recorded quietly', () {
+    test('a streak mark crossed by synced data is recorded quietly', () {
+      const before = MilestoneRecord(
+        streak: 0,
+        streakOn: '2026-09-20',
+        bodyLevel: 1,
+        rank: 0,
+      );
       final r = detectMilestones(
-        const MilestoneRecord(
-          streak: 0,
-          streakOn: '2026-09-20',
-          bodyLevel: 1,
-          rank: 0,
-        ),
+        before,
         today: _today,
         streak: 12,
         bodyLevel: 2,
         rank: 1,
-        quiet: {MilestoneKind.streak, MilestoneKind.rank},
+        quietStreakMark: 7,
       );
-      expect(r.celebrate, [(kind: MilestoneKind.bodyLevel, value: 2)]);
-      expect(
+      // Body Level / Rank van chuc mung (tinh theo tung may).
+      expect(r.celebrate, [
+        (kind: MilestoneKind.bodyLevel, value: 2),
+        (kind: MilestoneKind.rank, value: 1),
+      ]);
+      expect(r.base, before.copyWith(streak: 7, streakOn: _today));
+      // Moc cao hon moc do dong bo vuot qua: van chuc mung.
+      final next = detectMilestones(
         r.base,
-        const MilestoneRecord(
-          streak: 7,
-          streakOn: _today,
-          bodyLevel: 1,
-          rank: 1,
-        ),
+        today: _today,
+        streak: 30,
+        quietStreakMark: 7,
       );
+      expect(next.celebrate, [(kind: MilestoneKind.streak, value: 30)]);
+    });
+
+    test('only marks the merge itself crossed are quiet', () {
+      expect(syncedStreakMark(null), 0);
+      expect(syncedStreakMark((from: 5, to: 9)), 7);
+      expect(syncedStreakMark((from: 8, to: 12)), 0);
+      expect(syncedStreakMark((from: 0, to: 45)), 30);
     });
 
     test('unknown values keep their part of the record', () {

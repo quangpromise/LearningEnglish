@@ -27,22 +27,35 @@ class GymTalkSyncService {
     SrsStore? srs,
     DailyProgressStore? daily,
     EnglishPathStore? path,
-  }) : _supabase = supabase,
+  }) : this.withRemote(
+         remote: SupabaseGymTalkRemote(supabase),
+         currentUserId: () => supabase.auth.currentUser?.id,
+         srs: srs,
+         daily: daily,
+         path: path,
+       );
+
+  /// Dung [remote] thay cho Supabase (test).
+  @visibleForTesting
+  GymTalkSyncService.withRemote({
+    required GymTalkRemote remote,
+    required String? Function() currentUserId,
+    SrsStore? srs,
+    DailyProgressStore? daily,
+    EnglishPathStore? path,
+  }) : _remote = remote,
+       _currentUserId = currentUserId,
        _srs = srs ?? SrsStore.instance,
        _daily = daily ?? DailyProgressStore.instance,
        _path = path ?? EnglishPathStore.instance;
 
-  static const _table = 'user_gymtalk_state';
   static const _lastUserKey = 'gymtalk_sync_last_user';
 
-  final SupabaseClient _supabase;
+  final GymTalkRemote _remote;
+  final String? Function() _currentUserId;
   final SrsStore _srs;
   final DailyProgressStore _daily;
   final EnglishPathStore _path;
-
-  /// Server chua chay migration 0075 (chua co cot path) - van dong bo
-  /// srs/daily nhu cu, bo qua phan lo trinh.
-  bool _pathColumnMissing = false;
 
   Timer? _debounce;
   bool _listening = false;
@@ -97,7 +110,7 @@ class GymTalkSyncService {
   }
 
   Future<void> _sync() async {
-    final userId = _supabase.auth.currentUser?.id;
+    final userId = _currentUserId();
     if (userId == null) return;
     String? lastUser;
     var lastUserRead = false;
@@ -109,7 +122,7 @@ class GymTalkSyncService {
       lastUser = prefs.getString(_lastUserKey);
       lastUserRead = true;
 
-      final row = await _selectRow(userId);
+      final row = await _remote.fetch(userId);
 
       // CHI xoa du lieu may (cua tai khoan truoc) SAU khi da doc duoc du
       // lieu tai khoan moi - mat mang thi giu nguyen, khong day nham len.
@@ -130,47 +143,25 @@ class GymTalkSyncService {
           }
           // Cot path: gop theo luat merge; ban cua app moi hon thi giu
           // nguyen tren may va khong ghi de (canUpload = false).
-          if (!_pathColumnMissing) await _path.mergeRemote(row['path']);
+          if (_remote.hasPath) await _path.mergeRemote(row['path']);
         });
       }
       await prefs.setString(_lastUserKey, userId);
       _settle(userId);
-      await _supabase.from(_table).upsert({
-        'user_id': userId,
+      await _remote.save(userId, {
         'srs': _srs.exportJson(),
         'daily': _daily.exportJson(),
         // Bo han khoa 'path' khi khong duoc ghi -> server giu gia tri cu.
-        if (!_pathColumnMissing && _path.canUpload) 'path': _path.exportJson(),
-        'updated_at': DateTime.now().toUtc().toIso8601String(),
-      }, onConflict: 'user_id');
+        if (_remote.hasPath && _path.canUpload) 'path': _path.exportJson(),
+      });
     } catch (e) {
       debugPrint('GymTalkSyncService sync failed: $e');
-      if (lastUserRead && localDataBelongsTo(userId, lastUser: lastUser)) {
-        _settle(userId);
-      }
+      // Mat mang: dung tam du lieu tren may CHI khi chac chan la cua tai
+      // khoan nay (da tung dong bo xong cho no tren may nay). May moi / vua
+      // doi tai khoan thi cho lan dong bo thanh cong - khong lay moc tu du
+      // lieu rong hoac cua nguoi khac.
+      if (lastUserRead && lastUser == userId) _settle(userId);
     }
-  }
-
-  Future<Map<String, dynamic>?> _selectRow(String userId) async {
-    if (!_pathColumnMissing) {
-      try {
-        return await _supabase
-            .from(_table)
-            .select('srs, daily, path')
-            .eq('user_id', userId)
-            .maybeSingle();
-      } on PostgrestException catch (e) {
-        // 42703 = undefined_column (chua chay migration 0075). Chi dua vao
-        // ma loi - loi khac van nem ra de lan sau thu lai.
-        if (e.code != '42703') rethrow;
-        _pathColumnMissing = true;
-      }
-    }
-    return _supabase
-        .from(_table)
-        .select('srs, daily')
-        .eq('user_id', userId)
-        .maybeSingle();
   }
 
   /// Ap du lieu tu server/xoa may ma KHONG kich hoat vong day len lai.
@@ -197,10 +188,62 @@ class GymTalkSyncService {
   }
 }
 
-/// Luot dong bo loi (vd mat mang) thi du lieu tren may co dung tam cho tai
-/// khoan [userId] khong: co neu do la du lieu cua chinh tai khoan nay hoac
-/// may chua dong bo lan nao; khong neu con la du lieu tai khoan truoc (chi
-/// xoa sau khi keo duoc du lieu tai khoan moi).
-@visibleForTesting
-bool localDataBelongsTo(String userId, {required String? lastUser}) =>
-    lastUser == null || lastUser == userId;
+/// Dong `user_gymtalk_state` cua 1 tai khoan tren server - tach khoi
+/// [GymTalkSyncService] de test luat gop / xoa / "da dong bo" khong can mang.
+abstract interface class GymTalkRemote {
+  /// null = tai khoan chua co dong nao. Loi mang -> nem loi.
+  Future<Map<String, dynamic>?> fetch(String userId);
+
+  /// Server co cot `path` (migration 0075) - biet sau lan [fetch] dau.
+  bool get hasPath;
+
+  /// Ghi de dong cua [userId] bang [state] (`srs`, `daily`, co the `path`).
+  Future<void> save(String userId, Map<String, dynamic> state);
+}
+
+class SupabaseGymTalkRemote implements GymTalkRemote {
+  SupabaseGymTalkRemote(this._supabase);
+
+  static const _table = 'user_gymtalk_state';
+
+  final SupabaseClient _supabase;
+
+  /// Server chua chay migration 0075 (chua co cot path) - van dong bo
+  /// srs/daily nhu cu, bo qua phan lo trinh.
+  bool _pathColumnMissing = false;
+
+  @override
+  bool get hasPath => !_pathColumnMissing;
+
+  @override
+  Future<Map<String, dynamic>?> fetch(String userId) async {
+    if (!_pathColumnMissing) {
+      try {
+        return await _supabase
+            .from(_table)
+            .select('srs, daily, path')
+            .eq('user_id', userId)
+            .maybeSingle();
+      } on PostgrestException catch (e) {
+        // 42703 = undefined_column (chua chay migration 0075). Chi dua vao
+        // ma loi - loi khac van nem ra de lan sau thu lai.
+        if (e.code != '42703') rethrow;
+        _pathColumnMissing = true;
+      }
+    }
+    return _supabase
+        .from(_table)
+        .select('srs, daily')
+        .eq('user_id', userId)
+        .maybeSingle();
+  }
+
+  @override
+  Future<void> save(String userId, Map<String, dynamic> state) async {
+    await _supabase.from(_table).upsert({
+      'user_id': userId,
+      ...state,
+      'updated_at': DateTime.now().toUtc().toIso8601String(),
+    }, onConflict: 'user_id');
+  }
+}

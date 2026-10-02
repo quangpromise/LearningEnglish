@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -583,12 +585,23 @@ final fitnessDashboardStatsProvider =
       return ref.watch(workoutRepositoryProvider).getDashboardStats(userId);
     });
 
-/// Body Level (spec #45): tinh tu moi buoi da hoan thanh; autoDispose de mo
-/// lai la tinh lai. null = chua dang nhap hoac loi mang - KHONG gia la
-/// Rookie: man hien "…" nhu luc dang tai, Milestone (MO-06) khong lay moc
+/// So buoi tap da len server trong phien (WorkoutOutbox.finishedSent).
+final workoutsSentProvider = Provider<int>((ref) {
+  final outbox = ref.watch(workoutOutboxProvider);
+  void onChange() => ref.invalidateSelf();
+  outbox.addListener(onChange);
+  ref.onDispose(() => outbox.removeListener(onChange));
+  return outbox.finishedSent;
+});
+
+/// Body Level (spec #45): tinh tu moi buoi da hoan thanh; tinh lai khi mo lai
+/// (autoDispose) va moi khi 1 buoi tap len server (ke ca gui bu sau khi mat
+/// mang). null = chua dang nhap hoac loi mang - KHONG gia la Rookie: man hien
+/// "…" nhu luc dang tai (thu lai sau 1 phut), Milestone (MO-06) khong lay moc
 /// tu so lieu sai.
 final bodyStatsProvider = FutureProvider.autoDispose<BodyStats?>((ref) async {
-  final userId = ref.watch(supabaseClientProvider).auth.currentUser?.id;
+  ref.watch(workoutsSentProvider);
+  final userId = ref.watch(currentUserIdProvider);
   if (userId == null) return null;
   final repo = ref.watch(workoutRepositoryProvider);
   try {
@@ -596,6 +609,8 @@ final bodyStatsProvider = FutureProvider.autoDispose<BodyStats?>((ref) async {
     return computeBodyStats(times, now: DateTime.now());
   } catch (e) {
     debugPrint('bodyStatsProvider failed: $e');
+    final retry = Timer(const Duration(minutes: 1), ref.invalidateSelf);
+    ref.onDispose(retry.cancel);
     return null;
   }
 });

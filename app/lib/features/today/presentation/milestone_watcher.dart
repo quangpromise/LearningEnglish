@@ -16,14 +16,13 @@ import '../data/milestones.dart';
 
 /// So lieu de kiem Milestone. null = chua chac chan (chua dong bo xong lan
 /// dau, dang tai, loi mang) -> giu nguyen phan do cua ban ghi.
-/// [dailyRevision] / [pathRevision]: tang khi so lieu 3 vong / lo trinh den
-/// tu NGOAI may nay (dong bo tai khoan).
+/// [quietStreakMark]: moc chuoi do du lieu gop tu may khac vuot qua hom nay
+/// (syncedStreakMark) - ghi nhan, khong chuc mung.
 typedef MilestoneInputs = ({
   int? streak,
+  int quietStreakMark,
   BodyLevel? body,
   CefrLevel? english,
-  int dailyRevision,
-  int pathRevision,
 });
 
 /// Kiem Milestone moi - chuoi Body + Brain 7 / 30 / 100 / 365, len Body
@@ -66,12 +65,6 @@ class _GtMilestoneWatcherState extends ConsumerState<GtMilestoneWatcher> {
   Timer? _pending;
   bool _running = false;
   bool _again = false;
-
-  /// `revision` 2 nguon o lan kiem truoc (null = chua kiem trong phien nay):
-  /// doi tu do toi nay = so lieu moi den tu may khac -> ghi nhan, khong chuc
-  /// mung.
-  int? _dailySeen;
-  int? _pathSeen;
 
   @override
   void didUpdateWidget(GtMilestoneWatcher old) {
@@ -133,23 +126,13 @@ class _GtMilestoneWatcherState extends ConsumerState<GtMilestoneWatcher> {
     final loaded = await MilestoneStore.load(userId);
     // Bi che / doi tai khoan trong luc doc: de lan quay lai sau.
     if (!mounted || !widget.onScreen || widget.userId != userId) return;
-    final quiet = {
-      if (inputs.streak != null &&
-          _dailySeen != null &&
-          _dailySeen != inputs.dailyRevision)
-        MilestoneKind.streak,
-      if (rank != null && _pathSeen != null && _pathSeen != inputs.pathRevision)
-        MilestoneKind.rank,
-    };
-    if (inputs.streak != null) _dailySeen = inputs.dailyRevision;
-    if (rank != null) _pathSeen = inputs.pathRevision;
     final found = detectMilestones(
       loaded,
       today: today,
       streak: inputs.streak,
       bodyLevel: body?.index,
       rank: rank,
-      quiet: quiet,
+      quietStreakMark: inputs.quietStreakMark,
     );
     var record = found.base;
     if (record != loaded) await MilestoneStore.save(userId, record);

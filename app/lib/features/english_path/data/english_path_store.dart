@@ -35,12 +35,6 @@ class EnglishPathStore extends ChangeNotifier {
 
   EnglishPathState get state => _state;
 
-  int _revision = 0;
-
-  /// Tang moi khi du lieu den tu NGOAI may nay (dong bo tai khoan, doi tai
-  /// khoan) - Milestone (MO-06) ghi nhan, khong chuc mung nhu vua lam.
-  int get revision => _revision;
-
   Future<void> ensureLoaded() => _loading ??= _load();
 
   Future<void> _load() async {
@@ -94,7 +88,7 @@ class EnglishPathStore extends ChangeNotifier {
     }
     final remote = migrateEnglishPathState(raw);
     if (remote == null) return RemoteMergeResult.ignored;
-    await _update(mergeEnglishPathState(_state, remote), remote: true);
+    await _update(mergeEnglishPathState(_state, remote));
     return RemoteMergeResult.merged;
   }
 
@@ -103,7 +97,7 @@ class EnglishPathStore extends ChangeNotifier {
     await ensureLoaded();
     _readOnly = false;
     _remoteNewer = false;
-    await _update(const EnglishPathState(), force: true, remote: true);
+    await _update(const EnglishPathState(), force: true);
   }
 
   Future<void> recordCorrect(String unitId, String itemId) =>
@@ -127,11 +121,7 @@ class EnglishPathStore extends ChangeNotifier {
 
   Future<void> _writeChain = Future.value();
 
-  Future<void> _update(
-    EnglishPathState next, {
-    bool force = false,
-    bool remote = false,
-  }) async {
+  Future<void> _update(EnglishPathState next, {bool force = false}) async {
     await ensureLoaded();
     if (!force &&
         (identical(next, _state) ||
@@ -139,7 +129,6 @@ class EnglishPathStore extends ChangeNotifier {
       return;
     }
     _state = next;
-    if (remote) _revision++;
     notifyListeners();
     if (_readOnly) return;
     final json = jsonEncode(next.toJson());

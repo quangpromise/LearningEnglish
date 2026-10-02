@@ -3,7 +3,6 @@ import 'package:learn_english_music/features/fitness/data/program_model.dart';
 import 'package:learn_english_music/features/srs/data/srs_store.dart';
 import 'package:learn_english_music/features/today/data/daily_progress_store.dart';
 import 'package:learn_english_music/features/today/data/gymtalk_reminders.dart';
-import 'package:learn_english_music/features/today/data/gymtalk_sync_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 SrsCard _card(String key, {int box = 0, DateTime? due, DateTime? rev}) =>
@@ -99,16 +98,6 @@ void main() {
       await store.addWorkout();
       await store.clearLocal();
       expect(store.today.workouts, 0);
-    });
-  });
-
-  group('GymTalkSyncService', () {
-    test('a failed sync keeps local data only for its own account', () {
-      // Milestone (MO-06) lay moc tu du lieu tren may khi mat mang - chi khi
-      // do khong phai du lieu cua tai khoan truoc.
-      expect(localDataBelongsTo('a', lastUser: 'a'), isTrue);
-      expect(localDataBelongsTo('a', lastUser: null), isTrue);
-      expect(localDataBelongsTo('b', lastUser: 'a'), isFalse);
     });
   });
 

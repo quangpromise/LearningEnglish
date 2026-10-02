@@ -154,22 +154,6 @@ void main() {
       expect(store.state.level, isNull);
     });
 
-    test('only data from outside this device bumps the revision', () async {
-      final store = EnglishPathStore.forTest();
-      await store.setLevel(CefrLevel.a2);
-      expect(store.revision, 0);
-      final remote = jsonDecode(
-        jsonEncode(const EnglishPathState(level: CefrLevel.b1).toJson()),
-      );
-      await store.mergeRemote(remote);
-      expect(store.revision, 1);
-      // Gop lai cung du lieu: khong doi gi.
-      await store.mergeRemote(remote);
-      expect(store.revision, 1);
-      await store.clearLocal();
-      expect(store.revision, 2);
-    });
-
     test('clearLocal wipes progress for an account switch', () async {
       final store = EnglishPathStore.forTest();
       await store.recordCorrect('u1', 'i1');

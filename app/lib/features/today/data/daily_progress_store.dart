@@ -282,8 +282,12 @@ class DailyProgressStore extends ChangeNotifier {
   /// Tra ve true neu du lieu tren may thay doi.
   Future<bool> mergeRemote(Map<String, dynamic> remote) async {
     await ensureLoaded();
+    // Rut gon ngay cu tren may truoc khi so: khong thi ngay vua qua moc 60
+    // ngay (con day du ca tren may lan server) luon bi coi la "doi".
+    _compact();
     final keepFrom = _keyDaysAgo(_keepDays);
     final fullFrom = _keyDaysAgo(_fullDays);
+    final streakBefore = bodyBrainStreak;
     var changed = false;
     for (final e in remote.entries) {
       if (e.value is! Map || e.key.compareTo(keepFrom) < 0) continue;
@@ -304,6 +308,8 @@ class DailyProgressStore extends ChangeNotifier {
       }
     }
     if (changed) {
+      _streakCache = null;
+      _noteSyncedRise(streakBefore, bodyBrainStreak);
       _revision++;
       notifyListeners();
       await _save();
@@ -311,10 +317,33 @@ class DailyProgressStore extends ChangeNotifier {
     return changed;
   }
 
+  ({int from, int to, String day})? _syncedRise;
+
+  /// Chuoi Body + Brain truoc / sau cac lan gop du lieu tu may khac HOM NAY
+  /// (null = chua lan gop nao lam chuoi tang): Milestone (MO-06) ghi nhan moc
+  /// vuot qua trong khoang nay ma khong chuc mung - do la tien bo o may khac.
+  ({int from, int to})? get syncedStreakRiseToday {
+    final rise = _syncedRise;
+    if (rise == null || rise.day != _keyOf(_clock())) return null;
+    return (from: rise.from, to: rise.to);
+  }
+
+  void _noteSyncedRise(int before, int after) {
+    if (after <= before) return;
+    final day = _keyOf(_clock());
+    final last = _syncedRise;
+    // Gop lien tiep trong ngay: noi dai khoang tang.
+    final from = last != null && last.day == day
+        ? min(last.from, before)
+        : before;
+    _syncedRise = (from: from, to: after, day: day);
+  }
+
   /// Xoa sach so lieu tren may (doi sang tai khoan khac).
   Future<void> clearLocal() async {
     await ensureLoaded();
     _days.clear();
+    _syncedRise = null;
     _revision++;
     notifyListeners();
     await _save();

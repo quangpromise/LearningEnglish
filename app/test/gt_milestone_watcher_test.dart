@@ -24,13 +24,12 @@ MilestoneInputs _inputs({
   int? streak,
   BodyLevel? body,
   CefrLevel? english = CefrLevel.a1,
-  int dailyRevision = 0,
+  int quietStreakMark = 0,
 }) => (
   streak: streak,
+  quietStreakMark: quietStreakMark,
   body: body,
   english: english,
-  dailyRevision: dailyRevision,
-  pathRevision: 0,
 );
 
 Widget _watcher({
@@ -179,17 +178,17 @@ void main() {
     expect(await _showAll(tester), ['Chuỗi 7 ngày!']);
   });
 
-  testWidgets('a streak synced from another device is recorded quietly', (
+  testWidgets('a streak mark reached by synced data is recorded quietly', (
     tester,
   ) async {
     await MilestoneStore.save('u1', _known);
     await _arrive(tester, _inputs(streak: 3, body: BodyLevel.rookie));
     expect(find.byType(GtCelebration), findsNothing);
-    // Dong bo keo ve chuoi 10 ngay lam tren may khac.
+    // Dong bo keo ve chuoi 10 ngay lam tren may khac: lan gop vuot moc 7.
     await tester.pumpWidget(
       _watcher(
         visit: 1,
-        inputs: _inputs(streak: 10, body: BodyLevel.rookie, dailyRevision: 1),
+        inputs: _inputs(streak: 10, body: BodyLevel.rookie, quietStreakMark: 7),
       ),
     );
     await _settle(tester);
@@ -199,7 +198,7 @@ void main() {
     await tester.pumpWidget(
       _watcher(
         visit: 1,
-        inputs: _inputs(streak: 30, body: BodyLevel.rookie, dailyRevision: 1),
+        inputs: _inputs(streak: 30, body: BodyLevel.rookie, quietStreakMark: 7),
       ),
     );
     await _settle(tester);

@@ -146,4 +146,55 @@ void main() {
     );
     expect(store.revision, 1);
   });
+
+  test(
+    'its own server copy changes nothing, even a day just past 60',
+    () async {
+      // Ngay vua qua moc 60 ngay: con day du ca tren may lan tren server.
+      now = DateTime(2026, 7, 25, 19);
+      await completeDay();
+      await store.markRewarded(now, 'quest_review');
+      final server = store.exportJson();
+      now = DateTime(2026, 9, 24, 8);
+      expect(await store.mergeRemote(server), isFalse);
+      expect(store.revision, 0);
+    },
+  );
+
+  test('a merge that raises the streak is remembered for the day', () async {
+    await completeDay();
+    expect(store.syncedStreakRiseToday, isNull);
+    // May khac da xong 6 ngay truoc do.
+    expect(
+      await store.mergeRemote({
+        for (var i = 1; i <= 6; i++)
+          DailyProgressStore.keyOf(DateTime(2026, 9, 24 - i)): {
+            'w': 1,
+            'l': kDailyLearnGoal,
+            's': 0,
+            'r': false,
+          },
+      }),
+      isTrue,
+    );
+    expect(store.bodyBrainStreak, 7);
+    expect(store.syncedStreakRiseToday, (from: 1, to: 7));
+    // Doi khac khong lam chuoi tang (vd luot noi o may khac): giu nguyen.
+    await store.mergeRemote({
+      '2026-09-24': {'w': 1, 'l': kDailyLearnGoal, 's': 3, 'r': false},
+    });
+    expect(store.syncedStreakRiseToday, (from: 1, to: 7));
+    // Sang ngay moi: het hieu luc.
+    now = DateTime(2026, 9, 25, 9);
+    expect(store.syncedStreakRiseToday, isNull);
+  });
+
+  test('switching account forgets the synced rise', () async {
+    await store.mergeRemote({
+      '2026-09-24': {'w': 1, 'l': kDailyLearnGoal, 's': 0, 'r': false},
+    });
+    expect(store.syncedStreakRiseToday, (from: 0, to: 1));
+    await store.clearLocal();
+    expect(store.syncedStreakRiseToday, isNull);
+  });
 }
