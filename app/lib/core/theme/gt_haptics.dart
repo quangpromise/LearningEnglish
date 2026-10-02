@@ -41,17 +41,32 @@ abstract final class GtHaptics {
 
   static GtHapticLevel? _queued;
   static Future<void>? _flush;
+  static GtHapticLevel? _lastLevel;
+  static DateTime? _lastAt;
+
+  /// Dong ho cho khoang tro (test thay duoc).
+  @visibleForTesting
+  static DateTime Function() now = DateTime.now;
+
+  /// Sau 1 lan rung, su kien KHONG manh hon trong khoang nay bi bo: 1 viec
+  /// (vd xong nhiem vu On the va vong Hoc cham 100% ~0.2 s sau) chi rung 1
+  /// lan. Su kien manh hon van rung.
+  static const refractory = Duration(milliseconds: 350);
 
   @visibleForTesting
   static void resetForTest() {
     _micOwners.clear();
     _queued = null;
     _flush = null;
+    _lastLevel = null;
+    _lastAt = null;
+    now = DateTime.now;
   }
 
-  /// Rung cho [event]. Cac su kien trong CUNG 1 luot (vd nhiem vu xong va
-  /// vong cham 100% luc quay lai Hom nay) gop thanh 1 lan rung o muc manh
-  /// nhat, khong rung chong len nhau.
+  /// Rung cho [event]. Cac lan goi truoc khi microtask rung chay (vd nhieu
+  /// the cung build) gop thanh 1 lan o muc manh nhat; them [refractory] de
+  /// khong rung chong. Co mic dang thu luc rung (ke ca vua bat ngay sau lan
+  /// goi) thi im lang.
   static Future<void> play(GtHapticEvent event) {
     if (micActive) return Future.value();
     final level = gtHapticLevel(event);
@@ -66,6 +81,17 @@ abstract final class GtHaptics {
       _queued = null;
       _flush = null;
       if (strongest == null || micActive) return;
+      final at = now();
+      final lastAt = _lastAt;
+      final lastLevel = _lastLevel;
+      if (lastAt != null &&
+          lastLevel != null &&
+          at.difference(lastAt) < refractory &&
+          strongest.index <= lastLevel.index) {
+        return;
+      }
+      _lastAt = at;
+      _lastLevel = strongest;
       await _vibrate(strongest);
     });
   }

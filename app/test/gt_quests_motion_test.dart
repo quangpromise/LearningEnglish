@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,7 +10,9 @@ import 'package:learn_english_music/core/widgets/gt_celebration.dart';
 import 'package:learn_english_music/core/widgets/gt_tick_circle.dart';
 import 'package:learn_english_music/features/today/data/daily_progress_store.dart';
 import 'package:learn_english_music/features/today/data/daily_quests.dart';
+import 'package:learn_english_music/features/today/data/today_presentation.dart';
 import 'package:learn_english_music/features/today/presentation/gt_quests_card.dart';
+import 'package:learn_english_music/features/today/presentation/gt_today_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const _none = DayProgress();
@@ -63,7 +67,7 @@ bool _turned(WidgetTester tester, String key) =>
 
 bool _wiggling(WidgetTester tester) => _turned(tester, 'gt-chest-wiggle');
 
-bool _lidUp(WidgetTester tester) => _turned(tester, 'gt-chest-lid');
+bool _popping(WidgetTester tester) => _turned(tester, 'gt-chest-pop');
 
 void main() {
   late List<Object?> haptics;
@@ -153,46 +157,93 @@ void main() {
       expect(tester.hasRunningAnimations, isFalse);
     });
 
-    testWidgets('shakes again on each visit while ready, not while locked', (
+    testWidgets('shakes again on each return while ready, not while locked', (
       tester,
     ) async {
-      await tester.pumpWidget(_card(_four));
-      expect(_wiggling(tester), isFalse);
       await tester.pumpWidget(_card(_four, visit: 1));
+      expect(_wiggling(tester), isFalse);
+      await tester.pumpWidget(_card(_four, visit: 2));
       await tester.pump(const Duration(milliseconds: 100));
       expect(_wiggling(tester), isTrue);
       await tester.pump(const Duration(milliseconds: 700));
-      await tester.pumpWidget(_card(_three, visit: 2));
+      await tester.pumpWidget(_card(_three, visit: 3));
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(_wiggling(tester), isFalse);
+    });
+
+    testWidgets('the first visit after the card is rebuilt is not a return', (
+      tester,
+    ) async {
+      // Mo app / dong bo dung lai the: visit chay lai tu 0 -> 1.
+      await tester.pumpWidget(_card(_four));
+      await tester.pumpWidget(_card(_four, visit: 1));
       await tester.pump(const Duration(milliseconds: 100));
       expect(_wiggling(tester), isFalse);
     });
 
     testWidgets('reduced motion: no shake', (tester) async {
-      await tester.pumpWidget(_card(_three, reduce: true));
-      await tester.pumpWidget(_card(_four, visit: 1, reduce: true));
+      await tester.pumpWidget(_card(_three, visit: 1, reduce: true));
+      await tester.pumpWidget(_card(_four, visit: 2, reduce: true));
       await tester.pump(const Duration(milliseconds: 100));
       expect(_wiggling(tester), isFalse);
       expect(tester.hasRunningAnimations, isFalse);
     });
 
-    testWidgets('open: the lid pops first, then one celebration buzz-free', (
+    testWidgets('open: the icon pops first, then one celebration buzz-free', (
       tester,
     ) async {
       await tester.pumpWidget(_card(_four, open: () async => kChestXp));
-      expect(_lidUp(tester), isFalse);
+      expect(_popping(tester), isFalse);
       await tester.tap(find.text('Mở'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
-      expect(_lidUp(tester), isTrue);
+      expect(_popping(tester), isTrue);
       expect(find.byType(GtCelebration), findsNothing);
       await tester.pump(const Duration(milliseconds: 400));
       await tester.pump(const Duration(milliseconds: 300));
       expect(find.byType(GtCelebration), findsOneWidget);
-      // Chi 1 lan rung manh (nap bat len), Celebration khong rung them.
+      // Chi 1 lan rung manh (luc bam), Celebration khong rung them.
       expect(haptics, ['HapticFeedbackType.heavyImpact']);
     });
 
-    testWidgets('a failed open closes the lid and can be retried', (
+    testWidgets('a claim slower than the pop still shows the chest opened', (
+      tester,
+    ) async {
+      final claim = Completer<int?>();
+      await tester.pumpWidget(_card(_four, open: () => claim.future));
+      await tester.tap(find.text('Mở'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      // Icon da ve cho cu, van cho server.
+      expect(_popping(tester), isFalse);
+      claim.complete(kChestXp);
+      await tester.pump();
+      // "Da mo" ngay du so lieu ngay (dang giu) chua cap nhat.
+      expect(find.text('Mở'), findsNothing);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.byType(GtCelebration), findsOneWidget);
+    });
+
+    testWidgets('double tap while opening claims once', (tester) async {
+      var claims = 0;
+      await tester.pumpWidget(
+        _card(
+          _four,
+          open: () async {
+            claims++;
+            return 0;
+          },
+        ),
+      );
+      await tester.tap(find.text('Mở'));
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.tap(find.text('Mở'), warnIfMissed: false);
+      await tester.pump(const Duration(milliseconds: 600));
+      expect(claims, 1);
+    });
+
+    testWidgets('a failed open leaves the chest ready to retry', (
       tester,
     ) async {
       var tries = 0;
@@ -211,13 +262,13 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(SnackBar), findsOneWidget);
       expect(find.byType(GtCelebration), findsNothing);
-      expect(_lidUp(tester), isFalse);
+      expect(_popping(tester), isFalse);
       await tester.tap(find.text('Mở'));
       expect(tries, 2);
       await tester.pumpAndSettle();
     });
 
-    testWidgets('claimed on another device: lid open, no celebration', (
+    testWidgets('claimed on another device: opened, no celebration', (
       tester,
     ) async {
       await tester.pumpWidget(_card(_four, open: () async => 0));
@@ -226,10 +277,10 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
       await tester.pump(const Duration(milliseconds: 300));
       expect(find.byType(GtCelebration), findsNothing);
-      expect(_lidUp(tester), isTrue);
+      expect(find.text('Mở'), findsNothing);
     });
 
-    testWidgets('an opened chest shows its lid up from the start', (
+    testWidgets('an opened chest is still, with no Open button', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -243,9 +294,44 @@ void main() {
           ),
         ),
       );
-      expect(_lidUp(tester), isTrue);
+      expect(_popping(tester), isFalse);
       expect(find.text('Mở'), findsNothing);
       expect(tester.hasRunningAnimations, isFalse);
     });
+  });
+
+  testWidgets('a quest and its ring arc finishing together buzz once', (
+    tester,
+  ) async {
+    Widget today(DayProgress day) => ProviderScope(
+      child: MaterialApp(
+        theme: ThemeData(extensions: const [GtTokens.dark]),
+        home: Scaffold(
+          body: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              GtRingsCard(
+                day: day,
+                strip: List.filled(7, StreakCell.future),
+                date: DateTime(2026, 10, 2),
+              ),
+              GtQuestsCard(day: day),
+            ],
+          ),
+        ),
+      ),
+    );
+    await tester.pumpWidget(
+      today(const DayProgress(wordsReviewed: kDailyLearnGoal - 1)),
+    );
+    await tester.pumpAndSettle();
+    // The on thu 10: nhiem vu On the xong + cung Hoc day ~0.2 s sau.
+    await tester.pumpWidget(
+      today(const DayProgress(wordsReviewed: kDailyLearnGoal)),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.pumpAndSettle();
+    expect(haptics, ['HapticFeedbackType.mediumImpact']);
   });
 }

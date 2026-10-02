@@ -211,6 +211,23 @@ void main() {
       ]);
     });
 
+    test('within the refractory window only a stronger buzz plays', () async {
+      var at = DateTime(2026, 10, 2, 9);
+      GtHaptics.now = () => at;
+      await GtHaptics.play(GtHapticEvent.questCompleted);
+      at = at.add(const Duration(milliseconds: 214));
+      await GtHaptics.play(GtHapticEvent.ringCompleted);
+      await GtHaptics.play(GtHapticEvent.setTicked);
+      await GtHaptics.play(GtHapticEvent.chestOpened);
+      at = at.add(GtHaptics.refractory);
+      await GtHaptics.play(GtHapticEvent.questCompleted);
+      expect(calls.map((c) => c.arguments), [
+        'HapticFeedbackType.mediumImpact',
+        'HapticFeedbackType.heavyImpact',
+        'HapticFeedbackType.mediumImpact',
+      ]);
+    });
+
     test('stays silent while any mic session is open', () async {
       final pronunciation = Object();
       final trainer = Object();

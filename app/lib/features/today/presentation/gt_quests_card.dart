@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
@@ -246,6 +247,9 @@ class _QuestRowState extends ConsumerState<_QuestRow>
     final title = ref
         .tr('gt_quest_${quest.name}_title')
         .replaceFirst('{goal}', goal);
+    final subtitle = ref
+        .tr('gt_quest_${quest.name}_sub')
+        .replaceFirst('{goal}', goal);
     return Semantics(
       button: true,
       checked: widget.done,
@@ -287,9 +291,7 @@ class _QuestRowState extends ConsumerState<_QuestRow>
                             progress: strike,
                           ),
                           Text(
-                            ref
-                                .tr('gt_quest_${quest.name}_sub')
-                                .replaceFirst('{goal}', goal),
+                            subtitle,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: GtText.body(t.tx2, size: 13),
@@ -352,7 +354,10 @@ class _StrikeTitle extends StatelessWidget {
     return Stack(
       children: [
         ClipRect(clipper: _Band(progress, 1), child: plain),
-        ClipRect(clipper: _Band(0, progress), child: struck),
+        // 1 tieu de cho trinh doc man hinh, khong doc 2 lan.
+        ExcludeSemantics(
+          child: ClipRect(clipper: _Band(0, progress), child: struck),
+        ),
       ],
     );
   }
@@ -366,11 +371,12 @@ class _Band extends CustomClipper<Rect> {
   final double from;
   final double to;
 
+  // Mep ngoai (0 / 1) mo rong them: khong cat phan chu nho ra ngoai hop.
   @override
   Rect getClip(Size size) => Rect.fromLTRB(
-    size.width * from,
+    from <= 0 ? -size.width : size.width * from,
     -size.height,
-    size.width * to,
+    to >= 1 ? size.width * 2 : size.width * to,
     size.height * 2,
   );
 
@@ -400,36 +406,29 @@ class _ChestBoxState extends ConsumerState<_ChestBox>
   // Lac 1 lan (khong lap) khi vua san sang / moi lan quay lai Hom nay.
   late final AnimationController _wiggle = AnimationController(vsync: this);
 
-  // Nap: 0 = dong, 1 = mo. Tuyen tinh; dang lo xo ap o luc ve.
-  late final AnimationController _lid = AnimationController(
-    vsync: this,
-    value: chestState(widget.day) == ChestState.opened ? 1 : 0,
-  );
-
-  static final _lidSpring = GtSpringCurve(
-    gtSpringToken(GtMotionKind.expressive, GtMotionSpeed.fast),
-    springSettleMs(gtSpringToken(GtMotionKind.expressive, GtMotionSpeed.fast)),
-  );
+  // Bam Mo: icon phong to + xoay roi ve cho cu (0 -> 1, dang "bump").
+  late final AnimationController _pop = AnimationController(vsync: this);
 
   bool _opening = false;
+
+  /// Vua nhan ruong o day: hien "da mo" ngay ca khi so lieu dang giu (Hom
+  /// nay bi Celebration che) chua kip cap nhat.
+  bool _claimed = false;
 
   @override
   void didUpdateWidget(_ChestBox old) {
     super.didUpdateWidget(old);
     final was = chestState(old.day);
     final now = chestState(widget.day);
+    if (now != ChestState.ready) _claimed = false;
+    // Lan hien dau sau khi the duoc dung lai (visit 1: mo app, dong bo) khong
+    // phai "quay lai" -> khong lac.
     if (now == ChestState.ready &&
-        (was != ChestState.ready || old.visit != widget.visit)) {
+        !_claimed &&
+        (was != ChestState.ready ||
+            (old.visit != widget.visit && widget.visit > 1))) {
       _shake();
     }
-    if (_opening) return;
-    final lid = switch (now) {
-      ChestState.locked => 0.0,
-      // Da mo o may khac (dong bo): nap mo san, khong dien lai.
-      ChestState.opened => 1.0,
-      ChestState.ready => _lid.value,
-    };
-    if (_lid.value != lid) _lid.value = lid;
   }
 
   void _shake() {
@@ -449,14 +448,15 @@ class _ChestBoxState extends ConsumerState<_ChestBox>
     setState(() => _opening = true);
     GtHaptics.play(GtHapticEvent.chestOpened);
     _wiggle.value = 0;
-    final pop = gtMotion(context, GtMotionKind.expressive, GtMotionSpeed.fast);
-    final TickerFuture? lid;
-    if (pop.duration == Duration.zero) {
-      _lid.value = 1;
-      lid = null;
-    } else {
-      _lid.duration = pop.duration;
-      lid = _lid.forward(from: 0);
+    final motion = gtMotion(
+      context,
+      GtMotionKind.expressive,
+      GtMotionSpeed.fast,
+    );
+    TickerFuture? popping;
+    if (motion.duration != Duration.zero) {
+      _pop.duration = motion.duration;
+      popping = _pop.forward(from: 0);
     }
     int? xp;
     Object? error;
@@ -465,35 +465,38 @@ class _ChestBoxState extends ConsumerState<_ChestBox>
     } catch (e) {
       error = e;
     }
-    // Nap bat len xong roi moi chuc mung.
+    // Icon bat xong roi moi chuc mung.
     try {
-      await lid?.orCancel;
+      await popping?.orCancel;
     } on TickerCanceled {
-      return;
+      // Bi huy (vd the bi dung lai): van xu ly ket qua neu con mounted.
     }
     if (!mounted) return;
-    setState(() => _opening = false);
-    if (error != null || xp == null) {
-      // Chua mo duoc: nap roi xuong, ruong van san sang de thu lai.
-      if (lid == null) {
-        _lid.value = 0;
-      } else {
-        _lid.reverse();
-      }
+    _pop.value = 0;
+    final claimed = error == null && xp != null;
+    setState(() {
+      _opening = false;
+      _claimed = claimed;
+    });
+    if (!claimed) {
+      // Chua mo duoc: ruong van san sang de thu lai.
       if (error != null) {
         ScaffoldMessenger.maybeOf(context)
             ?.showSnackBar(SnackBar(content: Text(ref.tr('gt_chest_failed'))));
       }
       return;
     }
+    // Ve "da mo" 1 frame truoc khi Celebration phu len.
+    await SchedulerBinding.instance.endOfFrame;
+    if (!mounted) return;
     // 0 = da nhan tren may khac: ruong mo, khong chuc mung lan nua.
-    if (xp > 0) await widget.celebrate(xp);
+    if (xp! > 0) await widget.celebrate(xp);
   }
 
   @override
   void dispose() {
     _wiggle.dispose();
-    _lid.dispose();
+    _pop.dispose();
     super.dispose();
   }
 
@@ -501,7 +504,7 @@ class _ChestBoxState extends ConsumerState<_ChestBox>
   Widget build(BuildContext context) {
     final t = context.gt;
     final day = widget.day;
-    final state = chestState(day);
+    final state = _claimed ? ChestState.opened : chestState(day);
     final total = DailyQuestId.values.length;
     final label = switch (state) {
       ChestState.locked =>
@@ -520,21 +523,59 @@ class _ChestBoxState extends ConsumerState<_ChestBox>
       child: Row(
         children: [
           AnimatedBuilder(
-            animation: Listenable.merge([_wiggle, _lid]),
+            animation: Listenable.merge([_wiggle, _pop]),
             builder: (context, _) {
               final w = _wiggle.value;
               // 2.5 lan lac, tat dan; dung yen khi khong lac.
-              final angle = w == 0 || w == 1
+              final wiggle = w == 0 || w == 1
                   ? 0.0
                   : 0.16 * sin(w * 5 * pi) * (1 - w) * (1 - w);
+              final v = _pop.value;
+              // Phong to + xoay roi ve cho cu (README §5: icon redeem).
+              final bump = v == 0 || v == 1 ? 0.0 : sin(v * pi);
               return Transform.rotate(
                 key: const ValueKey('gt-chest-wiggle'),
-                angle: angle,
+                angle: wiggle,
                 alignment: Alignment.bottomCenter,
-                child: _ChestGlyph(
-                  lift: _lid.value == 0 ? 0 : _lidSpring.transform(_lid.value),
-                  // Anh sang loe ra trong luc nap bat len.
-                  glow: _opening ? sin(_lid.value * pi) : 0,
+                child: SizedBox.square(
+                  dimension: 28,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    alignment: Alignment.center,
+                    children: [
+                      // Anh sang toa ra luc bat - gradient, khong blur.
+                      if (bump > 0)
+                        Positioned(
+                          left: -14,
+                          top: -14,
+                          right: -14,
+                          bottom: -14,
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: RadialGradient(
+                                colors: [
+                                  t.gold.withValues(alpha: 0.5 * bump),
+                                  t.gold.withValues(alpha: 0),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      Transform.rotate(
+                        key: const ValueKey('gt-chest-pop'),
+                        angle: -0.3 * bump,
+                        child: Transform.scale(
+                          scale: 1 + 0.35 * bump,
+                          child: Icon(
+                            Icons.redeem_rounded,
+                            color: t.gold,
+                            size: 28,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               );
             },
@@ -565,114 +606,23 @@ class _ChestBoxState extends ConsumerState<_ChestBox>
           ),
           if (state == ChestState.ready) ...[
             const SizedBox(width: 12),
-            FilledButton(
-              style: FilledButton.styleFrom(
-                backgroundColor: t.gold,
-                foregroundColor: t.onGold,
-                minimumSize: const Size(64, 40),
-              ),
-              // Bam lien tiep trong luc nap dang bat: _open tu bo qua.
-              onPressed: _open,
-              child: Text(
-                ref.tr('gt_chest_open'),
-                style: GtText.rowTitle(t.onGold),
+            // Bam lien tiep trong luc dang mo: bo qua (khong gon song).
+            IgnorePointer(
+              ignoring: _opening,
+              child: FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: t.gold,
+                  foregroundColor: t.onGold,
+                  minimumSize: const Size(64, 40),
+                ),
+                onPressed: _open,
+                child: Text(
+                  ref.tr('gt_chest_open'),
+                  style: GtText.rowTitle(t.onGold),
+                ),
               ),
             ),
           ],
-        ],
-      ),
-    );
-  }
-}
-
-/// Ruong ve bang khoi: than + khoa + nap. [lift] 0..~1.1 (lo xo) nhac nap
-/// len va nghieng ra sau quanh ban le trai; [glow] 0..1 la anh sang tu
-/// trong ruong.
-class _ChestGlyph extends StatelessWidget {
-  const _ChestGlyph({required this.lift, required this.glow});
-
-  final double lift;
-  final double glow;
-
-  @override
-  Widget build(BuildContext context) {
-    final t = context.gt;
-    final band = t.onGold.withValues(alpha: 0.3);
-    return SizedBox(
-      width: 34,
-      height: 30,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          if (glow > 0)
-            Positioned(
-              left: 6,
-              right: 6,
-              top: 10,
-              height: 6,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  boxShadow: [
-                    BoxShadow(
-                      color: t.gold.withValues(alpha: 0.9 * glow),
-                      blurRadius: 14,
-                      spreadRadius: 4,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          Positioned(
-            left: 2,
-            right: 2,
-            bottom: 0,
-            height: 17,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: t.gold,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(2),
-                  bottom: Radius.circular(5),
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            left: 14,
-            width: 6,
-            bottom: 7,
-            height: 7,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: t.onGold.withValues(alpha: 0.55),
-                borderRadius: BorderRadius.circular(1.5),
-              ),
-            ),
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            top: 3,
-            height: 11,
-            child: Transform.translate(
-              offset: Offset(0, -5 * lift),
-              child: Transform.rotate(
-                key: const ValueKey('gt-chest-lid'),
-                angle: -0.45 * lift,
-                alignment: Alignment.bottomLeft,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: t.gold,
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(8),
-                      bottom: Radius.circular(2),
-                    ),
-                    border: Border(bottom: BorderSide(color: band, width: 2)),
-                  ),
-                ),
-              ),
-            ),
-          ),
         ],
       ),
     );

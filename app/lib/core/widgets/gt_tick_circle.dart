@@ -59,9 +59,9 @@ class _TickPainter extends CustomPainter {
 
   // Hinh tron bat len trong 60% dau = dung thoi gian on dinh cua lo xo
   // expressive nhanh (360 / 600 ms); dau check ve tu 25% toi 75%.
-  static final _pop = GtSpringCurve(
-    gtSpringToken(GtMotionKind.expressive, GtMotionSpeed.fast),
-    springSettleMs(gtSpringToken(GtMotionKind.expressive, GtMotionSpeed.fast)),
+  static final _pop = gtSpringCurve(
+    GtMotionKind.expressive,
+    GtMotionSpeed.fast,
   );
 
   @override
