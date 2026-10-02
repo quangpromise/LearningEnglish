@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
 /// Su kien co rung phan hoi (spec #96, quyet dinh #4).
@@ -43,10 +44,15 @@ abstract final class GtHaptics {
   static Future<void>? _flush;
   static GtHapticLevel? _lastLevel;
   static DateTime? _lastAt;
+  static Duration? _lastFrame;
 
-  /// Dong ho cho khoang tro (test thay duoc).
+  /// Dong ho that cho khoang tro (test thay duoc).
   @visibleForTesting
   static DateTime Function() now = DateTime.now;
+
+  /// Moc khung hinh gan nhat (theo thoi gian gia trong test).
+  static Duration _frameStamp() =>
+      SchedulerBinding.instance.currentSystemFrameTimeStamp;
 
   /// Sau 1 lan rung, su kien KHONG manh hon trong khoang nay bi bo: 1 viec
   /// (vd xong nhiem vu On the va vong Hoc cham 100% ~0.2 s sau) chi rung 1
@@ -60,6 +66,7 @@ abstract final class GtHaptics {
     _flush = null;
     _lastLevel = null;
     _lastAt = null;
+    _lastFrame = null;
     now = DateTime.now;
   }
 
@@ -82,15 +89,24 @@ abstract final class GtHaptics {
       _flush = null;
       if (strongest == null || micActive) return;
       final at = now();
+      final frame = _frameStamp();
       final lastAt = _lastAt;
       final lastLevel = _lastLevel;
-      if (lastAt != null &&
-          lastLevel != null &&
+      final lastFrame = _lastFrame;
+      // "Vua rung" chi khi CA dong ho that LAN dong ho khung hinh deu thay
+      // gan: test (thoi gian gia, chay rat nhanh) va luc man hinh dung yen
+      // (khong co khung hinh moi) deu dung.
+      final frameGap = lastFrame == null ? Duration.zero : frame - lastFrame;
+      final recent =
+          lastAt != null &&
           at.difference(lastAt) < refractory &&
-          strongest.index <= lastLevel.index) {
+          !frameGap.isNegative &&
+          frameGap < refractory;
+      if (recent && lastLevel != null && strongest.index <= lastLevel.index) {
         return;
       }
       _lastAt = at;
+      _lastFrame = frame;
       _lastLevel = strongest;
       await _vibrate(strongest);
     });

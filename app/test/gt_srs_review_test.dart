@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:learn_english_music/core/theme/gt_haptics.dart';
 import 'package:learn_english_music/core/theme/gt_tokens.dart';
 import 'package:learn_english_music/core/widgets/gt_celebration.dart';
 import 'package:learn_english_music/features/srs/data/srs_store.dart';
@@ -46,6 +47,7 @@ void main() {
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
+    GtHaptics.resetForTest();
     haptics = [];
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(SystemChannels.platform, (call) async {
