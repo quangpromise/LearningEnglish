@@ -35,6 +35,26 @@ void main() {
       expect(peak(ex), greaterThan(1.01));
       expect(peak(fx), lessThanOrEqualTo(1.0 + 1e-9));
     });
+
+    test('overdamped springs rise to 1 and match a numeric solution', () {
+      const s = (damping: 1.6, stiffness: 400.0);
+      var last = 0.0;
+      for (var ms = 4; ms <= 3000; ms += 4) {
+        final x = springProgress(s, ms / 1000);
+        expect(x, inInclusiveRange(last, 1.0), reason: '$ms ms');
+        last = x;
+      }
+      expect(last, closeTo(1, 1e-3));
+      // x'' = -k(x - 1) - c x', c = 2 * damping * sqrt(k); 0.2 s.
+      var x = 0.0;
+      var v = 0.0;
+      const dt = 1e-5;
+      for (var i = 0; i < 20000; i++) {
+        v += (-400 * (x - 1) - 2 * 1.6 * 20 * v) * dt;
+        x += v * dt;
+      }
+      expect(springProgress(s, 0.2), closeTo(x, 1e-3));
+    });
   });
 
   group('settle duration', () {

@@ -58,19 +58,31 @@ double springProgress(GtSpring s, double seconds) {
   if (seconds <= 0) return 0;
   final w = math.sqrt(s.stiffness);
   final z = s.damping;
-  if (z >= 1) {
+  final t = seconds;
+  if ((z - 1).abs() < 1e-9) {
     // Tat dan toi han (token effects deu = 1).
-    return 1 - math.exp(-w * seconds) * (1 + w * seconds);
+    return 1 - math.exp(-w * t) * (1 + w * t);
+  }
+  if (z > 1) {
+    // Qua tat dan: e^(-zwt)(cosh(wd t) + k sinh(wd t)), tach thanh 2 ham mu
+    // giam dan de khong tran so.
+    final wd = w * math.sqrt(z * z - 1);
+    final k = z * w / wd;
+    return 1 -
+        (1 + k) / 2 * math.exp(-(z * w - wd) * t) -
+        (1 - k) / 2 * math.exp(-(z * w + wd) * t);
   }
   final wd = w * math.sqrt(1 - z * z);
   return 1 -
-      math.exp(-z * w * seconds) *
-          (math.cos(wd * seconds) + (z * w / wd) * math.sin(wd * seconds));
+      math.exp(-z * w * t) *
+          (math.cos(wd * t) + (z * w / wd) * math.sin(wd * t));
 }
 
+final _settleMsCache = <GtSpring, int>{};
+
 /// Thoi gian (ms) de lo xo on dinh: sai lech voi dich < 0.1% va giu nguyen
-/// tu do tro di.
-int springSettleMs(GtSpring s) {
+/// tu do tro di. Tinh 1 lan cho moi lo xo (duoc goi trong build).
+int springSettleMs(GtSpring s) => _settleMsCache.putIfAbsent(s, () {
   const tolerance = 1e-3;
   const stepMs = 4;
   var lastOutside = 0;
@@ -78,7 +90,7 @@ int springSettleMs(GtSpring s) {
     if ((1 - springProgress(s, ms / 1000)).abs() > tolerance) lastOutside = ms;
   }
   return lastOutside + stepMs;
-}
+});
 
 /// Thoi luong mot chuyen dong. Giam chuyen dong: chuyen dong khong gian
 /// (nay, truot, phong, lat) hien ngay; effects (mau / do mo) chi con mo
