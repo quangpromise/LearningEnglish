@@ -4,13 +4,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/gt_haptics.dart';
 import '../../../core/tts/tutorial_voice.dart';
 import '../../../core/utils/keep_screen_on.dart';
+import '../../../core/widgets/gt_count_up.dart';
+import '../../../core/widgets/gt_mic_ring.dart';
 import '../../../core/widgets/speaker_button.dart';
 import '../../pronunciation/data/pronunciation_scoring.dart';
+import '../../pronunciation/presentation/pronunciation_result_card.dart';
 import '../../srs/data/srs_store.dart';
 import '../../today/data/daily_progress_store.dart';
 import '../data/hands_free_drill.dart';
+import '../data/sound_level.dart';
 import '../data/speech_listener.dart';
 
 /// "Luyen noi ranh tay": may doc cau tieng Anh, nguoi dung nhac lai, may
@@ -31,6 +36,10 @@ class _HandsFreeDrillScreenState extends ConsumerState<HandsFreeDrillScreen> {
   HandsFreeDrillController? _drill;
   String _heard = '';
 
+  /// Muc am 0..1 cho vong mic trong luc nghe.
+  final ValueNotifier<double> _level = ValueNotifier(0);
+  final SoundLevelMeter _meter = SoundLevelMeter();
+
   @override
   void initState() {
     super.initState();
@@ -42,6 +51,7 @@ class _HandsFreeDrillScreenState extends ConsumerState<HandsFreeDrillScreen> {
     _listener.onPartial = (partial) {
       if (mounted) setState(() => _heard = partial);
     };
+    _listener.onSoundLevel = (db) => _level.value = _meter.add(db);
     final ok = await _listener.init();
     await SrsStore.instance.ensureLoaded();
     if (!mounted) return;
@@ -56,6 +66,10 @@ class _HandsFreeDrillScreenState extends ConsumerState<HandsFreeDrillScreen> {
       score: (target, heard) =>
           scorePronunciation(targetEn: target, recognized: heard).score,
       onScored: (score) {
+        // Ranh tay: khong nhin man hinh -> rung vua bao cau dat (mic da tat).
+        if (score >= kPronunciationGoodScore) {
+          GtHaptics.play(GtHapticEvent.pronunciationGood);
+        }
         ref
             .read(statsRepositoryProvider)
             .recordPronunciationScore(score, source: 'hands_free')
@@ -83,7 +97,15 @@ class _HandsFreeDrillScreenState extends ConsumerState<HandsFreeDrillScreen> {
   Future<String> _listenOnce() async {
     if (_micAvailable != true) return '';
     if (mounted) setState(() => _heard = '');
-    return _listener.listenOnce();
+    // Dang thu: khong rung; vong mic bat dau tu 0.
+    GtHaptics.micStarted(this);
+    _meter.reset();
+    _level.value = 0;
+    try {
+      return await _listener.listenOnce();
+    } finally {
+      GtHaptics.micStopped(this);
+    }
   }
 
   // --- Dieu khien ----------------------------------------------------------
@@ -118,6 +140,8 @@ class _HandsFreeDrillScreenState extends ConsumerState<HandsFreeDrillScreen> {
     drill?.dispose();
     _stopAudio();
     _listener.dispose();
+    GtHaptics.micStopped(this);
+    _level.dispose();
     KeepScreenOn.disable();
     super.dispose();
   }
@@ -181,6 +205,7 @@ class _HandsFreeDrillScreenState extends ConsumerState<HandsFreeDrillScreen> {
     }
     final item = drill.current;
     final score = drill.lastScore;
+    final scoreText = ref.tr('hands_free_score');
     final (statusKey, statusColor) = switch (drill.phase) {
       DrillPhase.idle => ('hands_free_status_idle', AppColors.textMuted),
       DrillPhase.speaking => ('hands_free_status_speaking', AppColors.blue),
@@ -223,19 +248,47 @@ class _HandsFreeDrillScreenState extends ConsumerState<HandsFreeDrillScreen> {
                       const SizedBox(height: 20),
                       if (_heard.isNotEmpty ||
                           drill.phase == DrillPhase.listening)
-                        Text(
-                          _heard.isEmpty ? '…' : '"$_heard"',
-                          style: AppTextStyles.body(
-                            size: 16,
-                            color: AppColors.textSecondary,
-                          ),
+                        Row(
+                          children: [
+                            // Mic dang nghe: vong theo am luong giong noi.
+                            GtMicRing(
+                              active: drill.phase == DrillPhase.listening,
+                              level: _level,
+                              color: AppColors.teal,
+                              child: Container(
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: AppColors.teal.withValues(alpha: 0.18),
+                                ),
+                                child: const Icon(
+                                  Icons.mic_rounded,
+                                  size: 20,
+                                  color: AppColors.teal,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Text(
+                                _heard.isEmpty ? '…' : '"$_heard"',
+                                style: AppTextStyles.body(
+                                  size: 16,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       if (score != null) ...[
                         const SizedBox(height: 10),
-                        Text(
-                          ref
-                              .tr('hands_free_score')
-                              .replaceFirst('{score}', '$score'),
+                        GtCountUp(
+                          // Cau moi -> dem lai tu 0.
+                          key: ValueKey(drill.index),
+                          value: score,
+                          format: (v) =>
+                              scoreText.replaceFirst('{score}', '$v'),
                           style: AppTextStyles.heading(size: 20).copyWith(
                             color: score >= kDrillPassScore
                                 ? AppColors.teal

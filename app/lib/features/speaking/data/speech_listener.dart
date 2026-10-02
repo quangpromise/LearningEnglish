@@ -21,6 +21,9 @@ class SpeechListener {
   /// Chuoi dang nhan dien (cap nhat trong luc nghe) - de UI hien truc tiep.
   void Function(String partial)? onPartial;
 
+  /// Muc am (dB, thang do theo may) trong luc nghe - cho vong mic.
+  void Function(double db)? onSoundLevel;
+
   bool get isListening => _speech.isListening;
 
   /// Xin quyen mic + khoi tao (goi 1 lan). false = may khong ho tro/tu choi.
@@ -70,6 +73,9 @@ class SpeechListener {
           _heard = result.recognizedWords;
           onPartial?.call(_heard);
           if (result.finalResult) _finish();
+        },
+        onSoundLevelChange: (db) {
+          if (generation == _generation) onSoundLevel?.call(db);
         },
         listenOptions: stt.SpeechListenOptions(
           localeId: 'en_US',

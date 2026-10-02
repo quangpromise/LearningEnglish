@@ -12,8 +12,12 @@ import 'package:speech_to_text/speech_to_text.dart' as stt;
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/gt_haptics.dart';
 import '../../../core/tts/app_tts.dart';
+import '../../../core/widgets/gt_mic_ring.dart';
+import '../../speaking/data/sound_level.dart';
 import '../data/pronunciation_scoring.dart';
+import 'pronunciation_result_card.dart';
 
 /// Luyện phát âm cho 1 câu MỤC TIÊU CỤ THỂ — ghi âm qua mic, chấm điểm bằng
 /// [scorePronunciation]. Đây là phần thực sự dùng lại được của
@@ -92,6 +96,10 @@ class _PronunciationPracticeState extends ConsumerState<PronunciationPractice> {
   bool _scoring = false;
   String? _recordError;
 
+  /// Muc am 0..1 cho vong mic (chi cap nhat khi dang thu).
+  final ValueNotifier<double> _level = ValueNotifier(0);
+  final SoundLevelMeter _meter = SoundLevelMeter();
+
   @override
   void initState() {
     super.initState();
@@ -153,6 +161,7 @@ class _PronunciationPracticeState extends ConsumerState<PronunciationPractice> {
         _listening = false;
         _scoring = true;
       });
+      GtHaptics.micStopped(this);
       widget.onBusyChanged?.call(true);
       final startedAt = _listenStartedAt;
       if (widget.countsPracticeTime && startedAt != null) {
@@ -199,6 +208,10 @@ class _PronunciationPracticeState extends ConsumerState<PronunciationPractice> {
       _recordedPath = null;
       _recordError = null;
     });
+    // Dang thu: khong rung (lot vao ban ghi), vong mic bat dau tu 0.
+    GtHaptics.micStarted(this);
+    _meter.reset();
+    _level.value = 0;
     widget.onBusyChanged?.call(true);
 
     final completer = Completer<void>();
@@ -211,9 +224,11 @@ class _PronunciationPracticeState extends ConsumerState<PronunciationPractice> {
             completer.complete();
           }
         },
+        onSoundLevelChange: (db) => _level.value = _meter.add(db),
         listenOptions: stt.SpeechListenOptions(localeId: 'en_US'),
       );
     } catch (e) {
+      GtHaptics.micStopped(this);
       if (mounted) {
         setState(() {
           _listening = false;
@@ -270,6 +285,8 @@ class _PronunciationPracticeState extends ConsumerState<PronunciationPractice> {
 
   @override
   void dispose() {
+    GtHaptics.micStopped(this);
+    _level.dispose();
     _speech.stop();
     _recorder.dispose();
     _playbackPlayer.dispose();
@@ -345,36 +362,41 @@ class _PronunciationPracticeState extends ConsumerState<PronunciationPractice> {
         if (!_available)
           Text(ref.tr('pron_no_mic'), style: AppTextStyles.muted())
         else
-          GestureDetector(
-            onTap: _scoring ? null : _toggleListening,
-            child: Container(
-              width: 76,
-              height: 76,
-              decoration: BoxDecoration(
-                gradient: AppColors.accentGradient,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: (_listening ? AppColors.pink : AppColors.blue)
-                        .withValues(alpha: _scoring ? 0.2 : 0.5),
-                    blurRadius: 44,
-                    offset: const Offset(0, 18),
-                  ),
-                ],
-              ),
-              child: _scoring
-                  ? const Padding(
-                      padding: EdgeInsets.all(24),
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 3,
-                      ),
-                    )
-                  : Icon(
-                      _listening ? Icons.stop_rounded : Icons.mic_rounded,
-                      color: Colors.white,
-                      size: 30,
+          GtMicRing(
+            active: _listening,
+            level: _level,
+            color: AppColors.pink,
+            child: GestureDetector(
+              onTap: _scoring ? null : _toggleListening,
+              child: Container(
+                width: 76,
+                height: 76,
+                decoration: BoxDecoration(
+                  gradient: AppColors.accentGradient,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: (_listening ? AppColors.pink : AppColors.blue)
+                          .withValues(alpha: _scoring ? 0.2 : 0.5),
+                      blurRadius: 44,
+                      offset: const Offset(0, 18),
                     ),
+                  ],
+                ),
+                child: _scoring
+                    ? const Padding(
+                        padding: EdgeInsets.all(24),
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 3,
+                        ),
+                      )
+                    : Icon(
+                        _listening ? Icons.stop_rounded : Icons.mic_rounded,
+                        color: Colors.white,
+                        size: 30,
+                      ),
+              ),
             ),
           ),
         const SizedBox(height: 10),
@@ -425,76 +447,8 @@ class _PronunciationPracticeState extends ConsumerState<PronunciationPractice> {
         ],
         if (result != null) ...[
           const SizedBox(height: 16),
-          GlowBox(
-            light: true,
-            borderRadius: 22,
-            child: Row(
-              children: [
-                SizedBox(
-                  width: 60,
-                  height: 60,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      SizedBox(
-                        width: 60,
-                        height: 60,
-                        child: CircularProgressIndicator(
-                          value: result.score / 100,
-                          strokeWidth: 6,
-                          backgroundColor: Colors.black12,
-                          color: AppColors.blue,
-                        ),
-                      ),
-                      Text(
-                        '${result.score}%',
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 13,
-                          height: 1.0,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
-                    children: List.generate(result.targetWords.length, (i) {
-                      final ok =
-                          i < result.wordResults.length &&
-                          result.wordResults[i];
-                      return Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: (ok ? AppColors.teal : AppColors.pink)
-                              .withValues(alpha: 0.18),
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        child: Text(
-                          result.targetWords[i],
-                          style: TextStyle(
-                            color: ok
-                                ? const Color(0xFF1A8F7E)
-                                : const Color(0xFFC22A54),
-                            fontWeight: FontWeight.w800,
-                            fontSize: 11,
-                          ),
-                        ),
-                      );
-                    }),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          // Ket qua moi -> the moi (hoat anh + rung chay 1 lan).
+          PronunciationResultCard(key: ObjectKey(result), result: result),
           const SizedBox(height: 12),
           Row(
             children: [
