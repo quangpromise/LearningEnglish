@@ -6,16 +6,20 @@ import 'dart:typed_data';
 import 'package:audio_session/audio_session.dart';
 import 'package:audioplayers/audioplayers.dart' as ap;
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart' show Ticker;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../core/audio/pcm_level.dart';
 import '../../../core/config/env.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/gt_haptics.dart';
 import '../../../core/tts/app_tts.dart';
+import '../../../core/widgets/gt_mic_ring.dart';
 import '../../../core/widgets/speaker_button.dart';
 import '../data/anam_session_api.dart';
 import '../data/avatar_provider.dart';
@@ -31,6 +35,8 @@ import '../data/voice_chat_scenario.dart';
 import '../../translation/presentation/word_popup_sheet.dart';
 import 'anam_live_avatar.dart';
 import 'gemini_voice_picker_sheet.dart';
+import 'pt_voice_indicators.dart';
+import 'pt_voice_tracker.dart';
 import 'spatius_live_avatar.dart';
 
 /// AI Voice Chat: tro chuyen tu do bang giong noi voi AI qua backend
@@ -53,13 +59,23 @@ class AiVoiceChatScreen extends ConsumerStatefulWidget {
   ConsumerState<AiVoiceChatScreen> createState() => _AiVoiceChatScreenState();
 }
 
-class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
+class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen>
+    with SingleTickerProviderStateMixin {
   VoiceChatSession? _client;
   StreamSubscription<VoiceChatState>? _stateSub;
   StreamSubscription<List<int>>? _audioSub;
   StreamSubscription<TranscriptEvent>? _transcriptSub;
   StreamSubscription<Uint8List>? _liveAudioSub;
   StreamSubscription<void>? _turnAudioEndSub;
+
+  // 3 trang thai Nghe / Nghi / Noi + muc am (spec #96, MO-09).
+  final PtVoiceTracker _voice = PtVoiceTracker();
+  final Stopwatch _clock = Stopwatch()..start();
+  late final Ticker _voiceTicker;
+  StreamSubscription<double>? _micLevelSub;
+  StreamSubscription<Uint8List>? _aiChunkSub;
+  StreamSubscription<void>? _aiTurnEndSub;
+  StreamSubscription<ap.PlayerState>? _playerStateSub;
   // Chi duoc dung khi kUseAnamAvatar = true - xem build()/_toggle().
   final _anamKey = GlobalKey<AnamLiveAvatarState>();
   bool _anamReady = false;
@@ -112,6 +128,16 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
   @override
   void initState() {
     super.initState();
+    // Tao ngay (khong late-lazy): dispose() khong duoc tao ticker moi.
+    _voiceTicker = createTicker((_) => _voice.tick(_clock.elapsed));
+    _voice.addListener(_onPtVoice);
+    // Loa phat cau tra loi / nghe lai: PT dang noi (spec #96).
+    _playerStateSub = _player.onPlayerStateChanged.listen(
+      (s) => _voice.onPlayer(
+        playing: s == ap.PlayerState.playing,
+        at: _clock.elapsed,
+      ),
+    );
     _voiceName = GeminiVoiceSelection.instance.value;
     _gender = GeminiGenderRouter.fromVoiceName(_voiceName);
     GeminiVoiceSelection.instance.addListener(_onVoiceChanged);
@@ -126,10 +152,46 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
       _voiceName = newVoice;
       _gender = GeminiGenderRouter.fromVoiceName(newVoice);
     });
-    if (_state == VoiceChatState.idle && _client != null) {
-      _client!.dispose();
-      _client = null;
+    if (_state == VoiceChatState.idle && _client != null) _detachClient();
+  }
+
+  /// Ticker chi chay khi avatar / loa dang phat (thanh song theo dung thoi
+  /// diem phat - PtVoiceTracker.tick).
+  void _onPtVoice() {
+    if (!mounted) return;
+    if (_voice.ticking && !_voiceTicker.isActive) {
+      _voiceTicker.start();
+    } else if (!_voice.ticking && _voiceTicker.isActive) {
+      _voiceTicker.stop();
     }
+    setState(() {});
+  }
+
+  /// Bo client hien tai (doi giong, loi, roi man): huy dang ky stream truoc
+  /// roi moi dispose.
+  void _detachClient() {
+    for (final sub in <StreamSubscription<Object?>?>[
+      _stateSub,
+      _audioSub,
+      _transcriptSub,
+      _liveAudioSub,
+      _turnAudioEndSub,
+      _micLevelSub,
+      _aiChunkSub,
+      _aiTurnEndSub,
+    ]) {
+      sub?.cancel();
+    }
+    _stateSub = null;
+    _audioSub = null;
+    _transcriptSub = null;
+    _liveAudioSub = null;
+    _turnAudioEndSub = null;
+    _micLevelSub = null;
+    _aiChunkSub = null;
+    _aiTurnEndSub = null;
+    _client?.dispose();
+    _client = null;
   }
 
   Future<void> _pickVoice() async {
@@ -146,12 +208,13 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
   @override
   void dispose() {
     GeminiVoiceSelection.instance.removeListener(_onVoiceChanged);
-    _stateSub?.cancel();
-    _audioSub?.cancel();
-    _transcriptSub?.cancel();
-    _liveAudioSub?.cancel();
-    _turnAudioEndSub?.cancel();
-    _client?.dispose();
+    _playerStateSub?.cancel();
+    _detachClient();
+    _voiceTicker.dispose();
+    _voice
+      ..removeListener(_onPtVoice)
+      ..dispose();
+    GtHaptics.micStopped(this);
     _player.dispose();
     _scrollCtrl.dispose();
     // Khoi phuc audio session ve "music" luc roi man - man nay doi sang
@@ -211,6 +274,8 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
       // bat dau ghi am luot moi thay vi tao ket noi moi tu dau.
       client = existing;
     } else {
+      // Client cu (vd vua loi) bo han truoc khi tao moi.
+      _detachClient();
       if (kUseDirectGeminiConnection) {
         // TAM THOI (xem voice_chat_config.dart) - bo qua dang nhap/backend.
         client = GeminiLiveDirectClient(
@@ -222,6 +287,7 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
       } else {
         final token = Supabase.instance.client.auth.currentSession?.accessToken;
         if (token == null) {
+          _voice.onClientState(VoiceChatState.error);
           setState(() {
             _error = ref.tr('voice_chat_sign_in_required');
             _state = VoiceChatState.error;
@@ -239,9 +305,19 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
       }
       _client = client;
 
-      _stateSub?.cancel();
       _stateSub = client.stateStream.listen((s) {
         if (!mounted) return;
+        if (s == VoiceChatState.listening) {
+          // Dang thu mic: khong rung (lot vao ban ghi).
+          GtHaptics.micStarted(this);
+          // Nguoi dung bat dau noi (ke ca noi chen): dung ngay avatar va loa.
+          if (kUseAnamAvatar) _interruptActiveAvatar();
+          // Dung ca cau dang chuan bi phat (play() chua toi 'playing').
+          unawaited(_player.stop().catchError((Object _) {}));
+        } else {
+          GtHaptics.micStopped(this);
+        }
+        _voice.onClientState(s);
         setState(() {
           _state = s;
           if (s == VoiceChatState.error) {
@@ -249,18 +325,22 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
                 client.lastError ??
                 _error ??
                 ref.tr('voice_chat_error_generic');
-          } else if (s == VoiceChatState.listening) {
-            // Khi nguoi dung bat dau noi (barge-in): dung ngay lap tuc avatar va loa
-            if (kUseAnamAvatar) {
-              _interruptActiveAvatar();
-            }
           }
         });
       });
-      _audioSub?.cancel();
       _audioSub = client.incomingAudio.listen(_playResponse);
-      _transcriptSub?.cancel();
       _transcriptSub = client.transcriptStream.listen(_onTranscript);
+      _micLevelSub = client.micLevel.listen(_voice.onMicLevel);
+      _aiChunkSub = client.liveAudioChunks.listen(
+        (chunk) => _voice.onAiChunk(
+          chunk,
+          at: _clock.elapsed,
+          avatarPlays: _avatarPlaysAudio,
+        ),
+      );
+      _aiTurnEndSub = client.turnAudioEnd.listen(
+        (_) => _voice.onTurnAudioEnd(),
+      );
 
       // Nap tung chunk audio ngay khi Gemini tra ve vao mieng avatar dang
       // ACTIVE (Anam hoac Spatius, xem _avatarProvider) de lipsync realtime,
@@ -268,13 +348,12 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
       // bi dong/khoi dong lai khi chuyen mach avatar - chi doi huong noi
       // 2 stream nay tro toi widget nao dang hien.
       if (kUseAnamAvatar) {
-        _liveAudioSub?.cancel();
         _liveAudioSub = client.liveAudioChunks.listen(_forwardAudioChunk);
-        _turnAudioEndSub?.cancel();
         _turnAudioEndSub = client.turnAudioEnd.listen((_) => _forwardEndTurn());
       }
     }
 
+    _voice.onClientState(VoiceChatState.connecting);
     setState(() {
       _error = null;
       _state = VoiceChatState.connecting;
@@ -284,6 +363,7 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
       await client.start();
     } catch (e) {
       if (mounted) {
+        _voice.onClientState(VoiceChatState.error);
         setState(() {
           _error = ref
               .tr('voice_chat_could_not_connect')
@@ -292,6 +372,26 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
         });
       }
     }
+  }
+
+  /// Avatar dang ACTIVE (Anam hoac Spatius) tu phat giong AI dong bo - khi
+  /// do khong phat them qua loa (xem _playResponse).
+  bool get _avatarPlaysAudio =>
+      kUseAnamAvatar &&
+      switch (_avatarProvider) {
+        AvatarProvider.anam => _anamReady,
+        AvatarProvider.spatius => _spatiusReady,
+      };
+
+  /// Muc am tung 50 ms cua 1 file WAV - thanh song khi phat qua loa.
+  static List<double> _levelsOfWav(List<int> wav) {
+    final parsed = wavPcm16(wav is Uint8List ? wav : Uint8List.fromList(wav));
+    if (parsed == null) return const [];
+    return pcm16Envelope(
+      parsed.pcm,
+      samplesPerSecond: parsed.samplesPerSecond,
+      window: PtVoiceTracker.window,
+    );
   }
 
   void _forwardAudioChunk(Uint8List chunk) {
@@ -507,8 +607,15 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
     // giai thich trong _onTranscript.
     final future = _saveReplyAudio(wavBytes);
     _pendingAudioFuture = future;
+    // Phat qua loa: Nghi toi khi loa that su phat (spec #96).
+    final speaker = !_avatarPlaysAudio;
+    if (speaker) _voice.queueReply(_levelsOfWav(wavBytes));
     final path = await future;
-    if (path == null) return;
+    if (!mounted) return;
+    if (path == null) {
+      if (speaker) _voice.dropReply();
+      return;
+    }
     // Van luu file de nut "nghe lai" tren bong chat dung duoc (xem
     // _replayAudio) - chi bo qua phat NGAY luc nay, vi avatar dang ACTIVE
     // (Anam hoac Spatius) da tu phat am thanh dong bo roi, phat them lan
@@ -520,18 +627,16 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
     // dung, khien _player phat THEM 1 lan qua loa dien thoai du Spatius da
     // tu phat dong bo roi (nguoi dung bao cao: "avatar noi xong, tieng lai
     // vang len lan 2 nhung avatar khong map may").
-    final activeAvatarHandlesAudio =
-        kUseAnamAvatar &&
-        switch (_avatarProvider) {
-          AvatarProvider.anam => _anamReady,
-          AvatarProvider.spatius => _spatiusReady,
-        };
-    if (activeAvatarHandlesAudio) return;
+    if (_avatarPlaysAudio) {
+      if (speaker) _voice.dropReply();
+      return;
+    }
     try {
       await _ensurePlaybackSession();
       await _player.play(ap.DeviceFileSource(path));
     } catch (_) {
       // Loi phat lai khong lam gian doan phien chat - bo qua 1 luot noi.
+      if (mounted) _voice.dropReply();
     }
   }
 
@@ -549,6 +654,9 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
 
   Future<void> _replayAudio(String path) async {
     try {
+      final levels = _levelsOfWav(await File(path).readAsBytes());
+      if (!mounted) return;
+      _voice.queueReplay(levels);
       await _ensurePlaybackSession();
       await _player.play(ap.DeviceFileSource(path));
     } catch (_) {
@@ -556,20 +664,19 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
     }
   }
 
-  String _statusLabel() {
-    switch (_state) {
-      case VoiceChatState.idle:
-        return ref.tr('voice_chat_tap_to_start');
-      case VoiceChatState.connecting:
-        return ref.tr('voice_chat_connecting');
-      case VoiceChatState.listening:
-        return ref.tr('voice_chat_recording_stop');
-      case VoiceChatState.thinking:
-        return ref.tr('voice_chat_thinking');
-      case VoiceChatState.error:
-        return _error ?? ref.tr('voice_chat_error_generic');
-    }
-  }
+  String _statusLabel(PtVoiceState display) => switch (display) {
+    PtVoiceState.idle => ref.tr('voice_chat_tap_to_start'),
+    PtVoiceState.connecting => ref.tr('voice_chat_connecting'),
+    PtVoiceState.listening => ref.tr('voice_chat_recording_stop'),
+    PtVoiceState.thinking => ref.tr('voice_chat_thinking'),
+    // "PT dang noi" chi o PT AI; tro chuyen tu do la AI noi.
+    PtVoiceState.speaking => ref.tr(
+      widget.scenario == VoiceChatScenario.personalTrainer
+          ? 'voice_chat_speaking'
+          : 'voice_chat_ai_speaking',
+    ),
+    PtVoiceState.error => _error ?? ref.tr('voice_chat_error_generic'),
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -577,6 +684,7 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
     final busy =
         _state == VoiceChatState.connecting ||
         _state == VoiceChatState.thinking;
+    final display = _voice.display;
 
     return ScreenBackground(
       child: Padding(
@@ -770,45 +878,86 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen> {
                     ),
             ),
             const SizedBox(height: 8),
-            Text(
-              _statusLabel(),
-              textAlign: TextAlign.center,
-              style: _state == VoiceChatState.error
-                  ? AppTextStyles.muted().copyWith(color: AppColors.pink)
-                  : AppTextStyles.muted(),
-            ),
-            const SizedBox(height: 12),
-            Center(
-              child: GestureDetector(
-                onTap: busy ? null : _toggle,
-                child: Container(
-                  width: 72,
-                  height: 72,
-                  decoration: BoxDecoration(
-                    gradient: AppColors.accentGradient,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: (recording ? AppColors.pink : AppColors.blue)
-                            .withValues(alpha: 0.5),
-                        blurRadius: 40,
-                        offset: const Offset(0, 16),
+            // Nghi: 3 cham tho; Noi: thanh song theo giong PT (chi mount
+            // trong dung trang thai -> het trang thai la dung). Cao toi
+            // thieu bang thanh song: dong khong nhay khi doi trang thai.
+            ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 22),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (display == PtVoiceState.thinking) ...[
+                    const GtThinkingDots(color: AppColors.blue),
+                    const SizedBox(width: 10),
+                  ],
+                  if (display == PtVoiceState.speaking) ...[
+                    GtVoiceBars(level: _voice.aiLevel, color: AppColors.teal),
+                    const SizedBox(width: 10),
+                  ],
+                  Flexible(
+                    // Doc len khi doi Nghe / Nghi / Noi (TalkBack, VoiceOver).
+                    child: Semantics(
+                      liveRegion: true,
+                      child: Text(
+                        _statusLabel(display),
+                        textAlign: TextAlign.center,
+                        style: _state == VoiceChatState.error
+                            ? AppTextStyles.muted().copyWith(
+                                color: AppColors.pink,
+                              )
+                            : AppTextStyles.muted(),
                       ),
-                    ],
+                    ),
                   ),
-                  child: busy
-                      ? const Padding(
-                          padding: EdgeInsets.all(22),
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 3,
-                          ),
-                        )
-                      : Icon(
-                          recording ? Icons.stop_rounded : Icons.mic_rounded,
-                          color: Colors.white,
-                          size: 28,
+                ],
+              ),
+            ),
+            // Vong mic to nhat vuot nut ~22 px: khong de cat ngang dong chu.
+            const SizedBox(height: 24),
+            Center(
+              // Nghe: vong mic theo am luong giong nguoi dung.
+              child: GtMicRing(
+                active: display == PtVoiceState.listening,
+                level: _voice.micLevel,
+                color: AppColors.pink,
+                child: GestureDetector(
+                  onTap: busy ? null : _toggle,
+                  child: Container(
+                    width: 72,
+                    height: 72,
+                    decoration: BoxDecoration(
+                      gradient: AppColors.accentGradient,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: (recording ? AppColors.pink : AppColors.blue)
+                              .withValues(alpha: 0.5),
+                          blurRadius: 40,
+                          offset: const Offset(0, 16),
                         ),
+                      ],
+                    ),
+                    // Dang ket noi: vong quay; dang nghi: mic mo (3 cham o
+                    // dong trang thai da bao).
+                    child: _state == VoiceChatState.connecting
+                        ? const Padding(
+                            padding: EdgeInsets.all(22),
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 3,
+                            ),
+                          )
+                        : Opacity(
+                            opacity: busy ? 0.5 : 1,
+                            child: Icon(
+                              recording
+                                  ? Icons.stop_rounded
+                                  : Icons.mic_rounded,
+                              color: Colors.white,
+                              size: 28,
+                            ),
+                          ),
+                  ),
                 ),
               ),
             ),

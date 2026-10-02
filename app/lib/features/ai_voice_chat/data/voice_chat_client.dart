@@ -5,6 +5,7 @@ import 'package:record/record.dart' as rec;
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../../learning_path/data/learning_path_models.dart';
+import '../../../core/audio/pcm_level.dart';
 
 /// Trang thai 1 phien AI Voice Chat. [thinking] = nguoi dung da dung ghi am
 /// (goi [VoiceChatSession.endTurn]), dang cho AI xu ly va tra loi.
@@ -93,6 +94,10 @@ abstract class VoiceChatSession {
   /// hieu nay de goi endAnamTurn() ben JS, bao Anam khong con audio nao them
   /// cho cau tra loi vua roi. Mac dinh rong, cung ly do voi liveAudioChunks.
   Stream<void> get turnAudioEnd => const Stream<void>.empty();
+
+  /// Muc am mic 0..1 (pcm16Level) cua tung doan dang gui di trong luc
+  /// nguoi dung noi - cho vong mic o man PT AI (spec #96, MO-09).
+  Stream<double> get micLevel => const Stream<double>.empty();
 }
 
 /// Ket noi toi backend/gemini-proxy (xem backend/README.md): mo WebSocket,
@@ -126,10 +131,15 @@ class VoiceChatClient implements VoiceChatSession {
   WebSocketChannel? _channel;
   StreamSubscription<Uint8List>? _micSub;
   final rec.AudioRecorder _recorder = rec.AudioRecorder();
+  bool _disposed = false;
 
   final _stateController = StreamController<VoiceChatState>.broadcast();
   @override
   Stream<VoiceChatState> get stateStream => _stateController.stream;
+
+  final _micLevelController = StreamController<double>.broadcast();
+  @override
+  Stream<double> get micLevel => _micLevelController.stream;
 
   /// Moi event la 1 file WAV hoan chinh (1 luot AI noi) - san sang de phat
   /// truc tiep qua AudioPlayer.setFilePath sau khi ghi ra file tam.
@@ -155,11 +165,12 @@ class VoiceChatClient implements VoiceChatSession {
   @override
   Future<void> start() async {
     if (!await _recorder.hasPermission()) {
-      _stateController.add(VoiceChatState.error);
+      _emit(VoiceChatState.error);
       throw Exception('Microphone permission denied');
     }
+    if (_disposed) return;
 
-    _stateController.add(VoiceChatState.connecting);
+    _emit(VoiceChatState.connecting);
     final uri = Uri.parse(
       '$backendUrl?token=${Uri.encodeQueryComponent(accessToken)}'
       '${level != null ? '&level=${level!.name}' : ''}'
@@ -170,27 +181,40 @@ class VoiceChatClient implements VoiceChatSession {
 
     channel.stream.listen(
       (data) {
-        if (data is List<int>) {
+        if (data is List<int> && !_audioController.isClosed) {
           _audioController.add(Uint8List.fromList(data));
         }
       },
       onError: (Object e) {
         lastError = 'Server connection error: $e';
-        _stateController.add(VoiceChatState.error);
+        _dropChannel(channel);
+        unawaited(_stopMic());
+        _emit(VoiceChatState.error);
       },
       onDone: () {
+        // Ket noi da bo (mo khong thanh -> onError da bao loi, hoac man da
+        // dong): khong bao 'idle' de len 'error'.
+        if (!identical(_channel, channel)) return;
+        unawaited(_stopMic());
         final code = channel.closeCode;
         if (code != null && code != 1000) {
           lastError =
               'Server closed the connection (code $code'
               '${channel.closeReason != null ? ": ${channel.closeReason}" : ""})';
-          _stateController.add(VoiceChatState.error);
+          _emit(VoiceChatState.error);
         } else {
-          _stateController.add(VoiceChatState.idle);
+          _emit(VoiceChatState.idle);
         }
+        _dropChannel(channel);
       },
     );
-    await channel.ready;
+    try {
+      await channel.ready;
+    } catch (_) {
+      _dropChannel(channel);
+      rethrow;
+    }
+    if (_disposed) return;
 
     final micStream = await _recorder.startStream(
       const rec.RecordConfig(
@@ -199,8 +223,17 @@ class VoiceChatClient implements VoiceChatSession {
         numChannels: 1,
       ),
     );
-    _stateController.add(VoiceChatState.listening);
-    _micSub = micStream.listen((chunk) => _channel?.sink.add(chunk));
+    _micSub = micStream.listen((chunk) {
+      _channel?.sink.add(chunk);
+      _micLevelController.add(pcm16Level(chunk));
+    });
+    // Man hinh dong / ket noi chet trong luc mo mic: dung lai ngay, khong
+    // bao 'listening' de len 'error'.
+    if (_disposed || !identical(_channel, channel)) {
+      await _stopMic();
+      return;
+    }
+    _emit(VoiceChatState.listening);
   }
 
   @override
@@ -208,21 +241,57 @@ class VoiceChatClient implements VoiceChatSession {
 
   @override
   Future<void> stop() async {
-    await _micSub?.cancel();
-    _micSub = null;
-    if (await _recorder.isRecording()) {
-      await _recorder.stop();
-    }
+    await _stopMic();
     await _channel?.sink.close();
     _channel = null;
-    _stateController.add(VoiceChatState.idle);
+    _emit(VoiceChatState.idle);
+  }
+
+  /// Dung thu mic (khong doi trang thai) - ca khi ket noi loi / dong giua
+  /// luc dang noi, de mic khong ghi tiep cho 1 ket noi da chet.
+  Future<void> _stopMic() async {
+    await _micSub?.cancel();
+    _micSub = null;
+    try {
+      if (await _recorder.isRecording()) await _recorder.stop();
+    } catch (_) {
+      // Recorder da huy / loi nen tang: khong con gi de dung.
+    }
+  }
+
+  void _emit(VoiceChatState state) {
+    if (!_stateController.isClosed) _stateController.add(state);
+  }
+
+  /// Bo [channel] neu no van la ket noi hien tai (ket noi cu dong muon khong
+  /// duoc xoa ket noi moi).
+  void _dropChannel(WebSocketChannel channel) {
+    if (identical(_channel, channel)) _channel = null;
   }
 
   @override
   void dispose() {
-    stop();
+    _disposed = true;
+    unawaited(_shutdown());
+  }
+
+  /// Dung mic va giai phong recorder ngay; socket chi duoc gui lenh dong,
+  /// KHONG cho dong xong (ket noi chua mo xong co the khong bao gio dong
+  /// xong); roi dong cac stream - moi lan bao trang thai sau do bi bo qua.
+  Future<void> _shutdown() async {
+    await _stopMic();
+    try {
+      await _recorder.dispose();
+    } catch (_) {
+      // Bo qua - dang dong man.
+    }
+    final channel = _channel;
+    _channel = null;
+    if (channel != null) {
+      unawaited(channel.sink.close().catchError((Object _) {}));
+    }
     _stateController.close();
     _audioController.close();
-    _recorder.dispose();
+    _micLevelController.close();
   }
 }
