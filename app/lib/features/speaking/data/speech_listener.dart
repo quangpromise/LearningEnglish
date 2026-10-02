@@ -16,7 +16,11 @@ import '../../../core/theme/gt_haptics.dart';
 /// Trong luc nghe bao phien mic cho [GtHaptics] (khong rung lot vao ban
 /// ghi) - moi noi dung deu duoc phu (#123).
 class SpeechListener {
-  final stt.SpeechToText _speech = stt.SpeechToText();
+  /// [speech]: ban gia cho test; mac dinh la speech_to_text that.
+  SpeechListener({stt.SpeechToText? speech})
+    : _speech = speech ?? stt.SpeechToText();
+
+  final stt.SpeechToText _speech;
   bool? _available;
   Completer<String>? _done;
   String _heard = '';

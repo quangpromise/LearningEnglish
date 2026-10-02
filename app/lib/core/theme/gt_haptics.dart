@@ -27,7 +27,7 @@ enum GtHapticEvent {
   /// 3-2-1 cuoi gio nghi.
   restCountdown,
 
-  /// Het gio nghi.
+  /// Het gio nghi - bao hieu, xem [gtHapticIsAlert].
   restEnded,
 }
 
@@ -51,9 +51,15 @@ GtHapticLevel gtHapticLevel(GtHapticEvent event) => switch (event) {
   GtHapticEvent.restEnded => GtHapticLevel.heavy,
 };
 
+/// Bao hieu nguoi dung phai biet NGAY (het gio nghi): rung ca khi dang co
+/// phien thu mic (vd dang noi voi PT AI luc nghi) va khong bi khoang tro bo -
+/// mat rung la lo gio. 1 nhip rung lot vao mic chap nhan duoc.
+bool gtHapticIsAlert(GtHapticEvent event) => event == GtHapticEvent.restEnded;
+
 /// Rung phan hoi dung chung. Khong rung khi dang co phien thu mic (rung lot
 /// vao ban ghi va lam nhieu nhan giong) - man thu mic goi [micStarted] /
 /// [micStopped] voi chinh no lam "chu" phien (goi them ca trong dispose).
+/// Tru bao hieu ([gtHapticIsAlert]).
 /// Cai dat "phan hoi cham" cua he dieu hanh van quyet dinh co rung hay khong.
 abstract final class GtHaptics {
   static final Set<Object> _micOwners = {};
@@ -100,10 +106,16 @@ abstract final class GtHaptics {
   /// Rung cho [event]. Cac lan goi truoc khi microtask rung chay (vd nhieu
   /// the cung build) gop thanh 1 lan o muc manh nhat; them [refractory] de
   /// khong rung chong. Co mic dang thu luc rung (ke ca vua bat ngay sau lan
-  /// goi) thi im lang.
+  /// goi) thi im lang. Bao hieu ([gtHapticIsAlert]) thi rung ngay.
   static Future<void> play(GtHapticEvent event) {
-    if (micActive) return Future.value();
     final level = gtHapticLevel(event);
+    if (gtHapticIsAlert(event)) {
+      _lastAt = now();
+      _lastFrame = _frameStamp();
+      _lastLevel = level;
+      return _vibrate(level);
+    }
+    if (micActive) return Future.value();
     final queued = _queued;
     if (queued != null) {
       if (level.index > queued.index) _queued = level;

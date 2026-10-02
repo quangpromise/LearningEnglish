@@ -678,20 +678,24 @@ class _SpeakingQuestionState extends ConsumerState<_SpeakingQuestion> {
   /// im lang nhu truoc.
   Future<void> _stopAndScore() async {
     if (!_listening) return;
-    GtHaptics.micStopped(this);
     setState(() {
       _listening = false;
       _scoring = true;
     });
     final done = _sessionDone;
-    if (_sessionActive) {
-      await widget.speech.stop();
-      if (done != null && !done.isCompleted) {
-        await done.future.timeout(
-          const Duration(milliseconds: 1500),
-          onTimeout: () {},
-        );
+    try {
+      if (_sessionActive) {
+        await widget.speech.stop();
+        if (done != null && !done.isCompleted) {
+          await done.future.timeout(
+            const Duration(milliseconds: 1500),
+            onTimeout: () {},
+          );
+        }
       }
+    } finally {
+      // Nha mic khi phien nghe that su dung (nut ghi khoa trong luc cham).
+      GtHaptics.micStopped(this);
     }
     _sessionActive = false;
     if (!mounted) return;

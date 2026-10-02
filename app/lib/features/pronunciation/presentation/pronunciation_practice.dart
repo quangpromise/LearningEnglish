@@ -205,6 +205,9 @@ class _PronunciationPracticeState extends ConsumerState<PronunciationPractice> {
         // vao ban ghi).
         GtHaptics.micStopped(this);
       }
+      // iOS chay listen / stop o 2 Task rieng: phien nghe co the mo SAU lenh
+      // dung -> huy cho het.
+      if (_speech.isListening) unawaited(_speech.cancel());
 
       if (mounted) {
         setState(() {
@@ -256,6 +259,8 @@ class _PronunciationPracticeState extends ConsumerState<PronunciationPractice> {
         listenOptions: stt.SpeechListenOptions(localeId: 'en_US'),
       );
     } catch (e) {
+      // Lan nghe nay da bi dung (co the da co lan moi): khong dung vao.
+      if (attempt != _attempt) return;
       GtHaptics.micStopped(this);
       if (mounted) {
         setState(() {
@@ -269,7 +274,13 @@ class _PronunciationPracticeState extends ConsumerState<PronunciationPractice> {
 
     // Bi dung trong luc dang mo mic: khong bat recorder (ban ghi mo coi).
     bool stillThisAttempt() => mounted && attempt == _attempt;
-    if (!stillThisAttempt()) return;
+    if (!stillThisAttempt()) {
+      // iOS: phien nghe nay mo sau lenh dung. Lan dung con cho ket qua cuoi
+      // thi tu huy o cuoi (huy luc nay mat ket qua cuoi tren Android); da
+      // xong han va chua co lan moi thi huy o day.
+      if (mounted && !_listening && !_scoring) unawaited(_speech.cancel());
+      return;
+    }
     try {
       if (await _recorder.hasPermission()) {
         final dir = await getTemporaryDirectory();
