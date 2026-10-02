@@ -11,9 +11,14 @@ import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/gt_celebration.dart';
 import '../../../core/widgets/speaker_button.dart';
+import '../../fitness/data/body_level.dart';
+import '../../today/data/gymtalk_rank.dart';
+import '../../today/data/milestone_store.dart';
+import '../../today/presentation/rank_up.dart';
 import '../data/cefr_level.dart';
 import '../data/content_pack.dart';
 import '../data/english_path_progress.dart';
+import '../data/english_path_providers.dart';
 import '../data/english_path_store.dart';
 import '../data/level_test.dart';
 import 'practice_question.dart';
@@ -39,6 +44,8 @@ Future<void> celebrateLevelTestPass(
   required String subtitle,
   required String ctaLabel,
   void Function(int credited)? onCredited,
+  GtRankUp? rankUp,
+  Future<void> Function()? beforeCelebration,
   Duration minDelay = const Duration(milliseconds: 600),
   Duration timeout = const Duration(seconds: 3),
 }) async {
@@ -55,6 +62,10 @@ Future<void> celebrateLevelTestPass(
 
   await Future.wait([claim(), Future<void>.delayed(minDelay)]);
   if (!context.mounted) return;
+  // Vd ghi moc Rank (gop the Rank vao man nay): chi khi man nay that su
+  // hien - dong man truoc do thi Hom nay se chuc mung Rank nhu thuong.
+  await beforeCelebration?.call();
+  if (!context.mounted) return;
   await showTieredFeedback(
     context,
     GtFeedbackEvent.levelTestPassed,
@@ -65,6 +76,7 @@ Future<void> celebrateLevelTestPass(
       title: title,
       subtitle: subtitle,
       ctaLabel: ctaLabel,
+      rankUp: rankUp,
     ),
   );
 }
@@ -122,6 +134,8 @@ class _LevelTestScreenState extends ConsumerState<LevelTestScreen> {
       takenAt: DateTime.now(),
     );
     _result = result;
+    // English Level truoc khi ghi: qua bai thi len Stage ke tiep.
+    final englishBefore = ref.read(englishLevelProvider);
     EnglishPathStore.instance.recordLevelTest(result);
     if (result.passed && awardXp) {
       // XP la diem tich luy tren server - loi mang/chua dang nhap thi bo qua.
@@ -129,11 +143,25 @@ class _LevelTestScreenState extends ConsumerState<LevelTestScreen> {
       final repo = ref.read(learningXpRepositoryProvider);
       final lang = ref.read(appLanguageProvider);
       String t(String key) => AppStrings.t(key, lang);
+      // Len Stage moi keo GymTalk Rank len: gop vao chinh man nay (#121).
+      final stats = ref.read(bodyStatsProvider).valueOrNull;
+      final rise = rankRiseFromEnglish(
+        stats == null ? null : bodyLevelFor(stats),
+        englishBefore,
+        result.stage.next,
+      );
+      final userId = ref.read(currentUserIdProvider);
       unawaited(
         celebrateLevelTestPass(
           context,
           xp: kLevelTestPassXp,
           award: repo.addBonusXp,
+          rankUp: rise == null
+              ? null
+              : rankUpCard(from: rise.from, to: rise.to, tr: t),
+          beforeCelebration: rise == null || userId == null
+              ? null
+              : () => MilestoneStore.raiseRank(userId, rise.to),
           onCredited: (xp) {
             if (mounted) setState(() => _creditedXp = xp);
           },

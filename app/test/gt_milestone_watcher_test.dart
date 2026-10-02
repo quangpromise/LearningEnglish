@@ -128,11 +128,43 @@ void main() {
       tester,
       _inputs(streak: 35, body: BodyLevel.regular, english: CefrLevel.a2),
     );
-    expect(await _showAll(tester), [
-      'Chuỗi 30 ngày!',
-      'Lên Body Level!',
-      'Lên GymTalk Rank!',
-    ]);
+    expect(_title(tester), 'Chuỗi 30 ngày!');
+    expect(find.byType(GtRankUpCard), findsNothing);
+    await _close(tester);
+    // Len Body Level keo Rank len: 1 man, the Rank gop vao (#121).
+    expect(_title(tester), 'Lên Body Level!');
+    expect(find.byType(GtRankUpCard), findsOneWidget);
+    await _close(tester);
+    expect(find.byType(GtCelebration), findsNothing);
+    expect(
+      await MilestoneStore.load('u1'),
+      const MilestoneRecord(
+        streak: 30,
+        streakOn: _today,
+        bodyLevel: 1,
+        rank: 1,
+      ),
+    );
+  });
+
+  testWidgets('a rank-up on its own still gets its own Celebration', (
+    tester,
+  ) async {
+    await MilestoneStore.save(
+      'u1',
+      const MilestoneRecord(
+        streak: 0,
+        streakOn: _before,
+        bodyLevel: 1,
+        rank: 0,
+      ),
+    );
+    // English Level len (vd sau Placement), Body Level giu nguyen.
+    await _arrive(
+      tester,
+      _inputs(body: BodyLevel.regular, english: CefrLevel.a2),
+    );
+    expect(await _showAll(tester), ['Lên GymTalk Rank!']);
   });
 
   testWidgets('a batch cut short is finished by the next watcher', (
@@ -150,7 +182,9 @@ void main() {
     await tester.pumpWidget(const SizedBox());
     await tester.pump(const Duration(milliseconds: 300));
     await _arrive(tester, inputs);
-    expect(await _showAll(tester), ['Lên Body Level!', 'Lên GymTalk Rank!']);
+    expect(_title(tester), 'Lên Body Level!');
+    expect(find.byType(GtRankUpCard), findsOneWidget);
+    expect(await _showAll(tester), ['Lên Body Level!']);
   });
 
   testWidgets('covered before the check: nothing until the next visit', (

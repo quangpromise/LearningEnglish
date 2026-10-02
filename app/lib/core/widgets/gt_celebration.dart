@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 import 'dart:ui' as ui;
 
@@ -108,10 +109,33 @@ class _XpToastState extends State<_XpToast>
   }
 }
 
+/// GymTalk Rank vua tang CUNG khoanh khac duoc chuc mung (qua Level Test,
+/// len Body Level): hien thanh the trong chinh man chuc mung do - 1
+/// khoanh khac 1 Celebration (#121). [fromTier] / [toTier]: bac hien thi
+/// (1..5).
+@immutable
+class GtRankUp {
+  const GtRankUp({
+    required this.fromTier,
+    required this.toTier,
+    required this.title,
+    required this.detail,
+  });
+
+  final int fromTier;
+  final int toTier;
+
+  /// Vd "Len GymTalk Rank!".
+  final String title;
+
+  /// Vd "Bac 3: Athlete · B1".
+  final String detail;
+}
+
 /// Man chuc mung (README "Interactions"): nen den 86% + blur 8, huy hieu
-/// vang "+N XP" bat len roi toa sang, tieu de, dong phu, chip, nut trang.
-/// [haptic] = false khi noi goi da rung cho chinh khoanh khac nay (vd nap
-/// ruong bat len ngay truoc do) - khong rung 2 lan lien tiep.
+/// vang "+N XP" bat len roi toa sang, tieu de, dong phu, [rankUp], chip, nut
+/// trang. [haptic] = false khi noi goi da rung cho chinh khoanh khac nay (vd
+/// nap ruong bat len ngay truoc do) - khong rung 2 lan lien tiep.
 Future<void> showCelebration(
   BuildContext context, {
   required int xp,
@@ -119,6 +143,7 @@ Future<void> showCelebration(
   required String subtitle,
   required String ctaLabel,
   List<String> chips = const [],
+  GtRankUp? rankUp,
   bool haptic = true,
 }) {
   if (haptic) GtHaptics.play(GtHapticEvent.celebration);
@@ -134,6 +159,7 @@ Future<void> showCelebration(
       subtitle: subtitle,
       ctaLabel: ctaLabel,
       chips: chips,
+      rankUp: rankUp,
       onClose: () => Navigator.of(context).pop(),
     ),
   );
@@ -148,6 +174,7 @@ class GtCelebration extends StatefulWidget {
     required this.ctaLabel,
     required this.onClose,
     this.chips = const [],
+    this.rankUp,
   });
 
   final int xp;
@@ -155,6 +182,7 @@ class GtCelebration extends StatefulWidget {
   final String subtitle;
   final String ctaLabel;
   final List<String> chips;
+  final GtRankUp? rankUp;
   final VoidCallback onClose;
 
   @override
@@ -263,6 +291,10 @@ class _GtCelebrationState extends State<GtCelebration>
                   textAlign: TextAlign.center,
                   style: GtText.body(const Color(0xFFB9BDC4), size: 16),
                 ),
+                if (widget.rankUp case final rankUp?) ...[
+                  const SizedBox(height: 24),
+                  GtRankUpCard(rankUp: rankUp),
+                ],
                 if (widget.chips.isNotEmpty) ...[
                   const SizedBox(height: 18),
                   Wrap(
@@ -315,6 +347,220 @@ class _GtCelebrationState extends State<GtCelebration>
       ),
     );
   }
+}
+
+/// The "Len GymTalk Rank" trong man chuc mung: truot len ngay sau huy hieu
+/// chinh, roi so bac tren huy hieu Rank doi tu cu sang moi (cu truot len, moi
+/// tu duoi len) kem vong sang lan ra (khong blur) va 1 nhip rung nhe. Giam
+/// chuyen dong: hien ngay bac moi, khong truot, khong rung them.
+class GtRankUpCard extends StatefulWidget {
+  const GtRankUpCard({
+    super.key,
+    required this.rankUp,
+    this.enterAfter = const Duration(milliseconds: 450),
+    this.flipAfter = const Duration(milliseconds: 950),
+  });
+
+  final GtRankUp rankUp;
+
+  /// Luc the bat dau truot len (sau khi huy hieu chinh gan bat xong).
+  final Duration enterAfter;
+
+  /// Luc so bac doi sang bac moi.
+  final Duration flipAfter;
+
+  @override
+  State<GtRankUpCard> createState() => _GtRankUpCardState();
+}
+
+class _GtRankUpCardState extends State<GtRankUpCard>
+    with TickerProviderStateMixin {
+  late final AnimationController _enter = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 420),
+  );
+  late final AnimationController _flip = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 700),
+  );
+  Timer? _enterTimer;
+  Timer? _flipTimer;
+  bool _started = false;
+  bool _still = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_started) return;
+    _started = true;
+    _still = gtReduceMotion(context);
+    if (_still) {
+      _enter.value = 1;
+      _flip.value = 1;
+      return;
+    }
+    _enterTimer = Timer(widget.enterAfter, () {
+      if (mounted) _enter.forward();
+    });
+    _flipTimer = Timer(widget.flipAfter, () {
+      if (!mounted) return;
+      GtHaptics.play(GtHapticEvent.rankUp);
+      _flip.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _enterTimer?.cancel();
+    _flipTimer?.cancel();
+    _enter.dispose();
+    _flip.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.gt;
+    final enter = CurvedAnimation(parent: _enter, curve: Curves.easeOutCubic);
+    final tierStyle = GtText.cardTitle(t.gold).copyWith(
+      fontSize: 22,
+      fontFeatures: const [FontFeature.tabularFigures()],
+    );
+    return FadeTransition(
+      opacity: enter,
+      child: SlideTransition(
+        position: Tween(
+          begin: const Offset(0, 0.3),
+          end: Offset.zero,
+        ).animate(enter),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(12, 12, 18, 12),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: t.gold.withValues(alpha: 0.35)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // So bac chi de nhin - dong chu ben canh da noi bac moi.
+              ExcludeSemantics(
+                child: SizedBox(
+                  width: 52,
+                  height: 52,
+                  child: AnimatedBuilder(
+                    animation: _flip,
+                    builder: (context, _) => CustomPaint(
+                      painter: _RankHaloPainter(
+                        progress: _still ? 0 : _flip.value,
+                        color: t.gold,
+                      ),
+                      child: Transform.scale(
+                        scale: _still ? 1 : _bump(_flip.value),
+                        child: _badge(t, tierStyle),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 14),
+              Flexible(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.rankUp.title,
+                      style: GtText.rowTitle(Colors.white),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      widget.rankUp.detail,
+                      style: GtText.body(const Color(0xFFB9BDC4), size: 13),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Phong to nhe roi ve (1 -> 1.18 -> 1) trong luc doi bac.
+  static double _bump(double v) =>
+      1 + 0.18 * sin(pi * ((v - 0.25) / 0.75).clamp(0.0, 1.0));
+
+  Widget _badge(GtTokens t, TextStyle style) {
+    final rankUp = widget.rankUp;
+    final decoration = BoxDecoration(
+      shape: BoxShape.circle,
+      color: t.gold.withValues(alpha: 0.14),
+      border: Border.all(color: t.gold, width: 2.5),
+    );
+    if (_still) {
+      return DecoratedBox(
+        decoration: decoration,
+        child: Center(child: Text('${rankUp.toTier}', style: style)),
+      );
+    }
+    // Bac cu truot len va mo; bac moi tu duoi len.
+    final swap = Curves.easeInOutCubic.transform(
+      (_flip.value / 0.45).clamp(0.0, 1.0),
+    );
+    return DecoratedBox(
+      decoration: decoration,
+      child: ClipOval(
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Transform.translate(
+              offset: Offset(0, -20 * swap),
+              child: Opacity(
+                opacity: 1 - swap,
+                child: Text('${rankUp.fromTier}', style: style),
+              ),
+            ),
+            Transform.translate(
+              offset: Offset(0, 20 * (1 - swap)),
+              child: Opacity(
+                opacity: swap,
+                child: Text('${rankUp.toTier}', style: style),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Vong sang lan ra quanh huy hieu Rank khi doi bac (net ve, khong blur).
+class _RankHaloPainter extends CustomPainter {
+  _RankHaloPainter({required this.progress, required this.color});
+
+  final double progress;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (progress <= 0.3) return;
+    final p = ((progress - 0.3) / 0.7).clamp(0.0, 1.0);
+    final r = size.shortestSide / 2 * (1 + 0.6 * Curves.easeOut.transform(p));
+    canvas.drawCircle(
+      size.center(Offset.zero),
+      r,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 0.5 + 2.5 * (1 - p)
+        ..color = color.withValues(alpha: 0.6 * (1 - p)),
+    );
+  }
+
+  @override
+  bool shouldRepaint(_RankHaloPainter old) =>
+      old.progress != progress || old.color != color;
 }
 
 /// Hien phan hoi dung tang cua [event] (ADR-0008): Milestone ->

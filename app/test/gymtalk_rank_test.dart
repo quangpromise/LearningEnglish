@@ -27,4 +27,31 @@ void main() {
     }
     expect(BodyLevel.values.length, CefrLevel.values.length);
   });
+
+  group('rank rise from a new English Level (#121)', () {
+    test(
+      'passing a Level Test that lifts the lower ladder raises the rank',
+      () {
+        expect(
+          rankRiseFromEnglish(BodyLevel.athlete, CefrLevel.a2, CefrLevel.b1),
+          (from: 1, to: 2),
+        );
+      },
+    );
+
+    test('no rise when Body Level is the lower ladder', () {
+      expect(
+        rankRiseFromEnglish(BodyLevel.regular, CefrLevel.a2, CefrLevel.b1),
+        isNull,
+      );
+    });
+
+    test('no rise without a known Body Level or a level change', () {
+      expect(rankRiseFromEnglish(null, CefrLevel.a2, CefrLevel.b1), isNull);
+      expect(
+        rankRiseFromEnglish(BodyLevel.beast, CefrLevel.c1, CefrLevel.c1),
+        isNull,
+      );
+    });
+  });
 }

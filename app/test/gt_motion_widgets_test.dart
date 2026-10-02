@@ -308,4 +308,81 @@ void main() {
       expect(tester.hasRunningAnimations, isTrue);
     });
   });
+
+  group('rank-up card in a celebration (#121)', () {
+    late List<String> buzzes;
+
+    setUp(() {
+      GtHaptics.resetForTest();
+      buzzes = [];
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+            if (call.method == 'HapticFeedback.vibrate') {
+              buzzes.add('${call.arguments}');
+            }
+            return null;
+          });
+    });
+
+    tearDown(() {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, null);
+    });
+
+    GtCelebration celebration() => GtCelebration(
+      xp: 40,
+      title: 'Lên B1!',
+      subtitle: '18/20',
+      ctaLabel: 'OK',
+      onClose: () {},
+      rankUp: const GtRankUp(
+        fromTier: 2,
+        toTier: 3,
+        title: 'Lên GymTalk Rank!',
+        detail: 'Bậc 3: Athlete · B1',
+      ),
+    );
+
+    double opacityOf(WidgetTester tester, String text) => tester
+        .widget<Opacity>(
+          find
+              .ancestor(of: find.text(text), matching: find.byType(Opacity))
+              .first,
+        )
+        .opacity;
+
+    testWidgets('one Celebration: the card slides in, the tier flips once', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_app(celebration()));
+      expect(find.text('Lên GymTalk Rank!'), findsOneWidget);
+      expect(find.text('Bậc 3: Athlete · B1'), findsOneWidget);
+      // The da vao, bac van la bac cu.
+      await tester.pump(const Duration(milliseconds: 900));
+      expect(opacityOf(tester, '2'), 1);
+      expect(opacityOf(tester, '3'), 0);
+      expect(buzzes, isEmpty);
+      // Doi bac: 1 nhip rung nhe, bac moi hien han.
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump(const Duration(milliseconds: 700));
+      expect(opacityOf(tester, '3'), 1);
+      expect(opacityOf(tester, '2'), 0);
+      expect(buzzes, ['HapticFeedbackType.lightImpact']);
+      await tester.pump(const Duration(seconds: 1));
+      expect(buzzes, hasLength(1));
+      await tester.pumpWidget(const SizedBox());
+    });
+
+    testWidgets('reduced motion: the new tier at once, no extra tick', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_app(celebration(), disableAnimations: true));
+      await tester.pump();
+      expect(find.text('3'), findsOneWidget);
+      expect(find.text('2'), findsNothing);
+      await tester.pump(const Duration(seconds: 2));
+      expect(buzzes, isEmpty);
+      expect(tester.hasRunningAnimations, isFalse);
+    });
+  });
 }

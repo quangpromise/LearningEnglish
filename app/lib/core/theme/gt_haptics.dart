@@ -11,6 +11,9 @@ enum GtHapticEvent {
   pronunciationGood,
   chestOpened,
   celebration,
+
+  /// So bac tren the Rank trong man chuc mung doi sang bac moi (#121).
+  rankUp,
 }
 
 enum GtHapticLevel { selection, light, medium, heavy }
@@ -18,7 +21,7 @@ enum GtHapticLevel { selection, light, medium, heavy }
 /// Muc rung cua tung su kien.
 GtHapticLevel gtHapticLevel(GtHapticEvent event) => switch (event) {
   GtHapticEvent.cardGraded => GtHapticLevel.selection,
-  GtHapticEvent.setTicked => GtHapticLevel.light,
+  GtHapticEvent.setTicked || GtHapticEvent.rankUp => GtHapticLevel.light,
   GtHapticEvent.questCompleted ||
   GtHapticEvent.ringCompleted ||
   GtHapticEvent.pronunciationGood => GtHapticLevel.medium,

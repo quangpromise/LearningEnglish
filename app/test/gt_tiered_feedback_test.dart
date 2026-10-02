@@ -108,6 +108,40 @@ void main() {
       expect(find.text('+$kLevelTestPassXp XP'), findsOneWidget);
     });
 
+    testWidgets('a rank-up rides along in the same Celebration (#121)', (
+      tester,
+    ) async {
+      final context = await _host(tester);
+      var recorded = false;
+      var shownWhenRecorded = true;
+      celebrateLevelTestPass(
+        context,
+        xp: kLevelTestPassXp,
+        award: (_) async {},
+        title: 'Up',
+        subtitle: '18/20',
+        ctaLabel: 'OK',
+        rankUp: const GtRankUp(
+          fromTier: 2,
+          toTier: 3,
+          title: 'Lên GymTalk Rank!',
+          detail: 'Bậc 3: Athlete · B1',
+        ),
+        // Ghi moc Rank ngay truoc khi man hien (Hom nay khong hien lai).
+        beforeCelebration: () async {
+          recorded = true;
+          shownWhenRecorded = find.byType(GtCelebration).evaluate().isNotEmpty;
+        },
+      );
+      await tester.pump(const Duration(milliseconds: 700));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(recorded, isTrue);
+      expect(shownWhenRecorded, isFalse);
+      expect(find.byType(GtCelebration), findsOneWidget);
+      expect(find.byType(GtRankUpCard), findsOneWidget);
+      expect(find.text('Lên GymTalk Rank!'), findsOneWidget);
+    });
+
     testWidgets('offline: Celebration with a tick, no made-up XP', (
       tester,
     ) async {
