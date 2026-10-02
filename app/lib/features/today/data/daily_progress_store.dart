@@ -173,6 +173,16 @@ class DailyProgressStore extends ChangeNotifier {
   final DateTime Function() _clock;
   final Map<String, DayProgress> _days = {};
   Future<void>? _loading;
+  bool _loaded = false;
+
+  /// Da doc xong du lieu da luu - truoc do [today] chi la ngay rong.
+  bool get isLoaded => _loaded;
+
+  int _revision = 0;
+
+  /// Tang moi khi so lieu den tu NGOAI may nay (dong bo tai khoan, doi tai
+  /// khoan) - man Hom nay coi do la moc moi, khong chuc mung nhu vua lam.
+  int get revision => _revision;
 
   /// Khoa ngay 'yyyy-mm-dd' (theo gio may) - cung dung lam tien to khoa
   /// thuong tren server.
@@ -199,6 +209,7 @@ class DailyProgressStore extends ChangeNotifier {
     } catch (e) {
       debugPrint('DailyProgressStore load failed: $e');
     }
+    _loaded = true;
     notifyListeners();
   }
 
@@ -249,6 +260,7 @@ class DailyProgressStore extends ChangeNotifier {
       }
     }
     if (changed) {
+      _revision++;
       notifyListeners();
       await _save();
     }
@@ -259,6 +271,7 @@ class DailyProgressStore extends ChangeNotifier {
   Future<void> clearLocal() async {
     await ensureLoaded();
     _days.clear();
+    _revision++;
     notifyListeners();
     await _save();
   }
