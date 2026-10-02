@@ -272,10 +272,12 @@ void main() {
     );
     final overlay = tester.state<OverlayState>(find.byType(Overlay).first);
     showXpToast(55, overlay: overlay);
-    await tester.pump(const Duration(milliseconds: 500));
+    // Frame dau: toast + so dem bat dau; so dem len xong (~0.5s).
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 700));
     expect(find.text('+55 XP'), findsOneWidget);
-    // Ticker bat dau o frame dau -> doi qua 1.8s tinh tu do.
-    await tester.pump(const Duration(milliseconds: 2000));
+    // Toast song 1.8s tinh tu frame dau.
+    await tester.pump(const Duration(milliseconds: 1500));
     await tester.pump();
     expect(find.text('+55 XP'), findsNothing);
   });

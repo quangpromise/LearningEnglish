@@ -2,10 +2,12 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../navigation/nav_keys.dart';
+import '../theme/gt_haptics.dart';
+import '../theme/gt_motion.dart';
 import '../theme/gt_tokens.dart';
+import 'gt_count_up.dart';
 
 /// Toast XP dung chung (README "Interactions"): vien vang o dinh, "+N XP",
 /// 1.8s truot xuong 12px + hien dan, giu, mo dan. Chi goi voi XP DA cong
@@ -38,9 +40,12 @@ class _XpToast extends StatefulWidget {
 
 class _XpToastState extends State<_XpToast>
     with SingleTickerProviderStateMixin {
+  // `preserve`: controller nay DEM THOI GIAN hien toast - mac dinh no bi
+  // rut ~20 lan khi Android tat hieu ung, toast se bien mat gan nhu ngay.
   late final AnimationController _c = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 1800),
+    animationBehavior: AnimationBehavior.preserve,
   )..forward().whenComplete(widget.onDone);
 
   @override
@@ -69,7 +74,7 @@ class _XpToastState extends State<_XpToast>
                 ? (1 - v) / 0.2
                 : 1.0;
             // Giam chuyen dong: chi hien/mo, khong truot.
-            final still = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+            final still = gtReduceMotion(context);
             final dy = still || v >= 0.15 ? 0.0 : -12 * (1 - v / 0.15);
             return Opacity(
               opacity: opacity.clamp(0.0, 1.0),
@@ -88,8 +93,9 @@ class _XpToastState extends State<_XpToast>
                   color: t.gold,
                   borderRadius: BorderRadius.circular(999),
                 ),
-                child: Text(
-                  '+${widget.xp} XP',
+                child: GtCountUp(
+                  value: widget.xp,
+                  format: (v) => '+$v XP',
                   style: GtText.cardTitle(t.onGold).copyWith(fontSize: 16),
                 ),
               ),
@@ -111,7 +117,7 @@ Future<void> showCelebration(
   required String ctaLabel,
   List<String> chips = const [],
 }) {
-  HapticFeedback.heavyImpact();
+  GtHaptics.play(GtHapticEvent.celebration);
   return showGeneralDialog<void>(
     context: context,
     useRootNavigator: true,
@@ -162,15 +168,21 @@ class _GtCelebrationState extends State<GtCelebration>
     duration: const Duration(milliseconds: 1800),
   );
 
+  bool _started = false;
+
   @override
-  void initState() {
-    super.initState();
-    // Toa sang lap lai sau khi bat len xong; tat khi he thong giam chuyen
-    // dong.
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_started) return;
+    _started = true;
+    // Giam chuyen dong: huy hieu hien ngay, khong bat len, khong toa sang
+    // lap lai (doc co o day vi initState chua doc duoc MediaQuery/View).
+    if (gtReduceMotion(context)) {
+      _pop.value = 1;
+      return;
+    }
     _pop.forward().whenCompleteOrCancel(() {
-      if (!mounted) return;
-      if (MediaQuery.maybeDisableAnimationsOf(context) ?? false) return;
-      _glow.repeat();
+      if (mounted) _glow.repeat();
     });
   }
 
@@ -223,8 +235,9 @@ class _GtCelebrationState extends State<GtCelebration>
                         // Khong co XP that (vd nhiem vu da nhan truoc do) ->
                         // dau tick, khong bia so.
                         child: widget.xp > 0
-                            ? Text(
-                                '+${widget.xp} XP',
+                            ? GtCountUp(
+                                value: widget.xp,
+                                format: (v) => '+$v XP',
                                 style: GtText.ringStat(t.onGold),
                               )
                             : Icon(
