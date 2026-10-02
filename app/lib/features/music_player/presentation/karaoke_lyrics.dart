@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/gt_motion.dart';
 import '../data/songs_data.dart';
 
 // ---------------------------------------------------------------------------
@@ -252,6 +253,9 @@ const Duration _kLineTransition = Duration(milliseconds: 320);
 
 /// Danh sach lyric chay karaoke: dong dang hat duoc to sang dan TUNG TU
 /// theo giong hat, cac dong con lai lui ve sau bang do mo + lam nhoe.
+///
+/// Giam chuyen dong (spec #96): tat phong to dong, nhoe, nhun chu va quang
+/// sang; van to mau theo vi tri nhac va do mo cac dong.
 class KaraokeLyricsView extends StatelessWidget {
   const KaraokeLyricsView({
     super.key,
@@ -278,6 +282,7 @@ class KaraokeLyricsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final still = gtReduceMotion(context);
     return ListView.builder(
       // Build san nhieu dong o ngoai vung hien thi (khong chi dong dang
       // thay) de khi bai moi mo/seek xa, dong dich da co context san cho
@@ -291,6 +296,7 @@ class KaraokeLyricsView extends StatelessWidget {
         offset: i - activeIndex,
         positionSeconds: positionSeconds,
         bilingual: bilingual,
+        still: still,
         onSeek: () => onSeekToLine(i),
         onWordTap: onWordTap,
       ),
@@ -305,6 +311,7 @@ class _LineTile extends StatelessWidget {
     required this.offset,
     required this.positionSeconds,
     required this.bilingual,
+    required this.still,
     required this.onSeek,
     required this.onWordTap,
   });
@@ -317,6 +324,9 @@ class _LineTile extends StatelessWidget {
 
   final ValueListenable<double> positionSeconds;
   final bool bilingual;
+
+  /// Giam chuyen dong: khong phong, khong nhoe, khong nhun, khong sang.
+  final bool still;
   final VoidCallback onSeek;
   final void Function(String word) onWordTap;
 
@@ -331,7 +341,7 @@ class _LineTile extends StatelessWidget {
       2 => 0.3,
       _ => 0.2,
     };
-    final blur = !_kBlurInactiveLines || distance < 2
+    final blur = still || !_kBlurInactiveLines || distance < 2
         ? 0.0
         : (distance == 2 ? 1.0 : 1.8);
 
@@ -344,6 +354,7 @@ class _LineTile extends StatelessWidget {
           words: line.words,
           seconds: seconds,
           style: _RowStyle.lyric,
+          still: still,
           onWordTap: isActive ? onWordTap : null,
         ),
         if (bilingual && line.viWords.isNotEmpty)
@@ -353,6 +364,7 @@ class _LineTile extends StatelessWidget {
               words: line.viWords,
               seconds: seconds,
               style: _RowStyle.translation,
+              still: still,
               onWordTap: null,
             ),
           ),
@@ -373,7 +385,7 @@ class _LineTile extends StatelessWidget {
       child: rows,
     );
 
-    if (_kBlurInactiveLines) {
+    if (_kBlurInactiveLines && !still) {
       content = TweenAnimationBuilder<double>(
         tween: Tween<double>(end: blur),
         duration: _kLineTransition,
@@ -395,7 +407,7 @@ class _LineTile extends StatelessWidget {
         // Phong to bang Transform (khong doi font size) - doi font size se
         // lam danh sach tinh lai chieu cao va giat vi tri cuon moi lan sang
         // dong moi.
-        scale: isActive ? 1.05 : 0.97,
+        scale: still ? 1 : (isActive ? 1.05 : 0.97),
         duration: _kLineTransition,
         curve: Curves.easeOutCubic,
         child: AnimatedOpacity(
@@ -458,12 +470,14 @@ class _WordsRow extends StatelessWidget {
     required this.words,
     required this.seconds,
     required this.style,
+    required this.still,
     required this.onWordTap,
   });
 
   final List<KaraokeWord> words;
   final double seconds;
   final _RowStyle style;
+  final bool still;
   final void Function(String word)? onWordTap;
 
   @override
@@ -486,6 +500,7 @@ class _WordsRow extends StatelessWidget {
               n <= 1 ? 0.5 : i / (n - 1),
             )!,
             style: style,
+            still: still,
             onTap: _tapHandlerFor(words[i].text),
           ),
       ],
@@ -517,6 +532,7 @@ class _WordChip extends StatelessWidget {
     required this.afterglow,
     required this.glow,
     required this.style,
+    required this.still,
     required this.onTap,
   });
 
@@ -528,9 +544,11 @@ class _WordChip extends StatelessWidget {
 
   final Color glow;
   final _RowStyle style;
+  final bool still;
   final VoidCallback? onTap;
 
   List<Shadow>? _glowShadows(double strength) {
+    if (still) return null;
     final alpha = strength * style.glowStrength;
     if (alpha <= 0.01) return null;
     return [
@@ -604,7 +622,7 @@ class _WordChip extends StatelessWidget {
       child: Transform.translate(
         // Nhun nhe len roi ha xuong dung luc tu do duoc hat - tao "con song"
         // chay doc theo cau.
-        offset: Offset(0, -style.lift * math.sin(p * math.pi)),
+        offset: Offset(0, still ? 0 : -style.lift * math.sin(p * math.pi)),
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: style.gap, vertical: 1),
           child: text,
