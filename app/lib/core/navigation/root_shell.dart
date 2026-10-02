@@ -12,6 +12,7 @@ import '../../features/today/presentation/gt_today_screen.dart';
 import '../../features/today/presentation/gt_progress_screen.dart';
 import '../../features/update/presentation/update_dialog.dart';
 import '../theme/gt_tokens.dart';
+import 'gt_fade_indexed_stack.dart';
 import 'gt_mini_player.dart';
 import 'gt_tab_bar.dart';
 import 'root_tabs.dart';
@@ -21,7 +22,8 @@ import 'root_tabs.dart';
 /// con van mo dang POPUP (app_popup.dart). Wealth van la app rieng
 /// (WealthShell).
 ///
-/// IndexedStack giu nguyen trang thai tung tab khi chuyen qua lai.
+/// GtFadeIndexedStack giu nguyen trang thai tung tab khi chuyen qua lai
+/// (doi tab bang mo cheo ngan).
 class RootShell extends ConsumerStatefulWidget {
   const RootShell({super.key});
 
@@ -175,7 +177,7 @@ class _RootShellState extends ConsumerState<RootShell>
         children: [
           MediaQuery(
             data: contentInset,
-            child: IndexedStack(
+            child: GtFadeIndexedStack(
               index: tab.index,
               children: const [
                 GtTodayScreen(),

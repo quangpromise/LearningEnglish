@@ -254,6 +254,12 @@ class _GtRingsCardState extends ConsumerState<GtRingsCard>
 
   void _celebrate() {
     if (!mounted) return;
+    // Vua roi tab Hom nay trong luc cho (tab khuat tam dung hoat anh): khong
+    // rung o tab khac, khong loe lai luc quay ve.
+    if (!TickerMode.valuesOf(context).enabled) {
+      _reaching.clear();
+      return;
+    }
     GtHaptics.play(GtHapticEvent.ringCompleted);
     setState(() {
       // Cung khac vua day trong luc dang loe: loe cung luc, khong cat ngang.
