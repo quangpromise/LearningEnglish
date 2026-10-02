@@ -18,6 +18,8 @@ import '../../../core/theme/gt_motion.dart';
 import '../../../core/widgets/gt_celebration.dart';
 import '../../../core/widgets/gt_when_on_screen.dart';
 import '../../../core/widgets/gt_count_up.dart';
+import '../../english_path/data/english_path_providers.dart';
+import '../../fitness/data/body_level.dart';
 import '../../fitness/presentation/programs_list_screen.dart';
 import '../../../core/i18n/greeting.dart';
 import '../../srs/data/srs_store.dart';
@@ -27,6 +29,7 @@ import '../data/daily_quests.dart';
 import '../data/ring_geometry.dart';
 import '../data/today_presentation.dart';
 import 'gt_quests_card.dart';
+import 'milestone_watcher.dart';
 import 'gymtalk_setup_sheet.dart';
 
 /// Tab "Hom nay" cua ban redesign (spec #70, #73): top bar -> the Daily
@@ -114,73 +117,136 @@ class _GtTodayScreenState extends ConsumerState<GtTodayScreen> {
           );
     return ColoredBox(
       color: t.bg,
-      child: RefreshIndicator(
-        color: t.tx,
-        onRefresh: () async {
-          ref
-            ..invalidate(todayWorkoutPlanProvider)
-            ..invalidate(myLearningXpProvider);
-        },
-        child: ListenableBuilder(
-          listenable: Listenable.merge([store, SrsStore.instance]),
-          builder: (context, _) {
-            final now = DateTime.now();
-            return ListView(
-              padding: EdgeInsets.fromLTRB(
-                16,
-                padding.top + 4,
-                16,
-                padding.bottom + 16,
-              ),
-              children: [
-                GtTopBar(greetingKey: ref.watch(greetingKeyProvider)),
-                const SizedBox(height: 14),
-                // Tien do lam o popup / tab khac hien ra khi nguoi dung quay
-                // lai Hom nay -> vong cham 100%, nhiem vu xong chay truoc
-                // mat ho. Doc xong du lieu da luu / nhan so lieu dong bo thi
-                // dung lai the: tien do khong do chinh nguoi dung vua lam
-                // tren may nay thi khong chuc mung.
-                GtWhenOnScreen<DayProgress>(
-                  key: ValueKey((store.isLoaded, store.revision)),
-                  value: store.today,
-                  onScreen: onScreen,
-                  settle: settle,
-                  builder: (context, day, visit) => Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Moi the 1 lop ve rieng: hoat anh the nay khong ve
-                      // lai 2 the kia.
-                      RepaintBoundary(
-                        child: GtRingsCard(
-                          day: day,
-                          strip: weekStreakStrip(
-                            (d) => DateUtils.isSameDay(d, now)
-                                ? day
-                                : store.dayOf(d),
-                            now,
-                          ),
-                          date: now,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      RepaintBoundary(
-                        child: _TodayWorkout(
-                          today: day,
-                          dueCount: SrsStore.instance.dueCount(now),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      RepaintBoundary(
-                        child: GtQuestsCard(day: day, visit: visit),
-                      ),
-                    ],
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          RefreshIndicator(
+            color: t.tx,
+            onRefresh: () async {
+              ref
+                ..invalidate(todayWorkoutPlanProvider)
+                ..invalidate(myLearningXpProvider);
+            },
+            child: ListenableBuilder(
+              listenable: Listenable.merge([store, SrsStore.instance]),
+              builder: (context, _) {
+                final now = DateTime.now();
+                return ListView(
+                  padding: EdgeInsets.fromLTRB(
+                    16,
+                    padding.top + 4,
+                    16,
+                    padding.bottom + 16,
                   ),
-                ),
-              ],
-            );
-          },
-        ),
+                  children: [
+                    GtTopBar(greetingKey: ref.watch(greetingKeyProvider)),
+                    const SizedBox(height: 14),
+                    // Tien do lam o popup / tab khac hien ra khi nguoi dung
+                    // quay lai Hom nay -> vong cham 100%, nhiem vu xong chay
+                    // truoc mat ho. Doc xong du lieu da luu / nhan so lieu
+                    // dong bo thi dung lai the: tien do khong do chinh nguoi
+                    // dung vua lam tren may nay thi khong chuc mung.
+                    GtWhenOnScreen<DayProgress>(
+                      key: ValueKey((store.isLoaded, store.revision)),
+                      value: store.today,
+                      onScreen: onScreen,
+                      settle: settle,
+                      builder: (context, day, visit) => Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Moi the 1 lop ve rieng: hoat anh the nay khong ve
+                          // lai 2 the kia.
+                          RepaintBoundary(
+                            child: GtRingsCard(
+                              day: day,
+                              strip: weekStreakStrip(
+                                (d) => DateUtils.isSameDay(d, now)
+                                    ? day
+                                    : store.dayOf(d),
+                                now,
+                              ),
+                              date: now,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          RepaintBoundary(
+                            child: _TodayWorkout(
+                              today: day,
+                              dueCount: SrsStore.instance.dueCount(now),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          RepaintBoundary(
+                            child: GtQuestsCard(day: day, visit: visit),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+          // Ngoai ListView: ListView chi dung con dang (sap) hien - con cuoi
+          // danh sach tren man thap se khong bao gio duoc dung.
+          Positioned(
+            left: 0,
+            top: 0,
+            child: _TodayMilestones(onScreen: onScreen, settle: settle),
+          ),
+        ],
       ),
+    );
+  }
+}
+
+/// Milestone moi (chuoi 7/30/100/365, len Body Level, len Rank) chuc mung
+/// khi nguoi dung quay lai Hom nay (MO-06). Moi nguon chi duoc tinh khi da
+/// on dinh - khong lay moc goc / chuc mung tu so lieu tam:
+/// - chuoi: store da doc xong VA da dong bo xong 1 luot cho chinh tai khoan
+///   nay (truoc do co the con so lieu may cu / tai khoan truoc); chi ha moc
+///   khi da dong bo thanh cong hom nay;
+/// - English Level: nhu tren (lo trinh dong bo cung luot) VA da tai xong
+///   lua chon Persona (chua tai -> tam roi ve A1);
+/// - Body Level: tai thanh cong (loi mang -> null, khong phai Rookie).
+class _TodayMilestones extends ConsumerWidget {
+  const _TodayMilestones({required this.onScreen, required this.settle});
+
+  final bool onScreen;
+  final Duration settle;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userId = ref.watch(currentUserIdProvider);
+    final settled = ref.watch(gymTalkSettledProvider);
+    final synced = userId != null && settled?.user == userId;
+    final stats = ref.watch(bodyStatsProvider).valueOrNull;
+    final persona = ref.watch(learningPathChoiceProvider);
+    final english = ref.watch(englishLevelProvider);
+    final daily = DailyProgressStore.instance;
+    return ListenableBuilder(
+      listenable: daily,
+      builder: (context, _) {
+        final ready = synced && daily.isLoaded;
+        return GtWhenOnScreen<MilestoneInputs>(
+          value: (
+            streak: ready ? daily.bodyBrainStreak : null,
+            syncedOn: synced ? settled?.syncedOn : null,
+            body: stats == null ? null : bodyLevelFor(stats),
+            english: ready && persona.hasValue && !persona.hasError
+                ? english
+                : null,
+          ),
+          onScreen: onScreen,
+          settle: settle,
+          builder: (context, inputs, visit) => GtMilestoneWatcher(
+            userId: userId,
+            visit: visit,
+            onScreen: onScreen,
+            inputs: inputs,
+          ),
+        );
+      },
     );
   }
 }

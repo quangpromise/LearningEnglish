@@ -109,6 +109,13 @@ class DayProgress {
     rewarded: rewarded ?? this.rewarded,
   );
 
+  /// Ban rut gon cho ngay cu: chi con dung de dem chuoi Body + Brain.
+  DayProgress get forStreak => DayProgress(
+    workouts: workouts,
+    wordsReviewed: wordsReviewed,
+    restDay: restDay,
+  );
+
   /// Them 1 khoa thuong (idempotent).
   DayProgress withRewarded(String key) =>
       rewarded.contains(key) ? this : copyWith(rewarded: {...rewarded, key});
@@ -154,9 +161,10 @@ class DayProgress {
 const kWorkoutCelebratedKey = 'celebrated_workout';
 
 /// Dem tien do 3 vong Tap - Hoc - Noi theo tung ngay, luu tren may
-/// (SharedPreferences, giu 60 ngay). Singleton de cac noi ghi nhan (man tap,
-/// the tu, luyen phat am...) goi truc tiep ma khong can WidgetRef; man Hom
-/// nay/Tien do nghe thay doi qua ChangeNotifier.
+/// (SharedPreferences, giu 400 ngay; ngay cu hon 60 ngay rut gon). Singleton
+/// de cac noi ghi nhan (man tap, the tu, luyen phat am...) goi truc tiep ma
+/// khong can WidgetRef; man Hom nay/Tien do nghe thay doi qua
+/// ChangeNotifier.
 ///
 /// Chi la so lieu dong luc CA NHAN tren 1 may - thong ke chinh thuc (XP,
 /// buoi tap) van nam tren Supabase.
@@ -171,7 +179,11 @@ class DailyProgressStore extends ChangeNotifier {
       DailyProgressStore._(clock: clock);
 
   static const _prefKey = 'daily_progress_v1';
-  static const _keepDays = 60;
+  // Giu > 365 ngay: chuoi Body + Brain 100 / 365 ngay (Milestone, spec
+  // #96) phai dem duoc ca tren may moi sau khi dong bo. Ngay cu hon
+  // [_fullDays] chi con dung de dem chuoi -> rut gon (xem [_compact]).
+  static const _keepDays = 400;
+  static const _fullDays = 60;
 
   final DateTime Function() _clock;
   final Map<String, DayProgress> _days = {};
@@ -221,10 +233,31 @@ class DailyProgressStore extends ChangeNotifier {
   /// Xep hang cac lan ghi - 2 lan cong lien tiep khong de mat nhau.
   Future<void> _save() => _writeChain = _writeChain.then((_) => _write());
 
+  /// Khoa ngay cach hom nay [days] ngay theo lich.
+  String _keyDaysAgo(int days) {
+    final now = _clock();
+    return _keyOf(DateTime(now.year, now.month, now.day - days));
+  }
+
+  /// Chi giu [_keepDays] ngay gan nhat; ngay cu hon [_fullDays] chi con dung
+  /// de dem chuoi Body + Brain -> bo ngay khong dat, ngay dat chi giu phan
+  /// tinh chuoi (payload dong bo nho lai).
+  void _compact() {
+    final keepFrom = _keyDaysAgo(_keepDays);
+    final fullFrom = _keyDaysAgo(_fullDays);
+    _days.removeWhere(
+      (key, day) =>
+          key.compareTo(keepFrom) < 0 ||
+          (key.compareTo(fullFrom) < 0 && !day.bodyBrainDone),
+    );
+    _days.updateAll(
+      (key, day) => key.compareTo(fullFrom) < 0 ? day.forStreak : day,
+    );
+    _streakCache = null;
+  }
+
   Future<void> _write() async {
-    // Chi giu [_keepDays] ngay gan nhat.
-    final cutoff = _keyOf(_clock().subtract(const Duration(days: _keepDays)));
-    _days.removeWhere((key, _) => key.compareTo(cutoff) < 0);
+    _compact();
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(
@@ -249,14 +282,26 @@ class DailyProgressStore extends ChangeNotifier {
   /// Tra ve true neu du lieu tren may thay doi.
   Future<bool> mergeRemote(Map<String, dynamic> remote) async {
     await ensureLoaded();
+    final keepFrom = _keyDaysAgo(_keepDays);
+    final fullFrom = _keyDaysAgo(_fullDays);
     var changed = false;
     for (final e in remote.entries) {
-      if (e.value is! Map) continue;
+      if (e.value is! Map || e.key.compareTo(keepFrom) < 0) continue;
       final incoming = DayProgress.fromJson(
         Map<String, dynamic>.from(e.value as Map),
       );
       final local = _days[e.key] ?? const DayProgress();
       final merged = DayProgress.merge(local, incoming);
+      if (e.key.compareTo(fullFrom) < 0) {
+        // Ngay cu chi con dung de dem chuoi: gop voi ban day du tren may (2
+        // nua ngay o 2 may van thanh 1 ngay dat), roi so o dang rut gon nhu
+        // [_compact] - may kia hay may nay con ban day du khong tinh la "doi".
+        if (!merged.bodyBrainDone) continue;
+        final compact = merged.forStreak;
+        if (!local.bodyBrainDone || local.forStreak != compact) changed = true;
+        _days[e.key] = compact;
+        continue;
+      }
       if (merged != local || !_days.containsKey(e.key)) {
         _days[e.key] = merged;
         changed = true;
@@ -354,29 +399,40 @@ class DailyProgressStore extends ChangeNotifier {
   /// [count] ngay gan nhat, phan tu CUOI la hom nay.
   List<(DateTime, DayProgress)> lastDays(int count) {
     final now = _clock();
-    final today = DateTime(now.year, now.month, now.day);
-    return [
+    final days = [
       for (var i = count - 1; i >= 0; i--)
-        (
-          today.subtract(Duration(days: i)),
-          dayOf(today.subtract(Duration(days: i))),
-        ),
+        DateTime(now.year, now.month, now.day - i),
     ];
+    return [for (final day in days) (day, dayOf(day))];
+  }
+
+  /// Chuoi tinh 1 lan cho moi lan du lieu doi / sang ngay moi: getter duoc
+  /// goi o nhieu widget moi lan store bao doi, moi lan toi [_keepDays] ngay.
+  (String, int)? _streakCache;
+
+  @override
+  void notifyListeners() {
+    _streakCache = null;
+    super.notifyListeners();
   }
 
   /// Chuoi ngay lien tiep dat "Body + Brain". Hom nay chua xong van giu
   /// chuoi tu hom qua (con ca ngay de hoan thanh).
   int get bodyBrainStreak {
     final now = _clock();
+    final todayKey = _keyOf(now);
+    final cached = _streakCache;
+    if (cached != null && cached.$1 == todayKey) return cached.$2;
+    // Lui theo lich (khong tru 24 gio): khong nhay / lap ngay khi doi gio.
+    DateTime previous(DateTime d) => DateTime(d.year, d.month, d.day - 1);
     var cursor = DateTime(now.year, now.month, now.day);
-    if (!dayOf(cursor).bodyBrainDone) {
-      cursor = cursor.subtract(const Duration(days: 1));
-    }
+    if (!dayOf(cursor).bodyBrainDone) cursor = previous(cursor);
     var streak = 0;
     while (dayOf(cursor).bodyBrainDone && streak < _keepDays) {
       streak++;
-      cursor = cursor.subtract(const Duration(days: 1));
+      cursor = previous(cursor);
     }
+    _streakCache = (todayKey, streak);
     return streak;
   }
 }

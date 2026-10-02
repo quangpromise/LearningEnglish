@@ -1,0 +1,97 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:learn_english_music/core/providers/app_providers.dart';
+import 'package:learn_english_music/features/fitness/data/workout_repository.dart';
+
+class _Repo implements WorkoutRepository {
+  var calls = 0;
+  Object? error;
+
+  @override
+  Future<List<DateTime>> getCompletedWorkoutTimes(String userId) async {
+    calls++;
+    final e = error;
+    if (e != null) throw e;
+    return [DateTime(2026, 9, 1), DateTime(2026, 9, 3)];
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+final _sent = StateProvider<int>((ref) => 0);
+
+void main() {
+  testWidgets('offline: unknown (not Rookie), retried with backoff', (
+    tester,
+  ) async {
+    final repo = _Repo()..error = Exception('offline');
+    final container = ProviderContainer(
+      overrides: [
+        currentUserIdProvider.overrideWithValue('u1'),
+        workoutRepositoryProvider.overrideWithValue(repo),
+        workoutsSentProvider.overrideWith((ref) => ref.watch(_sent)),
+      ],
+    );
+    addTearDown(container.dispose);
+    final sub = container.listen(bodyStatsProvider, (_, _) {});
+    addTearDown(sub.close);
+    await tester.pump();
+    expect(repo.calls, 1);
+    expect(container.read(bodyStatsProvider).valueOrNull, isNull);
+    // Thu lai sau 1 phut, roi 2 phut (van mat mang).
+    await tester.pump(const Duration(minutes: 1));
+    await tester.pump(const Duration(milliseconds: 10));
+    expect(repo.calls, 2);
+    await tester.pump(const Duration(minutes: 1));
+    await tester.pump(const Duration(milliseconds: 10));
+    expect(repo.calls, 2);
+    // Co mang lai.
+    repo.error = null;
+    await tester.pump(const Duration(minutes: 1));
+    await tester.pump(const Duration(milliseconds: 10));
+    expect(repo.calls, 3);
+    expect(container.read(bodyStatsProvider).valueOrNull?.totalWorkouts, 2);
+  });
+
+  testWidgets('a workout reaching the server recomputes Body Level', (
+    tester,
+  ) async {
+    final repo = _Repo();
+    final container = ProviderContainer(
+      overrides: [
+        currentUserIdProvider.overrideWithValue('u1'),
+        workoutRepositoryProvider.overrideWithValue(repo),
+        workoutsSentProvider.overrideWith((ref) => ref.watch(_sent)),
+      ],
+    );
+    addTearDown(container.dispose);
+    final sub = container.listen(bodyStatsProvider, (_, _) {});
+    addTearDown(sub.close);
+    await tester.pump();
+    expect(repo.calls, 1);
+    // Buoi tap gui bu sau khi mat mang vua len server. Riverpod lam moi
+    // provider qua 1 timer 0 ms: pump() khong co thoi luong khong chay no.
+    container.read(_sent.notifier).state++;
+    await tester.pump(const Duration(milliseconds: 10));
+    await tester.pump(const Duration(milliseconds: 10));
+    expect(repo.calls, 2);
+  });
+
+  testWidgets('signed out: nothing is fetched', (tester) async {
+    final repo = _Repo();
+    final container = ProviderContainer(
+      overrides: [
+        currentUserIdProvider.overrideWithValue(null),
+        workoutRepositoryProvider.overrideWithValue(repo),
+        workoutsSentProvider.overrideWith((ref) => ref.watch(_sent)),
+      ],
+    );
+    addTearDown(container.dispose);
+    final sub = container.listen(bodyStatsProvider, (_, _) {});
+    addTearDown(sub.close);
+    await tester.pump();
+    expect(repo.calls, 0);
+    expect(container.read(bodyStatsProvider).valueOrNull, isNull);
+  });
+}

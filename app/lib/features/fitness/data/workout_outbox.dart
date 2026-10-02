@@ -45,6 +45,12 @@ class WorkoutOutbox extends ChangeNotifier {
   bool _lastFlushFailed = false;
   bool _disposed = false;
   int _opCounter = 0;
+  int _finishedSent = 0;
+
+  /// So buoi tap da gui xong lenh ket thuc trong phien (ke ca gui bu sau khi
+  /// mat mang) - so lieu tinh tu buoi tap (Body Level) tinh lai khi so nay
+  /// doi.
+  int get finishedSent => _finishedSent;
 
   /// Sinh id cuc bo cho 1 buoi tap moi.
   static String newLocalSessionId() =>
@@ -224,6 +230,7 @@ class WorkoutOutbox extends ChangeNotifier {
         _inFlight = op;
         await _run(op);
         _inFlight = null;
+        if (op['type'] == 'finish') _finishedSent++;
         _ops.remove(op);
         _forgetIfDone(op);
         await _persist();

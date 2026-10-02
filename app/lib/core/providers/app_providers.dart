@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -85,6 +87,13 @@ final rewardsRepositoryProvider = Provider<RewardsRepository>(
 final authStateProvider = StreamProvider<AuthState>(
   (ref) => ref.watch(authRepositoryProvider).authStateChanges,
 );
+
+/// Id tai khoan dang dang nhap (null = chua) - tinh lai moi lan dang nhap /
+/// dang xuat.
+final currentUserIdProvider = Provider<String?>((ref) {
+  ref.watch(authStateProvider);
+  return ref.watch(supabaseClientProvider).auth.currentUser?.id;
+});
 
 /// true sau khi người dùng đã đặt xong mật khẩu mới từ link "quên mật khẩu"
 /// - dùng để _AuthGate (main.dart) ngừng hiện ResetPasswordScreen dù event
@@ -516,6 +525,17 @@ final gymTalkSyncProvider = Provider<GymTalkSyncService>((ref) {
   return sync;
 });
 
+/// Du lieu GymTalk tren may da thuoc ve tai khoan nao sau 1 luot dong bo
+/// trong phien nay, kem ngay dong bo thanh cong (GymTalkSyncService.settled)
+/// - null = chua co luot nao xong.
+final gymTalkSettledProvider = Provider<GymTalkSettled?>((ref) {
+  final settled = ref.watch(gymTalkSyncProvider).settled;
+  void onChange() => ref.invalidateSelf();
+  settled.addListener(onChange);
+  ref.onDispose(() => settled.removeListener(onChange));
+  return settled.value;
+});
+
 final friendsChallengeRepositoryProvider = Provider<FriendsChallengeRepository>(
   (ref) => FriendsChallengeRepository(ref.watch(supabaseClientProvider)),
 );
@@ -565,18 +585,48 @@ final fitnessDashboardStatsProvider =
       return ref.watch(workoutRepositoryProvider).getDashboardStats(userId);
     });
 
-/// Body Level (spec #45): tinh tu moi buoi da hoan thanh. Chua dang nhap
-/// hoac loi mang -> Rookie (0 buoi); autoDispose de mo lai la tinh lai.
-final bodyStatsProvider = FutureProvider.autoDispose<BodyStats>((ref) async {
-  final userId = ref.watch(supabaseClientProvider).auth.currentUser?.id;
-  if (userId == null) return const BodyStats(0, 0, 0);
+/// So buoi tap da len server trong phien (WorkoutOutbox.finishedSent).
+final workoutsSentProvider = Provider<int>((ref) {
+  final outbox = ref.watch(workoutOutboxProvider);
+  void onChange() => ref.invalidateSelf();
+  outbox.addListener(onChange);
+  ref.onDispose(() => outbox.removeListener(onChange));
+  return outbox.finishedSent;
+});
+
+/// Lan tai Body Level loi lien tiep cua [_bodyStatsFailedFor] -> thu lai gian
+/// dan (phut); doi tai khoan thi dem lai tu dau.
+var _bodyStatsFailures = 0;
+String? _bodyStatsFailedFor;
+const _bodyStatsRetryMinutes = [1, 2, 4, 8, 16, 30];
+
+/// Body Level (spec #45): tinh tu moi buoi da hoan thanh; tinh lai khi mo lai
+/// (autoDispose) va moi khi 1 buoi tap len server (ke ca gui bu sau khi mat
+/// mang). null = chua dang nhap hoac loi mang - KHONG gia la Rookie: man hien
+/// "…" nhu luc dang tai (tu thu lai: 1, 2, 4... toi da 30 phut), Milestone
+/// (MO-06) khong lay moc tu so lieu sai.
+final bodyStatsProvider = FutureProvider.autoDispose<BodyStats?>((ref) async {
+  ref.watch(workoutsSentProvider);
+  final userId = ref.watch(currentUserIdProvider);
+  if (userId == null) return null;
   final repo = ref.watch(workoutRepositoryProvider);
   try {
     final times = await repo.getCompletedWorkoutTimes(userId);
+    _bodyStatsFailures = 0;
     return computeBodyStats(times, now: DateTime.now());
   } catch (e) {
     debugPrint('bodyStatsProvider failed: $e');
-    return const BodyStats(0, 0, 0);
+    if (_bodyStatsFailedFor != userId) {
+      _bodyStatsFailedFor = userId;
+      _bodyStatsFailures = 0;
+    }
+    final minutes = _bodyStatsFailures < _bodyStatsRetryMinutes.length
+        ? _bodyStatsRetryMinutes[_bodyStatsFailures]
+        : _bodyStatsRetryMinutes.last;
+    _bodyStatsFailures++;
+    final retry = Timer(Duration(minutes: minutes), ref.invalidateSelf);
+    ref.onDispose(retry.cancel);
+    return null;
   }
 });
 

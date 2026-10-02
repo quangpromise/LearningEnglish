@@ -61,4 +61,126 @@ void main() {
     expect(days, hasLength(7));
     expect(days.last.$2.workouts, 1);
   });
+
+  test('streaks longer than 60 days are counted (100 / 365)', () async {
+    for (var i = 0; i < 120; i++) {
+      await store.addWordsReviewed(kDailyLearnGoal);
+      await store.markRestDay(true);
+      now = now.add(const Duration(days: 1));
+    }
+    now = now.subtract(const Duration(days: 1));
+    expect(store.bodyBrainStreak, 120);
+  });
+
+  test('the streak steps back by calendar day across a new year', () async {
+    now = DateTime(2026, 12, 30, 19);
+    for (var i = 0; i < 4; i++) {
+      await completeDay();
+      now = DateTime(now.year, now.month, now.day + 1, 19);
+    }
+    now = DateTime(2027, 1, 2, 8);
+    expect(store.bodyBrainStreak, 4);
+  });
+
+  test('the cached streak follows synced days and account switches', () async {
+    await completeDay();
+    expect(store.bodyBrainStreak, 1);
+    await store.mergeRemote({
+      '2026-09-23': {'w': 1, 'l': kDailyLearnGoal, 's': 0, 'r': false},
+    });
+    expect(store.bodyBrainStreak, 2);
+    await store.clearLocal();
+    expect(store.bodyBrainStreak, 0);
+  });
+
+  test('days older than 60 keep only what the streak needs', () async {
+    // 70 ngay truoc: 1 ngay dat (kem quest, khoa thuong), 1 ngay khong dat.
+    now = DateTime(2026, 7, 16, 19);
+    await completeDay();
+    await store.markHandsFreeDone();
+    await store.markRewarded(now, 'quest_review');
+    now = DateTime(2026, 7, 17, 19);
+    await store.addWordsReviewed(3);
+    now = DateTime(2026, 9, 24, 19);
+    await store.addSpeakAttempt();
+    final exported = store.exportJson();
+    expect(exported['2026-07-16'], {
+      'w': 1,
+      'l': kDailyLearnGoal,
+      's': 0,
+      'r': false,
+    });
+    expect(exported.containsKey('2026-07-17'), isFalse);
+    expect(exported['2026-09-24'], {'w': 0, 'l': 0, 's': 1, 'r': false});
+    final reloaded = DailyProgressStore.forTest(clock: () => now);
+    await reloaded.ensureLoaded();
+    expect(reloaded.dayOf(DateTime(2026, 7, 16)).bodyBrainDone, isTrue);
+  });
+
+  test('synced old days are kept compact and count as a change once', () async {
+    final changed = await store.mergeRemote({
+      '2026-07-16': {
+        'w': 1,
+        'l': 12,
+        's': 4,
+        'r': false,
+        'hf': true,
+        'rk': ['quest_review'],
+      },
+      '2026-07-17': {'w': 0, 'l': 3, 's': 0, 'r': false},
+      // Qua 400 ngay: bo.
+      '2025-01-01': {'w': 1, 'l': 12, 's': 0, 'r': false},
+    });
+    expect(changed, isTrue);
+    expect(store.revision, 1);
+    final exported = store.exportJson();
+    expect(exported['2026-07-16'], {'w': 1, 'l': 12, 's': 0, 'r': false});
+    expect(exported.containsKey('2026-07-17'), isFalse);
+    expect(exported.containsKey('2025-01-01'), isFalse);
+    // May kia van con ban day du: khong tinh la doi nua.
+    expect(
+      await store.mergeRemote({
+        '2026-07-16': {'w': 1, 'l': 12, 's': 4, 'r': false, 'hf': true},
+      }),
+      isFalse,
+    );
+    expect(store.revision, 1);
+  });
+
+  test(
+    'its own server copy changes nothing, even a day just past 60',
+    () async {
+      // Ngay vua qua moc 60 ngay: con day du ca tren may lan tren server.
+      now = DateTime(2026, 7, 25, 19);
+      await completeDay();
+      await store.markRewarded(now, 'quest_review');
+      final server = store.exportJson();
+      now = DateTime(2026, 9, 24, 8);
+      expect(await store.mergeRemote(server), isFalse);
+      expect(store.revision, 0);
+    },
+  );
+
+  test(
+    'two halves of an old day from two devices still make it done',
+    () async {
+      // Hoc o may nay, tap o may kia - 70 ngay truoc, chua tung gop.
+      now = DateTime(2026, 7, 16, 19);
+      await store.addWordsReviewed(kDailyLearnGoal);
+      now = DateTime(2026, 9, 24, 19);
+      expect(
+        await store.mergeRemote({
+          '2026-07-16': {'w': 1, 'l': 0, 's': 0, 'r': false},
+        }),
+        isTrue,
+      );
+      expect(store.dayOf(DateTime(2026, 7, 16)).bodyBrainDone, isTrue);
+      expect(store.exportJson()['2026-07-16'], {
+        'w': 1,
+        'l': kDailyLearnGoal,
+        's': 0,
+        'r': false,
+      });
+    },
+  );
 }
