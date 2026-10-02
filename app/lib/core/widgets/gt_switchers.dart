@@ -6,7 +6,7 @@ import '../theme/gt_motion.dart';
 /// dinh cua AnimatedSwitcher): noi dung nam trong vung cuon, chu canh trai.
 Widget _topLayout(Widget? current, List<Widget> previous) => Stack(
   alignment: AlignmentDirectional.topStart,
-  children: [...previous, if (current != null) current],
+  children: [...previous, ?current],
 );
 
 /// Doi giua 2 noi dung (vd bang hiep <-> man nghi) bang mo cheo + thu phong
