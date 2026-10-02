@@ -2,13 +2,14 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/feedback/gt_feedback_tier.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/gt_celebration.dart';
 import '../../../core/widgets/speaker_button.dart';
 import '../data/cefr_level.dart';
 import '../data/content_pack.dart';
@@ -24,6 +25,49 @@ const kLevelTestPassXp = 50;
 /// Cau disclaimer bat buoc di kem Estimated Band (spec #45, nguyen van).
 const kEstimatedBandDisclaimer =
     'Estimated band — for learning guidance only; not an official IELTS score.';
+
+/// Qua Level Test la Milestone (ADR-0008): cong [xp] qua [award] roi hien
+/// Celebration voi XP THAT da cong - loi mang / chua dang nhap / qua
+/// [timeout] thi hien dau tick, khong bia so. [onCredited] nhan XP that
+/// (0 neu khong cong duoc) ngay khi biet. Cho it nhat [minDelay] de nguoi
+/// dung kip thay cau tra loi cuoi.
+Future<void> celebrateLevelTestPass(
+  BuildContext context, {
+  required int xp,
+  required Future<void> Function(int xp) award,
+  required String title,
+  required String subtitle,
+  required String ctaLabel,
+  void Function(int credited)? onCredited,
+  Duration minDelay = const Duration(milliseconds: 600),
+  Duration timeout = const Duration(seconds: 3),
+}) async {
+  var credited = 0;
+  Future<void> claim() async {
+    try {
+      await award(xp).timeout(timeout);
+      credited = xp;
+    } catch (e) {
+      debugPrint('Level Test XP failed: $e');
+    }
+    onCredited?.call(credited);
+  }
+
+  await Future.wait([claim(), Future<void>.delayed(minDelay)]);
+  if (!context.mounted) return;
+  await showTieredFeedback(
+    context,
+    GtFeedbackEvent.levelTestPassed,
+    xp: credited,
+    celebration: () => showCelebration(
+      context,
+      xp: credited,
+      title: title,
+      subtitle: subtitle,
+      ctaLabel: ctaLabel,
+    ),
+  );
+}
 
 /// Level Test cuoi Stage: 20 cau, khong hien dung/sai tung cau; cham xong
 /// moi hien ket qua, band (B1+) va nut on cau sai khi truot.
@@ -46,6 +90,9 @@ class _LevelTestScreenState extends ConsumerState<LevelTestScreen> {
   int? _chosen;
   Timer? _next;
   LevelTestResult? _result;
+
+  /// XP Level Test da cong that (null = dang cong / chua qua).
+  int? _creditedXp;
 
   @override
   void dispose() {
@@ -77,15 +124,26 @@ class _LevelTestScreenState extends ConsumerState<LevelTestScreen> {
     _result = result;
     EnglishPathStore.instance.recordLevelTest(result);
     if (result.passed && awardXp) {
-      HapticFeedback.heavyImpact();
       // XP la diem tich luy tren server - loi mang/chua dang nhap thi bo qua.
       // myLearningXpProvider la autoDispose nen tu tai lai khi mo Tien do.
+      final repo = ref.read(learningXpRepositoryProvider);
+      final lang = ref.read(appLanguageProvider);
+      String t(String key) => AppStrings.t(key, lang);
       unawaited(
-        ref
-            .read(learningXpRepositoryProvider)
-            .addBonusXp(kLevelTestPassXp)
-            .then<void>((_) {})
-            .catchError((Object e) => debugPrint('Level Test XP failed: $e')),
+        celebrateLevelTestPass(
+          context,
+          xp: kLevelTestPassXp,
+          award: repo.addBonusXp,
+          onCredited: (xp) {
+            if (mounted) setState(() => _creditedXp = xp);
+          },
+          title: t('level_test_passed'),
+          subtitle: t('level_test_score')
+              .replaceFirst('{c}', '${result.correct}')
+              .replaceFirst('{t}', '${result.total}')
+              .replaceFirst('{p}', '${result.correct * 100 ~/ result.total}'),
+          ctaLabel: t('gt_celebration_cta'),
+        ),
       );
     }
   }
@@ -134,7 +192,11 @@ class _LevelTestScreenState extends ConsumerState<LevelTestScreen> {
               Expanded(
                 child: showQuestion
                     ? _question(_items[index])
-                    : _LevelTestResultView(result: _result!, pack: widget.pack),
+                    : _LevelTestResultView(
+                        result: _result!,
+                        pack: widget.pack,
+                        creditedXp: _creditedXp,
+                      ),
               ),
             ],
           ),
@@ -154,8 +216,15 @@ class _LevelTestScreenState extends ConsumerState<LevelTestScreen> {
 }
 
 class _LevelTestResultView extends ConsumerWidget {
-  const _LevelTestResultView({required this.result, required this.pack});
+  const _LevelTestResultView({
+    required this.result,
+    required this.pack,
+    this.creditedXp,
+  });
   final LevelTestResult result;
+
+  /// XP Level Test da cong that (null = dang cong).
+  final int? creditedXp;
   final ContentPack pack;
 
   @override
@@ -191,9 +260,12 @@ class _LevelTestResultView extends ConsumerWidget {
           if (passed) ...[
             const SizedBox(height: 6),
             Text(
-              ref
-                  .tr('level_test_passed_body')
-                  .replaceFirst('{xp}', '$kLevelTestPassXp'),
+              // Chi noi "+N XP" khi XP da cong that (CONTEXT.md: XP that).
+              (creditedXp ?? 0) > 0
+                  ? ref
+                        .tr('level_test_passed_body')
+                        .replaceFirst('{xp}', '$creditedXp')
+                  : ref.tr('level_test_passed_body_no_xp'),
               textAlign: TextAlign.center,
               style: AppTextStyles.muted(size: 14),
             ),
