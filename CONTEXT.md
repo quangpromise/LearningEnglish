@@ -93,7 +93,15 @@ _Avoid_: loot box, reward box
 Nút hành động ở giữa thanh tab: vào buổi tập hôm nay nếu chưa tập, nếu đã tập thì vào ôn thẻ; bản thân nó không phải là một tab.
 _Avoid_: FAB, center tab
 
+**Milestone**:
+Sự kiện hiếm đáng chúc mừng toàn màn: mở Quest Chest, xong buổi tập trong ngày, chuỗi Body + Brain đạt 7 / 30 / 100 / 365 ngày, lên GymTalk Rank, lên Body Level, qua Level Test. Việc thường ngày (xong Daily Quest, xong bộ thẻ) không phải Milestone.
+_Avoid_: achievement, cột mốc nhỏ
+
 **Celebration**:
-Lớp phủ chúc mừng hiện sau một mốc (xong buổi tập, xong bộ thẻ, mở rương), kèm số XP thật vừa được cộng.
+Lớp phủ chúc mừng toàn màn, chỉ hiện sau một Milestone, kèm số XP thật vừa được cộng (không có XP thì không hiện số).
 _Avoid_: popup, modal
+
+**XP Toast**:
+Thông báo ngắn ở mép trên màn hình báo số XP thật vừa được cộng cho việc thường ngày.
+_Avoid_: snackbar, notification
 
