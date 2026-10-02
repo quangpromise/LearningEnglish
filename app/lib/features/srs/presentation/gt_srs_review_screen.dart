@@ -45,13 +45,15 @@ class GtSrsReviewScreen extends ConsumerStatefulWidget {
   ConsumerState<GtSrsReviewScreen> createState() => _GtSrsReviewScreenState();
 }
 
-/// 1 the vua cham dang bay ra.
+/// 1 the vua cham dang bay ra, giu co cua vung the luc cham (vung nay
+/// rong ra khi het bo the - the dang bay khong bi keo gian theo).
 class _Flying {
-  _Flying(this.card, this.grade, this.controller);
+  _Flying(this.card, this.grade, this.controller, this.size);
 
   final SrsCard card;
   final SrsGrade grade;
   final AnimationController controller;
+  final Size size;
 }
 
 class _GtSrsReviewScreenState extends ConsumerState<GtSrsReviewScreen>
@@ -66,9 +68,13 @@ class _GtSrsReviewScreenState extends ConsumerState<GtSrsReviewScreen>
   bool _revealed = false;
   bool _finished = false;
 
-  late final AnimationController _flip = AnimationController(vsync: this);
+  late final AnimationController _flip = AnimationController(vsync: this)
+    ..addListener(_maybeReveal);
   Curve _flipCurve = Curves.linear;
   final List<_Flying> _flying = [];
+
+  /// Co vung the o lan dung gan nhat.
+  Size _cardArea = Size.zero;
 
   @override
   void initState() {
@@ -110,20 +116,22 @@ class _GtSrsReviewScreenState extends ConsumerState<GtSrsReviewScreen>
     if (_flipped) return;
     final motion = gtMotion(context, GtMotionKind.standard);
     setState(() => _flipped = true);
+    _flipCurve = motion.curve;
     if (motion.duration == Duration.zero) {
       _flip.value = 1;
-      setState(() => _revealed = true);
       return;
     }
-    _flipCurve = motion.curve;
-    _flip.duration = motion.duration;
-    final flipping = _index;
-    _flip.forward(from: 0).whenCompleteOrCancel(() {
-      // Van la the do (chua doi the giua chung).
-      if (mounted && _index == flipping && _flipped) {
-        setState(() => _revealed = true);
-      }
-    });
+    _flip
+      ..duration = motion.duration
+      ..forward(from: 0);
+  }
+
+  /// The trong gan nhu phang (con < 4 do) la cho cham - khong bat cho lo xo
+  /// lang han.
+  void _maybeReveal() {
+    if (_flipped && !_revealed && _flipCurve.transform(_flip.value) >= 0.98) {
+      setState(() => _revealed = true);
+    }
   }
 
   Future<void> _grade(SrsGrade grade) async {
@@ -151,10 +159,12 @@ class _GtSrsReviewScreenState extends ConsumerState<GtSrsReviewScreen>
       _revealed = false;
       _flip.value = 0;
     });
+    // Tinh truoc await: the sau co the da duoc cham trong luc cho.
+    final last = _index >= next.length;
     if (!repeat) {
       await (widget.progress ?? DailyProgressStore.instance).addWordsReviewed();
     }
-    if (_index >= next.length) await _finish();
+    if (last) await _finish();
   }
 
   /// The vua cham bay ra theo muc cham; giam chuyen dong: doi the tuc thi.
@@ -162,7 +172,7 @@ class _GtSrsReviewScreenState extends ConsumerState<GtSrsReviewScreen>
     final duration = gtMotion(context, GtMotionKind.standard).duration;
     if (duration == Duration.zero) return;
     final controller = AnimationController(vsync: this, duration: duration);
-    final flying = _Flying(card, grade, controller);
+    final flying = _Flying(card, grade, controller, _cardArea);
     _flying.add(flying);
     controller.forward().whenCompleteOrCancel(() {
       if (!mounted) return;
@@ -180,13 +190,15 @@ class _GtSrsReviewScreenState extends ConsumerState<GtSrsReviewScreen>
     _finished = true;
     // Nhiem vu "On the" co the vua dat -> tra XP (khoa chong trung o server).
     // Chi bao XP ma CHINH lan goi nay vua cong: neu man Hom nay da tra (va
-    // da hien toast) giua phien thi o day = 0, khong bao lai.
+    // da hien toast) giua phien thi o day = 0, khong bao lai. Lay overlay
+    // goc truoc khi cho: dong popup giua chung van bao XP da cong that.
+    final overlay = Overlay.maybeOf(context, rootOverlay: true);
     final xp = await ref
         .read(questRewardServiceProvider)
         .claimPendingQuests()
         .catchError((Object _) => 0);
-    if (!mounted) return;
-    showXpToast(xp, overlay: Overlay.maybeOf(context, rootOverlay: true));
+    if (overlay == null || !overlay.mounted) return;
+    showXpToast(xp, overlay: overlay);
   }
 
   @override
@@ -268,18 +280,25 @@ class _GtSrsReviewScreenState extends ConsumerState<GtSrsReviewScreen>
       children: [
         Expanded(
           child: LayoutBuilder(
-            builder: (context, box) => Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Positioned.fill(child: current),
-                for (final f in _flying)
-                  Positioned.fill(
-                    child: IgnorePointer(
-                      child: _FlyingCard(flying: f, size: box.biggest),
+            builder: (context, box) {
+              _cardArea = box.biggest;
+              return Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Positioned.fill(child: current),
+                  for (final f in _flying)
+                    Positioned(
+                      left: 0,
+                      top: 0,
+                      width: f.size.width,
+                      height: f.size.height,
+                      child: ExcludeSemantics(
+                        child: IgnorePointer(child: _FlyingCard(flying: f)),
+                      ),
                     ),
-                  ),
-              ],
-            ),
+                ],
+              );
+            },
           ),
         ),
         if (!done) ...[
@@ -301,13 +320,10 @@ class _GtSrsReviewScreenState extends ConsumerState<GtSrsReviewScreen>
     );
   }
 
-  /// The hien tai: phong nhe vao (tru the dau), lat 3D khi cham.
+  /// The hien tai: phong nhe vao (tru the dau; lo xo standard - viec thuong
+  /// ngay, khong nay), lat 3D khi cham.
   Widget _currentCard(SrsCard card) {
-    final enter = gtMotion(
-      context,
-      GtMotionKind.expressive,
-      GtMotionSpeed.fast,
-    );
+    final enter = gtMotion(context, GtMotionKind.standard, GtMotionSpeed.fast);
     return TweenAnimationBuilder<double>(
       key: ValueKey(_index),
       tween: Tween(begin: _index == 0 ? 1 : 0, end: 1),
@@ -335,13 +351,12 @@ class _GtSrsReviewScreenState extends ConsumerState<GtSrsReviewScreen>
   }
 }
 
-/// The vua cham bay ra: Quen trai (do), Kho xuong (vang), Nho phai (ngoc),
-/// nhuom mau muc cham va mo dan.
+/// The vua cham bay ra: Quen trai (do), Kho xuong (vang), Nho phai (ngoc).
+/// Mau muc cham hien ngay tu dau, the chi mo dan o doan sau de mau kip thay.
 class _FlyingCard extends StatelessWidget {
-  const _FlyingCard({required this.flying, required this.size});
+  const _FlyingCard({required this.flying});
 
   final _Flying flying;
-  final Size size;
 
   @override
   Widget build(BuildContext context) {
@@ -356,8 +371,13 @@ class _FlyingCard extends StatelessWidget {
     return AnimatedBuilder(
       animation: flying.controller,
       builder: (context, child) {
-        // Roi di: tang toc dan.
-        final p = Curves.easeInCubic.transform(flying.controller.value);
+        final v = flying.controller.value;
+        // Roi di theo kieu "ra khoi man": tang toc dan (exit M3), ra het
+        // mep man - ngang 1.15 be rong, doc 0.9 chieu cao vung the.
+        final p = Curves.easeInCubic.transform(v);
+        final size = flying.size;
+        final tintAlpha = 0.45 * (v * 3).clamp(0.0, 1.0);
+        final fade = ((v - 0.35) / 0.65).clamp(0.0, 1.0);
         return Transform.translate(
           offset: Offset(
             dir.dx * size.width * 1.15 * p,
@@ -366,14 +386,14 @@ class _FlyingCard extends StatelessWidget {
           child: Transform.rotate(
             angle: dir.dx * 0.22 * p,
             child: Opacity(
-              opacity: 1 - p,
+              opacity: 1 - fade,
               child: Stack(
                 fit: StackFit.expand,
                 children: [
                   child!,
                   DecoratedBox(
                     decoration: BoxDecoration(
-                      color: tint.withValues(alpha: 0.35 * p),
+                      color: tint.withValues(alpha: tintAlpha),
                       borderRadius: BorderRadius.circular(32),
                     ),
                   ),
@@ -546,6 +566,7 @@ class _DeckDone extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final t = context.gt;
+    final sentence = ref.tr('gt_srs_done_sub');
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -560,7 +581,7 @@ class _DeckDone extends ConsumerWidget {
           const SizedBox(height: 6),
           GtCountUp(
             value: count,
-            format: (n) => ref.tr('gt_srs_done_sub').replaceFirst('{n}', '$n'),
+            format: (n) => sentence.replaceFirst('{n}', '$n'),
             textAlign: TextAlign.center,
             style: GtText.body(t.tx2),
           ),

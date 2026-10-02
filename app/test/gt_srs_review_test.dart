@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:learn_english_music/core/theme/gt_tokens.dart';
@@ -21,10 +22,11 @@ SrsCard _card(String en, String vi) => SrsCard(
   due: DateTime(2026, 9, 1),
 );
 
-/// Dich vu thuong gia: khong goi Supabase, khong co gi de tra.
-QuestRewardService _noRewards() => QuestRewardService(
-  store: DailyProgressStore.instance,
-  claimOnce: (key, amount) async => 0,
+/// Dich vu thuong gia (khong goi Supabase): "server" cong dung so XP - chi
+/// co XP khi nhiem vu that su dat trong [store].
+QuestRewardService _rewards(DailyProgressStore store) => QuestRewardService(
+  store: store,
+  claimOnce: (key, amount) async => amount,
   addLegacy: (amount) async {},
 );
 
@@ -36,7 +38,28 @@ Widget _reduced(Widget child) => Builder(
 );
 
 void main() {
-  setUp(() => SharedPreferences.setMockInitialValues({}));
+  // Moi test 1 store rieng: store singleton giu Future cua test truoc (zone
+  // fake-time cu) nen await tren no co the khong bao gio chay tiep.
+  late DailyProgressStore store;
+  late List<Object?> haptics;
+
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+    store = DailyProgressStore.forTest();
+    haptics = [];
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+          if (call.method == 'HapticFeedback.vibrate') {
+            haptics.add(call.arguments);
+          }
+          return null;
+        });
+  });
+
+  tearDown(() {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(SystemChannels.platform, null);
+  });
 
   Future<void> pump(
     WidgetTester tester,
@@ -49,7 +72,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          questRewardServiceProvider.overrideWithValue(rewards ?? _noRewards()),
+          questRewardServiceProvider.overrideWithValue(
+            rewards ?? _rewards(store),
+          ),
         ],
         child: MaterialApp(
           theme: ThemeData(extensions: const [GtTokens.dark]),
@@ -91,6 +116,7 @@ void main() {
       GtSrsReviewScreen(
         cards: [_card('lift', 'nang'), _card('rest', 'nghi')],
         stopVoice: () {},
+        progress: store,
       ),
     );
     expect(find.text('0/2'), findsOneWidget);
@@ -146,6 +172,7 @@ void main() {
       GtSrsReviewScreen(
         cards: [_card('lift', 'nang'), _card('rest', 'nghi')],
         stopVoice: () {},
+        progress: store,
       ),
     );
     await tester.tap(find.text('lift'));
@@ -171,6 +198,7 @@ void main() {
         GtSrsReviewScreen(
           cards: [_card('lift', 'nang'), _card('rest', 'nghi')],
           stopVoice: () {},
+          progress: store,
         ),
       ),
     );
@@ -189,7 +217,6 @@ void main() {
   testWidgets('the card that completes the review quest: XP Toast, no '
       'Celebration', (tester) async {
     // 1 the nua la dat nhiem vu On the -> lan claim cuoi bo the cong XP.
-    final store = DailyProgressStore.forTest();
     await store.addWordsReviewed(kDailyLearnGoal - 1);
     await pump(
       tester,
@@ -197,11 +224,6 @@ void main() {
         cards: [_card('lift', 'nang')],
         stopVoice: () {},
         progress: store,
-      ),
-      rewards: QuestRewardService(
-        store: store,
-        claimOnce: (key, amount) async => amount,
-        addLegacy: (amount) async {},
       ),
     );
     await tester.tap(find.text('lift'));
@@ -217,5 +239,47 @@ void main() {
     expect(find.byType(GtCelebration), findsNothing);
     await tester.pumpAndSettle();
     expect(find.text('Xong bộ thẻ!'), findsOneWidget);
+  });
+
+  testWidgets('XP already paid by Today mid-deck: no second toast', (
+    tester,
+  ) async {
+    await store.addWordsReviewed(kDailyLearnGoal - 1);
+    // Man Hom nay da tra nhiem vu nay (va da hien toast) trong phien.
+    await store.markRewarded(DateTime.now(), DailyQuestId.review.rewardKey);
+    await pump(
+      tester,
+      GtSrsReviewScreen(
+        cards: [_card('lift', 'nang')],
+        stopVoice: () {},
+        progress: store,
+      ),
+    );
+    await tester.tap(find.text('lift'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Nhớ'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    await tester.pump(const Duration(milliseconds: 700));
+    expect(find.textContaining('XP'), findsNothing);
+    await tester.pumpAndSettle();
+    expect(find.text('Xong bộ thẻ!'), findsOneWidget);
+  });
+
+  testWidgets('grading a card gives a very light tick', (tester) async {
+    await pump(
+      tester,
+      GtSrsReviewScreen(
+        cards: [_card('lift', 'nang'), _card('rest', 'nghi')],
+        stopVoice: () {},
+        progress: store,
+      ),
+    );
+    await tester.tap(find.text('lift'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Khó'));
+    await tester.pump();
+    expect(haptics, ['HapticFeedbackType.selectionClick']);
+    await tester.pumpAndSettle();
   });
 }

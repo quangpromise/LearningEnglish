@@ -49,7 +49,8 @@ List<T> requeueAfterGrade<T>(
 }
 
 /// Huong the bay ra sau khi cham (spec #96, quyet dinh #19): Quen sang
-/// trai, Kho xuong duoi, Nho sang phai - don vi = 1 chieu cua the.
+/// trai, Kho xuong duoi, Nho sang phai (vector don vi; quang duong do man
+/// hinh quyet dinh).
 ({double dx, double dy}) flyDirection(SrsGrade grade) => switch (grade) {
   SrsGrade.forgot => (dx: -1, dy: 0),
   SrsGrade.hard => (dx: 0, dy: 1),
