@@ -150,7 +150,7 @@ class _GtTodayScreenState extends ConsumerState<GtTodayScreen> {
                         dueCount: SrsStore.instance.dueCount(now),
                       ),
                       const SizedBox(height: 16),
-                      GtQuestsCard(day: day),
+                      GtQuestsCard(day: day, visit: visit),
                     ],
                   ),
                 ),

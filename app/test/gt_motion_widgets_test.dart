@@ -192,6 +192,25 @@ void main() {
       ]);
     });
 
+    test('one turn buzzes once, at the strongest level', () async {
+      await Future.wait([
+        GtHaptics.play(GtHapticEvent.questCompleted),
+        GtHaptics.play(GtHapticEvent.ringCompleted),
+        GtHaptics.play(GtHapticEvent.setTicked),
+      ]);
+      expect(calls.map((c) => c.arguments), [
+        'HapticFeedbackType.mediumImpact',
+      ]);
+      await Future.wait([
+        GtHaptics.play(GtHapticEvent.questCompleted),
+        GtHaptics.play(GtHapticEvent.chestOpened),
+      ]);
+      expect(calls.map((c) => c.arguments), [
+        'HapticFeedbackType.mediumImpact',
+        'HapticFeedbackType.heavyImpact',
+      ]);
+    });
+
     test('stays silent while any mic session is open', () async {
       final pronunciation = Object();
       final trainer = Object();

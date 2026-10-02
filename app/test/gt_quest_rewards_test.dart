@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:learn_english_music/core/theme/gt_tokens.dart';
 import 'package:learn_english_music/core/widgets/gt_celebration.dart';
+import 'package:learn_english_music/core/widgets/gt_tick_circle.dart';
 import 'package:learn_english_music/features/today/data/daily_progress_store.dart';
 import 'package:learn_english_music/features/today/data/daily_quests.dart';
 import 'package:learn_english_music/features/today/data/quest_rewards.dart';
@@ -217,7 +218,12 @@ void main() {
     for (final q in DailyQuestId.values) {
       expect(find.text('+${q.xp} XP'), findsOneWidget);
     }
-    expect(find.byIcon(Icons.check_rounded), findsOneWidget);
+    expect(
+      tester
+          .widgetList<GtTickCircle>(find.byType(GtTickCircle))
+          .map((w) => w.progress),
+      [1, 0, 0, 0],
+    );
     expect(find.text('Hoàn thành 3 nhiệm vụ nữa để mở rương'), findsOneWidget);
     expect(find.text('Mở'), findsNothing);
   });
@@ -233,7 +239,10 @@ void main() {
           handsFree: true,
           trainerChat: true,
         ),
-        onOpenChest: () => opened++,
+        onOpenChest: () async {
+          opened++;
+          return 0;
+        },
       ),
     );
     expect(find.text('Rương đã sẵn sàng!'), findsOneWidget);

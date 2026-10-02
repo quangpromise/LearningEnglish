@@ -39,20 +39,41 @@ abstract final class GtHaptics {
 
   static void micStopped(Object owner) => _micOwners.remove(owner);
 
-  @visibleForTesting
-  static void resetForTest() => _micOwners.clear();
+  static GtHapticLevel? _queued;
+  static Future<void>? _flush;
 
-  static Future<void> play(GtHapticEvent event) async {
-    if (micActive) return;
-    switch (gtHapticLevel(event)) {
-      case GtHapticLevel.selection:
-        await HapticFeedback.selectionClick();
-      case GtHapticLevel.light:
-        await HapticFeedback.lightImpact();
-      case GtHapticLevel.medium:
-        await HapticFeedback.mediumImpact();
-      case GtHapticLevel.heavy:
-        await HapticFeedback.heavyImpact();
-    }
+  @visibleForTesting
+  static void resetForTest() {
+    _micOwners.clear();
+    _queued = null;
+    _flush = null;
   }
+
+  /// Rung cho [event]. Cac su kien trong CUNG 1 luot (vd nhiem vu xong va
+  /// vong cham 100% luc quay lai Hom nay) gop thanh 1 lan rung o muc manh
+  /// nhat, khong rung chong len nhau.
+  static Future<void> play(GtHapticEvent event) {
+    if (micActive) return Future.value();
+    final level = gtHapticLevel(event);
+    final queued = _queued;
+    if (queued != null) {
+      if (level.index > queued.index) _queued = level;
+      return _flush ?? Future.value();
+    }
+    _queued = level;
+    return _flush = Future.microtask(() async {
+      final strongest = _queued;
+      _queued = null;
+      _flush = null;
+      if (strongest == null || micActive) return;
+      await _vibrate(strongest);
+    });
+  }
+
+  static Future<void> _vibrate(GtHapticLevel level) => switch (level) {
+    GtHapticLevel.selection => HapticFeedback.selectionClick(),
+    GtHapticLevel.light => HapticFeedback.lightImpact(),
+    GtHapticLevel.medium => HapticFeedback.mediumImpact(),
+    GtHapticLevel.heavy => HapticFeedback.heavyImpact(),
+  };
 }
