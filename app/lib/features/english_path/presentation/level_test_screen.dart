@@ -192,7 +192,11 @@ class _LevelTestScreenState extends ConsumerState<LevelTestScreen> {
               Expanded(
                 child: showQuestion
                     ? _question(_items[index])
-                    : _LevelTestResultView(result: _result!, pack: widget.pack),
+                    : _LevelTestResultView(
+                        result: _result!,
+                        pack: widget.pack,
+                        creditedXp: _creditedXp,
+                      ),
               ),
             ],
           ),
@@ -212,8 +216,15 @@ class _LevelTestScreenState extends ConsumerState<LevelTestScreen> {
 }
 
 class _LevelTestResultView extends ConsumerWidget {
-  const _LevelTestResultView({required this.result, required this.pack});
+  const _LevelTestResultView({
+    required this.result,
+    required this.pack,
+    this.creditedXp,
+  });
   final LevelTestResult result;
+
+  /// XP Level Test da cong that (null = dang cong).
+  final int? creditedXp;
   final ContentPack pack;
 
   @override
@@ -250,10 +261,10 @@ class _LevelTestResultView extends ConsumerWidget {
             const SizedBox(height: 6),
             Text(
               // Chi noi "+N XP" khi XP da cong that (CONTEXT.md: XP that).
-              (_creditedXp ?? 0) > 0
+              (creditedXp ?? 0) > 0
                   ? ref
                         .tr('level_test_passed_body')
-                        .replaceFirst('{xp}', '$_creditedXp')
+                        .replaceFirst('{xp}', '$creditedXp')
                   : ref.tr('level_test_passed_body_no_xp'),
               textAlign: TextAlign.center,
               style: AppTextStyles.muted(size: 14),
