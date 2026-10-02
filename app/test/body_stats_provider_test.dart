@@ -63,10 +63,11 @@ void main() {
     addTearDown(sub.close);
     await tester.pump();
     expect(repo.calls, 1);
-    // Buoi tap gui bu sau khi mat mang vua len server.
+    // Buoi tap gui bu sau khi mat mang vua len server. Riverpod lam moi
+    // provider qua 1 timer 0 ms: pump() khong co thoi luong khong chay no.
     container.read(_sent.notifier).state++;
-    await tester.pump();
-    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 10));
+    await tester.pump(const Duration(milliseconds: 10));
     expect(repo.calls, 2);
   });
 
