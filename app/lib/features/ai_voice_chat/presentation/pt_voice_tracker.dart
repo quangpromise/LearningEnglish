@@ -106,13 +106,15 @@ class PtVoiceTracker extends ChangeNotifier {
       _avatarFrom = start;
       _avatarTurnOver = false;
     } else if (start > from + _avatarLength) {
-      // Server cham hon thoi gian thuc: avatar im cho goi moi.
-      _flushCarry();
+      // Server cham hon thoi gian thuc: avatar im cho goi moi. Khoang lang
+      // vao muc am nhu am thanh im -> thanh song van khop thoi gian.
+      final gap = start - (from + _avatarLength);
+      final samples =
+          gap.inMicroseconds *
+          _aiSamplesPerSecond ~/
+          Duration.microsecondsPerSecond;
+      _appendLevels(Uint8List(samples * 2));
       _avatarLength = start - from;
-      final windows = _avatarLength.inMicroseconds ~/ window.inMicroseconds;
-      while (_avatarLevels.length < windows) {
-        _avatarLevels.add(0);
-      }
     }
     // Do dai theo dung so mau (goi nho khong bi lam tron len 50 ms).
     _avatarLength += Duration(
@@ -203,7 +205,7 @@ class PtVoiceTracker extends ChangeNotifier {
         _clearAvatar();
       } else {
         if (now >= avatarFrom) _avatarStarted = true;
-        level = _levelAt(_avatarLevels, now - avatarFrom);
+        level = _avatarLevelAt(now - avatarFrom);
       }
     }
     final playerFrom = _playerFrom;
@@ -216,6 +218,15 @@ class PtVoiceTracker extends ChangeNotifier {
     }
     aiLevel.value = level;
     _update();
+  }
+
+  /// Muc am avatar tai [offset]; o mep cuoi (phan le chua du 1 o) lay muc am
+  /// cua phan le; qua het am thanh da nhan (cho goi moi) -> 0.
+  double _avatarLevelAt(Duration offset) {
+    if (offset.isNegative || offset >= _avatarLength) return 0;
+    final i = offset.inMicroseconds ~/ window.inMicroseconds;
+    if (i < _avatarLevels.length) return _avatarLevels[i];
+    return _carry.isEmpty ? 0 : pcm16Level(_carry);
   }
 
   static double _levelAt(List<double> levels, Duration offset) {

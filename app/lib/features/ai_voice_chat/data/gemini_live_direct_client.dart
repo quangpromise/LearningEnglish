@@ -188,6 +188,9 @@ class GeminiLiveDirectClient implements VoiceChatSession {
           _emit(VoiceChatState.error);
         },
         onDone: () {
+          // Ket noi da bo (mo khong thanh -> onError da bao loi, hoac man da
+          // dong): khong bao 'idle' de len 'error'.
+          if (!identical(_channel, channel)) return;
           // Ket noi dong giua luc dang noi: thoi thu mic.
           unawaited(_stopMic());
           // Neu server tu dong dong ket noi (vd sai model, sai API key, het

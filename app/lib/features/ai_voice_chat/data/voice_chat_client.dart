@@ -192,6 +192,9 @@ class VoiceChatClient implements VoiceChatSession {
         _emit(VoiceChatState.error);
       },
       onDone: () {
+        // Ket noi da bo (mo khong thanh -> onError da bao loi, hoac man da
+        // dong): khong bao 'idle' de len 'error'.
+        if (!identical(_channel, channel)) return;
         unawaited(_stopMic());
         final code = channel.closeCode;
         if (code != null && code != 1000) {

@@ -100,6 +100,24 @@ void main() {
       expect(t.display, PtVoiceState.idle);
     });
 
+    test('a server just slower than real time keeps the bars in time', () {
+      t.onClientState(VoiceChatState.thinking);
+      // 50 goi 40 ms im lang, moi goi den sau 41 ms; roi 1 goi to.
+      for (var i = 0; i < 50; i++) {
+        t.onAiChunk(
+          _voice(40, amplitude: 0),
+          at: _ms(41 * i),
+          avatarPlays: true,
+        );
+      }
+      t.onAiChunk(_voice(40), at: _ms(41 * 50), avatarPlays: true);
+      t.tick(_ms(2000));
+      expect(t.aiLevel.value, 0);
+      // Goi to phat tu 2050 ms: thanh song len dung luc do.
+      t.tick(_ms(2060));
+      expect(t.aiLevel.value, greaterThan(0.8));
+    });
+
     test('a connection closed mid-reply does not leave the coach speaking', () {
       t.onClientState(VoiceChatState.thinking);
       t.onAiChunk(_voice(200), at: _ms(0), avatarPlays: true);
