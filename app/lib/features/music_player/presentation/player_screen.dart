@@ -10,6 +10,7 @@ import '../../../core/i18n/app_strings.dart';
 import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/gt_motion.dart';
 import '../../grammar/presentation/grammar_screen.dart';
 import '../../planner/presentation/planner_accent.dart';
 import '../../translation/presentation/word_popup_sheet.dart';
@@ -135,7 +136,10 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
       Scrollable.ensureVisible(
         ctx,
         alignment: 0.42,
-        duration: const Duration(milliseconds: 420),
+        // Giam chuyen dong: nhay thang toi dong dang hat, khong truot.
+        duration: gtReduceMotion(context)
+            ? Duration.zero
+            : const Duration(milliseconds: 420),
         curve: Curves.easeOutCubic,
       );
     } else if (retriesLeft > 0) {

@@ -38,17 +38,29 @@ const kWealthHomeRouteName = '/wealth-home';
 class TopRouteObserver extends NavigatorObserver {
   final ValueNotifier<String?> currentRouteName = ValueNotifier(null);
 
+  /// Thoi gian hoat anh lui dai nhat cua (cac) route vua pop tu lan push
+  /// gan nhat (vd bottom sheet 200 ms, trang 450 ms) - man ben duoi doi het
+  /// roi moi chay hieu ung "vua xong" (xem GtWhenOnScreen).
+  Duration lastExit = Duration.zero;
+
   void _update(Route<dynamic>? route) {
     currentRouteName.value = route?.settings.name;
   }
 
   @override
-  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) =>
-      _update(route);
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    lastExit = Duration.zero;
+    _update(route);
+  }
 
   @override
-  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) =>
-      _update(previousRoute);
+  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    if (route is TransitionRoute &&
+        route.reverseTransitionDuration > lastExit) {
+      lastExit = route.reverseTransitionDuration;
+    }
+    _update(previousRoute);
+  }
 
   @override
   void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) =>

@@ -150,6 +150,9 @@ class DayProgress {
   );
 }
 
+/// Khoa trong [DayProgress.rewarded]: hom nay da chuc mung buoi tap.
+const kWorkoutCelebratedKey = 'celebrated_workout';
+
 /// Dem tien do 3 vong Tap - Hoc - Noi theo tung ngay, luu tren may
 /// (SharedPreferences, giu 60 ngay). Singleton de cac noi ghi nhan (man tap,
 /// the tu, luyen phat am...) goi truc tiep ma khong can WidgetRef; man Hom
@@ -173,6 +176,16 @@ class DailyProgressStore extends ChangeNotifier {
   final DateTime Function() _clock;
   final Map<String, DayProgress> _days = {};
   Future<void>? _loading;
+  bool _loaded = false;
+
+  /// Da doc xong du lieu da luu - truoc do [today] chi la ngay rong.
+  bool get isLoaded => _loaded;
+
+  int _revision = 0;
+
+  /// Tang moi khi so lieu den tu NGOAI may nay (dong bo tai khoan, doi tai
+  /// khoan) - man Hom nay coi do la moc moi, khong chuc mung nhu vua lam.
+  int get revision => _revision;
 
   /// Khoa ngay 'yyyy-mm-dd' (theo gio may) - cung dung lam tien to khoa
   /// thuong tren server.
@@ -199,6 +212,7 @@ class DailyProgressStore extends ChangeNotifier {
     } catch (e) {
       debugPrint('DailyProgressStore load failed: $e');
     }
+    _loaded = true;
     notifyListeners();
   }
 
@@ -249,6 +263,7 @@ class DailyProgressStore extends ChangeNotifier {
       }
     }
     if (changed) {
+      _revision++;
       notifyListeners();
       await _save();
     }
@@ -259,6 +274,7 @@ class DailyProgressStore extends ChangeNotifier {
   Future<void> clearLocal() async {
     await ensureLoaded();
     _days.clear();
+    _revision++;
     notifyListeners();
     await _save();
   }
@@ -284,6 +300,15 @@ class DailyProgressStore extends ChangeNotifier {
 
   Future<void> addSpeakAttempt() =>
       _update((d) => d.copyWith(speakAttempts: d.speakAttempts + 1));
+
+  /// Buoi tap vua xong duoc Celebration khong (ADR-0008): chi buoi HOAN
+  /// THANH (du hiep) dau tien trong ngay. Goi NGAY TRUOC khi hien - giu cho
+  /// cua ngay (dong bo theo tai khoan) roi moi tra true; buoi luu & ket thuc
+  /// som khong tieu cho, buoi sau van duoc.
+  Future<bool> claimWorkoutCelebration({required bool completedAllSets}) async {
+    if (!completedAllSets) return false;
+    return markRewarded(_clock(), kWorkoutCelebratedKey);
+  }
 
   /// Man Hom nay goi khi biet hom nay la ngay nghi theo giao an.
   Future<void> markRestDay(bool restDay) async {

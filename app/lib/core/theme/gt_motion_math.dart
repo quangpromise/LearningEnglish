@@ -92,6 +92,18 @@ int springSettleMs(GtSpring s) => _settleMsCache.putIfAbsent(s, () {
   return lastOutside + stepMs;
 });
 
+final _reachMsCache = <GtSpring, int>{};
+
+/// Thoi diem (ms) lo xo CHAM dich lan dau (sai lech < 0.1%), truoc khi nay
+/// qua roi lang lai - vd luc cung vong vua day. Lo xo khong nay: = luc on
+/// dinh.
+int springReachMs(GtSpring s) => _reachMsCache.putIfAbsent(s, () {
+  for (var ms = 0; ms <= 3000; ms += 2) {
+    if (springProgress(s, ms / 1000) >= 1 - 1e-3) return ms;
+  }
+  return springSettleMs(s);
+});
+
 /// Thoi luong mot chuyen dong. Giam chuyen dong: chuyen dong khong gian
 /// (nay, truot, phong, lat) hien ngay; effects (mau / do mo) chi con mo
 /// ngan.

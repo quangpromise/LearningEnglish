@@ -47,3 +47,21 @@ List<T> requeueAfterGrade<T>(
   if (queue.where((c) => c == card).length > 1) return queue;
   return [...queue, card];
 }
+
+/// Huong the bay ra sau khi cham (spec #96, quyet dinh #19): Quen sang
+/// trai, Kho xuong duoi, Nho sang phai (vector don vi; quang duong do man
+/// hinh quyet dinh).
+({double dx, double dy}) flyDirection(SrsGrade grade) => switch (grade) {
+  SrsGrade.forgot => (dx: -1, dy: 0),
+  SrsGrade.hard => (dx: 0, dy: 1),
+  SrsGrade.know => (dx: 1, dy: 0),
+};
+
+/// Nhan 1 lan cham khi con the va the hien tai da lat XONG (nut da sang).
+/// Bam nhanh nhieu lan: lan dau doi sang the ke tiep (chua lat) nen cac lan
+/// sau bi bo qua - khong bao gio cham nham the ke tiep.
+bool acceptsGrade({
+  required int index,
+  required int length,
+  required bool revealed,
+}) => revealed && index >= 0 && index < length;

@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
+import '../feedback/gt_feedback_tier.dart';
 import '../navigation/nav_keys.dart';
 import '../theme/gt_haptics.dart';
 import '../theme/gt_motion.dart';
@@ -310,5 +311,25 @@ class _GtCelebrationState extends State<GtCelebration>
         ),
       ),
     );
+  }
+}
+
+/// Hien phan hoi dung tang cua [event] (ADR-0008): Milestone ->
+/// [celebration]; viec thuong ngay -> XP Toast voi [xp] that (0 thi khong
+/// hien gi); tang tai cho do noi goi tu lo.
+Future<void> showTieredFeedback(
+  BuildContext context,
+  GtFeedbackEvent event, {
+  required int xp,
+  required Future<void> Function() celebration,
+  bool firstToday = false,
+}) async {
+  switch (feedbackTier(event, firstToday: firstToday)) {
+    case GtFeedbackTier.celebration:
+      await celebration();
+    case GtFeedbackTier.toast:
+      showXpToast(xp, overlay: Overlay.maybeOf(context, rootOverlay: true));
+    case GtFeedbackTier.inline:
+      break;
   }
 }

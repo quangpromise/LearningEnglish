@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -7,16 +9,22 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/navigation/app_popup.dart';
 import '../../../core/navigation/gt_top_bar.dart';
+import '../../../core/navigation/nav_keys.dart';
 import '../../../core/navigation/root_tabs.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/gt_tokens.dart';
+import '../../../core/theme/gt_haptics.dart';
+import '../../../core/theme/gt_motion.dart';
 import '../../../core/widgets/gt_celebration.dart';
+import '../../../core/widgets/gt_when_on_screen.dart';
+import '../../../core/widgets/gt_count_up.dart';
 import '../../fitness/presentation/programs_list_screen.dart';
 import '../../../core/i18n/greeting.dart';
 import '../../srs/data/srs_store.dart';
 import '../../srs/presentation/srs_review_screen.dart';
 import '../data/daily_progress_store.dart';
 import '../data/daily_quests.dart';
+import '../data/ring_geometry.dart';
 import '../data/today_presentation.dart';
 import 'gt_quests_card.dart';
 import 'gymtalk_setup_sheet.dart';
@@ -89,6 +97,21 @@ class _GtTodayScreenState extends ConsumerState<GtTodayScreen> {
     final t = context.gt;
     final padding = MediaQuery.paddingOf(context);
     final store = DailyProgressStore.instance;
+    // Tab Hom nay dang that su hien: dang chon va khong co popup / dialog nao
+    // phu len man Home (moi man khac deu mo dang popup tren Navigator goc).
+    final onScreen =
+        ref.watch(rootTabProvider) == RootTab.today &&
+        (ModalRoute.isCurrentOf(context) ?? true);
+    // Doi popup / trang vua dong lui het (trang 450 ms > sheet 200 ms); giam
+    // chuyen dong thi hien ngay.
+    final settle = gtReduceMotion(context)
+        ? Duration.zero
+        : Duration(
+            milliseconds: max(
+              kGtOnScreenSettle.inMilliseconds,
+              topRouteObserver.lastExit.inMilliseconds + 40,
+            ),
+          );
     return ColoredBox(
       color: t.bg,
       child: RefreshIndicator(
@@ -112,18 +135,45 @@ class _GtTodayScreenState extends ConsumerState<GtTodayScreen> {
               children: [
                 GtTopBar(greetingKey: ref.watch(greetingKeyProvider)),
                 const SizedBox(height: 14),
-                GtRingsCard(
-                  day: store.today,
-                  strip: weekStreakStrip(store.dayOf, now),
-                  date: now,
+                // Tien do lam o popup / tab khac hien ra khi nguoi dung quay
+                // lai Hom nay -> vong cham 100%, nhiem vu xong chay truoc
+                // mat ho. Doc xong du lieu da luu / nhan so lieu dong bo thi
+                // dung lai the: tien do khong do chinh nguoi dung vua lam
+                // tren may nay thi khong chuc mung.
+                GtWhenOnScreen<DayProgress>(
+                  key: ValueKey((store.isLoaded, store.revision)),
+                  value: store.today,
+                  onScreen: onScreen,
+                  settle: settle,
+                  builder: (context, day, visit) => Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Moi the 1 lop ve rieng: hoat anh the nay khong ve
+                      // lai 2 the kia.
+                      RepaintBoundary(
+                        child: GtRingsCard(
+                          day: day,
+                          strip: weekStreakStrip(
+                            (d) => DateUtils.isSameDay(d, now)
+                                ? day
+                                : store.dayOf(d),
+                            now,
+                          ),
+                          date: now,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      RepaintBoundary(
+                        child: _TodayWorkout(
+                          today: day,
+                          dueCount: SrsStore.instance.dueCount(now),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      RepaintBoundary(child: GtQuestsCard(day: day)),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 16),
-                _TodayWorkout(
-                  today: store.today,
-                  dueCount: SrsStore.instance.dueCount(now),
-                ),
-                const SizedBox(height: 16),
-                GtQuestsCard(day: store.today),
               ],
             );
           },
@@ -136,8 +186,11 @@ class _GtTodayScreenState extends ConsumerState<GtTodayScreen> {
 // ---------------------------------------------------------------------------
 // The Daily Rings
 
-/// The 3 vong Tap/Hoc/Noi + 3 chi so + dai chuoi 7 ngay (README §5).
-class GtRingsCard extends ConsumerWidget {
+/// The Daily Rings: MOT vong chia 3 cung Tap / Hoc / Noi (ADR-0007), 3 chi
+/// so va dai chuoi 7 ngay (README §5). Vong lap day bang lo xo expressive,
+/// % va chi so dem len; cung vua cham 100% thi loe sang 1 lan + rung (spec
+/// #96, quyet dinh #13).
+class GtRingsCard extends ConsumerStatefulWidget {
   const GtRingsCard({
     super.key,
     required this.day,
@@ -150,11 +203,90 @@ class GtRingsCard extends ConsumerWidget {
   final DateTime date;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<GtRingsCard> createState() => _GtRingsCardState();
+}
+
+List<double> _ratiosOf(DayProgress d) => [
+  d.trainRatio,
+  d.learnRatio,
+  d.speakRatio,
+];
+
+class _GtRingsCardState extends ConsumerState<GtRingsCard>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _glow = AnimationController(vsync: this);
+  Set<int> _glowing = const {};
+
+  /// Cung vua day dang cho lo xo cham 100% de rung + loe.
+  final Set<int> _reaching = {};
+  Timer? _reach;
+
+  @override
+  void didUpdateWidget(GtRingsCard old) {
+    super.didUpdateWidget(old);
+    final day = widget.day;
+    final done = arcsToCelebrate(
+      _ratiosOf(old.day),
+      _ratiosOf(day),
+      trainByRestDay: day.restDay && day.workouts < kDailyTrainGoal,
+    );
+    if (done.isEmpty) return;
+    if (gtReduceMotion(context)) {
+      // Khong lap / loe: rung ngay.
+      GtHaptics.play(GtHapticEvent.ringCompleted);
+      return;
+    }
+    // Rung + loe dung luc cung cham 100% (lo xo toi dich lan dau, truoc khi
+    // nay qua roi lang lai), khong phai luc bat dau lap.
+    _reaching.addAll(done);
+    _reach?.cancel();
+    _reach = Timer(
+      Duration(
+        milliseconds: springReachMs(
+          gtSpringToken(GtMotionKind.expressive, GtMotionSpeed.normal),
+        ),
+      ),
+      _celebrate,
+    );
+  }
+
+  void _celebrate() {
+    if (!mounted) return;
+    // Vua roi tab Hom nay trong luc cho (tab khuat tam dung hoat anh): khong
+    // rung o tab khac, khong loe lai luc quay ve.
+    if (!TickerMode.valuesOf(context).enabled) {
+      _reaching.clear();
+      return;
+    }
+    GtHaptics.play(GtHapticEvent.ringCompleted);
+    setState(() {
+      // Cung khac vua day trong luc dang loe: loe cung luc, khong cat ngang.
+      _glowing = {if (_glow.isAnimating) ..._glowing, ..._reaching};
+      _reaching.clear();
+    });
+    _glow
+      ..duration = Duration(
+        milliseconds: motionDurationMs(
+          GtMotionKind.expressive,
+          GtMotionSpeed.slow,
+          reduce: false,
+        ),
+      )
+      ..forward(from: 0);
+  }
+
+  @override
+  void dispose() {
+    _reach?.cancel();
+    _glow.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final t = context.gt;
-    final trainValue = day.restDay
-        ? ref.tr('ring_rest_day')
-        : '${min(day.workouts, kDailyTrainGoal)}/$kDailyTrainGoal';
+    final day = widget.day;
+    final fill = gtMotion(context, GtMotionKind.expressive);
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -173,7 +305,7 @@ class GtRingsCard extends ConsumerWidget {
                 ),
               ),
               Text(
-                '${date.day}/${date.month}',
+                '${widget.date.day}/${widget.date.month}',
                 style: GtText.body(t.tx3, size: 13),
               ),
             ],
@@ -184,32 +316,37 @@ class GtRingsCard extends ConsumerWidget {
               SizedBox(
                 width: 164,
                 height: 164,
-                // Tween toi gia tri moi -> lan dau chay tu 0, sau do moi lan
-                // tien do doi cung chay 600ms tu gia tri cu.
-                child: TweenAnimationBuilder<Offset>(
-                  tween: Tween(
-                    begin: Offset.zero,
-                    end: Offset(day.trainRatio, day.learnRatio),
+                // Tween toi ti le moi: lan dau chay tu 0, sau do chay tu ti
+                // le dang hien toi ti le moi.
+                // Record (so sanh theo gia tri): rebuild voi cung ti le thi
+                // KHONG chay lai hoat anh.
+                child: TweenAnimationBuilder<_Ratios>(
+                  tween: _RatiosTween(
+                    begin: (0, 0, 0),
+                    end: (day.trainRatio, day.learnRatio, day.speakRatio),
                   ),
-                  duration: const Duration(milliseconds: 600),
-                  curve: Curves.easeOutCubic,
-                  builder: (context, tl, _) => TweenAnimationBuilder<double>(
-                    tween: Tween(begin: 0, end: day.speakRatio),
-                    duration: const Duration(milliseconds: 600),
-                    curve: Curves.easeOutCubic,
-                    builder: (context, speak, child) => CustomPaint(
+                  duration: fill.duration,
+                  curve: fill.curve,
+                  builder: (context, ratios, child) => AnimatedBuilder(
+                    animation: _glow,
+                    builder: (context, _) => CustomPaint(
                       painter: GtRingsPainter(
-                        train: tl.dx,
-                        learn: tl.dy,
-                        speak: speak,
+                        ratios: [ratios.$1, ratios.$2, ratios.$3],
+                        glowing: _glowing,
+                        // 0 -> 1 -> 0 trong 1 lan loe; tat han khi xong.
+                        glow: _glow.isAnimating ? sin(_glow.value * pi) : 0,
                         tokens: t,
                       ),
                       child: child,
                     ),
-                    child: Center(
-                      child: Text(
-                        '${ringsPercent(day)}%',
-                        style: GtText.ringStat(t.tx),
+                  ),
+                  child: Center(
+                    child: GtCountUp(
+                      value: ringsPercent(day),
+                      format: (v) => '$v%',
+                      style: GtText.ringStat(t.tx).copyWith(
+                        // Chu so deu rong: so dang dem khong lam chu nhay.
+                        fontFeatures: const [FontFeature.tabularFigures()],
                       ),
                     ),
                   ),
@@ -223,21 +360,27 @@ class GtRingsCard extends ConsumerWidget {
                     _RingStat(
                       label: ref.tr('ring_train'),
                       color: t.red,
-                      value: trainValue,
+                      count: day.restDay
+                          ? null
+                          : min(day.workouts, kDailyTrainGoal),
+                      goal: kDailyTrainGoal,
+                      text: day.restDay ? ref.tr('ring_rest_day') : null,
                       unit: day.restDay ? null : ref.tr('gt_unit_session'),
                     ),
                     const SizedBox(height: 12),
                     _RingStat(
                       label: ref.tr('ring_learn'),
                       color: t.blue,
-                      value: '${day.wordsReviewed}/$kDailyLearnGoal',
+                      count: day.wordsReviewed,
+                      goal: kDailyLearnGoal,
                       unit: ref.tr('gt_unit_words'),
                     ),
                     const SizedBox(height: 12),
                     _RingStat(
                       label: ref.tr('ring_speak'),
                       color: t.teal,
-                      value: '${day.speakAttempts}/$kDailySpeakGoal',
+                      count: day.speakAttempts,
+                      goal: kDailySpeakGoal,
                       unit: ref.tr('gt_unit_sentences'),
                     ),
                   ],
@@ -253,7 +396,7 @@ class GtRingsCard extends ConsumerWidget {
             child: Padding(
               padding: const EdgeInsets.only(top: 14),
               child: _StreakStrip(
-                cells: strip,
+                cells: widget.strip,
                 labels: ref.tr('gt_weekday_short').split(','),
               ),
             ),
@@ -264,22 +407,44 @@ class GtRingsCard extends ConsumerWidget {
   }
 }
 
+/// Ti le 3 cung Tap / Hoc / Noi.
+typedef _Ratios = (double, double, double);
+
+/// Noi suy tung ti le cua 3 cung.
+class _RatiosTween extends Tween<_Ratios> {
+  _RatiosTween({required super.begin, required super.end});
+
+  @override
+  _Ratios lerp(double t) {
+    double at(double a, double b) => a + (b - a) * t;
+    final (a, b) = (begin!, end!);
+    return (at(a.$1, b.$1), at(a.$2, b.$2), at(a.$3, b.$3));
+  }
+}
+
 class _RingStat extends StatelessWidget {
   const _RingStat({
     required this.label,
     required this.color,
-    required this.value,
-    required this.unit,
+    required this.goal,
+    this.count,
+    this.text,
+    this.unit,
   });
 
   final String label;
   final Color color;
-  final String value;
+
+  /// So dem duoc (dem len); null -> hien [text] (vd "Ngay nghi").
+  final int? count;
+  final int goal;
+  final String? text;
   final String? unit;
 
   @override
   Widget build(BuildContext context) {
     final t = context.gt;
+    final value = count;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -287,15 +452,29 @@ class _RingStat extends StatelessWidget {
           label,
           style: GtText.body(color, size: 13, weight: FontWeight.w800),
         ),
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          alignment: Alignment.centerLeft,
-          child: Text.rich(
-            TextSpan(
+        // 1 diem doc cho trinh doc man hinh ("5/10 tu"), khong tach 2.
+        MergeSemantics(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
               children: [
-                TextSpan(text: value, style: GtText.ringStat(t.tx)),
+                if (value == null)
+                  Text(text ?? '', style: GtText.ringStat(t.tx))
+                else
+                  GtCountUp(
+                    value: value,
+                    format: (v) => '$v/$goal',
+                    // Chu so deu rong: FittedBox khong co gian theo so dem.
+                    style: GtText.ringStat(t.tx).copyWith(
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                  ),
                 if (unit != null)
-                  TextSpan(text: ' $unit', style: GtText.ringStatUnit(t.tx2)),
+                  Text(' $unit', style: GtText.ringStatUnit(t.tx2)),
               ],
             ),
           ),
@@ -305,48 +484,85 @@ class _RingStat extends StatelessWidget {
   }
 }
 
-/// 3 vong dong tam: ngoai r72 do (Tap), giua r55 xanh (Hoc), trong r38 ngoc
-/// (Noi); net 14, dau tron, ranh = mau nhan nhat (README §5).
+/// MOT vong chia 3 cung (ADR-0007): Tap (do) -> Hoc (xanh) -> Noi (ngoc), tu
+/// 12 gio theo chieu kim dong ho; net 14, dau tron, ranh = mau nhat cua
+/// chinh cung. Cung trong [glowing] loe sang theo [glow] (0..1) bang quang
+/// nhieu lop net rong dan, KHONG blur (spec #96 quyet dinh #10).
 class GtRingsPainter extends CustomPainter {
   GtRingsPainter({
-    required this.train,
-    required this.learn,
-    required this.speak,
+    required this.ratios,
     required this.tokens,
+    this.glowing = const {},
+    this.glow = 0,
   });
 
-  final double train;
-  final double learn;
-  final double speak;
+  final List<double> ratios;
   final GtTokens tokens;
+  final Set<int> glowing;
+  final double glow;
+
+  static const _radius = 64.0;
+  static const _stroke = 14.0;
 
   @override
   void paint(Canvas canvas, Size size) {
     final c = size.center(Offset.zero);
     final scale = size.shortestSide / 164;
+    final radius = _radius * scale;
+    final stroke = _stroke * scale;
+    final rect = Rect.fromCircle(center: c, radius: radius);
+    final arcs = segmentedRing(ratios, capRadians: (stroke / 2) / radius);
+    final colors = [
+      (tokens.red, tokens.redT),
+      (tokens.blue, tokens.blueT),
+      (tokens.teal, tokens.tealT),
+    ];
     final paint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 14 * scale
+      ..strokeWidth = stroke
       ..strokeCap = StrokeCap.round;
-    for (final (r, value, color, track) in [
-      (72.0, train, tokens.red, tokens.redT),
-      (55.0, learn, tokens.blue, tokens.blueT),
-      (38.0, speak, tokens.teal, tokens.tealT),
-    ]) {
-      final rect = Rect.fromCircle(center: c, radius: r * scale);
-      canvas.drawArc(rect, 0, 2 * pi, false, paint..color = track);
-      final v = value.clamp(0.0, 1.0);
-      if (v > 0) {
-        canvas.drawArc(rect, -pi / 2, 2 * pi * v, false, paint..color = color);
+    // Thu tu: moi ranh -> moi quang -> moi phan day, de quang cua cung nay
+    // khong de len phan day cua cung ben canh.
+    for (final (i, arc) in arcs.indexed) {
+      final (_, track) = colors[i % colors.length];
+      canvas.drawArc(rect, arc.start, arc.span, false, paint..color = track);
+    }
+    if (glow > 0) {
+      for (final (i, arc) in arcs.indexed) {
+        if (!glowing.contains(i) || arc.fill <= 0) continue;
+        final (color, _) = colors[i % colors.length];
+        // Quang: 3 net rong dan, mo dan ra ngoai.
+        for (final (widen, alpha) in const [
+          (1.9, 0.12),
+          (1.55, 0.2),
+          (1.25, 0.3),
+        ]) {
+          canvas.drawArc(
+            rect,
+            arc.start,
+            arc.fill,
+            false,
+            Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeCap = StrokeCap.round
+              ..strokeWidth = stroke * (1 + (widen - 1) * glow)
+              ..color = color.withValues(alpha: alpha * glow),
+          );
+        }
       }
+    }
+    for (final (i, arc) in arcs.indexed) {
+      if (arc.fill <= 0) continue;
+      final (color, _) = colors[i % colors.length];
+      canvas.drawArc(rect, arc.start, arc.fill, false, paint..color = color);
     }
   }
 
   @override
   bool shouldRepaint(GtRingsPainter old) =>
-      old.train != train ||
-      old.learn != learn ||
-      old.speak != speak ||
+      !listEquals(old.ratios, ratios) ||
+      old.glow != glow ||
+      !setEquals(old.glowing, glowing) ||
       old.tokens != tokens;
 }
 
