@@ -8,10 +8,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/gt_haptics.dart';
 import '../../../core/theme/gt_tokens.dart';
 import '../../../core/tts/app_tts.dart';
 import '../../../core/tts/tutorial_voice.dart';
 import '../../../core/utils/keep_screen_on.dart';
+import '../../../core/widgets/gt_switchers.dart';
 import '../../english_path/data/content_pack.dart';
 import '../../english_path/data/english_path_providers.dart';
 import '../../english_path/data/english_path_store.dart';
@@ -28,6 +30,7 @@ import '../data/workout_model.dart';
 import '../data/workout_prefs.dart';
 import '../data/workout_presentation.dart';
 import 'exercise_photo_animator.dart';
+import 'gt_set_tick.dart';
 import 'rep_camera_screen.dart';
 import 'rest_vocab_card.dart';
 import 'workout_finished_screen.dart';
@@ -234,6 +237,13 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
     HapticFeedback.heavyImpact();
     SystemSound.play(SystemSoundType.alert);
     // Loi HLV cho set tiep theo do _announceSet doc (listener).
+  }
+
+  /// Hoan thanh hiep bang nut chinh: rung nhe (spec #96) roi giao cho
+  /// controller. O tick trong bang hiep tu rung.
+  void _completeSetFromButton(WorkoutController controller) {
+    GtHaptics.play(GtHapticEvent.setTicked);
+    controller.completeSet();
   }
 
   /// Dem rep bang camera cho set hien tai; so rep dem duoc dien thang vao
@@ -720,48 +730,60 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
-                child: resting
-                    ? _RestingView(
-                        controller: controller,
-                        vocabCard: learn == null
-                            ? null
-                            : _GtRestLearnFrame(child: learn),
-                      )
-                    : Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          _GtSetsTable(
-                            controller: controller,
-                            onTick: controller.completeSet,
-                          ),
-                          const SizedBox(height: 14),
-                          _StepperRow(
-                            label: ref.tr('fitness_workout_weight_kg'),
-                            value: _formatKg(controller.currentWeightKg),
-                            onMinus: () => controller.adjustWeight(-2.5),
-                            onPlus: () => controller.adjustWeight(2.5),
-                          ),
-                          const SizedBox(height: 10),
-                          _StepperRow(
-                            label: ref.tr('fitness_workout_reps'),
-                            value: '${controller.currentReps}',
-                            onMinus: () => controller.adjustReps(-1),
-                            onPlus: () => controller.adjustReps(1),
-                          ),
-                          if (RepPattern.forExercise(
-                                controller.currentBlock.exercise,
-                              ) !=
-                              null)
-                            TextButton.icon(
-                              onPressed: _openRepCamera,
-                              icon: Icon(Icons.videocam_rounded, color: t.red),
-                              label: Text(
-                                ref.tr('rep_camera_open'),
-                                style: GtText.body(t.red),
+                // Bang hiep <-> man nghi: mo cheo + thu phong nhe (spec #96).
+                child: GtFadeScaleSwitcher(
+                  switchKey: resting,
+                  child: resting
+                      ? _RestingView(
+                          controller: controller,
+                          vocabCard: learn == null
+                              ? null
+                              : _GtRestLearnFrame(child: learn),
+                        )
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            // Doi bai (ca bai A <-> B cua sieu hiep): bang
+                            // hiep truot ngang theo chieu di.
+                            GtSharedAxisSwitcher(
+                              position: _exercisePosition(controller),
+                              child: _GtSetsTable(
+                                controller: controller,
+                                onTick: controller.completeSet,
                               ),
                             ),
-                        ],
-                      ),
+                            const SizedBox(height: 14),
+                            _StepperRow(
+                              label: ref.tr('fitness_workout_weight_kg'),
+                              value: _formatKg(controller.currentWeightKg),
+                              onMinus: () => controller.adjustWeight(-2.5),
+                              onPlus: () => controller.adjustWeight(2.5),
+                            ),
+                            const SizedBox(height: 10),
+                            _StepperRow(
+                              label: ref.tr('fitness_workout_reps'),
+                              value: '${controller.currentReps}',
+                              onMinus: () => controller.adjustReps(-1),
+                              onPlus: () => controller.adjustReps(1),
+                            ),
+                            if (RepPattern.forExercise(
+                                  controller.currentBlock.exercise,
+                                ) !=
+                                null)
+                              TextButton.icon(
+                                onPressed: _openRepCamera,
+                                icon: Icon(
+                                  Icons.videocam_rounded,
+                                  color: t.red,
+                                ),
+                                label: Text(
+                                  ref.tr('rep_camera_open'),
+                                  style: GtText.body(t.red),
+                                ),
+                              ),
+                          ],
+                        ),
+                ),
               ),
             ),
             SafeArea(
@@ -812,7 +834,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                                   '${controller.currentTotalSets}$pairTag',
                                 ),
                         },
-                        onTap: controller.completeSet,
+                        onTap: () => _completeSetFromButton(controller),
                       ),
                     const SizedBox(height: 8),
                     Row(
@@ -848,6 +870,11 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
     );
   }
 }
+
+/// Vi tri bai dang tap trong buoi - tang khi sang bai moi (ke ca bai A -> B
+/// cua sieu hiep), giam khi hoan tac ve bai truoc.
+int _exercisePosition(WorkoutController controller) =>
+    controller.groupIndex * 2 + controller.pairSubIndex;
 
 class _SetBadge extends ConsumerWidget {
   const _SetBadge({required this.controller});
@@ -1223,19 +1250,29 @@ class _GtSessionHeader extends ConsumerWidget {
                   ],
                 ),
                 const Spacer(),
-                Text(
-                  // README §9: nhom co chinh o tren ten bai.
-                  exerciseMuscleLabel(exercise.primaryMuscle, lang),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: GtText.body(const Color(0xFFD4D6DA), size: 13),
-                ),
-                Text(
-                  exercise.nameFor(lang),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: GtText.cardTitle(Colors.white)
-                      .copyWith(fontSize: 28, height: 1.1),
+                // Doi bai: nhom co + ten bai truot ngang (shared axis).
+                GtSharedAxisSwitcher(
+                  position: _exercisePosition(controller),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        // README §9: nhom co chinh o tren ten bai.
+                        exerciseMuscleLabel(exercise.primaryMuscle, lang),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GtText.body(const Color(0xFFD4D6DA), size: 13),
+                      ),
+                      Text(
+                        exercise.nameFor(lang),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: GtText.cardTitle(Colors.white)
+                            .copyWith(fontSize: 28, height: 1.1),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -1325,7 +1362,7 @@ class _GtSetsTable extends ConsumerWidget {
                   ),
                   SizedBox(
                     width: 48,
-                    child: _GtTick(
+                    child: GtSetTick(
                       done: logged[n] != null,
                       active:
                           n == current &&
@@ -1338,48 +1375,6 @@ class _GtSetsTable extends ConsumerWidget {
               ),
             ),
         ],
-      ),
-    );
-  }
-}
-
-class _GtTick extends StatelessWidget {
-  const _GtTick({
-    required this.done,
-    required this.active,
-    required this.onTap,
-    required this.label,
-  });
-
-  final bool done;
-  final bool active;
-  final VoidCallback onTap;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final t = context.gt;
-    return Semantics(
-      button: active,
-      checked: done,
-      label: label,
-      child: GestureDetector(
-        onTap: active ? onTap : null,
-        child: Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: done ? t.red : (active ? t.s2 : null),
-            borderRadius: BorderRadius.circular(14),
-            border: done
-                ? null
-                : Border.all(color: active ? t.red : t.bd, width: 2),
-          ),
-          child: Icon(
-            Icons.check_rounded,
-            color: done ? t.onRed : (active ? t.red : t.tx3),
-          ),
-        ),
       ),
     );
   }
