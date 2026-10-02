@@ -248,6 +248,8 @@ class _GtCelebrationState extends State<GtCelebration>
     );
   }
 
+  /// Noi dung do bang IntrinsicHeight (de cuon khi khong du cho): khong
+  /// dat LayoutBuilder / vung cuon ben trong - chung khong do truoc duoc.
   Widget _content(GtTokens t) {
     // cubic-bezier(.2,1.4,.4,1): vuot qua 1 roi ve 1.
     const popCurve = Cubic(0.2, 1.4, 0.4, 1);

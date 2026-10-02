@@ -440,6 +440,14 @@ void main() {
       }
 
       final tickMs = 950 + GtRankUpCard.landsAfterFlip.inMilliseconds;
+      // The vao luc 450 ms (hoat anh tu khung hinh sau), dai bang thoi gian
+      // on dinh cua lo xo expressive normal.
+      final enterDone =
+          450 +
+          16 +
+          springSettleMs(
+            gtSpringToken(GtMotionKind.expressive, GtMotionSpeed.normal),
+          );
       await tester.pumpWidget(_app(celebration()));
       expect(find.text('Lên GymTalk Rank!'), findsOneWidget);
       expect(find.text('Bậc 3: Athlete · B1'), findsOneWidget);
@@ -449,7 +457,7 @@ void main() {
       // The truot len, hien dan.
       await runTo(560);
       expect(cardOpacity(tester), allOf(greaterThan(0), lessThan(1)));
-      await runTo(940);
+      await runTo(enterDone + 16);
       expect(cardOpacity(tester), 1);
       // Van la bac cu toi luc doi.
       expect(opacityOf(tester, '2'), 1);
