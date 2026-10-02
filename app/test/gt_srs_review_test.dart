@@ -38,14 +38,14 @@ Widget _reduced(Widget child) => Builder(
 );
 
 void main() {
-  // Moi test 1 store rieng: store singleton giu Future cua test truoc (zone
-  // fake-time cu) nen await tren no co the khong bao gio chay tiep.
+  // Moi test 1 store rieng, tao NGAY TRONG test: store singleton (hoac tao o
+  // setUp, ngoai zone fake-time cua test) giu Future cua zone khac nen await
+  // tren no co the khong bao gio chay tiep.
   late DailyProgressStore store;
   late List<Object?> haptics;
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
-    store = DailyProgressStore.forTest();
     haptics = [];
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(SystemChannels.platform, (call) async {
@@ -88,6 +88,7 @@ void main() {
   testWidgets('grade buttons stay disabled until the card is flipped', (
     tester,
   ) async {
+    store = DailyProgressStore.forTest();
     final graded = <SrsGrade>[];
     await pump(
       tester,
@@ -111,6 +112,7 @@ void main() {
   testWidgets('flip, grade, forgotten card comes back once, done in place', (
     tester,
   ) async {
+    store = DailyProgressStore.forTest();
     await pump(
       tester,
       GtSrsReviewScreen(
@@ -167,6 +169,7 @@ void main() {
   testWidgets('tapping a grade many times grades only the current card', (
     tester,
   ) async {
+    store = DailyProgressStore.forTest();
     await pump(
       tester,
       GtSrsReviewScreen(
@@ -192,6 +195,7 @@ void main() {
   testWidgets('reduced motion: no flip or fly, cards change at once', (
     tester,
   ) async {
+    store = DailyProgressStore.forTest();
     await pump(
       tester,
       _reduced(
@@ -216,6 +220,7 @@ void main() {
 
   testWidgets('the card that completes the review quest: XP Toast, no '
       'Celebration', (tester) async {
+    store = DailyProgressStore.forTest();
     // 1 the nua la dat nhiem vu On the -> lan claim cuoi bo the cong XP.
     await store.addWordsReviewed(kDailyLearnGoal - 1);
     await pump(
@@ -244,6 +249,7 @@ void main() {
   testWidgets('XP already paid by Today mid-deck: no second toast', (
     tester,
   ) async {
+    store = DailyProgressStore.forTest();
     await store.addWordsReviewed(kDailyLearnGoal - 1);
     // Man Hom nay da tra nhiem vu nay (va da hien toast) trong phien.
     await store.markRewarded(DateTime.now(), DailyQuestId.review.rewardKey);
@@ -267,6 +273,7 @@ void main() {
   });
 
   testWidgets('grading a card gives a very light tick', (tester) async {
+    store = DailyProgressStore.forTest();
     await pump(
       tester,
       GtSrsReviewScreen(
