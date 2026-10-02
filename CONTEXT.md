@@ -98,7 +98,7 @@ Sự kiện hiếm đáng chúc mừng toàn màn: mở Quest Chest, xong buổi
 _Avoid_: achievement, cột mốc nhỏ
 
 **Celebration**:
-Lớp phủ chúc mừng toàn màn, chỉ hiện sau một Milestone, kèm số XP thật vừa được cộng (không có XP thì không hiện số).
+Lớp phủ chúc mừng toàn màn, chỉ hiện sau một Milestone, kèm số XP thật vừa được cộng (không có XP thì không hiện số). Một khoảnh khắc chỉ có một Celebration: khi qua Level Test hoặc lên Body Level kéo GymTalk Rank lên theo, việc lên GymTalk Rank hiện ngay trong Celebration đó chứ không thành Celebration thứ hai.
 _Avoid_: popup, modal
 
 **XP Toast**:
