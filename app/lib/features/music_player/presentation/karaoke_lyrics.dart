@@ -412,7 +412,10 @@ class _LineTile extends StatelessWidget {
         curve: Curves.easeOutCubic,
         child: AnimatedOpacity(
           opacity: opacity,
-          duration: _kLineTransition,
+          // Giam chuyen dong: chi con mo ngan (token effects).
+          duration: still
+              ? gtMotion(context, GtMotionKind.effects).duration
+              : _kLineTransition,
           curve: Curves.easeOut,
           child: content,
         ),

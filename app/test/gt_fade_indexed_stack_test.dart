@@ -3,13 +3,12 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:learn_english_music/core/navigation/gt_fade_indexed_stack.dart';
 
-final _ticking = <int, bool>{};
-
 Widget _tabs(
   int index, {
   bool reduce = false,
   List<ScrollController>? controllers,
   List<int>? taps,
+  Map<int, bool>? ticking,
 }) => MaterialApp(
   home: Builder(
     builder: (context) => MediaQuery(
@@ -20,7 +19,7 @@ Widget _tabs(
           for (var t = 0; t < 2; t++)
             Builder(
               builder: (context) {
-                _ticking[t] = TickerMode.valuesOf(context).enabled;
+                ticking?[t] = TickerMode.valuesOf(context).enabled;
                 return ListView(
                   controller: controllers?[t],
                   children: [
@@ -41,7 +40,14 @@ Widget _tabs(
 
 /// Do mo dang ve (khong phai dich) cua tab [t].
 double _opacity(WidgetTester tester, int t) => tester
-    .renderObject<RenderAnimatedOpacity>(find.byType(AnimatedOpacity).at(t))
+    .renderObject<RenderAnimatedOpacity>(
+      find
+          .descendant(
+            of: find.byType(GtFadeIndexedStack),
+            matching: find.byType(AnimatedOpacity),
+          )
+          .at(t),
+    )
     .opacity
     .value;
 
@@ -75,11 +81,12 @@ void main() {
     tester,
   ) async {
     final taps = <int>[];
-    await tester.pumpWidget(_tabs(0, taps: taps));
+    final ticking = <int, bool>{};
+    await tester.pumpWidget(_tabs(0, taps: taps, ticking: ticking));
     // Tab 1 nam tren cung trong Stack nhung dang an.
     await tester.tap(find.text('tab0 row1'));
     expect(taps, [0]);
-    expect(_ticking, {0: true, 1: false});
+    expect(ticking, {0: true, 1: false});
   });
 
   testWidgets('reduced motion: tabs switch at once', (tester) async {

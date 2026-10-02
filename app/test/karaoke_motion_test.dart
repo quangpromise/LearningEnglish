@@ -54,6 +54,16 @@ bool _anyMoved(WidgetTester tester) => tester
     .widgetList<Transform>(_inLyrics(Transform))
     .any((t) => t.transform != Matrix4.identity());
 
+/// Dong dang hat duoc phong to.
+bool _anyZoom(WidgetTester tester) => tester
+    .widgetList<AnimatedScale>(_inLyrics(AnimatedScale))
+    .any((s) => s.scale != 1);
+
+/// Tu dang hat nhun len (dich doc).
+bool _anyLift(WidgetTester tester) => tester
+    .widgetList<Transform>(_inLyrics(Transform))
+    .any((t) => t.transform.getTranslation().y != 0);
+
 void main() {
   testWidgets('normal motion: lines zoom and blur, words lift and glow', (
     tester,
@@ -61,7 +71,8 @@ void main() {
     await _pump(tester, reduce: false);
     expect(_anyBlur(tester), isTrue);
     expect(_anyGlow(tester), isTrue);
-    expect(_anyMoved(tester), isTrue);
+    expect(_anyZoom(tester), isTrue);
+    expect(_anyLift(tester), isTrue);
   });
 
   testWidgets('reduced motion: no zoom, blur, lift or glow; colour sweep '
@@ -70,6 +81,8 @@ void main() {
     expect(_anyBlur(tester), isFalse);
     expect(_anyGlow(tester), isFalse);
     expect(_anyMoved(tester), isFalse);
+    expect(_anyZoom(tester), isFalse);
+    expect(_anyLift(tester), isFalse);
     for (final s in tester.widgetList<AnimatedScale>(
       _inLyrics(AnimatedScale),
     )) {
