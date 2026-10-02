@@ -3807,6 +3807,14 @@ class AppStrings {
       AppLanguage.vi: 'Đọc câu nhắc tiếng Anh khi nghỉ và khi hết giờ nghỉ',
       AppLanguage.en: 'Speaks short English cues when rest starts and ends',
     },
+    'fitness_rest_sounds': {
+      AppLanguage.vi: 'Âm báo giờ nghỉ',
+      AppLanguage.en: 'Rest timer sounds',
+    },
+    'fitness_rest_sounds_sub': {
+      AppLanguage.vi: 'Tiếng gõ ở 3-2-1 và chuông khi hết giờ nghỉ',
+      AppLanguage.en: 'Ticks at 3-2-1 and a bell when rest is over',
+    },
     'setup_title': {
       AppLanguage.vi: 'Thiết lập GymTalk',
       AppLanguage.en: 'Set up GymTalk',

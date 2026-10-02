@@ -239,6 +239,24 @@ void main() {
     c.dispose();
   });
 
+  test(
+    'hoan tac luc dang nghi: khong goi onRestElapsed (khong keu chuong)',
+    () async {
+      final c = makeController([_block(1, sets: 3)]);
+      var elapsed = 0;
+      c.onRestElapsed = () => elapsed++;
+      tap(c);
+      expect(c.phase, WorkoutPhase.resting);
+      c.undoLastSet();
+      now = now.add(const Duration(seconds: 120));
+      c.tickRest();
+      expect(c.phase, WorkoutPhase.logging);
+      expect(elapsed, 0);
+      await _settle();
+      c.dispose();
+    },
+  );
+
   test('hoan tac set chua gui -> go khoi hang doi', () async {
     repo.offline = true;
     final c = makeController([_block(1, sets: 3)]);
