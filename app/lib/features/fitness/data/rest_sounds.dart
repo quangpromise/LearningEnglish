@@ -8,11 +8,16 @@ const kRestTickAsset = 'audio/rest_tick.wav';
 /// Chuong het gio nghi ("Pleasing Bell" - Spring Spring, CC0).
 const kRestBellAsset = 'audio/rest_end_bell.wav';
 
+/// 3-2-1 cuoi gio nghi (rung nhe + tieng mo): CHI khi dem nguoc giam dung
+/// 1 giay xuong 3, 2, 1 - khong keu don dap khi app quay lai tu nen (dem
+/// nguoc nhay tu 40 xuong 2).
+bool isRestCountdownTick({required int? previous, required int second}) =>
+    previous != null && second == previous - 1 && second >= 1 && second <= 3;
+
 /// 1 am ngan nap san, phat lai tu dau moi lan.
 abstract interface class SfxPlayer {
-  /// Nap [asset] (duong dan duoi `assets/`). [duckOthers]: ha nho nhac dang
-  /// phat trong luc keu.
-  Future<void> load(String asset, {required bool duckOthers});
+  /// Nap [asset] (duong dan duoi `assets/`).
+  Future<void> load(String asset);
 
   /// Phat tu dau (dang keu thi cat va keu lai).
   Future<void> replay();
@@ -27,10 +32,9 @@ class RestSounds {
   RestSounds({required SfxPlayer Function() player})
     : _tick = player(),
       _bell = player() {
-    // Nap san de bam la keu. Tieng mo tron chung voi nhac (3 nhip ma ha nhac
-    // 3 lan thi nhac nhap nho); chuong ha nhac 1 chut cho nghe ro.
-    _guard(_tick.load(kRestTickAsset, duckOthers: false));
-    _guard(_bell.load(kRestBellAsset, duckOthers: true));
+    // Nap san de bam la keu.
+    _guard(_tick.load(kRestTickAsset));
+    _guard(_bell.load(kRestBellAsset));
   }
 
   final SfxPlayer _tick;

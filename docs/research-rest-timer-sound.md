@@ -246,7 +246,7 @@ Cả hai file đều đã cắt khoảng lặng đầu, chỉ giữ lại 2 ms t
 - Thư mục `assets/audio/` đã được khai báo sẵn trong `app/pubspec.yaml`.
 - WAV PCM cũng là định dạng iOS chấp nhận cho âm local notification, với điều kiện ngắn hơn 30 s. Nhờ vậy dùng lại được nếu sau này cần kêu cả khi app ở nền hoặc màn hình đã khoá (Android: `res/raw`).
 
-**Các bước xử lý** (Audacity hoặc ffmpeg):
+**Các bước xử lý đề xuất lúc nghiên cứu** (cho file dài 2–3 s như #1; file đã chọn ngắn hơn, xem bảng "Đã làm" ở trên):
 1. Cắt khoảng lặng đầu để attack dưới 10 ms.
 2. Cắt còn 1,2–1,4 s.
 3. Fade-out khoảng 300–400 ms.
@@ -264,11 +264,15 @@ ffmpeg -i glock_medium_C6_01.wav -i glock_medium_G6_01.wav -filter_complex \
 **Đã tích hợp (#131):**
 - Code nằm ở `features/fitness/data/rest_sounds.dart` và `audioplayers_sfx.dart`.
 - Phát bằng `audioplayers`. Cả 2 âm được nạp sẵn khi vào buổi tập, đặt `ReleaseMode.stop` để giữ file đã nạp, mỗi lần kêu thì phát lại từ đầu.
-- **Android:**
+- **Chỉ bật trên Android:**
   - Dùng `usageType: notificationEvent` và `contentType: sonification`, nên âm theo âm lượng thông báo và tự im khi máy để im lặng hoặc rung. Rung `restEnded` vẫn luôn có.
-  - Chuông xin audio focus `gainTransientMayDuck`, nên nhạc đang phát chỉ bị hạ nhỏ trong chốc lát.
-  - Tiếng mõ không xin focus (`none`) và trộn chung với nhạc, để nhạc không bị hạ nhỏ 3 lần liền.
-- **iOS:** chưa đặt `AVAudioSession`, vì session dùng chung với chat PT AI (`playAndRecord`) và trình phát nhạc. Phải làm cùng chiến lược session toàn app ở giai đoạn 2.
+  - **Không xin audio focus** (`AndroidAudioFocus.none`): cả chuông lẫn mõ đều trộn chung với nhạc và giọng HLV.
+  - Lý do bỏ ý định để chuông "hạ nhỏ nhạc" (review #132): trong cùng một app, Android không hạ nhỏ mà cắt hẳn.
+    - Giọng HLV cloud (audioplayers, xin focus đầy đủ) cắt ngang tiếng chuông.
+    - Player của chuông bị kẹt ở trạng thái "đang phát", nên màn hình vẽ lại mỗi khung hình suốt hiệp sau.
+    - Trình phát nhạc của chính app (just_audio) cũng không tự hạ âm lượng.
+    - Android 15+ còn từ chối focus khi app không ở trên cùng.
+- **iOS: chưa bật.** Lúc khởi tạo, plugin audioplayers đặt `AVAudioSession` sang `.playback` không trộn. Nếu bật thì âm sẽ bỏ qua nút im lặng và làm dừng nhạc của app khác. Phải làm cùng chiến lược session toàn app ở giai đoạn 2; session này dùng chung với chat PT AI (`playAndRecord`) và trình phát nhạc.
 - Có công tắc "Âm báo giờ nghỉ" trong cài đặt buổi tập (`WorkoutPrefs.restSounds`, mặc định bật).
 - Lỗi phát âm bị nuốt, không làm hỏng buổi tập.
 

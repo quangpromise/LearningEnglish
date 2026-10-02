@@ -12,9 +12,9 @@ class _FakeSfx implements SfxPlayer {
   String? _asset;
 
   @override
-  Future<void> load(String asset, {required bool duckOthers}) async {
+  Future<void> load(String asset) async {
     _asset = asset;
-    log.add('load $asset duck=$duckOthers');
+    log.add('load $asset');
     if (fail) throw Exception('no audio device');
   }
 
@@ -37,16 +37,13 @@ void main() {
 
   Iterable<String> played() => log.where((l) => l.startsWith('play'));
 
-  test('preloads the tick and the bell; only the bell ducks music', () async {
+  test('both sounds are preloaded when the workout starts', () async {
     sounds();
     await pumpEventQueue();
-    expect(log, [
-      'load $kRestTickAsset duck=false',
-      'load $kRestBellAsset duck=true',
-    ]);
+    expect(log, ['load $kRestTickAsset', 'load $kRestBellAsset']);
   });
 
-  test('3-2-1 plays the tick, the end of rest plays the bell', () async {
+  test('tick() plays the woodblock, end() plays the bell', () async {
     sounds()
       ..tick()
       ..end();
@@ -54,14 +51,17 @@ void main() {
     expect(played(), ['play $kRestTickAsset', 'play $kRestBellAsset']);
   });
 
-  test('switched off in the workout settings: silent', () async {
-    sounds()
-      ..enabled = false
-      ..tick()
-      ..end();
-    await pumpEventQueue();
-    expect(played(), isEmpty);
-  });
+  test(
+    'disabled (the settings switch): tick() and end() stay silent',
+    () async {
+      sounds()
+        ..enabled = false
+        ..tick()
+        ..end();
+      await pumpEventQueue();
+      expect(played(), isEmpty);
+    },
+  );
 
   test('a sound that fails never breaks the workout', () async {
     // Loi bat dong bo khong duoc xu ly se lam test nay fail.
@@ -83,6 +83,17 @@ void main() {
       'dispose $kRestBellAsset',
     ]);
     expect(played(), isEmpty);
+  });
+
+  test('3-2-1 ticks only on real 1-second steps down to 3, 2, 1', () {
+    bool tick(int? previous, int second) =>
+        isRestCountdownTick(previous: previous, second: second);
+    expect([tick(4, 3), tick(3, 2), tick(2, 1)], [true, true, true]);
+    // Het gio (0), con xa, lan dau, hay vua quay lai tu nen (40 -> 2).
+    expect(
+      [tick(1, 0), tick(5, 4), tick(null, 3), tick(40, 2), tick(3, 3)],
+      [false, false, false, false, false],
+    );
   });
 
   test('the sound files ship with the app: short mono WAV', () {

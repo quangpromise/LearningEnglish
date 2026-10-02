@@ -131,7 +131,9 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
       ..start();
     _controller = controller;
     _lastPhase = controller.phase;
-    _sounds = RestSounds(player: AudioplayersSfx.new);
+    _sounds = AudioplayersSfx.supported
+        ? RestSounds(player: AudioplayersSfx.new)
+        : null;
     KeepScreenOn.enable();
     _loadPrefsAndWords(controller);
   }
@@ -212,14 +214,10 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
       _coach('Nice set! Rest for ${controller.restDurationSeconds} seconds.');
     }
     if (phase == WorkoutPhase.resting) {
-      // Rung nhe o 3-2-1 - CHI khi giam dung 1 giay, tranh rung don dap khi
-      // app quay lai tu nen (dem nguoc nhay tu 40 xuong 2).
+      // 3-2-1: rung nhe + tieng mo.
       final second = controller.restSecondsRemaining;
       final previous = _lastRestSecond;
-      if (previous != null &&
-          second == previous - 1 &&
-          second >= 1 &&
-          second <= 3) {
+      if (isRestCountdownTick(previous: previous, second: second)) {
         GtHaptics.play(GtHapticEvent.restCountdown);
         _sounds?.tick();
       }
@@ -463,27 +461,29 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                   },
                 ),
               ),
-              StatefulBuilder(
-                builder: (context, setSheetState) => SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  value: _restSounds,
-                  activeThumbColor: AppColors.fitnessAccent,
-                  title: Text(
-                    _t('fitness_rest_sounds'),
-                    style: AppTextStyles.body(weight: FontWeight.w700),
+              // Chi khi may co am bao (Android - xem AudioplayersSfx).
+              if (_sounds != null)
+                StatefulBuilder(
+                  builder: (context, setSheetState) => SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    value: _restSounds,
+                    activeThumbColor: AppColors.fitnessAccent,
+                    title: Text(
+                      _t('fitness_rest_sounds'),
+                      style: AppTextStyles.body(weight: FontWeight.w700),
+                    ),
+                    subtitle: Text(
+                      _t('fitness_rest_sounds_sub'),
+                      style: AppTextStyles.muted(),
+                    ),
+                    onChanged: (enabled) {
+                      setSheetState(() {});
+                      setState(() => _restSounds = enabled);
+                      _sounds?.enabled = enabled;
+                      WorkoutPrefs.saveRestSounds(enabled);
+                    },
                   ),
-                  subtitle: Text(
-                    _t('fitness_rest_sounds_sub'),
-                    style: AppTextStyles.muted(),
-                  ),
-                  onChanged: (enabled) {
-                    setSheetState(() {});
-                    setState(() => _restSounds = enabled);
-                    _sounds?.enabled = enabled;
-                    WorkoutPrefs.saveRestSounds(enabled);
-                  },
                 ),
-              ),
             ],
           ),
         ),
