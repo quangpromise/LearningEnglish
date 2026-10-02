@@ -66,6 +66,11 @@ class SpeechListener {
     _heard = '';
     final done = Completer<String>();
     _done = done;
+    // speech_to_text la singleton: neu man khac khoi tao truoc, callback cua
+    // init() o day khong duoc nhan -> gan lai moi lan nghe.
+    _speech
+      ..statusListener = _onStatus
+      ..errorListener = _onError;
     try {
       await _speech.listen(
         onResult: (result) {

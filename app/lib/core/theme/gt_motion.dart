@@ -44,6 +44,13 @@ class GtSpringCurve extends Curve {
   int get hashCode => Object.hash(spring, durationMs);
 }
 
+/// Duong cong lo xo cua 1 token tren dung thoi gian on dinh cua no (dung khi
+/// controller cua cho dung chay theo thoi luong token).
+GtSpringCurve gtSpringCurve(GtMotionKind kind, GtMotionSpeed speed) {
+  final spring = gtSpringToken(kind, speed);
+  return GtSpringCurve(spring, springSettleMs(spring));
+}
+
 /// Thoi luong + duong cong cho 1 chuyen dong theo loai/toc do va che do
 /// giam chuyen dong. Giam chuyen dong: khong gian -> 0 ms (hien ngay),
 /// effects -> mo ngan tuyen tinh.

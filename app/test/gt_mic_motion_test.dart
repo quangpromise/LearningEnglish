@@ -108,6 +108,9 @@ void main() {
       }
       expect(find.text('87%'), findsOneWidget);
       expect(tester.hasRunningAnimations, isFalse);
+      // Van rung (rung khong phai chuyen dong), ngay lap tuc.
+      await tester.pump();
+      expect(haptics, ['HapticFeedbackType.mediumImpact']);
     });
   });
 
@@ -166,5 +169,49 @@ void main() {
       await tester.pump();
       expect(tester.hasRunningAnimations, isFalse);
     });
+
+    testWidgets('turning off keeps the button inside untouched', (
+      tester,
+    ) async {
+      final level = ValueNotifier<double>(0.5);
+      addTearDown(level.dispose);
+      Widget ring(bool active) => _app(
+        Center(
+          child: GtMicRing(
+            active: active,
+            level: level,
+            color: Colors.pink,
+            child: const _TapCounter(),
+          ),
+        ),
+      );
+      await tester.pumpWidget(ring(true));
+      await tester.tap(find.byType(_TapCounter));
+      await tester.pump();
+      expect(find.text('1'), findsOneWidget);
+      // Het thu: vong tat, nut (va state cua no) giu nguyen.
+      await tester.pumpWidget(ring(false));
+      await tester.pump();
+      expect(find.text('1'), findsOneWidget);
+      expect(_rings(tester), isEmpty);
+      expect(tester.hasRunningAnimations, isFalse);
+    });
   });
+}
+
+class _TapCounter extends StatefulWidget {
+  const _TapCounter();
+
+  @override
+  State<_TapCounter> createState() => _TapCounterState();
+}
+
+class _TapCounterState extends State<_TapCounter> {
+  var _taps = 0;
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: () => setState(() => _taps++),
+    child: SizedBox(width: 76, height: 76, child: Text('$_taps')),
+  );
 }

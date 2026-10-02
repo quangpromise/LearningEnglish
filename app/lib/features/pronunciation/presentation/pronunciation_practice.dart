@@ -9,13 +9,13 @@ import 'package:record/record.dart' as rec;
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
+import '../../../core/audio/sound_level.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/gt_haptics.dart';
 import '../../../core/tts/app_tts.dart';
 import '../../../core/widgets/gt_mic_ring.dart';
-import '../../speaking/data/sound_level.dart';
 import '../data/pronunciation_scoring.dart';
 import 'pronunciation_result_card.dart';
 
@@ -132,6 +132,17 @@ class _PronunciationPracticeState extends ConsumerState<PronunciationPractice> {
     }
   }
 
+  /// Android tu dung nghe sau khi im lang (hoac loi khong nghe thay gi):
+  /// ket thuc luot nhu khi bam dung - khong de vong mic dung im ma van "dang
+  /// nghe".
+  void _onSttStatus(String status) {
+    if (!mounted || !_listening || _scoring) return;
+    if (status == stt.SpeechToText.doneStatus ||
+        status == stt.SpeechToText.notListeningStatus) {
+      _toggleListening();
+    }
+  }
+
   void _handleSttError(SpeechRecognitionError error) {
     if (!(_finalResultCompleter?.isCompleted ?? true)) {
       _finalResultCompleter!.complete();
@@ -161,7 +172,6 @@ class _PronunciationPracticeState extends ConsumerState<PronunciationPractice> {
         _listening = false;
         _scoring = true;
       });
-      GtHaptics.micStopped(this);
       widget.onBusyChanged?.call(true);
       final startedAt = _listenStartedAt;
       if (widget.countsPracticeTime && startedAt != null) {
@@ -185,6 +195,10 @@ class _PronunciationPracticeState extends ConsumerState<PronunciationPractice> {
         recordedPath = await _recorder.stop();
       } catch (_) {
         recordedPath = null;
+      } finally {
+        // Nha mic sau khi recorder that su dung (rung luc nay khong con lot
+        // vao ban ghi).
+        GtHaptics.micStopped(this);
       }
 
       if (mounted) {
@@ -194,7 +208,7 @@ class _PronunciationPracticeState extends ConsumerState<PronunciationPractice> {
         });
       }
       widget.onBusyChanged?.call(false);
-      _scoreAttempt();
+      if (mounted) _scoreAttempt();
       return;
     }
 
@@ -216,15 +230,23 @@ class _PronunciationPracticeState extends ConsumerState<PronunciationPractice> {
 
     final completer = Completer<void>();
     _finalResultCompleter = completer;
+    // speech_to_text la singleton: man khac khoi tao truoc thi callback cua
+    // initialize() o day khong duoc nhan -> gan truc tiep moi lan nghe.
+    _speech
+      ..statusListener = _onSttStatus
+      ..errorListener = _handleSttError;
     try {
       await _speech.listen(
         onResult: (result) {
+          if (!mounted) return;
           setState(() => _recognized = result.recognizedWords);
           if (result.finalResult && !completer.isCompleted) {
             completer.complete();
           }
         },
-        onSoundLevelChange: (db) => _level.value = _meter.add(db),
+        onSoundLevelChange: (db) {
+          if (mounted && _listening) _level.value = _meter.add(db);
+        },
         listenOptions: stt.SpeechListenOptions(localeId: 'en_US'),
       );
     } catch (e) {

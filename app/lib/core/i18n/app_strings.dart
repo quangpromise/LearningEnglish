@@ -5564,6 +5564,10 @@ class AppStrings {
       AppLanguage.vi: 'Bạn đã mở khoá bậc tiếp theo và nhận +{xp} XP.',
       AppLanguage.en: 'You unlocked the next stage and earned +{xp} XP.',
     },
+    'level_test_passed_body_no_xp': {
+      AppLanguage.vi: 'Bạn đã mở khoá bậc tiếp theo.',
+      AppLanguage.en: 'You unlocked the next stage.',
+    },
     'level_test_failed_body': {
       AppLanguage.vi:
           'Cần từ 80% để qua. Ôn các câu sai rồi làm lại sau 24 giờ.',
