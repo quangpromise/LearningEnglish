@@ -210,7 +210,7 @@ class _GtCelebrationState extends State<GtCelebration>
                 const Spacer(),
                 AnimatedBuilder(
                   animation: Listenable.merge([_pop, _glow]),
-                  builder: (context, _) {
+                  builder: (context, child) {
                     final s = 0.4 + 0.6 * popCurve.transform(_pop.value);
                     final g = sin(_glow.value * pi);
                     return Transform.scale(
@@ -232,22 +232,20 @@ class _GtCelebrationState extends State<GtCelebration>
                             ),
                           ],
                         ),
-                        // Khong co XP that (vd nhiem vu da nhan truoc do) ->
-                        // dau tick, khong bia so.
-                        child: widget.xp > 0
-                            ? GtCountUp(
-                                value: widget.xp,
-                                format: (v) => '+$v XP',
-                                style: GtText.ringStat(t.onGold),
-                              )
-                            : Icon(
-                                Icons.check_rounded,
-                                color: t.onGold,
-                                size: 64,
-                              ),
+                        child: child,
                       ),
                     );
                   },
+                  // Ngoai builder: toa sang lap moi frame khong build lai so.
+                  // Khong co XP that (vd nhiem vu da nhan truoc do) -> dau
+                  // tick, khong bia so.
+                  child: widget.xp > 0
+                      ? GtCountUp(
+                          value: widget.xp,
+                          format: (v) => '+$v XP',
+                          style: GtText.ringStat(t.onGold),
+                        )
+                      : Icon(Icons.check_rounded, color: t.onGold, size: 64),
                 ),
                 const SizedBox(height: 32),
                 Text(

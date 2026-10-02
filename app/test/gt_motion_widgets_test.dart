@@ -21,6 +21,9 @@ Widget _app(Widget child, {bool disableAnimations = false}) => MaterialApp(
 const _style = TextStyle(fontSize: 20);
 
 void main() {
+  // Nhom haptics dung test() thuong nhung can binding (kenh nen tang gia).
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('reduced motion flag', () {
     testWidgets('reads Android "remove animations" via MediaQuery', (
       tester,
@@ -115,6 +118,33 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('30'), findsOneWidget);
     });
+
+    testWidgets('never shows a number past the target', (tester) async {
+      await tester.pumpWidget(
+        _app(const GtCountUp(value: 1000, style: _style)),
+      );
+      for (var i = 0; i < 40; i++) {
+        await tester.pump(const Duration(milliseconds: 16));
+        final shown = int.parse(tester.widget<Text>(find.byType(Text)).data!);
+        expect(shown, lessThanOrEqualTo(1000), reason: 'frame $i');
+      }
+      await tester.pumpAndSettle();
+      expect(find.text('1000'), findsOneWidget);
+    });
+
+    testWidgets('screen readers get the final value, not each step', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      await tester.pumpWidget(
+        _app(GtCountUp(value: 55, format: (v) => '+$v XP', style: _style)),
+      );
+      await tester.pump(const Duration(milliseconds: 50));
+      expect(find.text('+55 XP'), findsNothing);
+      expect(find.bySemanticsLabel('+55 XP'), findsWidgets);
+      await tester.pumpAndSettle();
+      semantics.dispose();
+    });
   });
 
   group('haptics', () {
@@ -150,19 +180,30 @@ void main() {
     });
 
     test('plays the platform haptic for the level', () async {
+      await GtHaptics.play(GtHapticEvent.cardGraded);
       await GtHaptics.play(GtHapticEvent.setTicked);
+      await GtHaptics.play(GtHapticEvent.questCompleted);
       await GtHaptics.play(GtHapticEvent.chestOpened);
       expect(calls.map((c) => c.arguments), [
+        'HapticFeedbackType.selectionClick',
         'HapticFeedbackType.lightImpact',
+        'HapticFeedbackType.mediumImpact',
         'HapticFeedbackType.heavyImpact',
       ]);
     });
 
-    test('stays silent while the mic is recording', () async {
-      GtHaptics.micStarted();
+    test('stays silent while any mic session is open', () async {
+      final pronunciation = Object();
+      final trainer = Object();
+      GtHaptics.micStarted(pronunciation);
+      // "Dang nghe" ban lai khi tu khoi dong lai: khong lam lech.
+      GtHaptics.micStarted(pronunciation);
+      GtHaptics.micStarted(trainer);
+      await GtHaptics.play(GtHapticEvent.questCompleted);
+      GtHaptics.micStopped(pronunciation);
       await GtHaptics.play(GtHapticEvent.questCompleted);
       expect(calls, isEmpty);
-      GtHaptics.micStopped();
+      GtHaptics.micStopped(trainer);
       await GtHaptics.play(GtHapticEvent.questCompleted);
       expect(calls, hasLength(1));
     });
@@ -208,6 +249,27 @@ void main() {
       await tester.pump();
       expect(find.text('+100 XP'), findsOneWidget);
       expect(tester.hasRunningAnimations, isFalse);
+    });
+
+    testWidgets('celebration counts XP up, then the glow keeps going', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _app(
+          GtCelebration(
+            xp: 100,
+            title: 'Done',
+            subtitle: 'Sub',
+            ctaLabel: 'OK',
+            onClose: () {},
+          ),
+        ),
+      );
+      expect(find.text('+0 XP'), findsOneWidget);
+      await tester.pump(const Duration(milliseconds: 700));
+      expect(find.text('+100 XP'), findsOneWidget);
+      // Huy hieu bat len xong -> vong toa sang lap lai.
+      expect(tester.hasRunningAnimations, isTrue);
     });
   });
 }
