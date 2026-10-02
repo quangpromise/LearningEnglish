@@ -85,6 +85,11 @@ void main() {
     Navigator.of(home).pop();
     await tester.pump();
     expect(current.last, isTrue);
-    await tester.pumpAndSettle();
+    // Home "hien lai" ngay luc sheet bat dau lui; sheet lui xong trong
+    // kGtOnScreenSettle (neu framework doi thoi luong, test nay bao ngay).
+    expect(find.byType(BottomSheet), findsOneWidget);
+    await tester.pump(kGtOnScreenSettle);
+    await tester.pump();
+    expect(find.byType(BottomSheet), findsNothing);
   });
 }

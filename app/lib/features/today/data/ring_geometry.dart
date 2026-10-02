@@ -34,3 +34,16 @@ Set<int> arcsJustCompleted(List<double> before, List<double> after) => {
   for (var i = 0; i < after.length && i < before.length; i++)
     if (before[i] < 1 && after[i] >= 1) i,
 };
+
+/// Cung can loe sang + rung: vua cham 100% ([arcsJustCompleted]) VA do
+/// nguoi dung lam ra. [trainByRestDay]: vong Tap day vi hom nay la ngay nghi
+/// theo giao an chu khong phai vua tap -> khong chuc mung.
+Set<int> arcsToCelebrate(
+  List<double> before,
+  List<double> after, {
+  bool trainByRestDay = false,
+}) {
+  final done = arcsJustCompleted(before, after);
+  if (trainByRestDay) done.remove(0);
+  return done;
+}

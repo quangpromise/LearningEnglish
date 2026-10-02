@@ -105,4 +105,17 @@ void main() {
       );
     });
   });
+
+  group('spring reach time', () {
+    test('a bouncy spring reaches its target well before it settles', () {
+      final s = gtSpringToken(GtMotionKind.expressive, GtMotionSpeed.normal);
+      expect(springReachMs(s), inInclusiveRange(150, 300));
+      expect(springReachMs(s), lessThan(springSettleMs(s)));
+    });
+
+    test('a non-bouncy spring reaches its target when it settles', () {
+      final s = gtSpringToken(GtMotionKind.effects, GtMotionSpeed.normal);
+      expect(springReachMs(s), closeTo(springSettleMs(s), 8));
+    });
+  });
 }
