@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:learn_english_music/core/theme/gt_tokens.dart';
 import 'package:learn_english_music/core/widgets/gt_celebration.dart';
+import 'package:learn_english_music/core/widgets/gt_tick_circle.dart';
 import 'package:learn_english_music/features/today/data/daily_progress_store.dart';
 import 'package:learn_english_music/features/today/data/daily_quests.dart';
 import 'package:learn_english_music/features/today/data/quest_rewards.dart';
@@ -185,6 +186,40 @@ void main() {
     });
   });
 
+  group('workout celebration (ADR-0008)', () {
+    test('only the first completed workout of the day is celebrated', () async {
+      var now = _now;
+      final store = DailyProgressStore.forTest(clock: () => now);
+      // Luu & ket thuc som: khong chuc mung, khong tieu cho cua ngay.
+      expect(
+        await store.claimWorkoutCelebration(completedAllSets: false),
+        isFalse,
+      );
+      expect(
+        await store.claimWorkoutCelebration(completedAllSets: true),
+        isTrue,
+      );
+      expect(
+        await store.claimWorkoutCelebration(completedAllSets: true),
+        isFalse,
+      );
+      now = now.add(const Duration(days: 1));
+      expect(
+        await store.claimWorkoutCelebration(completedAllSets: true),
+        isTrue,
+      );
+    });
+
+    test('a workout celebrated on another device counts', () async {
+      final a = newStore();
+      expect(await a.claimWorkoutCelebration(completedAllSets: true), isTrue);
+      SharedPreferences.setMockInitialValues({}); // may khac
+      final b = newStore();
+      await b.mergeRemote(a.exportJson());
+      expect(await b.claimWorkoutCelebration(completedAllSets: true), isFalse);
+    });
+  });
+
   Future<void> pump(WidgetTester tester, Widget child) async {
     tester.view.physicalSize = const Size(360, 900);
     tester.view.devicePixelRatio = 1;
@@ -217,7 +252,12 @@ void main() {
     for (final q in DailyQuestId.values) {
       expect(find.text('+${q.xp} XP'), findsOneWidget);
     }
-    expect(find.byIcon(Icons.check_rounded), findsOneWidget);
+    expect(
+      tester
+          .widgetList<GtTickCircle>(find.byType(GtTickCircle))
+          .map((w) => w.progress),
+      [1, 0, 0, 0],
+    );
     expect(find.text('Hoàn thành 3 nhiệm vụ nữa để mở rương'), findsOneWidget);
     expect(find.text('Mở'), findsNothing);
   });
@@ -233,7 +273,10 @@ void main() {
           handsFree: true,
           trainerChat: true,
         ),
-        onOpenChest: () => opened++,
+        onOpenChest: () async {
+          opened++;
+          return 0;
+        },
       ),
     );
     expect(find.text('Rương đã sẵn sàng!'), findsOneWidget);

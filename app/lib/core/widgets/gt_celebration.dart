@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
+import '../feedback/gt_feedback_tier.dart';
 import '../navigation/nav_keys.dart';
 import '../theme/gt_haptics.dart';
 import '../theme/gt_motion.dart';
@@ -109,6 +110,8 @@ class _XpToastState extends State<_XpToast>
 
 /// Man chuc mung (README "Interactions"): nen den 86% + blur 8, huy hieu
 /// vang "+N XP" bat len roi toa sang, tieu de, dong phu, chip, nut trang.
+/// [haptic] = false khi noi goi da rung cho chinh khoanh khac nay (vd nap
+/// ruong bat len ngay truoc do) - khong rung 2 lan lien tiep.
 Future<void> showCelebration(
   BuildContext context, {
   required int xp,
@@ -116,8 +119,9 @@ Future<void> showCelebration(
   required String subtitle,
   required String ctaLabel,
   List<String> chips = const [],
+  bool haptic = true,
 }) {
-  GtHaptics.play(GtHapticEvent.celebration);
+  if (haptic) GtHaptics.play(GtHapticEvent.celebration);
   return showGeneralDialog<void>(
     context: context,
     useRootNavigator: true,
@@ -310,5 +314,25 @@ class _GtCelebrationState extends State<GtCelebration>
         ),
       ),
     );
+  }
+}
+
+/// Hien phan hoi dung tang cua [event] (ADR-0008): Milestone ->
+/// [celebration]; viec thuong ngay -> XP Toast voi [xp] that (0 thi khong
+/// hien gi); tang tai cho do noi goi tu lo.
+Future<void> showTieredFeedback(
+  BuildContext context,
+  GtFeedbackEvent event, {
+  required int xp,
+  required Future<void> Function() celebration,
+  bool firstToday = false,
+}) async {
+  switch (feedbackTier(event, firstToday: firstToday)) {
+    case GtFeedbackTier.celebration:
+      await celebration();
+    case GtFeedbackTier.toast:
+      showXpToast(xp, overlay: Overlay.maybeOf(context, rootOverlay: true));
+    case GtFeedbackTier.inline:
+      break;
   }
 }

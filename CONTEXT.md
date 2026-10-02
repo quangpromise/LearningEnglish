@@ -94,7 +94,7 @@ Nút hành động ở giữa thanh tab: vào buổi tập hôm nay nếu chưa 
 _Avoid_: FAB, center tab
 
 **Milestone**:
-Sự kiện hiếm đáng chúc mừng toàn màn: mở Quest Chest, xong buổi tập trong ngày, chuỗi Body + Brain đạt 7 / 30 / 100 / 365 ngày, lên GymTalk Rank, lên Body Level, qua Level Test. Việc thường ngày (xong Daily Quest, xong bộ thẻ) không phải Milestone.
+Sự kiện hiếm đáng chúc mừng toàn màn: mở Quest Chest, xong buổi tập **đầu tiên** trong ngày, chuỗi Body + Brain đạt 7 / 30 / 100 / 365 ngày, lên GymTalk Rank, lên Body Level, qua Level Test. Việc thường ngày (xong Daily Quest, xong bộ thẻ, buổi tập thứ hai trở đi trong cùng ngày) không phải Milestone.
 _Avoid_: achievement, cột mốc nhỏ
 
 **Celebration**:
