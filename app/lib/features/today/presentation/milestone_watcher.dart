@@ -139,11 +139,13 @@ class _GtMilestoneWatcherState extends ConsumerState<GtMilestoneWatcher> {
     var record = found.base;
     if (record != loaded) await MilestoneStore.save(userId, record);
     // Len Body Level keo Rank len cung luc: 1 man (the Rank gop vao), khong
-    // 2 man lien nhau (#121).
+    // 2 man lien nhau (#121). Chi gop khi biet bac cu (de the doi tu bac do).
+    final rankBefore = loaded.rank;
     final shows = <List<Milestone>>[];
     for (final m in found.celebrate) {
       final last = shows.isEmpty ? null : shows.last;
       if (m.kind == MilestoneKind.rank &&
+          rankBefore != null &&
           last != null &&
           last.length == 1 &&
           last.first.kind == MilestoneKind.bodyLevel) {
@@ -152,7 +154,6 @@ class _GtMilestoneWatcherState extends ConsumerState<GtMilestoneWatcher> {
         shows.add([m]);
       }
     }
-    final rankBefore = loaded.rank;
     for (final (i, group) in shows.indexed) {
       if (i > 0) await Future<void>.delayed(_gap);
       // Watcher bi huy (vd dang xuat): phan con lai CHUA ghi -> lan sau hien.
@@ -162,14 +163,14 @@ class _GtMilestoneWatcherState extends ConsumerState<GtMilestoneWatcher> {
       }
       await MilestoneStore.save(userId, record);
       if (!mounted) return;
-      final rank = group.length > 1 ? group[1] : null;
+      final rankStep = group.length > 1 ? group[1] : null;
       await _celebrate(
         group.first,
-        rankUp: rank == null || rankBefore == null
+        rankUp: rankStep == null || rankBefore == null
             ? null
             : rankUpCard(
                 from: rankBefore,
-                to: rank.value,
+                to: rankStep.value,
                 tr: (key) => AppStrings.t(key, ref.read(appLanguageProvider)),
               ),
       );

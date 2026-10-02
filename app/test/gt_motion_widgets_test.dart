@@ -329,12 +329,12 @@ void main() {
           .setMockMethodCallHandler(SystemChannels.platform, null);
     });
 
-    GtCelebration celebration() => GtCelebration(
+    GtCelebration celebration({VoidCallback? onClose}) => GtCelebration(
       xp: 40,
       title: 'Lên B1!',
       subtitle: '18/20',
       ctaLabel: 'OK',
-      onClose: () {},
+      onClose: onClose ?? () {},
       rankUp: const GtRankUp(
         fromTier: 2,
         toTier: 3,
@@ -351,38 +351,112 @@ void main() {
         )
         .opacity;
 
+    double cardOpacity(WidgetTester tester) => tester
+        .widget<FadeTransition>(
+          find
+              .ancestor(
+                of: find.text('Lên GymTalk Rank!'),
+                matching: find.byType(FadeTransition),
+              )
+              .first,
+        )
+        .opacity
+        .value;
+
     testWidgets('one Celebration: the card slides in, the tier flips once', (
       tester,
     ) async {
+      var now = 0;
+      // Chay tung khung hinh 16 ms toi moc [ms], nhu may that: hoat anh bat
+      // dau o khung hinh ngay sau hen gio.
+      Future<void> runTo(int ms) async {
+        while (now + 16 <= ms) {
+          await tester.pump(const Duration(milliseconds: 16));
+          now += 16;
+        }
+      }
+
+      final tickMs = 950 + GtRankUpCard.landsAfterFlip.inMilliseconds;
       await tester.pumpWidget(_app(celebration()));
       expect(find.text('Lên GymTalk Rank!'), findsOneWidget);
       expect(find.text('Bậc 3: Athlete · B1'), findsOneWidget);
-      // The da vao, bac van la bac cu.
-      await tester.pump(const Duration(milliseconds: 900));
+      // Huy hieu chinh bat len truoc, the chua hien.
+      await runTo(440);
+      expect(cardOpacity(tester), 0);
+      // The truot len, hien dan.
+      await runTo(560);
+      expect(cardOpacity(tester), allOf(greaterThan(0), lessThan(1)));
+      await runTo(940);
+      expect(cardOpacity(tester), 1);
+      // Van la bac cu toi luc doi.
       expect(opacityOf(tester, '2'), 1);
       expect(opacityOf(tester, '3'), 0);
+      // Rung dung luc so moi cham dich, khong som hon.
+      await runTo(tickMs - 1);
       expect(buzzes, isEmpty);
-      // Doi bac: 1 nhip rung nhe, bac moi hien han.
-      await tester.pump(const Duration(milliseconds: 100));
-      await tester.pump(const Duration(milliseconds: 700));
+      expect(opacityOf(tester, '3'), greaterThan(0));
+      await runTo(tickMs + 16);
+      expect(buzzes, ['HapticFeedbackType.lightImpact']);
+      // Doi bac xong: chi con bac moi, khong rung them.
+      await runTo(2000);
       expect(opacityOf(tester, '3'), 1);
       expect(opacityOf(tester, '2'), 0);
-      expect(buzzes, ['HapticFeedbackType.lightImpact']);
-      await tester.pump(const Duration(seconds: 1));
       expect(buzzes, hasLength(1));
       await tester.pumpWidget(const SizedBox());
     });
 
-    testWidgets('reduced motion: the new tier at once, no extra tick', (
+    testWidgets('reduced motion: the new tier at once, the tick still comes', (
       tester,
     ) async {
+      final tickAt =
+          const Duration(milliseconds: 950) + GtRankUpCard.landsAfterFlip;
       await tester.pumpWidget(_app(celebration(), disableAnimations: true));
       await tester.pump();
       expect(find.text('3'), findsOneWidget);
       expect(find.text('2'), findsNothing);
-      await tester.pump(const Duration(seconds: 2));
+      expect(cardOpacity(tester), 1);
+      // Rung khong phai chuyen dong: van 1 nhip, cung luc nhu binh thuong.
+      await tester.pump(tickAt - const Duration(milliseconds: 10));
       expect(buzzes, isEmpty);
+      await tester.pump(const Duration(milliseconds: 20));
+      expect(buzzes, ['HapticFeedbackType.lightImpact']);
+      await tester.pump(const Duration(seconds: 2));
+      expect(buzzes, hasLength(1));
       expect(tester.hasRunningAnimations, isFalse);
     });
+
+    for (final (name, size, scale) in [
+      ('360x640, text x1.3', const Size(360, 640), 1.3),
+      ('360x640, text x2', const Size(360, 640), 2.0),
+      ('landscape 640x360', const Size(640, 360), 1.0),
+    ]) {
+      testWidgets('no overflow, the button stays reachable: $name', (
+        tester,
+      ) async {
+        tester.view.physicalSize = size;
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        var closed = false;
+        await tester.pumpWidget(
+          _app(
+            Builder(
+              builder: (context) => MediaQuery(
+                data: MediaQuery.of(context)
+                    .copyWith(textScaler: TextScaler.linear(scale)),
+                child: celebration(onClose: () => closed = true),
+              ),
+            ),
+          ),
+        );
+        await tester.pump(const Duration(seconds: 2));
+        expect(tester.takeException(), isNull);
+        // Khong du cho thi cuon toi nut dong.
+        await tester.ensureVisible(find.text('OK'));
+        await tester.pump();
+        await tester.tap(find.text('OK'));
+        expect(closed, isTrue);
+        await tester.pumpWidget(const SizedBox());
+      });
+    }
   });
 }

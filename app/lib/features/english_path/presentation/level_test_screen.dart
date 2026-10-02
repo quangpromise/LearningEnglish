@@ -45,7 +45,7 @@ Future<void> celebrateLevelTestPass(
   required String ctaLabel,
   void Function(int credited)? onCredited,
   GtRankUp? rankUp,
-  Future<void> Function()? beforeCelebration,
+  VoidCallback? onCelebrationShown,
   Duration minDelay = const Duration(milliseconds: 600),
   Duration timeout = const Duration(seconds: 3),
 }) async {
@@ -62,22 +62,25 @@ Future<void> celebrateLevelTestPass(
 
   await Future.wait([claim(), Future<void>.delayed(minDelay)]);
   if (!context.mounted) return;
-  // Vd ghi moc Rank (gop the Rank vao man nay): chi khi man nay that su
-  // hien - dong man truoc do thi Hom nay se chuc mung Rank nhu thuong.
-  await beforeCelebration?.call();
-  if (!context.mounted) return;
   await showTieredFeedback(
     context,
     GtFeedbackEvent.levelTestPassed,
     xp: credited,
-    celebration: () => showCelebration(
-      context,
-      xp: credited,
-      title: title,
-      subtitle: subtitle,
-      ctaLabel: ctaLabel,
-      rankUp: rankUp,
-    ),
+    celebration: () {
+      final closed = showCelebration(
+        context,
+        xp: credited,
+        title: title,
+        subtitle: subtitle,
+        ctaLabel: ctaLabel,
+        rankUp: rankUp,
+      );
+      // Vd ghi moc Rank (the Rank gop vao man nay): ngay khi man da day vao
+      // - Hom nay dang bi che nen chua kiem duoc. Dong man truoc do thi
+      // khong ghi, Hom nay chuc mung Rank nhu thuong.
+      onCelebrationShown?.call();
+      return closed;
+    },
   );
 }
 
@@ -134,46 +137,49 @@ class _LevelTestScreenState extends ConsumerState<LevelTestScreen> {
       takenAt: DateTime.now(),
     );
     _result = result;
-    // English Level truoc khi ghi: qua bai thi len Stage ke tiep.
-    final englishBefore = ref.read(englishLevelProvider);
+    // English Level TRUOC khi ghi bai (de biet Rank co len khong) - chi doc
+    // khi trao thuong: dispose cung goi vao day (bo do), luc do khong con
+    // dung duoc ref.
+    final englishBefore = result.passed && awardXp
+        ? ref.read(englishLevelProvider)
+        : null;
     EnglishPathStore.instance.recordLevelTest(result);
-    if (result.passed && awardXp) {
-      // XP la diem tich luy tren server - loi mang/chua dang nhap thi bo qua.
-      // myLearningXpProvider la autoDispose nen tu tai lai khi mo Tien do.
-      final repo = ref.read(learningXpRepositoryProvider);
-      final lang = ref.read(appLanguageProvider);
-      String t(String key) => AppStrings.t(key, lang);
-      // Len Stage moi keo GymTalk Rank len: gop vao chinh man nay (#121).
-      final stats = ref.read(bodyStatsProvider).valueOrNull;
-      final rise = rankRiseFromEnglish(
-        stats == null ? null : bodyLevelFor(stats),
-        englishBefore,
-        result.stage.next,
-      );
-      final userId = ref.read(currentUserIdProvider);
-      unawaited(
-        celebrateLevelTestPass(
-          context,
-          xp: kLevelTestPassXp,
-          award: repo.addBonusXp,
-          rankUp: rise == null
-              ? null
-              : rankUpCard(from: rise.from, to: rise.to, tr: t),
-          beforeCelebration: rise == null || userId == null
-              ? null
-              : () => MilestoneStore.raiseRank(userId, rise.to),
-          onCredited: (xp) {
-            if (mounted) setState(() => _creditedXp = xp);
-          },
-          title: t('level_test_passed'),
-          subtitle: t('level_test_score')
-              .replaceFirst('{c}', '${result.correct}')
-              .replaceFirst('{t}', '${result.total}')
-              .replaceFirst('{p}', '${result.correct * 100 ~/ result.total}'),
-          ctaLabel: t('gt_celebration_cta'),
-        ),
-      );
-    }
+    if (englishBefore == null) return;
+    // XP la diem tich luy tren server - loi mang/chua dang nhap thi bo qua.
+    // myLearningXpProvider la autoDispose nen tu tai lai khi mo Tien do.
+    final repo = ref.read(learningXpRepositoryProvider);
+    final lang = ref.read(appLanguageProvider);
+    String t(String key) => AppStrings.t(key, lang);
+    // Len Stage moi keo GymTalk Rank len: gop vao chinh man nay (#121).
+    final stats = ref.read(bodyStatsProvider).valueOrNull;
+    final rise = rankRiseFromEnglish(
+      stats == null ? null : bodyLevelFor(stats),
+      englishBefore,
+      result.stage.next,
+    );
+    final userId = ref.read(currentUserIdProvider);
+    unawaited(
+      celebrateLevelTestPass(
+        context,
+        xp: kLevelTestPassXp,
+        award: repo.addBonusXp,
+        rankUp: rise == null
+            ? null
+            : rankUpCard(from: rise.from, to: rise.to, tr: t),
+        onCelebrationShown: rise == null || userId == null
+            ? null
+            : () => unawaited(MilestoneStore.raiseRank(userId, rise.to)),
+        onCredited: (xp) {
+          if (mounted) setState(() => _creditedXp = xp);
+        },
+        title: t('level_test_passed'),
+        subtitle: t('level_test_score')
+            .replaceFirst('{c}', '${result.correct}')
+            .replaceFirst('{t}', '${result.total}')
+            .replaceFirst('{p}', '${result.correct * 100 ~/ result.total}'),
+        ctaLabel: t('gt_celebration_cta'),
+      ),
+    );
   }
 
   @override

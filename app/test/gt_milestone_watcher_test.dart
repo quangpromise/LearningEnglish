@@ -100,6 +100,20 @@ void main() {
     expect(await MilestoneStore.load('b'), const MilestoneRecord());
   });
 
+  test('raiseRank only raises the recorded Rank (#121)', () async {
+    await MilestoneStore.save('u1', const MilestoneRecord(streak: 7, rank: 2));
+    await MilestoneStore.raiseRank('u1', 1);
+    expect(
+      await MilestoneStore.load('u1'),
+      const MilestoneRecord(streak: 7, rank: 2),
+    );
+    await MilestoneStore.raiseRank('u1', 3);
+    expect(
+      await MilestoneStore.load('u1'),
+      const MilestoneRecord(streak: 7, rank: 3),
+    );
+  });
+
   testWidgets('first time on this device: baseline only, no Celebration', (
     tester,
   ) async {
@@ -134,6 +148,8 @@ void main() {
     // Len Body Level keo Rank len: 1 man, the Rank gop vao (#121).
     expect(_title(tester), 'Lên Body Level!');
     expect(find.byType(GtRankUpCard), findsOneWidget);
+    final card = tester.widget<GtRankUpCard>(find.byType(GtRankUpCard));
+    expect((card.rankUp.fromTier, card.rankUp.toTier), (1, 2));
     await _close(tester);
     expect(find.byType(GtCelebration), findsNothing);
     expect(

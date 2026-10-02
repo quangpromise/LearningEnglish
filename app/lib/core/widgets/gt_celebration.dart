@@ -228,131 +228,143 @@ class _GtCelebrationState extends State<GtCelebration>
   @override
   Widget build(BuildContext context) {
     final t = context.gt;
-    // cubic-bezier(.2,1.4,.4,1): vuot qua 1 roi ve 1.
-    const popCurve = Cubic(0.2, 1.4, 0.4, 1);
     return BackdropFilter(
       filter: ui.ImageFilter.blur(sigmaX: 8, sigmaY: 8),
       child: Material(
         color: Colors.black.withValues(alpha: 0.86),
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 28),
-            child: Column(
-              children: [
-                const Spacer(),
-                AnimatedBuilder(
-                  animation: Listenable.merge([_pop, _glow]),
-                  builder: (context, child) {
-                    final s = 0.4 + 0.6 * popCurve.transform(_pop.value);
-                    final g = sin(_glow.value * pi);
-                    return Transform.scale(
-                      scale: s,
-                      child: Container(
-                        width: 150,
-                        height: 150,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: RadialGradient(
-                            colors: [t.gold, t.gold.withValues(alpha: 0.55)],
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: t.gold.withValues(alpha: 0.25 + 0.3 * g),
-                              blurRadius: 24 + 24 * g,
-                              spreadRadius: 4 + 8 * g,
-                            ),
-                          ],
-                        ),
-                        child: child,
-                      ),
-                    );
-                  },
-                  // Ngoai builder: toa sang lap moi frame khong build lai so.
-                  // Khong co XP that (vd nhiem vu da nhan truoc do) -> dau
-                  // tick, khong bia so.
-                  child: widget.xp > 0
-                      ? GtCountUp(
-                          value: widget.xp,
-                          format: (v) => '+$v XP',
-                          style: GtText.ringStat(t.onGold),
-                        )
-                      : Icon(Icons.check_rounded, color: t.onGold, size: 64),
-                ),
-                const SizedBox(height: 32),
-                Text(
-                  widget.title,
-                  textAlign: TextAlign.center,
-                  style: GtText.heroTitle(Colors.white),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  widget.subtitle,
-                  textAlign: TextAlign.center,
-                  style: GtText.body(const Color(0xFFB9BDC4), size: 16),
-                ),
-                if (widget.rankUp case final rankUp?) ...[
-                  const SizedBox(height: 24),
-                  GtRankUpCard(rankUp: rankUp),
-                ],
-                if (widget.chips.isNotEmpty) ...[
-                  const SizedBox(height: 18),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    alignment: WrapAlignment.center,
-                    children: [
-                      for (final c in widget.chips)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 7,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                          child: Text(
-                            c,
-                            style: GtText.body(Colors.white, size: 13),
-                          ),
-                        ),
-                    ],
-                  ),
-                ],
-                const Spacer(),
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: FilledButton(
-                    style: FilledButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFF0B0C0E),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(18),
-                      ),
-                    ),
-                    onPressed: widget.onClose,
-                    child: Text(
-                      widget.ctaLabel,
-                      style: GtText.rowTitle(const Color(0xFF0B0C0E)),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
+          // Man ngang / chu lon: noi dung cao hon man thi cuon duoc (nut
+          // dong luon toi duoc); du cho thi can giua nhu cu.
+          child: LayoutBuilder(
+            builder: (context, viewport) => SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: viewport.maxHeight),
+                child: IntrinsicHeight(child: _content(t)),
+              ),
             ),
           ),
         ),
       ),
     );
   }
+
+  Widget _content(GtTokens t) {
+    // cubic-bezier(.2,1.4,.4,1): vuot qua 1 roi ve 1.
+    const popCurve = Cubic(0.2, 1.4, 0.4, 1);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 28),
+      child: Column(
+        children: [
+          const Spacer(),
+          AnimatedBuilder(
+            animation: Listenable.merge([_pop, _glow]),
+            builder: (context, child) {
+              final s = 0.4 + 0.6 * popCurve.transform(_pop.value);
+              final g = sin(_glow.value * pi);
+              return Transform.scale(
+                scale: s,
+                child: Container(
+                  width: 150,
+                  height: 150,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [t.gold, t.gold.withValues(alpha: 0.55)],
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: t.gold.withValues(alpha: 0.25 + 0.3 * g),
+                        blurRadius: 24 + 24 * g,
+                        spreadRadius: 4 + 8 * g,
+                      ),
+                    ],
+                  ),
+                  child: child,
+                ),
+              );
+            },
+            // Ngoai builder: toa sang lap moi frame khong build lai so.
+            // Khong co XP that (vd nhiem vu da nhan truoc do) -> dau
+            // tick, khong bia so.
+            child: widget.xp > 0
+                ? GtCountUp(
+                    value: widget.xp,
+                    format: (v) => '+$v XP',
+                    style: GtText.ringStat(t.onGold),
+                  )
+                : Icon(Icons.check_rounded, color: t.onGold, size: 64),
+          ),
+          const SizedBox(height: 32),
+          Text(
+            widget.title,
+            textAlign: TextAlign.center,
+            style: GtText.heroTitle(Colors.white),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            widget.subtitle,
+            textAlign: TextAlign.center,
+            style: GtText.body(const Color(0xFFB9BDC4), size: 16),
+          ),
+          if (widget.rankUp case final rankUp?) ...[
+            const SizedBox(height: 24),
+            GtRankUpCard(rankUp: rankUp),
+          ],
+          if (widget.chips.isNotEmpty) ...[
+            const SizedBox(height: 18),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              alignment: WrapAlignment.center,
+              children: [
+                for (final c in widget.chips)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 7,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Text(c, style: GtText.body(Colors.white, size: 13)),
+                  ),
+              ],
+            ),
+          ],
+          const Spacer(),
+          SizedBox(
+            width: double.infinity,
+            height: 56,
+            child: FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: const Color(0xFF0B0C0E),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+              ),
+              onPressed: widget.onClose,
+              child: Text(
+                widget.ctaLabel,
+                style: GtText.rowTitle(const Color(0xFF0B0C0E)),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
 }
 
 /// The "Len GymTalk Rank" trong man chuc mung: truot len ngay sau huy hieu
-/// chinh, roi so bac tren huy hieu Rank doi tu cu sang moi (cu truot len, moi
-/// tu duoi len) kem vong sang lan ra (khong blur) va 1 nhip rung nhe. Giam
-/// chuyen dong: hien ngay bac moi, khong truot, khong rung them.
+/// chinh, roi so bac tren huy hieu Rank doi tu cu sang moi (cu truot len mo
+/// di, moi bat len tu duoi) kem vong sang lan ra (net ve, khong blur) va 1
+/// nhip rung nhe dung luc so moi cham dich. Thong so lay tu token lo xo
+/// (gt_motion). Giam chuyen dong: hien ngay bac moi, van rung (rung khong
+/// phai chuyen dong).
 class GtRankUpCard extends StatefulWidget {
   const GtRankUpCard({
     super.key,
@@ -366,8 +378,25 @@ class GtRankUpCard extends StatefulWidget {
   /// Luc the bat dau truot len (sau khi huy hieu chinh gan bat xong).
   final Duration enterAfter;
 
-  /// Luc so bac doi sang bac moi.
+  /// Luc so bac bat dau doi sang bac moi.
   final Duration flipAfter;
+
+  // So moi bat len: expressive cham (du lau de doc kip "2 -> 3"); so cu mo
+  // di: effects; vong sang lan ra: standard, tu luc so moi cham dich.
+  static final _land = gtSpringToken(
+    GtMotionKind.expressive,
+    GtMotionSpeed.slow,
+  );
+  static final _leave = gtSpringToken(GtMotionKind.effects, GtMotionSpeed.slow);
+  static final _ring = gtSpringToken(GtMotionKind.standard, GtMotionSpeed.slow);
+
+  /// Tu luc doi bac toi luc so moi cham dich lan dau - luc rung.
+  static Duration get landsAfterFlip =>
+      Duration(milliseconds: springReachMs(_land));
+
+  /// Ca luot doi bac: so moi lang han va vong sang tat han.
+  static int get _flipMs =>
+      max(springSettleMs(_land), springReachMs(_land) + springSettleMs(_ring));
 
   @override
   State<GtRankUpCard> createState() => _GtRankUpCardState();
@@ -375,16 +404,53 @@ class GtRankUpCard extends StatefulWidget {
 
 class _GtRankUpCardState extends State<GtRankUpCard>
     with TickerProviderStateMixin {
+  static final _enterSpring = gtSpringToken(
+    GtMotionKind.expressive,
+    GtMotionSpeed.normal,
+  );
+  static final _enterMs = springSettleMs(_enterSpring);
+
+  // Doi bac tren 1 controller tuyen tinh dai [GtRankUpCard._flipMs]; moi
+  // phan theo lo xo rieng (dung 1 o cuoi controller).
+  static final _incoming = GtSpringCurve(
+    GtRankUpCard._land,
+    GtRankUpCard._flipMs,
+  );
+  static final _outgoing = GtSpringCurve(
+    GtRankUpCard._leave,
+    GtRankUpCard._flipMs,
+  );
+  static final _ringMs = springSettleMs(GtRankUpCard._ring);
+  static final _ringCurve = GtSpringCurve(GtRankUpCard._ring, _ringMs);
+
   late final AnimationController _enter = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 420),
+    duration: Duration(milliseconds: _enterMs),
   );
   late final AnimationController _flip = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 700),
+    duration: Duration(milliseconds: GtRankUpCard._flipMs),
   );
+  // Truot theo lo xo expressive (nay nhe); hien dan theo effects (khong
+  // vuot 1 - Opacity).
+  late final CurvedAnimation _slide = CurvedAnimation(
+    parent: _enter,
+    curve: GtSpringCurve(_enterSpring, _enterMs),
+  );
+  late final CurvedAnimation _fade = CurvedAnimation(
+    parent: _enter,
+    curve: GtSpringCurve(
+      gtSpringToken(GtMotionKind.effects, GtMotionSpeed.normal),
+      _enterMs,
+    ),
+  );
+  late final Animation<Offset> _offset = Tween(
+    begin: const Offset(0, 0.3),
+    end: Offset.zero,
+  ).animate(_slide);
   Timer? _enterTimer;
   Timer? _flipTimer;
+  Timer? _tickTimer;
   bool _started = false;
   bool _still = false;
 
@@ -394,6 +460,11 @@ class _GtRankUpCardState extends State<GtRankUpCard>
     if (_started) return;
     _started = true;
     _still = gtReduceMotion(context);
+    // Rung luc so moi cham dich - ca khi giam chuyen dong. Rung ngay luc mo
+    // man thi bi khoang tro sau cu rung manh cua Celebration nuot mat.
+    _tickTimer = Timer(widget.flipAfter + GtRankUpCard.landsAfterFlip, () {
+      if (mounted) GtHaptics.play(GtHapticEvent.rankUp);
+    });
     if (_still) {
       _enter.value = 1;
       _flip.value = 1;
@@ -403,9 +474,7 @@ class _GtRankUpCardState extends State<GtRankUpCard>
       if (mounted) _enter.forward();
     });
     _flipTimer = Timer(widget.flipAfter, () {
-      if (!mounted) return;
-      GtHaptics.play(GtHapticEvent.rankUp);
-      _flip.forward();
+      if (mounted) _flip.forward();
     });
   }
 
@@ -413,6 +482,9 @@ class _GtRankUpCardState extends State<GtRankUpCard>
   void dispose() {
     _enterTimer?.cancel();
     _flipTimer?.cancel();
+    _tickTimer?.cancel();
+    _slide.dispose();
+    _fade.dispose();
     _enter.dispose();
     _flip.dispose();
     super.dispose();
@@ -421,18 +493,14 @@ class _GtRankUpCardState extends State<GtRankUpCard>
   @override
   Widget build(BuildContext context) {
     final t = context.gt;
-    final enter = CurvedAnimation(parent: _enter, curve: Curves.easeOutCubic);
     final tierStyle = GtText.cardTitle(t.gold).copyWith(
       fontSize: 22,
       fontFeatures: const [FontFeature.tabularFigures()],
     );
     return FadeTransition(
-      opacity: enter,
+      opacity: _fade,
       child: SlideTransition(
-        position: Tween(
-          begin: const Offset(0, 0.3),
-          end: Offset.zero,
-        ).animate(enter),
+        position: _offset,
         child: Container(
           padding: const EdgeInsets.fromLTRB(12, 12, 18, 12),
           decoration: BoxDecoration(
@@ -450,35 +518,43 @@ class _GtRankUpCardState extends State<GtRankUpCard>
                   height: 52,
                   child: AnimatedBuilder(
                     animation: _flip,
-                    builder: (context, _) => CustomPaint(
-                      painter: _RankHaloPainter(
-                        progress: _still ? 0 : _flip.value,
-                        color: t.gold,
-                      ),
-                      child: Transform.scale(
-                        scale: _still ? 1 : _bump(_flip.value),
-                        child: _badge(t, tierStyle),
-                      ),
-                    ),
+                    builder: (context, _) {
+                      final v = _still ? 1.0 : _flip.value;
+                      final incoming = _incoming.transform(v);
+                      return CustomPaint(
+                        painter: _RankHaloPainter(
+                          progress: _still ? 0 : _ringAt(v),
+                          color: t.gold,
+                        ),
+                        child: Transform.scale(
+                          // Phong nhe roi ve theo so moi (1 -> 1.18 -> 1).
+                          scale: 1 + 0.18 * sin(pi * incoming.clamp(0.0, 1.0)),
+                          child: _badge(t, tierStyle, v, incoming),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),
               const SizedBox(width: 14),
               Flexible(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.rankUp.title,
-                      style: GtText.rowTitle(Colors.white),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      widget.rankUp.detail,
-                      style: GtText.body(const Color(0xFFB9BDC4), size: 13),
-                    ),
-                  ],
+                // TalkBack / VoiceOver doc tieu de + bac moi thanh 1 muc.
+                child: MergeSemantics(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.rankUp.title,
+                        style: GtText.rowTitle(Colors.white),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        widget.rankUp.detail,
+                        style: GtText.body(const Color(0xFFB9BDC4), size: 13),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -488,11 +564,14 @@ class _GtRankUpCardState extends State<GtRankUpCard>
     );
   }
 
-  /// Phong to nhe roi ve (1 -> 1.18 -> 1) trong luc doi bac.
-  static double _bump(double v) =>
-      1 + 0.18 * sin(pi * ((v - 0.25) / 0.75).clamp(0.0, 1.0));
+  /// Vong sang: chay tu luc so moi cham dich (0 truoc do, 1 khi tat han).
+  static double _ringAt(double v) {
+    final ms =
+        v * GtRankUpCard._flipMs - GtRankUpCard.landsAfterFlip.inMilliseconds;
+    return _ringCurve.transform((ms / _ringMs).clamp(0.0, 1.0));
+  }
 
-  Widget _badge(GtTokens t, TextStyle style) {
+  Widget _badge(GtTokens t, TextStyle style, double v, double incoming) {
     final rankUp = widget.rankUp;
     final decoration = BoxDecoration(
       shape: BoxShape.circle,
@@ -502,13 +581,11 @@ class _GtRankUpCardState extends State<GtRankUpCard>
     if (_still) {
       return DecoratedBox(
         decoration: decoration,
-        child: Center(child: Text('${rankUp.toTier}', style: style)),
+        child: Center(child: _tier(rankUp.toTier, style)),
       );
     }
-    // Bac cu truot len va mo; bac moi tu duoi len.
-    final swap = Curves.easeInOutCubic.transform(
-      (_flip.value / 0.45).clamp(0.0, 1.0),
-    );
+    // Bac cu truot len va mo; bac moi tu duoi bat len (nay nhe qua dich).
+    final outgoing = _outgoing.transform(v);
     return DecoratedBox(
       decoration: decoration,
       child: ClipOval(
@@ -516,17 +593,17 @@ class _GtRankUpCardState extends State<GtRankUpCard>
           alignment: Alignment.center,
           children: [
             Transform.translate(
-              offset: Offset(0, -20 * swap),
+              offset: Offset(0, -20 * outgoing),
               child: Opacity(
-                opacity: 1 - swap,
-                child: Text('${rankUp.fromTier}', style: style),
+                opacity: (1 - outgoing).clamp(0.0, 1.0),
+                child: _tier(rankUp.fromTier, style),
               ),
             ),
             Transform.translate(
-              offset: Offset(0, 20 * (1 - swap)),
+              offset: Offset(0, 20 * (1 - incoming)),
               child: Opacity(
-                opacity: swap,
-                child: Text('${rankUp.toTier}', style: style),
+                opacity: incoming.clamp(0.0, 1.0),
+                child: _tier(rankUp.toTier, style),
               ),
             ),
           ],
@@ -534,9 +611,15 @@ class _GtRankUpCardState extends State<GtRankUpCard>
       ),
     );
   }
+
+  /// So bac trang tri trong huy hieu 52 dp: khong phong theo co chu he thong
+  /// (bi cat trong vong tron).
+  static Widget _tier(int tier, TextStyle style) =>
+      Text('$tier', style: style, textScaler: TextScaler.noScaling);
 }
 
-/// Vong sang lan ra quanh huy hieu Rank khi doi bac (net ve, khong blur).
+/// Vong sang lan ra quanh huy hieu Rank khi so moi cham dich (net ve, khong
+/// blur). [progress]: 0..1 theo lo xo standard.
 class _RankHaloPainter extends CustomPainter {
   _RankHaloPainter({required this.progress, required this.color});
 
@@ -545,9 +628,11 @@ class _RankHaloPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (progress <= 0.3) return;
-    final p = ((progress - 0.3) / 0.7).clamp(0.0, 1.0);
-    final r = size.shortestSide / 2 * (1 + 0.6 * Curves.easeOut.transform(p));
+    final p = progress.clamp(0.0, 1.0);
+    if (p <= 0 || p >= 1) return;
+    // Lan toi 1.4 lan ban kinh: van nam trong the (tam huy hieu cach mep the
+    // 38 dp).
+    final r = size.shortestSide / 2 * (1 + 0.4 * p);
     canvas.drawCircle(
       size.center(Offset.zero),
       r,
