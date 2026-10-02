@@ -24,6 +24,14 @@ abstract final class MilestoneStore {
     }
   }
 
+  /// Ghi Rank [tier] da chuc mung o noi khac (gop vao Celebration cua Level
+  /// Test, #121) de Hom nay khong chuc mung lai. Chi nang, khong ha.
+  static Future<void> raiseRank(String userId, int tier) async {
+    final record = await load(userId);
+    if ((record.rank ?? -1) >= tier) return;
+    await save(userId, record.copyWith(rank: tier));
+  }
+
   static Future<void> save(String userId, MilestoneRecord record) async {
     try {
       final prefs = await SharedPreferences.getInstance();

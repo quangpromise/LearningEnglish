@@ -13,6 +13,7 @@ import '../data/daily_progress_store.dart';
 import '../data/gymtalk_rank.dart';
 import '../data/milestone_store.dart';
 import '../data/milestones.dart';
+import 'rank_up.dart';
 
 /// So lieu de kiem Milestone. null = chua chac chan (chua dong bo xong lan
 /// dau, dang tai, loi mang) -> giu nguyen phan do cua ban ghi.
@@ -137,18 +138,46 @@ class _GtMilestoneWatcherState extends ConsumerState<GtMilestoneWatcher> {
     );
     var record = found.base;
     if (record != loaded) await MilestoneStore.save(userId, record);
-    for (final (i, milestone) in found.celebrate.indexed) {
+    // Len Body Level keo Rank len cung luc: 1 man (the Rank gop vao), khong
+    // 2 man lien nhau (#121). Chi gop khi biet bac cu (de the doi tu bac do).
+    final rankBefore = loaded.rank;
+    final shows = <List<Milestone>>[];
+    for (final m in found.celebrate) {
+      final last = shows.isEmpty ? null : shows.last;
+      if (m.kind == MilestoneKind.rank &&
+          rankBefore != null &&
+          last != null &&
+          last.length == 1 &&
+          last.first.kind == MilestoneKind.bodyLevel) {
+        last.add(m);
+      } else {
+        shows.add([m]);
+      }
+    }
+    for (final (i, group) in shows.indexed) {
       if (i > 0) await Future<void>.delayed(_gap);
       // Watcher bi huy (vd dang xuat): phan con lai CHUA ghi -> lan sau hien.
       if (!mounted) return;
-      record = applyMilestone(record, milestone, today: today);
+      for (final m in group) {
+        record = applyMilestone(record, m, today: today);
+      }
       await MilestoneStore.save(userId, record);
       if (!mounted) return;
-      await _celebrate(milestone);
+      final rankStep = group.length > 1 ? group[1] : null;
+      await _celebrate(
+        group.first,
+        rankUp: rankStep == null || rankBefore == null
+            ? null
+            : rankUpCard(
+                from: rankBefore,
+                to: rankStep.value,
+                tr: (key) => AppStrings.t(key, ref.read(appLanguageProvider)),
+              ),
+      );
     }
   }
 
-  Future<void> _celebrate(Milestone m) {
+  Future<void> _celebrate(Milestone m, {GtRankUp? rankUp}) {
     final lang = ref.read(appLanguageProvider);
     String t(String key) => AppStrings.t(key, lang);
     String bodyName(int index) =>
@@ -168,10 +197,7 @@ class _GtMilestoneWatcherState extends ConsumerState<GtMilestoneWatcher> {
       MilestoneKind.rank => (
         GtFeedbackEvent.rankUp,
         t('gt_milestone_rank_title'),
-        t('gt_milestone_rank_sub')
-            .replaceFirst('{tier}', '${m.value + 1}')
-            .replaceFirst('{body}', bodyName(m.value))
-            .replaceFirst('{english}', CefrLevel.values[m.value].code),
+        rankDetail(m.value, t),
       ),
     };
     return showTieredFeedback(
@@ -185,6 +211,7 @@ class _GtMilestoneWatcherState extends ConsumerState<GtMilestoneWatcher> {
         title: title,
         subtitle: subtitle,
         ctaLabel: t('gt_celebration_cta'),
+        rankUp: rankUp,
       ),
     );
   }

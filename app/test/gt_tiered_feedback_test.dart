@@ -108,6 +108,66 @@ void main() {
       expect(find.text('+$kLevelTestPassXp XP'), findsOneWidget);
     });
 
+    testWidgets('a rank-up rides along in the same Celebration (#121)', (
+      tester,
+    ) async {
+      final context = await _host(tester);
+      bool? pushedWhenRecorded;
+      celebrateLevelTestPass(
+        context,
+        xp: kLevelTestPassXp,
+        award: (_) async {},
+        title: 'Up',
+        subtitle: '18/20',
+        ctaLabel: 'OK',
+        rankUp: const GtRankUp(
+          fromTier: 2,
+          toTier: 3,
+          title: 'Lên GymTalk Rank!',
+          detail: 'Bậc 3: Athlete · B1',
+        ),
+        // Ghi moc Rank ngay khi man da day vao (Hom nay khong hien lai).
+        onCelebrationShown: () => pushedWhenRecorded = Navigator.of(
+          context,
+          rootNavigator: true,
+        ).canPop(),
+      );
+      await tester.pump(const Duration(milliseconds: 700));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(pushedWhenRecorded, isTrue);
+      expect(find.byType(GtCelebration), findsOneWidget);
+      expect(find.byType(GtRankUpCard), findsOneWidget);
+      expect(find.text('Lên GymTalk Rank!'), findsOneWidget);
+    });
+
+    testWidgets('screen closed before it shows: the Rank is not recorded', (
+      tester,
+    ) async {
+      final context = await _host(tester);
+      var recorded = false;
+      celebrateLevelTestPass(
+        context,
+        xp: kLevelTestPassXp,
+        award: (_) async {},
+        title: 'Up',
+        subtitle: '18/20',
+        ctaLabel: 'OK',
+        rankUp: const GtRankUp(
+          fromTier: 2,
+          toTier: 3,
+          title: 'Lên GymTalk Rank!',
+          detail: 'Bậc 3: Athlete · B1',
+        ),
+        onCelebrationShown: () => recorded = true,
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pumpWidget(const SizedBox());
+      await tester.pump(const Duration(milliseconds: 500));
+      // Hom nay se chuc mung Rank nhu thuong.
+      expect(recorded, isFalse);
+      expect(find.byType(GtCelebration), findsNothing);
+    });
+
     testWidgets('offline: Celebration with a tick, no made-up XP', (
       tester,
     ) async {

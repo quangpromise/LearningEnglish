@@ -29,6 +29,9 @@ enum GtHapticEvent {
 
   /// Het gio nghi - bao hieu, xem [gtHapticIsAlert].
   restEnded,
+
+  /// So bac tren the Rank trong man chuc mung doi sang bac moi (#121).
+  rankUp,
 }
 
 enum GtHapticLevel { selection, light, medium, heavy }
@@ -40,7 +43,8 @@ GtHapticLevel gtHapticLevel(GtHapticEvent event) => switch (event) {
   GtHapticEvent.restCountdown => GtHapticLevel.selection,
   GtHapticEvent.setTicked ||
   GtHapticEvent.answerRight ||
-  GtHapticEvent.repCounted => GtHapticLevel.light,
+  GtHapticEvent.repCounted ||
+  GtHapticEvent.rankUp => GtHapticLevel.light,
   GtHapticEvent.questCompleted ||
   GtHapticEvent.ringCompleted ||
   GtHapticEvent.pronunciationGood ||

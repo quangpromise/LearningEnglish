@@ -22,6 +22,20 @@ class GymTalkRank {
   final RankSide limitedBy;
 }
 
+/// Rank tang khi English Level doi tu [before] sang [after] voi Body Level
+/// [body] (vd qua Level Test): bac cu / moi (0-based). null neu chua biet
+/// Body Level hoac Rank khong tang.
+({int from, int to})? rankRiseFromEnglish(
+  BodyLevel? body,
+  CefrLevel before,
+  CefrLevel after,
+) {
+  if (body == null) return null;
+  final from = gymTalkRank(body, before).tier;
+  final to = gymTalkRank(body, after).tier;
+  return to > from ? (from: from, to: to) : null;
+}
+
 GymTalkRank gymTalkRank(BodyLevel body, CefrLevel english) {
   final b = body.index;
   final e = english.index;
