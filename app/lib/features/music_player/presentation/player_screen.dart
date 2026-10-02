@@ -11,6 +11,7 @@ import '../../../core/navigation/app_popup.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/gt_motion.dart';
+import '../../../core/widgets/gt_reduced_motion_tabs.dart';
 import '../../grammar/presentation/grammar_screen.dart';
 import '../../planner/presentation/planner_accent.dart';
 import '../../translation/presentation/word_popup_sheet.dart';
@@ -36,7 +37,7 @@ class PlayerScreen extends ConsumerStatefulWidget {
 }
 
 class _PlayerScreenState extends ConsumerState<PlayerScreen>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, GtReducedMotionTabs<PlayerScreen> {
   // Dung chung 1 AudioPlayer + hang doi cho toan app (xem
   // now_playing_service.dart) - man hinh nay chi la 1 "o quan sat" phien
   // phat dang dien ra, KHONG con tu quan ly play/stop rieng nhu truoc, de
@@ -64,12 +65,12 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
   final ValueNotifier<double> _positionSeconds = ValueNotifier<double>(0);
   Ticker? _ticker;
   late final DateTime _openedAt;
-  late final TabController _tabController;
+  @override
+  int get tabCount => 2;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
     _openedAt = DateTime.now();
     final queue = widget.queue;
     final startIndex = widget.startIndex;
@@ -161,7 +162,6 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     _ticker?.dispose();
     _positionSeconds.dispose();
     _indexSub?.cancel();
-    _tabController.dispose();
     // KHONG dung/stop AudioPlayer o day nua - day la diem khac biet chinh so
     // voi truoc: roi man hinh nay (back ra ngoai) van tiep tuc phat, hien
     // qua mini-player + thong bao he thong (xem NowPlayingService).
@@ -259,7 +259,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
               ),
               padding: const EdgeInsets.all(4),
               child: TabBar(
-                controller: _tabController,
+                controller: tabController,
                 indicator: BoxDecoration(
                   gradient: accentGradient,
                   borderRadius: BorderRadius.circular(999),
@@ -281,7 +281,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
             const SizedBox(height: 12),
             Expanded(
               child: TabBarView(
-                controller: _tabController,
+                controller: tabController,
                 children: [
                   Column(
                     children: [
