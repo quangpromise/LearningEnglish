@@ -490,7 +490,7 @@ class _ChestBoxState extends ConsumerState<_ChestBox>
     await SchedulerBinding.instance.endOfFrame;
     if (!mounted) return;
     // 0 = da nhan tren may khac: ruong mo, khong chuc mung lan nua.
-    if (xp! > 0) await widget.celebrate(xp);
+    if (xp > 0) await widget.celebrate(xp);
   }
 
   @override
