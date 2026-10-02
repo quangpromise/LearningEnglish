@@ -85,6 +85,32 @@ void main() {
     expect(GtHaptics.micActive, isFalse);
   });
 
+  test(
+    'a stopped listen that fails to open leaves the next one alone',
+    () async {
+      final speech = _FakeSpeech();
+      final listener = SpeechListener(speech: speech);
+      final first = listener.listenOnce();
+      await pumpEventQueue();
+      listener.stop();
+      final second = listener.listenOnce();
+      var secondDone = false;
+      unawaited(second.then((_) => secondDone = true));
+      await pumpEventQueue();
+      speech.opening.first.completeError(Exception('busy'));
+      expect(await first, '');
+      speech.opening.last.complete();
+      await pumpEventQueue();
+      // Lan sau van dang nghe, khong bi ket thuc / huy nham.
+      expect(secondDone, isFalse);
+      expect(speech.cancels, 0);
+      expect(GtHaptics.micActive, isTrue);
+      speech.status!(stt.SpeechToText.doneStatus);
+      expect(await second, '');
+      expect(GtHaptics.micActive, isFalse);
+    },
+  );
+
   test('dispose puts the flag down (#123)', () async {
     final speech = _FakeSpeech();
     final listener = SpeechListener(speech: speech);

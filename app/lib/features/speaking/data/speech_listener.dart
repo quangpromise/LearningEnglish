@@ -115,7 +115,8 @@ class SpeechListener {
         ),
       );
     } catch (_) {
-      _finish();
+      // Lan nghe cu (da bi dung) mo mic loi: khong ket thuc nham lan moi.
+      if (generation == _generation) _finish();
     }
     // Bi dung trong luc dang mo mic -> tat ngay, khong de mic bat. Da co lan
     // nghe moi (dung chung speech) thi de yen, khong huy phien cua no.
