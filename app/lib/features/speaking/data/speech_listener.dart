@@ -21,6 +21,9 @@ class SpeechListener {
   /// Chuoi dang nhan dien (cap nhat trong luc nghe) - de UI hien truc tiep.
   void Function(String partial)? onPartial;
 
+  /// Muc am (dB, thang do theo may) trong luc nghe - cho vong mic.
+  void Function(double db)? onSoundLevel;
+
   bool get isListening => _speech.isListening;
 
   /// Xin quyen mic + khoi tao (goi 1 lan). false = may khong ho tro/tu choi.
@@ -63,6 +66,11 @@ class SpeechListener {
     _heard = '';
     final done = Completer<String>();
     _done = done;
+    // speech_to_text la singleton: neu man khac khoi tao truoc, callback cua
+    // init() o day khong duoc nhan -> gan lai moi lan nghe.
+    _speech
+      ..statusListener = _onStatus
+      ..errorListener = _onError;
     try {
       await _speech.listen(
         onResult: (result) {
@@ -70,6 +78,9 @@ class SpeechListener {
           _heard = result.recognizedWords;
           onPartial?.call(_heard);
           if (result.finalResult) _finish();
+        },
+        onSoundLevelChange: (db) {
+          if (generation == _generation) onSoundLevel?.call(db);
         },
         listenOptions: stt.SpeechListenOptions(
           localeId: 'en_US',
