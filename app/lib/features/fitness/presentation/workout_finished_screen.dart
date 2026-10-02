@@ -29,14 +29,9 @@ class WorkoutFinishedScreen extends ConsumerStatefulWidget {
     this.wordsReviewed = 0,
     this.restGameXp = 0,
     this.coachLine,
-    this.firstToday = true,
   });
 
-  /// Buoi hoan thanh DAU TIEN trong ngay -> Celebration (Milestone); cac
-  /// buoi sau chi XP Toast voi XP that (ADR-0008).
-  final bool firstToday;
-
-  /// XP Rest Game da cong trong buoi (Celebration ban redesign).
+  /// XP Rest Game da cong trong buoi (Celebration / XP Toast ban redesign).
   final int restGameXp;
 
   /// Cau chuc mung cua giong HLV (null = tat giong HLV).
@@ -84,10 +79,16 @@ class _WorkoutFinishedScreenState extends ConsumerState<WorkoutFinishedScreen> {
         setsLogged: synced ? c.totalSetsLogged : 0,
         restGameXp: widget.restGameXp,
       );
+      // Buoi hoan thanh dau tien trong ngay -> Celebration; buoi sau chi XP
+      // Toast (ADR-0008). Giu cho ngay luc hien - roi man truoc do thi buoi
+      // sau van duoc chuc mung.
+      final celebrate = await DailyProgressStore.instance
+          .claimWorkoutCelebration(completedAllSets: c.completedAllSets);
+      if (!mounted) return;
       showTieredFeedback(
         context,
         GtFeedbackEvent.workoutFinished,
-        firstToday: widget.firstToday,
+        firstToday: celebrate,
         xp: xp,
         celebration: () => showCelebration(
           context,

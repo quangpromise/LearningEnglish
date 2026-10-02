@@ -185,6 +185,40 @@ void main() {
     });
   });
 
+  group('workout celebration (ADR-0008)', () {
+    test('only the first completed workout of the day is celebrated', () async {
+      var now = _now;
+      final store = DailyProgressStore.forTest(clock: () => now);
+      // Luu & ket thuc som: khong chuc mung, khong tieu cho cua ngay.
+      expect(
+        await store.claimWorkoutCelebration(completedAllSets: false),
+        isFalse,
+      );
+      expect(
+        await store.claimWorkoutCelebration(completedAllSets: true),
+        isTrue,
+      );
+      expect(
+        await store.claimWorkoutCelebration(completedAllSets: true),
+        isFalse,
+      );
+      now = now.add(const Duration(days: 1));
+      expect(
+        await store.claimWorkoutCelebration(completedAllSets: true),
+        isTrue,
+      );
+    });
+
+    test('a workout celebrated on another device counts', () async {
+      final a = newStore();
+      expect(await a.claimWorkoutCelebration(completedAllSets: true), isTrue);
+      SharedPreferences.setMockInitialValues({}); // may khac
+      final b = newStore();
+      await b.mergeRemote(a.exportJson());
+      expect(await b.claimWorkoutCelebration(completedAllSets: true), isFalse);
+    });
+  });
+
   Future<void> pump(WidgetTester tester, Widget child) async {
     tester.view.physicalSize = const Size(360, 900);
     tester.view.devicePixelRatio = 1;

@@ -150,6 +150,9 @@ class DayProgress {
   );
 }
 
+/// Khoa trong [DayProgress.rewarded]: hom nay da chuc mung buoi tap.
+const kWorkoutCelebratedKey = 'celebrated_workout';
+
 /// Dem tien do 3 vong Tap - Hoc - Noi theo tung ngay, luu tren may
 /// (SharedPreferences, giu 60 ngay). Singleton de cac noi ghi nhan (man tap,
 /// the tu, luyen phat am...) goi truc tiep ma khong can WidgetRef; man Hom
@@ -284,6 +287,15 @@ class DailyProgressStore extends ChangeNotifier {
 
   Future<void> addSpeakAttempt() =>
       _update((d) => d.copyWith(speakAttempts: d.speakAttempts + 1));
+
+  /// Buoi tap vua xong duoc Celebration khong (ADR-0008): chi buoi HOAN
+  /// THANH (du hiep) dau tien trong ngay. Goi NGAY TRUOC khi hien - giu cho
+  /// cua ngay (dong bo theo tai khoan) roi moi tra true; buoi luu & ket thuc
+  /// som khong tieu cho, buoi sau van duoc.
+  Future<bool> claimWorkoutCelebration({required bool completedAllSets}) async {
+    if (!completedAllSets) return false;
+    return markRewarded(_clock(), kWorkoutCelebratedKey);
+  }
 
   /// Man Hom nay goi khi biet hom nay la ngay nghi theo giao an.
   Future<void> markRestDay(bool restDay) async {

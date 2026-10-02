@@ -26,38 +26,42 @@ const kLevelTestPassXp = 50;
 const kEstimatedBandDisclaimer =
     'Estimated band — for learning guidance only; not an official IELTS score.';
 
-/// Level Test cuoi Stage: 20 cau, khong hien dung/sai tung cau; cham xong
-/// moi hien ket qua, band (B1+) va nut on cau sai khi truot.
-/// Qua Level Test la Milestone (ADR-0008): cong XP roi hien Celebration voi
-/// XP THAT da cong - loi mang / chua dang nhap thi hien dau tick, khong bia
-/// so. Cho it nhat [minDelay] de nguoi dung kip thay cau tra loi cuoi.
+/// Qua Level Test la Milestone (ADR-0008): cong [xp] qua [award] roi hien
+/// Celebration voi XP THAT da cong - loi mang / chua dang nhap / qua
+/// [timeout] thi hien dau tick, khong bia so. [onCredited] nhan XP that
+/// (0 neu khong cong duoc) ngay khi biet. Cho it nhat [minDelay] de nguoi
+/// dung kip thay cau tra loi cuoi.
 Future<void> celebrateLevelTestPass(
   BuildContext context, {
-  required Future<void> Function() awardXp,
+  required int xp,
+  required Future<void> Function(int xp) award,
   required String title,
   required String subtitle,
   required String ctaLabel,
+  void Function(int credited)? onCredited,
   Duration minDelay = const Duration(milliseconds: 600),
+  Duration timeout = const Duration(seconds: 3),
 }) async {
-  var xp = 0;
-  Future<void> award() async {
+  var credited = 0;
+  Future<void> claim() async {
     try {
-      await awardXp();
-      xp = kLevelTestPassXp;
+      await award(xp).timeout(timeout);
+      credited = xp;
     } catch (e) {
       debugPrint('Level Test XP failed: $e');
     }
+    onCredited?.call(credited);
   }
 
-  await Future.wait([award(), Future<void>.delayed(minDelay)]);
+  await Future.wait([claim(), Future<void>.delayed(minDelay)]);
   if (!context.mounted) return;
   await showTieredFeedback(
     context,
     GtFeedbackEvent.levelTestPassed,
-    xp: xp,
+    xp: credited,
     celebration: () => showCelebration(
       context,
-      xp: xp,
+      xp: credited,
       title: title,
       subtitle: subtitle,
       ctaLabel: ctaLabel,
@@ -65,6 +69,8 @@ Future<void> celebrateLevelTestPass(
   );
 }
 
+/// Level Test cuoi Stage: 20 cau, khong hien dung/sai tung cau; cham xong
+/// moi hien ket qua, band (B1+) va nut on cau sai khi truot.
 class LevelTestScreen extends ConsumerStatefulWidget {
   const LevelTestScreen({super.key, required this.pack, required this.stage});
   final ContentPack pack;
@@ -84,6 +90,9 @@ class _LevelTestScreenState extends ConsumerState<LevelTestScreen> {
   int? _chosen;
   Timer? _next;
   LevelTestResult? _result;
+
+  /// XP Level Test da cong that (null = dang cong / chua qua).
+  int? _creditedXp;
 
   @override
   void dispose() {
@@ -118,17 +127,22 @@ class _LevelTestScreenState extends ConsumerState<LevelTestScreen> {
       // XP la diem tich luy tren server - loi mang/chua dang nhap thi bo qua.
       // myLearningXpProvider la autoDispose nen tu tai lai khi mo Tien do.
       final repo = ref.read(learningXpRepositoryProvider);
+      final lang = ref.read(appLanguageProvider);
+      String t(String key) => AppStrings.t(key, lang);
       unawaited(
         celebrateLevelTestPass(
           context,
-          awardXp: () => repo.addBonusXp(kLevelTestPassXp),
-          title: ref.tr('level_test_passed'),
-          subtitle: ref
-              .tr('level_test_score')
+          xp: kLevelTestPassXp,
+          award: repo.addBonusXp,
+          onCredited: (xp) {
+            if (mounted) setState(() => _creditedXp = xp);
+          },
+          title: t('level_test_passed'),
+          subtitle: t('level_test_score')
               .replaceFirst('{c}', '${result.correct}')
               .replaceFirst('{t}', '${result.total}')
               .replaceFirst('{p}', '${result.correct * 100 ~/ result.total}'),
-          ctaLabel: ref.tr('gt_celebration_cta'),
+          ctaLabel: t('gt_celebration_cta'),
         ),
       );
     }
@@ -235,9 +249,12 @@ class _LevelTestResultView extends ConsumerWidget {
           if (passed) ...[
             const SizedBox(height: 6),
             Text(
-              ref
-                  .tr('level_test_passed_body')
-                  .replaceFirst('{xp}', '$kLevelTestPassXp'),
+              // Chi noi "+N XP" khi XP da cong that (CONTEXT.md: XP that).
+              (_creditedXp ?? 0) > 0
+                  ? ref
+                        .tr('level_test_passed_body')
+                        .replaceFirst('{xp}', '$_creditedXp')
+                  : ref.tr('level_test_passed_body_no_xp'),
               textAlign: TextAlign.center,
               style: AppTextStyles.muted(size: 14),
             ),

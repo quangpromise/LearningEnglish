@@ -1,3 +1,5 @@
 # Celebration toàn màn chỉ dành cho Milestone
 
 Handoff và UI-08 cho Celebration hiện sau mỗi bộ thẻ ôn xong. Nghiên cứu motion (docs/research-motion-graphics.md) và Apple HIG Motion cùng chỉ ra: ăn mừng hoành tráng cho thao tác thường xuyên làm người dùng mỏi và mất giá trị; Duolingo đo được hiệu quả giữ chân khi dành hoạt ảnh lớn cho cột mốc chuỗi ngày. Vì vậy phản hồi chia 3 tầng: **tại chỗ** (tick, số đếm lên, rung) → **XP Toast** cho việc thường ngày (xong Daily Quest, xong bộ thẻ) → **Celebration** chỉ cho Milestone (mở Quest Chest, xong buổi tập trong ngày, chuỗi Body + Brain đạt 7/30/100/365, lên GymTalk Rank, lên Body Level, qua Level Test). Xong bộ thẻ không còn Celebration — đây là thay đổi có chủ đích so với handoff §10 và UI-08.
+
+_Làm rõ (2026-10-02, MO-05 #101):_ "xong buổi tập trong ngày" nghĩa là buổi **hoàn thành đủ hiệp đầu tiên** trong ngày. Celebration hiện 1 lần mỗi ngày (giữ chỗ lúc thực sự hiện, đồng bộ theo tài khoản). Buổi sau trong cùng ngày, hoặc buổi lưu & kết thúc sớm, chỉ có XP Toast.

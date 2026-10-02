@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:learn_english_music/core/feedback/gt_feedback_tier.dart';
@@ -75,6 +77,7 @@ void main() {
         celebration: () => _celebrate(context, 0),
       );
       await tester.pump();
+      await tester.pump(const Duration(milliseconds: 700));
       expect(find.textContaining('XP'), findsNothing);
       expect(find.byType(GtCelebration), findsNothing);
     });
@@ -84,9 +87,12 @@ void main() {
     testWidgets('Celebration with the XP actually credited', (tester) async {
       final context = await _host(tester);
       var awarded = 0;
+      int? credited;
       celebrateLevelTestPass(
         context,
-        awardXp: () async => awarded++,
+        xp: kLevelTestPassXp,
+        award: (xp) async => awarded += xp,
+        onCredited: (xp) => credited = xp,
         title: 'Up',
         subtitle: '18/20',
         ctaLabel: 'OK',
@@ -96,7 +102,8 @@ void main() {
       expect(find.byType(GtCelebration), findsNothing);
       await tester.pump(const Duration(milliseconds: 400));
       await tester.pump(const Duration(milliseconds: 700));
-      expect(awarded, 1);
+      expect(awarded, kLevelTestPassXp);
+      expect(credited, kLevelTestPassXp);
       expect(find.byType(GtCelebration), findsOneWidget);
       expect(find.text('+$kLevelTestPassXp XP'), findsOneWidget);
     });
@@ -107,7 +114,8 @@ void main() {
       final context = await _host(tester);
       celebrateLevelTestPass(
         context,
-        awardXp: () async => throw Exception('offline'),
+        xp: kLevelTestPassXp,
+        award: (_) async => throw Exception('offline'),
         title: 'Up',
         subtitle: '18/20',
         ctaLabel: 'OK',
@@ -117,6 +125,50 @@ void main() {
       expect(find.byType(GtCelebration), findsOneWidget);
       expect(find.textContaining('XP'), findsNothing);
       expect(find.byIcon(Icons.check_rounded), findsOneWidget);
+    });
+
+    testWidgets('a hanging XP call gives up after the timeout: tick', (
+      tester,
+    ) async {
+      final context = await _host(tester);
+      int? credited;
+      celebrateLevelTestPass(
+        context,
+        xp: kLevelTestPassXp,
+        award: (_) => Completer<void>().future,
+        onCredited: (xp) => credited = xp,
+        title: 'Up',
+        subtitle: '18/20',
+        ctaLabel: 'OK',
+      );
+      await tester.pump(const Duration(seconds: 2));
+      expect(find.byType(GtCelebration), findsNothing);
+      await tester.pump(const Duration(milliseconds: 1100));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(credited, 0);
+      expect(find.byType(GtCelebration), findsOneWidget);
+      expect(find.byIcon(Icons.check_rounded), findsOneWidget);
+    });
+
+    testWidgets('screen closed before it shows: XP kept, no Celebration', (
+      tester,
+    ) async {
+      final context = await _host(tester);
+      var awarded = 0;
+      celebrateLevelTestPass(
+        context,
+        xp: kLevelTestPassXp,
+        award: (xp) async => awarded += xp,
+        title: 'Up',
+        subtitle: '18/20',
+        ctaLabel: 'OK',
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pumpWidget(const SizedBox());
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(awarded, kLevelTestPassXp);
+      expect(find.byType(GtCelebration), findsNothing);
+      expect(tester.takeException(), isNull);
     });
   });
 }
