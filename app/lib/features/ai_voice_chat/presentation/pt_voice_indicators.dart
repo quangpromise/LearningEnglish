@@ -27,14 +27,21 @@ class _GtThinkingDotsState extends State<GtThinkingDots>
     vsync: this,
     duration: GtThinkingDots.period,
   );
-  var _started = false;
+
+  // Moi cham tre 0.18 chu ky -> song tho chay qua 3 cham.
+  late final _pulses = [for (var i = 0; i < 3; i++) _Pulse(_breath, i * 0.18)];
+  var _still = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_started) return;
-    _started = true;
-    if (!gtReduceMotion(context)) _breath.repeat();
+    // Doc lai moi lan: bat / tat giam chuyen dong trong luc dang nghi.
+    _still = gtReduceMotion(context);
+    if (_still) {
+      _breath.stop();
+    } else if (!_breath.isAnimating) {
+      _breath.repeat();
+    }
   }
 
   @override
@@ -43,41 +50,51 @@ class _GtThinkingDotsState extends State<GtThinkingDots>
     super.dispose();
   }
 
+  Widget _dot(int i) {
+    final dot = Container(
+      width: widget.size,
+      height: widget.size,
+      decoration: BoxDecoration(color: widget.color, shape: BoxShape.circle),
+    );
+    if (_still) return dot;
+    final pulse = _pulses[i];
+    return FadeTransition(
+      opacity: pulse.drive(Tween(begin: 0.35, end: 1.0)),
+      child: ScaleTransition(
+        scale: pulse.drive(Tween(begin: 0.75, end: 1.0)),
+        child: dot,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _breath,
-      builder: (context, _) => Row(
+    // Lop ve rieng: nhip tho khong ve lai ca man.
+    return RepaintBoundary(
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           for (var i = 0; i < 3; i++) ...[
             if (i > 0) SizedBox(width: widget.size * 0.6),
-            () {
-              // Moi cham tre 0.18 chu ky -> song tho chay qua 3 cham.
-              final phase = (_breath.value - i * 0.18) * 2 * math.pi;
-              final pulse = _breath.isAnimating
-                  ? 0.5 + 0.5 * math.sin(phase)
-                  : 1.0;
-              return Opacity(
-                opacity: 0.35 + 0.65 * pulse,
-                child: Transform.scale(
-                  scale: 0.75 + 0.25 * pulse,
-                  child: Container(
-                    width: widget.size,
-                    height: widget.size,
-                    decoration: BoxDecoration(
-                      color: widget.color,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ),
-              );
-            }(),
+            _dot(i),
           ],
         ],
       ),
     );
   }
+}
+
+/// Nhip tho 0..1 cua 1 cham, lech [offset] chu ky so voi [parent].
+class _Pulse extends Animation<double> with AnimationWithParentMixin<double> {
+  _Pulse(this.parent, this.offset);
+
+  @override
+  final Animation<double> parent;
+  final double offset;
+
+  @override
+  double get value =>
+      0.5 + 0.5 * math.sin((parent.value - offset) * 2 * math.pi);
 }
 
 /// Thanh song giong PT AI: 5 thanh cao theo muc am [level] (0..1) cua giong
@@ -123,13 +140,16 @@ class GtVoiceBars extends StatelessWidget {
   Widget build(BuildContext context) {
     if (gtReduceMotion(context)) return _bars(0.5);
     final smooth = gtMotion(context, GtMotionKind.effects, GtMotionSpeed.fast);
-    return ValueListenableBuilder<double>(
-      valueListenable: level,
-      builder: (context, target, _) => TweenAnimationBuilder<double>(
-        tween: Tween(end: target),
-        duration: smooth.duration,
-        curve: smooth.curve,
-        builder: (context, v, _) => _bars(v),
+    // Lop ve rieng: thanh song doi moi khung hinh khong ve lai ca man.
+    return RepaintBoundary(
+      child: ValueListenableBuilder<double>(
+        valueListenable: level,
+        builder: (context, target, _) => TweenAnimationBuilder<double>(
+          tween: Tween(end: target),
+          duration: smooth.duration,
+          curve: smooth.curve,
+          builder: (context, v, _) => _bars(v),
+        ),
       ),
     );
   }

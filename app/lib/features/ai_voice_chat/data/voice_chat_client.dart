@@ -5,7 +5,7 @@ import 'package:record/record.dart' as rec;
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../../learning_path/data/learning_path_models.dart';
-import 'pt_voice_state.dart';
+import '../../../core/audio/pcm_level.dart';
 
 /// Trang thai 1 phien AI Voice Chat. [thinking] = nguoi dung da dung ghi am
 /// (goi [VoiceChatSession.endTurn]), dang cho AI xu ly va tra loi.
@@ -131,6 +131,7 @@ class VoiceChatClient implements VoiceChatSession {
   WebSocketChannel? _channel;
   StreamSubscription<Uint8List>? _micSub;
   final rec.AudioRecorder _recorder = rec.AudioRecorder();
+  bool _disposed = false;
 
   final _stateController = StreamController<VoiceChatState>.broadcast();
   @override
@@ -164,11 +165,11 @@ class VoiceChatClient implements VoiceChatSession {
   @override
   Future<void> start() async {
     if (!await _recorder.hasPermission()) {
-      _stateController.add(VoiceChatState.error);
+      _emit(VoiceChatState.error);
       throw Exception('Microphone permission denied');
     }
 
-    _stateController.add(VoiceChatState.connecting);
+    _emit(VoiceChatState.connecting);
     final uri = Uri.parse(
       '$backendUrl?token=${Uri.encodeQueryComponent(accessToken)}'
       '${level != null ? '&level=${level!.name}' : ''}'
@@ -179,27 +180,30 @@ class VoiceChatClient implements VoiceChatSession {
 
     channel.stream.listen(
       (data) {
-        if (data is List<int>) {
+        if (data is List<int> && !_audioController.isClosed) {
           _audioController.add(Uint8List.fromList(data));
         }
       },
       onError: (Object e) {
         lastError = 'Server connection error: $e';
-        _stateController.add(VoiceChatState.error);
+        unawaited(_stopMic());
+        _emit(VoiceChatState.error);
       },
       onDone: () {
+        unawaited(_stopMic());
         final code = channel.closeCode;
         if (code != null && code != 1000) {
           lastError =
               'Server closed the connection (code $code'
               '${channel.closeReason != null ? ": ${channel.closeReason}" : ""})';
-          _stateController.add(VoiceChatState.error);
+          _emit(VoiceChatState.error);
         } else {
-          _stateController.add(VoiceChatState.idle);
+          _emit(VoiceChatState.idle);
         }
       },
     );
     await channel.ready;
+    if (_disposed) return;
 
     final micStream = await _recorder.startStream(
       const rec.RecordConfig(
@@ -208,11 +212,16 @@ class VoiceChatClient implements VoiceChatSession {
         numChannels: 1,
       ),
     );
-    _stateController.add(VoiceChatState.listening);
     _micSub = micStream.listen((chunk) {
       _channel?.sink.add(chunk);
       _micLevelController.add(pcm16Level(chunk));
     });
+    // Man hinh dong trong luc mo mic: dung lai ngay.
+    if (_disposed) {
+      await _stopMic();
+      return;
+    }
+    _emit(VoiceChatState.listening);
   }
 
   @override
@@ -220,22 +229,40 @@ class VoiceChatClient implements VoiceChatSession {
 
   @override
   Future<void> stop() async {
-    await _micSub?.cancel();
-    _micSub = null;
-    if (await _recorder.isRecording()) {
-      await _recorder.stop();
-    }
+    await _stopMic();
     await _channel?.sink.close();
     _channel = null;
-    _stateController.add(VoiceChatState.idle);
+    _emit(VoiceChatState.idle);
+  }
+
+  /// Dung thu mic (khong doi trang thai) - ca khi ket noi loi / dong giua
+  /// luc dang noi, de mic khong ghi tiep cho 1 ket noi da chet.
+  Future<void> _stopMic() async {
+    await _micSub?.cancel();
+    _micSub = null;
+    try {
+      if (await _recorder.isRecording()) await _recorder.stop();
+    } catch (_) {
+      // Recorder da huy / loi nen tang: khong con gi de dung.
+    }
+  }
+
+  void _emit(VoiceChatState state) {
+    if (!_stateController.isClosed) _stateController.add(state);
   }
 
   @override
   void dispose() {
-    stop();
-    _stateController.close();
-    _audioController.close();
-    _micLevelController.close();
-    _recorder.dispose();
+    _disposed = true;
+    // Dong stream SAU khi stop() xong: stop() con bao 'idle' - dong truoc thi
+    // lan bao do nem "Cannot add new events after calling close".
+    unawaited(
+      stop().catchError((Object _) {}).whenComplete(() {
+        _stateController.close();
+        _audioController.close();
+        _micLevelController.close();
+        _recorder.dispose();
+      }),
+    );
   }
 }

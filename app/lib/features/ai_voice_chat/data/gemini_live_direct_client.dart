@@ -5,9 +5,9 @@ import 'dart:typed_data';
 import 'package:record/record.dart' as rec;
 import 'package:web_socket_channel/web_socket_channel.dart';
 
+import '../../../core/audio/pcm_level.dart';
 import '../../learning_path/data/learning_path_models.dart';
 import 'gemini_voices.dart' show kDefaultGeminiVoiceName;
-import 'pt_voice_state.dart';
 import 'voice_chat_client.dart'
     show ChatRole, TranscriptEvent, VoiceChatSession, VoiceChatState;
 
@@ -117,6 +117,7 @@ class GeminiLiveDirectClient implements VoiceChatSession {
   WebSocketChannel? _channel;
   StreamSubscription<Uint8List>? _micSub;
   final rec.AudioRecorder _recorder = rec.AudioRecorder();
+  bool _disposed = false;
   final List<int> _turnAudio = [];
   final StringBuffer _inputText = StringBuffer();
   final StringBuffer _outputText = StringBuffer();
@@ -159,7 +160,7 @@ class GeminiLiveDirectClient implements VoiceChatSession {
   @override
   Future<void> start() async {
     if (!await _recorder.hasPermission()) {
-      _stateController.add(VoiceChatState.error);
+      _emit(VoiceChatState.error);
       throw Exception('Microphone permission denied');
     }
 
@@ -167,7 +168,7 @@ class GeminiLiveDirectClient implements VoiceChatSession {
     // null) - cac luot noi tiep theo trong cung 1 phien chat tai su dung
     // channel da mo, khong reconnect lai tu dau.
     if (_channel == null) {
-      _stateController.add(VoiceChatState.connecting);
+      _emit(VoiceChatState.connecting);
       final uri = Uri.parse(
         'wss://generativelanguage.googleapis.com/ws/'
         'google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent'
@@ -219,9 +220,12 @@ class GeminiLiveDirectClient implements VoiceChatSession {
         _handleServerMessage,
         onError: (Object e) {
           lastError = 'Gemini Live connection error: $e';
-          _stateController.add(VoiceChatState.error);
+          unawaited(_stopMic());
+          _emit(VoiceChatState.error);
         },
         onDone: () {
+          // Ket noi dong giua luc dang noi: thoi thu mic.
+          unawaited(_stopMic());
           // Neu server tu dong dong ket noi (vd sai model, sai API key, het
           // quota) ma khong phai do nguoi dung bam dung, closeCode se khac
           // 1000 (normal closure) - phai bao loi ro rang thay vi im lang tro
@@ -232,9 +236,9 @@ class GeminiLiveDirectClient implements VoiceChatSession {
             lastError =
                 'Gemini Live closed the connection (code $code'
                 '${channel.closeReason != null ? ": ${channel.closeReason}" : ""})';
-            _stateController.add(VoiceChatState.error);
+            _emit(VoiceChatState.error);
           } else {
-            _stateController.add(VoiceChatState.idle);
+            _emit(VoiceChatState.idle);
           }
           _channel = null;
         },
@@ -249,6 +253,7 @@ class GeminiLiveDirectClient implements VoiceChatSession {
       }),
     );
 
+    if (_disposed) return;
     final micStream = await _recorder.startStream(
       const rec.RecordConfig(
         encoder: rec.AudioEncoder.pcm16bits,
@@ -256,7 +261,12 @@ class GeminiLiveDirectClient implements VoiceChatSession {
         numChannels: 1,
       ),
     );
-    _stateController.add(VoiceChatState.listening);
+    // Man hinh dong trong luc mo mic: dung lai ngay.
+    if (_disposed) {
+      await _stopMic();
+      return;
+    }
+    _emit(VoiceChatState.listening);
     _micSub = micStream.listen((chunk) {
       _micLevelController.add(pcm16Level(chunk));
       _channel?.sink.add(
@@ -274,11 +284,7 @@ class GeminiLiveDirectClient implements VoiceChatSession {
 
   @override
   Future<void> endTurn() async {
-    await _micSub?.cancel();
-    _micSub = null;
-    if (await _recorder.isRecording()) {
-      await _recorder.stop();
-    }
+    await _stopMic();
     // Bao AI biet nguoi dung noi xong luot nay - vi da tat auto-VAD, khong
     // co tin hieu nay thi AI se cho mai khong bao gio tra loi.
     _channel?.sink.add(
@@ -286,10 +292,12 @@ class GeminiLiveDirectClient implements VoiceChatSession {
         'realtimeInput': {'activityEnd': <String, dynamic>{}},
       }),
     );
-    _stateController.add(VoiceChatState.thinking);
+    _emit(VoiceChatState.thinking);
   }
 
   void _handleServerMessage(dynamic raw) {
+    // Man hinh da dong: bo cac khung den muon.
+    if (_disposed) return;
     // Server co the tra ve JSON qua text frame (String) HOAC binary frame
     // (List<int>/Uint8List) tuy engine WebSocket - truoc day chi xu ly
     // String nen khi server gui binary frame, moi phan hoi bi am tham bo qua
@@ -382,7 +390,7 @@ class GeminiLiveDirectClient implements VoiceChatSession {
 
       // AI da tra loi xong luot nay - san sang cho nguoi dung bam mic noi
       // luot tiep theo (van dung chung 1 ket noi, khong reconnect lai).
-      _stateController.add(VoiceChatState.idle);
+      _emit(VoiceChatState.idle);
     }
   }
 
@@ -422,28 +430,46 @@ class GeminiLiveDirectClient implements VoiceChatSession {
 
   @override
   Future<void> stop() async {
-    await _micSub?.cancel();
-    _micSub = null;
-    if (await _recorder.isRecording()) {
-      await _recorder.stop();
-    }
+    await _stopMic();
     await _channel?.sink.close();
     _channel = null;
     _turnAudio.clear();
     _inputText.clear();
     _outputText.clear();
-    _stateController.add(VoiceChatState.idle);
+    _emit(VoiceChatState.idle);
+  }
+
+  /// Dung thu mic (khong doi trang thai) - ca khi ket noi loi / dong giua
+  /// luc dang noi, de mic khong ghi tiep cho 1 ket noi da chet.
+  Future<void> _stopMic() async {
+    await _micSub?.cancel();
+    _micSub = null;
+    try {
+      if (await _recorder.isRecording()) await _recorder.stop();
+    } catch (_) {
+      // Recorder da huy / loi nen tang: khong con gi de dung.
+    }
+  }
+
+  void _emit(VoiceChatState state) {
+    if (!_stateController.isClosed) _stateController.add(state);
   }
 
   @override
   void dispose() {
-    stop();
-    _stateController.close();
-    _audioController.close();
-    _transcriptController.close();
-    _liveAudioController.close();
-    _turnAudioEndController.close();
-    _micLevelController.close();
-    _recorder.dispose();
+    _disposed = true;
+    // Dong stream SAU khi stop() xong: stop() con bao 'idle' - dong truoc thi
+    // lan bao do nem "Cannot add new events after calling close".
+    unawaited(
+      stop().catchError((Object _) {}).whenComplete(() {
+        _stateController.close();
+        _audioController.close();
+        _transcriptController.close();
+        _liveAudioController.close();
+        _turnAudioEndController.close();
+        _micLevelController.close();
+        _recorder.dispose();
+      }),
+    );
   }
 }

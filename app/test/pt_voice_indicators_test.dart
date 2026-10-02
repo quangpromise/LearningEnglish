@@ -25,6 +25,23 @@ void main() {
       expect(tester.hasRunningAnimations, isFalse);
     });
 
+    testWidgets('reduced motion switched on while thinking stops them', (
+      tester,
+    ) async {
+      const dots = GtThinkingDots(color: Colors.blue);
+      await tester.pumpWidget(_app(dots));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.hasRunningAnimations, isTrue);
+      await tester.pumpWidget(_app(dots, reduce: true));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.hasRunningAnimations, isFalse);
+      // Tat lai: tho tiep.
+      await tester.pumpWidget(_app(dots));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.hasRunningAnimations, isTrue);
+      await tester.pumpWidget(_app(const SizedBox()));
+    });
+
     testWidgets('reduced motion: the dots stay still', (tester) async {
       await tester.pumpWidget(
         _app(const GtThinkingDots(color: Colors.blue), reduce: true),
