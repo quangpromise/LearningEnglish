@@ -594,8 +594,10 @@ final workoutsSentProvider = Provider<int>((ref) {
   return outbox.finishedSent;
 });
 
-/// Lan tai Body Level loi lien tiep -> thu lai gian dan (phut).
+/// Lan tai Body Level loi lien tiep cua [_bodyStatsFailedFor] -> thu lai gian
+/// dan (phut); doi tai khoan thi dem lai tu dau.
 var _bodyStatsFailures = 0;
+String? _bodyStatsFailedFor;
 const _bodyStatsRetryMinutes = [1, 2, 4, 8, 16, 30];
 
 /// Body Level (spec #45): tinh tu moi buoi da hoan thanh; tinh lai khi mo lai
@@ -614,6 +616,10 @@ final bodyStatsProvider = FutureProvider.autoDispose<BodyStats?>((ref) async {
     return computeBodyStats(times, now: DateTime.now());
   } catch (e) {
     debugPrint('bodyStatsProvider failed: $e');
+    if (_bodyStatsFailedFor != userId) {
+      _bodyStatsFailedFor = userId;
+      _bodyStatsFailures = 0;
+    }
     final minutes = _bodyStatsFailures < _bodyStatsRetryMinutes.length
         ? _bodyStatsRetryMinutes[_bodyStatsFailures]
         : _bodyStatsRetryMinutes.last;

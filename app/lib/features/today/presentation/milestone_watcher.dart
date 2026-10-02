@@ -16,11 +16,12 @@ import '../data/milestones.dart';
 
 /// So lieu de kiem Milestone. null = chua chac chan (chua dong bo xong lan
 /// dau, dang tai, loi mang) -> giu nguyen phan do cua ban ghi.
-/// [streakFresh]: du lieu tren may vua dong bo thanh cong hom nay - chi khi
-/// do moi ha moc chuoi (du lieu cu co the thieu ngay lam o may khac).
+/// [syncedOn]: ngay ('yyyy-mm-dd') dong bo thanh cong gan nhat cho tai khoan
+/// nay - chi khi la hom nay moi ha moc chuoi (du lieu cu co the thieu ngay
+/// lam o may khac).
 typedef MilestoneInputs = ({
   int? streak,
-  bool streakFresh,
+  String? syncedOn,
   BodyLevel? body,
   CefrLevel? english,
 });
@@ -132,7 +133,7 @@ class _GtMilestoneWatcherState extends ConsumerState<GtMilestoneWatcher> {
       streak: inputs.streak,
       bodyLevel: body?.index,
       rank: rank,
-      lowerStreak: inputs.streakFresh,
+      lowerStreak: inputs.syncedOn == today,
     );
     var record = found.base;
     if (record != loaded) await MilestoneStore.save(userId, record);

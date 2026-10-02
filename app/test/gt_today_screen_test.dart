@@ -84,6 +84,7 @@ void main() {
     );
     // Chua dong bo xong lan dau: chuoi / English Level chua dung lam moc.
     expect(_milestoneInputs(tester).streak, isNull);
+    expect(_milestoneInputs(tester).syncedOn, isNull);
     expect(_milestoneInputs(tester).english, isNull);
     expect(_milestoneInputs(tester).body, isNotNull);
 
@@ -92,7 +93,7 @@ void main() {
     await tester.pumpWidget(_today(settled: (user: 'u1', syncedOn: today)));
     await tester.pump(const Duration(milliseconds: 100));
     expect(_milestoneInputs(tester).streak, 0);
-    expect(_milestoneInputs(tester).streakFresh, isTrue);
+    expect(_milestoneInputs(tester).syncedOn, today);
     expect(_milestoneInputs(tester).english, CefrLevel.b1);
 
     // Man cao: dung het cac the trong ListView.

@@ -24,8 +24,8 @@ MilestoneInputs _inputs({
   int? streak,
   BodyLevel? body,
   CefrLevel? english = CefrLevel.a1,
-  bool streakFresh = true,
-}) => (streak: streak, streakFresh: streakFresh, body: body, english: english);
+  String? syncedOn = _today,
+}) => (streak: streak, syncedOn: syncedOn, body: body, english: english);
 
 Widget _watcher({
   String? userId = 'u1',
@@ -179,11 +179,17 @@ void main() {
       const MilestoneRecord(streak: 7, streakOn: _before),
     );
     // Mat mang: du lieu tren may thieu ngay lam o may khac -> chuoi 0.
-    await _arrive(tester, _inputs(streak: 0, streakFresh: false));
+    await _arrive(tester, _inputs(streak: 0, syncedOn: null));
     expect(
       await MilestoneStore.load('u1'),
       const MilestoneRecord(streak: 7, streakOn: _before),
     );
+    // Lan dong bo thanh cong cuoi la hom qua (app mo qua nua dem): van cu.
+    await tester.pumpWidget(
+      _watcher(visit: 1, inputs: _inputs(streak: 1, syncedOn: '2026-10-01')),
+    );
+    await _settle(tester);
+    expect((await MilestoneStore.load('u1')).streak, 7);
     // Dong bo lai, chuoi 10: khong chuc mung lap moc 7.
     await tester.pumpWidget(_watcher(visit: 1, inputs: _inputs(streak: 10)));
     await _settle(tester);

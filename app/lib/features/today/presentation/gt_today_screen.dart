@@ -220,8 +220,6 @@ class _TodayMilestones extends ConsumerWidget {
     final userId = ref.watch(currentUserIdProvider);
     final settled = ref.watch(gymTalkSettledProvider);
     final synced = userId != null && settled?.user == userId;
-    final fresh =
-        synced && settled?.syncedOn == DailyProgressStore.keyOf(DateTime.now());
     final stats = ref.watch(bodyStatsProvider).valueOrNull;
     final persona = ref.watch(learningPathChoiceProvider);
     final english = ref.watch(englishLevelProvider);
@@ -233,7 +231,7 @@ class _TodayMilestones extends ConsumerWidget {
         return GtWhenOnScreen<MilestoneInputs>(
           value: (
             streak: ready ? daily.bodyBrainStreak : null,
-            streakFresh: fresh,
+            syncedOn: synced ? settled?.syncedOn : null,
             body: stats == null ? null : bodyLevelFor(stats),
             english: ready && persona.hasValue && !persona.hasError
                 ? english
