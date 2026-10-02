@@ -173,6 +173,10 @@ class DailyProgressStore extends ChangeNotifier {
   final DateTime Function() _clock;
   final Map<String, DayProgress> _days = {};
   Future<void>? _loading;
+  bool _loaded = false;
+
+  /// Da doc xong du lieu da luu - truoc do [today] chi la ngay rong.
+  bool get isLoaded => _loaded;
 
   /// Khoa ngay 'yyyy-mm-dd' (theo gio may) - cung dung lam tien to khoa
   /// thuong tren server.
@@ -199,6 +203,7 @@ class DailyProgressStore extends ChangeNotifier {
     } catch (e) {
       debugPrint('DailyProgressStore load failed: $e');
     }
+    _loaded = true;
     notifyListeners();
   }
 

@@ -14,6 +14,7 @@ import '../../../core/theme/gt_tokens.dart';
 import '../../../core/theme/gt_haptics.dart';
 import '../../../core/theme/gt_motion.dart';
 import '../../../core/widgets/gt_celebration.dart';
+import '../../../core/widgets/gt_when_on_screen.dart';
 import '../../../core/widgets/gt_count_up.dart';
 import '../../fitness/presentation/programs_list_screen.dart';
 import '../../../core/i18n/greeting.dart';
@@ -94,6 +95,11 @@ class _GtTodayScreenState extends ConsumerState<GtTodayScreen> {
     final t = context.gt;
     final padding = MediaQuery.paddingOf(context);
     final store = DailyProgressStore.instance;
+    // Tab Hom nay dang that su hien: dang chon va khong co popup / dialog nao
+    // phu len man Home (moi man khac deu mo dang popup tren Navigator goc).
+    final onScreen =
+        ref.watch(rootTabProvider) == RootTab.today &&
+        (ModalRoute.isCurrentOf(context) ?? true);
     return ColoredBox(
       color: t.bg,
       child: RefreshIndicator(
@@ -117,18 +123,37 @@ class _GtTodayScreenState extends ConsumerState<GtTodayScreen> {
               children: [
                 GtTopBar(greetingKey: ref.watch(greetingKeyProvider)),
                 const SizedBox(height: 14),
-                GtRingsCard(
-                  day: store.today,
-                  strip: weekStreakStrip(store.dayOf, now),
-                  date: now,
+                // Tien do lam o popup / tab khac hien ra khi nguoi dung quay
+                // lai Hom nay -> vong cham 100%, nhiem vu xong chay truoc
+                // mat ho. Doc xong du lieu da luu thi dung lai the: tien do
+                // co tu truoc khi mo app khong tinh la "vua xong".
+                GtWhenOnScreen<DayProgress>(
+                  key: ValueKey(store.isLoaded),
+                  value: store.today,
+                  onScreen: onScreen,
+                  builder: (context, day, visit) => Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      GtRingsCard(
+                        day: day,
+                        strip: weekStreakStrip(
+                          (d) => DateUtils.isSameDay(d, now)
+                              ? day
+                              : store.dayOf(d),
+                          now,
+                        ),
+                        date: now,
+                      ),
+                      const SizedBox(height: 16),
+                      _TodayWorkout(
+                        today: day,
+                        dueCount: SrsStore.instance.dueCount(now),
+                      ),
+                      const SizedBox(height: 16),
+                      GtQuestsCard(day: day),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 16),
-                _TodayWorkout(
-                  today: store.today,
-                  dueCount: SrsStore.instance.dueCount(now),
-                ),
-                const SizedBox(height: 16),
-                GtQuestsCard(day: store.today),
               ],
             );
           },
