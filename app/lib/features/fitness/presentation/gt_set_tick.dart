@@ -4,11 +4,12 @@ import '../../../core/theme/gt_haptics.dart';
 import '../../../core/theme/gt_motion.dart';
 import '../../../core/theme/gt_tokens.dart';
 
-/// O tick hiep 44dp (README §9): cham -> o to do ngay, nay bang lo xo
-/// expressive va rung nhe (spec #96), roi moi bao [onTap].
+/// O tick hiep 44dp (README §9): cham -> bao [onTap]; hiep duoc ghi that
+/// (onTap tra true) thi o to do ngay, nay bang lo xo expressive va rung nhe
+/// (spec #96). Bi bo qua (vd cham dup trong 700 ms) thi khong doi gi.
 ///
-/// O "da tick" hien ngay luc cham (khong cho controller): khi hiep do mo man
-/// nghi, bang hiep cu mo dan ra van thay dung o vua tick.
+/// O "da tick" giu trong state: khi hiep do mo man nghi, bang hiep cu mo
+/// dan ra van thay dung o vua tick.
 class GtSetTick extends StatefulWidget {
   const GtSetTick({
     super.key,
@@ -20,7 +21,9 @@ class GtSetTick extends StatefulWidget {
 
   final bool done;
   final bool active;
-  final VoidCallback onTap;
+
+  /// Ghi hiep; true = da ghi that.
+  final bool Function() onTap;
   final String label;
 
   @override
@@ -51,6 +54,7 @@ class _GtSetTickState extends State<GtSetTick>
 
   void _tap() {
     if (!widget.active || widget.done || _ticked) return;
+    if (!widget.onTap()) return;
     setState(() => _ticked = true);
     GtHaptics.play(GtHapticEvent.setTicked);
     final duration = gtMotion(
@@ -63,7 +67,6 @@ class _GtSetTickState extends State<GtSetTick>
         ..duration = duration
         ..forward(from: 0);
     }
-    widget.onTap();
   }
 
   @override

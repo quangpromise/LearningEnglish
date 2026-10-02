@@ -59,7 +59,10 @@ void main() {
           GtSetTick(
             done: false,
             active: true,
-            onTap: () => ticks++,
+            onTap: () {
+              ticks++;
+              return true;
+            },
             label: 'Tick',
           ),
         ),
@@ -87,6 +90,44 @@ void main() {
       expect(haptics, ['HapticFeedbackType.lightImpact']);
     });
 
+    testWidgets('a tap the controller ignores leaves the tick untouched', (
+      tester,
+    ) async {
+      var calls = 0;
+      await tester.pumpWidget(
+        _app(
+          GtSetTick(
+            done: false,
+            active: true,
+            // Vd cham dup trong 700 ms: controller khong ghi hiep.
+            onTap: () {
+              calls++;
+              return false;
+            },
+            label: 'Tick',
+          ),
+        ),
+      );
+      await tester.tap(find.byType(GtSetTick));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 30));
+      expect(calls, 1);
+      expect(_tickScale(tester), 1);
+      expect(haptics, isEmpty);
+      final semantics = tester.widget<Semantics>(
+        find
+            .descendant(
+              of: find.byType(GtSetTick),
+              matching: find.byType(Semantics),
+            )
+            .first,
+      );
+      expect(semantics.properties.checked, isFalse);
+      // Van cham lai duoc.
+      await tester.tap(find.byType(GtSetTick));
+      expect(calls, 2);
+    });
+
     testWidgets('an inactive tick ignores taps', (tester) async {
       var ticks = 0;
       await tester.pumpWidget(
@@ -94,7 +135,10 @@ void main() {
           GtSetTick(
             done: false,
             active: false,
-            onTap: () => ticks++,
+            onTap: () {
+              ticks++;
+              return true;
+            },
             label: 'Tick',
           ),
         ),
@@ -114,7 +158,10 @@ void main() {
           GtSetTick(
             done: false,
             active: true,
-            onTap: () => ticks++,
+            onTap: () {
+              ticks++;
+              return true;
+            },
             label: 'Tick',
           ),
           reduce: true,
@@ -145,6 +192,9 @@ void main() {
       final home = tester.getTopLeft(find.text('page 0')).dx;
       await tester.pumpWidget(axis(1));
       await tester.pump(const Duration(milliseconds: 60));
+      // Fade through: trang cu giu nguyen nua dau.
+      expect(tester.getTopLeft(find.text('page 0')).dx, home);
+      await tester.pump(const Duration(milliseconds: 240));
       expect(tester.getTopLeft(find.text('page 0')).dx, lessThan(home));
       expect(tester.getTopLeft(find.text('page 1')).dx, greaterThan(home));
       await tester.pumpAndSettle();
@@ -156,7 +206,7 @@ void main() {
       await tester.pumpWidget(axis(3));
       final home = tester.getTopLeft(find.text('page 3')).dx;
       await tester.pumpWidget(axis(2));
-      await tester.pump(const Duration(milliseconds: 60));
+      await tester.pump(const Duration(milliseconds: 300));
       expect(tester.getTopLeft(find.text('page 3')).dx, greaterThan(home));
       expect(tester.getTopLeft(find.text('page 2')).dx, lessThan(home));
       await tester.pumpAndSettle();
@@ -199,5 +249,67 @@ void main() {
       expect(find.text('sets'), findsNothing);
       expect(find.text('rest'), findsOneWidget);
     });
+  });
+
+  testWidgets('a header name aligned to the bottom does not jump', (
+    tester,
+  ) async {
+    Widget header(int position, double height) => _app(
+      SizedBox(
+        height: 120,
+        child: Align(
+          alignment: Alignment.bottomLeft,
+          child: GtSharedAxisSwitcher(
+            position: position,
+            alignment: AlignmentDirectional.bottomStart,
+            child: SizedBox(
+              width: 200,
+              height: height,
+              child: Text('name $position'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpWidget(header(0, 60));
+    await tester.pumpWidget(header(1, 30));
+    await tester.pump(const Duration(milliseconds: 300));
+    // Ten 2 dong -> 1 dong: ca 2 cung day, ten moi khong "rot" xuong sau.
+    double bottomOf(String text) => tester
+        .getBottomLeft(
+          find
+              .ancestor(of: find.text(text), matching: find.byType(SizedBox))
+              .first,
+        )
+        .dy;
+    expect(bottomOf('name 1'), bottomOf('name 0'));
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('content on its way out takes no taps', (tester) async {
+    var taps = 0;
+    Widget swap(bool resting) => _app(
+      GtFadeScaleSwitcher(
+        switchKey: resting,
+        child: resting
+            ? const SizedBox(width: 200, height: 80)
+            : GestureDetector(
+                onTap: () => taps++,
+                child: const SizedBox(
+                  width: 200,
+                  height: 80,
+                  child: Text('stepper'),
+                ),
+              ),
+      ),
+    );
+    await tester.pumpWidget(swap(false));
+    await tester.pumpWidget(swap(true));
+    await tester.pump(const Duration(milliseconds: 60));
+    // Van thay (dang giu nua dau) nhung khong bam duoc.
+    expect(find.text('stepper'), findsOneWidget);
+    await tester.tap(find.text('stepper'), warnIfMissed: false);
+    expect(taps, 0);
+    await tester.pumpAndSettle();
   });
 }

@@ -239,11 +239,10 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
     // Loi HLV cho set tiep theo do _announceSet doc (listener).
   }
 
-  /// Hoan thanh hiep bang nut chinh: rung nhe (spec #96) roi giao cho
-  /// controller. O tick trong bang hiep tu rung.
+  /// Hoan thanh hiep bang nut chinh: rung nhe (spec #96) khi hiep duoc ghi
+  /// that. O tick trong bang hiep tu rung.
   void _completeSetFromButton(WorkoutController controller) {
-    GtHaptics.play(GtHapticEvent.setTicked);
-    controller.completeSet();
+    if (_logSet(controller)) GtHaptics.play(GtHapticEvent.setTicked);
   }
 
   /// Dem rep bang camera cho set hien tai; so rep dem duoc dien thang vao
@@ -749,7 +748,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                               position: _exercisePosition(controller),
                               child: _GtSetsTable(
                                 controller: controller,
-                                onTick: controller.completeSet,
+                                onTick: () => _logSet(controller),
                               ),
                             ),
                             const SizedBox(height: 14),
@@ -871,10 +870,21 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
   }
 }
 
-/// Vi tri bai dang tap trong buoi - tang khi sang bai moi (ke ca bai A -> B
-/// cua sieu hiep), giam khi hoan tac ve bai truoc.
-int _exercisePosition(WorkoutController controller) =>
-    controller.groupIndex * 2 + controller.pairSubIndex;
+/// Vi tri bai dang tap cho truc chung ngang (xem [exerciseSlidePosition]).
+int _exercisePosition(WorkoutController c) => exerciseSlidePosition(
+  groupIndex: c.groupIndex,
+  paired: c.isPairedGroup,
+  roundIndex: c.setOrRoundIndex,
+  subIndex: c.pairSubIndex,
+);
+
+/// Ghi hiep hien tai; true = da ghi that (controller bo qua cham dup trong
+/// 700 ms) - chi khi do moi tick / rung.
+bool _logSet(WorkoutController c) {
+  final before = c.totalSetsLogged;
+  c.completeSet();
+  return c.totalSetsLogged != before;
+}
 
 class _SetBadge extends ConsumerWidget {
   const _SetBadge({required this.controller});
@@ -1250,9 +1260,11 @@ class _GtSessionHeader extends ConsumerWidget {
                   ],
                 ),
                 const Spacer(),
-                // Doi bai: nhom co + ten bai truot ngang (shared axis).
+                // Doi bai: nhom co + ten bai truot ngang (shared axis), canh
+                // day - ten 1 dong / 2 dong khong nhay khi chuyen.
                 GtSharedAxisSwitcher(
                   position: _exercisePosition(controller),
+                  alignment: AlignmentDirectional.bottomStart,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
@@ -1290,7 +1302,9 @@ class _GtSetsTable extends ConsumerWidget {
   const _GtSetsTable({required this.controller, required this.onTick});
 
   final WorkoutController controller;
-  final VoidCallback onTick;
+
+  /// Ghi hiep; true = da ghi that.
+  final bool Function() onTick;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

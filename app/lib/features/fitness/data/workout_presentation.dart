@@ -42,3 +42,14 @@ List<SegmentState> exerciseSegments({
 /// (co it nhat 1 hiep) + XP Rest Game da cong trong luc nghi.
 int workoutXpEarned({required int setsLogged, required int restGameXp}) =>
     (setsLogged > 0 ? kWorkoutCompletedXp : 0) + restGameXp;
+
+/// Vi tri "bai dang tap" de truot ngang khi doi bai (spec #96 quyet dinh
+/// #20): luon TANG khi di toi - ke ca A -> B -> A cua vong sau trong sieu
+/// hiep - va giam khi hoan tac; cac set cua 1 bai don giu nguyen vi tri
+/// (khong truot giua cac set).
+int exerciseSlidePosition({
+  required int groupIndex,
+  required bool paired,
+  required int roundIndex,
+  required int subIndex,
+}) => groupIndex * 1000 + (paired ? roundIndex * 2 + subIndex : 0);
