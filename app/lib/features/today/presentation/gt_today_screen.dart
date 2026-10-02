@@ -170,7 +170,9 @@ class _GtTodayScreenState extends ConsumerState<GtTodayScreen> {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      RepaintBoundary(child: GtQuestsCard(day: day)),
+                      RepaintBoundary(
+                        child: GtQuestsCard(day: day, visit: visit),
+                      ),
                     ],
                   ),
                 ),
