@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
@@ -22,10 +21,12 @@ import '../../english_path/presentation/rest_game_card.dart';
 import '../../srs/data/srs_store.dart';
 import '../../stats/data/learning_xp_repository.dart';
 import '../../today/data/daily_progress_store.dart';
+import '../data/audioplayers_sfx.dart';
 import '../data/coach_script.dart';
 import '../data/exercise_i18n.dart';
 import '../data/gym_vocabulary.dart';
 import '../data/rep_counter.dart';
+import '../data/rest_sounds.dart';
 import '../data/workout_model.dart';
 import '../data/workout_prefs.dart';
 import '../data/workout_presentation.dart';
@@ -98,6 +99,10 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
   /// Giong HLV tieng Anh (xem [_coach]).
   bool _coachVoice = true;
 
+  /// Tieng mo 3-2-1 + chuong het gio nghi (#131); null khi khong co buoi tap.
+  RestSounds? _sounds;
+  bool _restSounds = true;
+
   /// Kich ban HLV dan buoi tap theo trinh do nguoi hoc (xem coach_script).
   late final CoachScript _script = CoachScript(
     level: ref.read(learnerLevelProvider),
@@ -126,6 +131,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
       ..start();
     _controller = controller;
     _lastPhase = controller.phase;
+    _sounds = RestSounds(player: AudioplayersSfx.new);
     KeepScreenOn.enable();
     _loadPrefsAndWords(controller);
   }
@@ -139,6 +145,8 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
       _prefsLoaded = true;
       _learnWhileResting = prefs.learnWhileResting;
       _coachVoice = prefs.coachVoice;
+      _restSounds = prefs.restSounds;
+      _sounds?.enabled = prefs.restSounds;
       _restMode = prefs.restLearnMode;
       _restListening = prefs.restListening;
       _words = pickGymWords(
@@ -213,6 +221,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
           second >= 1 &&
           second <= 3) {
         GtHaptics.play(GtHapticEvent.restCountdown);
+        _sounds?.tick();
       }
       // Giua gio nghi: 1 cau HLV (chi khi TAT the tu - tranh noi chen
       // luc nguoi dung dang nghe tu).
@@ -235,7 +244,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
 
   void _onRestElapsed() {
     GtHaptics.play(GtHapticEvent.restEnded);
-    SystemSound.play(SystemSoundType.alert);
+    _sounds?.end();
     // Loi HLV cho set tiep theo do _announceSet doc (listener).
   }
 
@@ -310,6 +319,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
     }
     KeepScreenOn.disable();
     TutorialVoice.shared.stop();
+    _sounds?.dispose();
     _endRestGame();
     super.dispose();
   }
@@ -450,6 +460,27 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                     setState(() => _coachVoice = enabled);
                     if (!enabled) TutorialVoice.shared.stop();
                     WorkoutPrefs.saveCoachVoice(enabled);
+                  },
+                ),
+              ),
+              StatefulBuilder(
+                builder: (context, setSheetState) => SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  value: _restSounds,
+                  activeThumbColor: AppColors.fitnessAccent,
+                  title: Text(
+                    _t('fitness_rest_sounds'),
+                    style: AppTextStyles.body(weight: FontWeight.w700),
+                  ),
+                  subtitle: Text(
+                    _t('fitness_rest_sounds_sub'),
+                    style: AppTextStyles.muted(),
+                  ),
+                  onChanged: (enabled) {
+                    setSheetState(() {});
+                    setState(() => _restSounds = enabled);
+                    _sounds?.enabled = enabled;
+                    WorkoutPrefs.saveRestSounds(enabled);
                   },
                 ),
               ),
