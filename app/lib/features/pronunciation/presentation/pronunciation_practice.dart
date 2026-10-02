@@ -96,6 +96,10 @@ class _PronunciationPracticeState extends ConsumerState<PronunciationPractice> {
   bool _scoring = false;
   String? _recordError;
 
+  /// Tang moi lan bat dau / dung ghi am: nhanh bat dau dang cho mo mic tu
+  /// huy neu luot do da bi dung hoac da co luot moi (#122).
+  int _attempt = 0;
+
   /// Muc am 0..1 cho vong mic (chi cap nhat khi dang thu).
   final ValueNotifier<double> _level = ValueNotifier(0);
   final SoundLevelMeter _meter = SoundLevelMeter();
@@ -168,6 +172,7 @@ class _PronunciationPracticeState extends ConsumerState<PronunciationPractice> {
   Future<void> _toggleListening() async {
     if (!_available || _scoring) return;
     if (_listening) {
+      _attempt++;
       setState(() {
         _listening = false;
         _scoring = true;
@@ -200,6 +205,9 @@ class _PronunciationPracticeState extends ConsumerState<PronunciationPractice> {
         // vao ban ghi).
         GtHaptics.micStopped(this);
       }
+      // iOS chay listen / stop o 2 Task rieng: phien nghe co the mo SAU lenh
+      // dung -> huy cho het.
+      if (_speech.isListening) unawaited(_speech.cancel());
 
       if (mounted) {
         setState(() {
@@ -214,6 +222,7 @@ class _PronunciationPracticeState extends ConsumerState<PronunciationPractice> {
 
     widget.onBeforeRecord?.call();
 
+    final attempt = ++_attempt;
     _listenStartedAt = DateTime.now();
     setState(() {
       _listening = true;
@@ -250,6 +259,8 @@ class _PronunciationPracticeState extends ConsumerState<PronunciationPractice> {
         listenOptions: stt.SpeechListenOptions(localeId: 'en_US'),
       );
     } catch (e) {
+      // Lan nghe nay da bi dung (co the da co lan moi): khong dung vao.
+      if (attempt != _attempt) return;
       GtHaptics.micStopped(this);
       if (mounted) {
         setState(() {
@@ -261,11 +272,21 @@ class _PronunciationPracticeState extends ConsumerState<PronunciationPractice> {
       return;
     }
 
+    // Bi dung trong luc dang mo mic: khong bat recorder (ban ghi mo coi).
+    bool stillThisAttempt() => mounted && attempt == _attempt;
+    if (!stillThisAttempt()) {
+      // iOS: phien nghe nay mo sau lenh dung. Lan dung con cho ket qua cuoi
+      // thi tu huy o cuoi (huy luc nay mat ket qua cuoi tren Android); da
+      // xong han va chua co lan moi thi huy o day.
+      if (mounted && !_listening && !_scoring) unawaited(_speech.cancel());
+      return;
+    }
     try {
       if (await _recorder.hasPermission()) {
         final dir = await getTemporaryDirectory();
         final path =
             '${dir.path}/pronunciation_attempt_${DateTime.now().millisecondsSinceEpoch}.m4a';
+        if (!stillThisAttempt()) return;
         await _recorder.start(const rec.RecordConfig(), path: path);
       }
     } catch (_) {

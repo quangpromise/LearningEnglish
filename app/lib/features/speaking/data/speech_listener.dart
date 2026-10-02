@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
+import '../../../core/theme/gt_haptics.dart';
+
 /// Nghe 1 lan (speech_to_text, en_US) va tra ve chuoi nhan dien duoc -
 /// dung chung cho "Luyen noi ranh tay" va "Noi theo" trong trinh phat huong
 /// dan bai tap. Tu dung khi im lang [pauseFor] hoac het [listenFor].
@@ -10,8 +12,15 @@ import 'package:speech_to_text/speech_to_text.dart' as stt;
 /// Moi lan [stop]/[dispose] tang [_generation]: 1 lan nghe dang cho (ke ca
 /// dang doi xin quyen mic) se tu huy va tra ve rong thay vi bat mic muon /
 /// hoan tat nham lan nghe sau.
+///
+/// Trong luc nghe bao phien mic cho [GtHaptics] (khong rung lot vao ban
+/// ghi) - moi noi dung deu duoc phu (#123).
 class SpeechListener {
-  final stt.SpeechToText _speech = stt.SpeechToText();
+  /// [speech]: ban gia cho test; mac dinh la speech_to_text that.
+  SpeechListener({stt.SpeechToText? speech})
+    : _speech = speech ?? stt.SpeechToText();
+
+  final stt.SpeechToText _speech;
   bool? _available;
   Completer<String>? _done;
   String _heard = '';
@@ -71,6 +80,22 @@ class SpeechListener {
     _speech
       ..statusListener = _onStatus
       ..errorListener = _onError;
+    GtHaptics.micStarted(this);
+    try {
+      return await _listen(generation, done, listenFor, pauseFor);
+    } finally {
+      // Lan nghe nay xong. Da co lan moi (stop() roi nghe tiep) thi lan moi
+      // tu nha - stop()/dispose() cung nha.
+      if (generation == _generation) GtHaptics.micStopped(this);
+    }
+  }
+
+  Future<String> _listen(
+    int generation,
+    Completer<String> done,
+    Duration listenFor,
+    Duration pauseFor,
+  ) async {
     try {
       await _speech.listen(
         onResult: (result) {
@@ -90,11 +115,13 @@ class SpeechListener {
         ),
       );
     } catch (_) {
-      _finish();
+      // Lan nghe cu (da bi dung) mo mic loi: khong ket thuc nham lan moi.
+      if (generation == _generation) _finish();
     }
-    // Bi dung trong luc dang mo mic -> tat ngay, khong de mic bat.
+    // Bi dung trong luc dang mo mic -> tat ngay, khong de mic bat. Da co lan
+    // nghe moi (dung chung speech) thi de yen, khong huy phien cua no.
     if (generation != _generation) {
-      _speech.cancel();
+      if (_done == null) _speech.cancel();
       return '';
     }
     return done.future.timeout(
@@ -109,6 +136,7 @@ class SpeechListener {
   /// Dung nghe ngay: lan listenOnce dang cho tra ve phan da nghe duoc.
   void stop() {
     _generation++;
+    GtHaptics.micStopped(this);
     _speech.stop();
     _finish();
   }
@@ -116,6 +144,7 @@ class SpeechListener {
   void dispose() {
     _disposed = true;
     _generation++;
+    GtHaptics.micStopped(this);
     _speech.cancel();
     _finish('');
   }

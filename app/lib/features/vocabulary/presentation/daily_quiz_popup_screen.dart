@@ -9,6 +9,7 @@ import 'package:speech_to_text/speech_to_text.dart' as stt;
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/gt_haptics.dart';
 import '../../../core/tts/app_tts.dart';
 import '../../../core/widgets/speaker_button.dart';
 import '../../pronunciation/data/pronunciation_scoring.dart';
@@ -580,6 +581,7 @@ class _SpeakingQuestionState extends ConsumerState<_SpeakingQuestion> {
     }
     // Tat co truoc de _onSessionEnded khong mo lai phien moi.
     _listening = false;
+    GtHaptics.micStopped(this);
     if (_sessionActive) widget.speech.stop();
     super.dispose();
   }
@@ -595,6 +597,7 @@ class _SpeakingQuestionState extends ConsumerState<_SpeakingQuestion> {
       'aborted',
     };
     if (!benign.contains(error.errorMsg) && _listening && mounted) {
+      GtHaptics.micStopped(this);
       setState(() {
         _listening = false;
         _error = '${ref.tr('pron_record_failed')} ${error.errorMsg}';
@@ -626,6 +629,8 @@ class _SpeakingQuestionState extends ConsumerState<_SpeakingQuestion> {
 
   Future<void> _startListening() async {
     if (_available != true || _listening || _scoring) return;
+    // Dang thu: khong rung (lot vao ban ghi) cho toi khi dung / loi (#123).
+    GtHaptics.micStarted(this);
     setState(() {
       _listening = true;
       _result = null;
@@ -659,6 +664,7 @@ class _SpeakingQuestionState extends ConsumerState<_SpeakingQuestion> {
       );
     } catch (e) {
       _sessionActive = false;
+      GtHaptics.micStopped(this);
       if (mounted) {
         setState(() {
           _listening = false;
@@ -677,14 +683,19 @@ class _SpeakingQuestionState extends ConsumerState<_SpeakingQuestion> {
       _scoring = true;
     });
     final done = _sessionDone;
-    if (_sessionActive) {
-      await widget.speech.stop();
-      if (done != null && !done.isCompleted) {
-        await done.future.timeout(
-          const Duration(milliseconds: 1500),
-          onTimeout: () {},
-        );
+    try {
+      if (_sessionActive) {
+        await widget.speech.stop();
+        if (done != null && !done.isCompleted) {
+          await done.future.timeout(
+            const Duration(milliseconds: 1500),
+            onTimeout: () {},
+          );
+        }
       }
+    } finally {
+      // Nha mic khi phien nghe that su dung (nut ghi khoa trong luc cham).
+      GtHaptics.micStopped(this);
     }
     _sessionActive = false;
     if (!mounted) return;

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -73,7 +75,8 @@ void main() {
         service.claimPendingQuests(),
         service.claimPendingQuests(),
       ]);
-      expect(results.fold<int>(0, (a, b) => a + b), 30 + 25);
+      // Lan goi thu 2 cho lan dau xong: chi 1 noi bao XP.
+      expect(results, [30 + 25, 0]);
       expect(server.xp, 55);
       expect(server.keys, {
         '2026-09-24:quest_review',
@@ -81,6 +84,20 @@ void main() {
       });
       expect(await service.claimPendingQuests(), 0);
       expect(store.today.rewarded, {'quest_review', 'quest_handsFree'});
+    });
+
+    test('a quest done while a claim runs is reported once', () async {
+      final store = newStore();
+      final server = _FakeServer();
+      final service = serviceFor(store, server);
+      await store.addWordsReviewed(kDailyLearnGoal);
+      // Hom nay dang tra thi xong them 1 nhiem vu, On the cung goi tra.
+      final today = service.claimPendingQuests();
+      await store.markHandsFreeDone();
+      final review = service.claimPendingQuests();
+      expect(await today, 30 + 25);
+      expect(await review, 0);
+      expect(server.xp, 55);
     });
 
     test('two devices never double-pay the same quest', () async {
@@ -114,6 +131,29 @@ void main() {
         expect(await service.claimPendingQuests(), DailyQuestId.trainerChat.xp);
       },
     );
+
+    test('a stuck RPC times out instead of holding up the queue', () async {
+      final store = newStore();
+      final server = _FakeServer();
+      var now = _now;
+      var stuck = true;
+      final service = QuestRewardService(
+        store: store,
+        // Socket chet: khong bao gio tra loi.
+        claimOnce: (key, amount) =>
+            stuck ? Completer<int>().future : server.claimOnce(key, amount),
+        addLegacy: server.addLegacy,
+        clock: () => now,
+        requestTimeout: const Duration(milliseconds: 20),
+      );
+      await store.markTrainerChatDone();
+      expect(await service.claimPendingQuests(), 0);
+      expect(store.today.rewarded, isEmpty);
+      // Lan goi sau khong ket sau lan treo; het tam dung thi tra duoc.
+      stuck = false;
+      now = now.add(const Duration(minutes: 2));
+      expect(await service.claimPendingQuests(), DailyQuestId.trainerChat.xp);
+    });
 
     test('a quest finished during a claim is paid in the same run', () async {
       final store = newStore();

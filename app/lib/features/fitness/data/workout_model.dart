@@ -316,15 +316,12 @@ class WorkoutController extends ChangeNotifier {
   /// [WorkoutOutbox] - van ghi tung set ngay khi xong thay vi doi cuoi buoi,
   /// dung triet ly SetLogEntity cua FitViet.
   ///
-  /// Bo qua lan bam thu 2 trong vong 700ms (cham dup tay luc dang met) -
-  /// tranh log nham set ke tiep cua bai sau.
+  /// Bo qua lan bam thu 2 trong vong [_doubleTap] (cham dup tay luc dang
+  /// met) - tranh log nham set ke tiep cua bai sau.
   void completeSet() {
     if (phase != WorkoutPhase.logging) return;
     final now = _clock();
-    final last = _lastCompleteAt;
-    if (last != null && now.difference(last).inMilliseconds.abs() < 700) {
-      return;
-    }
+    if (_justCompleted(now)) return;
     _lastCompleteAt = now;
 
     final exerciseId = currentBlock.exercise.id;
@@ -477,6 +474,9 @@ class WorkoutController extends ChangeNotifier {
   void addRestSeconds(int seconds) {
     final endsAt = _restEndsAt;
     if (phase != WorkoutPhase.resting || endsAt == null) return;
+    // Cham thu 2 cua cu cham dup "Hoan thanh hiep" roi dung nut "+15s" vua
+    // hien o cho do: bo qua, khong tu dung nghi them.
+    if (_justCompleted(_clock())) return;
     _restEndsAt = endsAt.add(Duration(seconds: seconds));
     notifyListeners();
   }
@@ -496,7 +496,18 @@ class WorkoutController extends ChangeNotifier {
 
   void skipRest() {
     if (phase != WorkoutPhase.resting) return;
+    // Cham thu 2 cua cu cham dup "Hoan thanh hiep" roi dung nut "Bo qua
+    // nghi" vua hien o cho do: bo qua nhu cham dup, khong mat gio nghi.
+    if (_justCompleted(_clock())) return;
     _endRest();
+  }
+
+  /// Khoang coi 2 lan cham la 1 cu cham dup.
+  static const _doubleTap = Duration(milliseconds: 700);
+
+  bool _justCompleted(DateTime now) {
+    final last = _lastCompleteAt;
+    return last != null && now.difference(last).abs() < _doubleTap;
   }
 
   void _cancelRestTimer() {
