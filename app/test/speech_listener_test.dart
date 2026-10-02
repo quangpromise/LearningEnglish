@@ -61,10 +61,10 @@ void main() {
     final second = listener.listenOnce();
     await pumpEventQueue();
     expect(GtHaptics.micActive, isTrue);
-    // Lan dau mo mic xong muon: tu huy, khong ha co cua lan sau.
+    // Lan dau mo mic xong muon: khong ha co, khong huy phien cua lan sau.
     speech.opening.first.complete();
     expect(await first, '');
-    expect(speech.cancels, 1);
+    expect(speech.cancels, 0);
     expect(GtHaptics.micActive, isTrue);
     speech.opening.last.complete();
     await pumpEventQueue();
@@ -73,7 +73,19 @@ void main() {
     expect(GtHaptics.micActive, isFalse);
   });
 
-  test('stop and dispose put the flag down (#123)', () async {
+  test('a listen stopped while the mic opens is cancelled once open', () async {
+    final speech = _FakeSpeech();
+    final listener = SpeechListener(speech: speech);
+    final heard = listener.listenOnce();
+    await pumpEventQueue();
+    listener.stop();
+    speech.opening.single.complete();
+    expect(await heard, '');
+    expect(speech.cancels, 1);
+    expect(GtHaptics.micActive, isFalse);
+  });
+
+  test('dispose puts the flag down (#123)', () async {
     final speech = _FakeSpeech();
     final listener = SpeechListener(speech: speech);
     unawaited(listener.listenOnce());

@@ -117,9 +117,10 @@ class SpeechListener {
     } catch (_) {
       _finish();
     }
-    // Bi dung trong luc dang mo mic -> tat ngay, khong de mic bat.
+    // Bi dung trong luc dang mo mic -> tat ngay, khong de mic bat. Da co lan
+    // nghe moi (dung chung speech) thi de yen, khong huy phien cua no.
     if (generation != _generation) {
-      _speech.cancel();
+      if (_done == null) _speech.cancel();
       return '';
     }
     return done.future.timeout(
