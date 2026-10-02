@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../../core/feedback/gt_feedback_tier.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
@@ -30,7 +31,7 @@ class WorkoutFinishedScreen extends ConsumerStatefulWidget {
     this.coachLine,
   });
 
-  /// XP Rest Game da cong trong buoi (Celebration ban redesign).
+  /// XP Rest Game da cong trong buoi (Celebration / XP Toast ban redesign).
   final int restGameXp;
 
   /// Cau chuc mung cua giong HLV (null = tat giong HLV).
@@ -74,26 +75,39 @@ class _WorkoutFinishedScreenState extends ConsumerState<WorkoutFinishedScreen> {
       }
       if (!mounted) return;
       final synced = c.syncState == WorkoutSyncState.synced;
-      showCelebration(
+      final xp = workoutXpEarned(
+        setsLogged: synced ? c.totalSetsLogged : 0,
+        restGameXp: widget.restGameXp,
+      );
+      // Buoi hoan thanh dau tien trong ngay -> Celebration; buoi sau chi XP
+      // Toast (ADR-0008). Giu cho ngay luc hien - roi man truoc do thi buoi
+      // sau van duoc chuc mung.
+      final celebrate = await DailyProgressStore.instance
+          .claimWorkoutCelebration(completedAllSets: c.completedAllSets);
+      if (!mounted) return;
+      showTieredFeedback(
         context,
-        xp: workoutXpEarned(
-          setsLogged: synced ? c.totalSetsLogged : 0,
-          restGameXp: widget.restGameXp,
+        GtFeedbackEvent.workoutFinished,
+        firstToday: celebrate,
+        xp: xp,
+        celebration: () => showCelebration(
+          context,
+          xp: xp,
+          title: ref.tr('gt_workout_done_title'),
+          subtitle: ref
+              .tr('gt_workout_done_sub')
+              .replaceFirst('{sets}', '${c.totalSetsLogged}')
+              .replaceFirst('{min}', '${c.elapsed.inMinutes}'),
+          ctaLabel: ref.tr('gt_celebration_cta'),
+          chips: [
+            ref
+                .tr('gt_celebration_streak_chip')
+                .replaceFirst(
+                  '{days}',
+                  '${DailyProgressStore.instance.bodyBrainStreak}',
+                ),
+          ],
         ),
-        title: ref.tr('gt_workout_done_title'),
-        subtitle: ref
-            .tr('gt_workout_done_sub')
-            .replaceFirst('{sets}', '${c.totalSetsLogged}')
-            .replaceFirst('{min}', '${c.elapsed.inMinutes}'),
-        ctaLabel: ref.tr('gt_celebration_cta'),
-        chips: [
-          ref
-              .tr('gt_celebration_streak_chip')
-              .replaceFirst(
-                '{days}',
-                '${DailyProgressStore.instance.bodyBrainStreak}',
-              ),
-        ],
       );
     });
     // Xong buoi tap -> tu tick "Hoan thanh" lan tap hom nay trong Lap ke
