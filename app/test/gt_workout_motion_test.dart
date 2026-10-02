@@ -26,7 +26,8 @@ double _tickScale(WidgetTester tester) => tester
       ),
     )
     .transform
-    .getMaxScaleOnAxis();
+    // Ti le theo truc x (getMaxScaleOnAxis tinh ca truc z luon = 1).
+    .entry(0, 0);
 
 void main() {
   late List<Object?> haptics;
