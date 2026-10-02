@@ -179,6 +179,42 @@ void main() {
       expect(gtHapticLevel(GtHapticEvent.celebration), GtHapticLevel.heavy);
     });
 
+    test('former direct haptics keep their level (#124)', () {
+      expect(gtHapticLevel(GtHapticEvent.quickStart), GtHapticLevel.medium);
+      expect(
+        gtHapticLevel(GtHapticEvent.answerPicked),
+        GtHapticLevel.selection,
+      );
+      expect(gtHapticLevel(GtHapticEvent.answerRight), GtHapticLevel.light);
+      expect(gtHapticLevel(GtHapticEvent.answerWrong), GtHapticLevel.heavy);
+      expect(gtHapticLevel(GtHapticEvent.repCounted), GtHapticLevel.light);
+      expect(
+        gtHapticLevel(GtHapticEvent.restCountdown),
+        GtHapticLevel.selection,
+      );
+      expect(gtHapticLevel(GtHapticEvent.restEnded), GtHapticLevel.heavy);
+    });
+
+    test(
+      'quick taps each get a tick, unless a stronger buzz just played',
+      () async {
+        var at = DateTime(2026, 10, 2, 9);
+        GtHaptics.now = () => at;
+        await GtHaptics.play(GtHapticEvent.answerPicked);
+        at = at.add(const Duration(milliseconds: 150));
+        await GtHaptics.play(GtHapticEvent.answerPicked);
+        at = at.add(const Duration(milliseconds: 150));
+        await GtHaptics.play(GtHapticEvent.questCompleted);
+        at = at.add(const Duration(milliseconds: 150));
+        await GtHaptics.play(GtHapticEvent.answerPicked);
+        expect(calls.map((c) => c.arguments), [
+          'HapticFeedbackType.selectionClick',
+          'HapticFeedbackType.selectionClick',
+          'HapticFeedbackType.mediumImpact',
+        ]);
+      },
+    );
+
     test('plays the platform haptic for the level', () async {
       await GtHaptics.play(GtHapticEvent.cardGraded);
       await GtHaptics.play(GtHapticEvent.setTicked);
@@ -227,6 +263,33 @@ void main() {
         'HapticFeedbackType.mediumImpact',
       ]);
     });
+
+    test(
+      'rest ended buzzes through the mic flag and the quiet window',
+      () async {
+        var at = DateTime(2026, 10, 2, 9);
+        GtHaptics.now = () => at;
+        // Dang noi voi PT AI luc nghi: 3-2-1 im, het gio van rung.
+        final trainer = Object();
+        GtHaptics.micStarted(trainer);
+        await GtHaptics.play(GtHapticEvent.restCountdown);
+        await GtHaptics.play(GtHapticEvent.restEnded);
+        GtHaptics.micStopped(trainer);
+        // Vua tra loi sai Rest Game (manh) ngay truoc khi het gio.
+        at = at.add(const Duration(seconds: 5));
+        await GtHaptics.play(GtHapticEvent.answerWrong);
+        at = at.add(const Duration(milliseconds: 100));
+        await GtHaptics.play(GtHapticEvent.restEnded);
+        // Nhip nhe ngay sau bao hieu van bi khoang tro bo.
+        at = at.add(const Duration(milliseconds: 100));
+        await GtHaptics.play(GtHapticEvent.cardGraded);
+        expect(calls.map((c) => c.arguments), [
+          'HapticFeedbackType.heavyImpact',
+          'HapticFeedbackType.heavyImpact',
+          'HapticFeedbackType.heavyImpact',
+        ]);
+      },
+    );
 
     test('stays silent while any mic session is open', () async {
       final pronunciation = Object();

@@ -1,7 +1,6 @@
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../features/fitness/presentation/programs_list_screen.dart';
@@ -10,6 +9,7 @@ import '../../features/today/data/daily_progress_store.dart';
 import '../../features/today/data/shell_presentation.dart';
 import '../i18n/app_strings.dart';
 import '../providers/app_providers.dart';
+import '../theme/gt_haptics.dart';
 import '../theme/gt_tokens.dart';
 import 'app_popup.dart';
 import 'root_tabs.dart';
@@ -163,7 +163,7 @@ class QuickStartButton extends ConsumerWidget {
   }
 
   Future<void> _start(BuildContext context, WidgetRef ref) async {
-    HapticFeedback.mediumImpact();
+    GtHaptics.play(GtHapticEvent.quickStart);
     await DailyProgressStore.instance.ensureLoaded();
     final plan = await ref
         .read(todayWorkoutPlanProvider.future)
