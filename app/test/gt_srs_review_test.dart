@@ -204,7 +204,10 @@ void main() {
     await tester.tap(find.text('lift'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Nhớ'));
+    // Toast duoc chen sau chuoi await (ghi tien do -> claim) -> frame dau
+    // cua no la frame ke tiep; so dem len them ~0.5 s.
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
     await tester.pump(const Duration(milliseconds: 700));
     expect(find.text('+${DailyQuestId.review.xp} XP'), findsOneWidget);
     expect(find.byType(GtCelebration), findsNothing);
