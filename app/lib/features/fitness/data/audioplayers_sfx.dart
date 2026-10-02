@@ -6,10 +6,12 @@ import 'rest_sounds.dart';
 /// [SfxPlayer] bang `audioplayers` - KHONG dung just_audio: just_audio_background
 /// chi cho 1 player trong ca app (xem pubspec.yaml).
 class AudioplayersSfx implements SfxPlayer {
-  /// Chi Android (giai doan 1). iOS: plugin dat AVAudioSession `.playback`
-  /// khong tron ngay luc khoi tao - am se bo qua nut im lang va dung nhac
-  /// cua app khac; can chien luoc session chung ca app (giai doan 2).
-  static bool get supported => defaultTargetPlatform == TargetPlatform.android;
+  /// Chi app Android (giai doan 1). iOS: plugin dat AVAudioSession
+  /// `.playback` khong tron ngay luc khoi tao - am se bo qua nut im lang va
+  /// dung nhac cua app khac; can chien luoc session chung ca app (giai doan
+  /// 2). Web (ke ca trinh duyet Android): am web khong theo che do im lang.
+  static bool get supported =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
 
   final ap.AudioPlayer _player = ap.AudioPlayer();
   Future<void>? _ready;
