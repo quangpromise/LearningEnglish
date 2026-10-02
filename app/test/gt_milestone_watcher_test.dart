@@ -24,13 +24,8 @@ MilestoneInputs _inputs({
   int? streak,
   BodyLevel? body,
   CefrLevel? english = CefrLevel.a1,
-  int quietStreakMark = 0,
-}) => (
-  streak: streak,
-  quietStreakMark: quietStreakMark,
-  body: body,
-  english: english,
-);
+  bool streakFresh = true,
+}) => (streak: streak, streakFresh: streakFresh, body: body, english: english);
 
 Widget _watcher({
   String? userId = 'u1',
@@ -178,31 +173,21 @@ void main() {
     expect(await _showAll(tester), ['Chuỗi 7 ngày!']);
   });
 
-  testWidgets('a streak mark reached by synced data is recorded quietly', (
-    tester,
-  ) async {
-    await MilestoneStore.save('u1', _known);
-    await _arrive(tester, _inputs(streak: 3, body: BodyLevel.rookie));
-    expect(find.byType(GtCelebration), findsNothing);
-    // Dong bo keo ve chuoi 10 ngay lam tren may khac: lan gop vuot moc 7.
-    await tester.pumpWidget(
-      _watcher(
-        visit: 1,
-        inputs: _inputs(streak: 10, body: BodyLevel.rookie, quietStreakMark: 7),
-      ),
+  testWidgets('stale data offline does not lower the mark', (tester) async {
+    await MilestoneStore.save(
+      'u1',
+      const MilestoneRecord(streak: 7, streakOn: _before),
     );
+    // Mat mang: du lieu tren may thieu ngay lam o may khac -> chuoi 0.
+    await _arrive(tester, _inputs(streak: 0, streakFresh: false));
+    expect(
+      await MilestoneStore.load('u1'),
+      const MilestoneRecord(streak: 7, streakOn: _before),
+    );
+    // Dong bo lai, chuoi 10: khong chuc mung lap moc 7.
+    await tester.pumpWidget(_watcher(visit: 1, inputs: _inputs(streak: 10)));
     await _settle(tester);
     expect(find.byType(GtCelebration), findsNothing);
-    expect((await MilestoneStore.load('u1')).streak, 7);
-    // Tu do, tien do lam tren may nay van duoc chuc mung.
-    await tester.pumpWidget(
-      _watcher(
-        visit: 1,
-        inputs: _inputs(streak: 30, body: BodyLevel.rookie, quietStreakMark: 7),
-      ),
-    );
-    await _settle(tester);
-    expect(await _showAll(tester), ['Chuỗi 30 ngày!']);
   });
 
   testWidgets('unknown inputs leave their part of the record alone', (

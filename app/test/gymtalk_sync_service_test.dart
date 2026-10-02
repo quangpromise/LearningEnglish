@@ -47,6 +47,7 @@ void main() {
     srs: SrsStore.forTest(),
     daily: daily,
     path: EnglishPathStore.forTest(),
+    clock: () => now,
   );
 
   setUp(() {
@@ -63,12 +64,14 @@ void main() {
     };
     final sync = service();
     int? streakWhenSettled;
-    sync.settledUser.addListener(
-      () => streakWhenSettled = daily.bodyBrainStreak,
-    );
+    sync.settled.addListener(() => streakWhenSettled = daily.bodyBrainStreak);
     await sync.syncNow();
-    expect(sync.settledUser.value, 'a');
+    expect(sync.settled.value, (user: 'a', syncedOn: '2026-09-24'));
     expect(streakWhenSettled, 2);
+    // Mat mang sau do trong cung phien: van tinh la da dong bo hom nay.
+    remote.failWith = Exception('offline');
+    await sync.syncNow();
+    expect(sync.settled.value, (user: 'a', syncedOn: '2026-09-24'));
     // Ban da gop duoc ghi lai len server.
     expect((remote.rows['a']!['daily'] as Map).length, 2);
     sync.dispose();
@@ -79,10 +82,10 @@ void main() {
     final sync = service();
     await sync.syncNow();
     // May chua dong bo lan nao: du lieu rong, chua dung lam moc.
-    expect(sync.settledUser.value, isNull);
+    expect(sync.settled.value?.user, isNull);
     remote.failWith = null;
     await sync.syncNow();
-    expect(sync.settledUser.value, 'a');
+    expect(sync.settled.value?.user, 'a');
     sync.dispose();
   });
 
@@ -95,13 +98,14 @@ void main() {
       remote.failWith = Exception('offline');
       final again = service();
       await again.syncNow();
-      expect(again.settledUser.value, 'a');
+      // Dung tam du lieu tren may, nhung khong phai du lieu moi nhat.
+      expect(again.settled.value, (user: 'a', syncedOn: null));
       again.dispose();
       // Tai khoan khac mat mang: du lieu tren may van cua 'a' -> chua dung.
       user = 'b';
       final other = service();
       await other.syncNow();
-      expect(other.settledUser.value, isNull);
+      expect(other.settled.value?.user, isNull);
       other.dispose();
     },
   );
@@ -121,7 +125,7 @@ void main() {
       await b.syncNow();
       expect(daily.today.workouts, 0);
       expect(daily.dayOf(DateTime(2026, 9, 20)).bodyBrainDone, isTrue);
-      expect(b.settledUser.value, 'b');
+      expect(b.settled.value?.user, 'b');
       expect((remote.rows['b']!['daily'] as Map).keys, ['2026-09-20']);
       b.dispose();
     },
@@ -132,7 +136,7 @@ void main() {
     final sync = service();
     await sync.syncNow();
     expect(remote.fetches, 0);
-    expect(sync.settledUser.value, isNull);
+    expect(sync.settled.value?.user, isNull);
     sync.dispose();
   });
 }

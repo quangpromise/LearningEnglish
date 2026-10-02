@@ -130,42 +130,27 @@ void main() {
       expect(r.celebrate, [(kind: MilestoneKind.bodyLevel, value: 4)]);
     });
 
-    test('a streak mark crossed by synced data is recorded quietly', () {
-      const before = MilestoneRecord(
-        streak: 0,
-        streakOn: '2026-09-20',
-        bodyLevel: 1,
-        rank: 0,
-      );
-      final r = detectMilestones(
-        before,
+    test('stale data never lowers the streak mark', () {
+      const reached = MilestoneRecord(streak: 7, streakOn: '2026-09-20');
+      // Mat mang: du lieu tren may thieu cac ngay lam o may khac -> chuoi 0.
+      var r = detectMilestones(
+        reached,
         today: _today,
-        streak: 12,
-        bodyLevel: 2,
-        rank: 1,
-        quietStreakMark: 7,
+        streak: 0,
+        lowerStreak: false,
       );
-      // Body Level / Rank van chuc mung (tinh theo tung may).
-      expect(r.celebrate, [
-        (kind: MilestoneKind.bodyLevel, value: 2),
-        (kind: MilestoneKind.rank, value: 1),
-      ]);
-      expect(r.base, before.copyWith(streak: 7, streakOn: _today));
-      // Moc cao hon moc do dong bo vuot qua: van chuc mung.
-      final next = detectMilestones(
+      expect(r.base, reached);
+      // Dong bo lai, chuoi 10: khong chuc mung lap moc 7.
+      r = detectMilestones(r.base, today: _today, streak: 10);
+      expect(r.celebrate, isEmpty);
+      // Van chuc mung khi vuot moc moi.
+      r = detectMilestones(
         r.base,
         today: _today,
         streak: 30,
-        quietStreakMark: 7,
+        lowerStreak: false,
       );
-      expect(next.celebrate, [(kind: MilestoneKind.streak, value: 30)]);
-    });
-
-    test('only marks the merge itself crossed are quiet', () {
-      expect(syncedStreakMark(null), 0);
-      expect(syncedStreakMark((from: 5, to: 9)), 7);
-      expect(syncedStreakMark((from: 8, to: 12)), 0);
-      expect(syncedStreakMark((from: 0, to: 45)), 30);
+      expect(r.celebrate, [(kind: MilestoneKind.streak, value: 30)]);
     });
 
     test('unknown values keep their part of the record', () {

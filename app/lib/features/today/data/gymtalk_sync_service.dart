@@ -9,6 +9,11 @@ import '../../english_path/data/english_path_store.dart';
 import '../../srs/data/srs_store.dart';
 import 'daily_progress_store.dart';
 
+/// Du lieu GymTalk tren may da thuoc ve tai khoan [user] sau 1 luot dong bo
+/// trong phien. [syncedOn]: ngay ('yyyy-mm-dd') dong bo THANH CONG gan nhat
+/// cho tai khoan do - null = moi chi dung tam du lieu tren may (mat mang).
+typedef GymTalkSettled = ({String user, String? syncedOn});
+
 /// Dong bo bo the SRS + so lieu 3 vong Tap/Hoc/Noi + tien do lo trinh tieng
 /// Anh voi Supabase (bang user_gymtalk_state, migration 0074/0075) de khong
 /// mat chuoi ngay/tien do khi doi may, va de ban be thay tien do trong "Thu
@@ -43,8 +48,10 @@ class GymTalkSyncService {
     SrsStore? srs,
     DailyProgressStore? daily,
     EnglishPathStore? path,
+    DateTime Function()? clock,
   }) : _remote = remote,
        _currentUserId = currentUserId,
+       _clock = clock ?? DateTime.now,
        _srs = srs ?? SrsStore.instance,
        _daily = daily ?? DailyProgressStore.instance,
        _path = path ?? EnglishPathStore.instance;
@@ -53,6 +60,7 @@ class GymTalkSyncService {
 
   final GymTalkRemote _remote;
   final String? Function() _currentUserId;
+  final DateTime Function() _clock;
   final SrsStore _srs;
   final DailyProgressStore _daily;
   final EnglishPathStore _path;
@@ -63,16 +71,25 @@ class GymTalkSyncService {
   bool _disposed = false;
   Future<void>? _running;
 
-  final _settledUser = ValueNotifier<String?>(null);
+  final _settled = ValueNotifier<GymTalkSettled?>(null);
 
-  /// Tai khoan ma du lieu tren may (SRS, 3 vong, lo trinh) da thuoc ve sau 1
-  /// luot dong bo trong phien nay - null = chua co luot nao xong. Milestone
+  /// Du lieu tren may (SRS, 3 vong, lo trinh) da thuoc ve tai khoan nao sau
+  /// 1 luot dong bo trong phien nay - null = chua co luot nao xong. Milestone
   /// (MO-06) chi lay moc tu luc nay: truoc do so lieu co the con cua lan cai
   /// cu, cua tai khoan truoc, hoac chua keo ve.
-  ValueListenable<String?> get settledUser => _settledUser;
+  ValueListenable<GymTalkSettled?> get settled => _settled;
 
-  void _settle(String userId) {
-    if (!_disposed) _settledUser.value = userId;
+  /// [synced]: luot nay keo ve thanh cong. Mat mang thi giu ngay dong bo
+  /// thanh cong truoc do trong phien (cung tai khoan).
+  void _settle(String userId, {required bool synced}) {
+    if (_disposed) return;
+    final previous = _settled.value;
+    final syncedOn = synced
+        ? DailyProgressStore.keyOf(_clock())
+        : previous != null && previous.user == userId
+        ? previous.syncedOn
+        : null;
+    _settled.value = (user: userId, syncedOn: syncedOn);
   }
 
   /// Bat dau nghe thay doi tren may (tu day len sau 5 giay) - goi 1 lan.
@@ -147,7 +164,7 @@ class GymTalkSyncService {
         });
       }
       await prefs.setString(_lastUserKey, userId);
-      _settle(userId);
+      _settle(userId, synced: true);
       await _remote.save(userId, {
         'srs': _srs.exportJson(),
         'daily': _daily.exportJson(),
@@ -160,7 +177,7 @@ class GymTalkSyncService {
       // khoan nay (da tung dong bo xong cho no tren may nay). May moi / vua
       // doi tai khoan thi cho lan dong bo thanh cong - khong lay moc tu du
       // lieu rong hoac cua nguoi khac.
-      if (lastUserRead && lastUser == userId) _settle(userId);
+      if (lastUserRead && lastUser == userId) _settle(userId, synced: false);
     }
   }
 
@@ -177,7 +194,7 @@ class GymTalkSyncService {
   void dispose() {
     if (_disposed) return;
     _disposed = true;
-    _settledUser.dispose();
+    _settled.dispose();
     _debounce?.cancel();
     if (_listening) {
       _srs.removeListener(_onLocalChanged);

@@ -22,7 +22,7 @@ class _Repo implements WorkoutRepository {
 final _sent = StateProvider<int>((ref) => 0);
 
 void main() {
-  testWidgets('offline: unknown (not Rookie), retried a minute later', (
+  testWidgets('offline: unknown (not Rookie), retried with backoff', (
     tester,
   ) async {
     final repo = _Repo()..error = Exception('offline');
@@ -39,11 +39,18 @@ void main() {
     await tester.pump();
     expect(repo.calls, 1);
     expect(container.read(bodyStatsProvider).valueOrNull, isNull);
-    // Co mang lai: 1 phut sau tu thu lai.
+    // Thu lai sau 1 phut, roi 2 phut (van mat mang).
+    await tester.pump(const Duration(minutes: 1));
+    await tester.pump(const Duration(milliseconds: 10));
+    expect(repo.calls, 2);
+    await tester.pump(const Duration(minutes: 1));
+    await tester.pump(const Duration(milliseconds: 10));
+    expect(repo.calls, 2);
+    // Co mang lai.
     repo.error = null;
     await tester.pump(const Duration(minutes: 1));
-    await tester.pump();
-    expect(repo.calls, 2);
+    await tester.pump(const Duration(milliseconds: 10));
+    expect(repo.calls, 3);
     expect(container.read(bodyStatsProvider).valueOrNull?.totalWorkouts, 2);
   });
 

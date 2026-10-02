@@ -26,7 +26,6 @@ import '../../srs/data/srs_store.dart';
 import '../../srs/presentation/srs_review_screen.dart';
 import '../data/daily_progress_store.dart';
 import '../data/daily_quests.dart';
-import '../data/milestones.dart';
 import '../data/ring_geometry.dart';
 import '../data/today_presentation.dart';
 import 'gt_quests_card.dart';
@@ -205,8 +204,8 @@ class _GtTodayScreenState extends ConsumerState<GtTodayScreen> {
 /// khi nguoi dung quay lai Hom nay (MO-06). Moi nguon chi duoc tinh khi da
 /// on dinh - khong lay moc goc / chuc mung tu so lieu tam:
 /// - chuoi: store da doc xong VA da dong bo xong 1 luot cho chinh tai khoan
-///   nay (truoc do co the con so lieu may cu / tai khoan truoc); moc do
-///   chinh lan gop du lieu tu may khac vuot qua thi chi ghi nhan;
+///   nay (truoc do co the con so lieu may cu / tai khoan truoc); chi ha moc
+///   khi da dong bo thanh cong hom nay;
 /// - English Level: nhu tren (lo trinh dong bo cung luot) VA da tai xong
 ///   lua chon Persona (chua tai -> tam roi ve A1);
 /// - Body Level: tai thanh cong (loi mang -> null, khong phai Rookie).
@@ -219,8 +218,10 @@ class _TodayMilestones extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userId = ref.watch(currentUserIdProvider);
-    final synced =
-        userId != null && ref.watch(gymTalkSettledUserProvider) == userId;
+    final settled = ref.watch(gymTalkSettledProvider);
+    final synced = userId != null && settled?.user == userId;
+    final fresh =
+        synced && settled?.syncedOn == DailyProgressStore.keyOf(DateTime.now());
     final stats = ref.watch(bodyStatsProvider).valueOrNull;
     final persona = ref.watch(learningPathChoiceProvider);
     final english = ref.watch(englishLevelProvider);
@@ -228,13 +229,13 @@ class _TodayMilestones extends ConsumerWidget {
     return ListenableBuilder(
       listenable: daily,
       builder: (context, _) {
-        final settled = synced && daily.isLoaded;
+        final ready = synced && daily.isLoaded;
         return GtWhenOnScreen<MilestoneInputs>(
           value: (
-            streak: settled ? daily.bodyBrainStreak : null,
-            quietStreakMark: syncedStreakMark(daily.syncedStreakRiseToday),
+            streak: ready ? daily.bodyBrainStreak : null,
+            streakFresh: fresh,
             body: stats == null ? null : bodyLevelFor(stats),
-            english: settled && persona.hasValue && !persona.hasError
+            english: ready && persona.hasValue && !persona.hasError
                 ? english
                 : null,
           ),

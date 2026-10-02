@@ -161,40 +161,26 @@ void main() {
     },
   );
 
-  test('a merge that raises the streak is remembered for the day', () async {
-    await completeDay();
-    expect(store.syncedStreakRiseToday, isNull);
-    // May khac da xong 6 ngay truoc do.
-    expect(
-      await store.mergeRemote({
-        for (var i = 1; i <= 6; i++)
-          DailyProgressStore.keyOf(DateTime(2026, 9, 24 - i)): {
-            'w': 1,
-            'l': kDailyLearnGoal,
-            's': 0,
-            'r': false,
-          },
-      }),
-      isTrue,
-    );
-    expect(store.bodyBrainStreak, 7);
-    expect(store.syncedStreakRiseToday, (from: 1, to: 7));
-    // Doi khac khong lam chuoi tang (vd luot noi o may khac): giu nguyen.
-    await store.mergeRemote({
-      '2026-09-24': {'w': 1, 'l': kDailyLearnGoal, 's': 3, 'r': false},
-    });
-    expect(store.syncedStreakRiseToday, (from: 1, to: 7));
-    // Sang ngay moi: het hieu luc.
-    now = DateTime(2026, 9, 25, 9);
-    expect(store.syncedStreakRiseToday, isNull);
-  });
-
-  test('switching account forgets the synced rise', () async {
-    await store.mergeRemote({
-      '2026-09-24': {'w': 1, 'l': kDailyLearnGoal, 's': 0, 'r': false},
-    });
-    expect(store.syncedStreakRiseToday, (from: 0, to: 1));
-    await store.clearLocal();
-    expect(store.syncedStreakRiseToday, isNull);
-  });
+  test(
+    'two halves of an old day from two devices still make it done',
+    () async {
+      // Hoc o may nay, tap o may kia - 70 ngay truoc, chua tung gop.
+      now = DateTime(2026, 7, 16, 19);
+      await store.addWordsReviewed(kDailyLearnGoal);
+      now = DateTime(2026, 9, 24, 19);
+      expect(
+        await store.mergeRemote({
+          '2026-07-16': {'w': 1, 'l': 0, 's': 0, 'r': false},
+        }),
+        isTrue,
+      );
+      expect(store.dayOf(DateTime(2026, 7, 16)).bodyBrainDone, isTrue);
+      expect(store.exportJson()['2026-07-16'], {
+        'w': 1,
+        'l': kDailyLearnGoal,
+        's': 0,
+        'r': false,
+      });
+    },
+  );
 }

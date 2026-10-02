@@ -525,11 +525,11 @@ final gymTalkSyncProvider = Provider<GymTalkSyncService>((ref) {
   return sync;
 });
 
-/// Tai khoan ma du lieu GymTalk tren may da thuoc ve sau 1 luot dong bo
-/// trong phien nay (GymTalkSyncService.settledUser) - null = chua co luot
-/// nao xong.
-final gymTalkSettledUserProvider = Provider<String?>((ref) {
-  final settled = ref.watch(gymTalkSyncProvider).settledUser;
+/// Du lieu GymTalk tren may da thuoc ve tai khoan nao sau 1 luot dong bo
+/// trong phien nay, kem ngay dong bo thanh cong (GymTalkSyncService.settled)
+/// - null = chua co luot nao xong.
+final gymTalkSettledProvider = Provider<GymTalkSettled?>((ref) {
+  final settled = ref.watch(gymTalkSyncProvider).settled;
   void onChange() => ref.invalidateSelf();
   settled.addListener(onChange);
   ref.onDispose(() => settled.removeListener(onChange));
@@ -594,11 +594,15 @@ final workoutsSentProvider = Provider<int>((ref) {
   return outbox.finishedSent;
 });
 
+/// Lan tai Body Level loi lien tiep -> thu lai gian dan (phut).
+var _bodyStatsFailures = 0;
+const _bodyStatsRetryMinutes = [1, 2, 4, 8, 16, 30];
+
 /// Body Level (spec #45): tinh tu moi buoi da hoan thanh; tinh lai khi mo lai
 /// (autoDispose) va moi khi 1 buoi tap len server (ke ca gui bu sau khi mat
 /// mang). null = chua dang nhap hoac loi mang - KHONG gia la Rookie: man hien
-/// "…" nhu luc dang tai (thu lai sau 1 phut), Milestone (MO-06) khong lay moc
-/// tu so lieu sai.
+/// "…" nhu luc dang tai (tu thu lai: 1, 2, 4... toi da 30 phut), Milestone
+/// (MO-06) khong lay moc tu so lieu sai.
 final bodyStatsProvider = FutureProvider.autoDispose<BodyStats?>((ref) async {
   ref.watch(workoutsSentProvider);
   final userId = ref.watch(currentUserIdProvider);
@@ -606,10 +610,15 @@ final bodyStatsProvider = FutureProvider.autoDispose<BodyStats?>((ref) async {
   final repo = ref.watch(workoutRepositoryProvider);
   try {
     final times = await repo.getCompletedWorkoutTimes(userId);
+    _bodyStatsFailures = 0;
     return computeBodyStats(times, now: DateTime.now());
   } catch (e) {
     debugPrint('bodyStatsProvider failed: $e');
-    final retry = Timer(const Duration(minutes: 1), ref.invalidateSelf);
+    final minutes = _bodyStatsFailures < _bodyStatsRetryMinutes.length
+        ? _bodyStatsRetryMinutes[_bodyStatsFailures]
+        : _bodyStatsRetryMinutes.last;
+    _bodyStatsFailures++;
+    final retry = Timer(Duration(minutes: minutes), ref.invalidateSelf);
     ref.onDispose(retry.cancel);
     return null;
   }
