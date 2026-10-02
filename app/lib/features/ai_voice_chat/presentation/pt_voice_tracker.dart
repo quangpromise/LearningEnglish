@@ -33,6 +33,13 @@ class PtVoiceTracker extends ChangeNotifier {
   /// Giong AI cua Gemini Live: PCM 16-bit mono 24 kHz.
   static const _aiSamplesPerSecond = 24000;
 
+  /// So byte PCM cua 1 [window].
+  static final _windowBytes =
+      _aiSamplesPerSecond *
+      2 *
+      window.inMicroseconds ~/
+      Duration.microsecondsPerSecond;
+
   /// Muc am mic 0..1 (vong mic khi Nghe).
   final micLevel = ValueNotifier<double>(0);
 
@@ -43,9 +50,13 @@ class PtVoiceTracker extends ChangeNotifier {
   PtVoiceState _display = PtVoiceState.idle;
   bool _ticking = false;
 
-  // Avatar: moc bat dau phat, muc am tung [window], server da het luot chua.
+  // Avatar: moc bat dau phat, do dai am thanh da nhan (ca khoang lang), muc
+  // am tung [window] (phan le cua goi cuoi cho goi sau), da het luot chua.
   Duration? _avatarFrom;
+  Duration _avatarLength = Duration.zero;
+  bool _avatarStarted = false;
   final _avatarLevels = <double>[];
+  Uint8List _carry = Uint8List(0);
   bool _avatarTurnOver = false;
 
   // Loa: cau tra loi sap phat (Nghi toi khi phat) va muc am lan phat toi.
@@ -71,6 +82,7 @@ class PtVoiceTracker extends ChangeNotifier {
       case VoiceChatState.idle:
         // Het luot / ket noi dong: khong con goi am thanh nao nua.
         _avatarTurnOver = true;
+        _flushCarry();
       case VoiceChatState.thinking:
         break;
     }
@@ -90,27 +102,64 @@ class PtVoiceTracker extends ChangeNotifier {
     final start = at + avatarDelay;
     final from = _avatarFrom;
     if (from == null) {
+      _clearAvatar();
       _avatarFrom = start;
-      _avatarLevels.clear();
       _avatarTurnOver = false;
-    } else {
+    } else if (start > from + _avatarLength) {
       // Server cham hon thoi gian thuc: avatar im cho goi moi.
-      final queuedEnd = from + window * _avatarLevels.length;
-      if (start > queuedEnd) {
-        final gap = (start - queuedEnd).inMicroseconds ~/ window.inMicroseconds;
-        _avatarLevels.addAll(List.filled(gap, 0.0));
+      _flushCarry();
+      _avatarLength = start - from;
+      final windows = _avatarLength.inMicroseconds ~/ window.inMicroseconds;
+      while (_avatarLevels.length < windows) {
+        _avatarLevels.add(0);
       }
     }
-    _avatarLevels.addAll(
-      pcm16Envelope(pcm, samplesPerSecond: _aiSamplesPerSecond, window: window),
+    // Do dai theo dung so mau (goi nho khong bi lam tron len 50 ms).
+    _avatarLength += Duration(
+      microseconds:
+          pcm.length ~/
+          2 *
+          Duration.microsecondsPerSecond ~/
+          _aiSamplesPerSecond,
     );
+    _appendLevels(pcm);
+    if (at >= (from ?? start)) _avatarStarted = true;
     _update();
   }
 
   /// Server bao het am thanh cua luot.
   void onTurnAudioEnd() {
     _avatarTurnOver = true;
+    _flushCarry();
     _update();
+  }
+
+  /// Them muc am tung [window] tron; phan le giu lai cho goi sau.
+  void _appendLevels(Uint8List pcm) {
+    final data = _carry.isEmpty ? pcm : Uint8List.fromList([..._carry, ...pcm]);
+    var offset = 0;
+    while (data.length - offset >= _windowBytes) {
+      _avatarLevels.add(
+        pcm16Level(Uint8List.sublistView(data, offset, offset + _windowBytes)),
+      );
+      offset += _windowBytes;
+    }
+    _carry = Uint8List.fromList(Uint8List.sublistView(data, offset));
+  }
+
+  /// Het luot / co khoang lang: phan le thanh 1 o rieng.
+  void _flushCarry() {
+    if (_carry.isEmpty) return;
+    _avatarLevels.add(pcm16Level(_carry));
+    _carry = Uint8List(0);
+  }
+
+  void _clearAvatar() {
+    _avatarFrom = null;
+    _avatarLength = Duration.zero;
+    _avatarStarted = false;
+    _avatarLevels.clear();
+    _carry = Uint8List(0);
   }
 
   /// Loa sap phat cau tra loi ([levels]: muc am tung [window]) - Nghi toi khi
@@ -144,16 +193,16 @@ class PtVoiceTracker extends ChangeNotifier {
   }
 
   /// Moi khung hinh khi [ticking]: muc am theo dung thoi diem dang phat;
-  /// avatar phat het phan da nhan (sau khi het luot) -> thoi Noi.
+  /// avatar bat dau noi -> Noi; phat het phan da nhan (sau khi het luot) ->
+  /// thoi Noi.
   void tick(Duration now) {
     var level = 0.0;
     final avatarFrom = _avatarFrom;
     if (avatarFrom != null) {
-      final end = avatarFrom + window * _avatarLevels.length;
-      if (_avatarTurnOver && now >= end) {
-        _avatarFrom = null;
-        _avatarLevels.clear();
+      if (_avatarTurnOver && now >= avatarFrom + _avatarLength) {
+        _clearAvatar();
       } else {
+        if (now >= avatarFrom) _avatarStarted = true;
         level = _levelAt(_avatarLevels, now - avatarFrom);
       }
     }
@@ -176,18 +225,18 @@ class PtVoiceTracker extends ChangeNotifier {
   }
 
   void _stopSpeaking() {
-    _avatarFrom = null;
-    _avatarLevels.clear();
+    _clearAvatar();
     _replyQueued = false;
     _queuedLevels = null;
     _playerFrom = null;
   }
 
   void _update() {
-    // Nghe lai cau cu trong luc cho cau tra loi moi: van la Nghi.
-    final speaking =
-        _avatarFrom != null ||
-        (_playerFrom != null && _client == VoiceChatState.idle);
+    // Avatar: Noi tu luc no that su bat dau. Loa: nghe lai cau cu trong luc
+    // cho cau tra loi moi van la Nghi.
+    final playerSpeaking =
+        _playerFrom != null && _client == VoiceChatState.idle;
+    final speaking = (_avatarFrom != null && _avatarStarted) || playerSpeaking;
     final next = switch (_client) {
       VoiceChatState.error => PtVoiceState.error,
       VoiceChatState.connecting => PtVoiceState.connecting,
@@ -201,7 +250,8 @@ class PtVoiceTracker extends ChangeNotifier {
             ? PtVoiceState.thinking
             : PtVoiceState.idle,
     };
-    final ticking = _avatarFrom != null || _playerFrom != null;
+    // Ticker chi chay khi avatar dang / sap phat hoac loa dang la "Noi".
+    final ticking = _avatarFrom != null || playerSpeaking;
     if (next != PtVoiceState.speaking) aiLevel.value = 0;
     if (next == _display && ticking == _ticking) return;
     _display = next;

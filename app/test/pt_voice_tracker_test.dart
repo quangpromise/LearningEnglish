@@ -53,12 +53,33 @@ void main() {
       delayed.onClientState(VoiceChatState.thinking);
       delayed.onAiChunk(_voice(200), at: _ms(0), avatarPlays: true);
       delayed.onTurnAudioEnd();
+      // Ticker van chay de biet luc avatar bat dau.
+      expect(delayed.ticking, isTrue);
       delayed.tick(_ms(300));
+      expect(delayed.display, PtVoiceState.thinking);
       expect(delayed.aiLevel.value, 0);
       delayed.tick(_ms(450));
+      expect(delayed.display, PtVoiceState.speaking);
       expect(delayed.aiLevel.value, closeTo(0.88, 0.01));
       delayed.tick(_ms(601));
       expect(delayed.display, PtVoiceState.thinking);
+    });
+
+    test('small chunks: speaking ends when the audio has played', () {
+      t.onClientState(VoiceChatState.thinking);
+      // 3 s am thanh trong 75 goi 40 ms, server nhanh gap 4.
+      for (var i = 0; i < 75; i++) {
+        t.onAiChunk(_voice(40), at: _ms(10 * i), avatarPlays: true);
+      }
+      t.onTurnAudioEnd();
+      t.onClientState(VoiceChatState.idle);
+      t.tick(_ms(1500));
+      expect(t.aiLevel.value, closeTo(0.88, 0.01));
+      t.tick(_ms(2990));
+      expect(t.display, PtVoiceState.speaking);
+      expect(t.aiLevel.value, closeTo(0.88, 0.01));
+      t.tick(_ms(3001));
+      expect(t.display, PtVoiceState.idle);
     });
 
     test('a server slower than real time leaves silent gaps', () {
@@ -159,6 +180,8 @@ void main() {
       t.queueReplay(const [0.4]);
       t.onPlayer(playing: true, at: _ms(200));
       expect(t.display, PtVoiceState.thinking);
+      // Khong hien la Noi -> khong chay ticker moi khung hinh.
+      expect(t.ticking, isFalse);
     });
   });
 

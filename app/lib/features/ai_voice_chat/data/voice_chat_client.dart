@@ -168,6 +168,7 @@ class VoiceChatClient implements VoiceChatSession {
       _emit(VoiceChatState.error);
       throw Exception('Microphone permission denied');
     }
+    if (_disposed) return;
 
     _emit(VoiceChatState.connecting);
     final uri = Uri.parse(
@@ -186,6 +187,7 @@ class VoiceChatClient implements VoiceChatSession {
       },
       onError: (Object e) {
         lastError = 'Server connection error: $e';
+        _dropChannel(channel);
         unawaited(_stopMic());
         _emit(VoiceChatState.error);
       },
@@ -200,9 +202,15 @@ class VoiceChatClient implements VoiceChatSession {
         } else {
           _emit(VoiceChatState.idle);
         }
+        _dropChannel(channel);
       },
     );
-    await channel.ready;
+    try {
+      await channel.ready;
+    } catch (_) {
+      _dropChannel(channel);
+      rethrow;
+    }
     if (_disposed) return;
 
     final micStream = await _recorder.startStream(
@@ -216,8 +224,9 @@ class VoiceChatClient implements VoiceChatSession {
       _channel?.sink.add(chunk);
       _micLevelController.add(pcm16Level(chunk));
     });
-    // Man hinh dong trong luc mo mic: dung lai ngay.
-    if (_disposed) {
+    // Man hinh dong / ket noi chet trong luc mo mic: dung lai ngay, khong
+    // bao 'listening' de len 'error'.
+    if (_disposed || !identical(_channel, channel)) {
       await _stopMic();
       return;
     }
@@ -251,18 +260,35 @@ class VoiceChatClient implements VoiceChatSession {
     if (!_stateController.isClosed) _stateController.add(state);
   }
 
+  /// Bo [channel] neu no van la ket noi hien tai (ket noi cu dong muon khong
+  /// duoc xoa ket noi moi).
+  void _dropChannel(WebSocketChannel channel) {
+    if (identical(_channel, channel)) _channel = null;
+  }
+
   @override
   void dispose() {
     _disposed = true;
-    // Dong stream SAU khi stop() xong: stop() con bao 'idle' - dong truoc thi
-    // lan bao do nem "Cannot add new events after calling close".
-    unawaited(
-      stop().catchError((Object _) {}).whenComplete(() {
-        _stateController.close();
-        _audioController.close();
-        _micLevelController.close();
-        _recorder.dispose();
-      }),
-    );
+    unawaited(_shutdown());
+  }
+
+  /// Dung mic va giai phong recorder ngay; socket chi duoc gui lenh dong,
+  /// KHONG cho dong xong (ket noi chua mo xong co the khong bao gio dong
+  /// xong); roi dong cac stream - moi lan bao trang thai sau do bi bo qua.
+  Future<void> _shutdown() async {
+    await _stopMic();
+    try {
+      await _recorder.dispose();
+    } catch (_) {
+      // Bo qua - dang dong man.
+    }
+    final channel = _channel;
+    _channel = null;
+    if (channel != null) {
+      unawaited(channel.sink.close().catchError((Object _) {}));
+    }
+    _stateController.close();
+    _audioController.close();
+    _micLevelController.close();
   }
 }

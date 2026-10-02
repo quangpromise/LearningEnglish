@@ -163,6 +163,7 @@ class GeminiLiveDirectClient implements VoiceChatSession {
       _emit(VoiceChatState.error);
       throw Exception('Microphone permission denied');
     }
+    if (_disposed) return;
 
     // Chi mo ket noi moi lan dau (hoac sau khi loi/stop() dat _channel ve
     // null) - cac luot noi tiep theo trong cung 1 phien chat tai su dung
@@ -176,7 +177,43 @@ class GeminiLiveDirectClient implements VoiceChatSession {
       );
       final channel = WebSocketChannel.connect(uri);
       _channel = channel;
-      await channel.ready;
+      // Nghe NGAY, truoc ready: ket noi hong ma khong ai nghe thi
+      // sink.close() treo mai (web_socket_channel 3.0.3).
+      channel.stream.listen(
+        _handleServerMessage,
+        onError: (Object e) {
+          lastError = 'Gemini Live connection error: $e';
+          _dropChannel(channel);
+          unawaited(_stopMic());
+          _emit(VoiceChatState.error);
+        },
+        onDone: () {
+          // Ket noi dong giua luc dang noi: thoi thu mic.
+          unawaited(_stopMic());
+          // Neu server tu dong dong ket noi (vd sai model, sai API key, het
+          // quota) ma khong phai do nguoi dung bam dung, closeCode se khac
+          // 1000 (normal closure) - phai bao loi ro rang thay vi im lang tro
+          // ve idle, neu khong nguoi dung se tuong minh dang noi ma "khong ai
+          // phan hoi" trong khi thuc ra ket noi da chet tu truoc.
+          final code = channel.closeCode;
+          if (code != null && code != 1000) {
+            lastError =
+                'Gemini Live closed the connection (code $code'
+                '${channel.closeReason != null ? ": ${channel.closeReason}" : ""})';
+            _emit(VoiceChatState.error);
+          } else {
+            _emit(VoiceChatState.idle);
+          }
+          _dropChannel(channel);
+        },
+      );
+      try {
+        await channel.ready;
+      } catch (_) {
+        _dropChannel(channel);
+        rethrow;
+      }
+      if (_disposed) return;
 
       channel.sink.add(
         jsonEncode({
@@ -215,39 +252,14 @@ class GeminiLiveDirectClient implements VoiceChatSession {
           },
         }),
       );
-
-      channel.stream.listen(
-        _handleServerMessage,
-        onError: (Object e) {
-          lastError = 'Gemini Live connection error: $e';
-          unawaited(_stopMic());
-          _emit(VoiceChatState.error);
-        },
-        onDone: () {
-          // Ket noi dong giua luc dang noi: thoi thu mic.
-          unawaited(_stopMic());
-          // Neu server tu dong dong ket noi (vd sai model, sai API key, het
-          // quota) ma khong phai do nguoi dung bam dung, closeCode se khac
-          // 1000 (normal closure) - phai bao loi ro rang thay vi im lang tro
-          // ve idle, neu khong nguoi dung se tuong minh dang noi ma "khong ai
-          // phan hoi" trong khi thuc ra ket noi da chet tu truoc.
-          final code = channel.closeCode;
-          if (code != null && code != 1000) {
-            lastError =
-                'Gemini Live closed the connection (code $code'
-                '${channel.closeReason != null ? ": ${channel.closeReason}" : ""})';
-            _emit(VoiceChatState.error);
-          } else {
-            _emit(VoiceChatState.idle);
-          }
-          _channel = null;
-        },
-      );
     }
 
+    // Ket noi vua dong (loi / server dong) truoc khi kip bat dau luot.
+    final live = _channel;
+    if (live == null) return;
     // Bao AI biet nguoi dung bat dau 1 luot noi moi - bat buoc phai gui
     // truoc audio vi automaticActivityDetection da bi tat o tren.
-    _channel!.sink.add(
+    live.sink.add(
       jsonEncode({
         'realtimeInput': {'activityStart': <String, dynamic>{}},
       }),
@@ -261,8 +273,9 @@ class GeminiLiveDirectClient implements VoiceChatSession {
         numChannels: 1,
       ),
     );
-    // Man hinh dong trong luc mo mic: dung lai ngay.
-    if (_disposed) {
+    // Man hinh dong / ket noi chet trong luc mo mic: dung lai ngay, khong
+    // bao 'listening' de len 'error'.
+    if (_disposed || !identical(_channel, live)) {
       await _stopMic();
       return;
     }
@@ -455,21 +468,38 @@ class GeminiLiveDirectClient implements VoiceChatSession {
     if (!_stateController.isClosed) _stateController.add(state);
   }
 
+  /// Bo [channel] neu no van la ket noi hien tai (ket noi cu dong muon khong
+  /// duoc xoa ket noi moi).
+  void _dropChannel(WebSocketChannel channel) {
+    if (identical(_channel, channel)) _channel = null;
+  }
+
   @override
   void dispose() {
     _disposed = true;
-    // Dong stream SAU khi stop() xong: stop() con bao 'idle' - dong truoc thi
-    // lan bao do nem "Cannot add new events after calling close".
-    unawaited(
-      stop().catchError((Object _) {}).whenComplete(() {
-        _stateController.close();
-        _audioController.close();
-        _transcriptController.close();
-        _liveAudioController.close();
-        _turnAudioEndController.close();
-        _micLevelController.close();
-        _recorder.dispose();
-      }),
-    );
+    unawaited(_shutdown());
+  }
+
+  /// Dung mic va giai phong recorder ngay; socket chi duoc gui lenh dong,
+  /// KHONG cho dong xong (ket noi chua mo xong co the khong bao gio dong
+  /// xong); roi dong cac stream - moi lan bao trang thai sau do bi bo qua.
+  Future<void> _shutdown() async {
+    await _stopMic();
+    try {
+      await _recorder.dispose();
+    } catch (_) {
+      // Bo qua - dang dong man.
+    }
+    final channel = _channel;
+    _channel = null;
+    if (channel != null) {
+      unawaited(channel.sink.close().catchError((Object _) {}));
+    }
+    _stateController.close();
+    _audioController.close();
+    _transcriptController.close();
+    _liveAudioController.close();
+    _turnAudioEndController.close();
+    _micLevelController.close();
   }
 }

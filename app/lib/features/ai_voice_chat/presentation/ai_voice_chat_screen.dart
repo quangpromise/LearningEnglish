@@ -312,9 +312,8 @@ class _AiVoiceChatScreenState extends ConsumerState<AiVoiceChatScreen>
           GtHaptics.micStarted(this);
           // Nguoi dung bat dau noi (ke ca noi chen): dung ngay avatar va loa.
           if (kUseAnamAvatar) _interruptActiveAvatar();
-          if (_player.state == ap.PlayerState.playing) {
-            unawaited(_player.stop().catchError((Object _) {}));
-          }
+          // Dung ca cau dang chuan bi phat (play() chua toi 'playing').
+          unawaited(_player.stop().catchError((Object _) {}));
         } else {
           GtHaptics.micStopped(this);
         }
