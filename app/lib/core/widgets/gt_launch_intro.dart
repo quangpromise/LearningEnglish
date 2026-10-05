@@ -56,6 +56,10 @@ class _GtLaunchIntroGateState extends ConsumerState<GtLaunchIntroGate> {
   bool _holding = false;
   bool _precaching = false;
   Timer? _holdTimer;
+
+  /// Bo nho may cham / treo: sau [_kPickTimeout] chieu ban day du.
+  Timer? _pickTimer;
+  static const _kPickTimeout = Duration(milliseconds: 400);
   static const _kHoldFirstFrame = Duration(milliseconds: 600);
 
   @override
@@ -88,28 +92,34 @@ class _GtLaunchIntroGateState extends ConsumerState<GtLaunchIntroGate> {
 
   @override
   void dispose() {
+    _pickTimer?.cancel();
     _releaseFirstFrame();
     super.dispose();
   }
 
-  Future<void> _pick() async {
+  void _pick() {
     final build = widget.currentBuild ?? Env.buildSha;
-    var variant = LaunchIntroVariant.full;
-    try {
-      // Bo nho may treo thi khong de man navy dung mai: chieu ban day du.
-      final prefs = await SharedPreferences.getInstance().timeout(
-        const Duration(milliseconds: 400),
-      );
-      variant = launchIntroVariant(
-        seenBuild: prefs.getString(kLaunchIntroSeenBuildKey),
-        currentBuild: build,
-      );
-      // Ghi ngay khi bat dau chieu: bo qua giua chung van tinh la da xem.
-      unawaited(prefs.setString(kLaunchIntroSeenBuildKey, build));
-    } catch (_) {
+    _pickTimer = Timer(_kPickTimeout, () => _show(LaunchIntroVariant.full));
+    SharedPreferences.getInstance().then(
+      (prefs) {
+        _show(
+          launchIntroVariant(
+            seenBuild: prefs.getString(kLaunchIntroSeenBuildKey),
+            currentBuild: build,
+          ),
+        );
+        // Ghi ngay khi bat dau chieu: bo qua giua chung van tinh la da xem.
+        unawaited(prefs.setString(kLaunchIntroSeenBuildKey, build));
+      },
       // Khong doc duoc: chieu ban day du.
-    }
-    if (mounted) setState(() => _variant = variant);
+      onError: (Object _) => _show(LaunchIntroVariant.full),
+    );
+  }
+
+  void _show(LaunchIntroVariant variant) {
+    _pickTimer?.cancel();
+    if (!mounted || _variant != null) return;
+    setState(() => _variant = variant);
   }
 
   void _finish() {
@@ -142,7 +152,7 @@ class GtLaunchIntro extends StatefulWidget {
 }
 
 class _GtLaunchIntroState extends State<GtLaunchIntro>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late final Ticker _ticker;
   final ValueNotifier<double> _t = ValueNotifier(0);
   LaunchIntroTimeline? _tl;
@@ -151,9 +161,6 @@ class _GtLaunchIntroState extends State<GtLaunchIntro>
   bool _finished = false;
   bool _measured = false;
 
-  /// Moc khung truoc - app vao nen giua chung thi dong ho nhay coc.
-  double _lastT = 0;
-
   /// Vong Daily Rings (toa do cua lop phu); null = khong bay, chi mo di.
   Rect? _target;
 
@@ -161,6 +168,14 @@ class _GtLaunchIntroState extends State<GtLaunchIntro>
   void initState() {
     super.initState();
     _ticker = createTicker(_tick);
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  /// App vao nen giua chung: khong rung bu luc mo lai (intro xong luon vi
+  /// dong ho da qua moc).
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) _buzzed = true;
   }
 
   @override
@@ -186,9 +201,7 @@ class _GtLaunchIntroState extends State<GtLaunchIntro>
     final tl = _tl!;
     final t = elapsed.inMicroseconds / 1000;
     final skipAt = _skipAt;
-    // App vao nen roi quay lai: khong rung bu luc mo lai, cho xong luon.
-    if (t - _lastT > 400) _buzzed = true;
-    _lastT = t;
+
     if (!_buzzed && skipAt == null && t >= tl.hapticAtMs) {
       _buzzed = true;
       GtHaptics.play(GtHapticEvent.launchRing);
@@ -237,6 +250,7 @@ class _GtLaunchIntroState extends State<GtLaunchIntro>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _ticker.dispose();
     _t.dispose();
     super.dispose();
