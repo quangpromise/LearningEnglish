@@ -114,11 +114,14 @@ void main() {
     tester,
   ) async {
     await pump(tester);
-    await tester.scrollUntilVisible(
-      find.text('Giới thiệu'),
-      300,
-      scrollable: find.byType(Scrollable).first,
-    );
+    await tester.drag(find.byType(ListView).first, const Offset(0, -3000));
+    await tester.pumpAndSettle();
+    // The Nhac nho phia tren tai xong co the cao them, day hang xuong duoi
+    // man: dua hang vao giua man lan nua roi moi cham.
+    final about = find.text('Giới thiệu', skipOffstage: false);
+    await tester.ensureVisible(about);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(about);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Giới thiệu'));
     await tester.pumpAndSettle();
