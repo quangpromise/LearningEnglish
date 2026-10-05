@@ -71,3 +71,20 @@ Bậc C1 của lộ trình tiếng Anh gồm các từ học thuật có trong N
 - Giấy phép: Creative Commons Attribution-ShareAlike 4.0 (https://creativecommons.org/licenses/by-sa/4.0/).
 - Danh sách headword được lưu **trong một file riêng** là `scripts/english_path/data/nawl_headwords.txt`, và file đó giữ nguyên giấy phép CC BY-SA 4.0.
 
+## Âm thanh giao diện (SFX)
+
+Âm báo giờ nghỉ trong buổi tập (#131). Cả hai đều **CC0 1.0**
+(https://creativecommons.org/publicdomain/zero/1.0/): dùng thương mại được,
+không bắt buộc ghi công. Ghi lại nguồn theo quy ước của dự án. Chi tiết và lý
+do chọn: [docs/research-rest-timer-sound.md](docs/research-rest-timer-sound.md).
+Tạo lại bằng `python scripts/make_rest_sounds.py`.
+
+- **Hết giờ nghỉ** (`app/assets/audio/rest_end_bell.wav`): "Pleasing Bell Sound
+  Effect". Produced by Julie Damsgaard/Spring Spring/Spring Enterprises @
+  https://spring-enterprises.neocities.org. Nguồn:
+  https://opengameart.org/content/pleasing-bell-sound-effect. Đã chỉnh sửa: trộn
+  mono, fade-out, chuẩn hoá âm lượng.
+- **Tiếng gõ 3-2-1** (`app/assets/audio/rest_tick.wav`): woodblock
+  `wood_click_pp_rr1.wav` của VCSL (Versilian Community Sample Library), Versilian
+  Studios LLC. Nguồn: https://github.com/sgossner/VCSL. Đã chỉnh sửa: cắt ngắn,
+  trộn mono, fade-out, chuẩn hoá âm lượng.
