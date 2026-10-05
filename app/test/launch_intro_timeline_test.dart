@@ -82,6 +82,9 @@ void main() {
       final tl = LaunchIntroTimeline(full, reduce: true);
       expect(tl.arc(2, 0), 1);
       expect(tl.namesOpacity(0), 1);
+      // Nen + vien sang chi mo nhanh 120 ms, khong bat phat.
+      expect(tl.ramp(60), closeTo(0.5, 0.01));
+      expect(tl.ramp(120), 1);
       expect(tl.lift(0), 1);
       expect(tl.overlayOpacity(790), 1);
       expect(tl.overlayOpacity(860), closeTo(0.5, 0.01));

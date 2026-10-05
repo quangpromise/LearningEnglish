@@ -231,6 +231,9 @@ void main() {
       ),
     );
     await tester.pump();
+    // Giu khung dau toi khi logo giai ma xong (trong test: het 600 ms).
+    expect(find.text('Quang Promise'), findsNothing);
+    await tester.pump(const Duration(milliseconds: 650));
     await tester.pump();
     expect(find.text('Quang Promise'), findsOneWidget);
     expect(container.read(launchIntroActiveProvider), isTrue);
@@ -250,6 +253,7 @@ void main() {
       ProviderScope(child: _app(const GtLaunchIntroGate(currentBuild: 'b1'))),
     );
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 650));
     await tester.pump();
     expect(find.byType(GtLaunchIntro), findsOneWidget);
     expect(find.text('Quang Promise'), findsNothing);

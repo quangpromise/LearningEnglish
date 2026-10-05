@@ -83,17 +83,20 @@ class _GtLaunchIntroGateState extends ConsumerState<GtLaunchIntroGate> {
     ).whenComplete(_releaseFirstFrame);
   }
 
-  void _releaseFirstFrame() {
+  void _releaseFirstFrame({bool disposing = false}) {
     if (!_holding) return;
     _holding = false;
     _holdTimer?.cancel();
     WidgetsBinding.instance.allowFirstFrame();
+    // Giao ban intro tu khung hien dau tien: dong ho intro bat dau dung luc
+    // nguoi dung thay (khong chay ngam sau man cho he thong).
+    if (!disposing && mounted) setState(() {});
   }
 
   @override
   void dispose() {
     _pickTimer?.cancel();
-    _releaseFirstFrame();
+    _releaseFirstFrame(disposing: true);
     super.dispose();
   }
 
@@ -131,7 +134,7 @@ class _GtLaunchIntroGateState extends ConsumerState<GtLaunchIntroGate> {
   @override
   Widget build(BuildContext context) {
     if (_done) return const SizedBox.shrink();
-    return GtLaunchIntro(variant: _variant, onDone: _finish);
+    return GtLaunchIntro(variant: _holding ? null : _variant, onDone: _finish);
   }
 }
 

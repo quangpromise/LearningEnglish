@@ -103,7 +103,7 @@ class LaunchIntroTimeline {
 
   /// Nen + vien sang hien dan tu nen navy phang cua man cho he thong (khung
   /// dau khop han man cho).
-  double ramp(double t) => reduce ? 1 : _c(_at(0, _fNormal, t));
+  double ramp(double t) => reduce ? _c(t / 120) : _c(_at(0, _fNormal, t));
 
   /// Vi tri vet sang quet qua logo (0 -> 1).
   double sweep(double t) => reduce ? 0 : _at(0, _sweep, t);
