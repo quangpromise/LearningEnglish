@@ -130,6 +130,12 @@ void main() {
     expect(find.text('Tùng Micky'), findsOneWidget);
     // Build tai cho (khong co SHA cua CI).
     expect(find.text('dev'), findsOneWidget);
+    // Nut giay phep o cuoi trang Gioi thieu: cuon trong trang.
+    await tester.dragUntilVisible(
+      find.text('Giấy phép mã nguồn mở'),
+      find.byType(Scrollable).last,
+      const Offset(0, -200),
+    );
     expect(find.text('Giấy phép mã nguồn mở'), findsOneWidget);
   });
 
