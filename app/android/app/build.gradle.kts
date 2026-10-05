@@ -80,6 +80,14 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            // Chi dong goi thu vien native cho dien thoai that (ARM): .so x86_64
+            // cua plugin (libxeno_native.so, nhieu kha nang cua ML Kit pose) tung
+            // lot vao APK ~11MB (build #466, issue #134). Chi co tac dung vi
+            // gradle.properties dat disable-abi-filtering=true (Flutter khong
+            // con tu them x86_64). Chi ban release - ban debug khong loc.
+            ndk {
+                abiFilters += listOf("armeabi-v7a", "arm64-v8a")
+            }
         }
     }
 }
