@@ -153,10 +153,11 @@ jobs:
         # lib/arm64-v8a 39.5, lib/armeabi-v7a 29.4, unified_model.pb 27.9 (avatar
         # du phong, da dong y tu 09-13), tutorial_audio 23.5 (giong Kokoro
         # offline, MP3 40kbps - tinh nang moi), mlkit_pose 11.8 (camera dem rep -
-        # tinh nang moi), lib/x86_64 11.1 (THUA - da bo bang abiFilters trong
-        # android/app/build.gradle.kts). Con khoang 146MB. Cho giam tiep (bo
-        # 32-bit ~29MB, model ML Kit "accurate" ~6MB, libapp.so ~14MB/ABI): issue
-        # #134 - giam xong thi ha nguong lai.
+        # tinh nang moi), lib/x86_64 11.1 (THUA - da bo: abiFilters cua ban
+        # release + disable-abi-filtering trong gradle.properties; buoc nay CHAN
+        # neu con lib/x86*). Con khoang 146MB. Cho giam tiep (bo 32-bit ~29MB,
+        # model ML Kit "accurate" ~6MB, libapp.so ~14MB/ABI): issue #134 - giam
+        # xong thi ha nguong lai.
         #
         # Bang "file lon nhat" + tong theo thu muc in o dau buoc nay MOI lan
         # build (ke ca khi bi chan) - biet ngay thu gi lam phinh app.
@@ -179,6 +180,11 @@ jobs:
           print('=== Tong theo thu muc (MB trong APK) ===')
           for key, size in groups.most_common(15):
               print(f'{size / 1048576:7.2f}  {key}')
+          # Dien thoai that deu la ARM; .so x86 la thua (issue #134).
+          x86 = [i.filename for i in infos if i.filename.startswith('lib/x86')]
+          if x86:
+              print(f'::error::APK con {len(x86)} thu vien x86 (vd {x86[0]}) - kiem tra abiFilters / disable-abi-filtering.')
+              raise SystemExit(1)
           PY
           UNIVERSAL_WARN_MB=150
           UNIVERSAL_MAX_MB=165
