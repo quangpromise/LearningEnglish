@@ -219,8 +219,11 @@ class _GtLaunchIntroState extends State<GtLaunchIntro>
     final skipAt = _skipAt;
     final w = size.width;
     final h = size.height;
-    // 1dp cua man tham chieu 400dp (ban xem thu) - chu theo be ngang man.
-    final u = w / 400;
+    // 1dp cua man tham chieu 400 x 860dp (ban xem thu): chu theo canh han che
+    // hon - man rong (may tinh bang, xoay ngang) khong lam chu to qua kho.
+    final u = math.min(w / 400, h / 860);
+    // Logo = man cho he thong (192dp); man thap (xoay ngang) thi nho lai.
+    final disc = math.min(_kDisc, h * 0.3);
     final overlay = tl == null
         ? 1.0
         : skipAt != null
@@ -235,8 +238,8 @@ class _GtLaunchIntroState extends State<GtLaunchIntro>
     // Vong: tu quanh logo bay toi vong Daily Rings (dung kich thuoc, net dam
     // dan) - GtRingsPainter: ban kinh 64, net 14 trong khung 164.
     final fly = skipAt == null && _target != null ? tl!.flight(t) : 0.0;
-    final ringR = _kDisc / 2 * 1.225 * push;
-    final ringW = _kDisc / 2 * 0.125 * push;
+    final ringR = disc / 2 * 1.225 * push;
+    final ringW = disc / 2 * 0.125 * push;
     final target = _target;
     final k = target == null ? 1.0 : target.shortestSide / 164;
     final center = target == null
@@ -283,10 +286,10 @@ class _GtLaunchIntroState extends State<GtLaunchIntro>
               ),
             ),
           Positioned(
-            left: mark.dx - _kDisc / 2,
-            top: mark.dy - _kDisc / 2,
-            width: _kDisc,
-            height: _kDisc,
+            left: mark.dx - disc / 2,
+            top: mark.dy - disc / 2,
+            width: disc,
+            height: disc,
             child: Opacity(
               opacity: content.clamp(0.0, 1.0),
               child: Transform.scale(
@@ -550,30 +553,33 @@ class _Wordmark extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const word = 'GymTalk';
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        for (var i = 0; i < word.length; i++)
-          Transform.translate(
-            offset: Offset(0, tl.letterY(i, t) * u),
-            child: Opacity(
-              opacity: tl.letterOpacity(i, t),
-              child: Text(
-                word[i],
-                textScaler: TextScaler.noScaling,
-                style: TextStyle(
-                  fontFamily: 'SpaceGrotesk',
-                  fontWeight: FontWeight.w700,
-                  fontSize: 48 * u,
-                  height: 1,
-                  letterSpacing: -1.4 * u,
-                  color: i < 3 ? tokens.tx : tokens.gold,
-                  decoration: TextDecoration.none,
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (var i = 0; i < word.length; i++)
+            Transform.translate(
+              offset: Offset(0, tl.letterY(i, t) * u),
+              child: Opacity(
+                opacity: tl.letterOpacity(i, t),
+                child: Text(
+                  word[i],
+                  textScaler: TextScaler.noScaling,
+                  style: TextStyle(
+                    fontFamily: 'SpaceGrotesk',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 48 * u,
+                    height: 1,
+                    letterSpacing: -1.4 * u,
+                    color: i < 3 ? tokens.tx : tokens.gold,
+                    decoration: TextDecoration.none,
+                  ),
                 ),
               ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -620,53 +626,57 @@ class _Credits extends StatelessWidget {
           ),
         ),
         SizedBox(height: 8 * u),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.baseline,
-          textBaseline: TextBaseline.alphabetic,
-          children: [
-            Transform.translate(
-              offset: Offset(tl.nameLX(t) * u, 0),
-              child: Opacity(
-                opacity: tl.namesOpacity(t),
-                child: Text(
-                  'Quang Promise',
-                  textScaler: TextScaler.noScaling,
-                  style: name,
-                ),
-              ),
-            ),
-            SizedBox(width: 10 * u),
-            Opacity(
-              opacity: tl.timesOpacity(t),
-              child: Transform.scale(
-                scale: tl.timesScale(t),
-                child: Text(
-                  '×',
-                  textScaler: TextScaler.noScaling,
-                  style: TextStyle(
-                    fontFamily: 'SpaceGrotesk',
-                    fontWeight: FontWeight.w500,
-                    fontSize: 20.8 * u,
-                    color: tokens.gold,
-                    decoration: TextDecoration.none,
+        // Ten dai / man hep: thu nho ca hang thay vi tran.
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Transform.translate(
+                offset: Offset(tl.nameLX(t) * u, 0),
+                child: Opacity(
+                  opacity: tl.namesOpacity(t),
+                  child: Text(
+                    'Quang Promise',
+                    textScaler: TextScaler.noScaling,
+                    style: name,
                   ),
                 ),
               ),
-            ),
-            SizedBox(width: 10 * u),
-            Transform.translate(
-              offset: Offset(tl.nameRX(t) * u, 0),
-              child: Opacity(
-                opacity: tl.nameROpacity(t),
-                child: Text(
-                  'Tùng Micky',
-                  textScaler: TextScaler.noScaling,
-                  style: name,
+              SizedBox(width: 10 * u),
+              Opacity(
+                opacity: tl.timesOpacity(t),
+                child: Transform.scale(
+                  scale: tl.timesScale(t),
+                  child: Text(
+                    '×',
+                    textScaler: TextScaler.noScaling,
+                    style: TextStyle(
+                      fontFamily: 'SpaceGrotesk',
+                      fontWeight: FontWeight.w500,
+                      fontSize: 20.8 * u,
+                      color: tokens.gold,
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ],
+              SizedBox(width: 10 * u),
+              Transform.translate(
+                offset: Offset(tl.nameRX(t) * u, 0),
+                child: Opacity(
+                  opacity: tl.nameROpacity(t),
+                  child: Text(
+                    'Tùng Micky',
+                    textScaler: TextScaler.noScaling,
+                    style: name,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
         SizedBox(height: 4 * u),
         CustomPaint(
