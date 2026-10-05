@@ -6056,6 +6056,11 @@ class AppStrings {
       AppLanguage.vi: 'Cấp độ từ vựng: CEFR-J Wordlist, Tono Laboratory (TUFS)',
       AppLanguage.en: 'Word levels: CEFR-J Wordlist, Tono Laboratory (TUFS)',
     },
+    'gt_about_credit_nawl': {
+      AppLanguage.vi: 'Từ học thuật C1: New Academic Word List (CC BY-SA 4.0)',
+      AppLanguage.en:
+          'C1 academic words: New Academic Word List (CC BY-SA 4.0)',
+    },
     'gt_about_credit_sentences': {
       AppLanguage.vi: 'Câu ví dụ: Tatoeba (CC BY 2.0 FR)',
       AppLanguage.en: 'Example sentences: Tatoeba (CC BY 2.0 FR)',

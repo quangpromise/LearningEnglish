@@ -24,7 +24,7 @@ void main() {
       expect(LaunchIntroTimeline(full).endMs, inInclusiveRange(2400, 2500));
       expect(LaunchIntroTimeline(short).endMs, inInclusiveRange(880, 960));
       expect(LaunchIntroTimeline(full, reduce: true).endMs, 920);
-      expect(LaunchIntroTimeline(short, reduce: true).endMs, 520);
+      expect(LaunchIntroTimeline(short, reduce: true).endMs, 920);
     });
 
     test('starts as the system splash left it: the logo alone', () {
@@ -34,6 +34,9 @@ void main() {
       expect(tl.letterOpacity(0, 0), 0);
       expect(tl.namesOpacity(0), 0);
       expect(tl.skyOpacity(0), 1);
+      // Nen phang + chua co vien sang, nhu man cho he thong.
+      expect(tl.ramp(0), 0);
+      expect(tl.ramp(400), greaterThan(0.99));
     });
 
     test('the arcs swirl in one after another, then the ring closes', () {
@@ -52,6 +55,7 @@ void main() {
       expect(LaunchIntroTimeline(full).hapticAtMs, 794);
       expect(LaunchIntroTimeline(short).hapticAtMs, 368);
       expect(LaunchIntroTimeline(full, reduce: true).hapticAtMs, 320);
+      expect(LaunchIntroTimeline(short, reduce: true).hapticAtMs, 320);
     });
 
     test('the full version brings GymTalk, then the authors, then leaves', () {

@@ -83,6 +83,21 @@ Future<void> _pump(WidgetTester tester, Widget child) async {
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
+  testWidgets('rings wait at 0 under the Launch Intro, then fill (#137)', (
+    tester,
+  ) async {
+    GtRingsCard card({required bool play}) => GtRingsCard(
+      play: play,
+      day: const DayProgress(workouts: 1, wordsReviewed: 5),
+      strip: List.filled(7, StreakCell.future),
+      date: DateTime(2026, 9, 24),
+    );
+    await _pump(tester, card(play: false));
+    expect(find.text('0%'), findsOneWidget);
+    await _pump(tester, card(play: true));
+    expect(find.text('50%'), findsOneWidget);
+  });
+
   testWidgets('rings card shows the overall % and the three goals', (
     tester,
   ) async {

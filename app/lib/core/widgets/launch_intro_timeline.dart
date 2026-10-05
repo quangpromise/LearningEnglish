@@ -78,8 +78,8 @@ class LaunchIntroTimeline {
   GtSpring get _push => hasWords ? _eSlow : _eNormal;
   double get _pushBy => hasWords ? 0.06 : 0.04;
 
-  /// Giam chuyen dong: thoi gian giu khung tinh truoc khi mo.
-  int get _holdMs => hasWords ? 800 : 400;
+  /// Giam chuyen dong: thoi gian giu khung tinh truoc khi mo (spec #135).
+  static const _holdMs = 800;
 
   /// Luc bat dau roi man (vong bay vao the Daily Rings).
   int get exitMs => hasWords ? 2100 : 600;
@@ -100,6 +100,10 @@ class LaunchIntroTimeline {
   static double _c(double x) => x.clamp(0.0, 1.0);
 
   // ----------------------------------------------------------- logo + vet sang
+
+  /// Nen + vien sang hien dan tu nen navy phang cua man cho he thong (khung
+  /// dau khop han man cho).
+  double ramp(double t) => reduce ? 1 : _c(_at(0, _fNormal, t));
 
   /// Vi tri vet sang quet qua logo (0 -> 1).
   double sweep(double t) => reduce ? 0 : _at(0, _sweep, t);

@@ -7,6 +7,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../config/app_credits.dart';
 import '../config/env.dart';
 import '../theme/gt_haptics.dart';
 import '../theme/gt_motion.dart';
@@ -22,8 +23,6 @@ final gtLaunchRingTarget = GlobalKey(debugLabel: 'launchRingTarget');
 
 /// Build da xem Launch Intro gan nhat (chon ban day du / ngan).
 const kLaunchIntroSeenBuildKey = 'launch_intro_seen_build';
-
-const _kLogoAsset = 'assets/icon/splash_logo.webp';
 
 // Mau rieng cua man khoi dong: nen navy + vien sang cam lay tu icon; khop man
 // cho he thong (android/.../values/colors.xml: splash_navy).
@@ -51,17 +50,56 @@ class _GtLaunchIntroGateState extends ConsumerState<GtLaunchIntroGate> {
   LaunchIntroVariant? _variant;
   bool _done = false;
 
+  /// Giu man cho he thong (chua gui khung Flutter dau) toi khi logo giai ma
+  /// xong - khong thi khung dau la dia navy trong, nhay 1-3 khung (review
+  /// #139). Toi da [_kHoldFirstFrame].
+  bool _holding = false;
+  bool _precaching = false;
+  Timer? _holdTimer;
+  static const _kHoldFirstFrame = Duration(milliseconds: 600);
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.deferFirstFrame();
+    _holding = true;
+    _holdTimer = Timer(_kHoldFirstFrame, _releaseFirstFrame);
     _pick();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_precaching) return;
+    _precaching = true;
+    precacheImage(
+      const AssetImage(kGtLogoAsset),
+      context,
+      onError: (_, _) {},
+    ).whenComplete(_releaseFirstFrame);
+  }
+
+  void _releaseFirstFrame() {
+    if (!_holding) return;
+    _holding = false;
+    _holdTimer?.cancel();
+    WidgetsBinding.instance.allowFirstFrame();
+  }
+
+  @override
+  void dispose() {
+    _releaseFirstFrame();
+    super.dispose();
   }
 
   Future<void> _pick() async {
     final build = widget.currentBuild ?? Env.buildSha;
     var variant = LaunchIntroVariant.full;
     try {
-      final prefs = await SharedPreferences.getInstance();
+      // Bo nho may treo thi khong de man navy dung mai: chieu ban day du.
+      final prefs = await SharedPreferences.getInstance().timeout(
+        const Duration(milliseconds: 400),
+      );
       variant = launchIntroVariant(
         seenBuild: prefs.getString(kLaunchIntroSeenBuildKey),
         currentBuild: build,
@@ -113,6 +151,9 @@ class _GtLaunchIntroState extends State<GtLaunchIntro>
   bool _finished = false;
   bool _measured = false;
 
+  /// Moc khung truoc - app vao nen giua chung thi dong ho nhay coc.
+  double _lastT = 0;
+
   /// Vong Daily Rings (toa do cua lop phu); null = khong bay, chi mo di.
   Rect? _target;
 
@@ -125,7 +166,6 @@ class _GtLaunchIntroState extends State<GtLaunchIntro>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    precacheImage(const AssetImage(_kLogoAsset), context, onError: (_, _) {});
     _maybeStart();
   }
 
@@ -146,6 +186,9 @@ class _GtLaunchIntroState extends State<GtLaunchIntro>
     final tl = _tl!;
     final t = elapsed.inMicroseconds / 1000;
     final skipAt = _skipAt;
+    // App vao nen roi quay lai: khong rung bu luc mo lai, cho xong luon.
+    if (t - _lastT > 400) _buzzed = true;
+    _lastT = t;
     if (!_buzzed && skipAt == null && t >= tl.hapticAtMs) {
       _buzzed = true;
       GtHaptics.play(GtHapticEvent.launchRing);
@@ -170,14 +213,25 @@ class _GtLaunchIntroState extends State<GtLaunchIntro>
     _skipAt = _t.value.round();
   }
 
-  /// Vong Daily Rings cua man Hom nay neu dang hien trong man hinh.
+  /// Vong Daily Rings cua man Hom nay neu dang that su hien: tab dang chon,
+  /// khong bi popup che (vd mo app tu thong bao) va nam trong man hinh.
   Rect? _measureTarget() {
-    final target = gtLaunchRingTarget.currentContext?.findRenderObject();
+    final targetContext = gtLaunchRingTarget.currentContext;
+    final target = targetContext?.findRenderObject();
     final self = context.findRenderObject();
-    if (target is! RenderBox || self is! RenderBox) return null;
+    if (targetContext == null || target is! RenderBox || self is! RenderBox) {
+      return null;
+    }
     if (!target.attached || !target.hasSize || !self.hasSize) return null;
-    final rect =
-        self.globalToLocal(target.localToGlobal(Offset.zero)) & target.size;
+    if (!(ModalRoute.isCurrentOf(targetContext) ?? true) ||
+        !TickerMode.valuesOf(targetContext).enabled) {
+      return null;
+    }
+    final global = MatrixUtils.transformRect(
+      target.getTransformTo(null),
+      Offset.zero & target.size,
+    );
+    final rect = global.shift(-self.localToGlobal(Offset.zero));
     return (Offset.zero & self.size).contains(rect.center) ? rect : null;
   }
 
@@ -191,20 +245,28 @@ class _GtLaunchIntroState extends State<GtLaunchIntro>
   @override
   Widget build(BuildContext context) {
     // Lop phu nam tren Navigator (MaterialApp.builder): tu cap Material de chu
-    // co kieu mac dinh.
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: _skip,
-      child: Material(
-        type: MaterialType.transparency,
-        child: Semantics(
-          container: true,
-          label: 'GymTalk',
-          child: ExcludeSemantics(
-            child: LayoutBuilder(
-              builder: (context, box) => ValueListenableBuilder<double>(
-                valueListenable: _t,
-                builder: (context, t, _) => _frame(context, box.biggest, t),
+    // co kieu mac dinh. Dang roi man / dang bo qua: cham di xuyen xuong app.
+    return ValueListenableBuilder<double>(
+      valueListenable: _t,
+      builder: (context, t, child) {
+        final tl = _tl;
+        final leaving = _skipAt != null || (tl != null && t >= tl.exitMs);
+        return IgnorePointer(ignoring: leaving, child: child);
+      },
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: _skip,
+        child: Material(
+          type: MaterialType.transparency,
+          child: Semantics(
+            container: true,
+            label: 'GymTalk',
+            child: ExcludeSemantics(
+              child: LayoutBuilder(
+                builder: (context, box) => ValueListenableBuilder<double>(
+                  valueListenable: _t,
+                  builder: (context, t, _) => _frame(context, box.biggest, t),
+                ),
               ),
             ),
           ),
@@ -222,8 +284,10 @@ class _GtLaunchIntroState extends State<GtLaunchIntro>
     // 1dp cua man tham chieu 400 x 860dp (ban xem thu): chu theo canh han che
     // hon - man rong (may tinh bang, xoay ngang) khong lam chu to qua kho.
     final u = math.min(w / 400, h / 860);
-    // Logo = man cho he thong (192dp); man thap (xoay ngang) thi nho lai.
-    final disc = math.min(_kDisc, h * 0.3);
+    // Logo = man cho he thong (192dp); chi nho lai khi xoay ngang.
+    final disc = w > h ? math.min(_kDisc, h * 0.3) : _kDisc;
+    // Nen + vien sang hien dan tu nen navy phang cua man cho.
+    final ramp = tl?.ramp(t) ?? 0;
     final overlay = tl == null
         ? 1.0
         : skipAt != null
@@ -237,7 +301,9 @@ class _GtLaunchIntroState extends State<GtLaunchIntro>
 
     // Vong: tu quanh logo bay toi vong Daily Rings (dung kich thuoc, net dam
     // dan) - GtRingsPainter: ban kinh 64, net 14 trong khung 164.
-    final fly = skipAt == null && _target != null ? tl!.flight(t) : 0.0;
+    final fly = _target == null
+        ? 0.0
+        : tl!.flight(skipAt == null ? t : math.min(t, skipAt.toDouble()));
     final ringR = disc / 2 * 1.225 * push;
     final ringW = disc / 2 * 0.125 * push;
     final target = _target;
@@ -255,13 +321,17 @@ class _GtLaunchIntroState extends State<GtLaunchIntro>
           Positioned.fill(
             child: Opacity(
               opacity: (tl?.skyOpacity(t) ?? 1).clamp(0.0, 1.0),
-              child: const DecoratedBox(
+              child: DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: RadialGradient(
-                    center: Alignment(0, -0.26),
+                    center: const Alignment(0, -0.26),
                     radius: 1.25,
-                    colors: [_navyHi, _navy, _navyLo],
-                    stops: [0, 0.46, 1],
+                    colors: [
+                      Color.lerp(_navy, _navyHi, ramp)!,
+                      _navy,
+                      Color.lerp(_navy, _navyLo, ramp)!,
+                    ],
+                    stops: const [0, 0.46, 1],
                   ),
                 ),
               ),
@@ -298,6 +368,7 @@ class _GtLaunchIntroState extends State<GtLaunchIntro>
                   sweep: tl?.sweep(t) ?? 0,
                   sweepOpacity: tl?.sweepOpacity(t) ?? 0,
                   rim: tl?.rim(t) ?? 0,
+                  show: ramp,
                 ),
               ),
             ),
@@ -363,15 +434,19 @@ class _Logo extends StatelessWidget {
     required this.sweep,
     required this.sweepOpacity,
     required this.rim,
+    required this.show,
   });
 
   final double sweep;
   final double sweepOpacity;
   final double rim;
 
+  /// Vien sang hien dan (0 = nhu man cho he thong: chua co vien).
+  final double show;
+
   @override
   Widget build(BuildContext context) {
-    final a = 0.35 + 0.55 * rim;
+    final a = (0.35 + 0.55 * rim) * show;
     return DecoratedBox(
       decoration: BoxDecoration(
         shape: BoxShape.circle,
@@ -394,7 +469,7 @@ class _Logo extends StatelessWidget {
             fit: StackFit.expand,
             children: [
               Image.asset(
-                _kLogoAsset,
+                kGtLogoAsset,
                 fit: BoxFit.cover,
                 gaplessPlayback: true,
                 errorBuilder: (_, _, _) => const SizedBox.shrink(),
@@ -639,7 +714,7 @@ class _Credits extends StatelessWidget {
                 child: Opacity(
                   opacity: tl.namesOpacity(t),
                   child: Text(
-                    'Quang Promise',
+                    kGtAuthors.$1,
                     textScaler: TextScaler.noScaling,
                     style: name,
                   ),
@@ -669,7 +744,7 @@ class _Credits extends StatelessWidget {
                 child: Opacity(
                   opacity: tl.nameROpacity(t),
                   child: Text(
-                    'Tùng Micky',
+                    kGtAuthors.$2,
                     textScaler: TextScaler.noScaling,
                     style: name,
                   ),

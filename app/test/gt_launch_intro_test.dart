@@ -8,34 +8,52 @@ import 'package:learn_english_music/core/widgets/gt_launch_intro.dart';
 import 'package:learn_english_music/core/widgets/launch_intro_timeline.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Man "Hom nay" gia ben duoi lop phu; [target] = vong Daily Rings 164dp.
-Widget _app(Widget intro, {bool reduce = false, bool target = false}) =>
-    MaterialApp(
-      theme: ThemeData(extensions: const [GtTokens.dark]),
-      home: Builder(
-        builder: (context) => MediaQuery(
-          data: MediaQuery.of(context).copyWith(disableAnimations: reduce),
-          child: Scaffold(
-            body: Stack(
-              children: [
-                const Center(child: Text('Hôm nay')),
-                if (target)
-                  Positioned(
-                    left: 20,
-                    top: 100,
-                    child: SizedBox(
-                      key: gtLaunchRingTarget,
-                      width: 164,
-                      height: 164,
-                    ),
-                  ),
-                Positioned.fill(child: intro),
-              ],
-            ),
-          ),
+/// Man "Hom nay" gia ben duoi lop phu; [target] = vong Daily Rings 164dp;
+/// [onAppTap] = cham vao app ben duoi.
+Widget _app(
+  Widget intro, {
+  bool reduce = false,
+  bool target = false,
+  VoidCallback? onAppTap,
+}) => MaterialApp(
+  theme: ThemeData(extensions: const [GtTokens.dark]),
+  home: Builder(
+    builder: (context) => MediaQuery(
+      data: MediaQuery.of(context).copyWith(disableAnimations: reduce),
+      child: Scaffold(
+        body: Stack(
+          children: [
+            const Center(child: Text('Hôm nay')),
+            if (onAppTap != null)
+              Positioned.fill(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: onAppTap,
+                ),
+              ),
+            if (target)
+              Positioned(
+                left: 20,
+                top: 100,
+                child: SizedBox(
+                  key: gtLaunchRingTarget,
+                  width: 164,
+                  height: 164,
+                ),
+              ),
+            Positioned.fill(child: intro),
+          ],
         ),
       ),
-    );
+    ),
+  ),
+);
+
+GtLaunchRingPainter _ring(WidgetTester tester) => tester
+    .widgetList<CustomPaint>(find.byType(CustomPaint))
+    .map((c) => c.painter)
+    .whereType<GtLaunchRingPainter>()
+    .single;
 
 double _opacityOf(WidgetTester tester, String text) => tester
     .widget<Opacity>(
@@ -71,12 +89,14 @@ void main() {
     VoidCallback onDone, {
     bool reduce = false,
     bool target = false,
+    VoidCallback? onAppTap,
   }) async {
     await tester.pumpWidget(
       _app(
         GtLaunchIntro(variant: variant, onDone: onDone),
         reduce: reduce,
         target: target,
+        onAppTap: onAppTap,
       ),
     );
     await tester.pump();
@@ -162,15 +182,39 @@ void main() {
     await start(tester, LaunchIntroVariant.full, () {}, target: true);
     await tester.pump(const Duration(milliseconds: 2150));
     await tester.pump(const Duration(milliseconds: 260));
-    final ring = tester
-        .widgetList<CustomPaint>(find.byType(CustomPaint))
-        .map((c) => c.painter)
-        .whereType<GtLaunchRingPainter>()
-        .single;
+    final ring = _ring(tester);
     // Tam + co vong Daily Rings (ban kinh 64 trong khung 164).
     expect(ring.center.dx, closeTo(20 + 82, 2));
     expect(ring.center.dy, closeTo(100 + 82, 2));
     expect(ring.radius, closeTo(64, 1));
+  });
+
+  testWidgets('no Daily Rings card on screen: the ring stays and fades', (
+    tester,
+  ) async {
+    await start(tester, LaunchIntroVariant.full, () {});
+    await tester.pump(const Duration(milliseconds: 2150));
+    final before = _ring(tester).center;
+    await tester.pump(const Duration(milliseconds: 260));
+    expect(_ring(tester).center, before);
+    expect(_ring(tester).opacity, lessThan(0.05));
+  });
+
+  testWidgets('while it leaves, taps go through to the app', (tester) async {
+    var appTaps = 0;
+    var done = 0;
+    await start(
+      tester,
+      LaunchIntroVariant.full,
+      () => done++,
+      onAppTap: () => appTaps++,
+    );
+    await tester.pump(const Duration(milliseconds: 2200));
+    await tester.tapAt(const Offset(400, 300));
+    expect(appTaps, 1);
+    // Khong bi tinh la bo qua: van xong dung luc.
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(done, 1);
   });
 
   testWidgets('gate: a new build plays the full version, then lets Today go', (

@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/config/app_credits.dart';
 import '../../../core/config/env.dart';
 import '../../../core/i18n/app_strings.dart';
 import '../../../core/theme/gt_tokens.dart';
-
-const _kLogoAsset = 'assets/icon/splash_logo.webp';
-
-/// Tac gia hien o Launch Intro va o day (spec #135, quyet dinh #2-3).
-const kGtAuthors = ('Quang Promise', 'Tùng Micky');
 
 /// Ban build dang chay: SHA rut gon cua CI, "dev" khi build tai cho.
 String gtBuildLabel([String sha = Env.buildSha]) =>
@@ -97,6 +93,7 @@ class GtAboutScreen extends ConsumerWidget {
                     'gt_about_credit_music',
                     'gt_about_credit_sounds',
                     'gt_about_credit_words',
+                    'gt_about_credit_nawl',
                     'gt_about_credit_sentences',
                   ])
                     Padding(
@@ -157,7 +154,7 @@ class _Logo extends StatelessWidget {
     ),
     child: ClipOval(
       child: Image.asset(
-        _kLogoAsset,
+        kGtLogoAsset,
         fit: BoxFit.cover,
         errorBuilder: (_, _, _) => const SizedBox.shrink(),
       ),
