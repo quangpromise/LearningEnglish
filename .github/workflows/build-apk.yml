@@ -148,15 +148,8 @@ jobs:
         # nang (khong phai dependency thua/loi cau hinh) truoc khi nang nguong -
         # nguoi dung da dong y danh doi dung luong lay co che du phong avatar.
         #
-        # 2026-10-05: nang 85/105MB len 140/170MB. Build next-465 nang 157MB, so
-        # voi 92MB cua ban cu (d1a6487). Phan tang den tu tinh nang that, them sau:
-        #   - giong doc Kokoro offline cho huong dan bai tap + tu vung gym
-        #     (assets/tutorial_audio ~27MB, 1.357 file MP3 mono 40kbps da nen);
-        #   - ML Kit pose detection cho camera dem rep (~14MB, gom ca model
-        #     "accurate" khong dung - xem issue giam dung luong);
-        #   - Content Pack lo trinh tieng Anh.
-        # Bang "file lon nhat" in o dau buoc nay MOI lan build (ke ca khi bi
-        # chan) de soi phan con lai va tim cho giam.
+        # Bang "file lon nhat" + tong theo thu muc in o dau buoc nay MOI lan
+        # build (ke ca khi bi chan) - biet ngay thu gi lam phinh app.
         run: |
           cd build/app/outputs/flutter-apk
           python3 - <<'PY'
@@ -170,14 +163,15 @@ jobs:
           for i in infos:
               parts = i.filename.split('/')
               depth = 4 if parts[:2] == ['assets', 'flutter_assets'] else 2
-              key = '/'.join(parts[:depth]) if len(parts) > depth else parts[0]
+              # Thu muc cha (toi da [depth] cap); file o goc giu ten rieng.
+              key = '/'.join(parts[:min(depth, len(parts) - 1)]) or parts[0]
               groups[key] += i.compress_size
           print('=== Tong theo thu muc (MB trong APK) ===')
           for key, size in groups.most_common(15):
               print(f'{size / 1048576:7.2f}  {key}')
           PY
-          UNIVERSAL_WARN_MB=140
-          UNIVERSAL_MAX_MB=170
+          UNIVERSAL_WARN_MB=85
+          UNIVERSAL_MAX_MB=105
           UNIVERSAL_SIZE_MB=$(du -m app-release.apk | cut -f1)
           echo "=== Dung luong APK (universal, arm64-v8a + armeabi-v7a) ==="
           echo "app-release.apk: ${UNIVERSAL_SIZE_MB}MB"

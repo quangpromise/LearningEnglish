@@ -73,11 +73,13 @@ File ra tại `app/build/app/outputs/flutter-apk/app-release.apk`.
      Android, đã qua R8 minify), assets (sách/font/âm thanh) ~1.3MB (không
      đáng kể). Nếu 1 trong các con số này phình to bất thường ở lần đo sau,
      đó là dấu hiệu cần điều tra.
-  5. CI đã có bước tự cảnh báo khi APK > 22MB (bản split-per-abi) / 42MB (bản
-     universal) và **chặn build** khi vượt 30MB / 55MB (xem
-     `.github/workflows/build-apk.yml`) — nếu build bị chặn vì lý do chính
-     đáng (tính năng thật sự cần), tăng ngưỡng `MAX_MB` trong workflow kèm
-     ghi chú lý do, đừng lặng lẽ bỏ qua.
+  5. CI tự cảnh báo và **chặn build** khi APK vượt ngưỡng
+     `UNIVERSAL_WARN_MB` / `UNIVERSAL_MAX_MB` trong
+     `.github/workflows/build-apk.yml` (ngưỡng hiện hành và lịch sử nâng ghi
+     ngay trong file đó). Mỗi lần build, CI in bảng 25 file lớn nhất + tổng
+     theo thư mục, kể cả khi bị chặn: đọc bảng đó để tìm đúng nguyên nhân
+     trước. Nếu build bị chặn vì lý do chính đáng (tính năng thật sự cần), mới
+     tăng ngưỡng kèm ghi chú lý do bằng số đo thật, đừng lặng lẽ bỏ qua.
 
 ## 5. Host & hướng dẫn người dùng cài (sideload, không qua Google Play)
 1. Tạo GitHub Release mới trong repo, đính kèm file `app-release.apk`:
