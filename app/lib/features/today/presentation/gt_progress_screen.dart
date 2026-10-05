@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/app_strings.dart';
+import '../../../core/navigation/app_popup.dart';
 import '../../../core/navigation/gt_mini_player.dart';
 import '../../../core/navigation/gt_top_bar.dart';
 import '../../../core/providers/app_providers.dart';
@@ -13,6 +14,7 @@ import '../../fitness/data/body_level.dart';
 import '../../../core/i18n/greeting.dart';
 import '../data/gymtalk_rank.dart';
 import '../data/progress_presentation.dart';
+import 'gt_about_screen.dart';
 import 'progress_social_cards.dart';
 
 /// Giay hoat dong 7 ngay theo nguon ('english' | 'fitness') - RPC
@@ -72,6 +74,8 @@ class GtProgressScreen extends ConsumerWidget {
             const _MiniPlayerSwitch(),
             const SizedBox(height: 10),
             const ReminderSettingsCard(),
+            const SizedBox(height: 10),
+            const _AboutRow(),
           ],
         ),
       ),
@@ -482,6 +486,31 @@ class _Legend extends StatelessWidget {
 
 // ---------------------------------------------------------------------------
 // Cai dat: bat/tat mini player (review #72 -> tieu chi cua ticket nay)
+
+/// Hang mo trang Gioi thieu (tac gia, ban build, giay phep - #138).
+class _AboutRow extends ConsumerWidget {
+  const _AboutRow();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = context.gt;
+    return Material(
+      color: t.s1,
+      borderRadius: BorderRadius.circular(20),
+      child: ListTile(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        leading: Icon(Icons.info_outline_rounded, color: t.tx2),
+        title: Text(ref.tr('gt_about'), style: GtText.rowTitle(t.tx)),
+        subtitle: Text(
+          ref.tr('gt_about_sub'),
+          style: GtText.body(t.tx2, size: 12),
+        ),
+        trailing: Icon(Icons.chevron_right_rounded, color: t.tx3),
+        onTap: () => openAppPopup(context, const GtAboutScreen()),
+      ),
+    );
+  }
+}
 
 class _MiniPlayerSwitch extends ConsumerWidget {
   const _MiniPlayerSwitch();

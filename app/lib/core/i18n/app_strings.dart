@@ -6033,6 +6033,42 @@ class AppStrings {
       AppLanguage.vi: 'Hiện thanh nhạc nhỏ phía trên thanh tab',
       AppLanguage.en: 'Show the small music bar above the tabs',
     },
+    'gt_about': {AppLanguage.vi: 'Giới thiệu', AppLanguage.en: 'About'},
+    'gt_about_sub': {
+      AppLanguage.vi: 'Tác giả, phiên bản, giấy phép',
+      AppLanguage.en: 'Authors, version, licences',
+    },
+    'gt_about_made_by': {
+      AppLanguage.vi: 'Thực hiện bởi',
+      AppLanguage.en: 'Made by',
+    },
+    'gt_about_version': {AppLanguage.vi: 'Bản build', AppLanguage.en: 'Build'},
+    'gt_about_credits': {AppLanguage.vi: 'Ghi công', AppLanguage.en: 'Credits'},
+    'gt_about_credit_music': {
+      AppLanguage.vi: 'Nhạc: Josh Woodward (CC BY 4.0)',
+      AppLanguage.en: 'Music: Josh Woodward (CC BY 4.0)',
+    },
+    'gt_about_credit_sounds': {
+      AppLanguage.vi: 'Âm báo giờ nghỉ: Spring Spring, VCSL (CC0)',
+      AppLanguage.en: 'Rest timer sounds: Spring Spring, VCSL (CC0)',
+    },
+    'gt_about_credit_words': {
+      AppLanguage.vi: 'Cấp độ từ vựng: CEFR-J Wordlist, Tono Laboratory (TUFS)',
+      AppLanguage.en: 'Word levels: CEFR-J Wordlist, Tono Laboratory (TUFS)',
+    },
+    'gt_about_credit_nawl': {
+      AppLanguage.vi: 'Từ học thuật C1: New Academic Word List (CC BY-SA 4.0)',
+      AppLanguage.en:
+          'C1 academic words: New Academic Word List (CC BY-SA 4.0)',
+    },
+    'gt_about_credit_sentences': {
+      AppLanguage.vi: 'Câu ví dụ: Tatoeba (CC BY 2.0 FR)',
+      AppLanguage.en: 'Example sentences: Tatoeba (CC BY 2.0 FR)',
+    },
+    'gt_about_licenses': {
+      AppLanguage.vi: 'Giấy phép mã nguồn mở',
+      AppLanguage.en: 'Open-source licences',
+    },
     'gt_srs_done_title': {
       AppLanguage.vi: 'Xong bộ thẻ!',
       AppLanguage.en: 'Deck done!',

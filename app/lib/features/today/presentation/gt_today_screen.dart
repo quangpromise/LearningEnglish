@@ -16,6 +16,7 @@ import '../../../core/theme/gt_tokens.dart';
 import '../../../core/theme/gt_haptics.dart';
 import '../../../core/theme/gt_motion.dart';
 import '../../../core/widgets/gt_celebration.dart';
+import '../../../core/widgets/gt_launch_intro.dart';
 import '../../../core/widgets/gt_when_on_screen.dart';
 import '../../../core/widgets/gt_count_up.dart';
 import '../../english_path/data/english_path_providers.dart';
@@ -54,6 +55,10 @@ class _GtTodayScreenState extends ConsumerState<GtTodayScreen> {
     // Nhiem vu vua xong (o bat ky man nao) -> cong XP 1 lan + toast.
     DailyProgressStore.instance.addListener(_claimQuestXp);
     WidgetsBinding.instance.addPostFrameCallback((_) => _claimQuestXp());
+    // Launch Intro dang phu man: toast XP doi no xong (khong het han ngam).
+    ref.listenManual<bool>(launchIntroActiveProvider, (previous, active) {
+      if (previous == true && !active) _claimQuestXp();
+    });
     // Lan dau chua co giao an -> tu mo "Thiet lap GymTalk" 1 lan (giu hanh
     // vi cu cho toi khi co onboarding moi - UI-10).
     ref.listenManual<AsyncValue<TodayWorkoutPlan?>>(todayWorkoutPlanProvider, (
@@ -65,7 +70,7 @@ class _GtTodayScreenState extends ConsumerState<GtTodayScreen> {
   }
 
   Future<void> _claimQuestXp() async {
-    if (!mounted) return;
+    if (!mounted || ref.read(launchIntroActiveProvider)) return;
     if (pendingQuestRewards(DailyProgressStore.instance.today).isEmpty) return;
     // Dich vu tu chong goi chong (khoa dang tra) va lap den khi het.
     final xp = await ref.read(questRewardServiceProvider).claimPendingQuests();
@@ -100,11 +105,14 @@ class _GtTodayScreenState extends ConsumerState<GtTodayScreen> {
     final t = context.gt;
     final padding = MediaQuery.paddingOf(context);
     final store = DailyProgressStore.instance;
-    // Tab Hom nay dang that su hien: dang chon va khong co popup / dialog nao
-    // phu len man Home (moi man khac deu mo dang popup tren Navigator goc).
+    // Tab Hom nay dang that su hien: dang chon, khong co popup / dialog nao
+    // phu len man Home (moi man khac deu mo dang popup tren Navigator goc) va
+    // Launch Intro da xong (spec #135 - vong / chuc mung khong chay ngam).
+    final introActive = ref.watch(launchIntroActiveProvider);
     final onScreen =
         ref.watch(rootTabProvider) == RootTab.today &&
-        (ModalRoute.isCurrentOf(context) ?? true);
+        (ModalRoute.isCurrentOf(context) ?? true) &&
+        !introActive;
     // Doi popup / trang vua dong lui het (trang 450 ms > sheet 200 ms); giam
     // chuyen dong thi hien ngay.
     final settle = gtReduceMotion(context)
@@ -158,6 +166,8 @@ class _GtTodayScreenState extends ConsumerState<GtTodayScreen> {
                           // lai 2 the kia.
                           RepaintBoundary(
                             child: GtRingsCard(
+                              // Vong lap day sau khi Launch Intro xong.
+                              play: !introActive,
                               day: day,
                               strip: weekStreakStrip(
                                 (d) => DateUtils.isSameDay(d, now)
@@ -264,9 +274,14 @@ class GtRingsCard extends ConsumerStatefulWidget {
     required this.day,
     required this.strip,
     required this.date,
+    this.play = true,
   });
 
   final DayProgress day;
+
+  /// false = giu vong o 0 (vd Launch Intro dang phu man); bat len thi lap
+  /// day toi tien do that truoc mat nguoi dung.
+  final bool play;
   final List<StreakCell> strip;
   final DateTime date;
 
@@ -353,7 +368,9 @@ class _GtRingsCardState extends ConsumerState<GtRingsCard>
   @override
   Widget build(BuildContext context) {
     final t = context.gt;
-    final day = widget.day;
+    final day = widget.play
+        ? widget.day
+        : DayProgress(restDay: widget.day.restDay);
     final fill = gtMotion(context, GtMotionKind.expressive);
     return Container(
       padding: const EdgeInsets.all(20),
@@ -382,6 +399,8 @@ class _GtRingsCardState extends ConsumerState<GtRingsCard>
           Row(
             children: [
               SizedBox(
+                // Dich bay cua vong Launch Intro (#137).
+                key: gtLaunchRingTarget,
                 width: 164,
                 height: 164,
                 // Tween toi ti le moi: lan dau chay tu 0, sau do chay tu ti

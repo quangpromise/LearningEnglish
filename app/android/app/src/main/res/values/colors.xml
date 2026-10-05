@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="ic_launcher_background">#0B1E4D</color>
+    <!-- Nen man cho he thong + nen cua so: navy cua Launch Intro (spec #135) -
+         khop khung dau tien cua intro, het nhay trang luc mo app. -->
+    <color name="splash_navy">#081538</color>
 </resources>

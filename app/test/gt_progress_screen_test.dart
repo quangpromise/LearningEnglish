@@ -110,6 +110,35 @@ void main() {
     expect(find.text('Chưa tải được hoạt động tuần'), findsOneWidget);
   });
 
+  testWidgets('settings: About shows both authors and the build (#138)', (
+    tester,
+  ) async {
+    await pump(tester);
+    await tester.drag(find.byType(ListView).first, const Offset(0, -3000));
+    await tester.pumpAndSettle();
+    // The Nhac nho phia tren tai xong co the cao them, day hang xuong duoi
+    // man: dua hang vao giua man lan nua roi moi cham.
+    final about = find.text('Giới thiệu', skipOffstage: false);
+    await tester.ensureVisible(about);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(about);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Giới thiệu'));
+    await tester.pumpAndSettle();
+    expect(overflowReport(tester), isEmpty);
+    expect(find.text('Quang Promise'), findsOneWidget);
+    expect(find.text('Tùng Micky'), findsOneWidget);
+    // Build tai cho (khong co SHA cua CI).
+    expect(find.text('dev'), findsOneWidget);
+    // Nut giay phep o cuoi trang Gioi thieu: cuon trong trang.
+    await tester.dragUntilVisible(
+      find.text('Giấy phép mã nguồn mở'),
+      find.byType(Scrollable).last,
+      const Offset(0, -200),
+    );
+    expect(find.text('Giấy phép mã nguồn mở'), findsOneWidget);
+  });
+
   testWidgets('settings: mini player can be turned back on', (tester) async {
     final container = await pump(tester);
     await container.read(miniPlayerVisibleProvider.notifier).set(false);

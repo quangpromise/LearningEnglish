@@ -101,6 +101,10 @@ _Avoid_: achievement, cột mốc nhỏ
 Lớp phủ chúc mừng toàn màn, chỉ hiện sau một Milestone, kèm số XP thật vừa được cộng (không có XP thì không hiện số). Một khoảnh khắc chỉ có một Celebration: khi qua Level Test hoặc lên Body Level kéo GymTalk Rank lên theo, việc lên GymTalk Rank hiện ngay trong Celebration đó chứ không thành Celebration thứ hai.
 _Avoid_: popup, modal
 
+**Launch Intro**:
+Đoạn chuyển động ngắn khi mở app, ngay sau màn chờ của hệ thống. Bản đầy đủ (có tên hai tác giả) chiếu ở lần mở đầu tiên sau khi cài hoặc cập nhật; các lần mở sau chiếu bản ngắn. Chạm để bỏ qua.
+_Avoid_: splash screen (đó là màn chờ của hệ thống trước khi app chạy), intro video
+
 **XP Toast**:
 Thông báo ngắn ở mép trên màn hình báo số XP thật vừa được cộng cho việc thường ngày.
 _Avoid_: snackbar, notification

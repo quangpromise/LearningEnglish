@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 12+: SplashScreen cua he thong (spec #135). Can ca values-v31 va
+         values-night-v31: khi chon tai nguyen, che do toi duoc uu tien hon cap
+         API, nen thieu ban night-v31 thi may dang de che do toi se dung
+         values-night (khong co cac thuoc tinh duoi day). -->
+    <style name="LaunchTheme" parent="@android:style/Theme.Black.NoTitleBar">
+        <item name="android:windowBackground">@drawable/launch_background</item>
+        <item name="android:windowSplashScreenBackground">@color/splash_navy</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_logo_inset</item>
+    </style>
+    <style name="NormalTheme" parent="@android:style/Theme.Black.NoTitleBar">
+        <item name="android:windowBackground">@color/splash_navy</item>
+    </style>
+</resources>

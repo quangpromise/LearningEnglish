@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Icon man cho Android 12+: he thong chi hien vong tron 2/3 khung o giua (192dp
+     tren 288dp) va tu co gian khung - le phai la ti le (1/6 moi canh), le dp co
+     dinh lam logo con ~117dp (review #139). -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/splash_logo"
+    android:inset="16.667%" />
