@@ -148,6 +148,16 @@ jobs:
         # nang (khong phai dependency thua/loi cau hinh) truoc khi nang nguong -
         # nguoi dung da dong y danh doi dung luong lay co che du phong avatar.
         #
+        # 2026-10-05: nang 85/105MB len 150/165MB. Build chan doan #466 nang
+        # 157MB (ban cu d1a6487: 92MB). Bang ben duoi cho thay (MB trong APK):
+        # lib/arm64-v8a 39.5, lib/armeabi-v7a 29.4, unified_model.pb 27.9 (avatar
+        # du phong, da dong y tu 09-13), tutorial_audio 23.5 (giong Kokoro
+        # offline, MP3 40kbps - tinh nang moi), mlkit_pose 11.8 (camera dem rep -
+        # tinh nang moi), lib/x86_64 11.1 (THUA - da bo bang abiFilters trong
+        # android/app/build.gradle.kts). Con khoang 146MB. Cho giam tiep (bo
+        # 32-bit ~29MB, model ML Kit "accurate" ~6MB, libapp.so ~14MB/ABI): issue
+        # #134 - giam xong thi ha nguong lai.
+        #
         # Bang "file lon nhat" + tong theo thu muc in o dau buoc nay MOI lan
         # build (ke ca khi bi chan) - biet ngay thu gi lam phinh app.
         run: |
@@ -170,8 +180,8 @@ jobs:
           for key, size in groups.most_common(15):
               print(f'{size / 1048576:7.2f}  {key}')
           PY
-          UNIVERSAL_WARN_MB=85
-          UNIVERSAL_MAX_MB=105
+          UNIVERSAL_WARN_MB=150
+          UNIVERSAL_MAX_MB=165
           UNIVERSAL_SIZE_MB=$(du -m app-release.apk | cut -f1)
           echo "=== Dung luong APK (universal, arm64-v8a + armeabi-v7a) ==="
           echo "app-release.apk: ${UNIVERSAL_SIZE_MB}MB"

@@ -80,6 +80,14 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            // Chi dong goi thu vien native cho dien thoai that (ARM). Flutter tu
+            // loc libflutter/libapp theo --target-platform, nhung .so trong AAR
+            // cua plugin thi khong: libxeno_native.so (spatius_avatarkit) tung
+            // lot ban x86_64 ~11MB vao APK (build #466, issue #134). Chi ban
+            // release - may ao x86_64 van chay ban debug.
+            ndk {
+                abiFilters += listOf("armeabi-v7a", "arm64-v8a")
+            }
         }
     }
 }
