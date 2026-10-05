@@ -110,6 +110,22 @@ void main() {
     expect(find.text('Chưa tải được hoạt động tuần'), findsOneWidget);
   });
 
+  testWidgets('settings: About shows both authors and the build (#138)', (
+    tester,
+  ) async {
+    await pump(tester);
+    await tester.drag(find.byType(ListView).first, const Offset(0, -3000));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Giới thiệu'));
+    await tester.pumpAndSettle();
+    expect(overflowReport(tester), isEmpty);
+    expect(find.text('Quang Promise'), findsOneWidget);
+    expect(find.text('Tùng Micky'), findsOneWidget);
+    // Build tai cho (khong co SHA cua CI).
+    expect(find.text('dev'), findsOneWidget);
+    expect(find.text('Giấy phép mã nguồn mở'), findsOneWidget);
+  });
+
   testWidgets('settings: mini player can be turned back on', (tester) async {
     final container = await pump(tester);
     await container.read(miniPlayerVisibleProvider.notifier).set(false);

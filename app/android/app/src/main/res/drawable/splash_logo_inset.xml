@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Icon man cho Android 12+: khung 288dp, he thong chi hien vong tron 192dp o
+     giua - dung bang logo tron (spec #135). -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/splash_logo"
+    android:inset="48dp" />

@@ -16,6 +16,7 @@ import '../../../core/theme/gt_tokens.dart';
 import '../../../core/theme/gt_haptics.dart';
 import '../../../core/theme/gt_motion.dart';
 import '../../../core/widgets/gt_celebration.dart';
+import '../../../core/widgets/gt_launch_intro.dart';
 import '../../../core/widgets/gt_when_on_screen.dart';
 import '../../../core/widgets/gt_count_up.dart';
 import '../../english_path/data/english_path_providers.dart';
@@ -100,11 +101,13 @@ class _GtTodayScreenState extends ConsumerState<GtTodayScreen> {
     final t = context.gt;
     final padding = MediaQuery.paddingOf(context);
     final store = DailyProgressStore.instance;
-    // Tab Hom nay dang that su hien: dang chon va khong co popup / dialog nao
-    // phu len man Home (moi man khac deu mo dang popup tren Navigator goc).
+    // Tab Hom nay dang that su hien: dang chon, khong co popup / dialog nao
+    // phu len man Home (moi man khac deu mo dang popup tren Navigator goc) va
+    // Launch Intro da xong (spec #135 - vong / chuc mung khong chay ngam).
     final onScreen =
         ref.watch(rootTabProvider) == RootTab.today &&
-        (ModalRoute.isCurrentOf(context) ?? true);
+        (ModalRoute.isCurrentOf(context) ?? true) &&
+        !ref.watch(launchIntroActiveProvider);
     // Doi popup / trang vua dong lui het (trang 450 ms > sheet 200 ms); giam
     // chuyen dong thi hien ngay.
     final settle = gtReduceMotion(context)
@@ -382,6 +385,8 @@ class _GtRingsCardState extends ConsumerState<GtRingsCard>
           Row(
             children: [
               SizedBox(
+                // Dich bay cua vong Launch Intro (#137).
+                key: gtLaunchRingTarget,
                 width: 164,
                 height: 164,
                 // Tween toi ti le moi: lan dau chay tu 0, sau do chay tu ti

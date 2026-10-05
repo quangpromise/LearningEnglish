@@ -193,6 +193,7 @@ void main() {
         GtHapticLevel.selection,
       );
       expect(gtHapticLevel(GtHapticEvent.restEnded), GtHapticLevel.heavy);
+      expect(gtHapticLevel(GtHapticEvent.launchRing), GtHapticLevel.light);
     });
 
     test(
