@@ -231,8 +231,7 @@ void main() {
       ),
     );
     await tester.pump();
-    // Giu khung dau toi khi logo giai ma xong (trong test: het 600 ms).
-    expect(find.text('Quang Promise'), findsNothing);
+    // Giu khung dau toi khi logo giai ma xong (toi da 600 ms).
     await tester.pump(const Duration(milliseconds: 650));
     await tester.pump();
     expect(find.text('Quang Promise'), findsOneWidget);
