@@ -201,6 +201,33 @@ class RecurringServiceRepository {
         .eq('user_id', userId);
   }
 
+  /// Xoa 1 giao dich chi tieu SINH RA TU 1 lan gia han tu tab Chi tieu
+  /// (wealth_expense_tab.dart): hoan tac ca lan gia han - xoa lan gia han
+  /// (dong thanh toan + dong tru Vi tu xoa theo nho on delete cascade,
+  /// migration 0034) va tra expiry_date ve ngay cu. Tra ve false neu
+  /// [transactionId] khong gan voi lan gia han nao.
+  Future<bool> deleteRenewalForTransaction(
+    String userId,
+    String transactionId,
+  ) async {
+    final renewal = await _supabase
+        .from('wealth_service_renewals')
+        .select('id, service_id, previous_expiry_date')
+        .eq('transaction_id', transactionId)
+        .eq('user_id', userId)
+        .maybeSingle();
+    if (renewal == null) return false;
+    await deleteRenewalAndRestoreExpiry(
+      userId: userId,
+      renewalId: renewal['id'] as String,
+      serviceId: renewal['service_id'] as String,
+      previousExpiryDate: DateTime.parse(
+        renewal['previous_expiry_date'] as String,
+      ),
+    );
+    return true;
+  }
+
   Future<void> deactivate(String userId, String id) async {
     await _supabase
         .from('wealth_recurring_services')
@@ -282,6 +309,36 @@ class RecurringServiceRepository {
           .eq('id', renewalId);
     }
 
+    await _insertPayments(
+      userId: userId,
+      renewalId: renewalId,
+      currency: service.currency,
+      payments: payments,
+      note: effectiveNote,
+      occurredAt: effectiveOccurredAt,
+    );
+
+    await _supabase
+        .from('wealth_recurring_services')
+        .update({
+          'expiry_date': newExpiryDate.toIso8601String().substring(0, 10),
+          'default_amount': totalAmount,
+          'last_notified_on': null,
+        })
+        .eq('id', service.id)
+        .eq('user_id', userId);
+  }
+
+  /// Ghi tung dong thanh toan cua 1 lan gia han + dong wealth_balance_entries
+  /// tuong ung tru vao Vi (source='service_renewal').
+  Future<void> _insertPayments({
+    required String userId,
+    required String renewalId,
+    required String currency,
+    required List<RenewalPaymentInput> payments,
+    required String? note,
+    required DateTime occurredAt,
+  }) async {
     final balanceRepo = WealthBalanceEntryRepository(_supabase);
     for (final payment in payments) {
       if (payment.amount <= 0) continue;
@@ -294,7 +351,7 @@ class RecurringServiceRepository {
             'payment_account_type': payment.accountType,
             'payment_bank_code': payment.bankCode,
             'payment_bank_name': payment.bankName,
-            'currency': service.currency,
+            'currency': currency,
           })
           .select('id')
           .single();
@@ -306,24 +363,65 @@ class RecurringServiceRepository {
           accountType: payment.accountType,
           bankCode: payment.bankCode,
           bankName: payment.bankName,
-          currency: service.currency,
+          currency: currency,
           amount: -payment.amount,
-          note: effectiveNote,
-          occurredAt: effectiveOccurredAt,
+          note: note,
+          occurredAt: occurredAt,
           source: 'service_renewal',
           sourceServiceRenewalPaymentId: paymentId,
         ),
       );
     }
+  }
 
+  /// Sua 1 giao dich chi tieu SINH RA TU 1 lan gia han (man Sua giao dich,
+  /// add_transaction_sheet.dart): cac dong Vi cua lan gia han gan voi
+  /// wealth_service_renewal_payments chu KHONG gan source_transaction_id,
+  /// nen deleteBySourceTransaction khong xoa duoc chung - doi Cash -> Bank
+  /// se de lai dong tru Cash cu va tru them Bank (tru 2 lan). O day xoa het
+  /// dong thanh toan cu (dong Vi tu xoa theo nho on delete cascade, migration
+  /// 0034) roi ghi lai bo moi theo [payments].
+  ///
+  /// Tra ve false neu [transactionId] khong gan voi lan gia han nao - noi
+  /// goi xu ly nhu 1 khoan chi tieu thuong.
+  Future<bool> replacePaymentsForTransaction({
+    required String userId,
+    required String transactionId,
+    required double totalAmount,
+    required String currency,
+    required DateTime occurredAt,
+    required String? note,
+    required List<RenewalPaymentInput> payments,
+  }) async {
+    final renewal = await _supabase
+        .from('wealth_service_renewals')
+        .select('id')
+        .eq('transaction_id', transactionId)
+        .eq('user_id', userId)
+        .maybeSingle();
+    if (renewal == null) return false;
+    final renewalId = renewal['id'] as String;
     await _supabase
-        .from('wealth_recurring_services')
-        .update({
-          'expiry_date': newExpiryDate.toIso8601String().substring(0, 10),
-          'default_amount': totalAmount,
-          'last_notified_on': null,
-        })
-        .eq('id', service.id)
+        .from('wealth_service_renewal_payments')
+        .delete()
+        .eq('renewal_id', renewalId)
         .eq('user_id', userId);
+    await _supabase
+        .from('wealth_service_renewals')
+        .update({
+          'amount': totalAmount,
+          'occurred_at': occurredAt.toIso8601String(),
+        })
+        .eq('id', renewalId)
+        .eq('user_id', userId);
+    await _insertPayments(
+      userId: userId,
+      renewalId: renewalId,
+      currency: currency,
+      payments: payments,
+      note: note,
+      occurredAt: occurredAt,
+    );
+    return true;
   }
 }

@@ -87,7 +87,8 @@ Single-context: một `CONTEXT.md` ở gốc repo + `docs/adr/`. See `docs/agent
 ## Kênh build tách riêng — BẮT BUỘC (từ 2026-09-25)
 Bản APK + web hiện có (commit `d1a6487`, CI #453) được **giữ nguyên, không bao giờ ghi đè**. Mọi thay đổi từ CI #454 trở đi (nguyent0810) ra **web riêng + APK riêng**, dùng chung Supabase:
 - **APK**: mỗi lần build tạo 1 GitHub Release **riêng**, tag `next-<run_number>` — **không** ghi vào release `latest`, không xoá/sửa release cũ. APK là app khác (`applicationId` thêm `.next`, tên "GymTalk Next"), cài song song, không thay app cũ. Xem đầu `.github/workflows/build-apk.yml`.
-- **Web**: `/LearningEnglish/` luôn build từ `d1a6487` (bản cũ), kênh mới ở `/LearningEnglish/next/`. Xem `.github/workflows/build-web.yml`.
+- **Web**: `/LearningEnglish/` luôn build từ `STABLE_REF` (bản cũ), kênh mới ở `/LearningEnglish/next/`. Xem `.github/workflows/build-web.yml`.
+- **Sửa lỗi cho bản cũ**: chỉ khi chủ repo đồng ý — commit bản sửa vào nhánh `stable` (= `d1a6487` + các bản sửa đã duyệt), rồi đổi `STABLE_REF` sang SHA mới của nhánh đó. Không merge `main` vào `stable`.
 - Không đổi lại tag `latest`, `STABLE_REF`, hậu tố `.next` hay tiền tố tag `next-` khi chưa được chủ repo đồng ý.
 
 ## Cộng tác nhiều người

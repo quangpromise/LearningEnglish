@@ -9,7 +9,8 @@ name: Build & Deploy Web
 # QUY TAC (2026-09-25): GitHub Pages chi co 1 site/repo nen moi lan deploy
 # build CA 2 kenh vao chung 1 artifact:
 #   /LearningEnglish/       ban cu GIU NGUYEN - luon build tu STABLE_REF
-#                           (d1a6487, CI #453), khong nhan code moi tren main
+#                           (nhanh "stable": d1a6487, CI #453, + ban sua loi
+#                           da duyet), khong nhan code moi tren main
 #   /LearningEnglish/next/  kenh moi - code tren main (thay doi tu CI #454,
 #                           nguyent0810), dung chung Supabase
 # Xem them quy tac tuong tu cho APK o dau build-apk.yml.
@@ -32,7 +33,10 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  STABLE_REF: d1a64875119a9978df2805ed39c2aaa3e10a6f55
+  # Dau nhanh "stable" = d1a6487 + cac ban sua loi chu repo da duyet
+  # (2026-10-08: 2 ban sua loi gia han dich vu o Quan ly tai san). Sua ban
+  # cu: commit vao nhanh "stable" roi doi SHA o day - khong merge main vao.
+  STABLE_REF: 5055f4a703ba65adfce8f6252aa1437e4aecd4f1
 
 jobs:
   build:
