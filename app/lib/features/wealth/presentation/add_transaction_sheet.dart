@@ -328,6 +328,30 @@ class _WealthTransactionFormState extends ConsumerState<WealthTransactionForm> {
       // nhap tren man Bao cao khong khop voi tien thuc te tang trong Vi (xem
       // migration 0045).
       final repo = ref.read(wealthBalanceEntryRepositoryProvider);
+      if (_isEditing && _isExpense) {
+        // Khoan chi sinh ra tu 1 lan gia han dich vu: dong Vi cua no gan
+        // voi dong thanh toan gia han chu khong gan source_transaction_id -
+        // phai thay qua RecurringServiceRepository, neu khong dong tru cu
+        // (vd Cash) van con va Vi bi tru them lan nua o hinh thuc moi.
+        final wasRenewal = await ref
+            .read(recurringServiceRepositoryProvider)
+            .replacePaymentsForTransaction(
+              userId: userId,
+              transactionId: txId,
+              totalAmount: tx.amount,
+              currency: tx.currency,
+              occurredAt: tx.occurredAt,
+              note: tx.note,
+              payments: _renewalPayments,
+            );
+        if (wasRenewal) {
+          ref.invalidate(serviceRenewalsProvider);
+          ref.invalidate(walletBalanceEntriesProvider);
+          ref.invalidate(wealthTransactionsProvider);
+          _onSaveComplete();
+          return;
+        }
+      }
       if (_isEditing) {
         // Sua lai giao dich cu - xoa het bo dong balance_entries CU sinh
         // ra tu no roi chen lai bo MOI theo split vua sua (don gian hon
