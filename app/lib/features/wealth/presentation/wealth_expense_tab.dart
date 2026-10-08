@@ -131,6 +131,16 @@ class _WealthExpenseTabState extends ConsumerState<WealthExpenseTab> {
                             // Portfolio (so luong + lich su mua) TRUOC khi
                             // xoa dong chi tieu.
                             await revertInvestmentPortfolio(ref, userId, t.id);
+                            // Khoan chi sinh ra tu 1 lan gia han dich vu:
+                            // hoan tac ca lan gia han (dong tru Vi + ngay
+                            // het han), giong khi xoa tu man Vi.
+                            final wasRenewal = await ref
+                                .read(recurringServiceRepositoryProvider)
+                                .deleteRenewalForTransaction(userId, t.id);
+                            if (wasRenewal) {
+                              ref.invalidate(recurringServicesProvider);
+                              ref.invalidate(serviceRenewalsProvider);
+                            }
                             await ref
                                 .read(wealthTransactionRepositoryProvider)
                                 .deleteTransaction(userId, t.id);

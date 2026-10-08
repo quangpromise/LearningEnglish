@@ -201,6 +201,33 @@ class RecurringServiceRepository {
         .eq('user_id', userId);
   }
 
+  /// Xoa 1 giao dich chi tieu SINH RA TU 1 lan gia han tu tab Chi tieu
+  /// (wealth_expense_tab.dart): hoan tac ca lan gia han - xoa lan gia han
+  /// (dong thanh toan + dong tru Vi tu xoa theo nho on delete cascade,
+  /// migration 0034) va tra expiry_date ve ngay cu. Tra ve false neu
+  /// [transactionId] khong gan voi lan gia han nao.
+  Future<bool> deleteRenewalForTransaction(
+    String userId,
+    String transactionId,
+  ) async {
+    final renewal = await _supabase
+        .from('wealth_service_renewals')
+        .select('id, service_id, previous_expiry_date')
+        .eq('transaction_id', transactionId)
+        .eq('user_id', userId)
+        .maybeSingle();
+    if (renewal == null) return false;
+    await deleteRenewalAndRestoreExpiry(
+      userId: userId,
+      renewalId: renewal['id'] as String,
+      serviceId: renewal['service_id'] as String,
+      previousExpiryDate: DateTime.parse(
+        renewal['previous_expiry_date'] as String,
+      ),
+    );
+    return true;
+  }
+
   Future<void> deactivate(String userId, String id) async {
     await _supabase
         .from('wealth_recurring_services')
